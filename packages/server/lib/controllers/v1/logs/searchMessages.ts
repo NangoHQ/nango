@@ -7,12 +7,15 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 const validation = z
     .object({
         operationId: operationIdRegex,
-        limit: z.number().optional().default(100),
-        search: z.string().optional(),
+        limit: z.number().max(500).optional().default(100),
+        search: z.string().max(100).optional(),
         states: z
             .array(z.enum(['all', 'waiting', 'running', 'success', 'failed', 'timeout', 'cancelled']))
+            .max(10)
             .optional()
-            .default(['all'])
+            .default(['all']),
+        cursorBefore: z.string().or(z.null()).optional(),
+        cursorAfter: z.string().or(z.null()).optional()
     })
     .strict();
 
@@ -59,11 +62,13 @@ export const searchMessages = asyncWrapper<SearchMessages>(async (req, res) => {
         parentId: body.operationId,
         limit: body.limit!,
         states: body.states,
-        search: body.search
+        search: body.search,
+        cursorBefore: body.cursorBefore,
+        cursorAfter: body.cursorAfter
     });
 
     res.status(200).send({
         data: rawOps.items,
-        pagination: { total: rawOps.count }
+        pagination: { total: rawOps.count, cursorBefore: rawOps.cursorBefore, cursorAfter: rawOps.cursorAfter }
     });
 });

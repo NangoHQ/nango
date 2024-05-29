@@ -47,6 +47,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                         styles={() => {
                             return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                         }}
+                        noCopy
                     >
                         {message.message}
                     </Prism>
@@ -55,7 +56,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
             <div className="overflow-x-auto">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
 
-                {message.meta ? (
+                {message.meta || message.error ? (
                     <div className="text-gray-400 text-sm bg-pure-black py-2">
                         <Prism
                             language="json"
@@ -65,7 +66,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                                 return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                             }}
                         >
-                            {JSON.stringify({ error: message.error || undefined, output: message.meta || undefined }, null, 2)}
+                            {JSON.stringify({ error: message.error?.message || undefined, output: message.meta || undefined }, null, 2)}
                         </Prism>
                     </div>
                 ) : (

@@ -57,19 +57,23 @@ export const DatePicker: React.FC<{
     const [selectedPreset, setSelectedPreset] = useState<string | undefined>(undefined);
 
     const [date, setDate] = useState<DateRange | undefined>();
+    const [tmpDate, setTmpDate] = useState<DateRange | undefined>();
 
     const months = useMemo(() => {
         const today = new Date();
         return today.getDate() < 24 ? 2 : 1;
     }, []);
+
     const disabledBefore = useMemo(() => {
         return addDays(new Date(), -14);
     }, []);
+
     const disabledAfter = useMemo(() => {
         return new Date();
     }, []);
+
     const display = useMemo(() => {
-        if (!date || !date.from) {
+        if (!date || !date.from || !date.to) {
             return 'Live - Last 14 days';
         }
         if (date.from && date.to) {
@@ -82,20 +86,29 @@ export const DatePicker: React.FC<{
         const range = getPresetRange(preset);
         setSelectedPreset(preset);
         onChange(range);
+        setTmpDate(range);
     };
 
     const onClickLive = () => {
         setSelectedPreset(undefined);
         onChange(undefined);
+        setTmpDate(undefined);
     };
 
     useEffect(() => {
         setDate(period ? { from: new Date(period.from), to: new Date(period.to) } : undefined);
     }, [period]);
 
+    useEffect(() => {
+        // We use a tmp date because we only want to commit full range, not partial from/to
+        if (!tmpDate || (tmpDate.from && tmpDate.to)) {
+            onChange(tmpDate);
+        }
+    }, [tmpDate]);
+
     return (
         <Popover>
-            <PopoverTrigger>
+            <PopoverTrigger asChild>
                 <Button variant="zombieGray" size={'xs'} className={cn('flex-grow truncate w-[230px]')}>
                     <CalendarIcon />
                     {display}
@@ -106,10 +119,16 @@ export const DatePicker: React.FC<{
                     <Calendar
                         mode="range"
                         defaultMonth={date?.from}
-                        selected={date}
+                        selected={tmpDate}
                         onSelect={(e) => {
                             setSelectedPreset(undefined);
-                            onChange(e);
+                            if (e?.from) {
+                                e.from.setHours(0, 0, 0);
+                            }
+                            if (e?.to) {
+                                e.to.setHours(23, 59, 59);
+                            }
+                            setTmpDate(e);
                         }}
                         initialFocus
                         numberOfMonths={months}

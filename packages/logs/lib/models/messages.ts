@@ -12,14 +12,19 @@ import type {
 import { indexMessages } from '../es/schema.js';
 import type { estypes } from '@elastic/elasticsearch';
 import { errors } from '@elastic/elasticsearch';
+import { createCursor, parseCursor } from './helpers.js';
+import { isTest } from '@nangohq/utils';
 
 export interface ListOperations {
     count: number;
     items: OperationRow[];
+    cursor: string | null;
 }
 export interface ListMessages {
     count: number;
     items: MessageRow[];
+    cursorAfter: string | null;
+    cursorBefore: string | null;
 }
 export interface ListFilters {
     items: { key: string; doc_count: number }[];
@@ -35,7 +40,7 @@ export async function createMessage(row: MessageRow): Promise<void> {
         index: indexMessages.index,
         id: row.id,
         document: row,
-        refresh: true
+        refresh: isTest
     });
 }
 
@@ -52,6 +57,7 @@ export async function listOperations(opts: {
     connections?: SearchOperationsConnection[] | undefined;
     syncs?: SearchOperationsSync[] | undefined;
     period?: SearchOperationsPeriod | undefined;
+    cursor?: string | null | undefined;
 }): Promise<ListOperations> {
     const query: estypes.QueryDslQueryContainer = {
         bool: {
@@ -128,20 +134,25 @@ export async function listOperations(opts: {
         });
     }
 
+    const cursor = opts.cursor ? parseCursor(opts.cursor) : undefined;
     const res = await client.search<OperationRow>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: [{ createdAt: 'desc' }, '_score'],
+        sort: [{ createdAt: 'desc' }, 'id'],
         track_total_hits: true,
+        search_after: cursor,
         query
     });
     const hits = res.hits;
 
+    const total = typeof hits.total === 'object' ? hits.total.value : hits.hits.length;
+    const totalPage = hits.hits.length;
     return {
-        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
+        count: total,
         items: hits.hits.map((hit) => {
             return hit._source!;
-        })
+        }),
+        cursor: totalPage > 0 && total > totalPage && opts.limit <= totalPage ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 
@@ -163,7 +174,7 @@ export async function update(opts: { id: MessageRow['id']; data: Partial<Omit<Me
     await client.update<Partial<Omit<MessageRow, 'id'>>>({
         index: indexMessages.index,
         id: opts.id,
-        refresh: true,
+        refresh: isTest,
         body: {
             doc: {
                 ...opts.data,
@@ -216,6 +227,8 @@ export async function listMessages(opts: {
     limit: number;
     states?: SearchOperationsState[] | undefined;
     search?: string | undefined;
+    cursorBefore?: string | null | undefined;
+    cursorAfter?: string | null | undefined;
 }): Promise<ListMessages> {
     const query: estypes.QueryDslQueryContainer = {
         bool: {
@@ -240,20 +253,50 @@ export async function listMessages(opts: {
         });
     }
 
+    // Sort and cursor
+    let cursor: any[] | undefined;
+    let sort: estypes.Sort = [{ createdAt: 'desc' }, { id: 'desc' }];
+    if (opts.cursorBefore) {
+        // search_before does not exists so we reverse the sort
+        // https://github.com/elastic/elasticsearch/issues/29449
+        cursor = parseCursor(opts.cursorBefore);
+        sort = [{ createdAt: 'asc' }, { id: 'asc' }];
+    } else if (opts.cursorAfter) {
+        cursor = opts.cursorAfter ? parseCursor(opts.cursorAfter) : undefined;
+    }
+
     const res = await client.search<MessageRow>({
         index: indexMessages.index,
         size: opts.limit,
-        sort: [{ createdAt: 'desc' }, '_score'],
+        sort,
         track_total_hits: true,
+        search_after: cursor,
         query
     });
     const hits = res.hits;
 
+    const total = typeof hits.total === 'object' ? hits.total.value : hits.hits.length;
+    const totalPage = hits.hits.length;
+    const items = hits.hits.map((hit) => {
+        return hit._source!;
+    });
+
+    if (opts.cursorBefore) {
+        // In case we set before we have to reverse the message since we inverted the sort
+        items.reverse();
+        return {
+            count: total,
+            items,
+            cursorBefore: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null,
+            cursorAfter: null
+        };
+    }
+
     return {
-        count: typeof hits.total === 'object' ? hits.total.value : hits.hits.length,
-        items: hits.hits.map((hit) => {
-            return hit._source!;
-        })
+        count: total,
+        items,
+        cursorBefore: totalPage > 0 ? createCursor(hits.hits[0]!) : null,
+        cursorAfter: totalPage > 0 && total > totalPage && totalPage >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 

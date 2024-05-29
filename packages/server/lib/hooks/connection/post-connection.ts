@@ -18,13 +18,13 @@ export interface InternalNango {
 }
 
 async function execute(createdConnection: RecentlyCreatedConnection, provider: string, logContextGetter: LogContextGetter) {
-    const { connection_id, environment, account, provider_config_key } = createdConnection;
+    const { connection: upsertedConnection, environment, account } = createdConnection;
     try {
         const credentialResponse = await connectionService.getConnectionCredentials({
             account,
             environment,
-            connectionId: connection_id,
-            providerConfigKey: provider_config_key,
+            connectionId: upsertedConnection.connection_id,
+            providerConfigKey: upsertedConnection.provider_config_key,
             logContextGetter,
             instantRefresh: false
         });
@@ -50,7 +50,11 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
         const internalNango: InternalNango = {
             getConnection: async () => {
-                const { response: connection } = await connectionService.getConnection(connection_id, provider_config_key, environment.id);
+                const { response: connection } = await connectionService.getConnection(
+                    upsertedConnection.connection_id,
+                    upsertedConnection.provider_config_key,
+                    environment.id
+                );
 
                 return connection as Connection;
             },
@@ -90,9 +94,9 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     start: Date.now(),
                     end: Date.now(),
                     timestamp: Date.now(),
-                    connection_id: connection_id,
+                    connection_id: upsertedConnection.connection_id,
                     provider,
-                    provider_config_key: provider_config_key,
+                    provider_config_key: upsertedConnection.provider_config_key,
                     environment_id: environment.id
                 };
 
@@ -116,8 +120,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
                 await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
                     environmentId: String(environment.id),
-                    connectionId: connection_id,
-                    providerConfigKey: provider_config_key,
+                    connectionId: upsertedConnection.connection_id,
+                    providerConfigKey: upsertedConnection.provider_config_key,
                     provider: provider,
                     level: 'error'
                 });
@@ -126,8 +130,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
     } catch (err) {
         await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
             environmentId: String(environment.id),
-            connectionId: connection_id,
-            providerConfigKey: provider_config_key,
+            connectionId: upsertedConnection.connection_id,
+            providerConfigKey: upsertedConnection.provider_config_key,
             provider: provider,
             level: 'error'
         });

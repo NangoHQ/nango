@@ -399,9 +399,7 @@ class ConnectionController {
                 const connCreatedHook = async (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
                         {
-                            id: res.id,
-                            connection_id,
-                            provider_config_key,
+                            connection: res.connection,
                             environment,
                             account,
                             auth_mode: ProviderAuthModes.OAuth2,
@@ -449,9 +447,7 @@ class ConnectionController {
                 const connCreatedHook = async (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
                         {
-                            id: res.id,
-                            connection_id,
-                            provider_config_key,
+                            connection: res.connection,
                             environment,
                             account,
                             auth_mode: ProviderAuthModes.OAuth2,
@@ -493,9 +489,7 @@ class ConnectionController {
                 const connCreatedHook = async (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
                         {
-                            id: res.id,
-                            connection_id,
-                            provider_config_key,
+                            connection: res.connection,
                             environment,
                             account,
                             auth_mode: ProviderAuthModes.ApiKey,
@@ -535,9 +529,7 @@ class ConnectionController {
                 const connCreatedHook = async (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
                         {
-                            id: res.id,
-                            connection_id,
-                            provider_config_key,
+                            connection: res.connection,
                             environment,
                             account,
                             auth_mode: ProviderAuthModes.ApiKey,
@@ -620,12 +612,10 @@ class ConnectionController {
                 return;
             }
 
-            if (updatedConnection && updatedConnection.id && runHook) {
+            if (updatedConnection && updatedConnection.connection.id && runHook) {
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id,
-                        provider_config_key,
+                        connection: updatedConnection.connection,
                         environment,
                         account,
                         auth_mode: template.auth_mode,
