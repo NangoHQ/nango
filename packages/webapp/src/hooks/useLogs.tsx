@@ -92,44 +92,59 @@ export function useSearchMessages(env: string, body: SearchMessages['Body']) {
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<SearchMessages['Success']>();
     const [error, setError] = useState<SearchMessages['Errors']>();
+    const signal = useRef<AbortController | null>();
 
-    async function fetchData() {
+    async function manualFetch(opts: Pick<SearchMessages['Body'], 'cursorAfter' | 'cursorBefore'>) {
+        if (signal.current && !signal.current.signal.aborted) {
+            signal.current.abort();
+        }
+
         setLoading(true);
+        signal.current = new AbortController();
         try {
             const res = await fetch(`/api/v1/logs/messages?env=${env}`, {
                 method: 'POST',
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' }
+                body: JSON.stringify({ ...body, ...opts }),
+                headers: { 'Content-Type': 'application/json' },
+                signal: signal.current.signal
             });
             if (res.status !== 200) {
-                setData(undefined);
-                setError((await res.json()) as SearchMessages['Errors']);
-                return;
+                return { error: (await res.json()) as SearchMessages['Errors'] };
             }
 
-            setError(undefined);
-            setData((await res.json()) as SearchMessages['Success']);
+            return { res: (await res.json()) as SearchMessages['Success'] };
         } catch (err) {
-            setData(undefined);
-            setError(err as any);
+            if (err instanceof DOMException && err.ABORT_ERR) {
+                return;
+            }
+            return { error: err };
         } finally {
             setLoading(false);
         }
     }
 
-    useEffect(() => {
-        if (!loading) {
-            void fetchData();
+    async function fetchData(opts: Pick<SearchMessages['Body'], 'cursorAfter' | 'cursorBefore'>) {
+        const man = await manualFetch(opts);
+        if (!man) {
+            return;
         }
-    }, [env, body.operationId, body.limit, body.states, body.search]);
+        if (man.error) {
+            setData(undefined);
+            setError(man.error as any);
+            return;
+        }
 
-    function trigger() {
+        setError(undefined);
+        setData(man.res);
+    }
+
+    function trigger(opts: Pick<SearchMessages['Body'], 'cursorAfter' | 'cursorBefore'>) {
         if (!loading) {
-            void fetchData();
+            void fetchData(opts);
         }
     }
 
-    return { data, error, loading, trigger };
+    return { data, error, loading, trigger, manualFetch };
 }
 
 export function useSearchFilters(enabled: boolean, env: string, body: SearchFilters['Body']) {

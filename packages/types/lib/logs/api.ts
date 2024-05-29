@@ -48,10 +48,17 @@ export type SearchMessages = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/logs/messages';
     Querystring: { env: string };
-    Body: { operationId: string; limit?: number; states?: SearchOperationsState[]; search?: string | undefined };
+    Body: {
+        operationId: string;
+        limit?: number;
+        states?: SearchOperationsState[];
+        search?: string | undefined;
+        cursorBefore?: string | null | undefined;
+        cursorAfter?: string | null | undefined;
+    };
     Success: {
         data: MessageRow[];
-        pagination: { total: number };
+        pagination: { total: number; cursorBefore: string | null; cursorAfter: string | null };
     };
 }>;
 export type SearchMessagesData = SearchMessages['Success']['data'][0];
