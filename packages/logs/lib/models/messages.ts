@@ -152,7 +152,7 @@ export async function listOperations(opts: {
         items: hits.hits.map((hit) => {
             return hit._source!;
         }),
-        cursor: totalPage > 0 && total > totalPage && opts.limit >= totalPage ? createCursor(hits.hits[hits.hits.length - 1]!) : null
+        cursor: totalPage > 0 && total > totalPage && opts.limit <= totalPage ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 
@@ -292,7 +292,7 @@ export async function listMessages(opts: {
         count: total,
         items,
         cursorBefore: totalPage > 0 ? createCursor(hits.hits[0]!) : null,
-        cursorAfter: totalPage > 0 && total > totalPage && hits.hits.length >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
+        cursorAfter: totalPage > 0 && total > totalPage && totalPage >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 
