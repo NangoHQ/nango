@@ -89,8 +89,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     }
 
     return (
-        <div className="bg-pure-black">
-            <div className="flex-1 ml-3 pr-4 h-full border-r border-border-gray flex flex-col w-60 bg-pure-black z-20 justify-between">
+        <div className="bg-pure-black h-screen w-full">
+            <div className="flex-1 ml-3 pr-4 h-full border-r border-border-gray flex flex-col bg-pure-black z-20 justify-between">
                 <div className="mt-4">
                     <div className="flex items-center mb-8">
                         <img className="h-6" src="/logo-dark.svg" alt="Nango" />

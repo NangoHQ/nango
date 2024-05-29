@@ -1,6 +1,7 @@
 import { nanoid } from '@nangohq/utils';
 import type { MessageRow } from '@nangohq/types';
 import { z } from 'zod';
+import type { estypes } from '@elastic/elasticsearch';
 
 export const operationIdRegex = z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/);
 
@@ -72,3 +73,11 @@ export const oldLevelToNewLevel = {
     silly: 'debug',
     http: 'info'
 } as const;
+
+export function createCursor({ sort }: estypes.SearchHit): string {
+    return Buffer.from(JSON.stringify(sort)).toString('base64');
+}
+
+export function parseCursor(str: string): any[] {
+    return JSON.parse(Buffer.from(str, 'base64').toString('utf8'));
+}

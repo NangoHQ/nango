@@ -16,10 +16,11 @@ export type SearchOperations = Endpoint<{
         connections?: SearchOperationsConnection[] | undefined;
         syncs?: SearchOperationsSync[] | undefined;
         period?: SearchOperationsPeriod | undefined;
+        cursor?: string | null | undefined;
     };
     Success: {
         data: OperationRow[];
-        pagination: { total: number };
+        pagination: { total: number; cursor: string | null };
     };
 }>;
 export type SearchOperationsState = 'all' | MessageState;
