@@ -254,7 +254,13 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
                         {data && data.pagination.total > 0 && data.data.length > 0 && data.pagination && cursorAfter.current && readyToDisplay && (
                             <div ref={bottomScrollRef}>
                                 <Button disabled={loading} variant="active" className="w-full justify-center" onClick={() => loadMore()}>
-                                    {loading && <Spinner size={1} />} Load More
+                                    {loading ? (
+                                        <>
+                                            <Spinner size={1} /> Loading...
+                                        </>
+                                    ) : (
+                                        'Load More'
+                                    )}
                                 </Button>
                             </div>
                         )}
