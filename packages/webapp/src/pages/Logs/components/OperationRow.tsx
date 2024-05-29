@@ -36,7 +36,7 @@ export const OperationRow: React.FC<{ row: Row<SearchOperationsData> }> = ({ row
                 </Table.Row>
             </DrawerTrigger>
             <DrawerContent>
-                <div className={`w-[1034px] relative h-screen`}>
+                <div className={`w-[1034px] relative h-screen select-text`}>
                     <div className="absolute right-4 top-7">
                         <DrawerClose title="Close" className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white">
                             <Cross1Icon className="" />

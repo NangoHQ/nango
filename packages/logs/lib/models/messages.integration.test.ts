@@ -54,6 +54,7 @@ describe('model', () => {
             expect(list3.cursor).toBeNull();
         });
     });
+
     describe('messages', () => {
         it('should list nothing', async () => {
             const list = await listMessages({ limit: 10, parentId: '1' });

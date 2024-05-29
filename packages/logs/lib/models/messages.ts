@@ -146,12 +146,13 @@ export async function listOperations(opts: {
     const hits = res.hits;
 
     const total = typeof hits.total === 'object' ? hits.total.value : hits.hits.length;
+    const totalPage = hits.hits.length;
     return {
         count: total,
         items: hits.hits.map((hit) => {
             return hit._source!;
         }),
-        cursor: hits.hits.length > 0 && total > hits.hits.length && hits.hits.length >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
+        cursor: totalPage > 0 && total > totalPage && opts.limit <= totalPage ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 
@@ -273,6 +274,7 @@ export async function listMessages(opts: {
     const hits = res.hits;
 
     const total = typeof hits.total === 'object' ? hits.total.value : hits.hits.length;
+    const totalPage = hits.hits.length;
     const items = hits.hits.map((hit) => {
         return hit._source!;
     });
@@ -282,15 +284,15 @@ export async function listMessages(opts: {
         return {
             count: total,
             items,
-            cursorBefore: hits.hits.length > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null,
+            cursorBefore: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null,
             cursorAfter: null
         };
     }
     return {
         count: total,
         items,
-        cursorBefore: hits.hits.length > 0 ? createCursor(hits.hits[0]!) : null,
-        cursorAfter: hits.hits.length > 0 && total > hits.hits.length && hits.hits.length >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
+        cursorBefore: totalPage > 0 ? createCursor(hits.hits[0]!) : null,
+        cursorAfter: totalPage > 0 && total > totalPage && totalPage >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 

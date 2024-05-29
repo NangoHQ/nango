@@ -79,9 +79,9 @@ describe('POST /logs/messages', () => {
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
-        expect(res.json).toStrictEqual({
+        expect(res.json).toStrictEqual<typeof res.json>({
             data: [],
-            pagination: { total: 0, cursor: expect.any(String) }
+            pagination: { total: 0, cursorAfter: null, cursorBefore: null }
         });
     });
 
@@ -137,7 +137,7 @@ describe('POST /logs/messages', () => {
                     userId: null
                 }
             ],
-            pagination: { total: 1, cursorBefore: expect.any(String), cursorAfter: expect.any(String) }
+            pagination: { total: 1, cursorBefore: expect.any(String), cursorAfter: null }
         });
     });
 
