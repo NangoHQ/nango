@@ -18,18 +18,18 @@ describe('mapping', () => {
         await deleteIndex();
     });
 
+    it('should not have an index before migration', async () => {
+        await expect(client.indices.getMapping({ index: fullIndexName })).rejects.toThrow();
+    });
+
     it('should migrate', async () => {
         await migrateMapping();
     });
 
-    it('should not have create any index', async () => {
-        await expect(client.indices.getMapping({ index: indexMessages.index })).rejects.toThrow();
-    });
+    it('should have create index and alias', async () => {
+        await client.indices.getMapping({ index: indexMessages.index });
 
-    it('should not have create any index', async () => {
-        await expect(client.indices.getMapping({ index: indexMessages.index })).rejects.toThrow();
-
-        await expect(client.indices.getMapping({ index: fullIndexName })).rejects.toThrow();
+        await client.indices.getMapping({ index: fullIndexName });
     });
 
     it('should create one index automatically on log', async () => {
