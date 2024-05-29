@@ -66,7 +66,7 @@ describe('Auto Idle Demo', async () => {
             })
             .returning('id');
         const conn = await connectionService.upsertConnection(connName, DEMO_GITHUB_CONFIG_KEY, 'github', {} as any, {}, env.id, 0);
-        const connId = conn[0]!.id;
+        const connId = conn[0]!.connection.id!;
         const sync = (await createSync(connId, DEMO_SYNC_NAME))!;
         await createSchedule(sync.id, '86400', 0, ScheduleStatus.RUNNING, nanoid());
         const schedBefore = await getSchedule(sync.id);

@@ -89,29 +89,35 @@ class ConnectionService {
 
             encryptedConnection.updated_at = new Date();
 
-            await db.knex.from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id, deleted: false }).update(encryptedConnection);
+            const connection = await db.knex
+                .from<StoredConnection>(`_nango_connections`)
+                .where({ id: storedConnection.id, deleted: false })
+                .update(encryptedConnection)
+                .returning('*');
 
             void analytics.track(AnalyticsTypes.CONNECTION_UPDATED, accountId, { provider });
 
-            return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
+            return [{ connection: connection[0]!, operation: AuthOperation.OVERRIDE }];
         }
 
-        const [id] = await db.knex.from<StoredConnection>(`_nango_connections`).insert(
-            encryptionManager.encryptConnection({
-                connection_id: connectionId,
-                provider_config_key: providerConfigKey,
-                config_id: config_id as number,
-                credentials: parsedRawCredentials,
-                connection_config: connectionConfig,
-                environment_id: environment_id,
-                metadata: metadata || null
-            }),
-            ['id']
-        );
+        const connection = await db.knex
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(
+                encryptionManager.encryptConnection({
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    config_id: config_id as number,
+                    credentials: parsedRawCredentials,
+                    connection_config: connectionConfig,
+                    environment_id: environment_id,
+                    metadata: metadata || null
+                })
+            )
+            .returning('*');
 
         void analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
 
-        return [{ id: id.id, operation: AuthOperation.CREATION }];
+        return [{ connection: connection[0]!, operation: AuthOperation.CREATION }];
     }
 
     public async upsertApiConnection(
@@ -124,7 +130,7 @@ class ConnectionService {
         accountId: number
     ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
-        const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
+        const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey); // TODO remove that
 
         if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
@@ -136,27 +142,33 @@ class ConnectionService {
                 environment_id
             });
             encryptedConnection.updated_at = new Date();
-            await db.knex.from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id, deleted: false }).update(encryptedConnection);
+            const connection = await db.knex
+                .from<StoredConnection>(`_nango_connections`)
+                .where({ id: storedConnection.id, deleted: false })
+                .update(encryptedConnection)
+                .returning('*');
 
             void analytics.track(AnalyticsTypes.API_CONNECTION_UPDATED, accountId, { provider });
 
-            return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
+            return [{ connection: connection[0]!, operation: AuthOperation.OVERRIDE }];
         }
-        const [id] = await db.knex.from<StoredConnection>(`_nango_connections`).insert(
-            encryptionManager.encryptApiConnection({
-                connection_id: connectionId,
-                provider_config_key: providerConfigKey,
-                config_id: config_id as number,
-                credentials,
-                connection_config: connectionConfig,
-                environment_id
-            }),
-            ['id']
-        );
+        const connection = await db.knex
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(
+                encryptionManager.encryptApiConnection({
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    config_id: config_id as number,
+                    credentials,
+                    connection_config: connectionConfig,
+                    environment_id
+                })
+            )
+            .returning('*');
 
         void analytics.track(AnalyticsTypes.API_CONNECTION_INSERTED, accountId, { provider });
 
-        return [{ id: id.id, operation: AuthOperation.CREATION }];
+        return [{ connection: connection[0]!, operation: AuthOperation.CREATION }];
     }
 
     public async upsertUnauthConnection(
@@ -167,10 +179,10 @@ class ConnectionService {
         accountId: number
     ): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
-        const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey);
+        const config_id = await configService.getIdByProviderConfigKey(environment_id, providerConfigKey); // TODO remove that
 
         if (storedConnection) {
-            await db.knex
+            const connection = await db.knex
                 .from<StoredConnection>(`_nango_connections`)
                 .where({ id: storedConnection.id, deleted: false })
                 .update({
@@ -178,27 +190,28 @@ class ConnectionService {
                     provider_config_key: providerConfigKey,
                     config_id: config_id as number,
                     updated_at: new Date()
-                });
+                })
+                .returning('*');
 
             void analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_UPDATED, accountId, { provider });
 
-            return [{ id: storedConnection.id, operation: AuthOperation.OVERRIDE }];
+            return [{ connection: connection[0]!, operation: AuthOperation.OVERRIDE }];
         }
-        const [id] = await db.knex.from<StoredConnection>(`_nango_connections`).insert(
-            {
+        const connection = await db.knex
+            .from<StoredConnection>(`_nango_connections`)
+            .insert({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 credentials: {},
                 connection_config: {},
                 environment_id,
                 config_id: config_id!
-            },
-            ['id']
-        );
+            })
+            .returning('*');
 
         void analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_INSERTED, accountId, { provider });
 
-        return [{ id: id.id, operation: AuthOperation.CREATION }];
+        return [{ connection: connection[0]!, operation: AuthOperation.CREATION }];
     }
 
     public async importOAuthConnection(

@@ -5,7 +5,7 @@ import utc from 'dayjs/plugin/utc.js';
 import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';
 import { SyncType } from '../../models/Sync.js';
-import type { NangoConnection, RecentlyCreatedConnection } from '../../models/Connection.js';
+import type { NangoConnection, RecentlyCreatedConnection, RecentlyFailedConnection } from '../../models/Connection.js';
 import type { Account, Config, Environment, SyncResult } from '../../models/index.js';
 import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -229,7 +229,7 @@ class WebhookService {
     }
 
     async sendAuthUpdate(
-        connection: RecentlyCreatedConnection,
+        connection: RecentlyCreatedConnection | RecentlyFailedConnection,
         provider: string,
         success: boolean,
         activityLogId: number | null,
@@ -246,8 +246,8 @@ class WebhookService {
         const body: NangoAuthWebhookBody = {
             from: 'nango',
             type: WebhookType.AUTH,
-            connectionId: connection.connection_id,
-            providerConfigKey: connection.provider_config_key,
+            connectionId: connection.connection.connection_id,
+            providerConfigKey: connection.connection.provider_config_key,
             authMode: connection.auth_mode,
             provider,
             environment: environmentName,

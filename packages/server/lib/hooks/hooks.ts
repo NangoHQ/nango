@@ -20,7 +20,8 @@ import type {
     Connection,
     ConnectionConfig,
     Template as ProviderTemplate,
-    HTTP_VERB
+    HTTP_VERB,
+    RecentlyFailedConnection
 } from '@nangohq/shared';
 
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
@@ -72,7 +73,7 @@ export const connectionCreated = async (
 ): Promise<void> => {
     if (options.initiateSync === true && !isHosted) {
         const syncClient = await SyncClient.getInstance();
-        await syncClient?.initiate(connection.id as number, logContextGetter);
+        await syncClient?.initiate(connection.connection.id as number, logContextGetter);
     }
 
     if (options.runPostConnectionScript === true) {
@@ -83,7 +84,7 @@ export const connectionCreated = async (
 };
 
 export const connectionCreationFailed = async (
-    connection: RecentlyCreatedConnection,
+    connection: RecentlyFailedConnection,
     provider: string,
     activityLogId: number | null,
     logCtx: LogContext
