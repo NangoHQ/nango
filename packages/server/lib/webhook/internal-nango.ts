@@ -1,7 +1,8 @@
 import get from 'lodash-es/get.js';
-import { environmentService, connectionService, telemetry, getSyncConfigsByConfigIdForWebhook, SyncClient, LogActionEnum, LogTypes } from '@nangohq/shared';
+import { environmentService, connectionService, telemetry, getSyncConfigsByConfigIdForWebhook, LogActionEnum, LogTypes } from '@nangohq/shared';
 import type { Config as ProviderConfig, SyncConfig, Connection } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
+import { getOrchestrator } from '../utils/utils.js';
 
 export interface InternalNango {
     getWebhooks: (environment_id: number, nango_config_id: number) => Promise<SyncConfig[]>;
@@ -41,7 +42,6 @@ export const internalNango: InternalNango = {
                     level: 'error'
                 }
             );
-
             return { connectionIds: [] };
         }
 
@@ -89,17 +89,16 @@ export const internalNango: InternalNango = {
             return { connectionIds: connections?.map((connection) => connection.connection_id) };
         }
 
-        const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
+        const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: integration.environment_id }))!;
 
         await telemetry.log(LogTypes.INCOMING_WEBHOOK_RECEIVED, 'Incoming webhook received and connection found for it', LogActionEnum.WEBHOOK, {
-            accountId: String(accountId),
+            accountId: String(account.id),
             environmentId: String(integration.environment_id),
             provider: integration.provider,
             providerConfigKey: integration.unique_key,
             connectionIds: connections.map((connection) => connection.connection_id).join(',')
         });
 
-        const syncClient = await SyncClient.getInstance();
         const type = get(body, webhookType);
 
         for (const syncConfig of syncConfigsWithWebhooks) {
@@ -112,7 +111,16 @@ export const internalNango: InternalNango = {
             for (const webhook of webhook_subscriptions) {
                 if (type === webhook) {
                     for (const connection of connections) {
-                        await syncClient?.triggerWebhook(integration, connection, webhook, syncConfig.sync_name, body, logContextGetter);
+                        await getOrchestrator().triggerWebhook({
+                            account,
+                            environment,
+                            integration,
+                            connection,
+                            webhookName: webhook,
+                            syncConfig,
+                            input: body,
+                            logContextGetter
+                        });
                     }
                 }
             }

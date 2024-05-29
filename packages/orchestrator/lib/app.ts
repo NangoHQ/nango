@@ -2,7 +2,9 @@ import './tracer.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { getServer } from './server.js';
 import { envs } from './env.js';
+import type { Task } from '@nangohq/scheduler';
 import { Scheduler, DatabaseClient } from '@nangohq/scheduler';
+import { EventsHandler } from './events.js';
 
 const logger = getLogger('Orchestrator');
 
@@ -17,20 +19,21 @@ try {
     await dbClient.migrate();
 
     // TODO: add logic to update syncs and syncs jobs in the database
+    const eventsHandler = new EventsHandler({
+        CREATED: (task: Task) => console.log(`Task created: ${JSON.stringify(task)}`),
+        STARTED: (task: Task) => console.log(`Task started: ${JSON.stringify(task)}`),
+        SUCCEEDED: (task: Task) => console.log(`Task succeeded: ${JSON.stringify(task)}`),
+        FAILED: (task: Task) => console.log(`Task failed: ${JSON.stringify(task)}`),
+        EXPIRED: (task: Task) => console.log(`Task expired: ${JSON.stringify(task)}`),
+        CANCELLED: (task: Task) => console.log(`Task cancelled: ${JSON.stringify(task)}`)
+    });
     const scheduler = new Scheduler({
         dbClient,
-        on: {
-            CREATED: (task) => console.log(`Task ${task.id} created`),
-            STARTED: (task) => console.log(`Task ${task.id} started`),
-            SUCCEEDED: (task) => console.log(`Task ${task.id} succeeded`),
-            FAILED: (task) => console.log(`Task ${task.id} failed`),
-            EXPIRED: (task) => console.log(`Task ${task.id} expired`),
-            CANCELLED: (task) => console.log(`Task ${task.id} cancelled`)
-        }
+        on: eventsHandler.onCallbacks
     });
 
+    const server = getServer(scheduler, eventsHandler);
     const port = envs.NANGO_ORCHESTRATOR_PORT;
-    const server = getServer({ scheduler });
     server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
     });

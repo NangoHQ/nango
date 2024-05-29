@@ -9,7 +9,7 @@ const nangoLogFormat = (service = '') => {
 };
 
 export function getLogger(service?: string): Logger {
-    const level = process.env['LOG_LEVEL'] || isTest ? 'error' : 'info';
+    const level = process.env['LOG_LEVEL'] ? process.env['LOG_LEVEL'] : isTest ? 'error' : 'info';
     return winston.createLogger({
         levels: winston.config.syslog.levels,
         format: winston.format.combine(winston.format.timestamp(), nangoLogFormat(service)),

@@ -1,41 +1,42 @@
-import type { SearchLogsData } from '@nangohq/types';
+import type { SearchOperationsData } from '@nangohq/types';
+import { Tag } from './Tag';
 
-export const StatusTag: React.FC<{ state: SearchLogsData['state'] }> = ({ state }) => {
+export const StatusTag: React.FC<{ state: SearchOperationsData['state'] }> = ({ state }) => {
     if (state === 'success') {
         return (
-            <div className="inline-flex px-1 pt-[1px] bg-state-green-900 bg-opacity-30 rounded">
-                <div className="text-state-green-400 uppercase text-[10px]">Success</div>
-            </div>
+            <Tag bgClassName="bg-green-base bg-opacity-30" textClassName="text-green-base">
+                Success
+            </Tag>
         );
     } else if (state === 'running') {
         return (
-            <div className="inline-flex px-2 bg-blue-400 bg-opacity-30 rounded">
-                <div className="text-blue-400 uppercase text-[10px]">Running</div>
-            </div>
+            <Tag bgClassName="bg-blue-400 bg-opacity-30" textClassName="text-blue-400">
+                Running
+            </Tag>
         );
     } else if (state === 'cancelled') {
         return (
-            <div className="inline-flex px-2 bg-gray-400 bg-opacity-30 rounded">
-                <div className="text-gray-400 uppercase text-[10px]">Cancelled</div>
-            </div>
+            <Tag bgClassName="bg-gray-400 bg-opacity-30" textClassName="text-gray-400">
+                Cancelled
+            </Tag>
         );
     } else if (state === 'failed') {
         return (
-            <div className="inline-flex px-2 bg-red-400 bg-opacity-30 rounded">
-                <div className="text-red-400 uppercase text-[10px]">Failed</div>
-            </div>
+            <Tag bgClassName="bg-red-400 bg-opacity-30" textClassName="text-red-400">
+                Failed
+            </Tag>
         );
     } else if (state === 'timeout') {
         return (
-            <div className="inline-flex px-2 bg-gray-400 bg-opacity-30 rounded">
-                <div className="text-gray-400 uppercase text-[10px]">Timeout</div>
-            </div>
+            <Tag bgClassName="bg-gray-400 bg-opacity-30" textClassName="text-gray-400">
+                Timeout
+            </Tag>
         );
     } else if (state === 'waiting') {
         return (
-            <div className="inline-flex px-2 bg-gray-400 bg-opacity-30 rounded">
-                <div className="text-gray-400 uppercase text-[10px]">Waiting</div>
-            </div>
+            <Tag bgClassName="bg-gray-400 bg-opacity-30" textClassName="text-gray-400">
+                Waiting
+            </Tag>
         );
     }
 

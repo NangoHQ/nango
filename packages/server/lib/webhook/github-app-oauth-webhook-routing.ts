@@ -1,10 +1,11 @@
 import type { InternalNango as Nango } from './internal-nango.js';
 import get from 'lodash-es/get.js';
-import type { Config as ProviderConfig, Connection, ConnectionConfig } from '@nangohq/shared';
-import { connectionService, configService } from '@nangohq/shared';
+import type { Config as ProviderConfig, Connection, ConnectionConfig, ConnectionUpsertResponse } from '@nangohq/shared';
+import { environmentService, connectionService, configService, AuthModes as ProviderAuthModes } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
 import type { LogContextGetter } from '@nangohq/logs';
+import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 
@@ -55,6 +56,15 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         logger.info('No connections found for app_id', get(body, 'installation.app_id'));
         return;
     } else {
+        const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: integration.environment_id });
+
+        if (!environmentAndAccountLookup) {
+            logger.error('Environment or account not found');
+            return;
+        }
+
+        const { environment, account } = environmentAndAccountLookup;
+
         const installationId = get(body, 'installation.id');
         const [connection] = connections as Connection[];
 
@@ -64,11 +74,9 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             return;
         }
 
-        const template = configService.getTemplate(integration?.provider);
+        const template = configService.getTemplate(integration.provider);
 
         const activityLogId = connection.connection_config['pendingLog'];
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete connection.connection_config['pendingLog'];
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete connection.connection_config['pendingLog'];
 
@@ -79,6 +87,23 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
 
         const logCtx = logContextGetter.get({ id: activityLogId });
 
+        const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+            void connectionCreatedHook(
+                {
+                    connection: res.connection,
+                    environment,
+                    account,
+                    auth_mode: ProviderAuthModes.App,
+                    operation: res.operation
+                },
+                integration.provider,
+                logContextGetter,
+                activityLogId,
+                { initiateSync: true, runPostConnectionScript: false },
+                logCtx
+            );
+        };
+
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
             integration,
@@ -86,7 +111,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             connectionConfig as ConnectionConfig,
             activityLogId,
             logCtx,
-            logContextGetter
+            connCreatedHook
         );
     }
 }

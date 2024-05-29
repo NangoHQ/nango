@@ -17,12 +17,13 @@ import type {
     OAuthSession,
     OAuth1RequestTokenResult,
     OAuth2Credentials,
-    ConnectionConfig
+    ConnectionConfig,
+    ConnectionUpsertResponse,
+    Environment,
+    Account
 } from '@nangohq/shared';
 import {
     getConnectionConfig,
-    connectionCreated as connectionCreatedHook,
-    connectionCreationFailed as connectionCreationFailedHook,
     interpolateStringFromObject,
     getOauthCallbackUrl,
     getGlobalAppCallbackUrl,
@@ -56,11 +57,13 @@ import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { errorToObject, stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
-        const accountId = res.locals['account'].id;
-        const environmentId = res.locals['environment'].id;
+        const { account, environment } = res.locals;
+        const accountId = account.id;
+        const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         let connectionId = req.query['connection_id'] as string | undefined;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
@@ -83,8 +86,8 @@ class OAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth' },
-                { account: { id: accountId }, environment: { id: environmentId } }
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization OAuth' },
+                { account, environment }
             );
             if (!wsClientId) {
                 void analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
@@ -200,7 +203,7 @@ class OAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             let template: ProviderTemplate;
             try {
@@ -257,6 +260,27 @@ class OAuthController {
                         oauth_client_secret_override: config.oauth_client_secret
                     };
                 }
+
+                const obfuscatedClientSecret = config.oauth_client_secret ? config.oauth_client_secret.slice(0, 4) + '***' : '';
+
+                await createActivityLogMessage({
+                    level: 'info',
+                    environment_id: environmentId,
+                    activity_log_id: activityLogId as number,
+                    content: 'Credentials override',
+                    timestamp: Date.now(),
+                    auth_mode: template.auth_mode,
+                    url: callbackUrl,
+                    params: {
+                        oauth_client_id: config.oauth_client_id,
+                        oauth_client_secret: obfuscatedClientSecret
+                    }
+                });
+
+                await logCtx.info('Credentials override', {
+                    oauth_client_id: config.oauth_client_id,
+                    oauth_client_secret: obfuscatedClientSecret
+                });
             }
 
             if (connectionConfig['oauth_scopes_override']) {
@@ -344,8 +368,7 @@ class OAuthController {
     }
 
     public async oauth2RequestCC(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const accountId = res.locals['account'].id;
-        const environmentId = res.locals['environment'].id;
+        const { environment, account } = res.locals;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -374,7 +397,7 @@ class OAuthController {
             timestamp: Date.now(),
             connection_id: connectionId as string,
             provider_config_key: providerConfigKey as string,
-            environment_id: environmentId
+            environment_id: environment.id
         };
 
         const activityLogId = await createActivityLog(log);
@@ -382,10 +405,10 @@ class OAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization OAuth2 CC' },
-                { account: { id: accountId }, environment: { id: environmentId } }
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization OAuth2 CC' },
+                { account, environment }
             );
-            void analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, accountId);
+            void analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, account.id);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -399,13 +422,13 @@ class OAuthController {
                 return;
             }
 
-            const hmacEnabled = await hmacService.isEnabled(environmentId);
+            const hmacEnabled = await hmacService.isEnabled(environment.id);
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
                 if (!hmac) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
-                        environment_id: environmentId,
+                        environment_id: environment.id,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: 'Missing HMAC in query params'
@@ -417,11 +440,11 @@ class OAuthController {
 
                     return;
                 }
-                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
+                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, connectionId);
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
-                        environment_id: environmentId,
+                        environment_id: environment.id,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: 'Invalid HMAC'
@@ -435,12 +458,12 @@ class OAuthController {
                 }
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
+            const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
             if (!config) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id: environmentId,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId as number,
                     content: `Error during OAuth2 client credentials: config not found`,
                     timestamp: Date.now()
@@ -458,7 +481,7 @@ class OAuthController {
             if (template.auth_mode !== ProviderAuthModes.OAuth2CC) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id: environmentId,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Provider ${config.provider} does not support oauth2 client credentials creation`
@@ -472,14 +495,14 @@ class OAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             const { success, error, response: credentials } = await connectionService.getOauthClientCredentials(template, client_id, client_secret);
 
             if (!success || !credentials) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id: environmentId,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId as number,
                     content: `Error during OAuth2 client credentials creation: ${error}`,
                     timestamp: Date.now()
@@ -496,7 +519,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
-                environment_id: environmentId,
+                environment_id: environment.id,
                 activity_log_id: activityLogId as number,
                 content: `OAuth2 client credentials connection creation was successful`,
                 timestamp: Date.now()
@@ -512,17 +535,17 @@ class OAuthController {
                 config.provider,
                 credentials,
                 connectionConfig,
-                environmentId,
-                accountId
+                environment.id,
+                account.id
             );
 
             if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
-                        environment_id: environmentId,
+                        connection: updatedConnection.connection,
+                        environment,
+                        account,
                         auth_mode: ProviderAuthModes.None,
                         operation: updatedConnection.operation
                     },
@@ -540,7 +563,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
-                environment_id: environmentId,
+                environment_id: environment.id,
                 activity_log_id: activityLogId as number,
                 content: `Error during OAuth2 client credentials create: ${prettyError}`,
                 timestamp: Date.now()
@@ -548,10 +571,9 @@ class OAuthController {
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId as string,
-                        provider_config_key: providerConfigKey as string,
-                        environment_id: environmentId,
+                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                        environment,
+                        account,
                         auth_mode: ProviderAuthModes.OAuth2CC,
                         error: `Error during Unauth create: ${prettyError}`,
                         operation: AuthOperation.UNKNOWN
@@ -567,7 +589,7 @@ class OAuthController {
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
-                environmentId,
+                environmentId: environment.id,
                 metadata: {
                     providerConfigKey,
                     connectionId
@@ -1064,12 +1086,21 @@ class OAuthController {
 
             const template = configService.getTemplate(session.provider);
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
+
+            const environment = await environmentService.getById(session.environmentId);
+            const account = await environmentService.getAccountFromEnvironment(session.environmentId);
+
+            if (!environment || !account) {
+                const error = WSErrBuilder.EnvironmentOrAccountNotFound();
+
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            }
 
             if (session.authMode === ProviderAuthModes.OAuth2 || session.authMode === ProviderAuthModes.Custom) {
-                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId, session.environmentId, logCtx);
+                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId, environment, account, logCtx);
             } else if (session.authMode === ProviderAuthModes.OAuth1) {
-                return this.oauth1Callback(template, config, session, req, res, activityLogId, session.environmentId, logCtx);
+                return this.oauth1Callback(template, config, session, req, res, activityLogId, environment, account, logCtx);
             }
 
             const error = WSErrBuilder.UnknownAuthMode(session.authMode);
@@ -1124,7 +1155,8 @@ class OAuthController {
         req: Request,
         res: Response,
         activityLogId: number,
-        environment_id: number,
+        environment: Environment,
+        account: Account,
         logCtx: LogContext
     ) {
         const { code } = req.query;
@@ -1139,7 +1171,7 @@ class OAuthController {
             const error = WSErrBuilder.InvalidCallbackOAuth2();
             await createActivityLogMessage({
                 level: 'error',
-                environment_id,
+                environment_id: environment.id,
                 activity_log_id: activityLogId,
                 content: error.message,
                 timestamp: Date.now(),
@@ -1157,7 +1189,7 @@ class OAuthController {
             await logCtx.failed();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed with a missing code', LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
+                environmentId: String(environment.id),
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
@@ -1167,10 +1199,9 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    id: -1,
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    environment_id,
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    environment,
+                    account,
                     auth_mode: template.auth_mode,
                     error: error.message,
                     operation: AuthOperation.UNKNOWN
@@ -1194,7 +1225,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
-                environment_id,
+                environment_id: environment.id,
                 activity_log_id: activityLogId,
                 content: `Update request has been made for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
                 timestamp: Date.now()
@@ -1246,7 +1277,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
-                environment_id,
+                environment_id: environment.id,
                 activity_log_id: activityLogId,
                 content: `Initiating token request for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
                 timestamp: Date.now(),
@@ -1289,7 +1320,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
-                environment_id,
+                environment_id: environment.id,
                 activity_log_id: activityLogId,
                 content: `Token response was received for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
                 timestamp: Date.now()
@@ -1305,7 +1336,7 @@ class OAuthController {
             } catch (err) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId,
                     content: `The OAuth token response from the server could not be parsed - OAuth flow failed. The server returned:\n${JSON.stringify(
                         rawCredentials
@@ -1320,7 +1351,7 @@ class OAuthController {
                     'OAuth2 token request failed, response from the server could not be parsed',
                     LogActionEnum.AUTH,
                     {
-                        environmentId: String(environment_id),
+                        environmentId: String(environment.id),
                         providerConfigKey: String(providerConfigKey),
                         provider: String(config.provider),
                         connectionId: String(connectionId),
@@ -1331,10 +1362,9 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
-                        environment_id,
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                        environment,
+                        account,
                         auth_mode: template.auth_mode,
                         error: 'OAuth2 token request failed, response from the server could not be parsed',
                         operation: AuthOperation.UNKNOWN
@@ -1346,8 +1376,6 @@ class OAuthController {
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
             }
-
-            const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
 
             let connectionConfig = { ...session.connectionConfig, ...tokenMetadata, ...callbackMetadata };
 
@@ -1418,15 +1446,14 @@ class OAuthController {
                 parsedRawCredentials,
                 connectionConfig,
                 session.environmentId,
-                accountId
+                account.id
             );
 
             await updateProviderActivityLog(activityLogId, session.provider);
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             await createActivityLogMessageAndEnd({
                 level: 'debug',
-                environment_id,
+                environment_id: environment.id,
                 activity_log_id: activityLogId,
                 content: `OAuth connection for ${providerConfigKey} was successful${
                     template.auth_mode === ProviderAuthModes.Custom && !installationId ? ' and request for app approval is pending' : ''
@@ -1455,15 +1482,15 @@ class OAuthController {
             );
 
             if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 // don't initiate a sync if custom because this is the first step of the oauth flow
                 const initiateSync = template.auth_mode === ProviderAuthModes.Custom ? false : true;
                 const runPostConnectionScript = true;
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
-                        environment_id,
+                        connection: updatedConnection.connection,
+                        environment,
+                        account,
                         auth_mode: template.auth_mode,
                         operation: updatedConnection.operation
                     },
@@ -1477,6 +1504,22 @@ class OAuthController {
 
             if (template.auth_mode === ProviderAuthModes.Custom && installationId) {
                 pending = false;
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            connection: res.connection,
+                            environment,
+                            account,
+                            auth_mode: ProviderAuthModes.App,
+                            operation: res.operation
+                        },
+                        config.provider,
+                        logContextGetter,
+                        activityLogId,
+                        { initiateSync: true, runPostConnectionScript: false },
+                        logCtx
+                    );
+                };
                 await connectionService.getAppCredentialsAndFinishConnection(
                     connectionId,
                     config,
@@ -1484,14 +1527,14 @@ class OAuthController {
                     connectionConfig as ConnectionConfig,
                     activityLogId,
                     logCtx,
-                    logContextGetter
+                    connCreatedHook
                 );
             } else {
                 await updateSuccessActivityLog(activityLogId, template.auth_mode === ProviderAuthModes.Custom ? null : true);
             }
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth2 token request succeeded', LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
+                environmentId: String(environment.id),
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
@@ -1513,7 +1556,7 @@ class OAuthController {
             });
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed', LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
+                environmentId: String(environment.id),
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
@@ -1524,7 +1567,7 @@ class OAuthController {
             const error = WSErrBuilder.UnknownError();
             await createActivityLogMessageAndEnd({
                 level: 'error',
-                environment_id,
+                environment_id: environment.id,
                 activity_log_id: activityLogId,
                 content: error.message + '\n' + prettyError,
                 timestamp: Date.now()
@@ -1534,10 +1577,9 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    id: -1,
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    environment_id,
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    environment,
+                    account,
                     auth_mode: template.auth_mode,
                     error: error.message + '\n' + prettyError,
                     operation: AuthOperation.UNKNOWN
@@ -1558,7 +1600,8 @@ class OAuthController {
         req: Request,
         res: Response,
         activityLogId: number,
-        environment_id: number,
+        environment: Environment,
+        account: Account,
         logCtx: LogContext
     ) {
         const { oauth_token, oauth_verifier } = req.query;
@@ -1571,7 +1614,7 @@ class OAuthController {
             const error = WSErrBuilder.InvalidCallbackOAuth1();
             await createActivityLogMessageAndEnd({
                 level: 'error',
-                environment_id,
+                environment_id: environment.id,
                 activity_log_id: activityLogId,
                 content: error.message,
                 timestamp: Date.now()
@@ -1581,10 +1624,9 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    id: -1,
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    environment_id,
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    environment,
+                    account,
                     auth_mode: template.auth_mode,
                     error: error.message,
                     operation: AuthOperation.UNKNOWN
@@ -1599,8 +1641,6 @@ class OAuthController {
 
         const oauth_token_secret = session.requestTokenSecret!;
 
-        const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
-
         const oAuth1Client = new OAuth1Client(config, template, '');
         oAuth1Client
             .getOAuthAccessToken(oauth_token as string, oauth_token_secret, oauth_verifier as string)
@@ -1613,15 +1653,15 @@ class OAuthController {
                     session.provider,
                     parsedAccessTokenResult,
                     { ...session.connectionConfig, ...metadata },
-                    session.environmentId,
-                    accountId
+                    environment.id,
+                    account.id
                 );
 
                 await updateSuccessActivityLog(activityLogId, true);
 
                 await createActivityLogMessageAndEnd({
                     level: 'info',
-                    environment_id,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId,
                     content: `OAuth connection for ${providerConfigKey} was successful`,
                     timestamp: Date.now(),
@@ -1631,7 +1671,7 @@ class OAuthController {
                 await logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
 
                 await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth1 token request succeeded', LogActionEnum.AUTH, {
-                    environmentId: String(environment_id),
+                    environmentId: String(environment.id),
                     providerConfigKey: String(providerConfigKey),
                     provider: String(config.provider),
                     connectionId: String(connectionId),
@@ -1639,15 +1679,18 @@ class OAuthController {
                 });
 
                 if (updatedConnection) {
+                    await logCtx.enrichOperation({
+                        connectionId: updatedConnection.connection.id!,
+                        connectionName: updatedConnection.connection.connection_id
+                    });
                     // syncs not support for oauth1
                     const initiateSync = false;
                     const runPostConnectionScript = true;
                     void connectionCreatedHook(
                         {
-                            id: updatedConnection.id,
-                            connection_id: connectionId,
-                            provider_config_key: providerConfigKey,
-                            environment_id,
+                            connection: updatedConnection.connection,
+                            environment,
+                            account,
                             auth_mode: template.auth_mode,
                             operation: updatedConnection.operation
                         },
@@ -1676,7 +1719,7 @@ class OAuthController {
                 const prettyError = stringifyError(err, { pretty: true });
 
                 await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth1 token request failed', LogActionEnum.AUTH, {
-                    environmentId: String(environment_id),
+                    environmentId: String(environment.id),
                     providerConfigKey: String(providerConfigKey),
                     provider: String(config.provider),
                     connectionId: String(connectionId),
@@ -1687,7 +1730,7 @@ class OAuthController {
                 const error = WSErrBuilder.UnknownError();
                 await createActivityLogMessageAndEnd({
                     level: 'error',
-                    environment_id,
+                    environment_id: environment.id,
                     activity_log_id: activityLogId,
                     content: error.message + '\n' + prettyError,
                     timestamp: Date.now()
@@ -1697,10 +1740,9 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
-                        environment_id,
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                        environment,
+                        account,
                         auth_mode: template.auth_mode,
                         error: error.message + '\n' + prettyError,
                         operation: AuthOperation.UNKNOWN

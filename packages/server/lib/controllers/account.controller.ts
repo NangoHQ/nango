@@ -19,7 +19,7 @@ class AccountController {
                 account.is_admin = true;
             }
 
-            delete account.uuid;
+            const { uuid, ...accountData } = account;
 
             const users = await userService.getUsersByAccountId(account.id);
             const invitedUsers = await userService.getInvitedUsersByAccountId(account.id);
@@ -31,7 +31,7 @@ class AccountController {
                 return invitedUser;
             });
 
-            res.status(200).send({ account, users: usersWithCurrentUser, invitedUsers });
+            res.status(200).send({ account: accountData, users: usersWithCurrentUser, invitedUsers });
         } catch (err) {
             next(err);
         }

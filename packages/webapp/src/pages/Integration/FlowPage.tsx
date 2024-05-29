@@ -4,6 +4,7 @@ import { Loading, useModal } from '@geist-ui/core';
 import { useEffect, useState } from 'react';
 import { CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
+import type { EnvironmentAndAccount } from '@nangohq/server';
 
 import { useUpdateSyncFrequency, requestErrorToast } from '../../utils/api';
 import Button from '../../components/ui/button/Button';
@@ -11,7 +12,7 @@ import CopyButton from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
 import type { FlowConfiguration, EndpointResponse } from './Show';
 import { Tabs, SubTabs } from './Show';
-import type { IntegrationConfig, Environment, Flow, Connection } from '../../types';
+import type { IntegrationConfig, Flow, Connection } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
 import ActionModal from '../../components/ui/ActionModal';
 import Info from '../../components/ui/Info';
@@ -21,7 +22,7 @@ import { autoStartSnippet, setMetadaSnippet } from '../../utils/language-snippet
 import { useStore } from '../../store';
 
 interface FlowPageProps {
-    environment: Environment;
+    environment: EnvironmentAndAccount['environment'];
     integration: IntegrationConfig;
     flow: Flow | null;
     flowConfig: FlowConfiguration | null;

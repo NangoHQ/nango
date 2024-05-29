@@ -12,6 +12,8 @@ import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { OrchestratorClientInterface } from '../../clients/orchestrator.js';
+import { Orchestrator } from '../../clients/orchestrator.js';
 
 const logger = getLogger('SlackService');
 const TABLE = dbNamespace + 'slack_notifications';
@@ -61,6 +63,8 @@ interface SlackActionResponse {
     };
 }
 
+export const generateSlackConnectionId = (accountUUID: string, environmentName: string) => `account-${accountUUID}-${environmentName}`;
+
 /**
  * _nango_slack_notifications
  * @desc persistence layer for slack notifications and the connection list
@@ -72,12 +76,17 @@ interface SlackActionResponse {
  *      - name
  */
 
-class SlackService {
+export class SlackService {
+    private orchestrator: Orchestrator;
     private actionName = 'flow-result-notifier-action';
     private adminConnectionId = process.env['NANGO_ADMIN_CONNECTION_ID'] || 'admin-slack';
     private integrationKey = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
     private nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
     private env = 'prod';
+
+    constructor(orchestratorClient: OrchestratorClientInterface) {
+        this.orchestrator = new Orchestrator(orchestratorClient);
+    }
 
     /**
      * Get Nango Admin Connection
@@ -144,7 +153,7 @@ class SlackService {
             payload.ts = ts;
         }
 
-        const actionResponse = await syncClient.triggerAction<SlackActionResponse>({
+        const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
             connection: nangoAdminConnection,
             actionName: this.actionName,
             input: payload,
@@ -225,7 +234,7 @@ class SlackService {
             throw new Error('failed_to_get_account');
         }
 
-        const slackConnectionId = `account-${account.uuid}-${envName}`;
+        const slackConnectionId = generateSlackConnectionId(account.uuid, envName);
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
 
         // we get the connection on the nango admin account to be able to send the notification
@@ -260,7 +269,7 @@ class SlackService {
             {
                 account,
                 environment: { id: environment_id, name: envName },
-                config: { id: slackConnection.config_id!, name: slackConnection.provider_config_key },
+                integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
                 connection: { id: slackConnection.id!, name: slackConnection.connection_id }
             }
         );
@@ -301,7 +310,7 @@ class SlackService {
             return;
         }
 
-        const actionResponse = await syncClient.triggerAction<SlackActionResponse>({
+        const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
             connection: slackConnection as NangoConnection,
             actionName: this.actionName,
             input: payload,
@@ -411,7 +420,7 @@ class SlackService {
         }
 
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
-        const slackConnectionId = `account-${account.uuid}-${envName}`;
+        const slackConnectionId = generateSlackConnectionId(account.uuid, envName);
         const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
             slackConnectionId,
             this.integrationKey,
@@ -442,12 +451,12 @@ class SlackService {
             {
                 account,
                 environment: { id: environment_id, name: envName },
-                config: { id: slackConnection.config_id!, name: slackConnection.provider_config_key },
+                integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
                 connection: { id: slackConnection.id!, name: slackConnection.connection_id }
             }
         );
 
-        const actionResponse = await syncClient.triggerAction<SlackActionResponse>({
+        const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
             connection: slackConnection as NangoConnection,
             actionName: this.actionName,
             input: payload,
@@ -668,5 +677,3 @@ class SlackService {
             });
     }
 }
-
-export default new SlackService();

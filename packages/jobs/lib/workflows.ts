@@ -1,8 +1,7 @@
 import type { ActivityFailure } from '@temporalio/workflow';
 import { CancellationScope, proxyActivities, isCancellation } from '@temporalio/workflow';
 import type * as activities from './activities.js';
-import type { WebhookArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/worker';
-import type { RunnerOutput } from '@nangohq/shared';
+import type { WebhookArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs, RunnerOutput } from '@nangohq/shared';
 
 const SYNC_TIMEOUT = '24h';
 const SYNC_MAX_ATTEMPTS = 3;

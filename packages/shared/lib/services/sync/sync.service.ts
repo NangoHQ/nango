@@ -751,11 +751,14 @@ export const getAndReconcileDifferences = async ({
 export interface PausableSyncs {
     id: string;
     name: string;
+    config_id: number;
+    provider_unique_key: string;
+    provider: string;
     environment_id: number;
     environment_name: string;
-    provider: string;
     account_id: number;
     account_name: string;
+    sync_config_id: number;
     connection_unique_id: number;
     connection_id: string;
     unique_key: string;
@@ -772,11 +775,13 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
             '_nango_accounts.name as account_name',
             '_nango_environments.id as environment_id',
             '_nango_environments.name as environment_name',
+            '_nango_configs.id as config_id',
             '_nango_configs.provider',
-            '_nango_configs.unique_key',
+            '_nango_configs.unique_key as provider_unique_key',
             '_nango_connections.id as connection_unique_id',
             '_nango_connections.connection_id',
-            '_nango_sync_schedules.schedule_id'
+            '_nango_sync_schedules.schedule_id',
+            '_nango_sync_configs.id as sync_config_id'
         )
         .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
         .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
@@ -786,6 +791,14 @@ export async function findPausableDemoSyncs(): Promise<PausableSyncs[]> {
                 '_nango_configs.unique_key',
                 '_nango_connections.provider_config_key'
             );
+        })
+        .join('_nango_sync_configs', function () {
+            this.on('_nango_sync_configs.environment_id', '_nango_environments.id')
+                .on('_nango_sync_configs.nango_config_id', '_nango_configs.id')
+                .on('_nango_sync_configs.sync_name', '_nango_syncs.name')
+                .onVal('_nango_sync_configs.type', 'sync')
+                .onVal('_nango_sync_configs.deleted', false)
+                .onVal('_nango_sync_configs.active', true);
         })
         .join('_nango_sync_schedules', '_nango_sync_schedules.sync_id', '_nango_syncs.id')
         .where({

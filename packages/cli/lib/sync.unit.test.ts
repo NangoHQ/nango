@@ -507,6 +507,15 @@ describe('generate function tests', () => {
         expect(modelsFile).toContain(`nullableDate: Date | null;`);
     });
 
+    it('should correctly interpret a union type with an array model', async () => {
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/model-array-types/nango.yaml`, `${testDirectory}/nango.yaml`);
+        expect(generate(false, true));
+        const modelsFile = await fs.promises.readFile(`${testDirectory}/models.ts`, 'utf8');
+        expect(modelsFile).not.toContain(`'Other[]' | null | undefined;`);
+        expect(modelsFile).toContain(`Other[] | null | undefined;`);
+    });
+
     it('should be able to compile files in nested directories', async () => {
         await fs.promises.rm(testDirectory, { recursive: true, force: true });
         await fs.promises.mkdir(testDirectory, { recursive: true });

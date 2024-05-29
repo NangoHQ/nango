@@ -4,7 +4,7 @@ import './utils/config.js';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import http from 'http';
-import { db, getGlobalOAuthCallbackUrl, getPort, getWebsocketsPath, packageJsonFile } from '@nangohq/shared';
+import { NANGO_VERSION, db, getGlobalOAuthCallbackUrl, getPort, getWebsocketsPath } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
@@ -47,7 +47,7 @@ refreshTokens();
 
 const port = getPort();
 server.listen(port, () => {
-    logger.info(`✅ Nango Server with version ${packageJsonFile().version} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
+    logger.info(`✅ Nango Server with version ${NANGO_VERSION} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
     logger.info(
         `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
     );
