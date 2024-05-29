@@ -208,11 +208,10 @@ class ApiAuthController {
             );
 
             if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
+                        connection: updatedConnection.connection,
                         environment,
                         account,
                         auth_mode: AuthModes.ApiKey,
@@ -240,9 +239,7 @@ class ApiAuthController {
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId as string,
-                        provider_config_key: providerConfigKey as string,
+                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
                         auth_mode: AuthModes.ApiKey,
@@ -366,6 +363,8 @@ class ApiAuthController {
                 return;
             }
 
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
+
             const template = configService.getTemplate(config.provider);
 
             if (template.auth_mode !== AuthModes.Basic) {
@@ -418,7 +417,6 @@ class ApiAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             await createActivityLogMessage({
                 level: 'info',
@@ -443,11 +441,10 @@ class ApiAuthController {
             );
 
             if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
+                        connection: updatedConnection.connection,
                         environment,
                         account,
                         auth_mode: AuthModes.Basic,
@@ -475,9 +472,7 @@ class ApiAuthController {
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId as string,
-                        provider_config_key: providerConfigKey as string,
+                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
                         auth_mode: AuthModes.ApiKey,

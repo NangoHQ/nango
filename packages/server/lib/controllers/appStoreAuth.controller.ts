@@ -169,9 +169,7 @@ class AppStoreAuthController {
             if (!success || !credentials) {
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
                         account,
                         auth_mode: AuthModes.AppStore,
@@ -210,11 +208,10 @@ class AppStoreAuthController {
             );
 
             if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
+                        connection: updatedConnection.connection,
                         environment,
                         account,
                         auth_mode: AuthModes.AppStore,
@@ -242,9 +239,7 @@ class AppStoreAuthController {
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId as string,
-                        provider_config_key: providerConfigKey as string,
+                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
                         auth_mode: AuthModes.AppStore,
