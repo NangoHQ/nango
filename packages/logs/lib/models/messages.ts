@@ -257,6 +257,8 @@ export async function listMessages(opts: {
     let cursor: any[] | undefined;
     let sort: estypes.Sort = [{ createdAt: 'desc' }, { id: 'desc' }];
     if (opts.cursorBefore) {
+        // search_before does not exists so we reverse the sort
+        // https://github.com/elastic/elasticsearch/issues/29449
         cursor = parseCursor(opts.cursorBefore);
         sort = [{ createdAt: 'asc' }, { id: 'asc' }];
     } else if (opts.cursorAfter) {
@@ -278,6 +280,7 @@ export async function listMessages(opts: {
     const items = hits.hits.map((hit) => {
         return hit._source!;
     });
+
     if (opts.cursorBefore) {
         // In case we set before we have to reverse the message since we inverted the sort
         items.reverse();
@@ -288,6 +291,7 @@ export async function listMessages(opts: {
             cursorAfter: null
         };
     }
+
     return {
         count: total,
         items,
