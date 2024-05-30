@@ -29,8 +29,6 @@ const connection: StoredConnection = {
 
 const getLogCtx = () => new LogContext({ parentId: '1', operation: {} as any }, { dryRun: true, logToConsole: false });
 
-const getLogCtx = () => new LogContext({ parentId: '1', operation: {} as any }, { dryRun: true, logToConsole: false });
-
 describe('Webhook notification tests', () => {
     beforeEach(() => {
         vi.resetAllMocks();

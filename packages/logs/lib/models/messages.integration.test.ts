@@ -1,11 +1,10 @@
 import { describe, beforeAll, it, expect, vi } from 'vitest';
 import { deleteIndex, migrateMapping } from '../es/helpers.js';
 import type { ListOperations, ListMessages } from './messages.js';
-import { getOperation, listOperations, listMessages } from './messages.js';
+import { getOperation, listOperations, listMessages, setTimeoutForAll } from './messages.js';
 import { afterEach } from 'node:test';
 import { logContextGetter } from './logContextGetter.js';
 import type { OperationRowInsert } from '@nangohq/types';
-import { timeoutOperations } from '../helpers/timeoutOperations.js';
 import { setTimeout } from 'node:timers/promises';
 import { getFormattedMessage } from './helpers.js';
 
@@ -69,7 +68,7 @@ describe('model', () => {
                 { logToConsole: false }
             );
 
-            await timeoutOperations();
+            await setTimeoutForAll();
             await setTimeout(500);
 
             const op1 = await getOperation({ id: ctx1.id });

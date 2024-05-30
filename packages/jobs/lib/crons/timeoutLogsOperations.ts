@@ -1,15 +1,23 @@
 import * as cron from 'node-cron';
 import { errorManager, ErrorSourceEnum } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import { timeoutOperations } from '@nangohq/logs';
+import { envs, model } from '@nangohq/logs';
+import { getLogger } from '@nangohq/utils';
+
+const logger = getLogger('Jobs.TimeoutLogsOperations');
 
 export function timeoutLogsOperations(): void {
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    if (!envs.NANGO_LOGS_ENABLED) {
+        return;
+    }
+
     cron.schedule(
         '*/10 * * * *',
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         async () => {
             try {
-                await timeoutOperations();
+                logger.info(`Timeouting old operations...`);
+                await model.setTimeoutForAll();
             } catch (err) {
                 errorManager.report(err, { source: ErrorSourceEnum.PLATFORM }, tracer);
             }
