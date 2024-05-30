@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetConnection, IntegrationConfig } from '@nangohq/types';
+import type { Connection, GetConnection, IntegrationConfig } from '@nangohq/types';
 import { connectionService, LogActionEnum, createActivityLogAndLogMessage, configService, errorNotificationService } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { LogLevel } from '@nangohq/shared';
@@ -78,9 +78,9 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     });
 
     if (credentialResponse.isErr()) {
-        if (credentialResponse.payload && credentialResponse.payload.id) {
-            const { payload: errorConnection } = credentialResponse;
-            const errorLog = await errorNotificationService.auth.get(credentialResponse.payload.id);
+        if (credentialResponse.error.payload && credentialResponse.error.payload['id']) {
+            const errorConnection = credentialResponse.error.payload as unknown as Connection;
+            const errorLog = await errorNotificationService.auth.get(errorConnection.id as number);
 
             res.status(400).send({
                 errorLog,

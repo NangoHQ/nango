@@ -584,7 +584,7 @@ class ConnectionService {
         providerConfigKey: string;
         logContextGetter: LogContextGetter;
         instantRefresh: boolean;
-    }): Promise<Result<Connection, NangoError, Connection>> {
+    }): Promise<Result<Connection, NangoError>> {
         if (connectionId === null) {
             const error = new NangoError('missing_connection');
 
@@ -684,7 +684,9 @@ class ConnectionService {
                     });
                 }
 
-                return Err(error, connection);
+                const errorWithPayload = new NangoError(error.type, connection);
+
+                return Err(errorWithPayload);
             }
 
             connection.credentials = credentials as OAuth2Credentials;
