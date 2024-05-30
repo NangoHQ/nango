@@ -466,6 +466,7 @@ contentstack:
     authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
     token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
     docs: https://docs.nango.dev/integrations/all/contentstack
+#Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     categories:
         - legal
