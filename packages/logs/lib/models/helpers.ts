@@ -62,7 +62,7 @@ export function getFormattedMessage(
         updatedAt: data.updatedAt || now.toISOString(),
         startedAt: data.startedAt || null,
         endedAt: data.endedAt || null,
-        expiresAt: data.expiresAt || new Date(now.getTime() + 7 * 86400 * 1000).toISOString()
+        expiresAt: data.operation ? data.expiresAt || new Date(now.getTime() + 7 * 86400 * 1000).toISOString() : null
     };
 }
 

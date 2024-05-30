@@ -5,8 +5,8 @@ import { getOperation, listOperations, listMessages, setTimeoutForAll } from './
 import { afterEach } from 'node:test';
 import { logContextGetter } from './logContextGetter.js';
 import type { OperationRowInsert } from '@nangohq/types';
-import { setTimeout } from 'node:timers/promises';
 import { getFormattedMessage } from './helpers.js';
+import { indexMessages } from '../es/schema.js';
 
 const account = { id: 1234, name: 'test' };
 const environment = { id: 5678, name: 'dev' };
@@ -14,7 +14,7 @@ const operationPayload: OperationRowInsert = { operation: { type: 'sync', action
 
 describe('model', () => {
     beforeAll(async () => {
-        await deleteIndex();
+        await deleteIndex({ prefix: indexMessages.index });
         await migrateMapping();
     });
     afterEach(() => {
@@ -68,8 +68,7 @@ describe('model', () => {
                 { logToConsole: false }
             );
 
-            await setTimeoutForAll();
-            await setTimeout(500);
+            await setTimeoutForAll({ wait: true });
 
             const op1 = await getOperation({ id: ctx1.id });
             expect(op1.state).toBe('timeout');

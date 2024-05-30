@@ -358,13 +358,15 @@ export async function listFilters(opts: {
     };
 }
 
-export async function setTimeoutForAll() {
+export async function setTimeoutForAll(opts: { wait?: boolean } = {}): Promise<void> {
     await client.updateByQuery({
         index: indexMessages.index,
-        wait_for_completion: false,
+        wait_for_completion: opts.wait === true,
+        refresh: opts.wait === true,
         query: {
             bool: {
                 must: [{ range: { expiresAt: { lt: 'now' } } }],
+                must_not: { exists: { field: 'parentId' } },
                 should: [{ term: { state: 'waiting' } }, { term: { state: 'running' } }]
             }
         },
