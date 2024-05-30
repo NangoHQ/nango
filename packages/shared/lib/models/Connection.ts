@@ -36,13 +36,22 @@ export interface Connection extends BaseConnection {
     credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials;
 }
 
-export type RecentlyCreatedConnection = Pick<StoredConnection, 'id' | 'connection_id' | 'provider_config_key'> & {
+export interface RecentlyCreatedConnection {
+    connection: StoredConnection;
     auth_mode: AuthModes;
     error?: string;
     operation: AuthOperation;
     environment: Environment;
     account: Account;
-};
+}
+export interface RecentlyFailedConnection {
+    connection: Pick<StoredConnection, 'connection_id' | 'provider_config_key'>;
+    auth_mode: AuthModes;
+    error?: string;
+    operation: AuthOperation;
+    environment: Environment;
+    account: Account;
+}
 
 export interface ApiConnection {
     id?: number;

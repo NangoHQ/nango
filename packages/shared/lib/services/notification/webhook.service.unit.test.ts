@@ -2,7 +2,7 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import axios from 'axios';
 import { SyncType } from '../../models/Sync.js';
-import type { RecentlyCreatedConnection, NangoConnection } from '../../models/Connection.js';
+import type { RecentlyCreatedConnection, NangoConnection, StoredConnection } from '../../models/Connection.js';
 import WebhookService from './webhook.service.js';
 import type { Environment } from '../../models/Environment.js';
 import { mockCreateActivityLog } from '../activity/mocks.js';
@@ -18,6 +18,16 @@ vi.mock('axios', () => ({
 
 const integration: Config = { id: 1, unique_key: 'providerKey', provider: 'provider', environment_id: 1, oauth_client_id: '', oauth_client_secret: '' };
 const account: Account = { id: 1, name: 'account', secret_key: '', uuid: 'uuid' };
+const connection: StoredConnection = {
+    id: 1,
+    connection_id: '1',
+    provider_config_key: 'providerkey',
+    connection_config: {},
+    credentials: {},
+    environment_id: 1
+};
+
+const getLogCtx = () => new LogContext({ parentId: '1', operation: {} as any }, { dryRun: true, logToConsole: false });
 
 const getLogCtx = () => new LogContext({ parentId: '1', operation: {} as any }, { dryRun: true, logToConsole: false });
 
@@ -32,7 +42,7 @@ describe('Webhook notification tests', () => {
 
         await WebhookService.sendAuthUpdate(
             {
-                connection_id: 'foo',
+                connection,
                 environment: { name: 'dev', id: 1, secret_key: 'secret', send_auth_webhook: false, webhook_url: null, always_send_webhook: true } as Environment
             } as RecentlyCreatedConnection,
             'hubspot',
@@ -49,7 +59,7 @@ describe('Webhook notification tests', () => {
 
         await WebhookService.sendAuthUpdate(
             {
-                connection_id: 'foo',
+                connection,
                 environment: {
                     name: 'dev',
                     id: 1,
@@ -74,7 +84,7 @@ describe('Webhook notification tests', () => {
 
         await WebhookService.sendAuthUpdate(
             {
-                connection_id: 'foo',
+                connection,
                 environment: {
                     name: 'dev',
                     id: 1,
@@ -99,7 +109,7 @@ describe('Webhook notification tests', () => {
 
         await WebhookService.sendAuthUpdate(
             {
-                connection_id: 'foo',
+                connection,
                 environment: {
                     name: 'dev',
                     id: 1,
@@ -125,7 +135,7 @@ describe('Webhook notification tests', () => {
 
         await WebhookService.sendAuthUpdate(
             {
-                connection_id: 'foo',
+                connection,
                 environment: {
                     name: 'dev',
                     id: 1,
@@ -149,7 +159,7 @@ describe('Webhook notification tests', () => {
         const logCtx = getLogCtx();
         await WebhookService.sendAuthUpdate(
             {
-                connection_id: 'foo',
+                connection,
                 environment: {
                     name: 'dev',
                     id: 1,

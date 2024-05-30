@@ -99,6 +99,8 @@ class AppAuthController {
                 return;
             }
 
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
+
             const template = configService.getTemplate(config.provider);
             const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.[AuthModes.App] as string);
 
@@ -202,9 +204,7 @@ class AppAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
                         account,
                         auth_mode: AuthModes.App,
@@ -232,11 +232,10 @@ class AppAuthController {
             );
 
             if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
+                        connection: updatedConnection.connection,
                         environment,
                         account,
                         auth_mode: AuthModes.App,
@@ -295,9 +294,7 @@ class AppAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    id: -1,
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
                     auth_mode: AuthModes.App,

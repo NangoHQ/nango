@@ -545,11 +545,10 @@ class OAuthController {
             );
 
             if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
+                        connection: updatedConnection.connection,
                         environment,
                         account,
                         auth_mode: ProviderAuthModes.None,
@@ -577,9 +576,7 @@ class OAuthController {
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId as string,
-                        provider_config_key: providerConfigKey as string,
+                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
                         auth_mode: ProviderAuthModes.OAuth2CC,
@@ -1207,9 +1204,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    id: -1,
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
                     auth_mode: template.auth_mode,
@@ -1372,9 +1367,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
                         account,
                         auth_mode: template.auth_mode,
@@ -1462,7 +1455,6 @@ class OAuthController {
             );
 
             await updateProviderActivityLog(activityLogId, session.provider);
-            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             await createActivityLogMessageAndEnd({
                 level: 'debug',
@@ -1495,14 +1487,13 @@ class OAuthController {
             );
 
             if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 // don't initiate a sync if custom because this is the first step of the oauth flow
                 const initiateSync = template.auth_mode === ProviderAuthModes.Custom ? false : true;
                 const runPostConnectionScript = true;
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
+                        connection: updatedConnection.connection,
                         environment,
                         account,
                         auth_mode: template.auth_mode,
@@ -1521,9 +1512,7 @@ class OAuthController {
                 const connCreatedHook = async (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
                         {
-                            id: res.id,
-                            connection_id: connectionId,
-                            provider_config_key: providerConfigKey,
+                            connection: res.connection,
                             environment,
                             account,
                             auth_mode: ProviderAuthModes.App,
@@ -1593,9 +1582,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    id: -1,
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
                     auth_mode: template.auth_mode,
@@ -1642,9 +1629,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    id: -1,
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
                     auth_mode: template.auth_mode,
@@ -1699,14 +1684,16 @@ class OAuthController {
                 });
 
                 if (updatedConnection) {
+                    await logCtx.enrichOperation({
+                        connectionId: updatedConnection.connection.id!,
+                        connectionName: updatedConnection.connection.connection_id
+                    });
                     // syncs not support for oauth1
                     const initiateSync = false;
                     const runPostConnectionScript = true;
                     void connectionCreatedHook(
                         {
-                            id: updatedConnection.id,
-                            connection_id: connectionId,
-                            provider_config_key: providerConfigKey,
+                            connection: updatedConnection.connection,
                             environment,
                             account,
                             auth_mode: template.auth_mode,
@@ -1758,9 +1745,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
                         account,
                         auth_mode: template.auth_mode,
