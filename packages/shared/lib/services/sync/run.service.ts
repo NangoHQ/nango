@@ -51,7 +51,7 @@ interface RunScriptRow {
     createdAt: number;
 }
 
-export interface SyncRunConfig {
+export type SyncRunConfig = {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
@@ -59,7 +59,6 @@ export interface SyncRunConfig {
     orchestratorClient: OrchestratorClientInterface;
     logContextGetter: LogContextGetter;
 
-    writeToDb: boolean;
     isAction?: boolean;
     isInvokedImmediately?: boolean;
     isWebhook?: boolean;
@@ -69,7 +68,6 @@ export interface SyncRunConfig {
 
     syncId?: string;
     syncJobId?: number;
-    activityLogId?: number | undefined;
     provider?: string;
 
     loadLocation?: string;
@@ -83,7 +81,7 @@ export interface SyncRunConfig {
     environment?: Environment;
 
     temporalContext?: Context;
-}
+} & ({ writeToDb: true; activityLogId: number; logCtx: LogContext } | { writeToDb: false; activityLogId?: never; logCtx?: never });
 
 export interface RecordsServiceInterface {
     markNonCurrentGenerationRecordsAsDeleted({
@@ -166,6 +164,9 @@ export default class SyncRun {
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }
+        if (config.logCtx) {
+            this.logCtx = config.logCtx;
+        }
 
         if (config.loadLocation) {
             this.loadLocation = config.loadLocation;
@@ -196,22 +197,12 @@ export default class SyncRun {
         }
     }
 
-    async cancel(): Promise<ServiceResponse<boolean>> {
-        await this.integrationService.cancelScript(this.syncId as string, this.nangoConnection.environment_id);
-
-        return { success: false, error: null, response: false };
-    }
-
     async run(
         optionalLastSyncDate?: Date | null,
         bypassEnvironment?: boolean,
         optionalSecretKey?: string,
         optionalHost?: string
     ): Promise<ServiceResponse<boolean | object>> {
-        if (this.activityLogId) {
-            this.logCtx = await this.logContextGetter.get({ id: String(this.activityLogId) });
-        }
-
         if (this.debug) {
             const content = this.loadLocation ? `Looking for a local nango config at ${this.loadLocation}` : `Looking for a sync config for ${this.syncName}`;
             if (this.writeToDb) {
@@ -372,7 +363,7 @@ export default class SyncRun {
                 environmentId: this.nangoConnection.environment_id,
                 providerConfigKey: String(this.nangoConnection.provider_config_key),
                 provider: this.provider as string,
-                activityLogId: this.activityLogId as number,
+                activityLogId: this.activityLogId,
                 secretKey,
                 nangoConnectionId: this.nangoConnection.id as number,
                 syncId: this.syncId,
@@ -424,7 +415,7 @@ export default class SyncRun {
                     syncId:
                         (this.syncId as string) ||
                         `${this.syncName}-${this.nangoConnection.environment_id}-${this.nangoConnection.provider_config_key}-${this.nangoConnection.connection_id}`,
-                    activityLogId: this.activityLogId as number,
+                    activityLogId: this.activityLogId,
                     nangoProps,
                     integrationData: syncData,
                     environmentId: this.nangoConnection.environment_id,

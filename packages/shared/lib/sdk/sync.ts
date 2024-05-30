@@ -249,7 +249,7 @@ export interface NangoProps {
     accountId?: number;
     connectionId: string;
     environmentId?: number;
-    activityLogId?: number;
+    activityLogId?: number | undefined;
     providerConfigKey: string;
     provider?: string;
     lastSyncDate?: Date;
@@ -275,7 +275,7 @@ const MEMOIZED_CONNECTION_TTL = 60000;
 export class NangoAction {
     protected nango: Nango;
     private attributes = {};
-    activityLogId?: number;
+    activityLogId?: number | undefined;
     syncId?: string;
     nangoConnectionId?: number;
     environmentId?: number;
@@ -348,6 +348,10 @@ export class NangoAction {
 
         if (config.dryRunService) {
             this.dryRunService = config.dryRunService;
+        }
+
+        if (!this.dryRun && !this.activityLogId) {
+            throw new Error('Parameter activityLogId is required when not in dryRun');
         }
     }
 
@@ -746,8 +750,8 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
+            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
         }
 
         if (this.dryRun) {
@@ -797,8 +801,8 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
+            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
         }
 
         if (this.dryRun) {
@@ -848,8 +852,8 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
+            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
         }
 
         if (this.dryRun) {

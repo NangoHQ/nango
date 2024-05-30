@@ -231,7 +231,6 @@ class DryRunService {
             input: normalizedInput as object,
             isAction: syncInfo?.type === SyncConfigType.ACTION,
             syncId: 'abc',
-            activityLogId: -1,
             syncJobId: -1,
             syncName,
             syncType: SyncType.INITIAL,

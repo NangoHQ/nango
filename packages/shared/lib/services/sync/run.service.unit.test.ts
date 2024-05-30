@@ -64,7 +64,6 @@ describe('SyncRun', () => {
         syncType: SyncType.INCREMENTAL,
         syncId: 'some-sync',
         syncJobId: 123,
-        activityLogId: 123,
         debug: true
     };
     it('should initialize correctly', () => {
@@ -73,7 +72,7 @@ describe('SyncRun', () => {
             recordsService,
             orchestratorClient,
             logContextGetter,
-            writeToDb: true,
+            writeToDb: false,
             nangoConnection: {
                 id: 1,
                 connection_id: '1234',
@@ -84,7 +83,6 @@ describe('SyncRun', () => {
             syncType: SyncType.INCREMENTAL,
             syncId: 'some-sync',
             syncJobId: 123,
-            activityLogId: 123,
             loadLocation: '/tmp',
             debug: true
         };

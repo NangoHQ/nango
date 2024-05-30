@@ -7,7 +7,7 @@ export interface NangoProps {
     providerConfigKey?: string;
     isSync?: boolean;
     dryRun?: boolean;
-    activityLogId?: number;
+    activityLogId?: number | undefined;
 }
 
 export interface CreateConnectionOAuth1 extends OAuth1Credentials {
