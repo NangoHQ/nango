@@ -36,7 +36,7 @@ const validate = validateRequest<GetOutput>({
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).parse(data)
 });
 
-const getHandler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
+const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (req: EndpointRequest<GetOutput>, res: EndpointResponse<GetOutput>) => {
         const waitForCompletionTimeoutMs = 120_000;
         const eventId = `task:completed:${req.params.taskId}`;
@@ -74,12 +74,12 @@ const getHandler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     };
 };
 
-export const getRoute: Route<GetOutput> = { path, method };
+export const route: Route<GetOutput> = { path, method };
 
-export const getRouteHandler = (scheduler: Scheduler, eventEmmiter: EventEmitter): RouteHandler<GetOutput> => {
+export const routeHandler = (scheduler: Scheduler, eventEmmiter: EventEmitter): RouteHandler<GetOutput> => {
     return {
-        ...getRoute,
+        ...route,
         validate,
-        handler: getHandler(scheduler, eventEmmiter)
+        handler: handler(scheduler, eventEmmiter)
     };
 };

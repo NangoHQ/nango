@@ -98,12 +98,15 @@ describe('OrchestratorProcessor', async () => {
     });
 });
 
-async function processN(process: (task: TaskAction | TaskWebhook) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
-    const processor = new OrchestratorProcessor({ process, opts: { orchestratorClient, groupKey, maxConcurrency: 3, checkForTerminatedInterval: 100 } });
+async function processN(handler: (task: TaskAction | TaskWebhook) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
+    const processor = new OrchestratorProcessor({
+        handler,
+        opts: { orchestratorClient, groupKey, maxConcurrency: 3, checkForTerminatedInterval: 100 }
+    });
     for (let i = 0; i < n; i++) {
         await schedule({ groupKey });
     }
-    await processor.start();
+    processor.start();
     // Wait so the processor can process all tasks
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return processor;

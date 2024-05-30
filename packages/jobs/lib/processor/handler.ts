@@ -3,7 +3,7 @@ import type { JsonValue } from 'type-fest';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
-export async function process(task: OrchestratorTask): Promise<Result<JsonValue>> {
+export async function handler(task: OrchestratorTask): Promise<Result<JsonValue>> {
     task.abortController.signal.onabort = () => {
         abort(task);
     };

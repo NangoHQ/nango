@@ -28,7 +28,7 @@ const validate = validateRequest<PutTask>({
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).parse(data)
 });
 
-const putHandler = (scheduler: Scheduler) => {
+const handler = (scheduler: Scheduler) => {
     return async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutTask>) => {
         const { taskId } = req.params;
         const { state, output } = req.body;
@@ -56,12 +56,12 @@ const putHandler = (scheduler: Scheduler) => {
     };
 };
 
-export const putRoute: Route<PutTask> = { path, method };
+export const route: Route<PutTask> = { path, method };
 
-export const putRouteHandler = (scheduler: Scheduler): RouteHandler<PutTask> => {
+export const routeHandler = (scheduler: Scheduler): RouteHandler<PutTask> => {
     return {
-        ...putRoute,
+        ...route,
         validate,
-        handler: putHandler(scheduler)
+        handler: handler(scheduler)
     };
 };

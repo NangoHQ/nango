@@ -1,12 +1,12 @@
 import express from 'express';
 import type { Express, Request, Response, NextFunction } from 'express';
-import { postRouteHandler as postScheduleHandler } from './routes/v1/schedule.js';
-import { postRouteHandler as postSearchHandler } from './routes/v1/search.js';
-import { getRouteHandler as getDequeueHandler } from './routes/v1/dequeue.js';
-import { putRouteHandler as putTaskHandler } from './routes/v1/tasks/taskId.js';
-import { getHandler as getHealthHandler } from './routes/health.js';
-import { getRouteHandler as getOutputHandler } from './routes/v1/tasks/taskId/output.js';
-import { postRouteHandler as postHeartbeatHandler } from './routes/v1/tasks/taskId/heartbeat.js';
+import { routeHandler as postScheduleHandler } from './routes/v1/postSchedule.js';
+import { routeHandler as postSearchHandler } from './routes/v1/postSearch.js';
+import { routeHandler as postDequeueHandler } from './routes/v1/postDequeue.js';
+import { routeHandler as putTaskHandler } from './routes/v1/tasks/putTaskId.js';
+import { routeHandler as getHealthHandler } from './routes/getHealth.js';
+import { routeHandler as getOutputHandler } from './routes/v1/tasks/taskId/getOutput.js';
+import { routeHandler as postHeartbeatHandler } from './routes/v1/tasks/taskId/postHeartbeat.js';
 import { getLogger, createRoute } from '@nangohq/utils';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError } from '@nangohq/types';
@@ -43,7 +43,7 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
     createRoute(server, putTaskHandler(scheduler));
     createRoute(server, getOutputHandler(scheduler, eventEmmiter));
     createRoute(server, postHeartbeatHandler(scheduler));
-    createRoute(server, getDequeueHandler(scheduler, eventEmmiter));
+    createRoute(server, postDequeueHandler(scheduler, eventEmmiter));
 
     server.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
         res.status(500).json({ error: `Internal server error: '${err}'` });

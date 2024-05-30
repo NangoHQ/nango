@@ -2,7 +2,7 @@ import { taskStates } from '@nangohq/scheduler';
 import type { Task } from '@nangohq/scheduler';
 import { TaskAction, TaskWebhook } from './types.js';
 import { z } from 'zod';
-import { actionArgsSchema, webhookArgsSchema } from '../routes/v1/schedule.js';
+import { actionArgsSchema, webhookArgsSchema } from '../routes/v1/postSchedule.js';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 

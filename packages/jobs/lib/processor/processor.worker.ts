@@ -3,7 +3,7 @@ import type { MessagePort } from 'node:worker_threads';
 import { Worker, isMainThread } from 'node:worker_threads';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { OrchestratorClient, OrchestratorProcessor } from '@nangohq/nango-orchestrator';
-import { process } from './process.js';
+import { handler } from './handler.js';
 
 const logger = getLogger('jobs.processor.worker');
 
@@ -73,7 +73,7 @@ export class ProcessorChild {
         });
         const client = new OrchestratorClient({ baseUrl: this.opts.orchestratorUrl });
         this.processor = new OrchestratorProcessor({
-            process,
+            handler,
             opts: {
                 orchestratorClient: client,
                 groupKey: this.opts.groupKey,
@@ -84,7 +84,7 @@ export class ProcessorChild {
 
     async start(): Promise<void> {
         logger.info(`Starting Processor: ${JSON.stringify(this.opts)}`);
-        await this.processor.start();
+        this.processor.start();
     }
 
     stop(): void {

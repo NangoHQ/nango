@@ -7,6 +7,9 @@ import { validateRequest } from '@nangohq/utils';
 import { jsonSchema } from '../../utils/validation.js';
 import type { TaskType } from '../../types.js';
 
+const path = '/v1/schedule';
+const method = 'POST';
+
 export type PostSchedule = Endpoint<{
     Method: typeof method;
     Path: typeof path;
@@ -28,9 +31,6 @@ export type PostSchedule = Endpoint<{
     Error: ApiError<'schedule_failed'>;
     Success: { taskId: string };
 }>;
-
-const path = '/v1/schedule';
-const method = 'POST';
 
 const commonSchemaFields = {
     name: z.string().min(1),
@@ -89,7 +89,7 @@ const validate = validateRequest<PostSchedule>({
     }
 });
 
-const postHandler = (scheduler: Scheduler) => {
+const handler = (scheduler: Scheduler) => {
     return async (req: EndpointRequest<PostSchedule>, res: EndpointResponse<PostSchedule>) => {
         const task = await scheduler.schedule({
             scheduling: req.body.scheduling,
@@ -111,12 +111,12 @@ const postHandler = (scheduler: Scheduler) => {
     };
 };
 
-export const postRoute: Route<PostSchedule> = { path, method };
+export const route: Route<PostSchedule> = { path, method };
 
-export const postRouteHandler = (scheduler: Scheduler): RouteHandler<PostSchedule> => {
+export const routeHandler = (scheduler: Scheduler): RouteHandler<PostSchedule> => {
     return {
-        ...postRoute,
+        ...route,
         validate,
-        handler: postHandler(scheduler)
+        handler: handler(scheduler)
     };
 };

@@ -6,51 +6,47 @@ import { validateRequest } from '@nangohq/utils';
 import type EventEmitter from 'node:events';
 
 const path = '/v1/dequeue';
-const method = 'GET';
+const method = 'POST';
 
-type GetDequeue = Endpoint<{
+type PostDequeue = Endpoint<{
     Method: typeof method;
     Path: typeof path;
-    Querystring: {
+    Body: {
         groupKey: string;
         limit: number;
-        waitForCompletion?: boolean;
+        waitForCompletion: boolean;
     };
     Error: ApiError<'dequeue_failed'>;
     Success: Task[];
 }>;
 
-const validate = validateRequest<GetDequeue>({
-    parseQuery: (data) =>
+const validate = validateRequest<PostDequeue>({
+    parseBody: (data) =>
         z
             .object({
                 groupKey: z.string().min(1),
                 limit: z.coerce.number().positive(),
-                waitForCompletion: z
-                    .string()
-                    .optional()
-                    .default('false')
-                    .transform((val) => val === 'true')
+                waitForCompletion: z.coerce.boolean()
             })
             .parse(data)
 });
 
-export const getRoute: Route<GetDequeue> = { path, method };
+export const route: Route<PostDequeue> = { path, method };
 
-export const getRouteHandler = (scheduler: Scheduler, eventEmitter: EventEmitter): RouteHandler<GetDequeue> => {
+export const routeHandler = (scheduler: Scheduler, eventEmitter: EventEmitter): RouteHandler<PostDequeue> => {
     return {
-        ...getRoute,
+        ...route,
         validate,
-        handler: getHandler(scheduler, eventEmitter)
+        handler: handler(scheduler, eventEmitter)
     };
 };
 
-const getHandler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
-    return async (req: EndpointRequest<GetDequeue>, res: EndpointResponse<GetDequeue>) => {
-        const { groupKey, limit } = req.query;
+const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
+    return async (req: EndpointRequest<PostDequeue>, res: EndpointResponse<PostDequeue>) => {
+        const { groupKey, limit, waitForCompletion } = req.body;
         const waitForCompletionTimeoutMs = 60_000;
         const eventId = `task:started:${groupKey}`;
-        const cleanupAndRespond = (respond: (res: EndpointResponse<GetDequeue>) => void) => {
+        const cleanupAndRespond = (respond: (res: EndpointResponse<PostDequeue>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
             }
@@ -80,7 +76,7 @@ const getHandler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             cleanupAndRespond((res) => res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } }));
             return;
         }
-        if (req.query.waitForCompletion && getTasks.value.length === 0) {
+        if (waitForCompletion && getTasks.value.length === 0) {
             await new Promise((resolve) => resolve(timeout));
         } else {
             cleanupAndRespond((res) => res.status(200).json(getTasks.value));

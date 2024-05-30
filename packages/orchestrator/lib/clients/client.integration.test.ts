@@ -280,7 +280,7 @@ describe('OrchestratorClient', async () => {
                     input: { foo: 'bar' }
                 }
             });
-            const res = await client.dequeue({ groupKey, limit: 2 });
+            const res = await client.dequeue({ groupKey, limit: 2, waitForCompletion: false });
             expect(res.unwrap().length).toBe(2);
             expect(res.unwrap()[0]?.isAction()).toBe(true);
             expect(res.unwrap()[1]?.isWebhook()).toBe(true);

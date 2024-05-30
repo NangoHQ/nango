@@ -10,7 +10,7 @@ type Health = Endpoint<{
 const path = '/health';
 const method = 'GET';
 
-export const getHandler: RouteHandler<Health> = {
+export const routeHandler: RouteHandler<Health> = {
     path,
     method,
     validate: (_req, _res, next) => next(), // No extra validation needed

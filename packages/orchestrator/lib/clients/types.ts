@@ -1,5 +1,5 @@
 import type { JsonValue, SetOptional } from 'type-fest';
-import type { PostSchedule } from '../routes/v1/schedule.js';
+import type { PostSchedule } from '../routes/v1/postSchedule.js';
 import type { Result } from '@nangohq/utils';
 import type { TaskState } from '@nangohq/scheduler';
 

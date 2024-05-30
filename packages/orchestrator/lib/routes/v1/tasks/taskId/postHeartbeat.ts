@@ -21,7 +21,7 @@ const validate = validateRequest<PostHeartbeat>({
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).parse(data)
 });
 
-const putHandler = (scheduler: Scheduler) => {
+const handler = (scheduler: Scheduler) => {
     return async (req: EndpointRequest<PostHeartbeat>, res: EndpointResponse<PostHeartbeat>) => {
         const { taskId } = req.params;
         const heartbeat = await scheduler.heartbeat({ taskId: taskId });
@@ -34,12 +34,12 @@ const putHandler = (scheduler: Scheduler) => {
     };
 };
 
-export const postRoute: Route<PostHeartbeat> = { path, method };
+export const route: Route<PostHeartbeat> = { path, method };
 
-export const postRouteHandler = (scheduler: Scheduler): RouteHandler<PostHeartbeat> => {
+export const routeHandler = (scheduler: Scheduler): RouteHandler<PostHeartbeat> => {
     return {
-        ...postRoute,
+        ...route,
         validate,
-        handler: putHandler(scheduler)
+        handler: handler(scheduler)
     };
 };

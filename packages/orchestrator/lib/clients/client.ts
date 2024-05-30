@@ -1,9 +1,9 @@
-import { postRoute as postScheduleRoute } from '../routes/v1/schedule.js';
-import { getRoute as getDequeueRoute } from '../routes/v1/dequeue.js';
-import { postRoute as postSearchRoute } from '../routes/v1/search.js';
-import { getRoute as getOutputRoute } from '../routes/v1/tasks/taskId/output.js';
-import { putRoute as putTaskRoute } from '../routes/v1/tasks/taskId.js';
-import { postRoute as postHeartbeatRoute } from '../routes/v1/tasks/taskId/heartbeat.js';
+import { route as postScheduleRoute } from '../routes/v1/postSchedule.js';
+import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
+import { route as postSearchRoute } from '../routes/v1/postSearch.js';
+import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js';
+import { route as putTaskRoute } from '../routes/v1/tasks/putTaskId.js';
+import { route as postHeartbeatRoute } from '../routes/v1/tasks/taskId/postHeartbeat.js';
 import type { Result, Route } from '@nangohq/utils';
 import { Ok, Err, routeFetch, stringifyError } from '@nangohq/utils';
 import type { Endpoint } from '@nangohq/types';
@@ -155,14 +155,14 @@ export class OrchestratorClient {
     public async dequeue({
         groupKey,
         limit,
-        waitForCompletion = true
+        waitForCompletion
     }: {
         groupKey: string;
         limit: number;
-        waitForCompletion?: boolean;
+        waitForCompletion: boolean;
     }): Promise<Result<(TaskWebhook | TaskAction)[], ClientError>> {
-        const res = await this.routeFetch(getDequeueRoute)({
-            query: {
+        const res = await this.routeFetch(postDequeueRoute)({
+            body: {
                 groupKey,
                 limit,
                 waitForCompletion

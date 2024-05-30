@@ -30,7 +30,7 @@ const validate = validateRequest<PostSearch>({
             .parse(data)
 });
 
-const getHandler = (scheduler: Scheduler) => {
+const handler = (scheduler: Scheduler) => {
     return async (req: EndpointRequest<PostSearch>, res: EndpointResponse<PostSearch>) => {
         const { ids, groupKey, limit } = req.body;
         const getTasks = await scheduler.search({
@@ -45,12 +45,12 @@ const getHandler = (scheduler: Scheduler) => {
     };
 };
 
-export const postRoute: Route<PostSearch> = { path, method };
+export const route: Route<PostSearch> = { path, method };
 
-export const postRouteHandler = (scheduler: Scheduler): RouteHandler<PostSearch> => {
+export const routeHandler = (scheduler: Scheduler): RouteHandler<PostSearch> => {
     return {
-        ...postRoute,
+        ...route,
         validate,
-        handler: getHandler(scheduler)
+        handler: handler(scheduler)
     };
 };
