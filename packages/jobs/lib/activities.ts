@@ -446,7 +446,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     return result.success;
 }
 
-export async function runPostConnectionScript(args: PostConnectionScriptArgs): Promise<boolean> {
+export async function runPostConnectionScript(args: PostConnectionScriptArgs): Promise<ServiceResponse> {
     const { name, nangoConnection, activityLogId, file_location } = args;
 
     const providerConfig: ProviderConfig = (await configService.getProviderConfig(
@@ -478,7 +478,7 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
 
     const result = await syncRun.run();
 
-    return result.success;
+    return result;
 }
 
 export async function reportFailure(

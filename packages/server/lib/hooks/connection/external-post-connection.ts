@@ -53,14 +53,12 @@ export async function externalPostConnection(
     for (const postConnectionScript of postConnectionScripts) {
         const { name, file_location } = postConnectionScript;
 
-        const postConnectionScriptResponse = await getOrchestrator().triggerPostConnectionScript({
+        await getOrchestrator().triggerPostConnectionScript({
             connection: createdConnection.connection,
             name,
             file_location,
             activityLogId: activityLogId as number,
             logCtx
         });
-
-        console.log(postConnectionScriptResponse);
     }
 }

@@ -534,7 +534,6 @@ export default class SyncRun {
 
                 return { success: true, error: null, response: true };
             } catch (e) {
-                console.log(e);
                 result = false;
                 const errorMessage = stringifyError(e, { pretty: true });
                 await this.reportFailureForResults({
