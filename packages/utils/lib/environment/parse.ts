@@ -83,7 +83,12 @@ export const ENVS = z.object({
     NANGO_DB_PASSWORD: z.string().optional().default('nango'),
     NANGO_DB_SSL: bool,
     NANGO_DB_CLIENT: z.string().optional(),
-    NANGO_ENCRYPTION_KEY: z.string().optional(),
+    NANGO_ENCRYPTION_KEY: z
+        .string({
+            required_error:
+                'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://docs.nango.dev/host/self-host/self-hosting-instructions#encrypt-sensitive-data'
+        })
+        .optional(),
     NANGO_DB_MIGRATION_FOLDER: z.string().optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
