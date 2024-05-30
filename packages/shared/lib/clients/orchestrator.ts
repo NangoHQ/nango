@@ -20,7 +20,7 @@ import type { LogLevel } from '@nangohq/types';
 import SyncClient from './sync.client.js';
 import type { Client as TemporalClient } from '@temporalio/client';
 import { LogActionEnum } from '../models/Activity.js';
-import type { TExecuteReturn, TExecuteActionProps, TExecuteWebhookProps } from '@nangohq/nango-orchestrator';
+import type { ExecuteReturn, ExecuteActionProps, ExecuteWebhookProps } from '@nangohq/nango-orchestrator';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import type { SyncConfig } from '../models/index.js';
@@ -36,8 +36,8 @@ async function getTemporal(): Promise<TemporalClient> {
 }
 
 export interface OrchestratorClientInterface {
-    executeAction(props: TExecuteActionProps): Promise<TExecuteReturn>;
-    executeWebhook(props: TExecuteWebhookProps): Promise<TExecuteReturn>;
+    executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
+    executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
 }
 
 export class Orchestrator {
@@ -114,7 +114,7 @@ export class Orchestrator {
                                 if (res.isErr()) {
                                     logger.error(`Error: Execution '${executionId}' failed: ${stringifyError(res.error)}`);
                                 } else {
-                                    logger.info(`Execution '${executionId}' executed successfully with result: ${res.value}`);
+                                    logger.info(`Execution '${executionId}' executed successfully with result: ${JSON.stringify(res.value)}`);
                                 }
                             },
                             (error) => {
@@ -350,7 +350,7 @@ export class Orchestrator {
                                 if (res.isErr()) {
                                     logger.error(`Error: Execution '${executionId}' failed: ${stringifyError(res.error)}`);
                                 } else {
-                                    logger.info(`Execution '${executionId}' executed successfully with result: ${res.value}`);
+                                    logger.info(`Execution '${executionId}' executed successfully with result: ${JSON.stringify(res.value)}`);
                                 }
                             },
                             (error) => {
