@@ -347,6 +347,18 @@ class DeployService {
             }
         }
 
+        if (debug && postConnectionScriptsByProvider) {
+            for (const postConnectionScriptByProvider of postConnectionScriptsByProvider) {
+                const { providerConfigKey, scripts } = postConnectionScriptByProvider;
+
+                for (const script of scripts) {
+                    const { name } = script;
+
+                    printDebug(`Post connection script found for ${providerConfigKey} with name ${name}`);
+                }
+            }
+        }
+
         return { flowConfigs: postData, postConnectionScriptsByProvider };
     }
 }

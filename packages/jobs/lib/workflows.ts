@@ -1,7 +1,7 @@
 import type { ActivityFailure } from '@temporalio/workflow';
 import { CancellationScope, proxyActivities, isCancellation } from '@temporalio/workflow';
 import type * as activities from './activities.js';
-import type { WebhookArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs, RunnerOutput } from '@nangohq/shared';
+import type { WebhookArgs, PostConnectionScriptArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs, RunnerOutput } from '@nangohq/shared';
 
 const SYNC_TIMEOUT = '24h';
 const SYNC_MAX_ATTEMPTS = 3;
@@ -30,7 +30,7 @@ const { runAction, reportFailure: reportActionFailure } = proxyActivities<typeof
     }
 });
 
-const { runWebhook } = proxyActivities<typeof activities>({
+const { runWebhook, runPostConnectionScript } = proxyActivities<typeof activities>({
     // webhook execution should be fast, hence shorter startToCloseTimeout
     // but we allow for longer time to start so events are not evicted too soon if system is busy
     scheduleToStartTimeout: '1h',
@@ -101,6 +101,16 @@ export async function action(args: ActionArgs): Promise<RunnerOutput> {
 export async function webhook(args: WebhookArgs): Promise<boolean> {
     try {
         return await runWebhook(args);
+    } catch (err) {
+        await reportFailure(err, args, WEBHOOK_TIMEOUT, WEBHOOK_MAX_ATTEMPTS);
+
+        return false;
+    }
+}
+
+export async function postConnectionScript(args: PostConnectionScriptArgs): Promise<boolean> {
+    try {
+        return await runPostConnectionScript(args);
     } catch (err) {
         await reportFailure(err, args, WEBHOOK_TIMEOUT, WEBHOOK_MAX_ATTEMPTS);
 

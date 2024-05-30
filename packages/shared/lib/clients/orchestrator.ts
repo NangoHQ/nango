@@ -458,7 +458,7 @@ export class Orchestrator {
                 level: 'info',
                 environment_id: connection.environment_id,
                 activity_log_id: activityLogId,
-                content: `Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
+                content: `Starting post connection script workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
                 timestamp: Date.now()
             });
             await logCtx.info(`Starting post connection script workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`);
@@ -504,7 +504,7 @@ export class Orchestrator {
             }
 
             const temporal = await getTemporal();
-            const postConnectionScriptHandler = await temporal.workflow.execute('post-connection-script', {
+            const postConnectionScriptHandler = await temporal.workflow.execute('postConnectionScript', {
                 taskQueue: SYNC_TASK_QUEUE,
                 workflowId,
                 args: [
@@ -542,14 +542,14 @@ export class Orchestrator {
                     environment_id: connection.environment_id,
                     activity_log_id: activityLogId,
                     timestamp: Date.now(),
-                    content: `The action workflow ${workflowId} did not complete successfully`
+                    content: `The post connection script workflow ${workflowId} did not complete successfully`
                 });
                 await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
 
                 return Err(error!);
             }
 
-            const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(0, 100)}`;
+            const content = `The post connection script workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(0, 100)}`;
 
             await createActivityLogMessageAndEnd({
                 level: 'info',

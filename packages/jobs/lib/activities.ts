@@ -7,6 +7,7 @@ import type {
     NangoConnection,
     ContinuousSyncArgs,
     InitialSyncArgs,
+    PostConnectionScriptArgs,
     ActionArgs,
     WebhookArgs,
     SyncConfig
@@ -445,9 +446,44 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     return result.success;
 }
 
+export async function runPostConnectionScript(args: PostConnectionScriptArgs): Promise<boolean> {
+    const { name, nangoConnection, activityLogId, file_location } = args;
+
+    const providerConfig: ProviderConfig = (await configService.getProviderConfig(
+        nangoConnection?.provider_config_key,
+        nangoConnection?.environment_id
+    )) as ProviderConfig;
+
+    const context: Context = Context.current();
+
+    const syncRun = new syncRunService({
+        bigQueryClient,
+        integrationService,
+        recordsService,
+        logContextGetter,
+        orchestratorClient,
+        writeToDb: true,
+        nangoConnection,
+        syncName: name,
+        isAction: false,
+        isPostConnectionScript: true,
+        syncType: SyncType.POST_CONNECTION_SCRIPT,
+        isWebhook: false,
+        activityLogId,
+        provider: providerConfig.provider,
+        fileLocation: file_location,
+        debug: false,
+        temporalContext: context
+    });
+
+    const result = await syncRun.run();
+
+    return result.success;
+}
+
 export async function reportFailure(
     error: any,
-    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs | WebhookArgs,
+    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs | WebhookArgs | PostConnectionScriptArgs,
     timeout: string,
     max_attempts: number
 ): Promise<void> {
