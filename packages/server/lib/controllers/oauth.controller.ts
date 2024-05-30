@@ -1064,7 +1064,7 @@ class OAuthController {
         }
 
         const activityLogId = Number(session.activityLogId);
-        const logCtx = logContextGetter.get({ id: session.activityLogId });
+        const logCtx = await logContextGetter.get({ id: session.activityLogId });
 
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
