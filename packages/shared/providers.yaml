@@ -1163,7 +1163,7 @@ jira:
         audience: api.atlassian.com
         prompt: consent
     connection_configuration:
-        - cloudID
+        - cloudId
         - accountId
     proxy:
         base_url: https://api.atlassian.com
