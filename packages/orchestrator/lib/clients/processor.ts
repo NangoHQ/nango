@@ -75,6 +75,7 @@ export class OrchestratorProcessor {
                 const tasks = await this.orchestratorClient.dequeue({ groupKey: this.groupKey, limit: this.queue.available() * 2, waitForCompletion: true }); // fetch more than available to keep the queue full
                 if (tasks.isErr()) {
                     logger.error(`failed to dequeue tasks: ${stringifyError(tasks.error)}`);
+                    await new Promise((resolve) => setTimeout(resolve, 1000)); // wait for a bit before retrying to avoid hammering the server in case of repetitive errors
                     continue;
                 }
                 for (const task of tasks.value) {
