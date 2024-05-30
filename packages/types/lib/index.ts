@@ -14,3 +14,5 @@ export type * from './connection/api/metadata.js';
 export type * from './connection/db.js';
 
 export type * from './environment/db.js';
+export type * from './scripts/post-connection/api.js';
+export type * from './scripts/post-connection/db.js';

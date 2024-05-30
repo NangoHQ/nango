@@ -17,7 +17,7 @@ interface SchedulingProps {
         startedToCompleted: number;
         heartbeat: number;
     };
-    args: JsonValue & { type: 'action' | 'webhook' | 'sync' };
+    args: JsonValue & { type: 'action' | 'webhook' | 'sync' | 'post-connection-script' };
 }
 
 interface TExecuteActionArgs {
@@ -45,6 +45,18 @@ interface TExecuteWebhookArgs {
         input: JsonValue;
     };
 }
+interface TExecutePostConnectionArgs {
+    args: {
+        name: string;
+        connection: {
+            id: number;
+            provider_config_key: string;
+            environment_id: number;
+        };
+        file_location: string;
+        activityLogId: number;
+    };
+}
 
 interface ClientError extends Error {
     name: string;
@@ -55,6 +67,7 @@ export type TExecuteProps = SetOptional<SchedulingProps, 'retry' | 'timeoutSetti
 export type TExecuteReturn = Result<JsonValue, ClientError>;
 export type TExecuteActionProps = Omit<TExecuteProps, 'args'> & TExecuteActionArgs;
 export type TExecuteWebhookProps = Omit<TExecuteProps, 'args'> & TExecuteWebhookArgs;
+export type TExecutePostConnectionProps = Omit<TExecuteProps, 'args'> & TExecutePostConnectionArgs;
 
 export class OrchestratorClient {
     private baseUrl: string;
@@ -159,6 +172,18 @@ export class OrchestratorClient {
             args: {
                 ...args,
                 type: 'webhook' as const
+            }
+        };
+        return this.execute(schedulingProps);
+    }
+
+    public async executePostConnection(props: TExecutePostConnectionProps): Promise<TExecuteReturn> {
+        const { args, ...rest } = props;
+        const schedulingProps = {
+            ...rest,
+            args: {
+                ...args,
+                type: 'post-connection-script' as const
             }
         };
         return this.execute(schedulingProps);

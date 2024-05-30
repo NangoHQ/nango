@@ -204,6 +204,9 @@ class DryRunService {
             },
             executeWebhook: () => {
                 return Promise.resolve({}) as any;
+            },
+            executePostConnection: () => {
+                return Promise.resolve({}) as any;
             }
         };
 

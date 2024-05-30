@@ -1,9 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { LogLevel, NangoConnection, HTTP_VERB, Connection, IncomingFlowConfig } from '@nangohq/shared';
+import type { PostConnectionScriptByProvider } from '@nangohq/types';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import {
-    deploy as deploySyncConfig,
+    deploy as deployScriptConfig,
     connectionService,
     getSyncs,
     verifyOwnership,
@@ -55,19 +56,34 @@ class SyncController {
     public async deploySync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const {
-                syncs,
+                flowConfigs,
+                postConnectionScriptsByProvider,
                 reconcile,
                 debug,
                 singleDeployMode
-            }: { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
-            const { environment } = res.locals;
+            }: {
+                flowConfigs: IncomingFlowConfig[];
+                postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
+                reconcile: boolean;
+                debug: boolean;
+                singleDeployMode?: boolean;
+            } = req.body;
+            const { environment, account } = res.locals;
             let reconcileSuccess = true;
 
             const {
                 success,
                 error,
                 response: syncConfigDeployResult
-            } = await deploySyncConfig(environment, syncs, req.body.nangoYamlBody || '', logContextGetter, debug);
+            } = await deployScriptConfig({
+                environment,
+                account,
+                flows: flowConfigs,
+                nangoYamlBody: req.body.nangoYamlBody || '',
+                postConnectionScriptsByProvider,
+                debug,
+                logContextGetter
+            });
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -79,7 +95,7 @@ class SyncController {
                 const logCtx = logContextGetter.get({ id: String(syncConfigDeployResult?.activityLogId) });
                 const success = await getAndReconcileDifferences({
                     environmentId: environment.id,
-                    syncs,
+                    flows: flowConfigs,
                     performAction: reconcile,
                     activityLogId: syncConfigDeployResult?.activityLogId as number,
                     debug,
@@ -116,13 +132,16 @@ class SyncController {
 
     public async confirmation(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { syncs, debug, singleDeployMode }: { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } =
-                req.body;
+            const {
+                flowConfigs,
+                debug,
+                singleDeployMode
+            }: { flowConfigs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
             const environmentId = res.locals['environment'].id;
 
             const result = await getAndReconcileDifferences({
                 environmentId,
-                syncs,
+                flows: flowConfigs,
                 performAction: false,
                 activityLogId: null,
                 debug,

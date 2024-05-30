@@ -44,6 +44,9 @@ const orchestratorClient = {
     },
     executeWebhook: () => {
         return Promise.resolve({}) as any;
+    },
+    executePostConnection: () => {
+        return Promise.resolve({}) as any;
     }
 };
 

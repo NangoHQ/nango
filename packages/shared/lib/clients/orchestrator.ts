@@ -20,7 +20,7 @@ import type { LogLevel } from '@nangohq/types';
 import SyncClient from './sync.client.js';
 import type { Client as TemporalClient } from '@temporalio/client';
 import { LogActionEnum } from '../models/Activity.js';
-import type { TExecuteReturn, TExecuteActionProps, TExecuteWebhookProps } from '@nangohq/nango-orchestrator';
+import type { TExecuteReturn, TExecuteActionProps, TExecuteWebhookProps, TExecutePostConnectionProps } from '@nangohq/nango-orchestrator';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import type { SyncConfig } from '../models/index.js';
@@ -38,6 +38,7 @@ async function getTemporal(): Promise<TemporalClient> {
 export interface OrchestratorClientInterface {
     executeAction(props: TExecuteActionProps): Promise<TExecuteReturn>;
     executeWebhook(props: TExecuteWebhookProps): Promise<TExecuteReturn>;
+    executePostConnection(props: TExecutePostConnectionProps): Promise<TExecuteReturn>;
 }
 
 export class Orchestrator {
@@ -434,6 +435,195 @@ export class Orchestrator {
             });
 
             return Err(error);
+        }
+    }
+
+    async triggerPostConnectionScript<T = any>({
+        connection,
+        name,
+        file_location,
+        activityLogId,
+        logCtx
+    }: {
+        connection: NangoConnection;
+        name: string;
+        file_location: string;
+        activityLogId: number;
+        logCtx: LogContext;
+    }): Promise<Result<T, NangoError>> {
+        const startTime = Date.now();
+        const workflowId = `${SYNC_TASK_QUEUE}.POST_CONNECTION_SCRIPT:${name}.${connection.connection_id}.${uuid()}`;
+        try {
+            await createActivityLogMessage({
+                level: 'info',
+                environment_id: connection.environment_id,
+                activity_log_id: activityLogId,
+                content: `Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
+                timestamp: Date.now()
+            });
+            await logCtx.info(`Starting post connection script workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`);
+
+            const isOchestratorEnabled = await featureFlags.isEnabled('orchestrator:dryrun', 'global', false, false);
+            if (isOchestratorEnabled) {
+                const groupKey: string = 'action';
+                const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-review:${name}:at:${new Date().toISOString()}:${uuid()}`;
+                const args = {
+                    name,
+                    connection: {
+                        id: connection.id!,
+                        provider_config_key: connection.provider_config_key,
+                        environment_id: connection.environment_id
+                    },
+                    activityLogId,
+                    file_location
+                };
+
+                void this.client
+                    .executePostConnection({
+                        name: executionId,
+                        groupKey,
+                        args,
+                        timeoutSettingsInSecs: {
+                            createdToStarted: 5,
+                            startedToCompleted: 5,
+                            heartbeat: 10
+                        }
+                    })
+                    .then(
+                        (res) => {
+                            if (res.isErr()) {
+                                logger.error(`Error: Execution '${executionId}' failed: ${stringifyError(res.error)}`);
+                            } else {
+                                logger.info(`Execution '${executionId}' executed successfully with result: ${res.value}`);
+                            }
+                        },
+                        (error) => {
+                            logger.error(`Error: Action '${executionId}' failed: ${stringifyError(error)}`);
+                        }
+                    );
+            }
+
+            const temporal = await getTemporal();
+            const postConnectionScriptHandler = await temporal.workflow.execute('post-connection-script', {
+                taskQueue: SYNC_TASK_QUEUE,
+                workflowId,
+                args: [
+                    {
+                        name,
+                        nangoConnection: {
+                            id: connection.id,
+                            connection_id: connection.connection_id,
+                            provider_config_key: connection.provider_config_key,
+                            environment_id: connection.environment_id
+                        },
+                        file_location,
+                        activityLogId
+                    }
+                ]
+            });
+
+            const { success, error: rawError, response }: RunnerOutput = postConnectionScriptHandler;
+
+            // Errors received from temporal are raw objects not classes
+            const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
+            if (!success || error) {
+                if (rawError) {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        environment_id: connection.environment_id,
+                        activity_log_id: activityLogId,
+                        timestamp: Date.now(),
+                        content: `Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`
+                    });
+                    await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
+                }
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id: connection.environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content: `The action workflow ${workflowId} did not complete successfully`
+                });
+                await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
+
+                return Err(error!);
+            }
+
+            const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(0, 100)}`;
+
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                environment_id: connection.environment_id,
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content
+            });
+            await updateSuccessActivityLog(activityLogId, true);
+            await logCtx.info(content);
+
+            // TODO add telemetry
+            /*
+            await telemetry.log(
+                LogTypes.ACTION_SUCCESS,
+                content,
+                LogActionEnum.ACTION,
+                {
+                    workflowId,
+                    input: JSON.stringify(input, null, 2),
+                    connection: JSON.stringify(connection),
+                    actionName
+                },
+                `actionName:${actionName}`
+            );
+            */
+
+            return Ok(response);
+        } catch (err) {
+            const errorMessage = stringifyError(err, { pretty: true });
+            const error = new NangoError('post_connection_script_failure', { errorMessage });
+
+            const content = `The post-connection-script workflow ${workflowId} failed with error: ${err}`;
+
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                environment_id: connection.environment_id,
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content
+            });
+            await logCtx.error(content);
+
+            errorManager.report(err, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC_CLIENT,
+                environmentId: connection.environment_id,
+                metadata: {
+                    name,
+                    connectionDetails: JSON.stringify(connection)
+                }
+            });
+
+            /*
+            await telemetry.log(
+                LogTypes.ACTION_FAILURE,
+                content,
+                LogActionEnum.ACTION,
+                {
+                    workflowId,
+                    input: JSON.stringify(input, null, 2),
+                    connection: JSON.stringify(connection),
+                    actionName,
+                    level: 'error'
+                },
+                `actionName:${actionName}`
+            );
+            */
+
+            return Err(error);
+        } finally {
+            const endTime = Date.now();
+            const totalRunTime = (endTime - startTime) / 1000;
+            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
         }
     }
 }
