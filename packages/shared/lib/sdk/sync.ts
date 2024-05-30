@@ -350,7 +350,7 @@ export class NangoAction {
             this.dryRunService = config.dryRunService;
         }
 
-        if (!this.dryRun && !this.activityLogId) {
+        if (this.dryRun !== true && !this.activityLogId) {
             throw new Error('Parameter activityLogId is required when not in dryRun');
         }
     }
@@ -588,10 +588,6 @@ export class NangoAction {
         if (this.dryRun) {
             logger.info([...args]);
             return;
-        }
-
-        if (!this.activityLogId) {
-            throw new Error('There is no current activity log stream to log to');
         }
 
         const response = await persistApi({

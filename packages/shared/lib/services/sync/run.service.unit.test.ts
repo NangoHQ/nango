@@ -90,13 +90,13 @@ describe('SyncRun', () => {
         const syncRun = new SyncRun(config);
 
         expect(syncRun).toBeTruthy();
-        expect(syncRun.writeToDb).toEqual(true);
+        expect(syncRun.writeToDb).toEqual(false);
         expect(syncRun.nangoConnection.connection_id).toEqual('1234');
         expect(syncRun.syncName).toEqual('test_sync');
         expect(syncRun.syncType).toEqual(SyncType.INCREMENTAL);
         expect(syncRun.syncId).toEqual('some-sync');
         expect(syncRun.syncJobId).toEqual(123);
-        expect(syncRun.activityLogId).toEqual(123);
+        expect(syncRun.activityLogId).toBeUndefined();
         expect(syncRun.loadLocation).toEqual('/tmp');
         expect(syncRun.debug).toEqual(true);
     });
