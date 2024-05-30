@@ -21,7 +21,6 @@ export function timeoutLogsOperations(): void {
             } catch (err) {
                 errorManager.report(err, { source: ErrorSourceEnum.PLATFORM }, tracer);
             }
-        },
-        { runOnInit: true }
+        }
     );
 }

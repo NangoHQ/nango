@@ -410,7 +410,12 @@ class OAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization OAuth2 CC' },
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'auth', action: 'create_connection' },
+                    message: 'Authorization OAuth2 CC',
+                    expiresAt: new Date(Date.now() + 300 * 1000).toISOString()
+                },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, account.id);
