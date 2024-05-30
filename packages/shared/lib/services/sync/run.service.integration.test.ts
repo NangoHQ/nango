@@ -16,6 +16,7 @@ import { createSyncSeeds } from '../../db/seeders/sync.seeder.js';
 import { createSyncJobSeeds } from '../../db/seeders/sync-job.seeder.js';
 import connectionService from '../connection.service.js';
 import { createActivityLog } from '../activity/activity.service.js';
+import { SlackService } from '../notification/slack.service.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -36,6 +37,7 @@ const orchestratorClient = {
         return Promise.resolve({}) as any;
     }
 };
+const slackService = new SlackService({ orchestratorClient, logContextGetter });
 
 const integrationService = new integrationServiceMock();
 
@@ -193,8 +195,7 @@ describe('SyncRun', () => {
         const config: SyncRunConfig = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
             recordsService,
-            orchestratorClient,
-            logContextGetter,
+            slackService,
             writeToDb: true,
             nangoConnection: {
                 id: 1,
@@ -255,8 +256,7 @@ const runJob = async (
     const config: SyncRunConfig = {
         integrationService: integrationService,
         recordsService,
-        orchestratorClient,
-        logContextGetter,
+        slackService,
         writeToDb: true,
         nangoConnection: connection,
         syncName: sync.name,

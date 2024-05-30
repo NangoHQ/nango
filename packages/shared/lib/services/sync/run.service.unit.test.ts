@@ -8,7 +8,6 @@ import * as configService from './config/config.service.js';
 import type { IntegrationServiceInterface } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
 import type { Account } from '../../models/Admin.js';
-import { logContextGetter } from '@nangohq/logs';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -38,21 +37,10 @@ const recordsService = {
     }
 };
 
-const orchestratorClient = {
-    executeAction: () => {
-        return Promise.resolve({}) as any;
-    },
-    executeWebhook: () => {
-        return Promise.resolve({}) as any;
-    }
-};
-
 describe('SyncRun', () => {
     const dryRunConfig: SyncRunConfig = {
         integrationService: integrationService as unknown as IntegrationServiceInterface,
         recordsService,
-        orchestratorClient,
-        logContextGetter,
         writeToDb: false,
         nangoConnection: {
             id: 1,
@@ -70,8 +58,6 @@ describe('SyncRun', () => {
         const config: SyncRunConfig = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
             recordsService,
-            orchestratorClient,
-            logContextGetter,
             writeToDb: false,
             nangoConnection: {
                 id: 1,

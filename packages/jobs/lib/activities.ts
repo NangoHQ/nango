@@ -32,7 +32,8 @@ import {
     getSyncByIdAndName,
     getLastSyncDate,
     getSyncConfigRaw,
-    getOrchestratorUrl
+    getOrchestratorUrl,
+    SlackService
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
 import { getLogger, env, stringifyError, errorToObject } from '@nangohq/utils';
@@ -50,6 +51,10 @@ const bigQueryClient = await BigQueryClient.createInstance({
 });
 
 const orchestratorClient = new OrchestratorClient({ baseUrl: getOrchestratorUrl() });
+const slackService = new SlackService({
+    orchestratorClient: orchestratorClient,
+    logContextGetter: logContextGetter
+});
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;
@@ -95,8 +100,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         bigQueryClient,
         integrationService,
         recordsService,
-        orchestratorClient,
-        logContextGetter,
+        slackService,
         writeToDb: true,
         logCtx: await logContextGetter.get({ id: String(activityLogId) }),
         nangoConnection,
@@ -329,8 +333,7 @@ export async function syncProvider({
             bigQueryClient,
             integrationService,
             recordsService,
-            logContextGetter,
-            orchestratorClient,
+            slackService,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -425,8 +428,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         bigQueryClient,
         integrationService,
         recordsService,
-        logContextGetter,
-        orchestratorClient,
+        slackService,
         writeToDb: true,
         nangoConnection,
         syncJobId: syncJobId?.id as number,

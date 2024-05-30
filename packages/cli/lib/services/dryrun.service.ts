@@ -197,34 +197,11 @@ class DryRunService {
                 return Promise.resolve([]);
             }
         };
-        // dry-run is not scheduling any tasks so we can safely mock the orchestrator client
-        const orchestratorClient = {
-            executeAction: () => {
-                return Promise.resolve({}) as any;
-            },
-            executeWebhook: () => {
-                return Promise.resolve({}) as any;
-            }
-        };
-
-        const logContextGetter = {
-            create: () => {
-                return Promise.resolve({}) as any;
-            },
-            get: () => {
-                return {} as any;
-            },
-            getStateLess: () => {
-                return {} as any;
-            }
-        };
 
         const syncRun = new syncRunService({
             integrationService,
             recordsService,
-            orchestratorClient,
             dryRunService: new DryRunService(environment, true),
-            logContextGetter,
             writeToDb: false,
             nangoConnection,
             provider,
