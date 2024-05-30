@@ -108,12 +108,20 @@ export async function webhook(args: WebhookArgs): Promise<boolean> {
     }
 }
 
-export async function postConnectionScript(args: PostConnectionScriptArgs): Promise<boolean> {
+export async function postConnectionScript(args: PostConnectionScriptArgs): Promise<RunnerOutput> {
     try {
         return await runPostConnectionScript(args);
     } catch (err) {
         await reportFailure(err, args, WEBHOOK_TIMEOUT, WEBHOOK_MAX_ATTEMPTS);
 
-        return false;
+        return {
+            success: false,
+            error: {
+                type: 'nango_internal_error',
+                status: 500,
+                payload: { message: (err as ActivityFailure).cause?.message }
+            },
+            response: null
+        };
     }
 }

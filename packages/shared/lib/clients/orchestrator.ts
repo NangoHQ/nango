@@ -466,7 +466,7 @@ export class Orchestrator {
             const isOchestratorEnabled = await featureFlags.isEnabled('orchestrator:dryrun', 'global', false, false);
             if (isOchestratorEnabled) {
                 const groupKey: string = 'action';
-                const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-review:${name}:at:${new Date().toISOString()}:${uuid()}`;
+                const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
                 const args = {
                     name,
                     connection: {
