@@ -432,7 +432,12 @@ class OnboardingController {
             }
 
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'action' },
+                    message: 'Start action',
+                    expiresAt: new Date(Date.now() + 86400 * 1000).toISOString()
+                },
                 {
                     account,
                     environment,
