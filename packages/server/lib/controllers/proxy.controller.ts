@@ -89,7 +89,7 @@ class ProxyController {
                 activityLogId = existingActivityLogId ? Number(existingActivityLogId) : await createActivityLog(log);
             }
             logCtx = existingActivityLogId
-                ? logContextGetter.get({ id: String(existingActivityLogId) })
+                ? await logContextGetter.get({ id: String(existingActivityLogId) })
                 : await logContextGetter.create({ operation: { type: 'proxy' }, message: 'Proxy call' }, { account, environment }, { dryRun: isDryRun });
 
             const { method } = req;

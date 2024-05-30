@@ -74,6 +74,10 @@ export const oldLevelToNewLevel = {
     http: 'info'
 } as const;
 
+export function getFullIndexName(prefix: string, createdAt: string) {
+    return `${prefix}.${new Date(createdAt).toISOString().split('T')[0]}`;
+}
+
 export function createCursor({ sort }: estypes.SearchHit): string {
     return Buffer.from(JSON.stringify(sort)).toString('base64');
 }

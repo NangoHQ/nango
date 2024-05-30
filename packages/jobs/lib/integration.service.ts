@@ -48,7 +48,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     content: `Failed to cancel script`,
                     timestamp: Date.now()
                 });
-                const logCtx = logContextGetter.get({ id: String(activityLogId) });
+                const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
                 await logCtx.error('Failed to cancel script');
             }
         }
@@ -77,7 +77,7 @@ class IntegrationService implements IntegrationServiceInterface {
             .setTag('syncId', nangoProps.syncId)
             .setTag('syncName', syncName);
 
-        const logCtx = activityLogId ? logContextGetter.get({ id: String(activityLogId) }) : null;
+        const logCtx = activityLogId ? logContextGetter.getStateLess({ id: String(activityLogId) }) : null;
         try {
             const script: string | null =
                 (isCloud || integrationFilesAreRemote) && !optionalLoadLocation

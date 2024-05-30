@@ -23,7 +23,7 @@ export async function setupElasticsearch() {
     process.env['NANGO_LOGS_ES_USER'] = '';
     process.env['NANGO_LOGS_ES_PWD'] = '';
     process.env['NANGO_LOGS_ENABLED'] = 'true';
-    console.log('OS running at', url);
+    console.log('ES running at', url);
 }
 
 async function setupPostgres() {

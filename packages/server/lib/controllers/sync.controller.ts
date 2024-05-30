@@ -76,7 +76,7 @@ class SyncController {
             }
 
             if (reconcile) {
-                const logCtx = logContextGetter.get({ id: String(syncConfigDeployResult?.activityLogId) });
+                const logCtx = await logContextGetter.get({ id: String(syncConfigDeployResult?.activityLogId) });
                 const success = await getAndReconcileDifferences({
                     environmentId: environment.id,
                     syncs,

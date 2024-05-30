@@ -85,7 +85,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             installation_id: installationId
         };
 
-        const logCtx = logContextGetter.get({ id: activityLogId });
+        const logCtx = await logContextGetter.get({ id: activityLogId });
 
         const connCreatedHook = async (res: ConnectionUpsertResponse) => {
             void connectionCreatedHook(
@@ -113,5 +113,6 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             logCtx,
             connCreatedHook
         );
+        await logCtx.success();
     }
 }

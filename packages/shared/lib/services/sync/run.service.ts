@@ -165,7 +165,6 @@ export default class SyncRun {
 
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
-            this.logCtx = this.logContextGetter.get({ id: String(config.activityLogId) });
         }
 
         if (config.loadLocation) {
@@ -209,6 +208,10 @@ export default class SyncRun {
         optionalSecretKey?: string,
         optionalHost?: string
     ): Promise<ServiceResponse<boolean | object>> {
+        if (this.activityLogId) {
+            this.logCtx = await this.logContextGetter.get({ id: String(this.activityLogId) });
+        }
+
         if (this.debug) {
             const content = this.loadLocation ? `Looking for a local nango config at ${this.loadLocation}` : `Looking for a sync config for ${this.syncName}`;
             if (this.writeToDb) {

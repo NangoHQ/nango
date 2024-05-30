@@ -27,6 +27,8 @@ const connection: StoredConnection = {
     environment_id: 1
 };
 
+const getLogCtx = () => new LogContext({ parentId: '1', operation: {} as any }, { dryRun: true, logToConsole: false });
+
 describe('Webhook notification tests', () => {
     beforeEach(() => {
         vi.resetAllMocks();
@@ -34,7 +36,7 @@ describe('Webhook notification tests', () => {
 
     it('Should not send an auth webhook if the webhook url is not present', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         await WebhookService.sendAuthUpdate(
             {
@@ -51,7 +53,7 @@ describe('Webhook notification tests', () => {
 
     it('Should not send an auth webhook if the webhook url is not present even if the auth webhook is checked', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         await WebhookService.sendAuthUpdate(
             {
@@ -76,7 +78,7 @@ describe('Webhook notification tests', () => {
 
     it('Should send an auth webhook if the webhook url is not present but the secondary is', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         await WebhookService.sendAuthUpdate(
             {
@@ -101,7 +103,7 @@ describe('Webhook notification tests', () => {
 
     it('Should send an auth webhook twice if the webhook url is present and the secondary is as well', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         await WebhookService.sendAuthUpdate(
             {
@@ -127,7 +129,7 @@ describe('Webhook notification tests', () => {
     it('Should send an auth webhook if the webhook url is present and if the auth webhook is checked', async () => {
         mockCreateActivityLog();
 
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         await WebhookService.sendAuthUpdate(
             {
@@ -152,7 +154,7 @@ describe('Webhook notification tests', () => {
     it('Should not send an auth webhook if the webhook url is present and if the auth webhook is not checked', async () => {
         mockCreateActivityLog();
 
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
         await WebhookService.sendAuthUpdate(
             {
                 connection,
@@ -252,7 +254,7 @@ describe('Webhook notification tests', () => {
 
     it('Should not send a sync webhook if the webhook url is not present', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -271,7 +273,7 @@ describe('Webhook notification tests', () => {
 
     it('Should not send a sync webhook if the webhook url is not present even if always send is checked', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -290,7 +292,7 @@ describe('Webhook notification tests', () => {
 
     it('Should not send a sync webhook if the webhook url is present but if always send is not checked and there were no sync changes', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         const responseResults = { added: 0, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -309,7 +311,7 @@ describe('Webhook notification tests', () => {
 
     it('Should send a sync webhook if the webhook url is present and if always send is not checked and there were sync changes', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -328,7 +330,7 @@ describe('Webhook notification tests', () => {
 
     it('Should send a sync webhook if the webhook url is present and if always send is checked and there were sync changes', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -347,7 +349,7 @@ describe('Webhook notification tests', () => {
 
     it('Should send an sync webhook if the webhook url is present and if always send is checked and there were no sync changes', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         const responseResults = { added: 0, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
@@ -366,7 +368,7 @@ describe('Webhook notification tests', () => {
 
     it('Should send an sync webhook twice if the webhook url and secondary are present and if always send is checked and there were no sync changes', async () => {
         mockCreateActivityLog();
-        const logCtx = new LogContext({ parentId: '1' }, { dryRun: true, logToConsole: false });
+        const logCtx = getLogCtx();
 
         const responseResults = { added: 0, updated: 0, deleted: 0 };
         await WebhookService.sendSyncUpdate(
