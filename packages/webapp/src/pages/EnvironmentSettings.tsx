@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, HelpCircle } from '@geist-ui/icons';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { Tooltip, useModal, Modal } from '@geist-ui/core';
-import Nango from '@nangohq/frontend';
 
 import {
     useEditCallbackUrlAPI,
@@ -17,13 +16,14 @@ import {
     useEditSendAuthWebhookAPI
 } from '../utils/api';
 import IntegrationLogo from '../components/ui/IntegrationLogo';
-import { isCloud, defaultCallback } from '../utils/utils';
+import { isCloud, isHosted, defaultCallback } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import SecretInput from '../components/ui/input/SecretInput';
 import { useStore } from '../store';
 import Button from '../components/ui/button/Button';
 import { useEnvironment } from '../hooks/useEnvironment';
+import { connectSlack } from '../utils/slack-connection';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -47,10 +47,12 @@ export const EnvironmentSettings: React.FC = () => {
     const [webhookSecondaryEditMode, setWebhookSecondaryEditMode] = useState(false);
 
     const [slackIsConnected, setSlackIsConnected] = useState(false);
+    const [slackIsConnecting, setSlackIsConnecting] = useState(false);
+    const [slackConnectedChannel, setSlackConnectedChannel] = useState<string | null>('');
 
-    const [hmacKey, setHmacKey] = useState('');
+    const [hmacKey, setHmacKey] = useState<string | null>('');
     const [hmacEnabled, setHmacEnabled] = useState(false);
-    const [accountUUID, setAccountUUID] = useState<string>();
+    const [accountUUID, setAccountUUID] = useState<string>('');
     const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
     const [sendAuthWebhook, setSendAuthWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
@@ -67,7 +69,7 @@ export const EnvironmentSettings: React.FC = () => {
     const { setVisible, bindings } = useModal();
     const { setVisible: setSecretVisible, bindings: secretBindings } = useModal();
 
-    const { environment, mutate } = useEnvironment(env);
+    const { environmentAndAccount, mutate } = useEnvironment(env);
 
     useEffect(() => {
         setEnvVariables(envVariables.filter((env) => env.id));
@@ -75,10 +77,11 @@ export const EnvironmentSettings: React.FC = () => {
     }, [env]);
 
     useEffect(() => {
-        if (!environment) {
+        if (!environmentAndAccount) {
             return;
         }
 
+        const { environment, host, uuid, env_variables, slack_notifications_channel } = environmentAndAccount;
         setSecretKey(environment.pending_secret_key || environment.secret_key);
         setSecretKeyRotatable(environment.secret_key_rotatable !== false);
         setHasPendingSecretKey(Boolean(environment.pending_secret_key));
@@ -92,17 +95,18 @@ export const EnvironmentSettings: React.FC = () => {
         setWebhookUrl(environment.webhook_url || '');
         setWebhookUrlSecondary(environment.webhook_url_secondary || '');
         setSendAuthWebhook(environment.send_auth_webhook);
-        setHostUrl(environment.host);
-        setAccountUUID(environment.uuid);
+        setHostUrl(host);
+        setAccountUUID(uuid);
 
         setHmacEnabled(environment.hmac_enabled);
         setAlwaysSendWebhook(environment.always_send_webhook);
-        setHmacKey(environment.hmac_key);
+        setHmacKey(environment.hmac_key || '');
 
         setSlackIsConnected(environment.slack_notifications);
+        setSlackConnectedChannel(slack_notifications_channel);
 
-        setEnvVariables(environment.env_variables);
-    }, [environment]);
+        setEnvVariables(env_variables);
+    }, [environmentAndAccount]);
 
     const handleCallbackSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -371,40 +375,20 @@ export const EnvironmentSettings: React.FC = () => {
         }
     };
 
-    const connectSlack = async () => {
-        const connectionId = `account-${accountUUID}-${env}`;
+    const createSlackConnection = async () => {
+        setSlackIsConnecting(true);
+        const onFinish = () => {
+            setSlackIsConnected(true);
+            toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+            void mutate();
+            setSlackIsConnecting(false);
+        };
 
-        const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (res.status !== 200) {
+        const onFailure = () => {
             toast.error('Something went wrong during the lookup for the Slack connect', { position: toast.POSITION.BOTTOM_CENTER });
-            return;
-        }
-
-        const authResponse = await res.json();
-        const { hmac_digest: hmacDigest, public_key: publicKey, integration_key: integrationKey } = authResponse;
-
-        const nango = new Nango({ host: hostUrl, publicKey });
-        nango
-            .auth(integrationKey, connectionId, {
-                user_scope: [],
-                params: {},
-                hmac: hmacDigest
-            })
-            .then(async () => {
-                await updateSlackNotifications(true);
-                setSlackIsConnected(true);
-                toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
-                void mutate();
-            })
-            .catch((err: unknown) => {
-                console.log(err);
-            });
+            setSlackIsConnecting(false);
+        };
+        await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
     };
 
     return (
@@ -458,7 +442,7 @@ export const EnvironmentSettings: React.FC = () => {
                 </Modal.Action>
             </Modal>
             {secretKey && (
-                <div className="h-full mb-20">
+                <div className="">
                     <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Environment Settings</h2>
                     <div className="border border-border-gray rounded-md h-fit pt-6 pb-14">
                         <div>
@@ -598,30 +582,37 @@ export const EnvironmentSettings: React.FC = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="flex items-center justify-between mx-8 mt-8">
-                            <div>
-                                <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
-                                    Slack Alerts
-                                    <Tooltip
-                                        text={
-                                            <div className="flex text-black text-sm">
-                                                {slackIsConnected
-                                                    ? 'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.'
-                                                    : 'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'}
-                                            </div>
-                                        }
+                        {!isHosted() && (
+                            <div className="flex items-center justify-between mx-8 mt-8">
+                                <div>
+                                    <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
+                                        Slack Alerts
+                                        <Tooltip
+                                            text={
+                                                <div className="flex text-black text-sm">
+                                                    {slackIsConnected
+                                                        ? 'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.'
+                                                        : 'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'}
+                                                </div>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                    </label>
+                                </div>
+                                <div className="">
+                                    <Button
+                                        disabled={slackIsConnecting}
+                                        className="items-center"
+                                        variant="primary"
+                                        onClick={slackIsConnected ? disconnectSlack : createSlackConnection}
                                     >
-                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                    </Tooltip>
-                                </label>
+                                        <IntegrationLogo provider="slack" height={5} width={6} classNames="" />
+                                        {slackIsConnected ? `Disconnect ${slackConnectedChannel}` : 'Connect'}
+                                    </Button>
+                                </div>
                             </div>
-                            <div className="">
-                                <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
-                                    <IntegrationLogo provider="slack" height={6} width={6} classNames="" />
-                                    {slackIsConnected ? 'Disconnect' : 'Connect'}
-                                </Button>
-                            </div>
-                        </div>
+                        )}
                         <div>
                             <div className="mx-8 mt-8">
                                 <div className="flex text-white  mb-2">
@@ -764,7 +755,7 @@ export const EnvironmentSettings: React.FC = () => {
                             </div>
                         </div>
                         <div>
-                            {!environment?.webhook_url_secondary && !webhookSecondaryEditMode ? (
+                            {!environmentAndAccount?.environment.webhook_url_secondary && !webhookSecondaryEditMode ? (
                                 <button
                                     onClick={() => setWebhookSecondaryEditMode(true)}
                                     className="mx-8 mt-4 hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm"
@@ -940,7 +931,7 @@ export const EnvironmentSettings: React.FC = () => {
                                                 name="hmac_key"
                                                 autoComplete="new-password"
                                                 type="text"
-                                                value={hmacKey}
+                                                value={hmacKey || ''}
                                                 onChange={(event) => setHmacKey(event.target.value)}
                                                 className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
                                             />

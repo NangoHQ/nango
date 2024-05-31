@@ -31,6 +31,13 @@ export function InvalidCallbackOAuth2(): WSErr {
     };
 }
 
+export function EnvironmentOrAccountNotFound(): WSErr {
+    return {
+        type: 'account_or_environment_retrieval_err',
+        message: `The account or environment could not be retrieved.`
+    };
+}
+
 export function UnknownGrantType(grantType: string): WSErr {
     return {
         type: 'grant_type_err',

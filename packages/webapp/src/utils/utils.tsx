@@ -92,9 +92,9 @@ export function formatTimestampWithTZ(timestamp: number): string {
     return formattedDate;
 }
 
-export function elapsedTime(start: number, end: number): string {
-    const startTime = new Date(start).getTime();
-    const endTime = new Date(end).getTime();
+export function elapsedTime(start: Date | number, end: Date | number): string {
+    const startTime = start instanceof Date ? start.getTime() : new Date(start).getTime();
+    const endTime = end instanceof Date ? end.getTime() : new Date(end).getTime();
 
     if (isNaN(startTime) || isNaN(endTime)) {
         return '';
@@ -146,7 +146,7 @@ export function formatDateToUSFormat(dateString: string): string {
     return formattedDate;
 }
 
-export function formatDateToIntFormat(dateString: string): string {
+export function formatDateToLogFormat(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
         hour: '2-digit',
@@ -154,6 +154,7 @@ export function formatDateToIntFormat(dateString: string): string {
         second: '2-digit',
         month: 'short',
         day: '2-digit',
+        fractionalSecondDigits: 2,
         hour12: false
     };
 
@@ -164,7 +165,7 @@ export function formatDateToIntFormat(dateString: string): string {
     }
 
     const parts = formattedDate.split(', ');
-    return `${parts[0]}, ${parts[1]}`;
+    return `${parts[0]} ${parts[1]}`;
 }
 
 export function parseCron(frequency: string): string {
@@ -371,4 +372,28 @@ export function parseEndpoint(endpoint: string | FlowEndpoint): string {
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
+}
+
+const quantityFormatter = Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1, minimumFractionDigits: 0 });
+export function formatQuantity(quantity: number): string {
+    return quantityFormatter.format(quantity);
+}
+
+export function formatFrequency(frequency: string): string {
+    const unitMap: Record<string, string> = {
+        minutes: 'm',
+        minute: 'm',
+        hours: 'h',
+        hour: 'h',
+        days: 'd',
+        day: 'd'
+    };
+
+    for (const [unit, abbreviation] of Object.entries(unitMap)) {
+        if (frequency.includes(unit)) {
+            return frequency.replace(unit, abbreviation).replace(/\s/g, '');
+        }
+    }
+
+    return frequency;
 }

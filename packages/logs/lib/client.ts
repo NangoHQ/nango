@@ -1,4 +1,4 @@
-import type { MessageRow, MessageRowInsert, MessageMeta } from '@nangohq/types';
+import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow } from '@nangohq/types';
 import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, update } from './models/messages.js';
 import { getFormattedMessage } from './models/helpers.js';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
@@ -10,7 +10,10 @@ interface Options {
     logToConsole?: boolean;
 }
 
-export class LogContext {
+/**
+ * Context without operation (stateless)
+ */
+export class LogContextStateless {
     id: string;
     dryRun: boolean;
     logToConsole: boolean;
@@ -21,16 +24,6 @@ export class LogContext {
         this.logToConsole = options.logToConsole ?? true;
     }
 
-    /**
-     * Add more data to the parentId
-     */
-    async enrichOperation(data: Partial<MessageRow>): Promise<void> {
-        await this.logOrExec(`enrich(${JSON.stringify(data)})`, async () => await update({ id: this.id, data }));
-    }
-
-    /**
-     * ------ Logs
-     */
     async log(data: MessageRowInsert): Promise<void> {
         if (this.logToConsole) {
             logger.info(`[debug] log(${JSON.stringify(data)})`);
@@ -65,7 +58,14 @@ export class LogContext {
     async error(message: string, meta: (MessageMeta & { error?: unknown; err?: never; e?: never }) | null = null): Promise<void> {
         const { error, ...rest } = meta || {};
         const err = error ? { name: 'Unknown Error', message: 'unknown error', ...errorToObject(error) } : null;
-        await this.log({ type: 'log', level: 'error', message, error: err ? { name: err.name, message: err.message } : null, meta: rest, source: 'internal' });
+        await this.log({
+            type: 'log',
+            level: 'error',
+            message,
+            error: err ? { name: err.name, message: err.message } : null,
+            meta: Object.keys(rest).length > 0 ? rest : null,
+            source: 'internal'
+        });
     }
 
     /**
@@ -79,28 +79,50 @@ export class LogContext {
         const level: MessageRow['level'] = data.response && data.response.code >= 400 ? 'error' : 'info';
         await this.log({ type: 'http', level, message, ...data, source: 'internal' });
     }
+}
+
+/**
+ * Context with operation (can modify state)
+ */
+export class LogContext extends LogContextStateless {
+    operation: OperationRow;
+
+    constructor(data: { parentId: string; operation: OperationRow }, options: Options = { dryRun: false, logToConsole: true }) {
+        super(data, options);
+        this.operation = data.operation;
+    }
+
+    /**
+     * Add more data to the parentId
+     */
+    async enrichOperation(data: Partial<MessageRow>): Promise<void> {
+        await this.logOrExec(
+            `enrich(${JSON.stringify(data)})`,
+            async () => await update({ id: this.id, data: { ...data, createdAt: this.operation.createdAt } })
+        );
+    }
 
     /**
      * ------ State
      */
     async start(): Promise<void> {
-        await this.logOrExec('start', async () => await setRunning({ id: this.id }));
+        await this.logOrExec('start', async () => await setRunning(this.operation));
     }
 
     async failed(): Promise<void> {
-        await this.logOrExec('failed', async () => await setFailed({ id: this.id }));
+        await this.logOrExec('failed', async () => await setFailed(this.operation));
     }
 
     async success(): Promise<void> {
-        await this.logOrExec('success', async () => await setSuccess({ id: this.id }));
+        await this.logOrExec('success', async () => await setSuccess(this.operation));
     }
 
     async cancel(): Promise<void> {
-        await this.logOrExec('cancel', async () => await setCancelled({ id: this.id }));
+        await this.logOrExec('cancel', async () => await setCancelled(this.operation));
     }
 
     async timeout(): Promise<void> {
-        await this.logOrExec('timeout', async () => await setTimeouted({ id: this.id }));
+        await this.logOrExec('timeout', async () => await setTimeouted(this.operation));
     }
 
     private async logOrExec(log: string, callback: () => Promise<void>) {

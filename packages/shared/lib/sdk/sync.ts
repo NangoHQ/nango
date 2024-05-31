@@ -191,7 +191,13 @@ type AuthCredentials =
     | AppStoreCredentials
     | UnauthCredentials;
 
-type Metadata = Record<string, string | Record<string, any>>;
+type Metadata = Record<string, unknown>;
+
+interface MetadataChangeResponse {
+    metadata: Metadata;
+    provider_config_key: string;
+    connection_id: string | string[];
+}
 
 interface Connection {
     id?: number;
@@ -243,7 +249,7 @@ export interface NangoProps {
     accountId?: number;
     connectionId: string;
     environmentId?: number;
-    activityLogId?: number;
+    activityLogId?: number | undefined;
     providerConfigKey: string;
     provider?: string;
     lastSyncDate?: Date;
@@ -269,7 +275,7 @@ const MEMOIZED_CONNECTION_TTL = 60000;
 export class NangoAction {
     protected nango: Nango;
     private attributes = {};
-    activityLogId?: number;
+    activityLogId?: number | undefined;
     syncId?: string;
     nangoConnectionId?: number;
     environmentId?: number;
@@ -342,6 +348,10 @@ export class NangoAction {
 
         if (config.dryRunService) {
             this.dryRunService = config.dryRunService;
+        }
+
+        if (this.dryRun !== true && !this.activityLogId) {
+            throw new Error('Parameter activityLogId is required when not in dryRun');
         }
     }
 
@@ -489,7 +499,7 @@ export class NangoAction {
         return cachedConnection.connection;
     }
 
-    public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         this.exitSyncIfAborted();
         try {
             return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
@@ -498,7 +508,7 @@ export class NangoAction {
         }
     }
 
-    public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         this.exitSyncIfAborted();
         try {
             return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
@@ -510,7 +520,7 @@ export class NangoAction {
     /**
      * @deprecated please use setMetadata instead.
      */
-    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
+    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<object>> {
         logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
         return this.setMetadata(fieldMapping);
     }
@@ -578,10 +588,6 @@ export class NangoAction {
         if (this.dryRun) {
             logger.info([...args]);
             return;
-        }
-
-        if (!this.activityLogId) {
-            throw new Error('There is no current activity log stream to log to');
         }
 
         const response = await persistApi({
@@ -740,8 +746,8 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
+            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
         }
 
         if (this.dryRun) {
@@ -791,8 +797,8 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
+            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
         }
 
         if (this.dryRun) {
@@ -842,8 +848,8 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
+            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
         }
 
         if (this.dryRun) {

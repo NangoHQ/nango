@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { HelpCircle } from '@geist-ui/icons';
 import { PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import type { EnvironmentAndAccount } from '@nangohq/server';
 import { Tooltip, useModal } from '@geist-ui/core';
-import type { IntegrationConfig, Environment } from '../../types';
+import type { IntegrationConfig } from '../../types';
 import { AuthModes } from '../../types';
 import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI, useEditIntegrationNameAPI } from '../../utils/api';
 import Info from '../../components/ui/Info';
@@ -20,7 +21,7 @@ import { useSWRConfig } from 'swr';
 
 interface AuthSettingsProps {
     integration: IntegrationConfig | null;
-    environment: Environment;
+    environment: EnvironmentAndAccount['environment'];
 }
 
 export default function AuthSettings(props: AuthSettingsProps) {
@@ -280,12 +281,12 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         </div>
                         <span className="flex items-center gap-2">
                             <span className="text-white">{environment.callback_url || defaultCallback()}</span>
-                            <CopyButton text={environment.callback_url || defaultCallback()} dark classNames="" />
+                            <CopyButton text={environment.callback_url || defaultCallback()} dark />
                         </span>
                     </div>
                 </div>
             )}
-            {integration?.auth_mode === AuthModes.App && (
+            {integration?.auth_mode === AuthModes.App && environment.callback_url && (
                 <div className="flex">
                     <div className="flex flex-col">
                         <div className="flex items-center mb-1">
@@ -305,7 +306,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         </div>
                         <span className="flex items-center gap-2">
                             <span className="text-white">{environment.callback_url.replace('oauth/callback', 'app-auth/connect')}</span>
-                            <CopyButton text={environment.callback_url.replace('oauth/callback', 'app-auth/connect')} dark classNames="" />
+                            <CopyButton text={environment.callback_url.replace('oauth/callback', 'app-auth/connect')} dark />
                         </span>
                     </div>
                 </div>
@@ -330,7 +331,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         </div>
                         <div className="flex text-white items-center gap-2">
                             <span className="text-white">{`${environment.webhook_receive_url}/${integrationId}`}</span>
-                            <CopyButton text={`${environment.webhook_receive_url}/${integrationId}`} dark classNames="" />
+                            <CopyButton text={`${environment.webhook_receive_url}/${integrationId}`} dark />
                         </div>
                     </div>
                     {(integration?.auth_mode === AuthModes.App || integration?.auth_mode === AuthModes.Custom) && integration?.webhook_secret && (
@@ -352,7 +353,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             </div>
                             <div className="flex text-white items-center gap-2">
                                 <span className="text-white">{integration?.webhook_secret}</span>
-                                <CopyButton text={integration?.webhook_secret} dark classNames="" />
+                                <CopyButton text={integration?.webhook_secret} dark />
                             </div>
                         </div>
                     )}
@@ -498,7 +499,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                 />
                                 <span className="absolute right-0.5 top-1 flex items-center">
-                                    <CopyButton text={integration?.client_id} dark classNames="relative -ml-6" />
+                                    <CopyButton text={integration?.client_id} dark className="relative -ml-6" />
                                 </span>
                             </div>
                         </div>

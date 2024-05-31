@@ -74,11 +74,16 @@ NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
 ### Encrypt sensitive data[](#encrypt-sensitive-data 'Direct link to Encrypt sensitive data')
 
 You can enforce encryption of sensitive data (tokens, secret key, app secret)
-using the AES-GCM encryption algorithm. To do so, set the following environment
-variable to a randomly generated 256-bit base64-encoded key:
+using the AES-GCM encryption algorithm. To do so, generate a 256-bit base64-encoded key:
 
 ```
-NANGO_ENCRYPTION_KEY=<ADD-BASE64-256BIT-KEY>
+openssl rand -base64 32
+```
+
+And set the `NANGO_ENCRYPTION_KEY` environment variable to the generated key:
+
+```
+NANGO_ENCRYPTION_KEY=<BASE64-256BIT-KEY>
 ```
 
 Once you restart the Nango server, the encryption of the database will happen
@@ -112,3 +117,25 @@ actions and do not track sensitive information.
 
 You can disable telemetry by setting the env var `TELEMETRY=false` (in the
 `.env` file or directly on Heroku/Render).
+
+## Logs[](#logs 'Direct link to Logs')
+
+We use Elasticsearch to store Nango's execution logs and power the logs UI.
+To limit the requirements to self-host, this stack is optional and up to the developper to setup.
+
+If you want to enable logs, you will need to:
+- Host an Elasticsearch cluster
+- Update your environment variables, with `NANGO_LOGS_ENABLED=true` and add the appropriate values in `NANGO_LOGS_ES_*`
+
+### Hosting
+
+To host an Elasticsearch cluster you have multiple solutions:
+
+- Locally: uncomment the service inside `docker-compose.yml` ([GitHub](https://github.com/NangoHQ/nango/blob/master/docker-compose.yaml#L63)) and run `docker-compose up`
+- ElasticCloud: minimal installation on Standard tier is about 20€/mo ([elastic.co](https://www.elastic.co/))
+- Render: deploy a free instance ([render.com](https://docs.render.com/deploy-elasticsearch))
+
+### Alternatives
+
+We don't provide alternatives storage for the moment.
+If `NANGO_LOGS_ENABLED` is `false`, all the logs are sent to stdout so you can always find everything in your hosts logs UI.

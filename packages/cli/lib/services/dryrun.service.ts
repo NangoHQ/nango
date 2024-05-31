@@ -1,7 +1,8 @@
 import promptly from 'promptly';
 import chalk from 'chalk';
 
-import type { Metadata, NangoConnection } from '@nangohq/shared';
+import type { NangoConnection } from '@nangohq/shared';
+import type { Metadata } from '@nangohq/types';
 import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
@@ -196,27 +197,17 @@ class DryRunService {
                 return Promise.resolve([]);
             }
         };
-        const logContextGetter = {
-            create: () => {
-                return Promise.resolve({}) as any;
-            },
-            get: () => {
-                return {} as any;
-            }
-        };
 
         const syncRun = new syncRunService({
             integrationService,
             recordsService,
             dryRunService: new DryRunService(environment, true),
-            logContextGetter,
             writeToDb: false,
             nangoConnection,
             provider,
             input: normalizedInput as object,
             isAction: syncInfo?.type === SyncConfigType.ACTION,
             syncId: 'abc',
-            activityLogId: -1,
             syncJobId: -1,
             syncName,
             syncType: SyncType.INITIAL,

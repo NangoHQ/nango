@@ -8,9 +8,10 @@ import type {
     AuthOperation,
     UnauthCredentials
 } from './Auth.js';
+import type { Account } from './Admin.js';
+import type { Environment } from './Environment.js';
 import type { TimestampsAndDeleted } from './Generic.js';
-
-export type Metadata = Record<string, string | Record<string, any>>;
+import type { Metadata } from '@nangohq/types';
 
 export type ConnectionConfig = Record<string, any>;
 
@@ -35,11 +36,22 @@ export interface Connection extends BaseConnection {
     credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials;
 }
 
-export type RecentlyCreatedConnection = Pick<StoredConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'> & {
+export interface RecentlyCreatedConnection {
+    connection: StoredConnection;
     auth_mode: AuthModes;
     error?: string;
     operation: AuthOperation;
-};
+    environment: Environment;
+    account: Account;
+}
+export interface RecentlyFailedConnection {
+    connection: Pick<StoredConnection, 'connection_id' | 'provider_config_key'>;
+    auth_mode: AuthModes;
+    error?: string;
+    operation: AuthOperation;
+    environment: Environment;
+    account: Account;
+}
 
 export interface ApiConnection {
     id?: number;
@@ -61,6 +73,9 @@ export interface NangoConnection {
     connection_config?: ConnectionConfig;
 
     // TODO legacy while the migration is in progress
+    /**
+     * @deprecated
+     */
     account_id?: number;
 }
 

@@ -1,30 +1,29 @@
 import { randomUUID } from 'crypto';
 import type { StartedTestContainer } from 'testcontainers';
-import { Wait, PostgreSqlContainer, GenericContainer } from 'testcontainers';
+import { Wait, PostgreSqlContainer, ElasticsearchContainer } from 'testcontainers';
 
 const containers: StartedTestContainer[] = [];
 
 export async function setupElasticsearch() {
-    console.log('Starting OpenSearch...');
-    const os = await new GenericContainer('opensearchproject/opensearch:2.13.0')
-        .withName(`os-test-${randomUUID()}`)
+    console.log('Starting Elasticsearch...');
+    const es = await new ElasticsearchContainer('elasticsearch:8.13.0')
+        .withName(`es-test-${randomUUID()}`)
         .withEnvironment({
             'discovery.type': 'single-node',
-            DISABLE_INSTALL_DEMO_CONFIG: 'true',
-            DISABLE_SECURITY_PLUGIN: 'true'
+            'xpack.security.enabled': 'false'
         })
         .withStartupTimeout(120_000)
         .withExposedPorts(9200)
         .start();
-    containers.push(os);
+    containers.push(es);
 
-    const url = `http://${os.getHost()}:${os.getMappedPort(9200)}`;
+    const url = `http://${es.getHost()}:${es.getMappedPort(9200)}`;
 
-    process.env['NANGO_LOGS_OS_URL'] = url;
-    process.env['NANGO_LOGS_OS_USER'] = '';
-    process.env['NANGO_LOGS_OS_PWD'] = '';
+    process.env['NANGO_LOGS_ES_URL'] = url;
+    process.env['NANGO_LOGS_ES_USER'] = '';
+    process.env['NANGO_LOGS_ES_PWD'] = '';
     process.env['NANGO_LOGS_ENABLED'] = 'true';
-    console.log('OS running at', url);
+    console.log('ES running at', url);
 }
 
 async function setupPostgres() {

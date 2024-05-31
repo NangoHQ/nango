@@ -20,6 +20,7 @@ body = """
     {% for commit in commits %}
         - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
            {{ commit.message | upper_first }}\
+           {% if commit.github.username %} by @{{ commit.github.username }}{%- endif -%}
     {% endfor %}
 {% endfor %}\n
 """

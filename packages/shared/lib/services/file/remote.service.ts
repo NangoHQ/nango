@@ -82,7 +82,7 @@ class RemoteFileService {
      * @desc copy an existing public integration file to user's location in s3,
      * on local copy to the set local destination
      */
-    async copy(integrationName: string, fileName: string, destinationPath: string, environmentId: number): Promise<string | null> {
+    async copy(integrationName: string, fileName: string, destinationPath: string, environmentId: number, destinationFileName: string): Promise<string | null> {
         try {
             const s3FilePath = `${this.publicRoute}/${integrationName}/${fileName}`;
 
@@ -99,7 +99,7 @@ class RemoteFileService {
             } else {
                 const fileContents = await this.getFile(s3FilePath, environmentId);
                 if (fileContents) {
-                    localFileService.putIntegrationFile(fileName, fileContents, integrationName.includes('dist'));
+                    localFileService.putIntegrationFile(destinationFileName, fileContents, integrationName.includes('dist'));
                 }
                 return '_LOCAL_FILE_';
             }

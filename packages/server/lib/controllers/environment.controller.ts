@@ -1,17 +1,20 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Environment } from '@nangohq/shared';
+import type { EnvironmentVariable } from '@nangohq/types';
 import { isCloud, baseUrl } from '@nangohq/utils';
 import {
     accountService,
     hmacService,
     environmentService,
+    connectionService,
     errorManager,
     getWebsocketsPath,
     getOauthCallbackUrl,
     getGlobalWebhookReceiveUrl,
-    packageJsonFile,
     getOnboardingProgress,
-    userService
+    userService,
+    generateSlackConnectionId,
+    NANGO_VERSION
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import type { RequestLocals } from '../utils/express.js';
@@ -23,6 +26,15 @@ export interface GetMeta {
     baseUrl: string;
     debugMode: boolean;
     onboardingComplete: boolean;
+}
+
+export interface EnvironmentAndAccount {
+    environment: Environment;
+    env_variables: EnvironmentVariable[];
+    host: string;
+    uuid: string;
+    email: string;
+    slack_notifications_channel: string | null;
 }
 
 class EnvironmentController {
@@ -41,11 +53,10 @@ class EnvironmentController {
             }
 
             const environments = await environmentService.getEnvironmentsByAccountId(user.account_id);
-            const version = packageJsonFile().version;
             const onboarding = await getOnboardingProgress(sessionUser.id);
             res.status(200).send({
                 environments,
-                version,
+                version: NANGO_VERSION,
                 email: sessionUser.email,
                 baseUrl,
                 debugMode: req.session.debugMode === true,
@@ -77,10 +88,36 @@ class EnvironmentController {
             const webhookBaseUrl = getGlobalWebhookReceiveUrl();
             environment.webhook_receive_url = `${webhookBaseUrl}/${environment.uuid}`;
 
+            let slack_notifications_channel = '';
+            if (environment.slack_notifications) {
+                const connectionId = generateSlackConnectionId(account.uuid, environment.name);
+                const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
+                const nangoAdminUUID = NANGO_ADMIN_UUID;
+                const env = 'prod';
+                const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
+                if (info) {
+                    const connectionConfig = await connectionService.getConnectionConfig({
+                        provider_config_key: integration_key,
+                        environment_id: info.environmentId,
+                        connection_id: connectionId
+                    });
+                    if (connectionConfig && connectionConfig['incoming_webhook.channel']) {
+                        slack_notifications_channel = connectionConfig['incoming_webhook.channel'];
+                    }
+                }
+            }
+
             const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
 
             res.status(200).send({
-                environment: { ...environment, env_variables: environmentVariables, host: baseUrl, uuid: account.uuid, email: user.email }
+                environmentAndAccount: {
+                    environment,
+                    env_variables: environmentVariables,
+                    host: baseUrl,
+                    uuid: account.uuid,
+                    email: user.email,
+                    slack_notifications_channel
+                }
             });
         } catch (err) {
             next(err);

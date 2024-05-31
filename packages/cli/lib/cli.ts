@@ -26,7 +26,7 @@ export const version = (debug: boolean) => {
     if (debug) {
         printDebug('Looking up the version first for a local path first then globally');
     }
-    const version = getPkgVersion(debug);
+    const version = getPkgVersion();
 
     console.log(chalk.green('Nango CLI version:'), version);
 };

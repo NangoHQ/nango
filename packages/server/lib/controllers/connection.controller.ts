@@ -3,15 +3,14 @@ import type {
     Config as ProviderConfig,
     Template as ProviderTemplate,
     OAuth2Credentials,
-    OAuth2ClientCredentials,
     ImportedCredentials,
     AuthCredentials,
-    TemplateOAuth2 as ProviderTemplateOAuth2,
     ConnectionList,
     LogLevel,
     ConnectionUpsertResponse
 } from '@nangohq/shared';
 import {
+    db,
     AuthModes as ProviderAuthModes,
     LogActionEnum,
     configService,
@@ -23,14 +22,14 @@ import {
     NangoError,
     createActivityLogAndLogMessage,
     accountService,
-    connectionCreated as connectionCreatedHook,
-    connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
-    slackNotificationService
+    SlackService
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '../hooks/hooks.js';
+import { getOrchestratorClient } from '../utils/utils.js';
 
 class ConnectionController {
     /**
@@ -60,33 +59,22 @@ class ConnectionController {
                 environment_id: environment.id
             };
 
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+            const credentialResponse = await connectionService.getConnectionCredentials({
+                account,
+                environment,
+                connectionId,
+                providerConfigKey,
+                logContextGetter,
+                instantRefresh
+            });
 
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            if (!connection) {
-                const activityLogId = await createActivityLogAndLogMessage(log, {
-                    level: 'error',
-                    environment_id: environment.id,
-                    timestamp: Date.now(),
-                    content: 'Unknown connection'
-                });
-                const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
-                    { account, environment }
-                );
-                await logCtx.error('Unknown connection');
-                await logCtx.failed();
-
-                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName: environment.name });
-                errorManager.errResFromNangoErr(res, error);
+            if (credentialResponse.isErr()) {
+                errorManager.errResFromNangoErr(res, credentialResponse.error);
 
                 return;
             }
+
+            const { value: connection } = credentialResponse;
 
             const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, environment.id);
 
@@ -98,12 +86,12 @@ class ConnectionController {
                     content: 'Unknown provider config'
                 });
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
+                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
                     {
                         account,
                         environment,
-                        connection: { id: connection.id!, name: connection.connection_id },
-                        config: { id: connection.config_id!, name: connection.provider_config_key }
+                        integration: { id: connection.config_id!, name: connection.provider_config_key, provider: 'unknown' },
+                        connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );
                 await logCtx.error('Unknown provider config');
@@ -114,34 +102,6 @@ class ConnectionController {
             }
 
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
-
-            if (
-                connection.credentials.type === ProviderAuthModes.OAuth2 ||
-                connection.credentials.type === ProviderAuthModes.App ||
-                connection.credentials.type === ProviderAuthModes.OAuth2CC
-            ) {
-                const {
-                    success,
-                    error,
-                    response: credentials
-                } = await connectionService.refreshCredentialsIfNeeded({
-                    connection,
-                    providerConfig: config,
-                    template: template as ProviderTemplateOAuth2,
-                    activityLogId: null,
-                    environment_id: environment.id,
-                    instantRefresh,
-                    logAction: LogActionEnum.TOKEN,
-                    logContextGetter
-                });
-
-                if (!success) {
-                    errorManager.errResFromNangoErr(res, error);
-                    return;
-                }
-
-                connection.credentials = credentials as OAuth2Credentials | OAuth2ClientCredentials;
-            }
 
             if (instantRefresh) {
                 log.provider = config.provider;
@@ -155,12 +115,12 @@ class ConnectionController {
                     timestamp: Date.now()
                 });
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'token' }, message: 'Get connection web' },
+                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
                     {
                         account,
                         environment,
-                        connection: { id: connection.id!, name: connection.connection_id },
-                        config: { id: config.id!, name: config.unique_key }
+                        integration: { id: config.id!, name: config.unique_key, provider: config.provider },
+                        connection: { id: connection.id!, name: connection.connection_id }
                     }
                 );
                 await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
@@ -264,41 +224,33 @@ class ConnectionController {
 
     async getConnectionCreds(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const environmentId = res.locals['environment'].id;
-            const accountId = res.locals['account'].id;
+            const { environment, account } = res.locals;
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
             const returnRefreshToken = req.query['refresh_token'] === 'true';
             const instantRefresh = req.query['force_refresh'] === 'true';
             const isSync = (req.get('Nango-Is-Sync') as string) === 'true';
 
-            const action = LogActionEnum.TOKEN;
-
             if (!isSync) {
-                metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId });
+                metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId: account.id });
             }
 
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnectionCredentials(
-                accountId,
-                environmentId,
+            const credentialResponse = await connectionService.getConnectionCredentials({
+                account,
+                environment,
                 connectionId,
                 providerConfigKey,
                 logContextGetter,
-                null,
-                undefined,
-                action,
                 instantRefresh
-            );
+            });
 
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
+            if (credentialResponse.isErr()) {
+                errorManager.errResFromNangoErr(res, credentialResponse.error);
 
                 return;
             }
+
+            const { value: connection } = credentialResponse;
 
             if (connection && connection.credentials && connection.credentials.type === ProviderAuthModes.OAuth2 && !returnRefreshToken) {
                 if (connection.credentials.refresh_token) {
@@ -431,6 +383,7 @@ class ConnectionController {
 
             await connectionService.deleteConnection(connection, integration_key, info?.environmentId as number);
 
+            const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
             await slackNotificationService.closeAllOpenNotifications(environment.id);
 
             res.status(204).send();
@@ -458,11 +411,11 @@ class ConnectionController {
         }
     }
 
-    async setMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async setMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
-            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+            const providerConfigKey = (req.query['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
@@ -472,26 +425,28 @@ class ConnectionController {
                 return;
             }
 
-            if (!connection) {
+            if (!connection || !connection.id) {
                 const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName: environment.name });
                 errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
 
-            await connectionService.replaceMetadata(connection, req.body);
+            await db.knex.transaction(async (trx) => {
+                await connectionService.replaceMetadata([connection.id as number], req.body, trx);
+            });
 
-            res.status(201).send();
+            res.status(201).send(req.body);
         } catch (err) {
             next(err);
         }
     }
 
-    async updateMetadata(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async updateMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
-            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+            const providerConfigKey = (req.query['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
@@ -508,9 +463,9 @@ class ConnectionController {
                 return;
             }
 
-            const metadata = await connectionService.updateMetadata(connection, req.body);
+            await connectionService.updateMetadata([connection], req.body);
 
-            res.status(200).send(metadata);
+            res.status(200).send(req.body);
         } catch (err) {
             next(err);
         }
@@ -622,6 +577,21 @@ class ConnectionController {
                     }
                 }
 
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            connection: res.connection,
+                            environment,
+                            account,
+                            auth_mode: ProviderAuthModes.OAuth2,
+                            operation: res.operation
+                        },
+                        provider,
+                        logContextGetter,
+                        null
+                    );
+                };
+
                 const [imported] = await connectionService.importOAuthConnection(
                     connection_id,
                     provider_config_key,
@@ -629,7 +599,7 @@ class ConnectionController {
                     environment.id,
                     account.id,
                     oAuthCredentials,
-                    logContextGetter
+                    connCreatedHook
                 );
 
                 if (imported) {
@@ -655,6 +625,21 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            connection: res.connection,
+                            environment,
+                            account,
+                            auth_mode: ProviderAuthModes.OAuth2,
+                            operation: res.operation
+                        },
+                        provider,
+                        logContextGetter,
+                        null
+                    );
+                };
+
                 const [imported] = await connectionService.importOAuthConnection(
                     connection_id,
                     provider_config_key,
@@ -662,7 +647,7 @@ class ConnectionController {
                     environment.id,
                     account.id,
                     oAuthCredentials,
-                    logContextGetter
+                    connCreatedHook
                 );
 
                 if (imported) {
@@ -682,6 +667,20 @@ class ConnectionController {
                     password
                 };
 
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            connection: res.connection,
+                            environment,
+                            account,
+                            auth_mode: ProviderAuthModes.ApiKey,
+                            operation: res.operation
+                        },
+                        provider,
+                        logContextGetter,
+                        null
+                    );
+                };
                 const [imported] = await connectionService.importApiAuthConnection(
                     connection_id,
                     provider_config_key,
@@ -689,7 +688,7 @@ class ConnectionController {
                     environment.id,
                     account.id,
                     credentials,
-                    logContextGetter
+                    connCreatedHook
                 );
 
                 if (imported) {
@@ -708,6 +707,21 @@ class ConnectionController {
                     apiKey
                 };
 
+                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            connection: res.connection,
+                            environment,
+                            account,
+                            auth_mode: ProviderAuthModes.ApiKey,
+                            operation: res.operation
+                        },
+                        provider,
+                        logContextGetter,
+                        null
+                    );
+                };
+
                 const [imported] = await connectionService.importApiAuthConnection(
                     connection_id,
                     provider_config_key,
@@ -715,7 +729,7 @@ class ConnectionController {
                     environment.id,
                     account.id,
                     credentials,
-                    logContextGetter
+                    connCreatedHook
                 );
 
                 if (imported) {
@@ -779,13 +793,12 @@ class ConnectionController {
                 return;
             }
 
-            if (updatedConnection && updatedConnection.id && runHook) {
+            if (updatedConnection && updatedConnection.connection.id && runHook) {
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id,
-                        provider_config_key,
-                        environment_id: environment.id,
+                        connection: updatedConnection.connection,
+                        environment,
+                        account,
                         auth_mode: template.auth_mode,
                         operation: updatedConnection.operation || AuthOperation.UNKNOWN
                     },

@@ -34,6 +34,16 @@ if [[ ! "$VERSION" =~ ^([0-9]+\.[0-9]+\.[0-9]+|0\.0\.1-[0-9a-fA-F]{40})$ ]]; the
     exit 1
 fi
 
+# increment stored version
+# NB: macos and linux have different "sed" that don't edit in place the same way
+pushd "$GIT_ROOT_DIR/packages"
+sed -E "s/NANGO_VERSION = '[0-9a-fA-F.-]+/NANGO_VERSION = '$VERSION/" ./shared/lib/version.ts >tmp
+mv tmp ./shared/lib/version.ts
+sed -E "s/NANGO_VERSION = '[0-9a-fA-F.-]+/NANGO_VERSION = '$VERSION/" ./node-client/lib/version.ts >tmp
+mv tmp ./node-client/lib/version.ts
+popd
+
+# build codebase
 npm ci
 npm run ts-build
 
@@ -53,6 +63,7 @@ bump_and_npm_publish "@nangohq/types" "$VERSION"
 bump_other_pkg "shared" "types"
 bump_other_pkg "server" "types"
 bump_other_pkg "webapp" "types"
+bump_other_pkg "cli" "types"
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"

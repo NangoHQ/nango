@@ -27,6 +27,15 @@ describe('client', () => {
         vi.clearAllMocks();
     });
 
+    it('should list nothing', async () => {
+        const list = await listOperations({ accountId: account.id, limit: 1, states: ['all'] });
+        expect(list).toStrictEqual<ListOperations>({
+            cursor: null,
+            count: 0,
+            items: []
+        });
+    });
+
     it('should insert an operation', async () => {
         const spy = vi.spyOn(model, 'createMessage');
         const ctx = await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
@@ -35,14 +44,16 @@ describe('client', () => {
 
         const list = await listOperations({ accountId: account.id, limit: 1, states: ['all'] });
         expect(list).toStrictEqual<ListOperations>({
+            cursor: null,
             count: 1,
             items: [
                 {
                     accountId: 1234,
                     accountName: 'test',
                     code: null,
-                    configId: null,
-                    configName: null,
+                    integrationId: null,
+                    integrationName: null,
+                    providerName: null,
                     connectionId: null,
                     connectionName: null,
                     createdAt: expect.toBeIsoDate(),
@@ -61,8 +72,8 @@ describe('client', () => {
                     source: 'internal',
                     startedAt: null,
                     state: 'waiting',
-                    syncId: null,
-                    syncName: null,
+                    syncConfigId: null,
+                    syncConfigName: null,
                     title: null,
                     type: 'log',
                     updatedAt: expect.toBeIsoDate(),

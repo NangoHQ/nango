@@ -31,9 +31,23 @@ import type { Response, Request } from 'express';
 import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import { searchLogs } from './controllers/v1/logs/searchLogs.js';
+import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
+import {
+    getEmailByUuid,
+    resendVerificationEmailByUuid,
+    resendVerificationEmailByEmail,
+    signup,
+    signupWithToken,
+    signin,
+    validateEmailAndLogin,
+    getEmailByExpiredToken
+} from './controllers/v1/account/index.js';
+import { searchMessages } from './controllers/v1/logs/searchMessages.js';
+import { setMetadata } from './controllers/v1/connection/setMetadata.js';
+import { updateMetadata } from './controllers/v1/connection/updateMetadata.js';
 import type { ApiError } from '@nangohq/types';
+import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 
 export const app = express();
 
@@ -95,8 +109,10 @@ app.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteP
 app.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
-app.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadata.bind(connectionController));
-app.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadata.bind(connectionController));
+app.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
+app.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadataLegacy.bind(connectionController));
+app.route('/connection/metadata').post(apiAuth, setMetadata);
+app.route('/connection/metadata').patch(apiAuth, updateMetadata);
 app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 app.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
@@ -124,12 +140,18 @@ setupAuth(web);
 
 // Webapp routes (no auth).
 if (AUTH_ENABLED) {
-    web.route('/api/v1/signup').post(rateLimiterMiddleware, authController.signup.bind(authController));
-    web.route('/api/v1/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
-    web.route('/api/v1/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
-    web.route('/api/v1/signin').post(rateLimiterMiddleware, passport.authenticate('local'), authController.signin.bind(authController));
-    web.route('/api/v1/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
-    web.route('/api/v1/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
+    web.route('/api/v1/account/signup').post(rateLimiterMiddleware, signup);
+    web.route('/api/v1/account/signup/token').post(rateLimiterMiddleware, signupWithToken);
+    web.route('/api/v1/account/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
+    web.route('/api/v1/account/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
+    web.route('/api/v1/account/signin').post(rateLimiterMiddleware, passport.authenticate('local'), signin);
+    web.route('/api/v1/account/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
+    web.route('/api/v1/account/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
+    web.route('/api/v1/account/resend-verification-email/by-uuid').post(rateLimiterMiddleware, resendVerificationEmailByUuid);
+    web.route('/api/v1/account/resend-verification-email/by-email').post(rateLimiterMiddleware, resendVerificationEmailByEmail);
+    web.route('/api/v1/account/email/:uuid').get(rateLimiterMiddleware, getEmailByUuid);
+    web.route('/api/v1/account/email/expired-token/:token').get(rateLimiterMiddleware, getEmailByExpiredToken);
+    web.route('/api/v1/account/verify/code').post(rateLimiterMiddleware, validateEmailAndLogin);
 }
 
 if (MANAGED_AUTH_ENABLED) {
@@ -203,7 +225,9 @@ web.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy
 web.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
 web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
 
-web.route('/api/v1/logs/search').post(webAuth, searchLogs);
+web.route('/api/v1/logs/operations').post(webAuth, searchOperations);
+web.route('/api/v1/logs/messages').post(webAuth, searchMessages);
+web.route('/api/v1/logs/filters').post(webAuth, searchFilters);
 web.route('/api/v1/logs/operations/:operationId').get(webAuth, getOperation);
 
 // Hosted signin

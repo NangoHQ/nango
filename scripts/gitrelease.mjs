@@ -13,17 +13,17 @@ if (tagExists.stdout !== '') {
     process.exit(1);
 }
 
-const releaseMessage = `chore(release): ${nextVersion} [skip ci]`;
+const releaseMessage = `chore(release): ${nextVersion}`;
 
 echo`Checkout out branch`;
 await $`git fetch origin ${branch}`;
 await $`git switch ${branch}`;
 
 echo`Generating changelog`;
-await $`npx git-cliff -o CHANGELOG.md -t ${nextVersion}`;
+await $`npx git-cliff -o CHANGELOG.md -t ${nextTag}`;
 
 echo`Adding file`;
-await $`git add -A package.json package-lock.json packages/**/package.json CHANGELOG.md`;
+await $`git add -A package.json package-lock.json packages/**/package.json CHANGELOG.md packages/**/lib/version.ts`;
 
 echo`Creating commit`;
 await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" commit --allow-empty --author="Release Bot <contact@nango.dev>" -m ${releaseMessage} `;

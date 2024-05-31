@@ -6,7 +6,7 @@ export interface Account {
     secret_key: string;
     host?: string | null;
     websockets_path?: string;
-    uuid?: string;
+    uuid: string;
     is_admin?: boolean;
     is_capped?: boolean;
 }
@@ -22,6 +22,10 @@ export interface User extends Timestamps {
     suspended: boolean;
     suspended_at: Date;
     currentUser?: boolean;
+    email_verified: boolean;
+    email_verification_token: string | null;
+    email_verification_token_expires_at: Date | null;
+    uuid: string;
 }
 
 export interface InviteUser extends Timestamps {

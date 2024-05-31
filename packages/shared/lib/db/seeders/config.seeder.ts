@@ -24,3 +24,11 @@ export const createConfigSeeds = async (env: Environment): Promise<void> => {
         environment_id: env.id
     } as ProviderConfig);
 };
+
+export const createConfigSeed = async (env: Environment, unique_key: string, provider: string): Promise<void> => {
+    await configService.createProviderConfig({
+        unique_key,
+        provider,
+        environment_id: env.id
+    } as ProviderConfig);
+};

@@ -1,14 +1,9 @@
-import path, { resolve } from 'path';
-import { readFileSync } from 'fs';
+import path from 'path';
 import { fileURLToPath } from 'url';
 import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
 import type { Environment } from '../models/Environment.js';
 import environmentService from '../services/environment.service.js';
 import type { Connection } from '../models/Connection.js';
-
-interface PackageJson {
-    version: string;
-}
 
 export { cloudHost, stagingHost };
 
@@ -91,6 +86,10 @@ export function getServerBaseUrl() {
 
 export function getRedisUrl() {
     return process.env['NANGO_REDIS_URL'] || undefined;
+}
+
+export function getOrchestratorUrl() {
+    return process.env['ORCHESTRATOR_SERVICE_URL'] || `http://localhost:${process.env['NANGO_ORCHESTRATOR_PORT'] || 3008}`;
 }
 
 export function isValidHttpUrl(str: string) {
@@ -252,17 +251,6 @@ export function interpolateIfNeeded(str: string, replacers: Record<string, any>)
 export function getConnectionConfig(queryParams: any): Record<string, string> {
     const arr = Object.entries(queryParams).filter(([, v]) => typeof v === 'string'); // Filter strings
     return Object.fromEntries(arr) as Record<string, string>;
-}
-
-let packageJsonCache: PackageJson | undefined;
-export function packageJsonFile(): PackageJson {
-    if (packageJsonCache) {
-        return packageJsonCache;
-    }
-
-    const localPath = '../../package.json';
-    packageJsonCache = JSON.parse(readFileSync(resolve(dirname(), localPath)).toString('utf-8')) as PackageJson;
-    return packageJsonCache;
 }
 
 export function safeStringify(obj: any): string {

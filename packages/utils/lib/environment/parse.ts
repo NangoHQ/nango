@@ -32,8 +32,11 @@ export const ENVS = z.object({
     PERSIST_SERVICE_URL: z.string().url().optional(),
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
 
+    // Orchestrator
     ORCHESTRATOR_SERVICE_URL: z.string().url().optional(),
     NANGO_ORCHESTRATOR_PORT: z.coerce.number().optional().default(3008),
+    ORCHESTRATOR_DATABASE_URL: z.string().url().optional(),
+    ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
 
     // Jobs
     JOBS_SERVICE_URL: z.string().url().optional(),
@@ -62,11 +65,11 @@ export const ENVS = z.object({
     DD_TRACE_AGENT_URL: z.string().optional(),
 
     // Elasticsearch
-    NANGO_LOGS_OS_URL: z.string().url().optional(),
-    NANGO_LOGS_OS_USER: z.string().optional(),
-    NANGO_LOGS_OS_PWD: z.string().optional(),
+    NANGO_LOGS_ES_URL: z.string().url().optional(),
+    NANGO_LOGS_ES_USER: z.string().optional(),
+    NANGO_LOGS_ES_PWD: z.string().optional(),
     NANGO_LOGS_ENABLED: bool,
-    NANGO_LOGS_OS_INDEX: z.string().optional(),
+    NANGO_LOGS_ES_INDEX: z.string().optional(),
 
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
@@ -80,7 +83,12 @@ export const ENVS = z.object({
     NANGO_DB_PASSWORD: z.string().optional().default('nango'),
     NANGO_DB_SSL: bool,
     NANGO_DB_CLIENT: z.string().optional(),
-    NANGO_ENCRYPTION_KEY: z.string().optional(),
+    NANGO_ENCRYPTION_KEY: z
+        .string({
+            required_error:
+                'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://docs.nango.dev/host/self-host/self-hosting-instructions#encrypt-sensitive-data'
+        })
+        .optional(),
     NANGO_DB_MIGRATION_FOLDER: z.string().optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
@@ -88,10 +96,6 @@ export const ENVS = z.object({
     // Records
     RECORDS_DATABASE_URL: z.string().url().optional().default('postgres://nango:nango@localhost:5432/nango'), //TODO remove default and deal with default value in the records package (ie: envVar || mainDB || localhost )
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
-
-    // Schduler
-    SCHEDULER_DATABASE_URL: z.string().url().optional(),
-    SCHEDULER_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
 
     // Redis
     NANGO_REDIS_URL: z.string().url().optional(),
@@ -109,7 +113,7 @@ export const ENVS = z.object({
     SENTRY_DNS: z.string().url().optional(),
 
     // Temporal
-    TEMPORAL_NAMESPACE: z.string().optional(),
+    TEMPORAL_NAMESPACE: z.string().optional().default('default'),
     TEMPORAL_ADDRESS: z.string().optional(),
     TEMPORAL_WORKER_MAX_CONCURRENCY: z.coerce.number().default(500),
 

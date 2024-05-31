@@ -1,15 +1,14 @@
 import type { JsonValue } from 'type-fest';
+import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
-import { db } from '../db/client.js';
-import type { TaskState, Task } from '../types.js';
+import { taskStates } from '../types.js';
+import type { TaskState, Task, TaskTerminalState, TaskNonTerminalState } from '../types.js';
 import { uuidv7 } from 'uuidv7';
 
 export const TASKS_TABLE = 'tasks';
 
 export type TaskProps = Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>;
-
-export const taskStates = ['CREATED', 'STARTED', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'] as const;
 
 interface TaskStateTransition {
     from: TaskState;
@@ -25,7 +24,7 @@ export const validTaskStateTransitions = [
     { from: 'STARTED', to: 'CANCELLED' },
     { from: 'STARTED', to: 'EXPIRED' }
 ] as const;
-const terminalStates: TaskState[] = taskStates.filter((state) => {
+const validToStates: TaskState[] = taskStates.filter((state) => {
     return validTaskStateTransitions.every((transition) => transition.from !== state);
 });
 export type ValidTaskStateTransitions = (typeof validTaskStateTransitions)[number];
@@ -102,7 +101,7 @@ const DbTask = {
     }
 };
 
-export async function create(taskProps: TaskProps): Promise<Result<Task>> {
+export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Result<Task>> {
     const now = new Date();
     const newTask: Task = {
         ...taskProps,
@@ -125,7 +124,7 @@ export async function create(taskProps: TaskProps): Promise<Result<Task>> {
     }
 }
 
-export async function get(taskId: string): Promise<Result<Task>> {
+export async function get(db: knex.Knex, taskId: string): Promise<Result<Task>> {
     const task = await db.from<DbTask>(TASKS_TABLE).where('id', taskId).first();
     if (!task) {
         return Err(new Error(`Task with id '${taskId}' not found`));
@@ -133,8 +132,11 @@ export async function get(taskId: string): Promise<Result<Task>> {
     return Ok(DbTask.from(task));
 }
 
-export async function list(params?: { groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
+export async function search(db: knex.Knex, params?: { ids?: string[]; groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
     const query = db.from<DbTask>(TASKS_TABLE);
+    if (params?.ids) {
+        query.whereIn('id', params.ids);
+    }
     if (params?.groupKey) {
         query.where('group_key', params.groupKey);
     }
@@ -142,11 +144,11 @@ export async function list(params?: { groupKey?: string; state?: TaskState; limi
         query.where('state', params.state);
     }
     const limit = params?.limit || 100;
-    const tasks = await query.limit(limit);
+    const tasks = await query.limit(limit).orderBy('id');
     return Ok(tasks.map(DbTask.from));
 }
 
-export async function heartbeat(taskId: string): Promise<Result<Task>> {
+export async function heartbeat(db: knex.Knex, taskId: string): Promise<Result<Task>> {
     try {
         const updated = await db.from<DbTask>(TASKS_TABLE).where('id', taskId).update({ last_heartbeat_at: new Date() }).returning('*');
         if (!updated?.[0]) {
@@ -158,37 +160,47 @@ export async function heartbeat(taskId: string): Promise<Result<Task>> {
     }
 }
 
-export async function transitionState({ taskId, newState, output }: { taskId: string; newState: TaskState; output?: JsonValue }): Promise<Result<Task>> {
-    if (newState === 'SUCCEEDED' && !output) {
-        return Err(new Error(`Output is required when state = '${newState}'`));
-    }
-    const task = await get(taskId);
+export async function transitionState(
+    db: knex.Knex,
+    props:
+        | {
+              taskId: string;
+              newState: TaskTerminalState;
+              output: JsonValue;
+          }
+        | {
+              taskId: string;
+              newState: TaskNonTerminalState;
+          }
+): Promise<Result<Task>> {
+    const task = await get(db, props.taskId);
     if (task.isErr()) {
-        return Err(new Error(`Task with id '${taskId}' not found`));
+        return Err(new Error(`Task with id '${props.taskId}' not found`));
     }
 
-    const transition = TaskStateTransition.validate({ from: task.value.state, to: newState });
+    const transition = TaskStateTransition.validate({ from: task.value.state, to: props.newState });
     if (transition.isErr()) {
         return Err(transition.error);
     }
 
+    const output = 'output' in props ? props.output : null;
     const updated = await db
         .from<DbTask>(TASKS_TABLE)
-        .where('id', taskId)
+        .where('id', props.taskId)
         .update({
             state: transition.value.to,
             last_state_transition_at: new Date(),
-            terminated: terminalStates.includes(transition.value.to),
-            output: output || null
+            terminated: validToStates.includes(transition.value.to),
+            output
         })
         .returning('*');
     if (!updated?.[0]) {
-        return Err(new Error(`Task with id '${taskId}' not found`));
+        return Err(new Error(`Task with id '${props.taskId}' not found`));
     }
     return Ok(DbTask.from(updated[0]));
 }
 
-export async function dequeue({ groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
+export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
     try {
         const tasks = await db
             .update({
@@ -220,13 +232,21 @@ export async function dequeue({ groupKey, limit }: { groupKey: string; limit: nu
     }
 }
 
-export async function expiresIfTimeout(): Promise<Result<Task[]>> {
+export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
     try {
         const tasks = await db
             .update({
                 state: 'EXPIRED',
                 last_state_transition_at: new Date(),
-                terminated: true
+                terminated: true,
+                output: db.raw(`
+                    CASE
+                        WHEN state = 'CREATED' AND starts_after + created_to_started_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP THEN '{"reason": "createdToStartedTimeoutSecs_exceeded"}'
+                        WHEN state = 'STARTED' AND last_heartbeat_at + heartbeat_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP THEN '{"reason": "heartbeatTimeoutSecs_exceeded"}'
+                        WHEN state = 'STARTED' AND last_state_transition_at + started_to_completed_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP THEN '{"reason": "startedToCompletedTimeoutSecs_exceeded"}'
+                        ELSE output
+                    END
+                `)
             })
             .from<DbTask>(TASKS_TABLE)
             .whereIn(

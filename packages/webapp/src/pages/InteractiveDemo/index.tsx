@@ -26,7 +26,7 @@ export const InteractiveDemo: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();
 
     const env = useStore((state) => state.env);
-    const { environment } = useEnvironment(env);
+    const { environmentAndAccount } = useEnvironment(env);
 
     useEffect(() => {
         if (env !== 'dev') {
@@ -35,16 +35,17 @@ export const InteractiveDemo: React.FC = () => {
     }, [env]);
 
     useEffect(() => {
-        if (!environment) {
+        if (!environmentAndAccount) {
             return;
         }
 
-        const email = environment.email;
+        const { email } = environmentAndAccount;
+
         let strippedEmail = email.includes('@') ? email.split('@')[0] : email;
         strippedEmail = strippedEmail.replace(/[^a-zA-Z0-9]/g, '_');
         setConnectionId(strippedEmail);
         setLoaded(true);
-    }, [setLoaded, setConnectionId, environment]);
+    }, [setLoaded, setConnectionId, environmentAndAccount]);
 
     useEffect(() => {
         const getProgress = async () => {
@@ -147,7 +148,7 @@ export const InteractiveDemo: React.FC = () => {
         setStep(Steps.Start);
     };
 
-    if (!environment) {
+    if (!environmentAndAccount) {
         return null;
     }
 
@@ -167,9 +168,9 @@ export const InteractiveDemo: React.FC = () => {
                             <AuthorizeBloc
                                 step={step}
                                 connectionId={connectionId}
-                                hostUrl={environment.host}
+                                hostUrl={environmentAndAccount.host}
                                 providerConfigKey={providerConfigKey}
-                                publicKey={environment.public_key}
+                                publicKey={environmentAndAccount.environment.public_key}
                                 onProgress={onAuthorize}
                             />
 
@@ -186,7 +187,7 @@ export const InteractiveDemo: React.FC = () => {
                                     step={step}
                                     connectionId={connectionId}
                                     providerConfigKey={providerConfigKey}
-                                    secretKey={environment.secret_key}
+                                    secretKey={environmentAndAccount.environment.secret_key}
                                     records={records}
                                     onProgress={onFetch}
                                 />
@@ -197,7 +198,7 @@ export const InteractiveDemo: React.FC = () => {
                                     step={step}
                                     connectionId={connectionId}
                                     providerConfigKey={providerConfigKey}
-                                    secretKey={environment.secret_key}
+                                    secretKey={environmentAndAccount.environment.secret_key}
                                     onProgress={onActionConfirm}
                                 />
                             </div>

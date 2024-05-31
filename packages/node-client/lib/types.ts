@@ -7,7 +7,7 @@ export interface NangoProps {
     providerConfigKey?: string;
     isSync?: boolean;
     dryRun?: boolean;
-    activityLogId?: number;
+    activityLogId?: number | undefined;
 }
 
 export interface CreateConnectionOAuth1 extends OAuth1Credentials {
@@ -125,7 +125,13 @@ export interface ApiKeyCredentials extends CredentialsCommon {
 
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
-export type Metadata = Record<string, string | Record<string, any>>;
+export type Metadata = Record<string, unknown>;
+
+export interface MetadataChangeResponse {
+    metadata: Metadata;
+    provider_config_key: string;
+    connection_id: string | string[];
+}
 
 export interface Connection {
     id?: number;

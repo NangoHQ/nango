@@ -13,10 +13,13 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import Info from '../../components/ui/Info';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
+import { useEnvironment } from '../../hooks/useEnvironment';
 import Syncs from './Syncs';
 import Authorization from './Authorization';
 import type { SyncResponse, Connection } from '../../types';
 import PageNotFound from '../PageNotFound';
+import { isHosted } from '../../utils/utils';
+import { connectSlack } from '../../utils/slack-connection';
 
 import { useStore } from '../../store';
 
@@ -28,14 +31,17 @@ export enum Tabs {
 export default function ShowIntegration() {
     const { mutate } = useSWRConfig();
     const env = useStore((state) => state.env);
+    const { environmentAndAccount, mutate: environmentMutate } = useEnvironment(env);
 
     const [loaded, setLoaded] = useState(false);
     const [connection, setConnection] = useState<Connection | null>(null);
+    const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const [, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [modalShowSpinner, setModalShowSpinner] = useState(false);
     const [pageNotFound, setPageNotFound] = useState(false);
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
+    const [slackIsConnected, setSlackIsConnected] = useState(true);
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI(env);
     const deleteConnectionAPI = useDeleteConnectionAPI(env);
 
@@ -62,10 +68,16 @@ export default function ShowIntegration() {
     }, [syncLoadError]);
 
     useEffect(() => {
+        if (environmentAndAccount) {
+            setSlackIsConnected(environmentAndAccount.environment.slack_notifications);
+        }
+    }, [environmentAndAccount]);
+
+    useEffect(() => {
         if (location.hash === '#models' || location.hash === '#syncs') {
             setActiveTab(Tabs.Syncs);
         }
-        if (location.hash === '#authorization') {
+        if (location.hash === '#authorization' || isHosted()) {
             setActiveTab(Tabs.Authorization);
         }
     }, [location]);
@@ -135,6 +147,23 @@ We could not retrieve and/or refresh your access token due to the following erro
         setTimeout(() => {
             setFetchingRefreshToken(false);
         }, 400);
+    };
+
+    const createSlackConnection = async () => {
+        setSlackIsConnecting(true);
+        if (!environmentAndAccount) return;
+        const { uuid: accountUUID, host: hostUrl } = environmentAndAccount;
+        const onFinish = () => {
+            environmentMutate();
+            toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+            setSlackIsConnecting(false);
+        };
+
+        const onFailure = () => {
+            toast.error('Failed to create Slack connection!', { position: toast.POSITION.BOTTOM_CENTER });
+            setSlackIsConnecting(false);
+        };
+        await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
     };
 
     if (pageNotFound) {
@@ -224,6 +253,22 @@ We could not retrieve and/or refresh your access token due to the following erro
                         Authorization
                     </li>
                 </ul>
+
+                {!slackIsConnected && !isHosted() && (
+                    <Info size={8} color="blue" showIcon={false} padding="mt-4 p-1">
+                        <div className="flex text-sm items-center">
+                            <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
+                            Receive instant monitoring alerts on Slack.{' '}
+                            <button
+                                disabled={slackIsConnecting}
+                                onClick={createSlackConnection}
+                                className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
+                            >
+                                Set up now for the {env} environment.
+                            </button>
+                        </div>
+                    </Info>
+                )}
             </section>
 
             {serverErrorMessage && (

@@ -7,9 +7,6 @@ import {
     analytics,
     AnalyticsTypes,
     AuthOperation,
-    connectionCreated as connectionCreatedHook,
-    connectionCreationFailed as connectionCreationFailedHook,
-    connectionTest as connectionTestHook,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     updateProvider as updateProviderActivityLog,
@@ -26,6 +23,11 @@ import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
+import {
+    connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
+    connectionTest as connectionTestHook
+} from '../hooks/hooks.js';
 
 class ApiAuthController {
     async apiKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -51,7 +53,7 @@ class ApiAuthController {
         let logCtx: LogContext | undefined;
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization API Key' },
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization API Key' },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, account.id);
@@ -141,7 +143,7 @@ class ApiAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             if (!req.body.apiKey) {
                 errorManager.errRes(res, 'missing_api_key');
@@ -206,12 +208,12 @@ class ApiAuthController {
             );
 
             if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
-                        environment_id: environment.id,
+                        connection: updatedConnection.connection,
+                        environment,
+                        account,
                         auth_mode: AuthModes.ApiKey,
                         operation: updatedConnection.operation
                     },
@@ -237,10 +239,9 @@ class ApiAuthController {
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId as string,
-                        provider_config_key: providerConfigKey as string,
-                        environment_id: environment.id,
+                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                        environment,
+                        account,
                         auth_mode: AuthModes.ApiKey,
                         error: `Error during API key auth: ${prettyError}`,
                         operation: AuthOperation.UNKNOWN
@@ -290,7 +291,7 @@ class ApiAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth' }, message: 'Authorization Basic' },
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization Basic' },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, account.id);
@@ -362,6 +363,8 @@ class ApiAuthController {
                 return;
             }
 
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
+
             const template = configService.getTemplate(config.provider);
 
             if (template.auth_mode !== AuthModes.Basic) {
@@ -414,7 +417,6 @@ class ApiAuthController {
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
-            await logCtx.enrichOperation({ configId: config.id!, configName: config.unique_key });
 
             await createActivityLogMessage({
                 level: 'info',
@@ -439,12 +441,12 @@ class ApiAuthController {
             );
 
             if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 void connectionCreatedHook(
                     {
-                        id: updatedConnection.id,
-                        connection_id: connectionId,
-                        provider_config_key: providerConfigKey,
-                        environment_id: environment.id,
+                        connection: updatedConnection.connection,
+                        environment,
+                        account,
                         auth_mode: AuthModes.Basic,
                         operation: updatedConnection.operation
                     },
@@ -470,10 +472,9 @@ class ApiAuthController {
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
-                        id: -1,
-                        connection_id: connectionId as string,
-                        provider_config_key: providerConfigKey as string,
-                        environment_id: environment.id,
+                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                        environment,
+                        account,
                         auth_mode: AuthModes.ApiKey,
                         error: `Error during basic API key auth: ${prettyError}`,
                         operation: AuthOperation.UNKNOWN
