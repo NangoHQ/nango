@@ -1328,6 +1328,7 @@ mailchimp:
     authorization_params:
         response_type: code
     docs: https://docs.nango.dev/integrations/all/mailchimp
+#Untested configuration. Please reach out if you have a test account that we can use to test it.
 marketo:
     auth_mode: OAUTH2_CC
     proxy:
