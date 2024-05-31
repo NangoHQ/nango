@@ -49,7 +49,7 @@ export default function Authorization(props: AuthorizationProps) {
             <div className="flex">
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-2">Auth Type</span>
-                    <span className="text-white">{connection.credentials.type}</span>
+                    <span className="text-white">{connection.credentials.type || 'None'}</span>
                 </div>
                 {connection.credentials && connection.credentials.type === AuthModes.ApiKey && 'apiKey' in connection.credentials && (
                     <div className="flex flex-col w-1/2">
