@@ -17,7 +17,8 @@ import type {
     ExecutePostConnectionProps,
     TaskAction,
     TaskWebhook,
-    TaskPostConnection
+    TaskPostConnection,
+    OrchestratorTask
 } from './types.js';
 import { validateTask } from './validate.js';
 import type { JsonValue } from 'type-fest';
@@ -66,7 +67,7 @@ export class OrchestratorClient {
             return res;
         }
         const taskId = res.value.taskId;
-        const getOutput = await this.routeFetch(getOutputRoute)({ params: { taskId }, query: { waitForCompletion: true } });
+        const getOutput = await this.routeFetch(getOutputRoute)({ params: { taskId }, query: { longPolling: true } });
         if ('error' in getOutput) {
             return Err({
                 name: getOutput.error.code,
@@ -178,17 +179,17 @@ export class OrchestratorClient {
     public async dequeue({
         groupKey,
         limit,
-        waitForCompletion
+        longPolling
     }: {
         groupKey: string;
         limit: number;
-        waitForCompletion: boolean;
-    }): Promise<Result<(TaskWebhook | TaskAction | TaskPostConnection)[], ClientError>> {
+        longPolling: boolean;
+    }): Promise<Result<OrchestratorTask[], ClientError>> {
         const res = await this.routeFetch(postDequeueRoute)({
             body: {
                 groupKey,
                 limit,
-                waitForCompletion
+                longPolling
             }
         });
         if ('error' in res) {
