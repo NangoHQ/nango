@@ -105,6 +105,7 @@ export class OrchestratorProcessor {
                 } else {
                     await this.orchestratorClient.succeed({ taskId: task.id, output: res.value });
                 }
+                //TODO what to do if failed/success fails?
             } catch (err: unknown) {
                 const error = new Error(stringifyError(err));
                 await this.orchestratorClient.failed({ taskId: task.id, error });

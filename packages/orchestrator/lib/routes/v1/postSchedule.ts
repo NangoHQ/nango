@@ -33,30 +33,31 @@ export type PostSchedule = Endpoint<{
 }>;
 
 const commonSchemaFields = {
-    name: z.string().min(1),
     connection: z.object({
         id: z.number().positive(),
+        connection_id: z.string().min(1),
         provider_config_key: z.string().min(1),
         environment_id: z.number().positive()
     }),
+    activityLogId: z.number().positive(),
     input: jsonSchema
 };
 
 export const actionArgsSchema = z.object({
     type: z.literal('action'),
-    activityLogId: z.number().positive(),
+    actionName: z.string().min(1),
     ...commonSchemaFields
 });
 export const webhookArgsSchema = z.object({
     type: z.literal('webhook'),
+    webhookName: z.string().min(1),
     parentSyncName: z.string().min(1),
-    activityLogId: z.number().positive().nullable(),
     ...commonSchemaFields
 });
 export const postConnectionArgsSchema = z.object({
     type: z.literal('post-connection-script'),
+    postConnectionName: z.string().min(1),
     fileLocation: z.string().min(1),
-    activityLogId: z.number().positive(),
     ...commonSchemaFields
 });
 
