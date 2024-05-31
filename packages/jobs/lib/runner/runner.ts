@@ -1,10 +1,10 @@
-import type { KVStore } from '@nangohq/shared/lib/utils/kvstore/KVStore.js';
 import { LocalRunner } from './local.runner.js';
 import { RenderRunner } from './render.runner.js';
 import { RemoteRunner } from './remote.runner.js';
 import { isEnterprise, env, getLogger } from '@nangohq/utils';
-import { getRedisUrl, InMemoryKVStore, RedisKVStore } from '@nangohq/shared';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
+import type { KVStore } from '@nangohq/kvstore';
+import { createKVStore } from '@nangohq/kvstore';
 
 const logger = getLogger('Runner');
 
@@ -111,7 +111,7 @@ class RunnerCache {
 
     async set(runner: Runner): Promise<void> {
         const ttl = 7 * 24 * 60 * 60 * 1000; // 7 days
-        await this.store.set(this.cacheKey(runner.id), JSON.stringify(runner), true, ttl);
+        await this.store.set(this.cacheKey(runner.id), JSON.stringify(runner), { canOverride: true, ttlInMs: ttl });
     }
 
     async delete(runnerId: string): Promise<void> {
@@ -120,13 +120,6 @@ class RunnerCache {
 }
 
 const runnersCache = await (async () => {
-    let store: KVStore;
-    const url = getRedisUrl();
-    if (url) {
-        store = new RedisKVStore(url);
-        await (store as RedisKVStore).connect();
-    } else {
-        store = new InMemoryKVStore();
-    }
+    const store = await createKVStore();
     return new RunnerCache(store);
 })();
