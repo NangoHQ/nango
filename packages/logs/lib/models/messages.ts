@@ -41,7 +41,7 @@ export async function createMessage(row: MessageRow): Promise<void> {
         index: indexMessages.index,
         id: row.id,
         document: row,
-        refresh: isTest,
+        refresh: row.operation ? true : isTest,
         pipeline: `daily.${indexMessages.index}`
     });
 }

@@ -53,7 +53,6 @@ export class Orchestrator {
         input,
         activityLogId,
         environment_id,
-        writeLogs = true,
         logCtx
     }: {
         connection: NangoConnection;
@@ -61,25 +60,22 @@ export class Orchestrator {
         input: object;
         activityLogId: number;
         environment_id: number;
-        writeLogs?: boolean;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const startTime = Date.now();
         const workflowId = `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connection.connection_id}.${uuid()}`;
         try {
-            if (writeLogs) {
-                await createActivityLogMessage({
-                    level: 'info',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    content: `Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
-                    params: {
-                        input: JSON.stringify(input, null, 2)
-                    },
-                    timestamp: Date.now()
-                });
-                await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input: JSON.stringify(input, null, 2) });
-            }
+            await createActivityLogMessage({
+                level: 'info',
+                environment_id,
+                activity_log_id: activityLogId,
+                content: `Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
+                params: {
+                    input: JSON.stringify(input, null, 2)
+                },
+                timestamp: Date.now()
+            });
+            await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input: JSON.stringify(input, null, 2) });
 
             const isOchestratorEnabled = await featureFlags.isEnabled('orchestrator:dryrun', 'global', false, false);
             if (isOchestratorEnabled) {
@@ -141,7 +137,7 @@ export class Orchestrator {
                             environment_id: connection.environment_id
                         },
                         input,
-                        activityLogId: writeLogs ? activityLogId : undefined
+                        activityLogId
                     }
                 ]
             });
@@ -151,43 +147,39 @@ export class Orchestrator {
             // Errors received from temporal are raw objects not classes
             const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
             if (!success || error) {
-                if (writeLogs) {
-                    if (rawError) {
-                        await createActivityLogMessageAndEnd({
-                            level: 'error',
-                            environment_id,
-                            activity_log_id: activityLogId,
-                            timestamp: Date.now(),
-                            content: `Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`
-                        });
-                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
-                    }
+                if (rawError) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
                         environment_id,
                         activity_log_id: activityLogId,
                         timestamp: Date.now(),
-                        content: `The action workflow ${workflowId} did not complete successfully`
+                        content: `Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`
                     });
-                    await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
+                    await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
                 }
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content: `The action workflow ${workflowId} did not complete successfully`
+                });
+                await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
 
                 return Err(error!);
             }
 
             const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(0, 100)}`;
 
-            if (writeLogs) {
-                await createActivityLogMessageAndEnd({
-                    level: 'info',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
-                await updateSuccessActivityLog(activityLogId, true);
-                await logCtx.info(content);
-            }
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                environment_id,
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content
+            });
+            await updateSuccessActivityLog(activityLogId, true);
+            await logCtx.info(content);
 
             await telemetry.log(
                 LogTypes.ACTION_SUCCESS,
@@ -209,16 +201,14 @@ export class Orchestrator {
 
             const content = `The action workflow ${workflowId} failed with error: ${err}`;
 
-            if (writeLogs) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
-                await logCtx.error(content);
-            }
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                environment_id,
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content
+            });
+            await logCtx.error(content);
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
