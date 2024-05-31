@@ -33,12 +33,14 @@ import {
     connectionService,
     configService
 } from '@nangohq/shared';
-import { metrics } from '@nangohq/utils';
+import { metrics, getLogger } from '@nangohq/utils';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 
 type ForwardedHeaders = Record<string, string>;
+
+const logger = getLogger('Proxy.Controller');
 
 class ProxyController {
     /**
@@ -302,11 +304,38 @@ class ProxyController {
             await logCtx.info(`${config.method.toUpperCase()} request to ${url} was successful`, { headers: JSON.stringify(safeHeaders) });
         }
 
-        const passThroughStream = new PassThrough();
-        responseStream.data.pipe(passThroughStream);
-        passThroughStream.pipe(res);
+        const contentType = responseStream.headers['content-type'];
+        const isJsonResponse = contentType && contentType.includes('application/json');
+        const isChunked = responseStream.headers['transfer-encoding'] === 'chunked';
 
-        res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
+        if (isChunked) {
+            const passThroughStream = new PassThrough();
+            responseStream.data.pipe(passThroughStream);
+            passThroughStream.pipe(res);
+            res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
+        } else {
+            let responseData = '';
+
+            responseStream.data.on('data', (chunk: Buffer) => {
+                responseData += chunk.toString();
+            });
+
+            responseStream.data.on('end', () => {
+                if (isJsonResponse) {
+                    try {
+                        const parsedResponse = JSON.parse(responseData);
+
+                        res.json(parsedResponse);
+                    } catch (error) {
+                        logger.error(error);
+                        res.writeHead(500, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ error: 'Failed to parse JSON response' }));
+                    }
+                } else {
+                    res.send(responseData);
+                }
+            });
+        }
     }
 
     private async handleErrorResponse(
@@ -411,7 +440,7 @@ class ProxyController {
                 headers,
                 decompress
             };
-            if (['POST', 'PUT', 'PATCH'].includes(method)) {
+            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
                 requestConfig.data = data || {};
             }
             const responseStream: AxiosResponse = await backOff(
