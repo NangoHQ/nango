@@ -1,6 +1,7 @@
-import type { TaskProps, taskStates } from './models/tasks';
+import type { TaskProps } from './models/tasks';
 import type { JsonValue } from 'type-fest';
 
+export const taskStates = ['CREATED', 'STARTED', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'] as const;
 export type TaskState = (typeof taskStates)[number];
 export type TaskTerminalState = Exclude<TaskState, 'CREATED' | 'STARTED'>;
 export type TaskNonTerminalState = Exclude<TaskState, TaskTerminalState>;

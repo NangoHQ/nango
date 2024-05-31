@@ -69,15 +69,16 @@ export class Scheduler {
     }
 
     /**
-     * List tasks
+     * Search tasks
      * @param params
+     * @param params.ids - Task IDs
      * @param params.groupKey - Group key
      * @param params.state - Task state
      * @example
-     * const tasks = await scheduler.list({ groupKey: 'test', state: 'CREATED' });
+     * const tasks = await scheduler.search({ groupKey: 'test', state: 'CREATED' });
      */
-    public async list(params?: { groupKey?: string; state?: TaskState }): Promise<Result<Task[]>> {
-        return tasks.list(this.dbClient.db, params);
+    public async search(params?: { ids?: string[]; groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
+        return tasks.search(this.dbClient.db, params);
     }
 
     /**
@@ -203,11 +204,12 @@ export class Scheduler {
     /**
      * Cancel a task
      * @param cancelBy - Cancel by task ID or schedule ID
+     * @param reason - Reason for cancellation
      * @returns Task
      * @example
      * const cancelled = await scheduler.cancel({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
-    public async cancel(cancelBy: { taskId: string; reason: string } | { scheduleId: string; reason: string }): Promise<Result<Task>> {
+    public async cancel(cancelBy: { taskId: string; reason: JsonValue } | { scheduleId: string; reason: JsonValue }): Promise<Result<Task>> {
         if ('scheduleId' in cancelBy) {
             throw new Error(`Cancelling tasks for schedule '${cancelBy.scheduleId}' not implemented`);
         }

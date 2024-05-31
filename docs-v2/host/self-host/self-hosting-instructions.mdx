@@ -74,11 +74,16 @@ NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
 ### Encrypt sensitive data[](#encrypt-sensitive-data 'Direct link to Encrypt sensitive data')
 
 You can enforce encryption of sensitive data (tokens, secret key, app secret)
-using the AES-GCM encryption algorithm. To do so, set the following environment
-variable to a randomly generated 256-bit base64-encoded key:
+using the AES-GCM encryption algorithm. To do so, generate a 256-bit base64-encoded key:
 
 ```
-NANGO_ENCRYPTION_KEY=<ADD-BASE64-256BIT-KEY>
+openssl rand -base64 32
+```
+
+And set the `NANGO_ENCRYPTION_KEY` environment variable to the generated key:
+
+```
+NANGO_ENCRYPTION_KEY=<BASE64-256BIT-KEY>
 ```
 
 Once you restart the Nango server, the encryption of the database will happen

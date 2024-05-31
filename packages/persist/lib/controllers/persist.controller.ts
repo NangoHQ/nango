@@ -51,8 +51,7 @@ class PersistController {
             },
             false
         );
-        const logCtx = logContextGetter.get({ id: String(activityLogId) });
-        logCtx.logToConsole = false;
+        const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) }, { logToConsole: false });
         await logCtx.log({ type: 'log', message: truncatedMsg, environmentId: environmentId, level: oldLevelToNewLevel[level], source: 'user' });
 
         if (result) {
@@ -203,7 +202,7 @@ class PersistController {
             syncJobId,
             softDelete
         });
-        const logCtx = logContextGetter.get({ id: String(activityLogId) });
+        const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
         if (formatting.isErr()) {
             await createActivityLogMessage({
                 level: 'error',

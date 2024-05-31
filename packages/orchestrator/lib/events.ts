@@ -1,12 +1,6 @@
 import type { Task } from '@nangohq/scheduler';
 import EventEmitter from 'node:events';
 
-type TaskEvent = 'completed';
-
-export function getEventId(event: TaskEvent, taskId: string) {
-    return `task:${event}:${taskId}`;
-}
-
 export class EventsHandler extends EventEmitter {
     public readonly onCallbacks: {
         CREATED: (task: Task) => void;
@@ -29,30 +23,27 @@ export class EventsHandler extends EventEmitter {
         this.onCallbacks = {
             CREATED: (task: Task) => {
                 on.CREATED(task);
+                this.emit(`task:started:${task.groupKey}`, task);
             },
             STARTED: (task: Task) => {
                 on.STARTED(task);
             },
             SUCCEEDED: (task: Task) => {
                 on.SUCCEEDED(task);
-                this.emitEvent('completed', task);
+                this.emit(`task:completed:${task.id}`, task);
             },
             FAILED: (task: Task) => {
                 on.FAILED(task);
-                this.emitEvent('completed', task);
+                this.emit(`task:completed:${task.id}`, task);
             },
             EXPIRED: (task: Task) => {
                 on.EXPIRED(task);
-                this.emitEvent('completed', task);
+                this.emit(`task:completed:${task.id}`, task);
             },
             CANCELLED: (task: Task) => {
                 on.CANCELLED(task);
-                this.emitEvent('completed', task);
+                this.emit(`task:completed:${task.id}`, task);
             }
         };
-    }
-
-    private emitEvent(event: TaskEvent, task: Task) {
-        this.emit(getEventId(event, task.id), task);
     }
 }
