@@ -1,5 +1,6 @@
 import * as cron from 'node-cron';
-import { telemetry, LogTypes, LogActionEnum, errorManager, ErrorSourceEnum, SyncClient, db, getRunningSchedules } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { telemetry, LogTypes, LogActionEnum, errorManager, ErrorSourceEnum, SyncClient, getRunningSchedules } from '@nangohq/shared';
 import { getLogger, metrics, stringToHash } from '@nangohq/utils';
 import tracer from 'dd-trace';
 

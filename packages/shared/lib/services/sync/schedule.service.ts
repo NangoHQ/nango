@@ -1,4 +1,4 @@
-import db, { schema, dbNamespace } from '../../db/database.js';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import type { Schedule as SyncSchedule, SyncCommand } from '../../models/Sync.js';
 import { ScheduleStatus, SyncCommandToScheduleStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';

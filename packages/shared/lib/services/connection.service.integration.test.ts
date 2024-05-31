@@ -1,11 +1,11 @@
 import { expect, describe, it, beforeAll } from 'vitest';
-import db, { multipleMigrations } from '../db/database.js';
+import db, { multipleMigrations } from '@nangohq/database';
 import connectionService from './connection.service.js';
 import type { Connection } from '../models/Connection.js';
 import type { Metadata } from '@nangohq/types';
-import { createConfigSeeds } from '../db/seeders/config.seeder.js';
-import { createConnectionSeeds } from '../db/seeders/connection.seeder.js';
-import { createEnvironmentSeed } from '../db/seeders/environment.seeder.js';
+import { createConfigSeeds } from '../seeders/config.seeder.js';
+import { createConnectionSeeds } from '../seeders/connection.seeder.js';
+import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import type { Environment } from '../models/Environment.js';
 
 describe('Connection service integration tests', async () => {

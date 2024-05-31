@@ -18,11 +18,12 @@
         "packages/webapp",
         "packages/utils",
         "packages/data-ingestion",
-        "packages/types"
+        "packages/types",
+        "packages/database"
     ],
     "scripts": {
-        "create:migration": "cd packages/shared/lib/db && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
-        "undo:migration": "cd packages/shared/lib/db && knex migrate:rollback --esm --knexfile ./knexfile.cjs",
+        "create:migration": "cd packages/database/lib/db && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
+        "undo:migration": "cd packages/database/lib/db && knex migrate:rollback --esm --knexfile ./knexfile.cjs",
         "prettier-format": "prettier --config .prettierrc \"./**/*.{ts,tsx}\" --write",
         "prettier-watch": "onchange './**/*.{ts,tsx}' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts,.tsx",

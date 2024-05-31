@@ -1,7 +1,7 @@
 FROM node:20.12.2-slim
 
 ENV SERVER_RUN_MODE=DOCKERIZED
-ENV NANGO_DB_MIGRATION_FOLDER=./packages/shared/lib/db/migrations
+ENV NANGO_DB_MIGRATION_FOLDER=./packages/database/lib/migrations
 
 RUN apt-get update \
     && apt-get install -y ca-certificates \
@@ -15,6 +15,7 @@ COPY packages/webapp/build/ packages/webapp/build/
 COPY packages/shared/ packages/shared/
 COPY packages/utils/ packages/utils/
 COPY packages/logs/ packages/logs/
+COPY packages/database/ packages/database/
 COPY packages/node-client/ packages/node-client/
 COPY packages/records/ packages/records/
 COPY packages/scheduler/ packages/scheduler/

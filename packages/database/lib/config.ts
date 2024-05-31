@@ -1,4 +1,4 @@
-import { getDbConfig } from './database.js';
+import { getDbConfig } from './getConfig.js';
 
 const config = getDbConfig({ timeoutMs: 60000 });
 

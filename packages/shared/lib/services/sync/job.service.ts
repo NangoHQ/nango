@@ -1,4 +1,4 @@
-import db, { schema, dbNamespace } from '../../db/database.js';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { NangoConnection } from '../../models/Connection.js';

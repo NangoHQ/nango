@@ -1,8 +1,8 @@
 import { promisify } from 'node:util';
 import crypto from 'node:crypto';
 import { nanoid } from '@nangohq/utils';
-import type { User } from '../../models';
-import userService from '../../services/user.service.js';
+import type { User } from '../models';
+import userService from '../services/user.service.js';
 
 const promisePdkdf2 = promisify(crypto.pbkdf2);
 export async function seedUser(accountId: number): Promise<User> {

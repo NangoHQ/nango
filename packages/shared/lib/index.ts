@@ -1,5 +1,4 @@
-import db from './db/database.js';
-import * as seeders from './db/seeders/index.js';
+import * as seeders from './seeders/index.js';
 import configService from './services/config.service.js';
 import encryptionManager from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
@@ -40,7 +39,6 @@ export * from './models/index.js';
 
 export * from './utils/utils.js';
 export * from './utils/error.js';
-export * from './db/database.js';
 export * from './constants.js';
 export * from './utils/kvstore/KVStore.js';
 export * from './utils/kvstore/InMemoryStore.js';
@@ -51,7 +49,6 @@ export * from './sdk/sync.js';
 export { NANGO_VERSION } from './version.js';
 
 export {
-    db,
     seeders,
     configService,
     connectionService,
