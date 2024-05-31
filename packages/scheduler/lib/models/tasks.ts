@@ -215,7 +215,7 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
                     .from<DbTask>(TASKS_TABLE)
                     .where({ group_key: groupKey, state: 'CREATED' })
                     .where('starts_after', '<=', db.fn.now())
-                    .orderBy('created_at')
+                    .orderBy('id')
                     .limit(limit)
                     .forUpdate()
                     .skipLocked()
