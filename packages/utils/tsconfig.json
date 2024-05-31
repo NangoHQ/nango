@@ -4,5 +4,10 @@
         "rootDir": "lib",
         "outDir": "dist"
     },
-    "include": ["lib/**/*"]
+    "include": ["lib/**/*"],
+    "references": [
+        {
+            "path": "../types"
+        }
+    ]
 }
