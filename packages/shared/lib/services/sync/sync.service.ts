@@ -6,6 +6,7 @@ import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { updateScheduleStatus } from './schedule.service.js';
+import type { ActiveLogIds } from '@nangohq/types';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
@@ -23,6 +24,7 @@ const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
 const ACTIVITY_LOG_TABLE = dbNamespace + 'activity_logs';
+const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 
 /**
  * Sync Service
@@ -196,9 +198,7 @@ export const getSyncsFlatWithNames = async (nangoConnection: Connection, syncNam
  * @description get the sync related to the connection
  * the latest sync and its result and the next sync based on the schedule
  */
-export const getSyncs = async (
-    nangoConnection: Connection
-): Promise<(Sync & { status: SyncStatus; error_activity_log_id: number; error_log_id: string })[]> => {
+export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { status: SyncStatus; active_logs: ActiveLogIds })[]> => {
     const syncClient = await SyncClient.getInstance();
 
     if (!syncClient || !nangoConnection || !nangoConnection.id) {
@@ -215,8 +215,17 @@ export const getSyncs = async (
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
             `${SYNC_CONFIG_TABLE}.models`,
-            '_nango_ui_notifications.activity_log_id as error_activity_log_id',
-            '_nango_ui_notifications.log_id as error_log_id',
+            `${ACTIVE_LOG_TABLE}.activity_log_id as error_activity_log_id`,
+            `${ACTIVE_LOG_TABLE}.log_id as error_log_id`,
+            db.knex.raw(`
+                CASE
+                    WHEN COUNT(${ACTIVE_LOG_TABLE}.activity_log_id) = 0 THEN NULL
+                    ELSE json_build_object(
+                        'activity_log_id', ${ACTIVE_LOG_TABLE}.activity_log_id,
+                        'log_id', ${ACTIVE_LOG_TABLE}.log_id
+                    )
+                END as active_logs
+            `),
             db.knex.raw(
                 `(
                     SELECT json_build_object(
@@ -245,8 +254,8 @@ export const getSyncs = async (
         .join(SYNC_SCHEDULE_TABLE, function () {
             this.on(`${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`).andOn(`${SYNC_SCHEDULE_TABLE}.deleted`, '=', db.knex.raw('FALSE'));
         })
-        .leftJoin('_nango_ui_notifications', function () {
-            this.on(`_nango_ui_notifications.sync_id`, `${TABLE}.id`).andOn(`_nango_ui_notifications.active`, '=', db.knex.raw('TRUE'));
+        .leftJoin(ACTIVE_LOG_TABLE, function () {
+            this.on(`${ACTIVE_LOG_TABLE}.sync_id`, `${TABLE}.id`).andOnVal(`${ACTIVE_LOG_TABLE}.active`, true).andOnVal(`${ACTIVE_LOG_TABLE}.type`, 'sync');
         })
         .join(SYNC_CONFIG_TABLE, function () {
             this.on(`${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
@@ -265,11 +274,11 @@ export const getSyncs = async (
         .groupBy(
             `${TABLE}.id`,
             `${SYNC_SCHEDULE_TABLE}.frequency`,
+            `${ACTIVE_LOG_TABLE}.activity_log_id`,
+            `${ACTIVE_LOG_TABLE}.log_id`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status`,
             `${SYNC_SCHEDULE_TABLE}.schedule_id`,
-            '_nango_ui_notifications.activity_log_id',
-            '_nango_ui_notifications.log_id',
             `${SYNC_CONFIG_TABLE}.models`
         );
 

@@ -1,9 +1,8 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { ApiError, UpdateMetadata, MetadataBody } from '@nangohq/types';
-import { connectionService } from '@nangohq/shared';
-import type { Connection } from '@nangohq/shared';
+import type { ApiError, SetMetadata, MetadataBody } from '@nangohq/types';
+import { db, connectionService } from '@nangohq/shared';
 
 const validation = z
     .object({
@@ -13,7 +12,7 @@ const validation = z
     })
     .strict();
 
-export const updateMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
+export const setMetadata = asyncWrapper<SetMetadata>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -36,7 +35,7 @@ export const updateMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
 
     const connectionIds = Array.isArray(connectionIdArg) ? connectionIdArg : [connectionIdArg];
 
-    const validConnections: Connection[] = [];
+    const ids: number[] = [];
 
     for (const connectionId of connectionIds) {
         const { success, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
@@ -62,10 +61,12 @@ export const updateMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
             return;
         }
 
-        validConnections.push(connection);
+        ids.push(connection.id);
     }
 
-    await connectionService.updateMetadata(validConnections, metadata);
+    await db.knex.transaction(async (trx) => {
+        await connectionService.replaceMetadata(ids, metadata, trx);
+    });
 
-    res.status(200).send(req.body);
+    res.status(201).send(req.body);
 });

@@ -596,7 +596,7 @@ export default class SyncRun {
             }
 
             if (this.syncId && this.nangoConnection.id) {
-                await errorNotificationService.sync.invalidate({
+                await errorNotificationService.sync.clear({
                     sync_id: this.syncId,
                     connection_id: this.nangoConnection.id
                 });
@@ -745,31 +745,15 @@ export default class SyncRun {
         }
 
         if (!this.isWebhook) {
-            try {
-                void this.slackNotificationService.reportFailure(
-                    this.nangoConnection,
-                    this.syncName,
-                    this.syncType,
-                    this.activityLogId as number,
-                    this.nangoConnection.environment_id,
-                    this.provider as string,
-                    this.logContextGetter
-                );
-            } catch {
-                errorManager.report('slack notification service reported a failure', {
-                    environmentId: this.nangoConnection.environment_id,
-                    source: ErrorSourceEnum.PLATFORM,
-                    operation: LogActionEnum.SYNC,
-                    metadata: {
-                        syncName: this.syncName,
-                        connectionDetails: this.nangoConnection,
-                        syncId: this.syncId,
-                        syncJobId: this.syncJobId,
-                        syncType: this.syncType,
-                        debug: this.debug
-                    }
-                });
-            }
+            void this.slackNotificationService.reportFailure(
+                this.nangoConnection,
+                this.syncName,
+                this.syncType,
+                this.activityLogId as number,
+                this.nangoConnection.environment_id,
+                this.provider as string,
+                this.logContextGetter
+            );
         }
 
         if (!this.activityLogId || !this.syncJobId) {

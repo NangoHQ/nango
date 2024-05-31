@@ -121,7 +121,7 @@ class ConnectionController {
                 };
 
                 if (isWeb) {
-                    list.error_log_id = connection.error_log_id;
+                    list.active_logs = connection.active_logs;
                 }
 
                 return list;

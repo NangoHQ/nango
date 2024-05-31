@@ -1,4 +1,4 @@
-const DB_TABLE = '_nango_ui_notifications';
+const DB_TABLE = '_nango_active_logs';
 
 exports.up = async function (knex, _) {
     return knex.schema.createTable(DB_TABLE, function (table) {

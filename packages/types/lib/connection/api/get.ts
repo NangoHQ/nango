@@ -1,6 +1,6 @@
 import type { ApiError, Endpoint } from '../../api.js';
 import type { Connection } from '../db.js';
-import type { UINotification } from '../../notification/ui/db.js';
+import type { ActiveLog } from '../../notification/active-logs/db.js';
 
 export type GetConnection = Endpoint<{
     Method: 'GET';
@@ -22,6 +22,6 @@ export type GetConnection = Endpoint<{
     Success: {
         provider: string | null;
         connection: Connection;
-        errorLog: UINotification | null;
+        errorLog: ActiveLog | null;
     };
 }>;

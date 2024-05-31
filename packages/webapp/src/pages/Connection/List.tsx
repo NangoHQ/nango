@@ -51,10 +51,10 @@ export default function ConnectionList() {
 
             if (states.length !== 0 && !states.includes('all') && !(states.includes('ok') && states.includes('error'))) {
                 if (states.includes('error')) {
-                    filtered = filtered?.filter((connection) => connection.error_log_id);
+                    filtered = filtered?.filter((connection) => connection.active_logs);
                 }
                 if (states.includes('ok')) {
-                    filtered = filtered?.filter((connection) => !connection.error_log_id);
+                    filtered = filtered?.filter((connection) => !connection.active_logs);
                 }
             }
 
@@ -155,7 +155,7 @@ export default function ConnectionList() {
                 <>
                     <div className="flex justify-end w-full text-[12px] text-white">
                         {connections.length} connections{' '}
-                        {errorNotifications && (
+                        {errorNotifications > 0 && (
                             <span className="flex items-center ml-1">
                                 ({errorNotifications} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
                             </span>
@@ -203,14 +203,7 @@ export default function ConnectionList() {
                                 <div className="w-20">Created</div>
                             </div>
                             {filteredConnections.map(
-                                ({
-                                    id,
-                                    connection_id: connectionId,
-                                    provider,
-                                    provider_config_key: providerConfigKey,
-                                    created: creationDate,
-                                    error_log_id
-                                }) => (
+                                ({ id, connection_id: connectionId, provider, provider_config_key: providerConfigKey, created: creationDate, active_logs }) => (
                                     <div
                                         key={`tr-${id}`}
                                         className={`flex gap-4 ${
@@ -222,7 +215,7 @@ export default function ConnectionList() {
                                     >
                                         <div className="flex items-center w-2/3 gap-2 py-2 truncate">
                                             <span className="break-words break-all truncate">{connectionId}</span>
-                                            {error_log_id && <ErrorCircle />}
+                                            {active_logs && <ErrorCircle />}
                                             <CopyButton dark text={connectionId} />
                                         </div>
                                         <div className="flex items-center w-1/3 gap-3">

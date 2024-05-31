@@ -1,3 +1,5 @@
+import type { ActiveLogIds } from '@nangohq/types';
+
 export interface ActivityResponse {
     id: number;
     level: 'info' | 'debug' | 'error' | 'warn';
@@ -92,8 +94,7 @@ export interface SyncResponse {
         version: string;
         models: string[];
     };
-    error_log_id?: string;
-    error_activity_log_id?: number;
+    active_logs: ActiveLogIds | null;
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL' | 'CANCEL';

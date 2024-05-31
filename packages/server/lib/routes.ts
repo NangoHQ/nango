@@ -31,7 +31,7 @@ import type { Response, Request } from 'express';
 import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import { getConnection as getConnectionWeb } from './controllers/v1/connection/web/get.js';
+import { getConnection as getConnectionWeb } from './controllers/v1/connection/get.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
 import {
@@ -45,8 +45,8 @@ import {
     getEmailByExpiredToken
 } from './controllers/v1/account/index.js';
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
-import { setMetadata } from './controllers/v1/connection/api/setMetadata.js';
-import { updateMetadata } from './controllers/v1/connection/api/updateMetadata.js';
+import { setMetadata } from './controllers/connection/setMetadata.js';
+import { updateMetadata } from './controllers/connection/updateMetadata.js';
 import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { Knex } from 'knex';
 import axios from 'axios';
-import db, { schema } from '../db/database.js';
+import db, { schema, dbNamespace } from '../db/database.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type {
     TemplateOAuth2 as ProviderTemplateOAuth2,
@@ -27,7 +27,7 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
-import type { Metadata } from '@nangohq/types';
+import type { Metadata, ActiveLogIds } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
@@ -54,6 +54,7 @@ import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 
 const logger = getLogger('Connection');
+const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 
 type KeyValuePairs = Record<string, string | boolean>;
 
@@ -524,11 +525,13 @@ class ConnectionService {
     public async listConnections(
         environment_id: number,
         connectionId?: string
-    ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata; error_log_id: number | null }[]> {
+    ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata; active_logs: ActiveLogIds }[]> {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
-            .leftJoin('_nango_ui_notifications', function () {
-                this.on('_nango_connections.id', '=', '_nango_ui_notifications.connection_id').onVal('_nango_ui_notifications.active', true);
+            .leftJoin(ACTIVE_LOG_TABLE, function () {
+                this.on('_nango_connections.id', '=', `${ACTIVE_LOG_TABLE}.connection_id`)
+                    .andOnVal(`${ACTIVE_LOG_TABLE}.active`, true)
+                    .andOnVal(`${ACTIVE_LOG_TABLE}.type`, 'auth');
             })
             .select(
                 { id: '_nango_connections.id' },
@@ -536,9 +539,26 @@ class ConnectionService {
                 { provider: '_nango_connections.provider_config_key' },
                 { created: '_nango_connections.created_at' },
                 '_nango_connections.metadata',
-                { error_log_id: '_nango_ui_notifications.activity_log_id' }
+                db.knex.raw(`
+                    CASE
+                        WHEN COUNT(${ACTIVE_LOG_TABLE}.activity_log_id) = 0 THEN NULL
+                        ELSE json_build_object(
+                            'activity_log_id', ${ACTIVE_LOG_TABLE}.activity_log_id,
+                            'log_id', ${ACTIVE_LOG_TABLE}.log_id
+                        )
+                    END as active_logs
+                `)
             )
-            .where({ '_nango_connections.environment_id': environment_id, '_nango_connections.deleted': false });
+            .where({ '_nango_connections.environment_id': environment_id, '_nango_connections.deleted': false })
+            .groupBy(
+                '_nango_connections.id',
+                '_nango_connections.connection_id',
+                '_nango_connections.provider_config_key',
+                '_nango_connections.created_at',
+                '_nango_connections.metadata',
+                `${ACTIVE_LOG_TABLE}.activity_log_id`,
+                `${ACTIVE_LOG_TABLE}.log_id`
+            );
 
         if (connectionId) {
             queryBuilder.where({
@@ -694,7 +714,7 @@ class ConnectionService {
 
         await this.updateLastFetched(connection.id);
 
-        await errorNotificationService.auth.invalidate({
+        await errorNotificationService.auth.clear({
             connection_id: connection.id
         });
 

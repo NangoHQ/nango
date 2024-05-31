@@ -147,10 +147,6 @@ We could not retrieve and/or refresh your access token due to the following erro
 
             toast.success('Token refresh success!', { position: toast.POSITION.BOTTOM_CENTER });
         } else if (res != null) {
-            setServerErrorMessage(`
-             We could not retrieve and/or refresh your access token due to the following error:
-             \n\n${(await res.json()).error}
-            `);
             toast.error('Failed to refresh token!', { position: toast.POSITION.BOTTOM_CENTER });
         }
         setTimeout(() => {
@@ -237,7 +233,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                         onClick={() => setActiveTab(Tabs.Syncs)}
                     >
                         Syncs
-                        {syncs && syncs.find((sync) => typeof sync.error_activity_log_id === 'number') && (
+                        {syncs && syncs.find((sync) => typeof sync.active_logs?.activity_log_id === 'number') && (
                             <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>
                         )}
                     </li>
@@ -249,22 +245,6 @@ We could not retrieve and/or refresh your access token due to the following erro
                         {connectionResponse.errorLog && <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>}
                     </li>
                 </ul>
-
-                {!slackIsConnected && !isHosted() && (
-                    <Info size={8} color="blue" showIcon={false} padding="mt-4 p-1">
-                        <div className="flex text-sm items-center">
-                            <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
-                            Receive instant monitoring alerts on Slack.{' '}
-                            <button
-                                disabled={slackIsConnecting}
-                                onClick={createSlackConnection}
-                                className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
-                            >
-                                Set up now for the {env} environment.
-                            </button>
-                        </div>
-                    </Info>
-                )}
             </section>
 
             {serverErrorMessage && (
@@ -295,26 +275,26 @@ We could not retrieve and/or refresh your access token due to the following erro
                 </div>
             )}
 
-            {activeTab === Tabs.Syncs && syncs && syncs.find((sync) => typeof sync.error_activity_log_id === 'number') && (
+            {activeTab === Tabs.Syncs && syncs && syncs.find((sync) => typeof sync.active_logs?.activity_log_id === 'number') && (
                 <div className="flex my-4">
                     <Info showIcon={false} size={14} padding="py-1 px-1" color="red">
                         <div className="flex items-center text-sm">
                             <ErrorCircle />
                             <span className="ml-2">
                                 Last sync execution failed for the following sync
-                                {syncs.filter((sync) => typeof sync.error_activity_log_id === 'number').length > 1 ? 's' : ''}:{' '}
+                                {syncs.filter((sync) => typeof sync.active_logs?.activity_log_id === 'number').length > 1 ? 's' : ''}:{' '}
                                 {syncs
-                                    .filter((sync) => typeof sync.error_activity_log_id === 'number')
+                                    .filter((sync) => typeof sync.active_logs?.activity_log_id === 'number')
                                     .map((sync, index) => (
                                         <Fragment key={sync.name}>
                                             {sync.name} (
                                             <Link
                                                 className="underline"
-                                                to={`/${env}/activity?activity_log_id=${sync.error_activity_log_id}&script=${sync.name}`}
+                                                to={`/${env}/activity?activity_log_id=${sync.active_logs?.activity_log_id}&script=${sync.name}`}
                                             >
                                                 logs
                                             </Link>
-                                            ){index < syncs.filter((sync) => typeof sync.error_activity_log_id === 'number').length - 1 && ', '}
+                                            ){index < syncs.filter((sync) => typeof sync.active_logs?.activity_log_id === 'number').length - 1 && ', '}
                                         </Fragment>
                                     ))}
                                 .
@@ -322,6 +302,22 @@ We could not retrieve and/or refresh your access token due to the following erro
                         </div>
                     </Info>
                 </div>
+            )}
+
+            {!slackIsConnected && !isHosted() && (
+                <Info size={14} color="blue" showIcon={false} padding="mt-6 p-1">
+                    <div className="flex text-sm items-center">
+                        <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
+                        Receive instant monitoring alerts on Slack.{' '}
+                        <button
+                            disabled={slackIsConnecting}
+                            onClick={createSlackConnection}
+                            className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
+                        >
+                            Set up now for the {env} environment.
+                        </button>
+                    </div>
+                </Info>
             )}
 
             <section className="mt-10">

@@ -396,7 +396,7 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                                                 </span>
                                                             </div>
                                                             <Link
-                                                                to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id || sync.error_activity_log_id}&connection=${connection?.connection_id}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                                to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id || sync.active_logs?.activity_log_id}&connection=${connection?.connection_id}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
                                                                 className={`flex items-center w-full whitespace-nowrap hover:bg-neutral-800 px-4 py-2`}
                                                             >
                                                                 <QueueListIcon className={`flex h-6 w-6 text-gray-400 cursor-pointer`} />

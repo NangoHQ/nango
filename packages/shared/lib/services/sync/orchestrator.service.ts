@@ -163,7 +163,7 @@ export class OrchestratorService {
     public async softDeleteSync(syncId: string, environmentId: number) {
         await deleteScheduleForSync(syncId, environmentId);
         await softDeleteSync(syncId);
-        await errorNotificationService.sync.invalidateBySyncId({ sync_id: syncId });
+        await errorNotificationService.sync.clearBySyncId({ sync_id: syncId });
     }
 
     public async softDeleteSyncsByConnection(connection: Connection) {

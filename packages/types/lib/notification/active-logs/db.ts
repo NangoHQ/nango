@@ -1,6 +1,6 @@
 import type { Timestamps } from '../../db.js';
 
-export interface UINotification extends Timestamps {
+export interface ActiveLog extends Timestamps {
     id: number;
     type: string;
     action: string;
@@ -10,3 +10,5 @@ export interface UINotification extends Timestamps {
     active: boolean;
     sync_id: string | null;
 }
+
+export type ActiveLogIds = Pick<ActiveLog, 'activity_log_id' | 'log_id'>;
