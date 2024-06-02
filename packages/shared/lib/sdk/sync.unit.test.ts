@@ -18,7 +18,9 @@ describe('cache', () => {
         nangoAction = new NangoAction({
             secretKey: '***',
             providerConfigKey: 'github',
-            connectionId: 'connection-1'
+            connectionId: 'connection-1',
+            dryRun: false,
+            activityLogId: 1
         });
         nango = new Nango({ secretKey: '***' });
         const nodeClient = (await import('@nangohq/node')).Nango;
@@ -398,15 +400,14 @@ describe('Pagination', () => {
 });
 
 describe('Log', () => {
-    it('should not log if no activityLogId', async () => {
-        const nangoAction = new NangoAction({
-            secretKey: '***',
-            providerConfigKey: 'github',
-            connectionId: 'connection-1'
-        });
-        await expect(async () => {
-            await nangoAction.log('top');
-        }).rejects.toThrowError(new Error('There is no current activity log stream to log to'));
+    it('should enforce activityLogId when not in dryRun', () => {
+        expect(() => {
+            new NangoAction({
+                secretKey: '***',
+                providerConfigKey: 'github',
+                connectionId: 'connection-1'
+            });
+        }).toThrowError(new Error('Parameter activityLogId is required when not in dryRun'));
     });
 
     it('should not fail on null', async () => {
