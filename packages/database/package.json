@@ -5,6 +5,9 @@
     "main": "./dist/index.js",
     "module": "./dist/index.js",
     "private": true,
+    "bundleDependencies": [
+        "@nangohq/utils"
+    ],
     "scripts": {
         "build": "rimraf ./dist && tsc"
     },
