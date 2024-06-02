@@ -8,7 +8,7 @@ const httpProxy = process.env['http_proxy'] || process.env['HTTP_PROXY'] || '';
 const httpsProxy = process.env['https_proxy'] || process.env['HTTPS_PROXY'] || '';
 
 proxyAgent = (!!httpProxy && new HttpProxyAgent(httpProxy)) || undefined;
-proxyAgent = (!!httpsProxy && new HttpsProxyAgent(httpProxy)) || undefined;
+proxyAgent = proxyAgent || (!!httpsProxy && new HttpsProxyAgent(httpProxy)) || undefined;
 
 export const axiosInstance = axios.create({
     httpAgent: proxyAgent,
