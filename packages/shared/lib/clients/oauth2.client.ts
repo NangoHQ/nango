@@ -15,6 +15,7 @@ import { interpolateString } from '../utils/utils.js';
 import Boom from '@hapi/boom';
 import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { proxyAgent } from '../axiosInstance/index.js';
 
 export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, template: ProviderTemplate, connectionConfig: Record<string, string>) {
     const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url![ProviderAuthModes.OAuth2] as string);
@@ -37,7 +38,10 @@ export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, temp
             authorizeHost: authorizeUrl.origin,
             authorizePath: authorizeUrl.pathname
         },
-        http: { headers: headers },
+        http: {
+            headers: headers,
+            agent: proxyAgent
+        },
         options: {
             authorizationMethod: authConfig.authorization_method || OAuthAuthorizationMethod.BODY,
             bodyFormat: authConfig.body_format || OAuthBodyFormat.FORM,
