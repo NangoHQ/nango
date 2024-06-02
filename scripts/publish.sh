@@ -67,7 +67,7 @@ npm install --workspaces=false
 npm pack --pack-destination "$GIT_ROOT_DIR/packages/shared/vendor"
 popd
 pushd "$GIT_ROOT_DIR/packages/shared"
-npm install "@nangohq/database@file:vendor/nangohq-database-1.0.0.tgz" --workspaces=false
+npm install "@nangohq/database@file:vendor/nangohq-database-1.0.0.tgz"
 popd
 
 pushd "$GIT_ROOT_DIR/packages/utils"
