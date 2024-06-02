@@ -39,15 +39,16 @@ services:
             - TELEMETRY=${TELEMETRY}
             - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
             - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
-            - NANGO_LOGS_OS_URL=${NANGO_LOGS_OS_URL:-http://nango-opensearch:9200}
-            - NANGO_LOGS_OS_USER=${NANGO_LOGS_OS_USER}
-            - NANGO_LOGS_OS_PWD=${NANGO_LOGS_OS_PWD}
+            - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
         restart: always
         ports:
             - '${NANGO_PORT:-3003}:${NANGO_PORT:-3003}'
         depends_on:
             - nango-db
-            - nango-opensearch
+            # - nango-elasticsearch
         volumes:
             - '${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-server/src/packages/shared/dist/nango-integrations'
         networks:
@@ -69,13 +70,15 @@ services:
             - NANGO_DB_NAME=${NANGO_DB_NAME}
             - NANGO_DB_SSL=${NANGO_DB_SSL}
             - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
-            - NANGO_LOGS_OS_URL=${NANGO_LOGS_OS_URL:-http://nango-opensearch:9200}
-            - NANGO_LOGS_OS_USER=${NANGO_LOGS_OS_USER}
-            - NANGO_LOGS_OS_PWD=${NANGO_LOGS_OS_PWD}
+            - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
+            - ORCHESTRATOR_SERVICE_URL=${ORCHESTRATOR_SERVICE_URL}
         depends_on:
             - nango-db
             - temporal
-            - nango-opensearch
+            # - nango-elasticsearch
         volumes:
             - '${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-jobs/src/packages/shared/dist/nango-integrations'
         networks:
@@ -96,12 +99,13 @@ services:
             - NANGO_DB_NAME=${NANGO_DB_NAME}
             - NANGO_DB_SSL=${NANGO_DB_SSL}
             - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
-            - NANGO_LOGS_OS_URL=${NANGO_LOGS_OS_URL:-http://nango-opensearch:9200}
-            - NANGO_LOGS_OS_USER=${NANGO_LOGS_OS_USER}
-            - NANGO_LOGS_OS_PWD=${NANGO_LOGS_OS_PWD}
+            - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
         depends_on:
             - nango-db
-            - nango-opensearch
+            # - nango-elasticsearch
         networks:
             - nango
 
@@ -121,28 +125,30 @@ services:
             - 7233:7233
         networks:
             - nango
-
-    nango-opensearch:
-        image: opensearchproject/opensearch:2.13.0
-        container_name: nango-opensearch
-        ulimits:
-            memlock:
-                soft: -1
-                hard: -1
-        volumes:
-            - opensearch-data1:/usr/share/opensearch/data
-        ports:
-            - 9500:9200
-            - 9600:9300
-        environment:
-            - discovery.type=single-node
-            - DISABLE_SECURITY_PLUGIN=true
-        networks:
-            - nango
+    #
+    # Optional dependency
+    # To load elasticsearch, set NANGO_LOGS_ENABLED=true in nango-server and uncomment this dependency
+    # nango-elasticsearch:
+    #     image: elasticsearch:8.13.0
+    #     container_name: nango-elasticsearch
+    #     ulimits:
+    #         memlock:
+    #             soft: -1
+    #             hard: -1
+    #     volumes:
+    #         - elasticsearch-data1:/usr/share/elasticsearch/data
+    #     ports:
+    #         - 9500:9200
+    #         - 9600:9300
+    #     environment:
+    #         - discovery.type=single-node
+    #         - xpack.security.enabled=false
+    #     networks:
+    #         - nango
 
 networks:
     nango:
 
 volumes:
-    opensearch-data1:
+    elasticsearch-data1:
         driver: local

@@ -48,7 +48,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     content: `Failed to cancel script`,
                     timestamp: Date.now()
                 });
-                const logCtx = logContextGetter.get({ id: String(activityLogId) });
+                const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
                 await logCtx.error('Failed to cancel script');
             }
         }
@@ -77,7 +77,7 @@ class IntegrationService implements IntegrationServiceInterface {
             .setTag('syncId', nangoProps.syncId)
             .setTag('syncName', syncName);
 
-        const logCtx = activityLogId ? logContextGetter.get({ id: String(activityLogId) }) : null;
+        const logCtx = activityLogId ? logContextGetter.getStateLess({ id: String(activityLogId) }) : null;
         try {
             const script: string | null =
                 (isCloud || integrationFilesAreRemote) && !optionalLoadLocation
@@ -97,17 +97,6 @@ class IntegrationService implements IntegrationServiceInterface {
                     });
                     await logCtx?.error(content);
                 }
-            }
-
-            if (!script && activityLogId && writeToDb) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    content: `Unable to find integration file for ${syncName}`,
-                    timestamp: Date.now()
-                });
-                await logCtx?.error(`Unable to find integration file for ${syncName}`);
 
                 const error = new NangoError('Unable to find integration file', 404);
 
@@ -137,7 +126,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 // https://github.com/trpc/trpc/blob/66d7db60e59b7c758709175a53765c9db0563dc0/packages/tests/server/abortQuery.test.ts#L26
                 const res = await runner.client.run.mutate({
                     nangoProps,
-                    code: script as string,
+                    code: script,
                     codeParams: input as object,
                     isInvokedImmediately,
                     isWebhook

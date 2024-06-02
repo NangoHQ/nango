@@ -363,7 +363,7 @@ export default function Activity() {
 
     if (error || logActivitiesError) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Activity} marginBottom={60}>
+            <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
                 <Loading spaceRatio={2.5} className="-top-36" />
             </DashboardLayout>
         );
@@ -371,14 +371,14 @@ export default function Activity() {
 
     if (!activities) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Activity} marginBottom={60}>
+            <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
                 <Loading spaceRatio={2.5} className="-top-36" />
             </DashboardLayout>
         );
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Activity} marginBottom={60}>
+        <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="relative -left-24">
                 <div className="flex items-center mb-6">
                     <div className="flex flex-col text-left">

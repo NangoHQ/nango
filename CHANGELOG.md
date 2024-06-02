@@ -2,6 +2,54 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.39.32] - 2024-05-28
+
+### Added
+
+- *(server)* [nan-981] prep for implementing error reporting UI on connection authorization sub (#2204) by @khaliqgant
+
+### Fixed
+
+- *(docker)* Wrong node version for jobs (#2211) by @bodinsamuel
+
+## [v0.39.31] - 2024-05-27
+
+### Added
+
+- *(scheduler)* All terminated tasks can have an output (#2172) by @TBonnin
+- *(runner)* [nan-996] return descriptive error from action with revoked creds (#2182) by @khaliqgant
+- *(logs)* Drawer with details (#2155) by @bodinsamuel
+- *(webapp)* [nan-983] show slack banner if conditions are met (#2184) by @khaliqgant
+- Add orchestrator to deploy Github Actions (#2186) by @TBonnin
+- *(server)* [nan-869] email verification on signup (#2173) by @khaliqgant
+- *(integrations)* Add support for tremendous (#2192) by @hassan254-prog
+- Allow upsert existing basic connection (#2181) by @descampsk
+- *(orchestrator)* Dry run execute action/webhook (#2176) by @TBonnin
+- *(integrations)* Add support for wrike (#2200) by @hassan254-prog
+- *(integrations)* Add support for signnow (#2201) by @hassan254-prog
+- *(logs)* UI filtering (#2193) by @bodinsamuel
+- *(logs)* Opensearch -> elasticsearch (#2196) by @bodinsamuel
+- *(orchestrator)* Add long polling option for /output endpoint (#2202) by @TBonnin
+- *(integrations)* Add support for productboard (#2194) by @hassan254-prog
+- *(logs)* Add date range filtering (#2207) by @bodinsamuel
+
+### Changed
+
+- Making the scheduler db not rely on env vars (#2171) by @TBonnin
+- Moving integrations/webhook folder out of shared (#2185) by @TBonnin
+- Move hooks related logic to server (#2188) by @TBonnin
+- *(logs)* Document elasticsearch and self-host (#2206) by @bodinsamuel
+
+### Fixed
+
+- *(webpapp)* [nan-968] helper for formatting the frequency (#2183) by @khaliqgant
+- *(jobs)* [nan-1010] use void (#2195) by @khaliqgant
+- *(cli)* [nan-992] fix with test case (#2199) by @khaliqgant
+- *(logs)* Consolidate metadata (#2187) by @bodinsamuel
+- *(docs)* More info about frequency notations (#2203) by @bastienbeurier
+- *(version)* Store version in a file instead of reading package.json (#2208) by @bodinsamuel
+- *(demo)* Incorrect token used to oauth (#2210) by @bodinsamuel
+
 ## [v0.39.30] - 2024-05-21
 
 ### Added
@@ -1130,6 +1178,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.39.32]: https://github.com/NangoHQ/nango/compare/v0.39.31..v0.39.32
+[v0.39.31]: https://github.com/NangoHQ/nango/compare/v0.39.30..v0.39.31
 [v0.39.30]: https://github.com/NangoHQ/nango/compare/v0.39.29..v0.39.30
 [v0.39.29]: https://github.com/NangoHQ/nango/compare/v0.39.28..v0.39.29
 [v0.39.28]: https://github.com/NangoHQ/nango/compare/v0.39.27..v0.39.28

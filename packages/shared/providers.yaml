@@ -1163,7 +1163,7 @@ jira:
         audience: api.atlassian.com
         prompt: consent
     connection_configuration:
-        - cloudID
+        - cloudId
         - accountId
     proxy:
         base_url: https://api.atlassian.com
@@ -1328,10 +1328,7 @@ mailchimp:
     authorization_params:
         response_type: code
     docs: https://docs.nango.dev/integrations/all/mailchimp
-microsoft-teams:
-    categories:
-        - productivity
-        - video
+microsoft:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
@@ -1342,13 +1339,21 @@ microsoft-teams:
         response_type: code
         response_mode: query
         prompt: consent
-    proxy:
-        base_url: https://graph.microsoft.com
-        decompress: true
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://graph.microsoft.com
+        retry:
+            after: 'Retry-After'
+        decompress: true
+    docs: https://docs.nango.dev/integrations/all/microsoft
+microsoft-teams:
+    categories:
+        - productivity
+        - video
+    alias: microsoft
     docs: https://docs.nango.dev/integrations/all/microsoft-teams
 microsoft-tenant-specific:
     categories:
@@ -1369,7 +1374,7 @@ microsoft-tenant-specific:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/microsoft-tenant-specific
 microsoft-ads:
-    alias: microsoft-teams
+    alias: microsoft
     categories:
         - marketing
     default_scopes:
@@ -1381,6 +1386,11 @@ microsoft-ads:
         grant_type: refresh_token
         scope: https://ads.microsoft.com/msads.manage
     docs: https://docs.nango.dev/integrations/all/microsoft-ads
+microsoft-entra-id:
+    categories:
+        - other
+    alias: microsoft
+    docs: https://docs.nango.dev/integrations/all/microsoft-entra-id
 mixpanel:
     categories:
         - analytics
@@ -1504,8 +1514,13 @@ one-drive:
     categories:
         - knowledge-base
         - storage
-    alias: microsoft-teams
+    alias: microsoft
     docs: https://docs.nango.dev/integrations/all/one-drive
+one-note:
+    categories:
+        - productivity
+    alias: microsoft
+    docs: https://docs.nango.dev/integrations/all/one-note
 osu:
     categories:
         - gaming
@@ -1523,6 +1538,11 @@ osu:
     proxy:
         base_url: https://osu.ppy.sh
     docs: https://docs.nango.dev/integrations/all/osu
+outlook:
+    categories:
+        - communication
+    alias: microsoft
+    docs: https://docs.nango.dev/integrations/all/outlook
 outreach:
     categories:
         - marketing
@@ -1727,6 +1747,24 @@ posthog:
             method: GET
             endpoint: /api/users/@me
     docs: https://docs.nango.dev/integrations/all/posthog
+productboard:
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.productboard.com/oauth2/authorize
+    token_url: https://app.productboard.com/oauth2/token
+    scope_seprator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            X-Version: '1'
+        base_url: https://api.productboard.com
+    docs: https://docs.nango.dev/integrations/all/productboard
 qualtrics:
     categories:
         - surveys
@@ -1901,6 +1939,35 @@ servicem8:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/servicem8
+signnow:
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://app.signnow.com/authorize
+    token_url: https://api.signnow.com/oauth2/token
+    disable_pkce: true
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/signnow
+signnow-sandbox:
+    categories:
+    auth_mode: OAUTH2
+    authorization_url: https://app-eval.signnow.com/authorize
+    token_url: https://api-eval.signnow.com/oauth2/token
+    disable_pkce: true
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/signnow
 servicenow:
     categories:
         - productivity
@@ -1914,6 +1981,12 @@ servicenow:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/servicenow
+sharepoint-online:
+    categories:
+        - storage
+        - communication
+    alias: microsoft
+    docs: https://docs.nango.dev/integrations/all/sharepoint-online
 shopify:
     categories:
         - e-commerce
@@ -2250,6 +2323,38 @@ timely:
     proxy:
         base_url: https://api.timelyapp.com
     docs: https://docs.nango.dev/integrations/all/timely
+tremendous:
+    categories:
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://api.tremendous.com/oauth/authorize
+    token_url: https://api.tremendous.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.tremendous.com/api/v2
+    docs: https://docs.nango.dev/integrations/all/tremendous
+tremendous-sandbox:
+    categories:
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://testflight.tremendous.com/oauth/authorize
+    token_url: https://testflight.tremendous.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://testflight.tremendous.com/api/v2
+    docs: https://docs.nango.dev/integrations/all/tremendous
 trello:
     categories:
         - productivity
@@ -2465,6 +2570,24 @@ workable:
             Authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
     docs: https://docs.nango.dev/integrations/all/workable
+wrike:
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://login.wrike.com/oauth2/authorize/v4
+    token_url: https://login.wrike.com/oauth2/token
+    scope_separator: ','
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_response_metadata:
+        - host
+    proxy:
+        base_url: https://${connectionConfig.host}/api/v4
+    docs: https://docs.nango.dev/integrations/all/wrike
 xero:
     categories:
         - accounting

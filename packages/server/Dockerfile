@@ -17,6 +17,8 @@ COPY packages/utils/ packages/utils/
 COPY packages/logs/ packages/logs/
 COPY packages/node-client/ packages/node-client/
 COPY packages/records/ packages/records/
+COPY packages/scheduler/ packages/scheduler/
+COPY packages/orchestrator/ packages/orchestrator/
 
 RUN npm pkg delete scripts.prepare
 RUN npm ci --omit=dev

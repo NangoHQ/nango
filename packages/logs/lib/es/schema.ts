@@ -1,8 +1,8 @@
-import type { opensearchtypes } from '@opensearch-project/opensearch';
+import type { estypes } from '@elastic/elasticsearch';
 import type { MessageRow } from '@nangohq/types';
 import { envs } from '../env.js';
 
-const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
+const props: Record<keyof MessageRow, estypes.MappingProperty> = {
     id: { type: 'keyword' },
 
     parentId: { type: 'keyword' },
@@ -13,14 +13,42 @@ const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
     environmentId: { type: 'keyword' },
     environmentName: { type: 'keyword' },
 
-    configId: { type: 'keyword' },
-    configName: { type: 'keyword' },
+    integrationId: { type: 'keyword' },
+    integrationName: {
+        type: 'text',
+        analyzer: 'standard',
+        search_analyzer: 'standard',
+        fields: {
+            keyword: {
+                type: 'keyword'
+            }
+        }
+    },
+    providerName: { type: 'keyword' },
 
     connectionId: { type: 'keyword' },
-    connectionName: { type: 'keyword' },
+    connectionName: {
+        type: 'text',
+        analyzer: 'standard',
+        search_analyzer: 'standard',
+        fields: {
+            keyword: {
+                type: 'keyword'
+            }
+        }
+    },
 
-    syncId: { type: 'keyword' },
-    syncName: { type: 'keyword' },
+    syncConfigId: { type: 'keyword' },
+    syncConfigName: {
+        type: 'text',
+        analyzer: 'standard',
+        search_analyzer: 'standard',
+        fields: {
+            keyword: {
+                type: 'keyword'
+            }
+        }
+    },
 
     jobId: { type: 'keyword' },
 
@@ -66,26 +94,57 @@ const props: Record<keyof MessageRow, opensearchtypes.MappingProperty> = {
     endedAt: { type: 'date' }
 };
 
-export const indexMessages: opensearchtypes.IndicesCreateRequest = {
-    index: envs.NANGO_LOGS_OS_INDEX ?? 'messages',
-    body: {
-        settings: {
-            analysis: {
-                analyzer: {
-                    default: {
-                        type: 'standard'
-                    },
-                    default_search: {
-                        type: 'standard'
-                    }
+export function getDailyIndexPipeline(name: string): estypes.IngestPutPipelineRequest {
+    return {
+        id: `daily.${name}`,
+        description: 'Daily index',
+        processors: [
+            {
+                date_index_name: {
+                    field: 'createdAt',
+                    index_name_prefix: `${name}.`,
+                    date_rounding: 'd',
+                    date_formats: ["yyyy-MM-dd'T'HH:mm:ss.SSSXX"]
+                }
+            }
+        ]
+    };
+}
+
+export function policyRetention(): estypes.IlmPutLifecycleRequest {
+    return {
+        name: 'policy_retention',
+        policy: {
+            phases: {
+                delete: { min_age: '15d', actions: { delete: {} } }
+            }
+        }
+    };
+}
+
+export const indexMessages: estypes.IndicesCreateRequest = {
+    index: `20240528_${envs.NANGO_LOGS_ES_INDEX ?? 'messages'}`,
+    settings: {
+        lifecycle: { name: 'policy_retention' },
+        analysis: {
+            analyzer: {
+                default: {
+                    type: 'standard'
+                },
+                default_search: {
+                    type: 'standard'
                 }
             }
         },
-        mappings: {
-            dynamic: false,
-            properties: props
-        }
+        index: {
+            'sort.field': ['createdAt', 'id'],
+            'sort.order': ['desc', 'desc']
+        },
+        number_of_shards: 10 // Made up number until we figured out a better strategy
+    },
+    mappings: {
+        _source: { enabled: true },
+        dynamic: false,
+        properties: props
     }
 };
-
-export const indices: opensearchtypes.IndicesCreateRequest[] = [indexMessages];

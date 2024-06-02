@@ -181,7 +181,7 @@ export async function deploy(
             timestamp: Date.now(),
             content: `Successfully deployed the ${nameOfType}${flowsWithVersions.length > 1 ? 's' : ''} ${JSON.stringify(flowsWithVersions, null, 2)}`
         });
-        await logCtx.info('Successfully deployed', {
+        await logCtx.info(`Successfully deployed ${flowsWithVersions.length} items${flowsWithVersions.length > 1 ? 's' : ''}`, {
             nameOfType,
             count: flowsWithVersions.length,
             syncNames: flowsWithVersions.map((flow) => flow['syncName']),
@@ -284,7 +284,8 @@ export async function deployPreBuilt(
             firstConfig?.public_route as string,
             nangoConfigFile,
             `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`,
-            environment.id
+            environment.id,
+            nangoConfigFile
         );
     }
 
@@ -363,7 +364,8 @@ export async function deployPreBuilt(
                 `${config.public_route}/dist`,
                 `${sync_name}-${config.provider}.js`,
                 `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
-                environment.id
+                environment.id,
+                `${sync_name}-${provider_config_key}.js`
             )) as string;
         } else {
             file_location = (await remoteFileService.upload(
@@ -392,7 +394,8 @@ export async function deployPreBuilt(
                 config.public_route as string,
                 `${type}s/${sync_name}.ts`,
                 `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}.ts`,
-                environment.id
+                environment.id,
+                `${sync_name}.ts`
             );
         } else {
             if (typeof config.fileBody === 'object' && config.fileBody.ts) {

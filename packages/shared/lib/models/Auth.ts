@@ -1,6 +1,6 @@
 import type { ServiceResponse } from './Generic.js';
 import type { Template } from './Provider.js';
-import type { BaseConnection } from './Connection.js';
+import type { BaseConnection, StoredConnection } from './Connection.js';
 
 export enum AuthModes {
     OAuth1 = 'OAUTH1',
@@ -31,7 +31,7 @@ export enum OAuthBodyFormat {
 }
 
 export interface ConnectionUpsertResponse {
-    id: number;
+    connection: StoredConnection;
     operation: AuthOperation;
 }
 

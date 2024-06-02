@@ -31,7 +31,7 @@ export type MessageState = 'waiting' | 'running' | 'success' | 'failed' | 'timeo
  */
 export interface MessageOpSync {
     type: 'sync';
-    action: 'pause' | 'unpause' | 'run' | 'run_full' | 'cancel' | 'init';
+    action: 'pause' | 'unpause' | 'run' | 'request_run' | 'request_run_full' | 'cancel' | 'init';
 }
 export interface MessageOpProxy {
     type: 'proxy';
@@ -41,9 +41,7 @@ export interface MessageOpAction {
 }
 export interface MessageOpAuth {
     type: 'auth';
-}
-export interface MessageOpToken {
-    type: 'token';
+    action: 'create_connection' | 'refresh_token' | 'post_connection';
 }
 export interface MessageOpAdmin {
     type: 'admin';
@@ -57,15 +55,7 @@ export interface MessageOpDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
 }
-export type MessageOperation =
-    | MessageOpSync
-    | MessageOpProxy
-    | MessageOpAction
-    | MessageOpWebhook
-    | MessageOpDeploy
-    | MessageOpAuth
-    | MessageOpAdmin
-    | MessageOpToken;
+export type MessageOperation = MessageOpSync | MessageOpProxy | MessageOpAction | MessageOpWebhook | MessageOpDeploy | MessageOpAuth | MessageOpAdmin;
 
 /**
  * Full schema
@@ -89,14 +79,24 @@ export type MessageRow = {
     environmentId: number | null;
     environmentName: string | null;
 
-    configId: number | null;
-    configName: string | null;
+    /**
+     * Provider name, i.e: github
+     */
+    providerName: string | null;
+    /**
+     * Database ID of the config, i.e: 9
+     */
+    integrationId: number | null;
+    /**
+     * Unique config name, i.e: github-demo
+     */
+    integrationName: string | null;
 
     connectionId: number | null;
     connectionName: string | null;
 
-    syncId: string | null;
-    syncName: string | null;
+    syncConfigId: number | null;
+    syncConfigName: string | null;
 
     jobId: string | null;
 
