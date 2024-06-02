@@ -59,6 +59,7 @@ npm install "@nangohq/utils@file:vendor/nangohq-utils-1.0.0.tgz" --workspaces=fa
 popd
 
 pushd "$GIT_ROOT_DIR/packages/database"
+jq '.bundleDependencies = true' package.json >temp.json && mv temp.json package.json
 npm install --workspaces=false
 npm pack --pack-destination "$GIT_ROOT_DIR/packages/shared/vendor"
 popd
@@ -107,6 +108,9 @@ npm install "@nangohq/utils@file:../utils"
 npm install "@nangohq/database@file:../database"
 popd
 pushd "$GIT_ROOT_DIR/packages/utils"
+jq 'del(.bundleDependencies)' package.json >temp.json && mv temp.json package.json
+popd
+pushd "$GIT_ROOT_DIR/packages/database"
 jq 'del(.bundleDependencies)' package.json >temp.json && mv temp.json package.json
 popd
 
