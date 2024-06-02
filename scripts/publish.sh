@@ -60,18 +60,18 @@ pushd "$GIT_ROOT_DIR/packages/shared"
 npm install "@nangohq/utils@file:vendor/nangohq-utils-1.0.0.tgz" --workspaces=false
 popd
 
-pushd "$GIT_ROOT_DIR/packages/utils"
-jq 'del(.bundleDependencies)' package.json >temp.json && mv temp.json package.json
-popd
-
 pushd "$GIT_ROOT_DIR/packages/database"
 jq '.bundleDependencies = true' package.json >temp.json && mv temp.json package.json
-npm install --workspaces=false
 npm install "@nangohq/utils@file:vendor/nangohq-utils-1.0.0.tgz" --workspaces=false
+npm install --workspaces=false
 npm pack --pack-destination "$GIT_ROOT_DIR/packages/shared/vendor"
 popd
 pushd "$GIT_ROOT_DIR/packages/shared"
 npm install "@nangohq/database@file:vendor/nangohq-database-1.0.0.tgz" --workspaces=false
+popd
+
+pushd "$GIT_ROOT_DIR/packages/utils"
+jq 'del(.bundleDependencies)' package.json >temp.json && mv temp.json package.json
 popd
 
 pushd "$GIT_ROOT_DIR/packages/database"
@@ -117,6 +117,8 @@ rm packages/database/package-lock.json
 pushd "$GIT_ROOT_DIR/packages/shared"
 npm install "@nangohq/utils@file:../utils"
 npm install "@nangohq/database@file:../database"
+pushd "$GIT_ROOT_DIR/packages/database"
+npm install "@nangohq/utils@file:../utils"
 popd
 
 jq ".version = \"$VERSION\"" package.json >temp.json && mv temp.json package.json
