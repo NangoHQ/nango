@@ -66,6 +66,7 @@ export interface ReportedSyncJobStatus {
     frequency: string;
     finishedAt: Date;
     nextScheduledSyncAt: Date | null;
+    latestExecutionStatus: SyncStatus;
 }
 
 export interface SyncModelSchema {

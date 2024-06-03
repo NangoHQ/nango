@@ -1,7 +1,7 @@
 // import { ChevronRight } from '@geist-ui/icons';
 import type { SearchOperationsData } from '@nangohq/types';
 import { cn } from '../../../utils/utils';
-import { Tag } from './Tag';
+import { Tag } from '../../../components/ui/label/Tag';
 import { CrossCircledIcon, Crosshair1Icon, PauseIcon, PlayIcon, ResumeIcon, UploadIcon } from '@radix-ui/react-icons';
 import * as Tooltip from '../../../components/ui/Tooltip';
 

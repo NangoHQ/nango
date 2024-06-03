@@ -6,13 +6,11 @@ import type {
     ImportedCredentials,
     AuthCredentials,
     ConnectionList,
-    LogLevel,
     ConnectionUpsertResponse
 } from '@nangohq/shared';
 import db from '@nangohq/database';
 import {
     AuthModes as ProviderAuthModes,
-    LogActionEnum,
     configService,
     connectionService,
     errorManager,
@@ -20,7 +18,6 @@ import {
     AnalyticsTypes,
     AuthOperation,
     NangoError,
-    createActivityLogAndLogMessage,
     accountService,
     SlackService
 } from '@nangohq/shared';
@@ -31,193 +28,9 @@ import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '../hooks/hooks.js';
 import { getOrchestratorClient } from '../utils/utils.js';
 
+export type { ConnectionList };
+
 class ConnectionController {
-    /**
-     * Webapp
-     */
-
-    async getConnectionWeb(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { environment, account } = res.locals;
-
-            const connectionId = req.params['connectionId'] as string;
-            const providerConfigKey = req.query['provider_config_key'] as string;
-            const instantRefresh = req.query['force_refresh'] === 'true';
-
-            const action = LogActionEnum.TOKEN;
-
-            const log = {
-                level: 'info' as LogLevel,
-                success: false,
-                action,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: connectionId,
-                provider: '',
-                provider_config_key: providerConfigKey,
-                environment_id: environment.id
-            };
-
-            const credentialResponse = await connectionService.getConnectionCredentials({
-                account,
-                environment,
-                connectionId,
-                providerConfigKey,
-                logContextGetter,
-                instantRefresh
-            });
-
-            if (credentialResponse.isErr()) {
-                errorManager.errResFromNangoErr(res, credentialResponse.error);
-
-                return;
-            }
-
-            const { value: connection } = credentialResponse;
-
-            const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, environment.id);
-
-            if (!config) {
-                const activityLogId = await createActivityLogAndLogMessage(log, {
-                    level: 'error',
-                    environment_id: environment.id,
-                    timestamp: Date.now(),
-                    content: 'Unknown provider config'
-                });
-                const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
-                    {
-                        account,
-                        environment,
-                        integration: { id: connection.config_id!, name: connection.provider_config_key, provider: 'unknown' },
-                        connection: { id: connection.id!, name: connection.connection_id }
-                    }
-                );
-                await logCtx.error('Unknown provider config');
-                await logCtx.failed();
-
-                errorManager.errRes(res, 'unknown_provider_config');
-                return;
-            }
-
-            const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
-
-            if (instantRefresh) {
-                log.provider = config.provider;
-                log.success = true;
-
-                const activityLogId = await createActivityLogAndLogMessage(log, {
-                    level: 'info',
-                    environment_id: environment.id,
-                    auth_mode: template.auth_mode,
-                    content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
-                    timestamp: Date.now()
-                });
-                const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
-                    {
-                        account,
-                        environment,
-                        integration: { id: config.id!, name: config.unique_key, provider: config.provider },
-                        connection: { id: connection.id!, name: connection.connection_id }
-                    }
-                );
-                await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
-                await logCtx.success();
-            }
-
-            let rawCredentials = null;
-            let credentials = null;
-
-            if (connection.credentials.type === ProviderAuthModes.OAuth1 || connection.credentials.type === ProviderAuthModes.OAuth2) {
-                credentials = connection.credentials;
-                rawCredentials = credentials.raw;
-            }
-
-            if (connection.credentials.type === ProviderAuthModes.OAuth2CC) {
-                credentials = connection.credentials;
-                rawCredentials = credentials.raw;
-            }
-
-            if (connection.credentials.type === ProviderAuthModes.App) {
-                credentials = connection.credentials;
-                rawCredentials = credentials.raw;
-            }
-
-            if (connection.credentials.type === ProviderAuthModes.Basic || connection.credentials.type === ProviderAuthModes.ApiKey) {
-                credentials = connection.credentials;
-            }
-
-            res.status(200).send({
-                connection: {
-                    id: connection.id,
-                    connectionId: connection.connection_id,
-                    provider: config.provider,
-                    providerConfigKey: connection.provider_config_key,
-                    creationDate: connection.created_at,
-                    oauthType: connection.credentials.type || 'None',
-                    connectionConfig: connection.connection_config,
-                    connectionMetadata: connection.metadata,
-                    accessToken:
-                        connection.credentials.type === ProviderAuthModes.OAuth2 || connection.credentials.type === ProviderAuthModes.App
-                            ? connection.credentials.access_token
-                            : null,
-                    refreshToken: connection.credentials.type === ProviderAuthModes.OAuth2 ? connection.credentials.refresh_token : null,
-                    expiresAt:
-                        connection.credentials.type === ProviderAuthModes.OAuth2 || connection.credentials.type === ProviderAuthModes.App
-                            ? connection.credentials.expires_at
-                            : null,
-                    oauthToken: connection.credentials.type === ProviderAuthModes.OAuth1 ? connection.credentials.oauth_token : null,
-                    oauthTokenSecret: connection.credentials.type === ProviderAuthModes.OAuth1 ? connection.credentials.oauth_token_secret : null,
-                    credentials,
-                    rawCredentials
-                }
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async getConnectionsWeb(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { environment } = res.locals;
-
-            const connections = await connectionService.listConnections(environment.id);
-
-            const configs = await configService.listProviderConfigs(environment.id);
-
-            if (configs == null) {
-                res.status(200).send({ connections: [] });
-
-                return;
-            }
-
-            const uniqueKeyToProvider: Record<string, string> = {};
-            const providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
-
-            providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
-
-            const result = connections.map((connection) => {
-                return {
-                    id: connection.id,
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider,
-                    provider: uniqueKeyToProvider[connection.provider],
-                    creationDate: connection.created
-                };
-            });
-
-            res.status(200).send({
-                connections: result.sort(function (a, b) {
-                    return new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime();
-                })
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     /**
      * CLI/SDK/API
      */
@@ -298,7 +111,7 @@ class ConnectionController {
             providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
 
             const result: ConnectionList[] = connections.map((connection) => {
-                return {
+                const list: ConnectionList = {
                     id: connection.id,
                     connection_id: connection.connection_id,
                     provider_config_key: connection.provider,
@@ -306,6 +119,12 @@ class ConnectionController {
                     created: connection.created,
                     metadata: connection.metadata
                 };
+
+                if (isWeb) {
+                    list.active_logs = connection.active_logs;
+                }
+
+                return list;
             });
 
             res.status(200).send({
