@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { CrossCircledIcon } from '@radix-ui/react-icons';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/Popover';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList, CommandCheck } from './ui/Command';
+import { cn } from '../utils/utils';
 
 export interface MultiSelectArgs<T> {
     label: string;
@@ -49,11 +50,11 @@ export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, se
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="zombieGray" size={'xs'}>
+                <Button variant="zombieGray" size={'xs'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
                     {label}
                     {isDirty && (
                         <button
-                            className="bg-pure-black text-white flex gap-1 items-center px-1.5 rounded-xl"
+                            className="bg-pure-black text-text-light-gray flex gap-1 items-center px-1.5 rounded-xl"
                             onPointerDown={reset}
                             onKeyDown={(e) => {
                                 if (['Enter', ' '].includes(e.key)) {
@@ -67,7 +68,7 @@ export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, se
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-0 text-white bg-active-gray">
+            <PopoverContent className="w-56 p-0 text-white bg-active-gray" align="end">
                 <Command>
                     <CommandList>
                         <CommandEmpty>No framework found.</CommandEmpty>

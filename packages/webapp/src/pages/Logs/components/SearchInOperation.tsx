@@ -107,7 +107,9 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
         if (data?.pagination.cursorBefore) {
             cursorBefore.current = data?.pagination.cursorBefore;
         }
-        setReadyToDisplay(true);
+        if (data?.data) {
+            setReadyToDisplay(true);
+        }
     }, [data?.data]);
     useEffect(() => {
         if (data?.pagination.cursorAfter && !hasLoadedMore) {
