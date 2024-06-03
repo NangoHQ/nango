@@ -51,7 +51,7 @@ export class Nango {
     providerConfigKey?: string;
     isSync = false;
     dryRun = false;
-    activityLogId?: number;
+    activityLogId?: number | undefined;
     userAgent: string;
     http: AxiosInstance;
 
