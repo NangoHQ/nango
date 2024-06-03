@@ -8,8 +8,8 @@ import type {
     ConnectionList,
     ConnectionUpsertResponse
 } from '@nangohq/shared';
+import db from '@nangohq/database';
 import {
-    db,
     AuthModes as ProviderAuthModes,
     configService,
     connectionService,

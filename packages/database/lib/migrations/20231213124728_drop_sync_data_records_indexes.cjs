@@ -1,6 +1,6 @@
 exports.config = { transaction: false };
 
-exports.up = function(knex) {
+exports.up = function (_knex) {
     return Promise.resolve();
     /*
      * Production only migration
@@ -17,6 +17,6 @@ exports.up = function(knex) {
     */
 };
 
-exports.down = function(knex) {
+exports.down = function (_knex) {
     return Promise.resolve();
 };

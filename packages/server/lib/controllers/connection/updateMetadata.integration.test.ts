@@ -1,4 +1,5 @@
-import { connectionService, multipleMigrations, seeders } from '@nangohq/shared';
+import { connectionService, seeders } from '@nangohq/shared';
+import { multipleMigrations } from '@nangohq/database';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runServer, shouldBeProtected } from '../../utils/tests.js';
 

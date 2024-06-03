@@ -1,4 +1,4 @@
-import db from '../db/database.js';
+import db from '@nangohq/database';
 import * as uuid from 'uuid';
 import type { Result } from '@nangohq/utils';
 import { isEnterprise, Ok, Err } from '@nangohq/utils';

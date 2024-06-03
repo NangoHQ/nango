@@ -4,7 +4,6 @@
  *       2) move fieldMappings into metadata under a fieldMapping key
  */
 const DB_TABLE = '_nango_connections';
-const TABLE_PREFIX = '_nango_';
 
 exports.up = async function (knex, _) {
     const existingMetaData = await knex.select('id', 'metadata', 'connection_config').from(DB_TABLE).whereNotNull('metadata').andWhere('metadata', '!=', '{}');

@@ -1,6 +1,6 @@
-import db from '../database.js';
-import * as syncService from '../../services/sync/sync.service.js';
-import type { Sync } from '../../models/Sync.js';
+import db from '@nangohq/database';
+import * as syncService from '../services/sync/sync.service.js';
+import type { Sync } from '../models/Sync.js';
 
 export const createSyncSeeds = async (connectionId = 1): Promise<Sync> => {
     const syncName = Math.random().toString(36).substring(7);

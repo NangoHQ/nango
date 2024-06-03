@@ -2,7 +2,7 @@ import knex from 'knex';
 import type { Knex } from 'knex';
 import { metrics, retry } from '@nangohq/utils';
 import type { Pool } from 'tarn';
-import { defaultSchema, getDbConfig } from './getDbConfig.js';
+import { defaultSchema, getDbConfig } from './getConfig.js';
 
 export class KnexDatabase {
     knex: Knex;
@@ -77,6 +77,8 @@ export { db as database };
 export const schema = (): Knex.QueryBuilder => db.knex.queryBuilder();
 
 export const dbNamespace = '_nango_';
+
+export type { Knex };
 
 export const multipleMigrations = async (): Promise<void> => {
     try {

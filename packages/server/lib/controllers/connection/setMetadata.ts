@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { ApiError, SetMetadata, MetadataBody } from '@nangohq/types';
-import { db, connectionService } from '@nangohq/shared';
+import { connectionService } from '@nangohq/shared';
+import db from '@nangohq/database';
 
 const validation = z
     .object({

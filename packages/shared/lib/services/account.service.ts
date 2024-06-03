@@ -1,4 +1,4 @@
-import db from '../db/database.js';
+import db from '@nangohq/database';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import { LogActionEnum } from '../models/Activity.js';
