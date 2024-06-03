@@ -314,6 +314,8 @@ class ProxyController {
             responseStream.data.pipe(passThroughStream);
             passThroughStream.pipe(res);
             res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
+
+            await logCtx.success();
             return;
         }
 
