@@ -32,30 +32,16 @@ import {
     isInitialSyncStillRunning,
     getSyncByIdAndName,
     getLastSyncDate,
-    getSyncConfigRaw,
-    getOrchestratorUrl,
-    SlackService
+    getSyncConfigRaw
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
-import { getLogger, env, stringifyError, errorToObject } from '@nangohq/utils';
-import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
+import { getLogger, stringifyError, errorToObject } from '@nangohq/utils';
 import integrationService from './integration.service.js';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
-import { OrchestratorClient } from '@nangohq/nango-orchestrator';
+import { bigQueryClient, slackService } from './clients.js';
 
 const logger = getLogger('Jobs');
-
-const bigQueryClient = await BigQueryClient.createInstance({
-    datasetName: 'raw',
-    tableName: `${env}_script_runs`
-});
-
-const orchestratorClient = new OrchestratorClient({ baseUrl: getOrchestratorUrl() });
-const slackService = new SlackService({
-    orchestratorClient: orchestratorClient,
-    logContextGetter: logContextGetter
-});
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;

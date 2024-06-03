@@ -43,9 +43,10 @@ describe('OrchestratorClient', async () => {
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
                     type: 'action',
-                    name: rndStr(),
+                    actionName: rndStr(),
                     connection: {
                         id: 123,
+                        connection_id: 'C',
                         provider_config_key: 'P',
                         environment_id: 456
                     },
@@ -79,9 +80,10 @@ describe('OrchestratorClient', async () => {
                     name: 'Task',
                     groupKey: groupKey,
                     args: {
-                        name: 'Action',
+                        actionName: 'Action',
                         connection: {
                             id: 1234,
+                            connection_id: 'C',
                             provider_config_key: 'P',
                             environment_id: 5678
                         },
@@ -109,9 +111,10 @@ describe('OrchestratorClient', async () => {
                     name: 'Task',
                     groupKey: groupKey,
                     args: {
-                        name: 'Action',
+                        actionName: 'Action',
                         connection: {
                             id: 1234,
+                            connection_id: 'C',
                             provider_config_key: 'P',
                             environment_id: 5678
                         },
@@ -144,10 +147,11 @@ describe('OrchestratorClient', async () => {
                     name: 'Task',
                     groupKey: groupKey,
                     args: {
-                        name: 'Action',
+                        webhookName: 'W',
                         parentSyncName: 'parent',
                         connection: {
                             id: 1234,
+                            connection_id: 'C',
                             provider_config_key: 'P',
                             environment_id: 5678
                         },
@@ -175,10 +179,11 @@ describe('OrchestratorClient', async () => {
                     name: 'Task',
                     groupKey: groupKey,
                     args: {
-                        name: 'Action',
+                        webhookName: 'W',
                         parentSyncName: rndStr(),
                         connection: {
                             id: 1234,
+                            connection_id: 'C',
                             provider_config_key: 'P',
                             environment_id: 5678
                         },
@@ -205,9 +210,10 @@ describe('OrchestratorClient', async () => {
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
                     type: 'action',
-                    name: `action-a`,
+                    actionName: `A`,
                     connection: {
                         id: 123,
+                        connection_id: 'C',
                         provider_config_key: 'P',
                         environment_id: 456
                     },
@@ -222,9 +228,10 @@ describe('OrchestratorClient', async () => {
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
                     type: 'action',
-                    name: `action-b`,
+                    actionName: `A`,
                     connection: {
                         id: 123,
+                        connection_id: 'C',
                         provider_config_key: 'P',
                         environment_id: 456
                     },
@@ -252,9 +259,10 @@ describe('OrchestratorClient', async () => {
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
                     type: 'action',
-                    name: `action-a`,
+                    actionName: `A`,
                     connection: {
                         id: 123,
+                        connection_id: 'C',
                         provider_config_key: 'P',
                         environment_id: 456
                     },
@@ -269,10 +277,11 @@ describe('OrchestratorClient', async () => {
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
                     type: 'webhook',
-                    name: `webhook-a`,
+                    webhookName: `webhook-a`,
                     parentSyncName: 'parent',
                     connection: {
                         id: 123,
+                        connection_id: 'C',
                         provider_config_key: 'P',
                         environment_id: 456
                     },
