@@ -13,7 +13,7 @@ type GetOutput = Endpoint<{
         taskId: string;
     };
     Querystring: {
-        waitForCompletion?: boolean;
+        longPolling?: boolean;
     };
     Error: ApiError<'task_not_found'>;
     Success: { state: TaskState; output: JsonValue };
@@ -26,7 +26,7 @@ const validate = validateRequest<GetOutput>({
     parseQuery: (data) =>
         z
             .object({
-                waitForCompletion: z
+                longPolling: z
                     .string()
                     .optional()
                     .default('false')
@@ -38,7 +38,7 @@ const validate = validateRequest<GetOutput>({
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (req: EndpointRequest<GetOutput>, res: EndpointResponse<GetOutput>) => {
-        const waitForCompletionTimeoutMs = 120_000;
+        const longPollingTimeoutMs = 120_000;
         const eventId = `task:completed:${req.params.taskId}`;
         const cleanupAndRespond = (respond: (res: EndpointResponse<GetOutput>) => void) => {
             if (timeout) {
@@ -56,7 +56,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
         };
         const timeout = setTimeout(() => {
             cleanupAndRespond((res) => res.status(204).send());
-        }, waitForCompletionTimeoutMs);
+        }, longPollingTimeoutMs);
 
         eventEmitter.once(eventId, onCompletion);
 
@@ -65,7 +65,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             cleanupAndRespond((res) => res.status(404).json({ error: { code: 'task_not_found', message: task.error.message } }));
             return;
         }
-        if (req.query.waitForCompletion && (task.value.state === 'CREATED' || task.value.state === 'STARTED')) {
+        if (req.query.longPolling && (task.value.state === 'CREATED' || task.value.state === 'STARTED')) {
             await new Promise((resolve) => resolve(timeout));
         } else {
             cleanupAndRespond((res) => res.status(200).json({ state: task.value.state, output: task.value.output }));

@@ -240,7 +240,7 @@ describe('OrchestratorClient', async () => {
     });
     describe('dequeue', () => {
         it('should returns nothing if no scheduled task', async () => {
-            const res = await client.dequeue({ groupKey: 'abc', limit: 1, waitForCompletion: false });
+            const res = await client.dequeue({ groupKey: 'abc', limit: 1, longPolling: false });
             expect(res.unwrap()).toEqual([]);
         });
         it('should return scheduled tasks', async () => {
@@ -280,7 +280,7 @@ describe('OrchestratorClient', async () => {
                     input: { foo: 'bar' }
                 }
             });
-            const res = await client.dequeue({ groupKey, limit: 2, waitForCompletion: false });
+            const res = await client.dequeue({ groupKey, limit: 2, longPolling: false });
             expect(res.unwrap().length).toBe(2);
             expect(res.unwrap()[0]?.isAction()).toBe(true);
             expect(res.unwrap()[1]?.isWebhook()).toBe(true);
