@@ -19,7 +19,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Build the docker-compose stack
-              run: docker compose . up -d
+              run: docker compose up -d
 
             - name: Sleep
               uses: jakejarvis/wait-action@master
