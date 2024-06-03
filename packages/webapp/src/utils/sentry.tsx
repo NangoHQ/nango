@@ -1,9 +1,10 @@
 import * as Sentry from '@sentry/react';
 import { useEffect } from 'react';
 import { Routes, createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
+import { PUBLIC_SENTRY_KEY } from './env';
 
 Sentry.init({
-    dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
+    dsn: PUBLIC_SENTRY_KEY,
     integrations: [
         Sentry.reactRouterV6BrowserTracingIntegration({
             useEffect,

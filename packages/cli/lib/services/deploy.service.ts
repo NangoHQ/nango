@@ -3,7 +3,7 @@ import promptly from 'promptly';
 import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
 import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
-import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
+import { SyncConfigType, localFileService, getInterval, cloudHost } from '@nangohq/shared';
 import configService from './config.service.js';
 import { compileAllFiles } from './compile.service.js';
 import verificationService from './verification.service.js';
@@ -20,9 +20,6 @@ class DeployService {
             switch (environmentName) {
                 case 'local':
                     process.env['NANGO_HOSTPORT'] = `http://localhost:${port}`;
-                    break;
-                case 'staging':
-                    process.env['NANGO_HOSTPORT'] = stagingHost;
                     break;
                 default:
                     process.env['NANGO_HOSTPORT'] = cloudHost;
@@ -92,9 +89,6 @@ class DeployService {
             switch (env) {
                 case 'local':
                     process.env['NANGO_HOSTPORT'] = `http://localhost:${port}`;
-                    break;
-                case 'staging':
-                    process.env['NANGO_HOSTPORT'] = stagingHost;
                     break;
                 default:
                     process.env['NANGO_HOSTPORT'] = cloudHost;

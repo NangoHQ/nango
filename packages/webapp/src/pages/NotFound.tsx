@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import { useEffect } from 'react';
+import PageNotFound from './PageNotFound';
 
 const VALID_PATHS = [
     'interactive-demo',
@@ -30,8 +31,8 @@ export const NotFound: React.FC = () => {
             return;
         }
 
-        navigate(`/${env}/integrations`);
+        // navigate(`/${env}/integrations`);
     }, [location, env, navigate, showInteractiveDemo]);
 
-    return null;
+    return <PageNotFound />;
 };

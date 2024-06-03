@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 import type { NangoConnection } from '@nangohq/shared';
 import type { Metadata } from '@nangohq/types';
-import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
+import { SyncConfigType, SyncType, syncRunService } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import configService from './config.service.js';
@@ -136,10 +136,6 @@ class DryRunService {
         }
         if (debug) {
             printDebug(`Provider found: ${provider}`);
-        }
-
-        if (process.env['NANGO_HOSTPORT'] === cloudHost || process.env['NANGO_HOSTPORT'] === stagingHost) {
-            process.env['NANGO_CLOUD'] = 'true';
         }
 
         let lastSyncDate = null;

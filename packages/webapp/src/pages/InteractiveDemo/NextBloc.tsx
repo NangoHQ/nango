@@ -34,7 +34,7 @@ export const NextBloc: React.FC<{ onProgress: () => void }> = ({ onProgress }) =
         <div className="mt-2">
             <div className=" flex pt-6">
                 <div className="w-290px h-240px ml-4">
-                    <img src="/images/ship.svg" className="" />
+                    <img src="./images/ship.svg" className="" />
                 </div>
                 <div className="mt-10 ml-10">
                     <h2 className={'text-xl font-semibold leading-7 text-white'}>You&apos;re now ready to ship your first integration!</h2>

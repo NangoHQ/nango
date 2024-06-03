@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     SquaresPlusIcon,
     LinkIcon,
@@ -41,6 +41,7 @@ const navHoverBg = 'hover:bg-hover-gray';
 export default function LeftNavBar(props: LeftNavBarProps) {
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
     const navigate = useNavigate();
+    const location = useLocation();
     const signout = useSignout();
     const { meta } = useMeta();
     const env = useStore((state) => state.env);
@@ -68,7 +69,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         setEnv(newEnv);
         void mutate();
 
-        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        const pathSegments = location.pathname.split('/').filter(Boolean);
 
         pathSegments[0] = newEnv;
 
@@ -93,8 +94,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
             <div className="flex-1 ml-3 pr-4 h-full border-r border-border-gray flex flex-col bg-pure-black z-20 justify-between">
                 <div className="mt-4">
                     <div className="flex items-center mb-8">
-                        <img className="h-6" src="/logo-dark.svg" alt="Nango" />
-                        <img className="mt-1 h-5 ml-1" src="/logo-text.svg" alt="Nango" />
+                        <img className="h-6" src="./logo-dark.svg" alt="Nango" />
+                        <img className="mt-1 h-5 ml-1" src="./logo-text.svg" alt="Nango" />
                         <span className="ml-3 text-xs text-black mono">{meta.version}</span>
                     </div>
                     {meta.environments.length === 0 && (

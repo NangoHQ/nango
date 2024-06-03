@@ -1,7 +1,7 @@
 import type { GetOperation, SearchFilters, SearchMessages, SearchOperations } from '@nangohq/types';
 import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
-import { swrFetcher } from '../utils/api';
+import { apiFetch, swrFetcher } from '../utils/api';
 
 export function useSearchOperations(env: string, body: SearchOperations['Body']) {
     const [loading, setLoading] = useState<boolean>(false);
@@ -17,10 +17,9 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'])
         setLoading(true);
         signal.current = new AbortController();
         try {
-            const res = await fetch(`/api/v1/logs/operations?env=${env}`, {
+            const res = await apiFetch(`/api/v1/logs/operations?env=${env}`, {
                 method: 'POST',
                 body: JSON.stringify({ ...body, cursor }),
-                headers: { 'Content-Type': 'application/json' },
                 signal: signal.current.signal
             });
             if (res.status !== 200) {
@@ -102,10 +101,9 @@ export function useSearchMessages(env: string, body: SearchMessages['Body']) {
         setLoading(true);
         signal.current = new AbortController();
         try {
-            const res = await fetch(`/api/v1/logs/messages?env=${env}`, {
+            const res = await apiFetch(`/api/v1/logs/messages?env=${env}`, {
                 method: 'POST',
                 body: JSON.stringify({ ...body, ...opts }),
-                headers: { 'Content-Type': 'application/json' },
                 signal: signal.current.signal
             });
             if (res.status !== 200) {
@@ -155,10 +153,9 @@ export function useSearchFilters(enabled: boolean, env: string, body: SearchFilt
     async function fetchData() {
         setLoading(true);
         try {
-            const res = await fetch(`/api/v1/logs/filters?env=${env}`, {
+            const res = await apiFetch(`/api/v1/logs/filters?env=${env}`, {
                 method: 'POST',
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' }
+                body: JSON.stringify(body)
             });
             if (res.status !== 200) {
                 setData(undefined);

@@ -1,22 +1,17 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
+import { localhostUrl } from '@nangohq/utils';
 import type { Environment } from '../models/Environment.js';
 import environmentService from '../services/environment.service.js';
 import type { Connection } from '../models/Connection.js';
 
-export { cloudHost, stagingHost };
+// Useful for CLI
+export const cloudHost = 'https://api.nango.dev';
 
 export enum UserType {
     Local = 'localhost',
     SelfHosted = 'self-hosted',
     Cloud = 'cloud'
-}
-
-export enum NodeEnv {
-    Dev = 'development',
-    Staging = 'staging',
-    Prod = 'production'
 }
 
 export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
@@ -42,18 +37,6 @@ export function isJsOrTsType(type?: string): boolean {
     const genericTypeRegex = new RegExp(`^(${typesWithGenerics.join('|')})<.+>$`);
 
     return genericTypeRegex.test(baseType);
-}
-
-export function getPort() {
-    if (process.env['SERVER_PORT']) {
-        return +process.env['SERVER_PORT'];
-    } else if (process.env['PORT']) {
-        return +process.env['PORT']; // For Heroku (dynamic port)
-    } else if (process.env['NANGO_PORT']) {
-        return +process.env['NANGO_PORT']; // more friendly cli port name
-    } else {
-        return 3003;
-    }
 }
 
 export function getServerPort() {
@@ -137,14 +120,7 @@ export function getLocalOAuthCallbackUrlBaseUrl() {
 }
 
 export function getApiUrl() {
-    if (isStaging) {
-        return stagingHost;
-    } else if (isEnterprise) {
-        return process.env['NANGO_SERVER_URL'] as string;
-    } else if (isProd) {
-        return cloudHost;
-    }
-    return getServerBaseUrl();
+    return process.env['NANGO_SERVER_URL'] as string;
 }
 
 export function getGlobalOAuthCallbackUrl() {

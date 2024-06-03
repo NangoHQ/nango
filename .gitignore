@@ -8,3 +8,4 @@ nango-integrations/*
 dist/
 tsconfig.tsbuildinfo
 node_modules
+packages/webapp/public/env.js

@@ -29,6 +29,7 @@
             "last 1 safari version"
         ]
     },
+    "homepage": ".",
     "devDependencies": {
         "@geist-ui/core": "2.3.8",
         "@geist-ui/icons": "1.0.2",

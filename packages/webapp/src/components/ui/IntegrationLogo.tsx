@@ -20,7 +20,7 @@ export default function IntegrationLogo({ provider, height = 5, width = 5, color
         <>
             {!imgError ? (
                 <img
-                    src={`/images/template-logos/${provider}.svg`}
+                    src={`./images/template-logos/${provider}.svg`}
                     alt=""
                     className={`h-${height} w-${width} ${classNames}`}
                     onError={() => setImgError(true)}

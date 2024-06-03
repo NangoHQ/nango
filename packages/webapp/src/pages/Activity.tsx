@@ -30,6 +30,7 @@ import { LeftNavBarItems } from '../components/LeftNavBar';
 import type { ActivityMessageResponse, ActivityResponse } from '../types';
 
 import { useStore } from '../store';
+import { WEB_BASE_URL } from '../utils/env';
 
 interface Props {
     data: string | number | undefined;
@@ -310,7 +311,7 @@ export default function Activity() {
     };
 
     const copyActivityLogUrl = (activity: ActivityResponse): string => {
-        const baseUrl = `${window.location.protocol}//${window.location.host}/${env}/activity`;
+        const baseUrl = `${WEB_BASE_URL}/${env}/activity`;
         const url = new URL(baseUrl);
         const params = new URLSearchParams({ activity_log_id: activity.id.toString() });
 
@@ -616,7 +617,7 @@ export default function Activity() {
                                                                     )}
                                                                     {activity.action === 'token' && (
                                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-[#FBBC05] bg-opacity-20">
-                                                                            <img className="h-4 mr-2" src="/images/token-icon.svg" alt="" />
+                                                                            <img className="h-4 mr-2" src="./images/token-icon.svg" alt="" />
                                                                             <p className="inline-block text-[#FBBC05]">token</p>
                                                                         </div>
                                                                     )}

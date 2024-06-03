@@ -1,4 +1,5 @@
 import Nango from '@nangohq/frontend';
+import { apiFetch } from './api';
 
 export const connectSlack = async ({
     accountUUID,
@@ -15,11 +16,8 @@ export const connectSlack = async ({
 }) => {
     const connectionId = `account-${accountUUID}-${env}`;
 
-    const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        }
+    const res = await apiFetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`, {
+        method: 'GET'
     });
 
     if (res.status !== 200) {
@@ -49,11 +47,8 @@ export const connectSlack = async ({
 };
 
 export const updateSlackNotifications = async (env: string, enabled: boolean) => {
-    await fetch(`/api/v1/environment/slack-notifications-enabled?env=${env}`, {
+    await apiFetch(`/api/v1/environment/slack-notifications-enabled?env=${env}`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
             slack_notifications: enabled
         })

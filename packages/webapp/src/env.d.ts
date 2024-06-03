@@ -1,3 +1,5 @@
+import type { WindowEnv } from '@nangohq/server';
+
 export {};
 
 declare global {
@@ -8,5 +10,11 @@ declare global {
             REACT_APP_PUBLIC_POSTHOG_KEY: string;
             REACT_APP_PUBLIC_POSTHOG_HOST: string;
         }
+    }
+}
+
+declare global {
+    interface Window {
+        _env?: WindowEnv;
     }
 }
