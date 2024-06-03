@@ -11,7 +11,11 @@ import type { Account, Config } from '../../models/index.js';
 
 vi.mock('axios', () => ({
     default: {
-        post: vi.fn(() => Promise.resolve({ status: 200 })) // Mock axios.post as a spy
+        create: () => {
+            return  {
+                post: vi.fn(() => Promise.resolve({ status: 200 })) // Mock axios.post as a spy
+            }
+        }
     },
     __esModule: true
 }));
