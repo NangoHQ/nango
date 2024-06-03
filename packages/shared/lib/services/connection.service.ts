@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import type { Knex } from '@nangohq/database';
-import axios from 'axios';
+import { axiosInstance as axios } from '../axiosInstance/index.js';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type {

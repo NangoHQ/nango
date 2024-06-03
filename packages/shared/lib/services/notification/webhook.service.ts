@@ -1,5 +1,5 @@
 import type { AxiosError } from 'axios';
-import axios from 'axios';
+import { axiosInstance as axios } from '../../axiosInstance/index.js';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { backOff } from 'exponential-backoff';
