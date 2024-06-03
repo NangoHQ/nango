@@ -10,6 +10,7 @@ import { CheckCircledIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { curlSnippet, nodeActionSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
 import { useMeta } from '../../hooks/useMeta';
+import { apiFetch } from '../../utils/api';
 
 export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; connectionId: string; secretKey: string; onProgress: () => void }> = ({
     step,
@@ -49,9 +50,8 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
 
         try {
             // Deploy the provider
-            const res = await fetch(`/api/v1/onboarding/action?env=dev`, {
+            const res = await apiFetch(`/api/v1/onboarding/action?env=dev`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ connectionId, title })
             });
 

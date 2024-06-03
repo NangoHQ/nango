@@ -1,9 +1,17 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
 import type { AuthModes, RunSyncCommand, PreBuiltFlow } from '../types';
+import { API_URL } from './env';
+
+export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
+    return await fetch(`${API_URL}${input}`, {
+        ...init,
+        headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) }
+    });
+}
 
 export async function fetcher(...args: Parameters<typeof fetch>) {
-    const response = await fetch(...args);
+    const response = await apiFetch(...args);
     return response.json();
 }
 
@@ -11,7 +19,7 @@ export async function fetcher(...args: Parameters<typeof fetch>) {
  * Default SWR fetcher does not throw on HTTP error
  */
 export async function swrFetcher<TBody>(url: string): Promise<TBody> {
-    const res = await fetch(url);
+    const res = await apiFetch(url);
 
     if (!res.ok) {
         throw { json: await res.json(), status: res.status };
@@ -28,18 +36,13 @@ function serverErrorToast() {
     toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
 }
 
-function getHeaders(): Record<string, string> {
-    return { 'Content-Type': 'application/json' };
-}
-
 export function useLogoutAPI() {
     return async () => {
         const options = {
-            method: 'POST',
-            headers: getHeaders()
+            method: 'POST'
         };
 
-        await fetch('/api/v1/account/logout', options);
+        await apiFetch('/api/v1/account/logout', options);
     };
 }
 
@@ -48,11 +51,10 @@ export function useSignupAPI() {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({ name: name, email: email, password: password })
             };
 
-            return fetch('/api/v1/account/signup', options);
+            return apiFetch('/api/v1/account/signup', options);
         } catch {
             requestErrorToast();
         }
@@ -64,11 +66,10 @@ export function useSigninAPI() {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({ email: email, password: password })
             };
 
-            const res = await fetch('/api/v1/account/signin', options);
+            const res = await apiFetch('/api/v1/account/signin', options);
 
             if (res.status !== 200 && res.status !== 401 && res.status !== 400) {
                 return serverErrorToast();
@@ -84,7 +85,7 @@ export function useSigninAPI() {
 export function useHostedSigninAPI() {
     return async () => {
         try {
-            const res = await fetch('/api/v1/basic', { headers: getHeaders() });
+            const res = await apiFetch('/api/v1/basic');
 
             if (res.status !== 200 && res.status !== 401) {
                 return serverErrorToast();
@@ -104,11 +105,10 @@ export function useEditCallbackUrlAPI(env: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({ callback_url: callbackUrl })
             };
 
-            const res = await fetch(`/api/v1/environment/callback?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/environment/callback?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -132,11 +132,10 @@ export function useEditHmacEnabledAPI(env: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({ hmac_enabled: hmacEnabled })
             };
 
-            const res = await fetch(`/api/v1/environment/hmac-enabled?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/environment/hmac-enabled?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -160,11 +159,10 @@ export function useEditAlwaysSendWebhookAPI(env: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({ always_send_webhook: alwaysSendWebhook })
             };
 
-            const res = await fetch(`/api/v1/environment/webhook-send?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/environment/webhook-send?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -188,11 +186,10 @@ export function useEditSendAuthWebhookAPI(env: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({ send_auth_webhook: sendAuthWebhook })
             };
 
-            const res = await fetch(`/api/v1/environment/webhook-auth-send?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/environment/webhook-auth-send?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -216,11 +213,10 @@ export function useEditHmacKeyAPI(env: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({ hmac_key: hmacKey })
             };
 
-            const res = await fetch(`/api/v1/environment/hmac-key?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/environment/hmac-key?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -244,11 +240,10 @@ export function useEditEnvVariablesAPI(env: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify(envVariables)
             };
 
-            const res = await fetch(`/api/v1/environment/environment-variables?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/environment/environment-variables?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -272,11 +267,10 @@ export function useEditWebhookUrlAPI(env: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({ webhook_url: webhookUrl })
             };
 
-            const res = await fetch(`/api/v1/environment/webhook?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/environment/webhook?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -300,11 +294,10 @@ export function useEditWebhookSecondaryUrlAPI(env: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({ webhook_secondary_url: webhookSecondaryUrl })
             };
 
-            const res = await fetch(`/api/v1/environment/webhook-secondary?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/environment/webhook-secondary?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -326,7 +319,7 @@ export function useGetIntegrationListAPI(env: string) {
 
     return async () => {
         try {
-            const res = await fetch(`/api/v1/integration?env=${env}`, { headers: getHeaders() });
+            const res = await apiFetch(`/api/v1/integration?env=${env}`);
 
             if (res.status === 401) {
                 return signout();
@@ -348,9 +341,7 @@ export function useGetIntegrationDetailsAPI(env: string) {
 
     return async (providerConfigKey: string) => {
         try {
-            const res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?env=${env}&include_creds=true`, {
-                headers: getHeaders()
-            });
+            const res = await apiFetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?env=${env}&include_creds=true`);
 
             if (res.status === 401) {
                 return signout();
@@ -383,7 +374,6 @@ export function useCreateIntegrationAPI(env: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({
                     auth_mode: authMode,
                     provider: provider,
@@ -396,7 +386,7 @@ export function useCreateIntegrationAPI(env: string) {
                 })
             };
 
-            const res = await fetch(`/api/v1/integration?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/integration?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -416,13 +406,12 @@ export function useCreateEmptyIntegrationAPI(env: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({
                     provider: provider
                 })
             };
 
-            const res = await fetch(`/api/v1/integration/new?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/integration/new?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -451,7 +440,6 @@ export function useEditIntegrationAPI(env: string) {
         try {
             const options = {
                 method: 'PUT',
-                headers: getHeaders(),
                 body: JSON.stringify({
                     auth_mode: authMode,
                     provider: provider,
@@ -464,7 +452,7 @@ export function useEditIntegrationAPI(env: string) {
                 })
             };
 
-            const res = await fetch(`/api/v1/integration?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/integration?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -488,14 +476,13 @@ export function useEditIntegrationNameAPI(env: string) {
         try {
             const options = {
                 method: 'PUT',
-                headers: getHeaders(),
                 body: JSON.stringify({
                     oldProviderConfigKey: providerConfigKey,
                     newProviderConfigKey: name
                 })
             };
 
-            const res = await fetch(`/api/v1/integration/name?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/integration/name?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -513,8 +500,7 @@ export function useDeleteIntegrationAPI(env: string) {
 
     return async (providerConfigKey: string) => {
         try {
-            const res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?env=${env}`, {
-                headers: getHeaders(),
+            const res = await apiFetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?env=${env}`, {
                 method: 'DELETE'
             });
 
@@ -538,7 +524,7 @@ export function useGetProvidersAPI(env: string) {
 
     return async () => {
         try {
-            const res = await fetch(`/api/v1/provider?env=${env}`, { headers: getHeaders() });
+            const res = await apiFetch(`/api/v1/provider?env=${env}`);
 
             if (res.status === 401) {
                 return signout();
@@ -560,7 +546,7 @@ export function useGetConnectionListAPI(env: string) {
 
     return async () => {
         try {
-            const res = await fetch(`/api/v1/connection?env=${env}`, { headers: getHeaders() });
+            const res = await apiFetch(`/api/v1/connection?env=${env}`);
 
             if (res.status === 401) {
                 return signout();
@@ -582,13 +568,10 @@ export function useGetConnectionDetailsAPI(env: string) {
 
     return async (connectionId: string, providerConfigKey: string, force_refresh: boolean) => {
         try {
-            const res = await fetch(
+            const res = await apiFetch(
                 `/api/v1/connection/${encodeURIComponent(connectionId)}?env=${env}&provider_config_key=${encodeURIComponent(
                     providerConfigKey
-                )}&force_refresh=${force_refresh}`,
-                {
-                    headers: getHeaders()
-                }
+                )}&force_refresh=${force_refresh}`
             );
 
             if (res.status === 401) {
@@ -607,10 +590,9 @@ export function useDeleteConnectionAPI(env: string) {
 
     return async (connectionId: string, providerConfigKey: string) => {
         try {
-            const res = await fetch(
+            const res = await apiFetch(
                 `/api/v1/connection/${encodeURIComponent(connectionId)}?env=${env}&provider_config_key=${encodeURIComponent(providerConfigKey)}`,
                 {
-                    headers: getHeaders(),
                     method: 'DELETE'
                 }
             );
@@ -633,9 +615,8 @@ export function useDeleteConnectionAPI(env: string) {
 export function useRequestPasswordResetAPI() {
     return async (email: string) => {
         try {
-            const res = await fetch(`/api/v1/account/forgot-password`, {
+            const res = await apiFetch(`/api/v1/account/forgot-password`, {
                 method: 'PUT',
-                headers: getHeaders(),
                 body: JSON.stringify({ email: email })
             });
 
@@ -649,9 +630,8 @@ export function useRequestPasswordResetAPI() {
 export function useResetPasswordAPI() {
     return async (token: string, password: string) => {
         try {
-            const res = await fetch(`/api/v1/account/reset-password`, {
+            const res = await apiFetch(`/api/v1/account/reset-password`, {
                 method: 'PUT',
-                headers: getHeaders(),
                 body: JSON.stringify({ password: password, token: token })
             });
 
@@ -665,9 +645,8 @@ export function useResetPasswordAPI() {
 export function useGetSyncAPI(env: string) {
     return async (connectionId: string, providerConfigKey: string) => {
         try {
-            const res = await fetch(`/api/v1/sync?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
-                method: 'GET',
-                headers: getHeaders()
+            const res = await apiFetch(`/api/v1/sync?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+                method: 'GET'
             });
 
             return res;
@@ -680,9 +659,8 @@ export function useGetSyncAPI(env: string) {
 export function useGetHmacAPI(env: string) {
     return async (providerConfigKey: string, connectionId: string) => {
         try {
-            const res = await fetch(`/api/v1/environment/hmac?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
-                method: 'GET',
-                headers: getHeaders()
+            const res = await apiFetch(`/api/v1/environment/hmac?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+                method: 'GET'
             });
 
             return res;
@@ -695,9 +673,8 @@ export function useGetHmacAPI(env: string) {
 export function useGetAllSyncsAPI(env: string) {
     return async () => {
         try {
-            const res = await fetch(`/api/v1/syncs?env=${env}`, {
-                method: 'GET',
-                headers: getHeaders()
+            const res = await apiFetch(`/api/v1/syncs?env=${env}`, {
+                method: 'GET'
             });
 
             return res;
@@ -710,9 +687,8 @@ export function useGetAllSyncsAPI(env: string) {
 export function useRunSyncAPI(env: string) {
     return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: string, sync_name: string, provider?: string) => {
         try {
-            const res = await fetch(`/api/v1/sync/command?env=${env}`, {
+            const res = await apiFetch(`/api/v1/sync/command?env=${env}`, {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify({ command, schedule_id, nango_connection_id, sync_id, sync_name, provider })
             });
 
@@ -728,7 +704,7 @@ export function useGetAccountAPI(env: string) {
 
     return async () => {
         try {
-            const res = await fetch(`/api/v1/account?env=${env}`, { headers: getHeaders() });
+            const res = await apiFetch(`/api/v1/account?env=${env}`);
 
             if (res.status === 401) {
                 return signout();
@@ -746,9 +722,8 @@ export function useEditAccountNameAPI(env: string) {
 
     return async (name: string) => {
         try {
-            const res = await fetch(`/api/v1/account?env=${env}`, {
+            const res = await apiFetch(`/api/v1/account?env=${env}`, {
                 method: 'PUT',
-                headers: getHeaders(),
                 body: JSON.stringify({ name })
             });
 
@@ -768,7 +743,7 @@ export function useGetUserAPI() {
 
     return async () => {
         try {
-            const res = await fetch('/api/v1/user', { headers: getHeaders() });
+            const res = await apiFetch('/api/v1/user');
 
             if (res.status === 401) {
                 return signout();
@@ -786,9 +761,8 @@ export function useEditUserNameAPI() {
 
     return async (name: string) => {
         try {
-            const res = await fetch('/api/v1/user/name', {
+            const res = await apiFetch('/api/v1/user/name', {
                 method: 'PUT',
-                headers: getHeaders(),
                 body: JSON.stringify({ name })
             });
 
@@ -808,9 +782,8 @@ export function useEditUserPasswordAPI() {
 
     return async (oldPassword: string, newPassword: string) => {
         try {
-            const res = await fetch('/api/v1/user/password', {
+            const res = await apiFetch('/api/v1/user/password', {
                 method: 'PUT',
-                headers: getHeaders(),
                 body: JSON.stringify({ oldPassword, newPassword })
             });
 
@@ -830,9 +803,8 @@ export function useInviteSignupAPI() {
 
     return async (token: string) => {
         try {
-            const res = await fetch(`/api/v1/account/signup/invite?token=${token}`, {
-                method: 'GET',
-                headers: getHeaders()
+            const res = await apiFetch(`/api/v1/account/signup/invite?token=${token}`, {
+                method: 'GET'
             });
 
             if (res.status === 401) {
@@ -849,9 +821,8 @@ export function useInviteSignupAPI() {
 export function useGetFlows(env: string) {
     return async () => {
         try {
-            const res = await fetch(`/api/v1/flows?env=${env}`, {
-                method: 'GET',
-                headers: getHeaders()
+            const res = await apiFetch(`/api/v1/flows?env=${env}`, {
+                method: 'GET'
             });
 
             return res;
@@ -864,9 +835,8 @@ export function useGetFlows(env: string) {
 export function useCreateFlow(env: string) {
     return async (flow: PreBuiltFlow[]) => {
         try {
-            const res = await fetch(`/api/v1/flow/deploy/pre-built?env=${env}`, {
+            const res = await apiFetch(`/api/v1/flow/deploy/pre-built?env=${env}`, {
                 method: 'POST',
-                headers: getHeaders(),
                 body: JSON.stringify(flow)
             });
 
@@ -880,9 +850,8 @@ export function useCreateFlow(env: string) {
 export function useUpdateSyncFrequency(env: string) {
     return async (syncId: number, frequency: string) => {
         try {
-            const res = await fetch(`/api/v1/sync/${syncId}/frequency?env=${env}`, {
+            const res = await apiFetch(`/api/v1/sync/${syncId}/frequency?env=${env}`, {
                 method: 'PUT',
-                headers: getHeaders(),
                 body: JSON.stringify({ frequency })
             });
 
@@ -896,9 +865,8 @@ export function useUpdateSyncFrequency(env: string) {
 export function useGetConnectionAPI(env: string) {
     return async (providerConfigKey: string) => {
         try {
-            const res = await fetch(`/api/v1/integration/${providerConfigKey}/connections?env=${env}`, {
-                method: 'GET',
-                headers: getHeaders()
+            const res = await apiFetch(`/api/v1/integration/${providerConfigKey}/connections?env=${env}`, {
+                method: 'GET'
             });
 
             return res;

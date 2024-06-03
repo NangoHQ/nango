@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Signup } from '@nangohq/types';
 import { Link, useNavigate } from 'react-router-dom';
 import { MANAGED_AUTH_ENABLED } from '../../utils/utils';
-import { useSignupAPI } from '../../utils/api';
+import { apiFetch, useSignupAPI } from '../../utils/api';
 import DefaultLayout from '../../layout/DefaultLayout';
 import GoogleButton from '../../components/ui/button/Auth/Google';
 import Button from '../../components/ui/button/Button';
@@ -46,11 +46,8 @@ export default function Signup() {
         setShowResendEmail(false);
         setServerErrorMessage('');
 
-        const res = await fetch('/api/v1/account/resend-verification-email/by-email', {
+        const res = await apiFetch('/api/v1/account/resend-verification-email/by-email', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 email
             })

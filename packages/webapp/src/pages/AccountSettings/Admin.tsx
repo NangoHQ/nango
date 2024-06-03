@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Button from '../../components/ui/button/Button';
 import { useStore } from '../../store';
+import { apiFetch } from '../../utils/api';
 
 export const Admin: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -18,11 +19,8 @@ export const Admin: React.FC = () => {
             login_reason: target.login_reason.value
         };
 
-        const res = await fetch(`/api/v1/account/admin/switch?env=${env}`, {
+        const res = await apiFetch(`/api/v1/account/admin/switch?env=${env}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify(payload)
         });
 

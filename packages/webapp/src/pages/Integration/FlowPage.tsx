@@ -6,7 +6,7 @@ import { CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon, XCir
 import { Prism } from '@mantine/prism';
 import type { EnvironmentAndAccount } from '@nangohq/server';
 
-import { useUpdateSyncFrequency, requestErrorToast } from '../../utils/api';
+import { useUpdateSyncFrequency, requestErrorToast, apiFetch } from '../../utils/api';
 import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
@@ -72,11 +72,8 @@ export default function FlowPage(props: FlowPageProps) {
             flowType: flow?.type
         };
 
-        const response = await fetch(`/api/v1/flow/download?env=${env}`, {
+        const response = await apiFetch(`/api/v1/flow/download?env=${env}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify(flowInfo)
         });
 

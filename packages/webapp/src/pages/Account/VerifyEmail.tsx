@@ -5,6 +5,7 @@ import type { GetEmailByUuid, ResendVerificationEmailByUuid } from '@nangohq/typ
 import { toast } from 'react-toastify';
 
 import DefaultLayout from '../../layout/DefaultLayout';
+import { apiFetch } from '../../utils/api';
 
 export function VerifyEmail() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -22,7 +23,7 @@ export function VerifyEmail() {
 
     useEffect(() => {
         const getEmail = async () => {
-            const res = await fetch(`/api/v1/account/email/${uuid}`);
+            const res = await apiFetch(`/api/v1/account/email/${uuid}`);
 
             if (res?.status === 200) {
                 const response: GetEmailByUuid['Success'] = (await res.json()) as GetEmailByUuid['Success'];
@@ -49,11 +50,8 @@ export function VerifyEmail() {
         e.preventDefault();
         setServerErrorMessage('');
 
-        const res = await fetch('/api/v1/account/resend-verification-email/by-uuid', {
+        const res = await apiFetch('/api/v1/account/resend-verification-email/by-uuid', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 uuid
             })
