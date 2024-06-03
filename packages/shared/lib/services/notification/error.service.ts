@@ -3,7 +3,7 @@ import type { ActiveLog } from '@nangohq/types';
 import { Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
-import db from '../../db/database.js';
+import db from '@nangohq/database';
 
 const DB_TABLE = '_nango_active_logs';
 
