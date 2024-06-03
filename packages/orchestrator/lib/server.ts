@@ -24,7 +24,7 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
         const originalSend = res.send;
         res.send = function (body: any) {
             if (res.statusCode >= 400) {
-                logger.error(`${req.method} ${req.path} ${res.statusCode} -> ${body}`);
+                logger.error(`${req.method} ${req.path} ${res.statusCode} -> ${JSON.stringify(body)}`);
             }
             originalSend.call(this, body) as any;
             return this;
