@@ -2,6 +2,7 @@ import { nanoid } from '@nangohq/utils';
 import type { MessageRow } from '@nangohq/types';
 import { z } from 'zod';
 import type { estypes } from '@elastic/elasticsearch';
+import { defaultOperationExpiration } from '../env.js';
 
 export const operationIdRegex = z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/);
 
@@ -62,7 +63,7 @@ export function getFormattedMessage(
         updatedAt: data.updatedAt || now.toISOString(),
         startedAt: data.startedAt || null,
         endedAt: data.endedAt || null,
-        expiresAt: data.operation ? data.expiresAt || new Date(now.getTime() + 7 * 86400 * 1000).toISOString() : null
+        expiresAt: data.operation ? data.expiresAt || defaultOperationExpiration.sync() : null
     };
 }
 

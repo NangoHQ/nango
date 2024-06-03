@@ -18,7 +18,7 @@ import {
     LogActionEnum
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
@@ -50,7 +50,7 @@ class AppStoreAuthController {
                     id: String(activityLogId),
                     operation: { type: 'auth', action: 'create_connection' },
                     message: 'Authorization App Store',
-                    expiresAt: new Date(Date.now() + 300 * 1000).toISOString()
+                    expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }
             );

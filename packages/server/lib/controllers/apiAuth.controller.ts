@@ -20,7 +20,7 @@ import {
     LogActionEnum
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import {
@@ -57,7 +57,7 @@ class ApiAuthController {
                     id: String(activityLogId),
                     operation: { type: 'auth', action: 'create_connection' },
                     message: 'Authorization API Key',
-                    expiresAt: new Date(Date.now() + 300 * 1000).toISOString()
+                    expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }
             );
@@ -300,7 +300,7 @@ class ApiAuthController {
                     id: String(activityLogId),
                     operation: { type: 'auth', action: 'create_connection' },
                     message: 'Authorization Basic',
-                    expiresAt: new Date(Date.now() + 300 * 1000).toISOString()
+                    expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }
             );

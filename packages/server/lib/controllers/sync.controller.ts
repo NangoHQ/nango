@@ -44,7 +44,7 @@ import {
     getSyncConfigRaw
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import type { LastAction } from '@nangohq/records';
 import { isHosted } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
@@ -415,7 +415,7 @@ class SyncController {
                     id: String(activityLogId),
                     operation: { type: 'action' },
                     message: 'Start action',
-                    expiresAt: new Date(Date.now() + 86400 * 1000).toISOString()
+                    expiresAt: defaultOperationExpiration.action()
                 },
                 {
                     account,

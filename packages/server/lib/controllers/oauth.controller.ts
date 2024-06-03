@@ -54,7 +54,7 @@ import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import type { LogContext } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { errorToObject, stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
@@ -90,7 +90,7 @@ class OAuthController {
                     id: String(activityLogId),
                     operation: { type: 'auth', action: 'create_connection' },
                     message: 'Authorization OAuth',
-                    expiresAt: new Date(Date.now() + 300 * 1000).toISOString()
+                    expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }
             );
@@ -414,7 +414,7 @@ class OAuthController {
                     id: String(activityLogId),
                     operation: { type: 'auth', action: 'create_connection' },
                     message: 'Authorization OAuth2 CC',
-                    expiresAt: new Date(Date.now() + 300 * 1000).toISOString()
+                    expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }
             );

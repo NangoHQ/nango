@@ -2,13 +2,7 @@ import type { ActivityFailure } from '@temporalio/workflow';
 import { CancellationScope, proxyActivities, isCancellation } from '@temporalio/workflow';
 import type * as activities from './activities.js';
 import type { WebhookArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs, RunnerOutput } from '@nangohq/shared';
-
-const SYNC_TIMEOUT = '24h';
-const SYNC_MAX_ATTEMPTS = 3;
-const ACTION_TIMEOUT = '15m';
-const ACTION_MAX_ATTEMPTS = 1; // no retry
-const WEBHOOK_TIMEOUT = '15m';
-const WEBHOOK_MAX_ATTEMPTS = 3;
+import { ACTION_MAX_ATTEMPTS, ACTION_TIMEOUT, SYNC_MAX_ATTEMPTS, SYNC_TIMEOUT, WEBHOOK_MAX_ATTEMPTS, WEBHOOK_TIMEOUT } from '@nangohq/utils';
 
 const { routeSync, scheduleAndRouteSync } = proxyActivities<typeof activities>({
     // 1 hour to start so syncs are not evicted from the queue too soon

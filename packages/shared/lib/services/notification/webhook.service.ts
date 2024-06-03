@@ -12,6 +12,7 @@ import { LogActionEnum } from '../../models/Activity.js';
 import type { NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
 import { WebhookType } from '../../models/Webhook.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
+import { defaultOperationExpiration } from '@nangohq/logs';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 
@@ -399,7 +400,7 @@ class WebhookService {
                 id: String(activityLogId),
                 operation: { type: 'webhook', action: 'outgoing' },
                 message: 'Forwarding Webhook',
-                expiresAt: new Date(Date.now() + 86400 * 1000).toISOString()
+                expiresAt: defaultOperationExpiration.webhook()
             },
             { account, environment, integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider } }
         );
