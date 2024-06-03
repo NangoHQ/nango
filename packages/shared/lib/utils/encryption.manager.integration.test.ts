@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import encryptionManager, { EncryptionManager } from './encryption.manager';
-import db, { multipleMigrations } from '../db/database.js';
-import { seedAccountEnvAndUser } from '../db/seeders/index.js';
+import db, { multipleMigrations } from '@nangohq/database';
+import { seedAccountEnvAndUser } from '../seeders/index.js';
 import environmentService from '../services/environment.service';
 
 describe('encryption', () => {

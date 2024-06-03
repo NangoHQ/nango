@@ -1,4 +1,4 @@
-import type { Account, Environment, User } from '../../models/index.js';
+import type { Account, Environment, User } from '../models/index.js';
 import { seedUser } from './user.seeder.js';
 import { createEnvironmentSeed } from './environment.seeder.js';
 import { createAccount } from './account.seeder.js';

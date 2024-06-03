@@ -10,6 +10,5 @@ exports.up = function (knex, _) {
 };
 
 exports.down = function (knex, _) {
-    var schema = 'nango';
     return knex.schema.dropTable('_nango_connections');
 };

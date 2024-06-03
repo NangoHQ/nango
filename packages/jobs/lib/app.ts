@@ -7,7 +7,8 @@ import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { reconcileTemporalSchedules } from './crons/reconcileTemporalSchedules.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
-import { db, featureFlags } from '@nangohq/shared';
+import { featureFlags } from '@nangohq/shared';
+import db from '@nangohq/database';
 import { envs } from './env.js';
 
 const logger = getLogger('Jobs');

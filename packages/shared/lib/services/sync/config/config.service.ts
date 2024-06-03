@@ -1,5 +1,5 @@
 import semver from 'semver';
-import db, { schema, dbNamespace } from '../../../db/database.js';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import { getLogger } from '@nangohq/utils';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';

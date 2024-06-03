@@ -1,5 +1,5 @@
-import * as activityService from '../../services/activity/activity.service.js';
-import type { ActivityLog } from '../../models/Activity.js';
+import * as activityService from '../services/activity/activity.service.js';
+import type { ActivityLog } from '../models/Activity.js';
 import { logContextGetter } from '@nangohq/logs';
 
 export const createActivityLogSeed = async (environmentId: number): Promise<number> => {

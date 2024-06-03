@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import db, { schema, dbNamespace } from '../../db/database.js';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob, SyncWithSchedule, SlimSync, SlimAction } from '../../models/Sync.js';
 import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
