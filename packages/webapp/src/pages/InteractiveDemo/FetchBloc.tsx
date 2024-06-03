@@ -11,6 +11,7 @@ import { Bloc, Tab } from './Bloc';
 import { cn } from '../../utils/utils';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { CheckCircledIcon, InfoCircledIcon } from '@radix-ui/react-icons';
+import { apiFetch } from '../../utils/api';
 
 type Interval = ReturnType<typeof setInterval>;
 
@@ -51,11 +52,10 @@ export const FetchBloc: React.FC<{
     const fetchRecords = async () => {
         const params = { model };
 
-        const res = await fetch(`/records?${new URLSearchParams(params).toString()}`, {
+        const res = await apiFetch(`/records?${new URLSearchParams(params).toString()}`, {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${secretKey}`,
-                'Content-Type': 'application/json',
                 'Provider-Config-Key': providerConfigKey,
                 'Connection-Id': connectionId
             }
@@ -89,9 +89,8 @@ export const FetchBloc: React.FC<{
         analyticsTrack('web:demo:fetch');
 
         async function poll() {
-            const res = await fetch(`/api/v1/onboarding/sync-status?env=dev`, {
+            const res = await apiFetch(`/api/v1/onboarding/sync-status?env=dev`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ connectionId })
             });
 

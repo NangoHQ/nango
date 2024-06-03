@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { useSigninAPI } from '../../utils/api';
+import { apiFetch, useSigninAPI } from '../../utils/api';
 import { useSignin } from '../../utils/user';
 import type { WebUser, Signin } from '@nangohq/types';
 import { MANAGED_AUTH_ENABLED } from '../../utils/utils';
@@ -52,11 +52,8 @@ export default function Signin() {
         setShowResendEmail(false);
         setServerErrorMessage('');
 
-        const res = await fetch('/api/v1/account/resend-verification-email/by-email', {
+        const res = await apiFetch('/api/v1/account/resend-verification-email/by-email', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 email
             })

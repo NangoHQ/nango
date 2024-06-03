@@ -6,7 +6,7 @@ import { Tooltip, useModal, Modal } from '@geist-ui/core';
 import CopyButton from '../components/ui/button/CopyButton';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
-import { useEditAccountNameAPI, useGetAccountAPI } from '../utils/api';
+import { apiFetch, useEditAccountNameAPI, useGetAccountAPI } from '../utils/api';
 import type { User, InvitedUser } from '../types';
 import { formatDateToUSFormat } from '../utils/utils';
 import { Admin } from './AccountSettings/Admin';
@@ -86,11 +86,8 @@ export default function AccountSettings() {
             return;
         }
 
-        const res = await fetch(`/api/v1/users/${pendingSuspendMember.id}/suspend`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        const res = await apiFetch(`/api/v1/users/${pendingSuspendMember.id}/suspend`, {
+            method: 'POST'
         });
 
         setVisible(false);
@@ -109,11 +106,8 @@ export default function AccountSettings() {
             email: { value: string };
         };
 
-        const res = await fetch(`/api/v1/users/invite?env=${env}`, {
+        const res = await apiFetch(`/api/v1/users/invite?env=${env}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 name: target.name.value,
                 email: target.email.value

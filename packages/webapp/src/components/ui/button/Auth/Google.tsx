@@ -1,3 +1,5 @@
+import { apiFetch } from '../../../../utils/api';
+
 interface Props {
     text: string;
     setServerErrorMessage: (message: string) => void;
@@ -7,19 +9,13 @@ interface Props {
 
 interface PostBody {
     method: string;
-    headers: {
-        'Content-Type': string;
-    };
     body?: string;
 }
 
 export default function GoogleButton({ text, setServerErrorMessage, invitedAccountID, token }: Props) {
     const googleLogin = async () => {
         const postBody: PostBody = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            method: 'POST'
         };
 
         if (invitedAccountID !== null && invitedAccountID !== undefined && token) {
@@ -29,7 +25,7 @@ export default function GoogleButton({ text, setServerErrorMessage, invitedAccou
         }
         const endpoint = token ? `/api/v1/managed/signup/${token}?provider=GoogleOAuth` : '/api/v1/managed/signup?provider=GoogleOAuth';
 
-        const res = await fetch(endpoint, postBody);
+        const res = await apiFetch(endpoint, postBody);
 
         if (res.status === 200) {
             const data = await res.json();
