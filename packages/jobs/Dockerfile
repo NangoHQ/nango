@@ -16,6 +16,7 @@ COPY packages/data-ingestion/ packages/data-ingestion/
 COPY packages/kvstore/ packages/kvstore/
 COPY packages/jobs/ packages/jobs/
 COPY packages/logs/ packages/logs/
+COPY packages/database/ packages/database/
 COPY packages/runner/ packages/runner/
 COPY packages/scheduler/ packages/scheduler/
 COPY packages/orchestrator/ packages/orchestrator/

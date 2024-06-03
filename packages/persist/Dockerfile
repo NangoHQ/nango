@@ -14,6 +14,7 @@ COPY packages/persist/ packages/persist/
 COPY packages/utils/ packages/utils/
 COPY packages/kvstore/ packages/kvstore/
 COPY packages/logs/ packages/logs/
+COPY packages/database/ packages/database/
 COPY packages/records/ packages/records/
 COPY package*.json ./
 

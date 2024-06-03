@@ -9,8 +9,8 @@ import type {
     LogLevel,
     ConnectionUpsertResponse
 } from '@nangohq/shared';
+import db from '@nangohq/database';
 import {
-    db,
     AuthModes as ProviderAuthModes,
     LogActionEnum,
     configService,

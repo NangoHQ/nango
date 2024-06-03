@@ -1,5 +1,6 @@
 import * as cron from 'node-cron';
-import { db, errorManager, ErrorSourceEnum, connectionService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { errorManager, ErrorSourceEnum, connectionService } from '@nangohq/shared';
 import { stringifyError, getLogger, metrics, stringToHash } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import tracer from 'dd-trace';

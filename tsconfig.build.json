@@ -14,6 +14,9 @@
             "path": "packages/jobs"
         },
         {
+            "path": "packages/database"
+        },
+        {
             "path": "packages/kvstore"
         },
         {

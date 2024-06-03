@@ -11,6 +11,7 @@ WORKDIR /nango
 COPY packages/node-client/ packages/node-client/
 COPY packages/shared/ packages/shared/
 COPY packages/utils/ packages/utils/
+COPY packages/database/ packages/database/
 COPY packages/runner/ packages/runner/
 COPY package*.json ./
 
