@@ -1,10 +1,9 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
 import type { AuthModes, RunSyncCommand, PreBuiltFlow } from '../types';
-import { API_URL } from './env';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
-    return await fetch(`${API_URL}${input}`, {
+    return await fetch(input, {
         ...init,
         headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) }
     });

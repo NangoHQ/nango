@@ -11,7 +11,6 @@ import type { User, InvitedUser } from '../types';
 import { formatDateToUSFormat } from '../utils/utils';
 import { Admin } from './AccountSettings/Admin';
 import { useStore } from '../store';
-import { WEB_BASE_URL } from '../utils/env';
 
 export default function AccountSettings() {
     const env = useStore((state) => state.env);
@@ -280,7 +279,7 @@ export default function AccountSettings() {
                                                                 icontype="link"
                                                                 textPrompt="Copy Invite Link"
                                                                 dark
-                                                                text={`${WEB_BASE_URL}/signup/${member.token}`}
+                                                                text={`${window.location.host}/signup/${member.token}`}
                                                             />
                                                         </li>
                                                     ))}

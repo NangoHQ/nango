@@ -183,7 +183,7 @@ export const FetchBloc: React.FC<{
                 <div className="px-6 py-4">
                     {step === Steps.Webhooks && !pollingInterval && (
                         <Button type="button" variant="primary" onClick={startPolling}>
-                            <img className="h-5" src="./images/chart-icon.svg" alt="" />
+                            <img className="h-5" src="/images/chart-icon.svg" alt="" />
                             Retrieve GitHub Issues
                         </Button>
                     )}
