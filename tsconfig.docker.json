@@ -11,6 +11,9 @@
             "path": "packages/frontend"
         },
         {
+            "path": "packages/kvstore"
+        },
+        {
             "path": "packages/jobs"
         },
         {

@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "@nangohq/data-ingestion": "file:../data-ingestion",
+        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/nango-runner": "file:../runner",
