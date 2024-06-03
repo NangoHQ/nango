@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { vi, expect, describe, it, beforeEach } from 'vitest';
-import axios from 'axios';
+import axios, { CreateAxiosDefaults } from 'axios';
 import { SyncType } from '../../models/Sync.js';
 import type { RecentlyCreatedConnection, NangoConnection, StoredConnection } from '../../models/Connection.js';
 import WebhookService from './webhook.service.js';
@@ -15,7 +15,10 @@ const mock = {
 
 vi.mock('axios', () => ({
     default: {
-        create: () => mock
+        create: (config: CreateAxiosDefaults<any>) => {
+            axios.create(config);
+            return mock;
+        }
     },
     __esModule: true
 }));
