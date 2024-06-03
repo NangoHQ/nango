@@ -529,9 +529,7 @@ class ConnectionService {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
             .leftJoin(ACTIVE_LOG_TABLE, function () {
-                this.on('_nango_connections.id', '=', `${ACTIVE_LOG_TABLE}.connection_id`)
-                    .andOnVal(`${ACTIVE_LOG_TABLE}.active`, true)
-                    .andOnVal(`${ACTIVE_LOG_TABLE}.type`, 'auth');
+                this.on('_nango_connections.id', '=', `${ACTIVE_LOG_TABLE}.connection_id`).andOnVal(`${ACTIVE_LOG_TABLE}.active`, true);
             })
             .select(
                 { id: '_nango_connections.id' },
