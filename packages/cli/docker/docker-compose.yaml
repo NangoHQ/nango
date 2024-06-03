@@ -20,7 +20,7 @@ services:
         platform: linux/amd64
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
-            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
+            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/database/lib/migrations
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
