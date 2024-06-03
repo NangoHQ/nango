@@ -31,3 +31,10 @@ export interface WebhookArgs {
     input: object;
     activityLogId: number;
 }
+
+export interface PostConnectionScriptArgs {
+    name: string;
+    nangoConnection: NangoConnection;
+    file_location: string;
+    activityLogId: number;
+}

@@ -25,6 +25,7 @@ export enum LogTypes {
     SYNC_GET_RECORDS_INCLUDE_METADATA_USED = 'sync_get_records_include_metadata_used',
     SYNC_GET_RECORDS_DEPRECATED_METHOD_USED = 'sync_get_records_deprecated_method_used',
     FLOW_JOB_TIMEOUT_FAILURE = 'flow_job_failure',
+    POST_CONNECTION_SCRIPT_SUCCESS = 'post_connection_script_success',
     POST_CONNECTION_SCRIPT_FAILURE = 'post_connection_script_failure',
     INCOMING_WEBHOOK_RECEIVED = 'incoming_webhook_received',
     INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER = 'incoming_webhook_issue_wrong_connection_identifier',
