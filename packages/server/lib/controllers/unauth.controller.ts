@@ -194,7 +194,10 @@ class UnAuthController {
                         environment,
                         account,
                         auth_mode: AuthModes.None,
-                        error: `Error during Unauth create: ${prettyError}`,
+                        error: {
+                            type: 'unknown',
+                            description: `Error during Unauth create: ${prettyError}`
+                        },
                         operation: AuthOperation.UNKNOWN
                     },
                     'unknown',

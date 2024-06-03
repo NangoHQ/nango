@@ -17,6 +17,7 @@ export enum AuthModes {
 export enum AuthOperation {
     CREATION = 'creation',
     OVERRIDE = 'override',
+    REFRESH = 'refresh',
     UNKNOWN = 'unknown'
 }
 

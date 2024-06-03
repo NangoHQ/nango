@@ -20,8 +20,9 @@ import {
 import type { ActivityLogMessage, ActivityLog, LogLevel } from '../models/Activity.js';
 import { LogActionEnum } from '../models/Activity.js';
 import providerClient from '../clients/provider.client.js';
-import configService from '../services/config.service.js';
+import configService from './config.service.js';
 import syncOrchestrator from './sync/orchestrator.service.js';
+import webhookService from './notification/webhook.service.js';
 import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
@@ -636,7 +637,7 @@ class ConnectionService {
             return Err(error);
         }
 
-        const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider);
+        const template: ProviderTemplate = configService.getTemplate(config?.provider);
 
         if (
             connection?.credentials?.type === ProviderAuthModes.OAuth2 ||
@@ -702,6 +703,19 @@ class ConnectionService {
                         log_id: logCtx.id,
                         active: true
                     });
+
+                    const authError = {
+                        type: error.type,
+                        description: error.message
+                    };
+
+                    void webhookService.sendAuthUpdate(
+                        { connection, environment, account, auth_mode: template.auth_mode, operation: AuthOperation.REFRESH, error: authError },
+                        config.provider,
+                        false,
+                        activityLogId,
+                        logCtx
+                    );
                 }
 
                 const errorWithPayload = new NangoError(error.type, connection);

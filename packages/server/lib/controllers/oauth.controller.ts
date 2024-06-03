@@ -575,7 +575,10 @@ class OAuthController {
                         environment,
                         account,
                         auth_mode: ProviderAuthModes.OAuth2CC,
-                        error: `Error during Unauth create: ${prettyError}`,
+                        error: {
+                            type: 'unknown',
+                            description: `Error during Unauth create: ${prettyError}`
+                        },
                         operation: AuthOperation.UNKNOWN
                     },
                     'unknown',
@@ -1203,7 +1206,10 @@ class OAuthController {
                     environment,
                     account,
                     auth_mode: template.auth_mode,
-                    error: error.message,
+                    error: {
+                        type: 'invalid_callback',
+                        description: error.message
+                    },
                     operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
@@ -1366,7 +1372,10 @@ class OAuthController {
                         environment,
                         account,
                         auth_mode: template.auth_mode,
-                        error: 'OAuth2 token request failed, response from the server could not be parsed',
+                        error: {
+                            type: 'unable_to_parse_token_response',
+                            description: 'OAuth2 token request failed, response from the server could not be parsed'
+                        },
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
@@ -1581,7 +1590,10 @@ class OAuthController {
                     environment,
                     account,
                     auth_mode: template.auth_mode,
-                    error: error.message + '\n' + prettyError,
+                    error: {
+                        type: 'unknown',
+                        description: error.message + '\n' + prettyError
+                    },
                     operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
@@ -1628,7 +1640,10 @@ class OAuthController {
                     environment,
                     account,
                     auth_mode: template.auth_mode,
-                    error: error.message,
+                    error: {
+                        type: 'invalid_callback',
+                        description: error.message
+                    },
                     operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
@@ -1744,7 +1759,10 @@ class OAuthController {
                         environment,
                         account,
                         auth_mode: template.auth_mode,
-                        error: error.message + '\n' + prettyError,
+                        error: {
+                            type: 'unknown',
+                            description: error.message + '\n' + prettyError
+                        },
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,

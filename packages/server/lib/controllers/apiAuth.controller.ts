@@ -243,7 +243,10 @@ class ApiAuthController {
                         environment,
                         account,
                         auth_mode: AuthModes.ApiKey,
-                        error: `Error during API key auth: ${prettyError}`,
+                        error: {
+                            type: 'unknown',
+                            description: `Error during API key auth: ${prettyError}`
+                        },
                         operation: AuthOperation.UNKNOWN
                     },
                     'unknown',
@@ -476,7 +479,10 @@ class ApiAuthController {
                         environment,
                         account,
                         auth_mode: AuthModes.ApiKey,
-                        error: `Error during basic API key auth: ${prettyError}`,
+                        error: {
+                            type: 'unknown',
+                            description: `Error during basic API key auth: ${prettyError}`
+                        },
                         operation: AuthOperation.UNKNOWN
                     },
                     'unknown',

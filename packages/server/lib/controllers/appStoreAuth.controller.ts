@@ -173,7 +173,10 @@ class AppStoreAuthController {
                         environment,
                         account,
                         auth_mode: AuthModes.AppStore,
-                        error: `Error during App store credentials auth: ${error?.message}`,
+                        error: {
+                            type: 'credential_fetch_failure',
+                            description: `Error during App store credentials auth: ${error?.message}`
+                        },
                         operation: AuthOperation.UNKNOWN
                     },
                     config.provider,
@@ -243,7 +246,10 @@ class AppStoreAuthController {
                         environment,
                         account,
                         auth_mode: AuthModes.AppStore,
-                        error: `Error during App store auth: ${prettyError}`,
+                        error: {
+                            type: 'unknown',
+                            description: `Error during App store auth: ${prettyError}`
+                        },
                         operation: AuthOperation.UNKNOWN
                     },
                     'unknown',

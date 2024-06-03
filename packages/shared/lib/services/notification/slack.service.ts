@@ -209,8 +209,8 @@ export class SlackService {
      */
     async reportFailure(
         nangoConnection: NangoConnection,
-        syncName: string,
-        syncType: SyncType,
+        name: string,
+        type: SyncType,
         originalActivityLogId: number,
         environment_id: number,
         provider: string,
@@ -222,12 +222,12 @@ export class SlackService {
             return;
         }
 
-        if (syncName === this.actionName) {
+        if (name === this.actionName) {
             return;
         }
 
         const envName = (await environmentService.getEnvironmentName(nangoConnection.environment_id))!;
-        const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, syncName, syncType);
+        const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, name, type);
 
         const account = await environmentService.getAccountFromEnvironment(environment_id);
         if (!account) {
@@ -290,11 +290,11 @@ export class SlackService {
 
         const count = slackNotificationStatus.connectionCount;
         const connection = count === 1 ? 'connection' : 'connections';
-        const flowType = syncType === SyncType.ACTION ? SyncConfigType.ACTION : SyncConfigType.SYNC;
+        const flowType = type === SyncType.ACTION ? SyncConfigType.ACTION : SyncConfigType.SYNC;
         const date = new Date();
         const dateString = date.toISOString().split('T')[0];
         const payload: NotificationPayload = {
-            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection} in *${envName}*. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}&script=${syncName}&date=${dateString}|logs>.`,
+            content: `*${name}* (${flowType.toLowerCase()}) is failing for ${count} ${connection} in *${envName}*. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}&script=${name}&date=${dateString}|logs>.`,
             status: 'open',
             providerConfigKey: nangoConnection.provider_config_key,
             provider
@@ -333,8 +333,8 @@ export class SlackService {
         );
 
         const content = actionResponse.isOk()
-            ? `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
-            : `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
+            ? `The action ${this.actionName} was successfully triggered for the ${flowType} ${name} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
+            : `The action ${this.actionName} failed to trigger for the ${flowType} ${name} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
 
         await createActivityLogMessage({
             level: actionResponse.isOk() ? 'info' : 'error',
@@ -349,13 +349,13 @@ export class SlackService {
 
         if (actionResponse.isOk()) {
             await logCtx.info(
-                `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
+                `The action ${this.actionName} was successfully triggered for the ${flowType} ${name} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
                 { payload }
             );
             await logCtx.success();
         } else {
             await logCtx.error(
-                `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
+                `The action ${this.actionName} failed to trigger for the ${flowType} ${name} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
                 { error: actionResponse.error, payload }
             );
             await logCtx.failed();

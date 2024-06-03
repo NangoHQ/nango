@@ -39,15 +39,21 @@ export interface Connection extends BaseConnection {
 export interface RecentlyCreatedConnection {
     connection: StoredConnection;
     auth_mode: AuthModes;
-    error?: string;
+    error?: FailedConnectionError;
     operation: AuthOperation;
     environment: Environment;
     account: Account;
 }
+
+export interface FailedConnectionError {
+    type: string;
+    description: string;
+}
+
 export interface RecentlyFailedConnection {
     connection: Pick<StoredConnection, 'connection_id' | 'provider_config_key'>;
     auth_mode: AuthModes;
-    error?: string;
+    error?: FailedConnectionError;
     operation: AuthOperation;
     environment: Environment;
     account: Account;

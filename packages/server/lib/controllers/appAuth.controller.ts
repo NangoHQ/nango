@@ -208,7 +208,10 @@ class AppAuthController {
                         environment,
                         account,
                         auth_mode: AuthModes.App,
-                        error: `Error during app token retrieval call: ${error?.message}`,
+                        error: {
+                            type: 'unknown',
+                            description: `Error during app token retrieval call: ${error?.message}`
+                        },
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
@@ -298,7 +301,10 @@ class AppAuthController {
                     environment,
                     account,
                     auth_mode: AuthModes.App,
-                    error: content,
+                    error: {
+                        type: 'unknown',
+                        description: content
+                    },
                     operation: AuthOperation.UNKNOWN
                 },
                 'unknown',

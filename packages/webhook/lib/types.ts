@@ -1,13 +1,3 @@
-import type { SyncResult, SyncType } from './Sync.js';
-import type { AuthOperation, AuthModes } from './Auth.js';
-import type { FailedConnectionError } from './Connection.js';
-
-export enum WebhookType {
-    SYNC = 'sync',
-    AUTH = 'auth',
-    FORWARD = 'forward'
-}
-
 export interface NangoSyncWebhookBody {
     from: string;
     type: WebhookType.SYNC;
