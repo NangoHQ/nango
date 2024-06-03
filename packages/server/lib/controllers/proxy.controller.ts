@@ -307,35 +307,45 @@ class ProxyController {
         const contentType = responseStream.headers['content-type'];
         const isJsonResponse = contentType && contentType.includes('application/json');
         const isChunked = responseStream.headers['transfer-encoding'] === 'chunked';
+        const isZip = responseStream.headers['content-encoding'] === 'gzip';
 
-        if (isChunked) {
+        if (isChunked || isZip) {
             const passThroughStream = new PassThrough();
             responseStream.data.pipe(passThroughStream);
             passThroughStream.pipe(res);
             res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
-        } else {
-            let responseData = '';
 
-            responseStream.data.on('data', (chunk: Buffer) => {
-                responseData += chunk.toString();
-            });
-
-            responseStream.data.on('end', () => {
-                if (isJsonResponse) {
-                    try {
-                        const parsedResponse = JSON.parse(responseData);
-
-                        res.json(parsedResponse);
-                    } catch (error) {
-                        logger.error(error);
-                        res.writeHead(500, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ error: 'Failed to parse JSON response' }));
-                    }
-                } else {
-                    res.send(responseData);
-                }
-            });
+            await logCtx.success();
+            return;
         }
+
+        let responseData = '';
+
+        responseStream.data.on('data', (chunk: Buffer) => {
+            responseData += chunk.toString();
+        });
+
+        responseStream.data.on('end', async () => {
+            if (!isJsonResponse) {
+                res.send(responseData);
+                await logCtx.success();
+                return;
+            }
+
+            try {
+                const parsedResponse = JSON.parse(responseData);
+
+                res.json(parsedResponse);
+                await logCtx.success();
+            } catch (error) {
+                logger.error(error);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Failed to parse JSON response' }));
+
+                await logCtx.error('Failed to parse JSON response', { error });
+                await logCtx.failed();
+            }
+        });
     }
 
     private async handleErrorResponse(
