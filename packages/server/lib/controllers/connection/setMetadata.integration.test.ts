@@ -1,7 +1,7 @@
 import { multipleMigrations } from '@nangohq/database';
 import { connectionService, seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 

@@ -13,6 +13,7 @@ import { LinkIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Scripts from './Scripts';
 import AuthSettings from './AuthSettings';
+import { isHosted } from '../../utils/utils';
 import type { IntegrationConfig, Flow, FlowEndpoint } from '../../types';
 import { useStore } from '../../store';
 import { requestErrorToast } from '../../utils/api';
@@ -53,7 +54,7 @@ export default function ShowIntegration() {
 
     const { environmentAndAccount, error: environmentError } = useEnvironment(env);
 
-    const [activeTab, setActiveTab] = useState<Tabs>(Tabs.API);
+    const [activeTab, setActiveTab] = useState<Tabs>(isHosted() ? Tabs.Auth : Tabs.API);
     const [subTab, setSubTab] = useState<SubTabs | null>(null);
     const [currentFlow, setCurrentFlow] = useState<Flow | null>(null);
     const [endpoint, setEndpoint] = useState<FlowEndpoint | string | null>(null);

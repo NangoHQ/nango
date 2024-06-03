@@ -10,7 +10,7 @@ import type {
 import { formatDateToLogFormat } from '../../utils/utils';
 import { StatusTag } from './components/StatusTag';
 import { OperationTag } from './components/OperationTag';
-import type { MultiSelectArgs } from './components/MultiSelect';
+import type { MultiSelectArgs } from '../../components/MultiSelect';
 import { ChevronRightIcon } from '@radix-ui/react-icons';
 import { ProviderTag } from './components/ProviderTag';
 
