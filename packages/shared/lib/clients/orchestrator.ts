@@ -463,7 +463,7 @@ export class Orchestrator {
 
             const isOchestratorEnabled = await featureFlags.isEnabled('orchestrator:dryrun', 'global', false, false);
             if (isOchestratorEnabled) {
-                const groupKey: string = 'action';
+                const groupKey: string = 'post-connection-script';
                 const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
                 const args: PostConnectionArgs = {
                     name,
@@ -496,7 +496,7 @@ export class Orchestrator {
                             }
                         },
                         (error) => {
-                            logger.error(`Error: Action '${executionId}' failed: ${stringifyError(error)}`);
+                            logger.error(`Error: Post connection script '${executionId}' failed: ${stringifyError(error)}`);
                         }
                     );
             }
@@ -542,7 +542,7 @@ export class Orchestrator {
                     timestamp: Date.now(),
                     content: `The post connection script workflow ${workflowId} did not complete successfully`
                 });
-                await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
+                await logCtx.error(`The post connection script workflow ${workflowId} did not complete successfully`);
 
                 return Err(error!);
             }
@@ -559,21 +559,18 @@ export class Orchestrator {
             await updateSuccessActivityLog(activityLogId, true);
             await logCtx.info(content);
 
-            // TODO add telemetry
-            /*
             await telemetry.log(
-                LogTypes.ACTION_SUCCESS,
+                LogTypes.POST_CONNECTION_SCRIPT_SUCCESS,
                 content,
-                LogActionEnum.ACTION,
+                LogActionEnum.POST_CONNECTION_SCRIPT,
                 {
                     workflowId,
-                    input: JSON.stringify(input, null, 2),
+                    input: '',
                     connection: JSON.stringify(connection),
-                    actionName
+                    name
                 },
-                `actionName:${actionName}`
+                `postConnectionScript:${name}`
             );
-            */
 
             return Ok(response);
         } catch (err) {
@@ -601,27 +598,25 @@ export class Orchestrator {
                 }
             });
 
-            /*
             await telemetry.log(
-                LogTypes.ACTION_FAILURE,
+                LogTypes.POST_CONNECTION_SCRIPT_FAILURE,
                 content,
-                LogActionEnum.ACTION,
+                LogActionEnum.POST_CONNECTION_SCRIPT,
                 {
                     workflowId,
-                    input: JSON.stringify(input, null, 2),
+                    input: '',
                     connection: JSON.stringify(connection),
-                    actionName,
+                    name,
                     level: 'error'
                 },
-                `actionName:${actionName}`
+                `postConnectionScript:${name}`
             );
-            */
 
             return Err(error);
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
+            metrics.duration(metrics.Types.POST_CONNECTION_SCRIPT_RUNTIME, totalRunTime);
         }
     }
 }
