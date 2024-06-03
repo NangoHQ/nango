@@ -126,9 +126,10 @@ async function scheduleTask({ groupKey }: { groupKey: string }) {
             payload: {
                 type: 'action',
                 activityLogId: 1234,
-                name: 'Task',
+                actionName: 'Task',
                 connection: {
                     id: 1234,
+                    connection_id: 'C',
                     provider_config_key: 'P',
                     environment_id: 5678
                 },

@@ -151,6 +151,13 @@ describe('Task', () => {
         expect(l5.length).toBe(2);
         expect(l5.map((t) => t.id)).toStrictEqual([t1.id, t2.id]);
     });
+    it('should be successfully saving json output', async () => {
+        const outputs = [1, 'one', true, null, ['a', 'b'], { a: 1, b: 2, s: 'two', arr: ['a', 'b'] }, [{ id: 'a' }, { id: 'b' }]];
+        for (const output of outputs) {
+            const task = await createTaskWithState(db, 'STARTED');
+            (await tasks.transitionState(db, { taskId: task.id, newState: 'SUCCEEDED', output })).unwrap();
+        }
+    });
 });
 
 async function createTaskWithState(db: knex.Knex, state: TaskState): Promise<Task> {

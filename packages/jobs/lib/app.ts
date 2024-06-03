@@ -8,7 +8,6 @@ import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { reconcileTemporalSchedules } from './crons/reconcileTemporalSchedules.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
-import { featureFlags } from '@nangohq/shared';
 import db from '@nangohq/database';
 import { envs } from './env.js';
 
@@ -26,17 +25,7 @@ try {
     // This promise never resolve
     void temporal.start();
 
-    // Start processor
-    const getFlag = () => featureFlags.isEnabled('orchestrator:dryrun:process', 'global', false, false);
-    const processorFlagTimer = setInterval(async () => {
-        const isProcessorEnabled = await getFlag();
-        if (isProcessorEnabled && processor.isStopped()) {
-            processor.start();
-        }
-        if (!isProcessorEnabled && !processor.isStopped()) {
-            processor.stop();
-        }
-    }, 1000);
+    processor.start();
 
     db.enableMetrics();
 
@@ -51,7 +40,6 @@ try {
     process.on('SIGTERM', () => {
         temporal.stop();
         processor.stop();
-        clearInterval(processorFlagTimer);
         server.server.close(() => {
             process.exit(0);
         });

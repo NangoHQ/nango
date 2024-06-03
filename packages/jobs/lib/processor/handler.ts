@@ -1,7 +1,13 @@
 import type { OrchestratorTask, TaskWebhook, TaskAction, TaskPostConnection } from '@nangohq/nango-orchestrator';
+import { jsonSchema } from '@nangohq/nango-orchestrator';
 import type { JsonValue } from 'type-fest';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
+import { configService, createSyncJob, getSyncByIdAndName, syncRunService, SyncStatus, SyncType } from '@nangohq/shared';
+import { logContextGetter } from '@nangohq/logs';
+import { records as recordsService } from '@nangohq/records';
+import integrationService from '../integration.service.js';
+import { bigQueryClient, slackService } from '../clients.js';
 
 export async function handler(task: OrchestratorTask): Promise<Result<JsonValue>> {
     task.abortController.signal.onabort = () => {
@@ -25,15 +31,80 @@ async function abort(_task: OrchestratorTask): Promise<Result<void>> {
 }
 
 async function action(task: TaskAction): Promise<Result<JsonValue>> {
-    // TODO: Implement action processing
-    // Returning a successful result for now
-    return Ok({ taskId: task.id, dryrun: true });
+    const providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
+    if (providerConfig === null) {
+        return Err(`Provider config not found for connection: ${task.connection}`);
+    }
+
+    const syncRun = new syncRunService({
+        bigQueryClient,
+        integrationService,
+        recordsService,
+        slackService,
+        writeToDb: true,
+        logCtx: await logContextGetter.get({ id: String(task.activityLogId) }),
+        nangoConnection: task.connection,
+        syncName: task.actionName,
+        isAction: true,
+        syncType: SyncType.ACTION,
+        activityLogId: task.activityLogId,
+        input: task.input as object, // TODO: fix type after temporal is removed
+        provider: providerConfig.provider,
+        debug: false
+    });
+
+    const { error, response } = await syncRun.run();
+    if (error) {
+        return Err(error);
+    }
+    const res = jsonSchema.safeParse(response);
+    if (res.success) {
+        return Ok(res.data);
+    }
+    return Err(`Invalid action response format: ${response}. Action: ${JSON.stringify(task)}`);
 }
 
 async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
-    // TODO: Implement action processing
-    // Returning an error for now
-    return Err(`Not implemented: ${JSON.stringify({ taskId: task.id })}`);
+    const providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
+    if (providerConfig === null) {
+        return Err(`Provider config not found for connection: ${task.connection}`);
+    }
+
+    const sync = await getSyncByIdAndName(task.connection.id, task.parentSyncName);
+    if (!sync) {
+        return Err(`Sync not found for connection: ${task.connection}`);
+    }
+
+    const syncJobId = await createSyncJob(sync.id, SyncType.WEBHOOK, SyncStatus.RUNNING, task.name, task.connection, task.id);
+
+    const syncRun = new syncRunService({
+        bigQueryClient,
+        integrationService,
+        recordsService,
+        slackService,
+        writeToDb: true,
+        nangoConnection: task.connection,
+        syncJobId: syncJobId?.id as number,
+        syncName: task.parentSyncName,
+        isAction: false,
+        syncType: SyncType.WEBHOOK,
+        syncId: sync?.id,
+        isWebhook: true,
+        activityLogId: task.activityLogId,
+        logCtx: await logContextGetter.get({ id: String(task.activityLogId) }),
+        input: task.input as object, // TODO: fix type after temporal is removed
+        provider: providerConfig.provider,
+        debug: false
+    });
+    const { error, response } = await syncRun.run();
+    if (error) {
+        return Err(error);
+    }
+    const res = jsonSchema.safeParse(response);
+    if (res.success) {
+        return Ok(res.data);
+    }
+    return Err(`Invalid webhook response format: ${response}. Webhook: ${JSON.stringify(task)}`);
 }
 
 async function postConnection(task: TaskPostConnection): Promise<Result<JsonValue>> {

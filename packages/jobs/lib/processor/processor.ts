@@ -24,7 +24,7 @@ export class Processor {
             const actionWorker = new ProcessorWorker({
                 orchestratorUrl: this.orchestratorServiceUrl,
                 groupKey: 'action',
-                maxConcurrency: 100
+                maxConcurrency: 500
             });
             actionWorker.start();
 
