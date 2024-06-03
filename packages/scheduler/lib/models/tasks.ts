@@ -2,14 +2,13 @@ import type { JsonValue } from 'type-fest';
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
+import { taskStates } from '../types.js';
 import type { TaskState, Task, TaskTerminalState, TaskNonTerminalState } from '../types.js';
 import { uuidv7 } from 'uuidv7';
 
 export const TASKS_TABLE = 'tasks';
 
 export type TaskProps = Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>;
-
-export const taskStates = ['CREATED', 'STARTED', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'] as const;
 
 interface TaskStateTransition {
     from: TaskState;
@@ -133,8 +132,11 @@ export async function get(db: knex.Knex, taskId: string): Promise<Result<Task>> 
     return Ok(DbTask.from(task));
 }
 
-export async function list(db: knex.Knex, params?: { groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
+export async function search(db: knex.Knex, params?: { ids?: string[]; groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
     const query = db.from<DbTask>(TASKS_TABLE);
+    if (params?.ids) {
+        query.whereIn('id', params.ids);
+    }
     if (params?.groupKey) {
         query.where('group_key', params.groupKey);
     }
@@ -142,7 +144,7 @@ export async function list(db: knex.Knex, params?: { groupKey?: string; state?: 
         query.where('state', params.state);
     }
     const limit = params?.limit || 100;
-    const tasks = await query.limit(limit);
+    const tasks = await query.limit(limit).orderBy('id');
     return Ok(tasks.map(DbTask.from));
 }
 
@@ -213,7 +215,7 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
                     .from<DbTask>(TASKS_TABLE)
                     .where({ group_key: groupKey, state: 'CREATED' })
                     .where('starts_after', '<=', db.fn.now())
-                    .orderBy('created_at')
+                    .orderBy('id')
                     .limit(limit)
                     .forUpdate()
                     .skipLocked()

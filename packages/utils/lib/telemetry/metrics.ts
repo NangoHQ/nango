@@ -20,6 +20,7 @@ export enum Types {
     LOGS_LOG = 'nango.logs.log',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
+    POST_CONNECTION_SCRIPT_RUNTIME = 'nango.jobs.postConnectionScriptRuntime',
     PROXY = 'nango.server.proxyCall',
     REFRESH_TOKENS = 'nango.server.cron.refreshTokens',
     REFRESH_TOKENS_FAILED = 'nango.server.cron.refreshTokens.failed',

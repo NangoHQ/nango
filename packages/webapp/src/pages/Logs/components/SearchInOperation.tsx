@@ -13,7 +13,7 @@ import { MessageRow } from './MessageRow';
 import { ChevronRightIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useIntersection, useInterval } from 'react-use';
-import { Tag } from './Tag';
+import { Tag } from '../../../components/ui/label/Tag';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import Button from '../../../components/ui/button/Button';
 
@@ -71,15 +71,21 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
 
     // --- Data fetch
     const [search, setSearch] = useState<string | undefined>();
-    const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
     const cursorBefore = useRef<SearchMessages['Body']['cursorBefore']>();
     const cursorAfter = useRef<SearchMessages['Body']['cursorAfter']>();
     const [hasLoadedMore, setHasLoadedMore] = useState<boolean>(false);
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
-    const { data, error, loading, trigger, manualFetch } = useSearchMessages(env, { limit, operationId, search: debouncedSearch });
+    const { data, error, loading, trigger, manualFetch } = useSearchMessages(env, { limit, operationId, search });
     const [messages, setMessages] = useState<SearchOperationsData[]>([]);
 
-    useDebounce(() => setDebouncedSearch(search), 250, [search]);
+    useDebounce(
+        () => {
+            setMessages([]);
+            trigger({});
+        },
+        250,
+        [search]
+    );
     useEffect(() => {
         // Data aggregation to enable infinite scroll
         // Because states are changing we need to deduplicate and update rows
@@ -179,7 +185,7 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
         }
     };
 
-    if (!data && loading) {
+    if (!readyToDisplay) {
         return (
             <div>
                 <div className="flex justify-between items-center">

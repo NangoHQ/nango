@@ -2,18 +2,8 @@ import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
 import type { AuthCredentials, Connection, Sync, Job as SyncJob, Environment, Account } from '@nangohq/shared';
-import {
-    multipleMigrations,
-    createActivityLog,
-    environmentService,
-    connectionService,
-    createSync,
-    createSyncJob,
-    SyncType,
-    SyncStatus,
-    db,
-    accountService
-} from '@nangohq/shared';
+import db, { multipleMigrations } from '@nangohq/database';
+import { createActivityLog, environmentService, connectionService, createSync, createSyncJob, SyncType, SyncStatus, accountService } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import { migrate as migrateRecords } from '@nangohq/records';
 

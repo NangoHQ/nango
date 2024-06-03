@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { cn } from '../../utils/utils';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { CheckCircledIcon } from '@radix-ui/react-icons';
+import { apiFetch } from '../../utils/api';
 
 type File = 'github-issues-demo.ts' | 'nango.yaml';
 
@@ -52,9 +53,8 @@ models:
 
         try {
             // Deploy the provider
-            const res = await fetch(`/api/v1/onboarding/deploy?env=dev`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+            const res = await apiFetch(`/api/v1/onboarding/deploy?env=dev`, {
+                method: 'POST'
             });
 
             if (res.status !== 200) {

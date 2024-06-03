@@ -6,7 +6,7 @@ import { useSearchOperations } from '../../hooks/useLogs';
 import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
-import { MultiSelect } from './components/MultiSelect';
+import { MultiSelect } from '../../components/MultiSelect';
 import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, syncsDefaultOptions, typesDefaultOptions } from './constants';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
@@ -28,8 +28,9 @@ import { SearchableMultiSelect } from './components/SearchableMultiSelect';
 import { TypesSelect } from './components/TypesSelect';
 import { DatePicker } from './components/DatePicker';
 import Button from '../../components/ui/button/Button';
-import { OperationRow } from './components/OperationRow';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { OperationDrawer } from './components/OperationDrawer';
+import { OperationRow } from './components/OperationRow';
 
 const limit = 20;
 
@@ -130,6 +131,11 @@ export const LogsSearch: React.FC = () => {
                 setPeriod({ from: tmpFrom, to: tmpTo });
             }
 
+            const tmpOperationId = searchParams.get('operationId');
+            if (tmpOperationId) {
+                setOperationId(tmpOperationId);
+            }
+
             setSynced(true);
         },
         [searchParams, synced]
@@ -153,6 +159,9 @@ export const LogsSearch: React.FC = () => {
             if (period) {
                 tmp.set('from', period.from);
                 tmp.set('to', period.to);
+            }
+            if (operationId) {
+                tmp.set('operationId', operationId);
             }
             setSearchParams(tmp);
         },
@@ -220,6 +229,9 @@ export const LogsSearch: React.FC = () => {
         }
     };
 
+    // Operation select
+    const [operationId, setOperationId] = useState<string>();
+
     if (error) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth className="p-6">
@@ -264,7 +276,6 @@ export const LogsSearch: React.FC = () => {
                 <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
                 <div className="text-white text-xs">{totalHumanReadable} logs found</div>
             </div>
-
             <div className="flex gap-2 justify-between">
                 <div className="w-full">{/* <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." /> */}</div>
                 <div className="flex gap-2">
@@ -280,7 +291,6 @@ export const LogsSearch: React.FC = () => {
                     />
                 </div>
             </div>
-
             <Table.Table className="my-4 table-fixed">
                 <Table.Header>
                     {table.getHeaderGroups().map((headerGroup) => (
@@ -335,6 +345,8 @@ export const LogsSearch: React.FC = () => {
                     </Button>
                 </div>
             )}
+
+            {operationId && <OperationDrawer key={operationId} operationId={operationId} forceOpen={true} />}
         </DashboardLayout>
     );
 };

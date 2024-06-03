@@ -1,6 +1,6 @@
 import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import * as tasks from './tasks.js';
-import { taskStates } from './tasks.js';
+import { taskStates } from '../types.js';
 import type { TaskState, Task } from '../types.js';
 import { getTestDbClient } from '../db/helpers.test.js';
 import type { knex } from 'knex';
@@ -128,24 +128,28 @@ describe('Task', () => {
         expect(expired).toHaveLength(1);
         expect(expired[0]?.output).toMatchObject({ reason: `heartbeatTimeoutSecs_exceeded` });
     });
-    it('should list of tasks', async () => {
+    it('should search tasks', async () => {
         const t1 = await createTaskWithState(db, 'STARTED');
         const t2 = await createTaskWithState(db, 'CREATED');
         const t3 = await createTaskWithState(db, 'CREATED');
 
-        const l1 = (await tasks.list(db)).unwrap();
+        const l1 = (await tasks.search(db)).unwrap();
         expect(l1.length).toBe(3);
 
-        const l2 = (await tasks.list(db, { groupKey: t1.groupKey })).unwrap();
+        const l2 = (await tasks.search(db, { groupKey: t1.groupKey })).unwrap();
         expect(l2.length).toBe(1);
         expect(l2.map((t) => t.id)).toStrictEqual([t1.id]);
 
-        const l3 = (await tasks.list(db, { state: 'CREATED' })).unwrap();
+        const l3 = (await tasks.search(db, { state: 'CREATED' })).unwrap();
         expect(l3.length).toBe(2);
         expect(l3.map((t) => t.id)).toStrictEqual([t2.id, t3.id]);
 
-        const l4 = (await tasks.list(db, { state: 'CREATED', groupKey: 'unkown' })).unwrap();
+        const l4 = (await tasks.search(db, { state: 'CREATED', groupKey: 'unkown' })).unwrap();
         expect(l4.length).toBe(0);
+
+        const l5 = (await tasks.search(db, { ids: [t1.id, t2.id] })).unwrap();
+        expect(l5.length).toBe(2);
+        expect(l5.map((t) => t.id)).toStrictEqual([t1.id, t2.id]);
     });
 });
 

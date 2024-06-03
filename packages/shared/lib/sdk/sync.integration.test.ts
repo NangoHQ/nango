@@ -1,12 +1,12 @@
 import { expect, describe, it, beforeAll } from 'vitest';
-import { multipleMigrations } from '../db/database.js';
+import { multipleMigrations } from '@nangohq/database';
 import type { Connection } from '../models/Connection.js';
 import { NangoAction } from './sync.js';
 import connectionService from '../services/connection.service.js';
 import environmentService from '../services/environment.service.js';
-import { createConnectionSeeds } from '../db/seeders/connection.seeder.js';
-import { createConfigSeeds } from '../db/seeders/config.seeder.js';
-import { createEnvironmentSeed } from '../db/seeders/environment.seeder.js';
+import { createConnectionSeeds } from '../seeders/connection.seeder.js';
+import { createConfigSeeds } from '../seeders/config.seeder.js';
+import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import type { Environment } from '../models/Environment.js';
 
 describe('Connection service integration tests', async () => {

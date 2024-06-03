@@ -1,12 +1,11 @@
 import { describe, it, beforeAll, expect, vi } from 'vitest';
 import type { Environment, SyncConfig } from '@nangohq/shared';
+import db, { multipleMigrations } from '@nangohq/database';
 import {
     seeders,
-    multipleMigrations,
     configService,
     connectionService,
     createSync,
-    db,
     getSchedule,
     createSchedule,
     ScheduleStatus,

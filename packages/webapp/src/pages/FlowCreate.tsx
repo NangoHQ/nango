@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Prism } from '@mantine/prism';
-import { useGetFlows, useCreateFlow } from '../utils/api';
+import { useGetFlows, useCreateFlow, apiFetch } from '../utils/api';
 import type { Sync } from '../types';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
@@ -248,11 +248,8 @@ export default function FlowCreate() {
             public_route: flowObject.rawName || integration
         };
 
-        const response = await fetch(`/api/v1/flow/download?env=${env}`, {
+        const response = await apiFetch(`/api/v1/flow/download?env=${env}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify(flowInfo)
         });
 

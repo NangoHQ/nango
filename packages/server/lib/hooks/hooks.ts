@@ -28,6 +28,7 @@ import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
+import { externalPostConnection } from './connection/external-post-connection.js';
 
 const logger = getLogger('hooks');
 
@@ -78,6 +79,7 @@ export const connectionCreated = async (
 
     if (options.runPostConnectionScript === true) {
         await postConnection(connection, provider, logContextGetter);
+        await externalPostConnection(connection, provider, logContextGetter);
     }
 
     await webhookService.sendAuthUpdate(connection, provider, true, activityLogId, logCtx);

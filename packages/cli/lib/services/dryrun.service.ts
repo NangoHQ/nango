@@ -79,9 +79,22 @@ class DryRunService {
         }
 
         let providerConfigKey = options.optionalProviderConfigKey;
+        let isPostConnectionScript = false;
 
         if (!providerConfigKey) {
             providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
+
+            if (!providerConfigKey) {
+                providerConfigKey =
+                    config.find((config) => {
+                        if (config.postConnectionScripts && config.postConnectionScripts.length > 0) {
+                            return config.postConnectionScripts.some((postConnectionScript) => postConnectionScript === syncName);
+                        } else {
+                            return false;
+                        }
+                    })?.providerConfigKey || '';
+                isPostConnectionScript = true;
+            }
 
             if (!providerConfigKey) {
                 console.log(
@@ -151,7 +164,15 @@ class DryRunService {
             lastSyncDate = new Date(suppliedLastSyncDate);
         }
 
-        const type = syncInfo?.type === SyncConfigType.ACTION ? 'action' : 'sync';
+        let type = 'sync';
+
+        if (syncInfo?.type === SyncConfigType.ACTION) {
+            type = 'action';
+        }
+
+        if (isPostConnectionScript) {
+            type = 'post-connection-script';
+        }
 
         const result = await compileAllFiles({ debug, scriptName: syncName, providerConfigKey, type });
 
@@ -197,41 +218,18 @@ class DryRunService {
                 return Promise.resolve([]);
             }
         };
-        // dry-run is not scheduling any tasks so we can safely mock the orchestrator client
-        const orchestratorClient = {
-            executeAction: () => {
-                return Promise.resolve({}) as any;
-            },
-            executeWebhook: () => {
-                return Promise.resolve({}) as any;
-            }
-        };
-
-        const logContextGetter = {
-            create: () => {
-                return Promise.resolve({}) as any;
-            },
-            get: () => {
-                return {} as any;
-            },
-            getStateLess: () => {
-                return {} as any;
-            }
-        };
 
         const syncRun = new syncRunService({
             integrationService,
             recordsService,
-            orchestratorClient,
             dryRunService: new DryRunService(environment, true),
-            logContextGetter,
             writeToDb: false,
             nangoConnection,
             provider,
             input: normalizedInput as object,
             isAction: syncInfo?.type === SyncConfigType.ACTION,
+            isPostConnectionScript,
             syncId: 'abc',
-            activityLogId: -1,
             syncJobId: -1,
             syncName,
             syncType: SyncType.INITIAL,

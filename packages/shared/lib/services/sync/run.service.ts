@@ -8,11 +8,12 @@ import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
+import { errorNotificationService } from '../notification/error.service.js';
 import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
-import { SlackService } from '../notification/slack.service.js';
+import type { SlackService } from '../notification/slack.service.js';
 import webhookService from '../notification/webhook.service.js';
 import { integrationFilesAreRemote, isCloud, getLogger, metrics, stringifyError } from '@nangohq/utils';
 import { getApiUrl, isJsOrTsType } from '../../utils/utils.js';
@@ -22,10 +23,9 @@ import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment.js';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '../../sdk/sync.js';
 import type { UpsertSummary } from '@nangohq/records';
-import type { OrchestratorClientInterface } from '../../clients/orchestrator.js';
 
 const logger = getLogger('run.service');
 
@@ -51,28 +51,26 @@ interface RunScriptRow {
     createdAt: number;
 }
 
-export interface SyncRunConfig {
+export type SyncRunConfig = {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
     dryRunService?: NangoProps['dryRunService'];
-    orchestratorClient: OrchestratorClientInterface;
-    logContextGetter: LogContextGetter;
 
-    writeToDb: boolean;
     isAction?: boolean;
     isInvokedImmediately?: boolean;
     isWebhook?: boolean;
+    isPostConnectionScript?: boolean;
     nangoConnection: NangoConnection;
     syncName: string;
     syncType: SyncType;
 
     syncId?: string;
     syncJobId?: number;
-    activityLogId?: number | undefined;
     provider?: string;
 
     loadLocation?: string;
+    fileLocation?: string;
     debug?: boolean;
     input?: object;
 
@@ -83,7 +81,7 @@ export interface SyncRunConfig {
     environment?: Environment;
 
     temporalContext?: Context;
-}
+} & ({ writeToDb: true; activityLogId: number; logCtx: LogContext; slackService: SlackService } | { writeToDb: false });
 
 export interface RecordsServiceInterface {
     markNonCurrentGenerationRecordsAsDeleted({
@@ -104,11 +102,11 @@ export default class SyncRun {
     integrationService: IntegrationServiceInterface;
     recordsService: RecordsServiceInterface;
     dryRunService?: NangoProps['dryRunService'];
-    logContextGetter: LogContextGetter;
-    slackNotificationService: SlackService;
+    slackNotificationService?: SlackService;
 
     writeToDb: boolean;
     isAction: boolean;
+    isPostConnectionScript: boolean;
     isInvokedImmediately: boolean;
     nangoConnection: NangoConnection;
     syncName: string;
@@ -119,6 +117,7 @@ export default class SyncRun {
     activityLogId?: number;
     provider?: string;
     loadLocation?: string;
+    fileLocation?: string;
     debug?: boolean;
     input?: object;
 
@@ -139,21 +138,19 @@ export default class SyncRun {
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
         this.recordsService = config.recordsService;
-        this.logContextGetter = config.logContextGetter;
-        this.slackNotificationService = new SlackService(config.orchestratorClient);
         if (config.bigQueryClient) {
             this.bigQueryClient = config.bigQueryClient;
         }
         if (config.dryRunService) {
             this.dryRunService = config.dryRunService;
         }
-        this.writeToDb = config.writeToDb;
         this.isAction = config.isAction || false;
         this.isWebhook = config.isWebhook || false;
+        this.isPostConnectionScript = config.isPostConnectionScript || false;
         this.nangoConnection = config.nangoConnection;
         this.syncName = config.syncName;
         this.syncType = config.syncType;
-        this.isInvokedImmediately = Boolean(config.isAction || config.isWebhook);
+        this.isInvokedImmediately = Boolean(config.isAction || config.isWebhook || config.isPostConnectionScript);
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -163,8 +160,11 @@ export default class SyncRun {
             this.syncJobId = config.syncJobId;
         }
 
-        if (config.activityLogId) {
+        this.writeToDb = config.writeToDb;
+        if (config.writeToDb) {
+            this.slackNotificationService = config.slackService;
             this.activityLogId = config.activityLogId;
+            this.logCtx = config.logCtx;
         }
 
         if (config.loadLocation) {
@@ -194,12 +194,10 @@ export default class SyncRun {
         if (config.temporalContext) {
             this.temporalContext = config.temporalContext;
         }
-    }
 
-    async cancel(): Promise<ServiceResponse<boolean>> {
-        await this.integrationService.cancelScript(this.syncId as string, this.nangoConnection.environment_id);
-
-        return { success: false, error: null, response: false };
+        if (config.fileLocation) {
+            this.fileLocation = config.fileLocation;
+        }
     }
 
     async run(
@@ -208,10 +206,6 @@ export default class SyncRun {
         optionalSecretKey?: string,
         optionalHost?: string
     ): Promise<ServiceResponse<boolean | object>> {
-        if (this.activityLogId) {
-            this.logCtx = await this.logContextGetter.get({ id: String(this.activityLogId) });
-        }
-
         if (this.debug) {
             const content = this.loadLocation ? `Looking for a local nango config at ${this.loadLocation}` : `Looking for a sync config for ${this.syncName}`;
             if (this.writeToDb) {
@@ -227,9 +221,20 @@ export default class SyncRun {
                 logger.info(content);
             }
         }
-        const nangoConfig = this.loadLocation
+        let nangoConfig = this.loadLocation
             ? await loadLocalNangoConfig(this.loadLocation)
             : await getSyncConfig(this.nangoConnection, this.syncName, this.isAction);
+
+        if (!nangoConfig && this.isPostConnectionScript) {
+            nangoConfig = {
+                integrations: {
+                    [this.nangoConnection.provider_config_key]: {
+                        'post-connection-scripts': [this.syncName]
+                    }
+                },
+                models: {}
+            };
+        }
 
         if (!nangoConfig) {
             const message = `No ${this.isAction ? 'action' : 'sync'} configuration was found for ${this.syncName}.`;
@@ -254,7 +259,7 @@ export default class SyncRun {
         }
 
         // if there is a matching customer integration code for the provider config key then run it
-        if (integrations[this.nangoConnection.provider_config_key]) {
+        if (integrations[this.nangoConnection.provider_config_key] || this.isPostConnectionScript) {
             let environment: Environment | null = null;
             let account: Account | null = null;
 
@@ -294,6 +299,14 @@ export default class SyncRun {
 
             if (this.isAction) {
                 syncData = (syncObject['actions'] ? syncObject['actions'][this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
+            } else if (this.isPostConnectionScript) {
+                syncData = {
+                    runs: 'every 5 minutes',
+                    returns: [],
+                    track_deletes: false,
+                    is_public: false,
+                    fileLocation: this.fileLocation
+                } as NangoIntegrationData;
             } else {
                 syncData = (syncObject['syncs'] ? syncObject['syncs'][this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
             }
@@ -372,7 +385,7 @@ export default class SyncRun {
                 environmentId: this.nangoConnection.environment_id,
                 providerConfigKey: String(this.nangoConnection.provider_config_key),
                 provider: this.provider as string,
-                activityLogId: this.activityLogId as number,
+                activityLogId: this.activityLogId,
                 secretKey,
                 nangoConnectionId: this.nangoConnection.id as number,
                 syncId: this.syncId,
@@ -424,7 +437,7 @@ export default class SyncRun {
                     syncId:
                         (this.syncId as string) ||
                         `${this.syncName}-${this.nangoConnection.environment_id}-${this.nangoConnection.provider_config_key}-${this.nangoConnection.connection_id}`,
-                    activityLogId: this.activityLogId as number,
+                    activityLogId: this.activityLogId,
                     nangoProps,
                     integrationData: syncData,
                     environmentId: this.nangoConnection.environment_id,
@@ -472,17 +485,34 @@ export default class SyncRun {
                     await this.logCtx?.info(content);
                     await this.logCtx?.success();
 
-                    await this.slackNotificationService.removeFailingConnection(
+                    await this.slackNotificationService?.removeFailingConnection(
                         this.nangoConnection,
                         this.syncName,
                         this.syncType,
                         this.activityLogId as number,
                         this.nangoConnection.environment_id,
-                        this.provider as string,
-                        this.logContextGetter
+                        this.provider as string
                     );
 
                     await this.finishFlow(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
+
+                    return { success: true, error: null, response: userDefinedResults };
+                }
+
+                if (this.isPostConnectionScript) {
+                    const content = `The post connection script "${this.syncName}" has been run successfully.`;
+
+                    await updateSuccessActivityLog(this.activityLogId as number, true);
+
+                    await createActivityLogMessageAndEnd({
+                        level: 'info',
+                        environment_id: this.nangoConnection.environment_id,
+                        activity_log_id: this.activityLogId as number,
+                        timestamp: Date.now(),
+                        content
+                    });
+                    await this.logCtx?.info(content);
+                    await this.logCtx?.success();
 
                     return { success: true, error: null, response: userDefinedResults };
                 }
@@ -583,15 +613,21 @@ export default class SyncRun {
             // any changes while the sync is running
             if (!this.isWebhook) {
                 await setLastSyncDate(this.syncId as string, syncStartDate);
-                await this.slackNotificationService.removeFailingConnection(
+                await this.slackNotificationService?.removeFailingConnection(
                     this.nangoConnection,
                     this.syncName,
                     this.syncType,
                     this.activityLogId,
                     this.nangoConnection.environment_id,
-                    this.provider as string,
-                    this.logContextGetter
+                    this.provider as string
                 );
+            }
+
+            if (this.syncId && this.nangoConnection.id) {
+                await errorNotificationService.sync.clear({
+                    sync_id: this.syncId,
+                    connection_id: this.nangoConnection.id
+                });
             }
         }
 
@@ -738,14 +774,13 @@ export default class SyncRun {
 
         if (!this.isWebhook) {
             try {
-                await this.slackNotificationService.reportFailure(
+                await this.slackNotificationService?.reportFailure(
                     this.nangoConnection,
                     this.syncName,
                     this.syncType,
                     this.activityLogId as number,
                     this.nangoConnection.environment_id,
-                    this.provider as string,
-                    this.logContextGetter
+                    this.provider as string
                 );
             } catch {
                 errorManager.report('slack notification service reported a failure', {
@@ -818,11 +853,25 @@ export default class SyncRun {
             },
             `syncId:${this.syncId}`
         );
+
+        if (this.nangoConnection.id && this.activityLogId && this.logCtx?.id && this.syncId) {
+            await errorNotificationService.sync.create({
+                action: 'run',
+                type: 'sync',
+                sync_id: this.syncId,
+                connection_id: this.nangoConnection.id,
+                activity_log_id: this.activityLogId,
+                log_id: this.logCtx?.id,
+                active: true
+            });
+        }
     }
 
     private determineExecutionType(): string {
         if (this.isAction) {
             return 'action';
+        } else if (this.isPostConnectionScript) {
+            return 'post-connection-script';
         } else if (this.isWebhook) {
             return 'webhook';
         } else {

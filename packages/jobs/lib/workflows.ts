@@ -1,7 +1,7 @@
 import type { ActivityFailure } from '@temporalio/workflow';
 import { CancellationScope, proxyActivities, isCancellation } from '@temporalio/workflow';
 import type * as activities from './activities.js';
-import type { WebhookArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs, RunnerOutput } from '@nangohq/shared';
+import type { WebhookArgs, PostConnectionScriptArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs, RunnerOutput } from '@nangohq/shared';
 import { ACTION_MAX_ATTEMPTS, ACTION_TIMEOUT, SYNC_MAX_ATTEMPTS, SYNC_TIMEOUT, WEBHOOK_MAX_ATTEMPTS, WEBHOOK_TIMEOUT } from '@nangohq/utils';
 
 const { routeSync, scheduleAndRouteSync } = proxyActivities<typeof activities>({
@@ -24,7 +24,7 @@ const { runAction, reportFailure: reportActionFailure } = proxyActivities<typeof
     }
 });
 
-const { runWebhook } = proxyActivities<typeof activities>({
+const { runWebhook, runPostConnectionScript } = proxyActivities<typeof activities>({
     // webhook execution should be fast, hence shorter startToCloseTimeout
     // but we allow for longer time to start so events are not evicted too soon if system is busy
     scheduleToStartTimeout: '1h',
@@ -99,5 +99,23 @@ export async function webhook(args: WebhookArgs): Promise<boolean> {
         await reportFailure(err, args, WEBHOOK_TIMEOUT, WEBHOOK_MAX_ATTEMPTS);
 
         return false;
+    }
+}
+
+export async function postConnectionScript(args: PostConnectionScriptArgs): Promise<RunnerOutput> {
+    try {
+        return await runPostConnectionScript(args);
+    } catch (err) {
+        await reportFailure(err, args, WEBHOOK_TIMEOUT, WEBHOOK_MAX_ATTEMPTS);
+
+        return {
+            success: false,
+            error: {
+                type: 'nango_internal_error',
+                status: 500,
+                payload: { message: (err as ActivityFailure).cause?.message }
+            },
+            response: null
+        };
     }
 }
