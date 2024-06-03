@@ -14,7 +14,7 @@ interface InfoProps {
 export default function Info({ children, size, padding, verticallyCenter = true, classNames = '', color = 'blue', showIcon = true }: InfoProps) {
     const iconClasses = color === 'blue' ? 'stroke-blue-400' : color === 'red' ? 'stroke-red-500' : 'stroke-amber-500';
     const background = color === 'blue' ? 'bg-blue-base/[.35]' : color === 'red' ? 'bg-red-base/[.35]' : 'bg-amber-500';
-    const border = color === 'blue' ? 'outline outline-1 outline-blue-base' : color === 'red' ? 'border border-red-base' : 'border border-amber-500';
+    const border = color === 'blue' ? 'border border-blue-base' : color === 'red' ? 'border border-red-base' : 'border border-amber-500';
     const bgOpacity = color === 'blue' ? '' : color === 'red' ? '' : 'bg-opacity-20';
     const textColor = color === 'blue' ? 'text-blue-base' : color === 'red' ? 'text-red-base' : 'text-white';
 

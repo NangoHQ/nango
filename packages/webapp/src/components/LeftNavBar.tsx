@@ -151,7 +151,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             }`}
                         >
                             <LinkIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Connections ? 'text-white' : 'text-gray-400'}`} />
-                            {errorNotifications > 0 && <span className="absolute top-2 left-6 bg-red-base h-1.5 w-1.5 rounded-full"></span>}
+                            {errorNotifications > 0 && <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>}
                             <p>Connections</p>
                         </Link>
                         <Link
