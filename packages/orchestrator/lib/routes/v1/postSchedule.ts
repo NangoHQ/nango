@@ -5,8 +5,12 @@ import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 import { jsonSchema } from '../../utils/validation.js';
+import type { TaskType } from '../../types.js';
 
-type Schedule = Endpoint<{
+const path = '/v1/schedule';
+const method = 'POST';
+
+export type PostSchedule = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Body: {
@@ -22,18 +26,58 @@ type Schedule = Endpoint<{
             startedToCompleted: number;
             heartbeat: number;
         };
-        args: JsonValue;
+        args: JsonValue & { type: TaskType };
     };
     Error: ApiError<'schedule_failed'>;
     Success: { taskId: string };
 }>;
 
-const path = '/v1/schedule';
-const method = 'POST';
+const commonSchemaFields = {
+    name: z.string().min(1),
+    connection: z.object({
+        id: z.number().positive(),
+        provider_config_key: z.string().min(1),
+        environment_id: z.number().positive()
+    }),
+    input: jsonSchema
+};
 
-const validate = validateRequest<Schedule>({
-    parseBody: (data) =>
-        z
+export const actionArgsSchema = z.object({
+    type: z.literal('action'),
+    activityLogId: z.number().positive(),
+    ...commonSchemaFields
+});
+export const webhookArgsSchema = z.object({
+    type: z.literal('webhook'),
+    parentSyncName: z.string().min(1),
+    activityLogId: z.number().positive().nullable(),
+    ...commonSchemaFields
+});
+export const postConnectionArgsSchema = z.object({
+    type: z.literal('post-connection-script'),
+    fileLocation: z.string().min(1),
+    activityLogId: z.number().positive(),
+    ...commonSchemaFields
+});
+
+const validate = validateRequest<PostSchedule>({
+    parseBody: (data: any) => {
+        function argsSchema(data: any) {
+            if ('args' in data && 'type' in data.args) {
+                switch (data.args.type) {
+                    case 'action':
+                        return actionArgsSchema;
+                    case 'webhook':
+                        return webhookArgsSchema;
+                    case 'post-connection-script':
+                        return postConnectionArgsSchema;
+                    default:
+                        throw new Error(`Invalid task type: '${data.args.type}'`);
+                }
+            }
+            throw new Error('Missing task type');
+        }
+        return z
             .object({
                 scheduling: z.literal('immediate'),
                 name: z.string().min(1),
@@ -47,22 +91,14 @@ const validate = validateRequest<Schedule>({
                     startedToCompleted: z.number().int().positive(),
                     heartbeat: z.number().int().positive()
                 }),
-                args: z.object({
-                    name: z.string().min(1),
-                    connection: z.object({
-                        id: z.number().positive(),
-                        provider_config_key: z.string().min(1),
-                        environment_id: z.number().positive()
-                    }),
-                    activityLogId: z.number().positive(),
-                    input: z.optional(jsonSchema).default({})
-                })
+                args: argsSchema(data)
             })
-            .parse(data)
+            .parse(data);
+    }
 });
 
-const getHandler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<Schedule>, res: EndpointResponse<Schedule>) => {
+const handler = (scheduler: Scheduler) => {
+    return async (req: EndpointRequest<PostSchedule>, res: EndpointResponse<PostSchedule>) => {
         const task = await scheduler.schedule({
             scheduling: req.body.scheduling,
             taskProps: {
@@ -83,12 +119,12 @@ const getHandler = (scheduler: Scheduler) => {
     };
 };
 
-export const route: Route<Schedule> = { path, method };
+export const route: Route<PostSchedule> = { path, method };
 
-export const getRouteHandler = (scheduler: Scheduler): RouteHandler<Schedule> => {
+export const routeHandler = (scheduler: Scheduler): RouteHandler<PostSchedule> => {
     return {
         ...route,
         validate,
-        handler: getHandler(scheduler)
+        handler: handler(scheduler)
     };
 };

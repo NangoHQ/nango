@@ -21,7 +21,7 @@ export interface ActionArgs {
     input: object;
     actionName: string;
     nangoConnection: NangoConnection;
-    activityLogId: number | undefined;
+    activityLogId: number;
 }
 
 export interface WebhookArgs {

@@ -51,12 +51,12 @@ export async function externalPostConnection(
     );
 
     for (const postConnectionScript of postConnectionScripts) {
-        const { name, file_location } = postConnectionScript;
+        const { name, file_location: fileLocation } = postConnectionScript;
 
         await getOrchestrator().triggerPostConnectionScript({
             connection: createdConnection.connection,
             name,
-            file_location,
+            fileLocation,
             activityLogId: activityLogId as number,
             logCtx
         });

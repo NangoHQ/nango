@@ -5,9 +5,8 @@ import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 import type { EventEmitter } from 'node:events';
-import { getEventId } from '../../../../events.js';
 
-type Output = Endpoint<{
+type GetOutput = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Params: {
@@ -20,10 +19,10 @@ type Output = Endpoint<{
     Success: { state: TaskState; output: JsonValue };
 }>;
 
-const path = '/v1/task/:taskId/output';
+const path = '/v1/tasks/:taskId/output';
 const method = 'GET';
 
-const validate = validateRequest<Output>({
+const validate = validateRequest<GetOutput>({
     parseQuery: (data) =>
         z
             .object({
@@ -37,11 +36,11 @@ const validate = validateRequest<Output>({
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).parse(data)
 });
 
-const getHandler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
-    return async (req: EndpointRequest<Output>, res: EndpointResponse<Output>) => {
+const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
+    return async (req: EndpointRequest<GetOutput>, res: EndpointResponse<GetOutput>) => {
         const waitForCompletionTimeoutMs = 120_000;
-        const eventId = getEventId('completed', req.params.taskId);
-        const cleanupAndRespond = (respond: (res: EndpointResponse<Output>) => void) => {
+        const eventId = `task:completed:${req.params.taskId}`;
+        const cleanupAndRespond = (respond: (res: EndpointResponse<GetOutput>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
             }
@@ -75,12 +74,12 @@ const getHandler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     };
 };
 
-export const route: Route<Output> = { path, method };
+export const route: Route<GetOutput> = { path, method };
 
-export const getRouteHandler = (scheduler: Scheduler, eventEmmiter: EventEmitter): RouteHandler<Output> => {
+export const routeHandler = (scheduler: Scheduler, eventEmmiter: EventEmitter): RouteHandler<GetOutput> => {
     return {
         ...route,
         validate,
-        handler: getHandler(scheduler, eventEmmiter)
+        handler: handler(scheduler, eventEmmiter)
     };
 };

@@ -1,19 +1,19 @@
 import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import type { Task } from '@nangohq/scheduler';
 import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
-import { getServer } from './server.js';
+import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 import getPort from 'get-port';
-import { EventsHandler } from './events.js';
+import { EventsHandler } from '../events.js';
 
 const dbClient = getTestDbClient();
 const eventsHandler = new EventsHandler({
-    CREATED: (task) => console.log(`Task ${task.id} created`),
-    STARTED: (task) => console.log(`Task ${task.id} started`),
-    SUCCEEDED: (task) => console.log(`Task ${task.id} succeeded`),
-    FAILED: (task) => console.log(`Task ${task.id} failed`),
-    EXPIRED: (task) => console.log(`Task ${task.id} expired`),
-    CANCELLED: (task) => console.log(`Task ${task.id} cancelled`)
+    CREATED: () => {},
+    STARTED: () => {},
+    SUCCEEDED: () => {},
+    FAILED: () => {},
+    EXPIRED: () => {},
+    CANCELLED: () => {}
 });
 const scheduler = new Scheduler({
     dbClient,
@@ -33,6 +33,34 @@ describe('OrchestratorClient', async () => {
     afterAll(async () => {
         scheduler.stop();
         await dbClient.clearDatabase();
+    });
+    describe('heartbeat', () => {
+        it('should be successful', async () => {
+            const scheduledTask = await client.schedule({
+                name: 'Task',
+                groupKey: rndStr(),
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'action',
+                    name: rndStr(),
+                    connection: {
+                        id: 123,
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    activityLogId: 789,
+                    input: { foo: 'bar' }
+                }
+            });
+            const taskId = scheduledTask.unwrap().taskId;
+            const beforeTask = await scheduler.get({ taskId });
+            const res = await client.heartbeat({ taskId });
+            const after = await scheduler.get({ taskId });
+
+            expect(res.isOk(), `heartbeat failed: ${res.isErr() ? JSON.stringify(res.error) : ''}`).toBe(true);
+            expect(after.unwrap().lastHeartbeatAt.getTime()).toBeGreaterThan(beforeTask.unwrap().lastHeartbeatAt.getTime());
+        });
     });
 
     describe('executeAction', () => {
@@ -167,6 +195,98 @@ describe('OrchestratorClient', async () => {
             }
         });
     });
+    describe('search', () => {
+        it('should returns task by ids', async () => {
+            const groupKey = rndStr();
+            const actionA = await client.schedule({
+                name: 'Task',
+                groupKey,
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'action',
+                    name: `action-a`,
+                    connection: {
+                        id: 123,
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    activityLogId: 789,
+                    input: { foo: 'bar' }
+                }
+            });
+            const actionB = await client.schedule({
+                name: 'Task',
+                groupKey,
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'action',
+                    name: `action-b`,
+                    connection: {
+                        id: 123,
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    activityLogId: 789,
+                    input: { foo: 'bar' }
+                }
+            });
+            const ids = [actionA.unwrap().taskId, actionB.unwrap().taskId];
+            const res = await client.search({ ids });
+            expect(res.unwrap().length).toBe(2);
+            expect(res.unwrap().map((task) => task.id)).toEqual(ids);
+        });
+    });
+    describe('dequeue', () => {
+        it('should returns nothing if no scheduled task', async () => {
+            const res = await client.dequeue({ groupKey: 'abc', limit: 1, waitForCompletion: false });
+            expect(res.unwrap()).toEqual([]);
+        });
+        it('should return scheduled tasks', async () => {
+            const groupKey = rndStr();
+            const scheduledAction = await client.schedule({
+                name: 'Task',
+                groupKey,
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'action',
+                    name: `action-a`,
+                    connection: {
+                        id: 123,
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    activityLogId: 789,
+                    input: { foo: 'bar' }
+                }
+            });
+            const scheduledWebhook = await client.schedule({
+                name: 'Task',
+                groupKey,
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'webhook',
+                    name: `webhook-a`,
+                    parentSyncName: 'parent',
+                    connection: {
+                        id: 123,
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    activityLogId: 789,
+                    input: { foo: 'bar' }
+                }
+            });
+            const res = await client.dequeue({ groupKey, limit: 2, waitForCompletion: false });
+            expect(res.unwrap().length).toBe(2);
+            expect(res.unwrap()[0]?.isAction()).toBe(true);
+            expect(res.unwrap()[1]?.isWebhook()).toBe(true);
+            expect(res.unwrap().map((task) => task.id)).toEqual([scheduledAction.unwrap().taskId, scheduledWebhook.unwrap().taskId]);
+        });
+    });
 });
 
 class MockProcessor {
@@ -174,7 +294,7 @@ class MockProcessor {
 
     constructor({ groupKey, process }: { groupKey: string; process: (task: Task) => void }) {
         this.interval = setInterval(async () => {
-            const tasks = (await scheduler.list({ groupKey })).unwrap();
+            const tasks = (await scheduler.search({ groupKey })).unwrap();
             for (const task of tasks) {
                 switch (task.state) {
                     case 'CREATED':

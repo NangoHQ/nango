@@ -7,7 +7,7 @@ import * as database from '../../db/database.js';
 import * as jobService from './job.service.js';
 import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { Connection } from '../../models/Connection.js';
-import { logContextGetter } from '@nangohq/logs';
+import { LogContext, logContextGetter } from '@nangohq/logs';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { createEnvironmentSeed } from '../../db/seeders/environment.seeder.js';
@@ -16,6 +16,7 @@ import { createSyncSeeds } from '../../db/seeders/sync.seeder.js';
 import { createSyncJobSeeds } from '../../db/seeders/sync-job.seeder.js';
 import connectionService from '../connection.service.js';
 import { createActivityLog } from '../activity/activity.service.js';
+import { SlackService } from '../notification/slack.service.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -39,6 +40,7 @@ const orchestratorClient = {
         return Promise.resolve({}) as any;
     }
 };
+const slackService = new SlackService({ orchestratorClient, logContextGetter });
 
 const integrationService = new integrationServiceMock();
 
@@ -196,8 +198,7 @@ describe('SyncRun', () => {
         const config: SyncRunConfig = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
             recordsService,
-            orchestratorClient,
-            logContextGetter,
+            slackService,
             writeToDb: true,
             nangoConnection: {
                 id: 1,
@@ -210,6 +211,7 @@ describe('SyncRun', () => {
             syncId: 'some-sync',
             syncJobId: 123,
             activityLogId: 123,
+            logCtx: new LogContext({ parentId: String(123), operation: {} as any }),
             loadLocation: '/tmp',
             debug: true
         };
@@ -257,15 +259,15 @@ const runJob = async (
     const config: SyncRunConfig = {
         integrationService: integrationService,
         recordsService,
-        orchestratorClient,
-        logContextGetter,
+        slackService,
         writeToDb: true,
         nangoConnection: connection,
         syncName: sync.name,
         syncType: SyncType.INITIAL,
         syncId: sync.id,
         syncJobId: syncJob.id,
-        activityLogId
+        activityLogId,
+        logCtx: new LogContext({ parentId: String(activityLogId), operation: {} as any })
     };
     const syncRun = new SyncRun(config);
 

@@ -33,7 +33,8 @@ import {
     getSyncByIdAndName,
     getLastSyncDate,
     getSyncConfigRaw,
-    getOrchestratorUrl
+    getOrchestratorUrl,
+    SlackService
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
 import { getLogger, env, stringifyError, errorToObject } from '@nangohq/utils';
@@ -51,6 +52,10 @@ const bigQueryClient = await BigQueryClient.createInstance({
 });
 
 const orchestratorClient = new OrchestratorClient({ baseUrl: getOrchestratorUrl() });
+const slackService = new SlackService({
+    orchestratorClient: orchestratorClient,
+    logContextGetter: logContextGetter
+});
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;
@@ -96,9 +101,9 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         bigQueryClient,
         integrationService,
         recordsService,
-        orchestratorClient,
-        logContextGetter,
+        slackService,
         writeToDb: true,
+        logCtx: await logContextGetter.get({ id: String(activityLogId) }),
         nangoConnection,
         syncName: actionName,
         isAction: true,
@@ -329,8 +334,7 @@ export async function syncProvider({
             bigQueryClient,
             integrationService,
             recordsService,
-            logContextGetter,
-            orchestratorClient,
+            slackService,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -340,7 +344,8 @@ export async function syncProvider({
             activityLogId,
             provider: providerConfig.provider,
             temporalContext,
-            debug
+            debug,
+            logCtx
         });
 
         const result = await syncRun.run();
@@ -424,8 +429,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         bigQueryClient,
         integrationService,
         recordsService,
-        logContextGetter,
-        orchestratorClient,
+        slackService,
         writeToDb: true,
         nangoConnection,
         syncJobId: syncJobId?.id as number,
@@ -435,6 +439,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         syncId: sync?.id as string,
         isWebhook: true,
         activityLogId,
+        logCtx: await logContextGetter.get({ id: String(activityLogId) }),
         input,
         provider: providerConfig.provider,
         debug: false,
@@ -460,8 +465,7 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
         bigQueryClient,
         integrationService,
         recordsService,
-        logContextGetter,
-        orchestratorClient,
+        slackService,
         writeToDb: true,
         nangoConnection,
         syncName: name,
@@ -470,6 +474,7 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
         syncType: SyncType.POST_CONNECTION_SCRIPT,
         isWebhook: false,
         activityLogId,
+        logCtx: await logContextGetter.get({ id: String(activityLogId) }),
         provider: providerConfig.provider,
         fileLocation: file_location,
         debug: false,
@@ -541,33 +546,9 @@ export async function reportFailure(
 
 export async function cancelActivity(workflowArguments: InitialSyncArgs | ContinuousSyncArgs): Promise<void> {
     try {
-        const { syncId, syncName, nangoConnection, debug } = workflowArguments;
-
-        const context: Context = Context.current();
+        const { syncId, nangoConnection } = workflowArguments;
 
         const environmentId = nangoConnection?.environment_id;
-
-        const providerConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key, environmentId)) as ProviderConfig;
-
-        const lastSyncDate = await getLastSyncDate(syncId);
-        const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.INITIAL;
-
-        const syncRun = new syncRunService({
-            bigQueryClient,
-            integrationService,
-            recordsService,
-            orchestratorClient,
-            logContextGetter,
-            writeToDb: true,
-            syncId,
-            nangoConnection,
-            syncType,
-            syncName,
-            activityLogId: undefined,
-            provider: providerConfig.provider,
-            temporalContext: context,
-            debug: Boolean(debug)
-        });
 
         if ('syncJobId' in workflowArguments) {
             await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
@@ -575,7 +556,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
             await updateLatestJobSyncStatus(workflowArguments.syncId, SyncStatus.STOPPED);
         }
 
-        await syncRun.cancel();
+        await integrationService.cancelScript(syncId, environmentId);
     } catch (e) {
         const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e instanceof Error ? e.message : stringifyError(e)}`;
         errorManager.report(content, {
