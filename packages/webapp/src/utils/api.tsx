@@ -10,6 +10,13 @@ export async function apiFetch(input: string | URL | Request, init?: RequestInit
     });
 }
 
+export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
+    return await fetch(input, {
+        ...init,
+        headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) }
+    });
+}
+
 export async function fetcher(...args: Parameters<typeof fetch>) {
     const response = await apiFetch(...args);
     return response.json();

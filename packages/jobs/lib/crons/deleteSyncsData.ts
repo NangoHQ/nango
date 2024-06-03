@@ -1,5 +1,6 @@
 import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, softDeleteSchedules, softDeleteJobs, db, findRecentlyDeletedSync } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { errorManager, ErrorSourceEnum, softDeleteSchedules, softDeleteJobs, findRecentlyDeletedSync } from '@nangohq/shared';
 import { records } from '@nangohq/records';
 import { getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';

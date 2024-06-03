@@ -53,6 +53,12 @@ export const webhookArgsSchema = z.object({
     activityLogId: z.number().positive().nullable(),
     ...commonSchemaFields
 });
+export const postConnectionArgsSchema = z.object({
+    type: z.literal('post-connection-script'),
+    fileLocation: z.string().min(1),
+    activityLogId: z.number().positive(),
+    ...commonSchemaFields
+});
 
 const validate = validateRequest<PostSchedule>({
     parseBody: (data: any) => {
@@ -63,6 +69,8 @@ const validate = validateRequest<PostSchedule>({
                         return actionArgsSchema;
                     case 'webhook':
                         return webhookArgsSchema;
+                    case 'post-connection-script':
+                        return postConnectionArgsSchema;
                     default:
                         throw new Error(`Invalid task type: '${data.args.type}'`);
                 }

@@ -15,6 +15,7 @@ import type { Account } from '../../../models/Admin.js';
 
 describe('Sync config create', () => {
     const environment = { id: 1, name: '' } as Environment;
+    const account = { id: 1, name: '' } as Account;
     const debug = true;
 
     it('Create sync configs correctly', async () => {
@@ -30,7 +31,15 @@ describe('Sync config create', () => {
         mockAddEndTime();
 
         // empty sync config should return back an empty array
-        const emptyConfig = await DeployConfigService.deploy(environment, syncs, '', logContextGetter, debug);
+        const emptyConfig = await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: syncs,
+            nangoYamlBody: '',
+            logContextGetter,
+            debug,
+            postConnectionScriptsByProvider: []
+        });
 
         expect(emptyConfig).not.toBe([]);
     });
@@ -56,7 +65,15 @@ describe('Sync config create', () => {
             return Promise.resolve(null);
         });
 
-        const { error } = await DeployConfigService.deploy(environment, syncs, '', logContextGetter, debug);
+        const { error } = await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: syncs,
+            nangoYamlBody: '',
+            logContextGetter,
+            debug,
+            postConnectionScriptsByProvider: []
+        });
         expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
   "providerConfigKey": "google-wrong"
@@ -90,6 +107,7 @@ describe('Sync config create', () => {
                 provider: 'google',
                 oauth_client_id: '123',
                 oauth_client_secret: '123',
+                post_connection_scripts: null,
                 environment_id: 1
             });
         });
@@ -110,7 +128,8 @@ describe('Sync config create', () => {
                     auto_start: true,
                     track_deletes: false,
                     version: '1',
-                    enabled: true
+                    enabled: true,
+                    webhook_subscriptions: null
                 }
             ]);
         });
@@ -130,7 +149,8 @@ describe('Sync config create', () => {
                 auto_start: true,
                 track_deletes: false,
                 version: '1',
-                enabled: true
+                enabled: true,
+                webhook_subscriptions: null
             });
         });
 
@@ -149,7 +169,8 @@ describe('Sync config create', () => {
                 auto_start: true,
                 track_deletes: false,
                 version: '1',
-                enabled: true
+                enabled: true,
+                webhook_subscriptions: null
             });
         });
 
@@ -161,8 +182,8 @@ describe('Sync config create', () => {
             return Promise.resolve([]);
         });
 
-        await expect(DeployConfigService.deploy(environment, syncs, '', logContextGetter, debug)).rejects.toThrowError(
-            'Error creating sync config from a deploy. Please contact support with the sync name and connection details'
-        );
+        await expect(
+            DeployConfigService.deploy({ environment, account, flows: syncs, nangoYamlBody: '', logContextGetter, debug, postConnectionScriptsByProvider: [] })
+        ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');
     });
 });

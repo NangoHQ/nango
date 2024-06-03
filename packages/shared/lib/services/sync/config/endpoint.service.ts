@@ -1,4 +1,4 @@
-import { schema, dbNamespace } from '../../../db/database.js';
+import { schema, dbNamespace } from '@nangohq/database';
 import configService from '../../config.service.js';
 import type { SyncConfig } from '../../../models/Sync.js';
 import { SyncConfigType } from '../../../models/Sync.js';

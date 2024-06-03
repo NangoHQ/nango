@@ -79,9 +79,22 @@ class DryRunService {
         }
 
         let providerConfigKey = options.optionalProviderConfigKey;
+        let isPostConnectionScript = false;
 
         if (!providerConfigKey) {
             providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
+
+            if (!providerConfigKey) {
+                providerConfigKey =
+                    config.find((config) => {
+                        if (config.postConnectionScripts && config.postConnectionScripts.length > 0) {
+                            return config.postConnectionScripts.some((postConnectionScript) => postConnectionScript === syncName);
+                        } else {
+                            return false;
+                        }
+                    })?.providerConfigKey || '';
+                isPostConnectionScript = true;
+            }
 
             if (!providerConfigKey) {
                 console.log(
@@ -147,7 +160,15 @@ class DryRunService {
             lastSyncDate = new Date(suppliedLastSyncDate);
         }
 
-        const type = syncInfo?.type === SyncConfigType.ACTION ? 'action' : 'sync';
+        let type = 'sync';
+
+        if (syncInfo?.type === SyncConfigType.ACTION) {
+            type = 'action';
+        }
+
+        if (isPostConnectionScript) {
+            type = 'post-connection-script';
+        }
 
         const result = await compileAllFiles({ debug, scriptName: syncName, providerConfigKey, type });
 
@@ -203,6 +224,7 @@ class DryRunService {
             provider,
             input: normalizedInput as object,
             isAction: syncInfo?.type === SyncConfigType.ACTION,
+            isPostConnectionScript,
             syncId: 'abc',
             syncJobId: -1,
             syncName,

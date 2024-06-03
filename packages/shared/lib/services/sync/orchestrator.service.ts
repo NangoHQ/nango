@@ -18,6 +18,7 @@ import {
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog
 } from '../activity/activity.service.js';
+import { errorNotificationService } from '../notification/error.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
@@ -162,6 +163,7 @@ export class OrchestratorService {
     public async softDeleteSync(syncId: string, environmentId: number) {
         await deleteScheduleForSync(syncId, environmentId);
         await softDeleteSync(syncId);
+        await errorNotificationService.sync.clearBySyncId({ sync_id: syncId });
     }
 
     public async softDeleteSyncsByConnection(connection: Connection) {
@@ -517,7 +519,8 @@ export class OrchestratorService {
             name: sync?.name,
             status,
             frequency: schedule?.frequency,
-            latestResult: latestJob?.result
+            latestResult: latestJob?.result,
+            latestExecutionStatus: latestJob?.status === SyncStatus.STOPPED ? SyncStatus.ERROR : latestJob?.status
         } as ReportedSyncJobStatus;
 
         if (includeJobStatus) {

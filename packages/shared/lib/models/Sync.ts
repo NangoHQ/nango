@@ -16,6 +16,7 @@ export enum SyncType {
     INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL',
     WEBHOOK = 'WEBHOOK',
+    POST_CONNECTION_SCRIPT = 'POST_CONNECTION_SCRIPT',
     FULL = 'FULL',
     ACTION = 'ACTION'
 }
@@ -66,6 +67,7 @@ export interface ReportedSyncJobStatus {
     frequency: string;
     finishedAt: Date;
     nextScheduledSyncAt: Date | null;
+    latestExecutionStatus: SyncStatus;
 }
 
 export interface SyncModelSchema {
@@ -107,7 +109,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     endpoints?: NangoSyncEndpoint[];
     input?: string | SyncModelSchema | undefined;
     sync_type?: SyncType | undefined;
-    webhook_subscriptions?: string[];
+    webhook_subscriptions: string[] | null;
     enabled: boolean;
 }
 

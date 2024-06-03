@@ -1,4 +1,4 @@
-import { schema, dbNamespace } from '../../../db/database.js';
+import { schema, dbNamespace } from '@nangohq/database';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import environmentService from '../../environment.service.js';
@@ -26,6 +26,8 @@ import type {
     IncomingPreBuiltFlowConfig,
     SyncEndpoint
 } from '../../../models/Sync.js';
+import type { PostConnectionScriptByProvider } from '@nangohq/types';
+import { postConnectionScriptService } from '../post-connection.service.js';
 import { SyncConfigType } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
@@ -34,6 +36,7 @@ import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { Environment } from '../../../models/Environment.js';
+import type { Account } from '../../../models/Admin.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
@@ -42,20 +45,29 @@ const nameOfType = 'sync/action';
 
 type FlowWithVersion = Omit<IncomingFlowConfig, 'fileBody'>;
 
-export async function deploy(
-    environment: Environment,
-    flows: IncomingFlowConfig[],
-    nangoYamlBody: string,
-    logContextGetter: LogContextGetter,
-    debug = false
-): Promise<ServiceResponse<SyncConfigResult | null>> {
+export async function deploy({
+    environment,
+    account,
+    flows,
+    postConnectionScriptsByProvider,
+    nangoYamlBody,
+    logContextGetter,
+    debug
+}: {
+    environment: Environment;
+    account: Account;
+    flows: IncomingFlowConfig[];
+    postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
+    nangoYamlBody: string;
+    logContextGetter: LogContextGetter;
+    debug?: boolean;
+}): Promise<ServiceResponse<SyncConfigResult | null>> {
     const insertData: SyncConfig[] = [];
 
     const providers = flows.map((flow) => flow.providerConfigKey);
     const providerConfigKeys = [...new Set(providers)];
 
     const idsToMarkAsInvactive: number[] = [];
-    const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
 
     const log = {
         level: 'info' as LogLevel,
@@ -102,7 +114,7 @@ export async function deploy(
             environment_id: environment.id,
             accountId: account.id,
             activityLogId: activityLogId as number,
-            debug,
+            debug: Boolean(debug),
             logCtx
         });
 
@@ -166,6 +178,10 @@ export async function deploy(
 
         if (endpoints.length > 0) {
             await schema().from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+        }
+
+        if (postConnectionScriptsByProvider.length > 0) {
+            await postConnectionScriptService.update({ environment, account, postConnectionScriptsByProvider });
         }
 
         if (idsToMarkAsInvactive.length > 0) {
@@ -446,7 +462,8 @@ export async function deployPreBuilt(
             metadata,
             pre_built: true,
             is_public,
-            enabled: true
+            enabled: true,
+            webhook_subscriptions: null
         };
 
         insertData.push(flowData);

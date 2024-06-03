@@ -284,8 +284,8 @@ export function createExampleForType(type: string): any {
 }
 
 export function generateExampleValueForProperty(model: NangoSyncModel): Record<string, boolean | string | number> {
-    if (!Array.isArray(model.fields)) {
-        return createExampleForType(model.name);
+    if (!Array.isArray(model?.fields)) {
+        return createExampleForType(model?.name);
     }
     const example = {} as Record<string, boolean | string | number>;
     for (const field of model.fields) {

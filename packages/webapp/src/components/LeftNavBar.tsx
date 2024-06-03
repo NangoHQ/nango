@@ -17,6 +17,7 @@ import { useMeta } from '../hooks/useMeta';
 import { useSignout } from '../utils/user';
 import { RocketIcon } from '@radix-ui/react-icons';
 import { useEnvironment } from '../hooks/useEnvironment';
+import { useConnections } from '../hooks/useConnections';
 
 export enum LeftNavBarItems {
     Integrations = 0,
@@ -45,6 +46,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const signout = useSignout();
     const { meta } = useMeta();
     const env = useStore((state) => state.env);
+    const { errorNotifications } = useConnections(env);
     const setEnv = useStore((state) => state.setEnv);
     const email = useStore((state) => state.email);
     const { mutate } = useEnvironment(env);
@@ -145,11 +147,12 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </Link>
                         <Link
                             to={`/${env}/connections`}
-                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md relative text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.Connections ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
                             <LinkIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Connections ? 'text-white' : 'text-gray-400'}`} />
+                            {errorNotifications > 0 && <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>}
                             <p>Connections</p>
                         </Link>
                         <Link
