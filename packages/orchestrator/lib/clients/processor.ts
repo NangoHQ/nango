@@ -4,7 +4,7 @@ import type { OrchestratorClient } from './client.js';
 import type { OrchestratorTask } from './types.js';
 import type { JsonValue } from 'type-fest';
 import PQueue from 'p-queue';
-import tracer from 'dd-trace';
+import type { Tracer } from 'dd-trace';
 
 const logger = getLogger('orchestrator.clients.processor');
 
@@ -34,12 +34,12 @@ export class OrchestratorProcessor {
         this.checkForTerminatedInterval = opts.checkForTerminatedInterval || 1000;
     }
 
-    public start() {
+    public start(ctx: { tracer: Tracer }) {
         this.stopped = false;
         this.terminatedTimer = setInterval(async () => {
             await this.checkForTerminatedTasks();
         }, this.checkForTerminatedInterval); // checking for cancelled/expired doesn't require to be very responsive so we can do it on an interval
-        void this.processingLoop();
+        void this.processingLoop(ctx);
     }
 
     public stop() {
@@ -73,7 +73,7 @@ export class OrchestratorProcessor {
         return;
     }
 
-    private async processingLoop() {
+    private async processingLoop(ctx: { tracer: Tracer }) {
         while (!this.stopped) {
             // wait for the queue to have space before dequeuing more tasks
             await this.queue.onSizeLessThan(this.queue.concurrency);
@@ -86,12 +86,12 @@ export class OrchestratorProcessor {
                 continue;
             }
             for (const task of tasks.value) {
-                const active = tracer.scope().active();
-                const span = tracer.startSpan('processor.process', {
+                const active = ctx.tracer.scope().active();
+                const span = ctx.tracer.startSpan('processor.process', {
                     ...(active ? { childOf: active } : {}),
                     tags: { 'task.id': task.id }
                 });
-                void this.processTask(task)
+                void this.processTask(task, ctx)
                     .catch((err: unknown) => span.setTag('error', err))
                     .finally(() => span.finish());
             }
@@ -99,11 +99,11 @@ export class OrchestratorProcessor {
         return;
     }
 
-    private async processTask(task: OrchestratorTask): Promise<void> {
+    private async processTask(task: OrchestratorTask, ctx: { tracer: Tracer }): Promise<void> {
         this.abortControllers.set(task.id, task.abortController);
         await this.queue.add(async () => {
-            const active = tracer.scope().active();
-            const span = tracer.startSpan('processor.process.task', {
+            const active = ctx.tracer.scope().active();
+            const span = ctx.tracer.startSpan('processor.process.task', {
                 ...(active ? { childOf: active } : {}),
                 tags: { 'task.id': task.id }
             });
