@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import type { Knex } from '@nangohq/database';
-import { axiosInstance as axios } from "../utils/axios";
+import { axiosInstance as axios } from '../utils/axios.js';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type {
@@ -702,6 +702,7 @@ class ConnectionService {
                     });
                 }
 
+                // TODO: this leak credentials to the logs
                 const errorWithPayload = new NangoError(error.type, connection);
 
                 return Err(errorWithPayload);
@@ -877,7 +878,7 @@ class ConnectionService {
                     level: 'error'
                 });
 
-                const error = new NangoError('refresh_token_external_error', e as Error);
+                const error = new NangoError('refresh_token_external_error', errorDetails);
 
                 return { success: false, error, response: null };
             } finally {
