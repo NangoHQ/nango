@@ -4,6 +4,7 @@ import type { OrchestratorClient } from './client.js';
 import type { OrchestratorTask } from './types.js';
 import type { JsonValue } from 'type-fest';
 import PQueue from 'p-queue';
+import tracer from 'dd-trace';
 
 const logger = getLogger('orchestrator.clients.processor');
 
@@ -85,7 +86,14 @@ export class OrchestratorProcessor {
                 continue;
             }
             for (const task of tasks.value) {
-                void this.processTask(task);
+                const active = tracer.scope().active();
+                const span = tracer.startSpan('processor.process', {
+                    ...(active ? { childOf: active } : {}),
+                    tags: { 'task.id': task.id }
+                });
+                void this.processTask(task)
+                    .catch((err: unknown) => span.setTag('error', err))
+                    .finally(() => span.finish());
             }
         }
         return;
@@ -94,23 +102,46 @@ export class OrchestratorProcessor {
     private async processTask(task: OrchestratorTask): Promise<void> {
         this.abortControllers.set(task.id, task.abortController);
         await this.queue.add(async () => {
+            const active = tracer.scope().active();
+            const span = tracer.startSpan('processor.process.task', {
+                ...(active ? { childOf: active } : {}),
+                tags: { 'task.id': task.id }
+            });
             try {
                 if (task.abortController.signal.aborted) {
                     // task was aborted while waiting in the queue
+                    logger.info(`task ${task.id} was aborted before processing started`);
                     return;
                 }
                 const res = await this.handler(task);
                 if (res.isErr()) {
-                    await this.orchestratorClient.failed({ taskId: task.id, error: res.error });
+                    const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error: res.error });
+                    if (setFailed.isErr()) {
+                        logger.error(`failed to set task ${task.id} as failed: ${stringifyError(setFailed.error)}`);
+                        span.setTag('error', setFailed);
+                    } else {
+                        span.setTag('error', res.error);
+                    }
                 } else {
-                    await this.orchestratorClient.succeed({ taskId: task.id, output: res.value });
+                    const setSucceed = await this.orchestratorClient.succeed({ taskId: task.id, output: res.value });
+                    if (setSucceed.isErr()) {
+                        logger.error(`failed to set task ${task.id} as succeeded: ${stringifyError(setSucceed.error)}`);
+                        span.setTag('error', setSucceed);
+                    }
                 }
-                //TODO what to do if failed/success fails?
             } catch (err: unknown) {
                 const error = new Error(stringifyError(err));
-                await this.orchestratorClient.failed({ taskId: task.id, error });
+                logger.error(`Failed to process task ${task.id}: ${stringifyError(error)}`);
+                const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error });
+                if (setFailed.isErr()) {
+                    logger.error(`failed to set task ${task.id} as failed. Unknown error: ${stringifyError(setFailed.error)}`);
+                    span.setTag('error', setFailed);
+                } else {
+                    span.setTag('error', error);
+                }
             } finally {
                 this.abortControllers.delete(task.id);
+                span.finish();
             }
         });
     }
