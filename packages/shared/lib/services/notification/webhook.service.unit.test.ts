@@ -9,13 +9,13 @@ import { mockCreateActivityLog } from '../activity/mocks.js';
 import { LogContext, logContextGetter } from '@nangohq/logs';
 import type { Account, Config } from '../../models/index.js';
 
+const mock = {
+    post: vi.fn(() => Promise.resolve({ status: 200 })) // Mock axios.post as a spy
+};
+
 vi.mock('axios', () => ({
     default: {
-        create: () => {
-            return  {
-                post: vi.fn(() => Promise.resolve({ status: 200 })) // Mock axios.post as a spy
-            }
-        }
+        create: () => mock
     },
     __esModule: true
 }));
@@ -59,7 +59,7 @@ describe('Webhook notification tests', () => {
             1,
             logCtx
         );
-        expect(axios.post).not.toHaveBeenCalled();
+        expect(mock.post).not.toHaveBeenCalled();
     });
 
     it('Should not send an auth webhook if the webhook url is not present even if the auth webhook is checked', async () => {
@@ -84,7 +84,7 @@ describe('Webhook notification tests', () => {
             1,
             logCtx
         );
-        expect(axios.post).not.toHaveBeenCalled();
+        expect(mock.post).not.toHaveBeenCalled();
     });
 
     it('Should send an auth webhook if the webhook url is not present but the secondary is', async () => {
@@ -109,7 +109,7 @@ describe('Webhook notification tests', () => {
             1,
             logCtx
         );
-        expect(axios.post).toHaveBeenCalledTimes(1);
+        expect(mock.post).toHaveBeenCalledTimes(1);
     });
 
     it('Should send an auth webhook twice if the webhook url is present and the secondary is as well', async () => {
@@ -134,7 +134,7 @@ describe('Webhook notification tests', () => {
             1,
             logCtx
         );
-        expect(axios.post).toHaveBeenCalledTimes(2);
+        expect(mock.post).toHaveBeenCalledTimes(2);
     });
 
     it('Should send an auth webhook if the webhook url is present and if the auth webhook is checked', async () => {
@@ -159,7 +159,7 @@ describe('Webhook notification tests', () => {
             1,
             logCtx
         );
-        expect(axios.post).toHaveBeenCalledTimes(1);
+        expect(mock.post).toHaveBeenCalledTimes(1);
     });
 
     it('Should not send an auth webhook if the webhook url is present and if the auth webhook is not checked', async () => {
@@ -184,7 +184,7 @@ describe('Webhook notification tests', () => {
             1,
             logCtx
         );
-        expect(axios.post).not.toHaveBeenCalled();
+        expect(mock.post).not.toHaveBeenCalled();
     });
 
     it('Should not send a forward webhook if the webhook url is not present', async () => {
@@ -200,7 +200,7 @@ describe('Webhook notification tests', () => {
             webhookOriginalHeaders: {},
             logContextGetter
         });
-        expect(axios.post).not.toHaveBeenCalled();
+        expect(mock.post).not.toHaveBeenCalled();
     });
 
     it('Should send a forward webhook if the webhook url is not present but the secondary is', async () => {
@@ -223,7 +223,7 @@ describe('Webhook notification tests', () => {
             webhookOriginalHeaders: {},
             logContextGetter
         });
-        expect(axios.post).toHaveBeenCalledTimes(1);
+        expect(mock.post).toHaveBeenCalledTimes(1);
     });
 
     it('Should send a forwarded webhook if the webhook url is present', async () => {
@@ -238,7 +238,7 @@ describe('Webhook notification tests', () => {
             webhookOriginalHeaders: {},
             logContextGetter
         });
-        expect(axios.post).toHaveBeenCalledTimes(1);
+        expect(mock.post).toHaveBeenCalledTimes(1);
     });
 
     it('Should send a forwarded webhook twice if the webhook url and secondary are present', async () => {
@@ -260,7 +260,7 @@ describe('Webhook notification tests', () => {
             webhookOriginalHeaders: {},
             logContextGetter
         });
-        expect(axios.post).toHaveBeenCalledTimes(2);
+        expect(mock.post).toHaveBeenCalledTimes(2);
     });
 
     it('Should not send a sync webhook if the webhook url is not present', async () => {
@@ -279,7 +279,7 @@ describe('Webhook notification tests', () => {
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: null, always_send_webhook: false } as Environment
         );
-        expect(axios.post).not.toHaveBeenCalled();
+        expect(mock.post).not.toHaveBeenCalled();
     });
 
     it('Should not send a sync webhook if the webhook url is not present even if always send is checked', async () => {
@@ -298,7 +298,7 @@ describe('Webhook notification tests', () => {
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: null, always_send_webhook: true } as Environment
         );
-        expect(axios.post).not.toHaveBeenCalled();
+        expect(mock.post).not.toHaveBeenCalled();
     });
 
     it('Should not send a sync webhook if the webhook url is present but if always send is not checked and there were no sync changes', async () => {
@@ -317,7 +317,7 @@ describe('Webhook notification tests', () => {
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://exmaple.com/webhook', always_send_webhook: false } as Environment
         );
-        expect(axios.post).not.toHaveBeenCalled();
+        expect(mock.post).not.toHaveBeenCalled();
     });
 
     it('Should send a sync webhook if the webhook url is present and if always send is not checked and there were sync changes', async () => {
@@ -336,7 +336,7 @@ describe('Webhook notification tests', () => {
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://example.com/webhook', always_send_webhook: false } as Environment
         );
-        expect(axios.post).toHaveBeenCalled();
+        expect(mock.post).toHaveBeenCalled();
     });
 
     it('Should send a sync webhook if the webhook url is present and if always send is checked and there were sync changes', async () => {
@@ -355,7 +355,7 @@ describe('Webhook notification tests', () => {
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://example.com/webhook', always_send_webhook: true } as Environment
         );
-        expect(axios.post).toHaveBeenCalled();
+        expect(mock.post).toHaveBeenCalled();
     });
 
     it('Should send an sync webhook if the webhook url is present and if always send is checked and there were no sync changes', async () => {
@@ -374,7 +374,7 @@ describe('Webhook notification tests', () => {
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://example.com/webhook', always_send_webhook: true } as Environment
         );
-        expect(axios.post).toHaveBeenCalled();
+        expect(mock.post).toHaveBeenCalled();
     });
 
     it('Should send an sync webhook twice if the webhook url and secondary are present and if always send is checked and there were no sync changes', async () => {
@@ -400,6 +400,6 @@ describe('Webhook notification tests', () => {
                 always_send_webhook: true
             } as Environment
         );
-        expect(axios.post).toHaveBeenCalledTimes(2);
+        expect(mock.post).toHaveBeenCalledTimes(2);
     });
 });
