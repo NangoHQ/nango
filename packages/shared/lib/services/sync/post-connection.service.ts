@@ -1,4 +1,4 @@
-import db from '../../db/database.js';
+import db from '@nangohq/database';
 import remoteFileService from '../file/remote.service.js';
 import type { Account } from '../../models/Admin.js';
 import type { Environment } from '../../models/Environment.js';

@@ -13,7 +13,7 @@ import { MessageRow } from './MessageRow';
 import { ChevronRightIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useIntersection, useInterval } from 'react-use';
-import { Tag } from './Tag';
+import { Tag } from '../../../components/ui/label/Tag';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import Button from '../../../components/ui/button/Button';
 

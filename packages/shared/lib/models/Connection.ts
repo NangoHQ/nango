@@ -11,7 +11,7 @@ import type {
 import type { Account } from './Admin.js';
 import type { Environment } from './Environment.js';
 import type { TimestampsAndDeleted } from './Generic.js';
-import type { Metadata } from '@nangohq/types';
+import type { Metadata, ActiveLogIds } from '@nangohq/types';
 
 export type ConnectionConfig = Record<string, any>;
 
@@ -86,4 +86,5 @@ export interface ConnectionList {
     provider: string;
     created: string;
     metadata?: Metadata | null;
+    active_logs?: ActiveLogIds | null;
 }
