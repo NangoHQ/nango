@@ -6,6 +6,7 @@
         "packages/cli",
         "packages/shared",
         "packages/frontend",
+        "packages/kvstore",
         "packages/logs",
         "packages/node-client",
         "packages/records",

@@ -1,5 +1,5 @@
 {
-    "name": "@nangohq/logs",
+    "name": "@nangohq/kvstore",
     "version": "1.0.0",
     "type": "module",
     "main": "./dist/index.js",
@@ -14,16 +14,11 @@
         "directory": "packages/logs"
     },
     "dependencies": {
-        "@elastic/elasticsearch": "8.13.1",
-        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/utils": "file:../utils",
-        "zod": "3.22.4"
+        "redis": "4.6.13"
     },
     "devDependencies": {
-        "@nangohq/types": "file:../types",
-        "type-fest": "4.14.0",
-        "vitest": "0.33.0",
-        "winston": "3.8.2"
+        "vitest": "0.33.0"
     },
     "files": [
         "dist/**/*"

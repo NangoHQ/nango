@@ -5,7 +5,7 @@ import { envs } from '../env.js';
 import type { FormatMessageData } from './helpers.js';
 import { getFormattedMessage } from './helpers.js';
 import { LogContext, LogContextStateless } from '../client.js';
-import { logger } from '../utils.js';
+import { getKVStore, logger } from '../utils.js';
 import type { MessageRow, OperationRow, OperationRowInsert } from '@nangohq/types';
 
 interface Options {
@@ -36,7 +36,9 @@ export const logContextGetter = {
 
         try {
             if (envs.NANGO_LOGS_ENABLED && !options?.dryRun) {
-                await createMessage(msg);
+                const res = await createMessage(msg);
+                const store = await getKVStore();
+                await store.set(`es:operation:${msg.id}:indexName`, res.index, { ttlInMs: 60 * 1000 });
             } else if (options?.logToConsole !== false) {
                 logger.info(`[debug] operation(${JSON.stringify(msg)})`);
             }
@@ -54,7 +56,10 @@ export const logContextGetter = {
     async get({ id }: { id: MessageRow['id'] }, options?: Options): Promise<LogContext> {
         try {
             if (envs.NANGO_LOGS_ENABLED) {
-                const operation = await getOperation({ id });
+                const store = await getKVStore();
+                const indexName = await store.get(`es:operation:${id}:indexName`);
+
+                const operation = await getOperation({ id, indexName });
                 return new LogContext({ parentId: id, operation }, options);
             }
         } catch (err) {

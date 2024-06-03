@@ -40,9 +40,6 @@ export * from './models/index.js';
 export * from './utils/utils.js';
 export * from './utils/error.js';
 export * from './constants.js';
-export * from './utils/kvstore/KVStore.js';
-export * from './utils/kvstore/InMemoryStore.js';
-export * from './utils/kvstore/RedisStore.js';
 
 export * from './sdk/sync.js';
 

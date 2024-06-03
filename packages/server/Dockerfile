@@ -14,6 +14,7 @@ COPY package*.json ./
 COPY packages/webapp/build/ packages/webapp/build/
 COPY packages/shared/ packages/shared/
 COPY packages/utils/ packages/utils/
+COPY packages/kvstore/ packages/kvstore/
 COPY packages/logs/ packages/logs/
 COPY packages/database/ packages/database/
 COPY packages/node-client/ packages/node-client/

@@ -17,6 +17,9 @@
             "path": "packages/database"
         },
         {
+            "path": "packages/kvstore"
+        },
+        {
             "path": "packages/logs"
         },
         {
