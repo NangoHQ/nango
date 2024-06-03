@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import db, { schema, dbNamespace } from '../../db/database.js';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob, SyncWithSchedule, SlimSync, SlimAction } from '../../models/Sync.js';
 import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
@@ -530,7 +530,7 @@ export const getSyncsByConnectionIdsAndEnvironmentIdAndSyncName = async (connect
 
 export const getAndReconcileDifferences = async ({
     environmentId,
-    syncs,
+    flows,
     performAction,
     activityLogId,
     debug = false,
@@ -539,7 +539,7 @@ export const getAndReconcileDifferences = async ({
     logContextGetter
 }: {
     environmentId: number;
-    syncs: IncomingFlowConfig[];
+    flows: IncomingFlowConfig[];
     performAction: boolean;
     activityLogId: number | null;
     debug?: boolean | undefined;
@@ -554,13 +554,13 @@ export const getAndReconcileDifferences = async ({
     const existingSyncsByProviderConfig: Record<string, SlimSync[]> = {};
     const existingConnectionsByProviderConfig: Record<string, NangoConnection[]> = {};
 
-    for (const sync of syncs) {
-        const { syncName, providerConfigKey, type } = sync;
+    for (const flow of flows) {
+        const { syncName: flowName, providerConfigKey, type } = flow;
         if (type === SyncConfigType.ACTION) {
-            const actionExists = await getActionConfigByNameAndProviderConfigKey(environmentId, syncName, providerConfigKey);
+            const actionExists = await getActionConfigByNameAndProviderConfigKey(environmentId, flowName, providerConfigKey);
             if (!actionExists) {
                 newActions.push({
-                    name: syncName,
+                    name: flowName,
                     providerConfigKey
                 });
             }
@@ -577,7 +577,7 @@ export const getAndReconcileDifferences = async ({
         }
         const currentSync = existingSyncsByProviderConfig[providerConfigKey];
 
-        const exists = currentSync?.find((existingSync) => existingSync.name === syncName);
+        const exists = currentSync?.find((existingSync) => existingSync.name === flowName);
         const connections = existingConnectionsByProviderConfig[providerConfigKey] as Connection[];
 
         let isNew = false;
@@ -593,17 +593,17 @@ export const getAndReconcileDifferences = async ({
         if (exists && exists.enabled && connections.length > 0) {
             syncsByConnection = await findSyncByConnections(
                 connections.map((connection) => connection.id as number),
-                syncName
+                flowName
             );
             isNew = syncsByConnection.length === 0;
         }
 
         if (!exists || isNew) {
             newSyncs.push({
-                name: syncName,
+                name: flowName,
                 providerConfigKey,
                 connections: existingConnectionsByProviderConfig[providerConfigKey]?.length as number,
-                auto_start: sync.auto_start === false ? false : true
+                auto_start: flow.auto_start === false ? false : true
             });
             if (performAction) {
                 if (debug && activityLogId) {
@@ -612,11 +612,11 @@ export const getAndReconcileDifferences = async ({
                         environment_id: environmentId,
                         activity_log_id: activityLogId,
                         timestamp: Date.now(),
-                        content: `Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`
+                        content: `Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`
                     });
-                    await logCtx?.debug(`Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
+                    await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
                 }
-                syncsToCreate.push({ connections, syncName, sync, providerConfigKey, environmentId });
+                syncsToCreate.push({ connections, syncName: flowName, sync: flow, providerConfigKey, environmentId });
             }
         }
 
@@ -633,11 +633,11 @@ export const getAndReconcileDifferences = async ({
                         environment_id: environmentId,
                         activity_log_id: activityLogId,
                         timestamp: Date.now(),
-                        content: `Creating sync ${syncName} for ${providerConfigKey} with ${missingConnections.length} connections`
+                        content: `Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`
                     });
-                    await logCtx?.debug(`Creating sync ${syncName} for ${providerConfigKey} with ${missingConnections.length} connections`);
+                    await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`);
                 }
-                syncsToCreate.push({ connections: missingConnections, syncName, sync, providerConfigKey, environmentId });
+                syncsToCreate.push({ connections: missingConnections, syncName: flowName, sync: flow, providerConfigKey, environmentId });
             }
         }
     }
@@ -675,7 +675,7 @@ export const getAndReconcileDifferences = async ({
 
     if (!singleDeployMode) {
         for (const existingSync of existingSyncs) {
-            const exists = syncs.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
+            const exists = flows.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
 
             if (!exists) {
                 const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);

@@ -21,7 +21,7 @@ export interface ActionArgs {
     input: object;
     actionName: string;
     nangoConnection: NangoConnection;
-    activityLogId: number | undefined;
+    activityLogId: number;
 }
 
 export interface WebhookArgs {
@@ -29,5 +29,12 @@ export interface WebhookArgs {
     parentSyncName: string;
     nangoConnection: NangoConnection;
     input: object;
+    activityLogId: number;
+}
+
+export interface PostConnectionScriptArgs {
+    name: string;
+    nangoConnection: NangoConnection;
+    file_location: string;
     activityLogId: number;
 }

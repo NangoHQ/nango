@@ -3,7 +3,7 @@ import type { ActiveLog } from '@nangohq/types';
 import { Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
-import db from '../../db/database.js';
+import db from '@nangohq/database';
 
 const DB_TABLE = '_nango_active_logs';
 
@@ -37,12 +37,8 @@ export const errorNotificationService = {
         get: async (id: number): Promise<ActiveLog | null> => {
             return await db.knex.from<ActiveLog>(DB_TABLE).where({ type: 'auth', connection_id: id, active: true }).first();
         },
-        clear: async ({ connection_id, trx }: { connection_id: ActiveLog['connection_id']; trx?: Knex.Transaction }): Promise<void> => {
-            if (trx) {
-                await trx.from<ActiveLog>(DB_TABLE).where({ type: 'auth', connection_id }).delete();
-            } else {
-                await db.knex.from<ActiveLog>(DB_TABLE).where({ type: 'auth', connection_id }).delete();
-            }
+        clear: async ({ connection_id, trx = db.knex }: { connection_id: ActiveLog['connection_id']; trx?: Knex.Transaction | Knex }): Promise<void> => {
+            await trx.from<ActiveLog>(DB_TABLE).where({ type: 'auth', connection_id }).delete();
         }
     },
     sync: {
@@ -72,17 +68,13 @@ export const errorNotificationService = {
         clear: async ({
             sync_id,
             connection_id,
-            trx
+            trx = db.knex
         }: {
             sync_id: ActiveLog['sync_id'];
             connection_id: ActiveLog['connection_id'];
-            trx?: Knex.Transaction;
+            trx?: Knex.Transaction | Knex;
         }): Promise<void> => {
-            if (trx) {
-                await trx.from<ActiveLog>(DB_TABLE).where({ type: 'sync', sync_id, connection_id }).delete();
-            } else {
-                await db.knex.from<ActiveLog>(DB_TABLE).where({ type: 'sync', sync_id, connection_id }).delete();
-            }
+            await trx.from<ActiveLog>(DB_TABLE).where({ type: 'sync', sync_id, connection_id }).delete();
         },
         clearBySyncId: async ({ sync_id }: Pick<SyncErrorNotification, 'sync_id'>): Promise<void> => {
             await db.knex.from<ActiveLog>(DB_TABLE).where({ type: 'sync', sync_id }).delete();

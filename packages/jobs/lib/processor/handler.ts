@@ -1,4 +1,4 @@
-import type { OrchestratorTask, TaskWebhook, TaskAction } from '@nangohq/nango-orchestrator';
+import type { OrchestratorTask, TaskWebhook, TaskAction, TaskPostConnection } from '@nangohq/nango-orchestrator';
 import type { JsonValue } from 'type-fest';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -12,6 +12,9 @@ export async function handler(task: OrchestratorTask): Promise<Result<JsonValue>
     }
     if (task.isWebhook()) {
         return webhook(task);
+    }
+    if (task.isPostConnection()) {
+        return postConnection(task);
     }
     return Err(`Unreachable`);
 }
@@ -30,5 +33,9 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
 async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
     // TODO: Implement action processing
     // Returning an error for now
+    return Err(`Not implemented: ${JSON.stringify({ taskId: task.id })}`);
+}
+
+async function postConnection(task: TaskPostConnection): Promise<Result<JsonValue>> {
     return Err(`Not implemented: ${JSON.stringify({ taskId: task.id })}`);
 }

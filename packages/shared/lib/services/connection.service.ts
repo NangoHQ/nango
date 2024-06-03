@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import type { Knex } from 'knex';
+import type { Knex } from '@nangohq/database';
 import axios from 'axios';
-import db, { schema, dbNamespace } from '../db/database.js';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type {
     TemplateOAuth2 as ProviderTemplateOAuth2,
@@ -530,9 +530,7 @@ class ConnectionService {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
             .leftJoin(ACTIVE_LOG_TABLE, function () {
-                this.on('_nango_connections.id', '=', `${ACTIVE_LOG_TABLE}.connection_id`)
-                    .andOnVal(`${ACTIVE_LOG_TABLE}.active`, true)
-                    .andOnVal(`${ACTIVE_LOG_TABLE}.type`, 'auth');
+                this.on('_nango_connections.id', '=', `${ACTIVE_LOG_TABLE}.connection_id`).andOnVal(`${ACTIVE_LOG_TABLE}.active`, true);
             })
             .select(
                 { id: '_nango_connections.id' },

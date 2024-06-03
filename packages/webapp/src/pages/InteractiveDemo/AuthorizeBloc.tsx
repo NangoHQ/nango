@@ -7,6 +7,7 @@ import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
 import { Bloc, Tab } from './Bloc';
 import { CheckCircledIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
+import { apiFetch } from '../../utils/api';
 
 export const AuthorizeBloc: React.FC<{
     step: Steps;
@@ -26,9 +27,8 @@ export const AuthorizeBloc: React.FC<{
 
         try {
             // Setup the onboarding process
-            const res = await fetch(`/api/v1/onboarding?env=dev`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+            const res = await apiFetch(`/api/v1/onboarding?env=dev`, {
+                method: 'POST'
             });
 
             if (res.status !== 201) {

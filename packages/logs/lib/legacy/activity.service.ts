@@ -1,7 +1,5 @@
-import db from '../../db/database.js';
-import type { ActivityLog, ActivityLogMessage, LogAction } from '../../models/Activity.js';
-import { LogActionEnum } from '../../models/Activity.js';
-import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+import db from '@nangohq/database';
+import type { ActivityLog, ActivityLogMessage, LogAction } from './types.js';
 
 import { getLogger } from '@nangohq/utils';
 
@@ -41,14 +39,7 @@ export async function createActivityLog(log: ActivityLog): Promise<number | null
             return result[0].id;
         }
     } catch (e) {
-        errorManager.report(e, {
-            source: ErrorSourceEnum.PLATFORM,
-            environmentId: log.environment_id,
-            operation: LogActionEnum.DATABASE,
-            metadata: {
-                log
-            }
-        });
+        logger.error(e);
     }
 
     return null;
@@ -139,13 +130,7 @@ export async function createActivityLogMessage(logMessage: ActivityLogMessage, l
             return true;
         }
     } catch (e) {
-        errorManager.report(e, {
-            source: ErrorSourceEnum.PLATFORM,
-            operation: LogActionEnum.DATABASE,
-            metadata: {
-                logMessage
-            }
-        });
+        logger.error(e);
     }
 
     return false;
@@ -157,13 +142,7 @@ export async function addEndTime(activity_log_id: number): Promise<void> {
             end: Date.now()
         });
     } catch (e) {
-        errorManager.report(e, {
-            source: ErrorSourceEnum.PLATFORM,
-            operation: LogActionEnum.DATABASE,
-            metadata: {
-                activity_log_id
-            }
-        });
+        logger.error(e);
     }
 }
 

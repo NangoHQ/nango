@@ -6,6 +6,12 @@
     },
     "references": [
         {
+            "path": "../database"
+        },
+        {
+            "path": "../kvstore"
+        },
+        {
             "path": "../types"
         },
         {

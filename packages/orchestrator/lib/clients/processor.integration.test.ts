@@ -8,7 +8,7 @@ import { EventsHandler } from '../events.js';
 import { Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
-import type { OrchestratorTask, TaskAction, TaskWebhook } from './types.js';
+import type { OrchestratorTask, TaskAction, TaskWebhook, TaskPostConnection } from './types.js';
 
 const dbClient = getTestDbClient();
 const eventsHandler = new EventsHandler({
@@ -98,13 +98,13 @@ describe('OrchestratorProcessor', async () => {
     });
 });
 
-async function processN(handler: (task: TaskAction | TaskWebhook) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
+async function processN(handler: (task: TaskAction | TaskWebhook | TaskPostConnection) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
     const processor = new OrchestratorProcessor({
         handler,
-        opts: { orchestratorClient, groupKey, maxConcurrency: 3, checkForTerminatedInterval: 100 }
+        opts: { orchestratorClient, groupKey, maxConcurrency: n, checkForTerminatedInterval: 100 }
     });
     for (let i = 0; i < n; i++) {
-        await schedule({ groupKey });
+        await scheduleTask({ groupKey });
     }
     processor.start();
     // Wait so the processor can process all tasks
@@ -112,8 +112,8 @@ async function processN(handler: (task: TaskAction | TaskWebhook) => Promise<Res
     return processor;
 }
 
-async function schedule({ groupKey }: { groupKey: string }) {
-    await scheduler.schedule({
+async function scheduleTask({ groupKey }: { groupKey: string }) {
+    return scheduler.schedule({
         scheduling: 'immediate',
         taskProps: {
             groupKey,

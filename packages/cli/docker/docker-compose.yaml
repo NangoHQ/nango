@@ -20,7 +20,7 @@ services:
         platform: linux/amd64
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
-            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
+            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/database/lib/migrations
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
@@ -74,6 +74,7 @@ services:
             - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
             - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
             - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
+            - ORCHESTRATOR_SERVICE_URL=${ORCHESTRATOR_SERVICE_URL}
         depends_on:
             - nango-db
             - temporal

@@ -249,7 +249,7 @@ We could not retrieve and/or refresh your access token due to the following erro
 
             {serverErrorMessage && (
                 <div className="flex my-4">
-                    <Info showIcon={false} size={14} padding="py-1 px-1" color="red">
+                    <Info showIcon={false} size={14} padding="py-1 px-1 py-1" color="red">
                         <div className="flex items-center text-sm">
                             <ErrorCircle />
                             <span className="ml-2">{serverErrorMessage}</span>
@@ -305,7 +305,7 @@ We could not retrieve and/or refresh your access token due to the following erro
             )}
 
             {!slackIsConnected && !isHosted() && (
-                <Info size={14} color="blue" showIcon={false} padding="mt-6 p-1">
+                <Info size={14} color="blue" showIcon={false} padding="mt-7 p-1 py-1">
                     <div className="flex text-sm items-center">
                         <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
                         Receive instant monitoring alerts on Slack.{' '}

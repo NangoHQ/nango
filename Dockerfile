@@ -18,7 +18,9 @@ COPY packages/shared/package.json ./packages/shared/package.json
 COPY packages/utils/package.json ./packages/utils/package.json
 COPY packages/webapp/package.json ./packages/webapp/package.json
 COPY packages/data-ingestion/package.json ./packages/data-ingestion/package.json
+COPY packages/kvstore/package.json ./packages/kvstore/package.json
 COPY packages/logs/package.json ./packages/logs/package.json
+COPY packages/database/package.json ./packages/database/package.json
 COPY packages/records/package.json ./packages/records/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/scheduler/package.json ./packages/scheduler/package.json

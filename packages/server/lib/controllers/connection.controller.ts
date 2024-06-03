@@ -8,8 +8,8 @@ import type {
     ConnectionList,
     ConnectionUpsertResponse
 } from '@nangohq/shared';
+import db from '@nangohq/database';
 import {
-    db,
     AuthModes as ProviderAuthModes,
     configService,
     connectionService,
@@ -202,7 +202,7 @@ class ConnectionController {
 
             await connectionService.deleteConnection(connection, integration_key, info?.environmentId as number);
 
-            const slackNotificationService = new SlackService(getOrchestratorClient());
+            const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
             await slackNotificationService.closeAllOpenNotifications(environment.id);
 
             res.status(204).send();

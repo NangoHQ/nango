@@ -1,5 +1,4 @@
-import db from './db/database.js';
-import * as seeders from './db/seeders/index.js';
+import * as seeders from './seeders/index.js';
 import configService from './services/config.service.js';
 import encryptionManager from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
@@ -24,6 +23,7 @@ import featureFlags from './utils/featureflags.js';
 import { Orchestrator } from './clients/orchestrator.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
 
+export * from './services/sync/post-connection.service.js';
 export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
@@ -41,18 +41,13 @@ export * from './models/index.js';
 
 export * from './utils/utils.js';
 export * from './utils/error.js';
-export * from './db/database.js';
 export * from './constants.js';
-export * from './utils/kvstore/KVStore.js';
-export * from './utils/kvstore/InMemoryStore.js';
-export * from './utils/kvstore/RedisStore.js';
 
 export * from './sdk/sync.js';
 
 export { NANGO_VERSION } from './version.js';
 
 export {
-    db,
     seeders,
     configService,
     connectionService,

@@ -76,6 +76,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
         const { syncs, actions, postConnectionScripts, providerConfigKey } = standardConfig;
 
         if (postConnectionScripts) {
+            const type = 'post-connection-script';
             for (const name of postConnectionScripts) {
                 const rendered = ejs.render(postConnectionTemplateContents, {
                     interfaceFileName: TYPES_FILE_NAME.replace('.ts', '')
@@ -83,7 +84,8 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 const stripped = rendered.replace(/^\s+/, '');
 
                 if (!fs.existsSync(`${dirPrefix}/${name}.ts`)) {
-                    fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
+                    fs.mkdirSync(`${dirPrefix}/${providerConfigKey}/${type}s`, { recursive: true });
+                    fs.writeFileSync(`${dirPrefix}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
                     if (debug) {
                         printDebug(`Created ${name}.ts file`);
                     }

@@ -5,8 +5,7 @@ import type { AxiosError } from 'axios';
 import { stringifyError } from '@nangohq/utils';
 import type { Environment } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-//import { createActivityLogMessage } from '@nangohq/logs';
-import { createActivityLogMessage } from '@nangohq/shared';
+import { createActivityLogMessage } from '@nangohq/logs';
 
 export const RETRY_ATTEMPTS = 7;
 

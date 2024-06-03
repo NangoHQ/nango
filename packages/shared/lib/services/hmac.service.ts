@@ -1,5 +1,5 @@
 import * as crypto from 'node:crypto';
-import { schema } from '../db/database.js';
+import { schema } from '@nangohq/database';
 import type { Environment } from '../models/Environment.js';
 
 class HmacService {

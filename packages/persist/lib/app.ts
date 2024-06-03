@@ -1,7 +1,7 @@
 import './tracer.js';
 import { getLogger } from '@nangohq/utils';
 import { server } from './server.js';
-import { db } from '@nangohq/shared';
+import { database as db } from '@nangohq/database';
 import { envs } from './env.js';
 
 const logger = getLogger('Persist');

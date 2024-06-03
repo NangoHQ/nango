@@ -8,7 +8,6 @@ import * as configService from './config/config.service.js';
 import type { IntegrationServiceInterface } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
 import type { Account } from '../../models/Admin.js';
-import { logContextGetter } from '@nangohq/logs';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -38,21 +37,10 @@ const recordsService = {
     }
 };
 
-const orchestratorClient = {
-    executeAction: () => {
-        return Promise.resolve({}) as any;
-    },
-    executeWebhook: () => {
-        return Promise.resolve({}) as any;
-    }
-};
-
 describe('SyncRun', () => {
     const dryRunConfig: SyncRunConfig = {
         integrationService: integrationService as unknown as IntegrationServiceInterface,
         recordsService,
-        orchestratorClient,
-        logContextGetter,
         writeToDb: false,
         nangoConnection: {
             id: 1,
@@ -64,16 +52,13 @@ describe('SyncRun', () => {
         syncType: SyncType.INCREMENTAL,
         syncId: 'some-sync',
         syncJobId: 123,
-        activityLogId: 123,
         debug: true
     };
     it('should initialize correctly', () => {
         const config: SyncRunConfig = {
             integrationService: integrationService as unknown as IntegrationServiceInterface,
             recordsService,
-            orchestratorClient,
-            logContextGetter,
-            writeToDb: true,
+            writeToDb: false,
             nangoConnection: {
                 id: 1,
                 connection_id: '1234',
@@ -84,7 +69,6 @@ describe('SyncRun', () => {
             syncType: SyncType.INCREMENTAL,
             syncId: 'some-sync',
             syncJobId: 123,
-            activityLogId: 123,
             loadLocation: '/tmp',
             debug: true
         };
@@ -92,13 +76,13 @@ describe('SyncRun', () => {
         const syncRun = new SyncRun(config);
 
         expect(syncRun).toBeTruthy();
-        expect(syncRun.writeToDb).toEqual(true);
+        expect(syncRun.writeToDb).toEqual(false);
         expect(syncRun.nangoConnection.connection_id).toEqual('1234');
         expect(syncRun.syncName).toEqual('test_sync');
         expect(syncRun.syncType).toEqual(SyncType.INCREMENTAL);
         expect(syncRun.syncId).toEqual('some-sync');
         expect(syncRun.syncJobId).toEqual(123);
-        expect(syncRun.activityLogId).toEqual(123);
+        expect(syncRun.activityLogId).toBeUndefined();
         expect(syncRun.loadLocation).toEqual('/tmp');
         expect(syncRun.debug).toEqual(true);
     });
