@@ -23,6 +23,7 @@ import featureFlags from './utils/featureflags.js';
 import { Orchestrator } from './clients/orchestrator.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
 
+export * from './services/sync/post-connection.service.js';
 export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';

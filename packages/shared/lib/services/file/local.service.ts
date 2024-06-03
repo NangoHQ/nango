@@ -201,7 +201,7 @@ class LocalFileService {
     public getProviderConfigurationFromPath(filePath: string, config: StandardNangoConfig[]): StandardNangoConfig | null {
         const pathSegments = filePath.split('/');
         const scriptType = pathSegments.length > 1 ? pathSegments[pathSegments.length - 2] : null;
-        const isNested = scriptType === 'syncs' || scriptType === 'actions';
+        const isNested = scriptType === 'syncs' || scriptType === 'actions' || scriptType === 'post-connection-scripts';
 
         const baseName = path.basename(filePath, '.ts');
         let providerConfiguration: StandardNangoConfig | null = null;

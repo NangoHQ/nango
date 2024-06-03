@@ -39,6 +39,9 @@ export interface MessageOpProxy {
 export interface MessageOpAction {
     type: 'action';
 }
+export interface MessageOpPostConnectionScript {
+    type: 'post-connection-script';
+}
 export interface MessageOpAuth {
     type: 'auth';
     action: 'create_connection' | 'refresh_token' | 'post_connection';
@@ -55,7 +58,15 @@ export interface MessageOpDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
 }
-export type MessageOperation = MessageOpSync | MessageOpProxy | MessageOpAction | MessageOpWebhook | MessageOpDeploy | MessageOpAuth | MessageOpAdmin;
+export type MessageOperation =
+    | MessageOpSync
+    | MessageOpProxy
+    | MessageOpAction
+    | MessageOpPostConnectionScript
+    | MessageOpWebhook
+    | MessageOpDeploy
+    | MessageOpAuth
+    | MessageOpAdmin;
 
 /**
  * Full schema

@@ -192,8 +192,14 @@ export function listFilesToCompile({
             config.forEach((providerConfig) => {
                 const syncPath = `${providerConfig.providerConfigKey}/syncs`;
                 const actionPath = `${providerConfig.providerConfigKey}/actions`;
+                const postConnectionPath = `${providerConfig.providerConfigKey}/post-connection-scripts`;
 
-                files = [...files, ...glob.sync(`${cwd || process.cwd()}/${syncPath}/*.ts`), ...glob.sync(`${cwd || process.cwd()}/${actionPath}/*.ts`)];
+                files = [
+                    ...files,
+                    ...glob.sync(`${cwd || process.cwd()}/${syncPath}/*.ts`),
+                    ...glob.sync(`${cwd || process.cwd()}/${actionPath}/*.ts`),
+                    ...glob.sync(`${cwd || process.cwd()}/${postConnectionPath}/*.ts`)
+                ];
 
                 if (debug) {
                     if (glob.sync(`${cwd || process.cwd()}/${syncPath}/*.ts`).length > 0) {
@@ -201,6 +207,9 @@ export function listFilesToCompile({
                     }
                     if (glob.sync(`${cwd || process.cwd()}/${actionPath}/*.ts`).length > 0) {
                         printDebug(`Found nested action files in ${actionPath}`);
+                    }
+                    if (glob.sync(`${cwd || process.cwd()}/${postConnectionPath}/*.ts`).length > 0) {
+                        printDebug(`Found nested post connection script files in ${postConnectionPath}`);
                     }
                 }
             });
