@@ -1,4 +1,4 @@
-import { schema, dbNamespace } from '../../../db/database.js';
+import { schema, dbNamespace } from '@nangohq/database';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import environmentService from '../../environment.service.js';

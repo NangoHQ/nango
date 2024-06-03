@@ -1,8 +1,9 @@
-export interface ApiError<TCode extends string, TErrors = undefined> {
+export interface ApiError<TCode extends string, TErrors = undefined, P = unknown> {
     error: {
         code: TCode;
         message?: string | undefined;
         errors?: TErrors;
+        payload?: P;
     };
 }
 export interface ValidationError {

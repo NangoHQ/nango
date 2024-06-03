@@ -24,6 +24,7 @@
     },
     "dependencies": {
         "@hapi/boom": "^10.0.1",
+        "@nangohq/database": "file:../database",
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/records": "file:../records",
