@@ -1,4 +1,3 @@
-import { defaultOperationExpiration } from '@nangohq/logs';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { Err, Ok, stringifyError, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -304,7 +303,7 @@ export class Orchestrator {
                 id: String(activityLogId),
                 operation: { type: 'webhook', action: 'incoming' },
                 message: 'Received a webhook',
-                expiresAt: defaultOperationExpiration.webhook()
+                expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
             },
             {
                 account,
