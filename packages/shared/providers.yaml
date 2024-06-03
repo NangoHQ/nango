@@ -1322,7 +1322,7 @@ mailgun:
     categories:
         - marketing
     auth_mode: BASIC
-     proxy:
+    proxy:
         base_url: https://${connectionConfig.region}.mailgun.net
         verification:
             method: GET
