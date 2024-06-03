@@ -1,5 +1,5 @@
 import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
-import { axiosInstance as axios } from '../axiosInstance/index.js';
+import { axiosInstance as axios } from '../utils/axios';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
 import type { ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
