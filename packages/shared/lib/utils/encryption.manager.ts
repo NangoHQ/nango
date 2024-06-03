@@ -6,7 +6,7 @@ import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '@nangohq/types';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
-import db from '../db/database.js';
+import db from '@nangohq/database';
 import { hashSecretKey } from '../services/environment.service.js';
 
 const logger = getLogger('Encryption.Manager');

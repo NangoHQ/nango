@@ -15,6 +15,7 @@
     },
     "dependencies": {
         "@elastic/elasticsearch": "8.13.1",
+        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/utils": "file:../utils",
         "zod": "3.22.4"
     },

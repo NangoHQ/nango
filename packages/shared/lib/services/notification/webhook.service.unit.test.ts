@@ -16,7 +16,14 @@ vi.mock('axios', () => ({
     __esModule: true
 }));
 
-const integration: Config = { id: 1, unique_key: 'providerKey', provider: 'provider', environment_id: 1, oauth_client_id: '', oauth_client_secret: '' };
+const integration: Config = {
+    id: 1,
+    unique_key: 'providerKey',
+    provider: 'provider',
+    environment_id: 1,
+    oauth_client_id: '',
+    oauth_client_secret: ''
+};
 const account: Account = { id: 1, name: 'account', secret_key: '', uuid: 'uuid' };
 const connection: StoredConnection = {
     id: 1,

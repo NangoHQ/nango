@@ -20,6 +20,7 @@ export type LogAction =
     | 'sync init'
     | 'sync client'
     | 'sync deploy'
+    | 'post connection script'
     | 'token'
     | 'trigger sync'
     | 'trigger full sync'
@@ -43,6 +44,7 @@ export enum LogActionEnum {
     SYNC_INIT = 'sync init',
     SYNC_CLIENT = 'sync client',
     SYNC_DEPLOY = 'sync deploy',
+    POST_CONNECTION_SCRIPT = 'post connection script',
     TOKEN = 'token',
     TRIGGER_SYNC = 'trigger sync',
     TRIGGER_FULL_SYNC = 'trigger full sync',

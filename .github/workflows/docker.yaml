@@ -19,7 +19,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Build the docker-compose stack
-              run: docker compose -f ./packages/cli/docker/docker-compose.yaml --project-directory . up -d
+              run: docker compose up -d
 
             - name: Sleep
               uses: jakejarvis/wait-action@master
@@ -39,13 +39,6 @@ jobs:
                   DB=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
                   if [ ! "${DB}" ]; then
                     echo "DB container doesn't exist"
-                    exit 1
-                  fi
-
-                  CONTAINER_NAME=nango-jobs
-                  JOBS=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
-                  if [ ! "${JOBS}" ]; then
-                    echo "Jobs container doesn't exist"
                     exit 1
                   fi
               shell: bash

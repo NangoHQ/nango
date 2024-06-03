@@ -1,4 +1,4 @@
-import { schema, dbNamespace } from '../../db/database.js';
+import { schema, dbNamespace } from '@nangohq/database';
 import type { SlackNotification } from '../../models/SlackNotification.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { ServiceResponse } from '../../models/Generic.js';

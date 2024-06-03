@@ -1,11 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
-import db, { schema, dbNamespace } from '../../db/database.js';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob, SyncWithSchedule, SlimSync, SlimAction } from '../../models/Sync.js';
 import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { updateScheduleStatus } from './schedule.service.js';
+import type { ActiveLogIds } from '@nangohq/types';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
@@ -23,6 +24,7 @@ const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
 const ACTIVITY_LOG_TABLE = dbNamespace + 'activity_logs';
+const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 
 /**
  * Sync Service
@@ -196,25 +198,12 @@ export const getSyncsFlatWithNames = async (nangoConnection: Connection, syncNam
  * @description get the sync related to the connection
  * the latest sync and its result and the next sync based on the schedule
  */
-export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { status: SyncStatus })[]> => {
+export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { status: SyncStatus; active_logs: ActiveLogIds })[]> => {
     const syncClient = await SyncClient.getInstance();
 
     if (!syncClient || !nangoConnection || !nangoConnection.id) {
         return [];
     }
-
-    const syncJobTimestampsSubQuery = db.knex.raw(
-        `(
-            SELECT json_agg(json_build_object(
-                'created_at', ${SYNC_JOB_TABLE}.created_at,
-                'updated_at', ${SYNC_JOB_TABLE}.updated_at
-            ))
-            FROM ${SYNC_JOB_TABLE}
-            WHERE ${SYNC_JOB_TABLE}.sync_id = ${TABLE}.id
-                AND ${SYNC_JOB_TABLE}.created_at >= CURRENT_DATE - INTERVAL '30 days'
-                AND ${SYNC_JOB_TABLE}.deleted = false
-        ) as thirty_day_timestamps`
-    );
 
     const q = db.knex
         .from<Sync>(TABLE)
@@ -226,6 +215,17 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
             `${SYNC_CONFIG_TABLE}.models`,
+            `${ACTIVE_LOG_TABLE}.activity_log_id as error_activity_log_id`,
+            `${ACTIVE_LOG_TABLE}.log_id as error_log_id`,
+            db.knex.raw(`
+                CASE
+                    WHEN COUNT(${ACTIVE_LOG_TABLE}.activity_log_id) = 0 THEN NULL
+                    ELSE json_build_object(
+                        'activity_log_id', ${ACTIVE_LOG_TABLE}.activity_log_id,
+                        'log_id', ${ACTIVE_LOG_TABLE}.log_id
+                    )
+                END as active_logs
+            `),
             db.knex.raw(
                 `(
                     SELECT json_build_object(
@@ -249,11 +249,13 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                     LIMIT 1
                 ) as latest_sync
                 `
-            ),
-            syncJobTimestampsSubQuery
+            )
         )
         .join(SYNC_SCHEDULE_TABLE, function () {
             this.on(`${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`).andOn(`${SYNC_SCHEDULE_TABLE}.deleted`, '=', db.knex.raw('FALSE'));
+        })
+        .leftJoin(ACTIVE_LOG_TABLE, function () {
+            this.on(`${ACTIVE_LOG_TABLE}.sync_id`, `${TABLE}.id`).andOnVal(`${ACTIVE_LOG_TABLE}.active`, true).andOnVal(`${ACTIVE_LOG_TABLE}.type`, 'sync');
         })
         .join(SYNC_CONFIG_TABLE, function () {
             this.on(`${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
@@ -272,10 +274,12 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
         .groupBy(
             `${TABLE}.id`,
             `${SYNC_SCHEDULE_TABLE}.frequency`,
+            `${ACTIVE_LOG_TABLE}.activity_log_id`,
+            `${ACTIVE_LOG_TABLE}.log_id`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status`,
             `${SYNC_SCHEDULE_TABLE}.schedule_id`,
-            'models'
+            `${SYNC_CONFIG_TABLE}.models`
         );
 
     const result = await q;
@@ -526,7 +530,7 @@ export const getSyncsByConnectionIdsAndEnvironmentIdAndSyncName = async (connect
 
 export const getAndReconcileDifferences = async ({
     environmentId,
-    syncs,
+    flows,
     performAction,
     activityLogId,
     debug = false,
@@ -535,7 +539,7 @@ export const getAndReconcileDifferences = async ({
     logContextGetter
 }: {
     environmentId: number;
-    syncs: IncomingFlowConfig[];
+    flows: IncomingFlowConfig[];
     performAction: boolean;
     activityLogId: number | null;
     debug?: boolean | undefined;
@@ -550,13 +554,13 @@ export const getAndReconcileDifferences = async ({
     const existingSyncsByProviderConfig: Record<string, SlimSync[]> = {};
     const existingConnectionsByProviderConfig: Record<string, NangoConnection[]> = {};
 
-    for (const sync of syncs) {
-        const { syncName, providerConfigKey, type } = sync;
+    for (const flow of flows) {
+        const { syncName: flowName, providerConfigKey, type } = flow;
         if (type === SyncConfigType.ACTION) {
-            const actionExists = await getActionConfigByNameAndProviderConfigKey(environmentId, syncName, providerConfigKey);
+            const actionExists = await getActionConfigByNameAndProviderConfigKey(environmentId, flowName, providerConfigKey);
             if (!actionExists) {
                 newActions.push({
-                    name: syncName,
+                    name: flowName,
                     providerConfigKey
                 });
             }
@@ -573,7 +577,7 @@ export const getAndReconcileDifferences = async ({
         }
         const currentSync = existingSyncsByProviderConfig[providerConfigKey];
 
-        const exists = currentSync?.find((existingSync) => existingSync.name === syncName);
+        const exists = currentSync?.find((existingSync) => existingSync.name === flowName);
         const connections = existingConnectionsByProviderConfig[providerConfigKey] as Connection[];
 
         let isNew = false;
@@ -589,17 +593,17 @@ export const getAndReconcileDifferences = async ({
         if (exists && exists.enabled && connections.length > 0) {
             syncsByConnection = await findSyncByConnections(
                 connections.map((connection) => connection.id as number),
-                syncName
+                flowName
             );
             isNew = syncsByConnection.length === 0;
         }
 
         if (!exists || isNew) {
             newSyncs.push({
-                name: syncName,
+                name: flowName,
                 providerConfigKey,
                 connections: existingConnectionsByProviderConfig[providerConfigKey]?.length as number,
-                auto_start: sync.auto_start === false ? false : true
+                auto_start: flow.auto_start === false ? false : true
             });
             if (performAction) {
                 if (debug && activityLogId) {
@@ -608,11 +612,11 @@ export const getAndReconcileDifferences = async ({
                         environment_id: environmentId,
                         activity_log_id: activityLogId,
                         timestamp: Date.now(),
-                        content: `Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`
+                        content: `Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`
                     });
-                    await logCtx?.debug(`Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
+                    await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
                 }
-                syncsToCreate.push({ connections, syncName, sync, providerConfigKey, environmentId });
+                syncsToCreate.push({ connections, syncName: flowName, sync: flow, providerConfigKey, environmentId });
             }
         }
 
@@ -629,11 +633,11 @@ export const getAndReconcileDifferences = async ({
                         environment_id: environmentId,
                         activity_log_id: activityLogId,
                         timestamp: Date.now(),
-                        content: `Creating sync ${syncName} for ${providerConfigKey} with ${missingConnections.length} connections`
+                        content: `Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`
                     });
-                    await logCtx?.debug(`Creating sync ${syncName} for ${providerConfigKey} with ${missingConnections.length} connections`);
+                    await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`);
                 }
-                syncsToCreate.push({ connections: missingConnections, syncName, sync, providerConfigKey, environmentId });
+                syncsToCreate.push({ connections: missingConnections, syncName: flowName, sync: flow, providerConfigKey, environmentId });
             }
         }
     }
@@ -671,7 +675,7 @@ export const getAndReconcileDifferences = async ({
 
     if (!singleDeployMode) {
         for (const existingSync of existingSyncs) {
-            const exists = syncs.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
+            const exists = flows.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
 
             if (!exists) {
                 const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);

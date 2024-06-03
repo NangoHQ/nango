@@ -6,6 +6,7 @@ import { useSignin } from '../../utils/user';
 import type { ValidateEmailAndLogin } from '@nangohq/types';
 import { toast } from 'react-toastify';
 import { useStore } from '../../store';
+import { apiFetch } from '../../utils/api';
 
 export const EmailVerified: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
@@ -21,11 +22,8 @@ export const EmailVerified: React.FC = () => {
 
         const verifyEmail = async () => {
             try {
-                const res = await fetch(`/api/v1/account/verify/code`, {
+                const res = await apiFetch(`/api/v1/account/verify/code`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({ token })
                 });
 

@@ -1,13 +1,14 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.39.32",
+    "version": "0.39.33",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
     "scripts": {},
     "bundleDependencies": [
-        "@nangohq/utils"
+        "@nangohq/utils",
+        "@nangohq/database"
     ],
     "keywords": [],
     "repository": {
@@ -20,7 +21,8 @@
         "@aws-sdk/client-s3": "3.348.0",
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "^0.39.32",
+        "@nangohq/database": "file:../database",
+        "@nangohq/node": "^0.39.33",
         "@nangohq/utils": "file:../utils",
         "@sentry/node": "^7.106.0",
         "@temporalio/client": "^1.9.1",
@@ -43,7 +45,6 @@
         "ip": "^2.0.1",
         "js-yaml": "^4.1.0",
         "jsonwebtoken": "^9.0.2",
-        "knex": "3.1.0",
         "lodash-es": "^4.17.21",
         "md5": "^2.3.0",
         "ms": "3.0.0-canary.1",
@@ -66,7 +67,7 @@
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/records": "file:../records",
-        "@nangohq/types": "^0.39.32",
+        "@nangohq/types": "^0.39.33",
         "@octokit/types": "^9.2.1",
         "@types/amqplib": "^0.8.2",
         "@types/cors": "^2.8.12",
