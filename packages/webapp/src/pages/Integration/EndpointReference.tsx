@@ -231,7 +231,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                             setSyncSnippet(
                                                 activeFlow?.type === 'sync'
                                                     ? nodeSnippet(
-                                                          activeFlow.models || activeFlow.returns,
+                                                          activeFlow.models || activeFlow.returns[0],
                                                           environment.secret_key,
                                                           connectionId,
                                                           integration.unique_key
