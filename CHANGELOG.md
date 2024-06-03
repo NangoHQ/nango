@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.39.33] - 2024-06-03
+
+### Added
+
+- *(logs)* Pagination and infinite scroll (#2213) by @bodinsamuel
+- *(logs)* Messages infinite scroll and live refresh (#2214) by @bodinsamuel
+- *(integrations)* Add support for various mircosoft graph api services (#2209) by @hassan254-prog
+- *(logs)* Daily index, policy, retention (#2216) by @bodinsamuel
+- Add command to generate encryption key to .env.example (#2227) by @TBonnin
+- *(orchestrator)* Implement task processor (#2221) by @TBonnin
+- *(logs)* Share an operation via URL (#2217) by @bodinsamuel
+- *(scheduler)* Add indexes for tables tasks (#2230) by @TBonnin
+- *(pkgs)* Create kvstore  (#2235) by @bodinsamuel
+- *(integrations)* Add mailgun API key (#2177) by @jwd-dev
+- *(server)* [nan-981] implement error reporting UI on connection authorization sub notification (#2222) by @khaliqgant
+- *(server)* [nan-906] run external client post connection scripts (#2225) by @khaliqgant
+
+### Changed
+
+- *(persist)* Make NANGO_ENCRYPTION_KEY required in persist service (#2226) by @TBonnin
+
+### Fixed
+
+- *(orchestrator)* Harden type safety of orchestrator client execute function (#2205) by @TBonnin
+- *(server)* [nan-1037] allow an override connection to be refreshed properly (#2215) by @khaliqgant
+- *(jobs)* Local runner for enterprise (#2212) by @khaliqgant
+- *(server)* [nan-1037] on refresh keep the overrides (#2218) by @khaliqgant
+- *(connection)* Upsert return full connection, logs (#2219) by @bodinsamuel
+- *(server.proxy)* [nan-1049] if the response not chunked manually piece the response together (#2228) by @khaliqgant
+- *(server.proxy)* [nan-1051] allow DELETE to have a body (#2229) by @khaliqgant
+- *(logs)* First prod feedback (#2224) by @bodinsamuel
+- *(docker)* Missing orchestrator env (#2232) by @bodinsamuel
+- *(processor)* Queue with max concurrency implementation (#2231) by @TBonnin
+- *(database)* [nan-1063] migrate to database package (#2236) by @khaliqgant
+- Update location of migration directory (#2245) by @khaliqgant
+
 ## [v0.39.32] - 2024-05-28
 
 ### Added
@@ -1178,6 +1214,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.39.33]: https://github.com/NangoHQ/nango/compare/v0.39.32..v0.39.33
 [v0.39.32]: https://github.com/NangoHQ/nango/compare/v0.39.31..v0.39.32
 [v0.39.31]: https://github.com/NangoHQ/nango/compare/v0.39.30..v0.39.31
 [v0.39.30]: https://github.com/NangoHQ/nango/compare/v0.39.29..v0.39.30
