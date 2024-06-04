@@ -100,7 +100,7 @@ export const connectionCreationFailed = (
     failedConnectionPayload: RecentlyFailedConnection,
     provider: string,
     activityLogId: number | null,
-    logCtx: LogContext
+    logCtx?: LogContext
 ): void => {
     const { connection, environment, auth_mode, error } = failedConnectionPayload;
 

@@ -575,23 +575,23 @@ class OAuthController {
                 content: `Error during OAuth2 client credentials create: ${prettyError}`,
                 timestamp: Date.now()
             });
-            if (logCtx) {
-                void connectionCreationFailedHook(
-                    {
-                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
-                        environment,
-                        account,
-                        auth_mode: 'OAUTH2_CC',
-                        error: {
-                            type: 'unknown',
-                            description: `Error during Unauth create: ${prettyError}`
-                        },
-                        operation: 'unknown'
+            connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                    environment,
+                    account,
+                    auth_mode: 'OAUTH2_CC',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during Unauth create: ${prettyError}`
                     },
-                    'unknown',
-                    activityLogId,
-                    logCtx
-                );
+                    operation: 'unknown'
+                },
+                'unknown',
+                activityLogId,
+                logCtx
+            );
+            if (logCtx) {
                 await logCtx.error('Error during OAuth2 client credentials creation', { error: err });
                 await logCtx.failed();
             }
@@ -1207,7 +1207,7 @@ class OAuthController {
                 level: 'error'
             });
 
-            void connectionCreationFailedHook(
+            connectionCreationFailedHook(
                 {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
@@ -1373,7 +1373,7 @@ class OAuthController {
                     }
                 );
 
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
@@ -1589,7 +1589,7 @@ class OAuthController {
             await logCtx.error(error.message, { error: err });
             await logCtx.failed();
 
-            void connectionCreationFailedHook(
+            connectionCreationFailedHook(
                 {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
@@ -1639,7 +1639,7 @@ class OAuthController {
             await logCtx.error(error.message);
             await logCtx.failed();
 
-            void connectionCreationFailedHook(
+            connectionCreationFailedHook(
                 {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
@@ -1758,7 +1758,7 @@ class OAuthController {
                 await logCtx.error(error.message);
                 await logCtx.failed();
 
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,

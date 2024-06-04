@@ -185,23 +185,23 @@ class UnAuthController {
                 content: `Error during Unauth create: ${prettyError}`,
                 timestamp: Date.now()
             });
-            if (logCtx) {
-                void connectionCreationFailedHook(
-                    {
-                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
-                        environment,
-                        account,
-                        auth_mode: 'NONE',
-                        error: {
-                            type: 'unknown',
-                            description: `Error during Unauth create: ${prettyError}`
-                        },
-                        operation: 'unknown'
+            connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                    environment,
+                    account,
+                    auth_mode: 'NONE',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during Unauth create: ${prettyError}`
                     },
-                    'unknown',
-                    activityLogId,
-                    logCtx
-                );
+                    operation: 'unknown'
+                },
+                'unknown',
+                activityLogId,
+                logCtx
+            );
+            if (logCtx) {
                 await logCtx.error('Error during Unauthenticated connection creation', { error: err });
                 await logCtx.failed();
             }

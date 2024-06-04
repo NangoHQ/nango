@@ -200,7 +200,7 @@ class AppAuthController {
                     }
                 );
 
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
@@ -293,7 +293,7 @@ class AppAuthController {
                 connectionId: String(connectionId)
             });
 
-            void connectionCreationFailedHook(
+            connectionCreationFailedHook(
                 {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,

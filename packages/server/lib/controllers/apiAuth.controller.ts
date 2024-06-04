@@ -240,7 +240,7 @@ class ApiAuthController {
                 timestamp: Date.now()
             });
             if (logCtx) {
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
@@ -481,7 +481,7 @@ class ApiAuthController {
                 timestamp: Date.now()
             });
             if (logCtx) {
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
