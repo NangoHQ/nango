@@ -185,6 +185,7 @@ class UnAuthController {
                 content: `Error during Unauth create: ${prettyError}`,
                 timestamp: Date.now()
             });
+
             connectionCreationFailedHook(
                 {
                     connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },

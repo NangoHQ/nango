@@ -170,7 +170,7 @@ class AppStoreAuthController {
             const { success, error, response: credentials } = await connectionService.getAppStoreCredentials(template, connectionConfig, privateKey);
 
             if (!success || !credentials) {
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
@@ -242,23 +242,23 @@ class AppStoreAuthController {
                 content: `Error during App store auth: ${prettyError}`,
                 timestamp: Date.now()
             });
-            if (logCtx) {
-                void connectionCreationFailedHook(
-                    {
-                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
-                        environment,
-                        account,
-                        auth_mode: 'APP_STORE',
-                        error: {
-                            type: 'unknown',
-                            description: `Error during App store auth: ${prettyError}`
-                        },
-                        operation: 'unknown'
+            connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                    environment,
+                    account,
+                    auth_mode: 'APP_STORE',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during App store auth: ${prettyError}`
                     },
-                    'unknown',
-                    activityLogId,
-                    logCtx
-                );
+                    operation: 'unknown'
+                },
+                'unknown',
+                activityLogId,
+                logCtx
+            );
+            if (logCtx) {
                 await logCtx.error('Error during API key auth', { error: err });
                 await logCtx.failed();
             }
