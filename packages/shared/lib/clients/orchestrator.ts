@@ -299,7 +299,12 @@ export class Orchestrator {
 
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'webhook', action: 'incoming' }, message: 'Received a webhook' },
+            {
+                id: String(activityLogId),
+                operation: { type: 'webhook', action: 'incoming' },
+                message: 'Received a webhook',
+                expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+            },
             {
                 account,
                 environment,

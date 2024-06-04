@@ -364,3 +364,21 @@ export async function listFilters(opts: {
         items: agg.buckets as any
     };
 }
+
+export async function setTimeoutForAll(opts: { wait?: boolean } = {}): Promise<void> {
+    await client.updateByQuery({
+        index: indexMessages.index,
+        wait_for_completion: opts.wait === true,
+        refresh: opts.wait === true,
+        query: {
+            bool: {
+                must: [{ range: { expiresAt: { lt: 'now' } } }],
+                must_not: { exists: { field: 'parentId' } },
+                should: [{ term: { state: 'waiting' } }, { term: { state: 'running' } }]
+            }
+        },
+        script: {
+            source: "ctx._source.state = 'timeout'"
+        }
+    });
+}
