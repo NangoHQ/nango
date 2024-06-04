@@ -1,11 +1,12 @@
 import { inspect } from 'node:util';
 import type { Server } from 'node:http';
 import { createServer } from 'node:http';
+import express from 'express';
 import { expect } from 'vitest';
 import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, ApiError } from '@nangohq/types';
 import getPort from 'get-port';
 
-import { app } from '../routes.js';
+import { router } from '../routes.js';
 
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     let res = tpl;
@@ -104,7 +105,7 @@ export function shouldRequireQueryEnv({ res, json }: { res: Response; json: any 
  * Run the API in the test
  */
 export async function runServer(): Promise<{ server: Server; url: string; fetch: ReturnType<typeof apiFetch> }> {
-    const server = createServer(app);
+    const server = createServer(express().use(router));
     const port = await getPort();
     return new Promise((resolve) => {
         server.listen(port, () => {

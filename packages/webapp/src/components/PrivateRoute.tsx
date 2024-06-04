@@ -1,4 +1,4 @@
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useMeta } from '../hooks/useMeta';
 import { useEffect, useState } from 'react';
 import { useStore } from '../store';
@@ -8,6 +8,7 @@ import PageNotFound from '../pages/PageNotFound';
 
 export const PrivateRoute: React.FC = () => {
     const { meta, error, loading } = useMeta();
+    const location = useLocation();
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [ready, setReady] = useState(false);
     const { user } = useUser(Boolean(meta && ready && !notFoundEnv));
@@ -63,7 +64,7 @@ export const PrivateRoute: React.FC = () => {
 
         // it's ready when datastore and path are finally reconciliated
         setReady(true);
-    }, [meta, loading, env, error, setEnv]);
+    }, [location, meta, loading, env, error, setEnv]);
 
     useEffect(() => {
         if (user) {

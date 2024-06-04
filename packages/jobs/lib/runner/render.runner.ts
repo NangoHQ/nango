@@ -3,7 +3,7 @@ import { RunnerType } from './runner.js';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import { getRunnerClient } from '@nangohq/nango-runner';
 import { env, stringifyError } from '@nangohq/utils';
-import { NodeEnv, getPersistAPIUrl } from '@nangohq/shared';
+import { getPersistAPIUrl } from '@nangohq/shared';
 import { RenderAPI } from './render.api.js';
 import tracer from 'dd-trace';
 
@@ -69,7 +69,7 @@ export class RenderRunner implements Runner {
                     image: { ownerId: ownerId, imagePath: `nangohq/nango-runner:${imageTag}` },
                     serviceDetails: { env: 'image' },
                     envVars: [
-                        { key: 'NODE_ENV', value: process.env['NODE_ENV'] || NodeEnv.Dev },
+                        { key: 'NODE_ENV', value: process.env['NODE_ENV'] || 'development' },
                         { key: 'NANGO_CLOUD', value: process.env['NANGO_CLOUD'] || 'true' },
                         { key: 'NODE_OPTIONS', value: '--max-old-space-size=384' },
                         { key: 'RUNNER_ID', value: runnerId },

@@ -1,8 +1,8 @@
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
-import { baseUrl } from '../utils/utils';
 import Nango, { AuthError } from '@nangohq/frontend';
+import { API_URL } from '../utils/env';
 
 export default function AuthLink() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -28,7 +28,7 @@ export default function AuthLink() {
         }
 
         // Optional params.
-        const host = searchParams.get('host') || baseUrl();
+        const host = searchParams.get('host') || API_URL;
         const websocketsPath = searchParams.get('websockets_path') || '/';
         const userScopes = searchParams.get('selected_scopes')?.split(',') || []; // Slack only.
         const params = searchParams.get('params');

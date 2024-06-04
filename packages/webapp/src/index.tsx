@@ -8,9 +8,10 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import { PostHogProvider } from 'posthog-js/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { PUBLIC_POSTHOG_HOST, PUBLIC_POSTHOG_KEY, WEB_BASE_PATH } from './utils/env';
 
 const options = {
-    api_host: process.env.REACT_APP_PUBLIC_POSTHOG_HOST,
+    api_host: PUBLIC_POSTHOG_HOST,
     maskAllInputs: true
 };
 
@@ -18,8 +19,8 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
     <React.StrictMode>
         <SentryErrorBoundary fallback={<ErrorBoundary />}>
-            <PostHogProvider apiKey={process.env.REACT_APP_PUBLIC_POSTHOG_KEY} options={options}>
-                <BrowserRouter>
+            <PostHogProvider apiKey={PUBLIC_POSTHOG_KEY} options={options}>
+                <BrowserRouter basename={WEB_BASE_PATH}>
                     <App />
                 </BrowserRouter>
             </PostHogProvider>

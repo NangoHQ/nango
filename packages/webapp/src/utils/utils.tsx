@@ -3,30 +3,25 @@ import { clsx } from 'clsx';
 import type { ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { FlowEndpoint, Flow, SyncResult, NangoSyncModel } from '../types';
-
-export const localhostUrl: string = 'http://localhost:3003';
-export const stagingUrl: string = 'https://api-staging.nango.dev';
-export const prodUrl: string = 'https://api.nango.dev';
-
-export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
+import { API_URL, REACT_APP_ENV } from './env';
 
 export const AUTH_ENABLED = isCloud() || isEnterprise() || isLocal();
 export const MANAGED_AUTH_ENABLED = isCloud() || isLocal();
 
 export function isHosted() {
-    return process.env.REACT_APP_ENV === 'hosted';
+    return REACT_APP_ENV === 'hosted';
 }
 
 export function isEnterprise() {
-    return process.env.REACT_APP_ENV === 'enterprise';
+    return REACT_APP_ENV === 'enterprise';
 }
 
 export function isStaging() {
-    return process.env.REACT_APP_ENV === 'staging';
+    return REACT_APP_ENV === 'staging';
 }
 
 export function isProd() {
-    return process.env.REACT_APP_ENV === 'production';
+    return REACT_APP_ENV === 'production';
 }
 
 export function isCloud() {
@@ -34,24 +29,11 @@ export function isCloud() {
 }
 
 export function isLocal() {
-    return window.location.href.includes('localhost');
-}
-
-export function baseUrl() {
-    switch (process.env.REACT_APP_ENV) {
-        case 'hosted':
-            return localhostUrl;
-        case 'staging':
-            return stagingUrl;
-        case 'production':
-            return prodUrl;
-        default:
-            return localhostUrl;
-    }
+    return window.location.hostname.includes('localhost');
 }
 
 export function defaultCallback() {
-    return baseUrl() + '/oauth/callback';
+    return `${API_URL}/oauth/callback`;
 }
 
 export function formatTimestamp(timestamp: number): string {

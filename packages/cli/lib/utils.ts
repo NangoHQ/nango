@@ -11,7 +11,7 @@ import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
 import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
-import { SyncConfigType, cloudHost, stagingHost, NANGO_VERSION } from '@nangohq/shared';
+import { SyncConfigType, cloudHost, NANGO_VERSION } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { state } from './state.js';
 import https from 'node:https';
@@ -37,14 +37,6 @@ if (parsedHostport.slice(-1) === '/') {
 }
 
 export const hostport = parsedHostport;
-
-export function setCloudHost() {
-    process.env['NANGO_HOSTPORT'] = cloudHost;
-}
-
-export function setStagingHost() {
-    process.env['NANGO_HOSTPORT'] = stagingHost;
-}
 
 export function printDebug(message: string) {
     console.log(chalk.gray(message));
@@ -99,13 +91,11 @@ export function checkEnvVars(optionalHostport?: string) {
 
     if (hostport === `http://localhost:${port}`) {
         console.log(`Assuming you are running Nango on localhost:${port} because you did not set the NANGO_HOSTPORT env var.\n\n`);
-    } else if (hostport === cloudHost || hostport === stagingHost) {
+    } else if (hostport === cloudHost) {
         if (!process.env['NANGO_SECRET_KEY']) {
             console.log(`Assuming you are using Nango Cloud but you are missing the NANGO_SECRET_KEY env var.`);
-        } else if (hostport === cloudHost) {
+        } else {
             console.log(`Assuming you are using Nango Cloud (because you set the NANGO_HOSTPORT env var to https://api.nango.dev).`);
-        } else if (hostport === stagingHost) {
-            console.log(`Assuming you are using Nango Cloud (because you set the NANGO_HOSTPORT env var to https://api.staging.nango.dev).`);
         }
     } else {
         console.log(`Assuming you are self-hosting Nango (because you set the NANGO_HOSTPORT env var to ${hostport}).`);

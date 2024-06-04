@@ -141,7 +141,8 @@ export class AccessMiddleware {
                     return next(err);
                 }
 
-                next();
+                res.locals['authType'] = 'none';
+                void fillLocalsFromSession(req, res, next);
             });
             return;
         }

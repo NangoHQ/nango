@@ -93,6 +93,7 @@ const App = () => {
                                     <Route path="/:env/user-settings" element={<UserSettings />} />
                                 </>
                             )}
+                            <Route path="*" element={<NotFound />} />
                         </Route>
                         <Route path="/auth-link" element={<AuthLink />} />
                         {true && <Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}

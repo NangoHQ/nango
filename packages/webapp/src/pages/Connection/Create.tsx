@@ -9,7 +9,7 @@ import { Tooltip } from '@geist-ui/core';
 import type { Integration } from '@nangohq/server';
 
 import useSet from '../../hooks/useSet';
-import { isHosted, isStaging, baseUrl } from '../../utils/utils';
+import { isHosted } from '../../utils/utils';
 import { useGetIntegrationListAPI, useGetHmacAPI } from '../../utils/api';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -20,6 +20,7 @@ import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { useStore } from '../../store';
 import { AuthModes } from '../../types';
 import { useEnvironment } from '../../hooks/useEnvironment';
+import { API_URL } from '../../utils/env';
 
 export default function IntegrationCreate() {
     const { mutate } = useSWRConfig();
@@ -97,7 +98,7 @@ export default function IntegrationCreate() {
         if (environmentAndAccount) {
             const { environment, host } = environmentAndAccount;
             setPublicKey(environment.public_key);
-            setHostUrl(host || baseUrl());
+            setHostUrl(host || API_URL!);
             setWebsocketsPath(environment.websockets_path || '');
             setIsHmacEnabled(Boolean(environment.hmac_key));
         }
@@ -238,7 +239,7 @@ export default function IntegrationCreate() {
     const snippet = () => {
         const args = [];
 
-        if (isStaging() || isHosted()) {
+        if (isHosted()) {
             args.push(`host: '${hostUrl}'`);
             if (websocketsPath && websocketsPath !== '/') {
                 args.push(`websocketsPath: '${websocketsPath}'`);

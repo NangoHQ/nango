@@ -1,5 +1,5 @@
 import { PostHog } from 'posthog-node';
-import { localhostUrl, isCloud, isStaging, baseUrl } from '@nangohq/utils';
+import { localhostUrl, isCloud, baseUrl } from '@nangohq/utils';
 import { UserType } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
@@ -62,7 +62,7 @@ class Analytics {
 
     constructor() {
         try {
-            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging) {
+            if (process.env['TELEMETRY']?.toLowerCase() !== 'false') {
                 this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
                 this.client.enable();
                 this.packageVersion = NANGO_VERSION;
