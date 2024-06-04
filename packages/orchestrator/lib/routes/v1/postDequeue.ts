@@ -69,14 +69,13 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             cleanupAndRespond((res) => res.status(200).send([]));
         }, longPollingTimeoutMs);
 
-        eventEmitter.once(eventId, onTaskStarted);
-
         const getTasks = await scheduler.dequeue({ groupKey, limit });
         if (getTasks.isErr()) {
             cleanupAndRespond((res) => res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } }));
             return;
         }
         if (longPolling && getTasks.value.length === 0) {
+            eventEmitter.once(eventId, onTaskStarted);
             await new Promise((resolve) => resolve(timeout));
         } else {
             cleanupAndRespond((res) => res.status(200).json(getTasks.value));

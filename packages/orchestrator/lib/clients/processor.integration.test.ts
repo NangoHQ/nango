@@ -103,10 +103,10 @@ async function processN(handler: (task: TaskAction | TaskWebhook | TaskPostConne
         handler,
         opts: { orchestratorClient, groupKey, maxConcurrency: n, checkForTerminatedInterval: 100 }
     });
+    processor.start();
     for (let i = 0; i < n; i++) {
         await scheduleTask({ groupKey });
     }
-    processor.start();
     // Wait so the processor can process all tasks
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return processor;
