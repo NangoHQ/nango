@@ -15,7 +15,7 @@ export const sendAuth = async ({
     activityLogId,
     logCtx
 }: {
-    connection: Connection;
+    connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
     environment: Environment;
     auth_mode: AuthModeType;
     error?: FailedConnectionError;
@@ -23,7 +23,7 @@ export const sendAuth = async ({
     provider: string;
     type: string;
     activityLogId: number | null;
-    logCtx: LogContext;
+    logCtx?: LogContext | undefined;
 }): Promise<void> => {
     if (!shouldSend(environment)) {
         return;

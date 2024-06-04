@@ -6,7 +6,6 @@ import {
     SpanTypes,
     SyncClient,
     proxyService,
-    webhookService,
     getSyncConfigsWithConnections,
     analytics,
     errorNotificationService,
@@ -66,33 +65,58 @@ export const connectionCreationStartCapCheck = async ({
 };
 
 export const connectionCreated = async (
-    connection: RecentlyCreatedConnection,
+    createdConnectionPayload: RecentlyCreatedConnection,
     provider: string,
     logContextGetter: LogContextGetter,
     activityLogId: number | null,
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true },
     logCtx?: LogContext
 ): Promise<void> => {
+    const { connection, environment, auth_mode } = createdConnectionPayload;
+
     if (options.initiateSync === true && !isHosted) {
         const syncClient = await SyncClient.getInstance();
-        await syncClient?.initiate(connection.connection.id as number, logContextGetter);
+        await syncClient?.initiate(connection.id as number, logContextGetter);
     }
 
     if (options.runPostConnectionScript === true) {
-        await postConnection(connection, provider, logContextGetter);
-        await externalPostConnection(connection, provider, logContextGetter);
+        await postConnection(createdConnectionPayload, provider, logContextGetter);
+        await externalPostConnection(createdConnectionPayload, provider, logContextGetter);
     }
 
-    await webhookService.sendAuthUpdate(connection, provider, true, activityLogId, logCtx);
+    void sendAuthWebhook({
+        connection,
+        environment,
+        auth_mode,
+        operation: 'creation',
+        provider,
+        type: 'auth',
+        activityLogId,
+        logCtx
+    });
 };
 
-export const connectionCreationFailed = async (
-    connection: RecentlyFailedConnection,
+export const connectionCreationFailed = (
+    failedConnectionPayload: RecentlyFailedConnection,
     provider: string,
     activityLogId: number | null,
     logCtx: LogContext
-): Promise<void> => {
-    await webhookService.sendAuthUpdate(connection, provider, false, activityLogId, logCtx);
+): void => {
+    const { connection, environment, auth_mode, error } = failedConnectionPayload;
+
+    if (error) {
+        void sendAuthWebhook({
+            connection,
+            environment,
+            auth_mode,
+            error,
+            operation: 'creation',
+            provider,
+            type: 'auth',
+            activityLogId,
+            logCtx
+        });
+    }
 };
 
 export const connectionRefreshFailed = async ({

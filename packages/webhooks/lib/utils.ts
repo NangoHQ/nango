@@ -111,7 +111,7 @@ export const deliver = async ({
     webhookType: string;
     activityLogId: number | null;
     environment: Environment;
-    logCtx: LogContext;
+    logCtx?: LogContext | undefined;
 }): Promise<void> => {
     for (const webhook of webhooks) {
         const { url, type } = webhook;

@@ -84,6 +84,7 @@ bump_other_pkg "shared" "types"
 bump_other_pkg "server" "types"
 bump_other_pkg "webapp" "types"
 bump_other_pkg "cli" "types"
+bump_other_pkg "webhooks" "types"
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
