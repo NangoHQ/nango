@@ -38,6 +38,15 @@
             "path": "packages/orchestrator"
         },
         {
+            "path": "packages/database"
+        },
+        {
+            "path": "packages/utils"
+        },
+        {
+            "path": "packages/webhooks"
+        },
+        {
             "path": "packages/server"
         },
         {

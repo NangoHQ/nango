@@ -132,22 +132,22 @@ export const deliver = async ({
                         level: 'info',
                         environment_id: environment.id,
                         activity_log_id: activityLogId,
-                        content: `${webhookType} sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`,
+                        content: `${webhookType} webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`,
                         timestamp: Date.now()
                     });
                     await logCtx?.info(
-                        `${webhookType} sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`
+                        `${webhookType} webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`
                     );
                 } else {
                     await createActivityLogMessage({
                         level: 'error',
                         environment_id: environment.id,
                         activity_log_id: activityLogId,
-                        content: `${webhookType} sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
+                        content: `${webhookType} webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
                         timestamp: Date.now()
                     });
                     await logCtx?.error(
-                        `${webhookType} sent successfully to ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
+                        `${webhookType} sent webhook successfully to ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
                     );
                 }
             }
@@ -159,10 +159,10 @@ export const deliver = async ({
                     level: 'error',
                     environment_id: environment.id,
                     activity_log_id: activityLogId,
-                    content: `${webhookType} failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}. The error was: ${errorMessage}`,
+                    content: `${webhookType} webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}. The error was: ${errorMessage}`,
                     timestamp: Date.now()
                 });
-                await logCtx?.error(`${webhookType} failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}`, {
+                await logCtx?.error(`${webhookType} webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}`, {
                     error: err
                 });
             }

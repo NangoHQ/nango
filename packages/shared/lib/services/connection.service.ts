@@ -14,7 +14,6 @@ import { LogActionEnum } from '../models/Activity.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
 import syncOrchestrator from './sync/orchestrator.service.js';
-import webhookService from './notification/webhook.service.js';
 import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
@@ -690,32 +689,14 @@ class ConnectionService {
                 await logCtx.failed();
 
                 if (activityLogId) {
-                    await errorNotificationService.auth.create({
-                        type: 'auth',
-                        action: 'token_refresh',
-                        connection_id: connection.id,
-                        activity_log_id: activityLogId,
-                        log_id: logCtx.id,
-                        active: true
-                    });
-
-                    const authError = {
-                        type: error.type,
-                        description: error.message
-                    };
-
-                    void webhookService.sendAuthUpdate(
-                        { connection, environment, account, auth_mode: template.auth_mode, operation: 'refresh', error: authError },
-                        config.provider,
-                        false,
-                        activityLogId,
-                        logCtx
-                    );
                     await connectionRefreshFailedHook({
                         connection,
                         activityLogId,
                         logCtx,
-                        authError,
+                        authError: {
+                            type: error.type,
+                            description: error.message
+                        },
                         environment,
                         template,
                         config
