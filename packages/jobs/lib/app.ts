@@ -7,6 +7,7 @@ import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { reconcileTemporalSchedules } from './crons/reconcileTemporalSchedules.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
+import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import db from '@nangohq/database';
 import { envs } from './env.js';
 
@@ -33,6 +34,7 @@ try {
     deleteOldActivityLogs();
     deleteSyncsData();
     reconcileTemporalSchedules();
+    timeoutLogsOperations();
 
     // handle SIGTERM
     process.on('SIGTERM', () => {

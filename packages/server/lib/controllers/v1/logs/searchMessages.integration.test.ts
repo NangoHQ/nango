@@ -118,6 +118,7 @@ describe('POST /logs/messages', () => {
                     environmentId: null,
                     environmentName: null,
                     error: null,
+                    expiresAt: null,
                     id: expect.any(String),
                     jobId: null,
                     level: 'info',

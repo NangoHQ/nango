@@ -45,7 +45,7 @@ import {
     getSyncConfigRaw
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import type { LastAction } from '@nangohq/records';
 import { isHosted } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
@@ -442,7 +442,12 @@ class SyncController {
             }
 
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'action' },
+                    message: 'Start action',
+                    expiresAt: defaultOperationExpiration.action()
+                },
                 {
                     account,
                     environment,

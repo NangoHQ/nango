@@ -395,7 +395,12 @@ class WebhookService {
 
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'webhook', action: 'outgoing' }, message: 'Forwarding Webhook' },
+            {
+                id: String(activityLogId),
+                operation: { type: 'webhook', action: 'outgoing' },
+                message: 'Forwarding Webhook',
+                expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+            },
             { account, environment, integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider } }
         );
 
