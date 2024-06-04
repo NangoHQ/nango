@@ -91,6 +91,7 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
     createdAt: { type: 'date' },
     updatedAt: { type: 'date' },
     startedAt: { type: 'date' },
+    expiresAt: { type: 'date' },
     endedAt: { type: 'date' }
 };
 

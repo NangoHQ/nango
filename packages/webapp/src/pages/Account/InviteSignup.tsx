@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import type { SignupWithToken } from '@nangohq/types';
-import { useInviteSignupAPI } from '../../utils/api';
+import { apiFetch, useInviteSignupAPI } from '../../utils/api';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { MANAGED_AUTH_ENABLED, isEnterprise } from '../../utils/utils';
 import { useSignin } from '../../utils/user';
@@ -53,11 +53,8 @@ export default function InviteSignup() {
             password: { value: string };
         };
 
-        const res = await fetch(`/api/v1/account/signup/token`, {
+        const res = await apiFetch(`/api/v1/account/signup/token`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 name: target.name.value,
                 email: target.email.value,

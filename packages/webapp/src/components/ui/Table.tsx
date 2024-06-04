@@ -37,7 +37,7 @@ const Head = forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCe
     <th
         ref={ref}
         className={cn(
-            'bg-active-gray border-t border-b border-border-gray-400 first-of-type:border-l last-of-type:border-r first-of-type:rounded-l last-of-type:rounded-r px-3 py-1 pt-1.5 text-xs leading-5 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
+            'bg-active-gray first-of-type:rounded-l last-of-type:rounded-r px-3 py-1 pt-1.5 text-xs leading-5 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
             className
         )}
         {...props}

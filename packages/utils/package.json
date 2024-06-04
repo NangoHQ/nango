@@ -23,6 +23,7 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
+        "ms": "3.0.0-canary.1",
         "rimraf": "3.0.2",
         "vitest": "0.33.0"
     },

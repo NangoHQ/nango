@@ -3,6 +3,7 @@ import { Err, stringifyError, getLogger } from '@nangohq/utils';
 import type { OrchestratorClient } from './client.js';
 import type { OrchestratorTask } from './types.js';
 import type { JsonValue } from 'type-fest';
+import PQueue from 'p-queue';
 
 const logger = getLogger('orchestrator.clients.processor');
 
@@ -10,7 +11,7 @@ export class OrchestratorProcessor {
     private handler: (task: OrchestratorTask) => Promise<Result<JsonValue>>;
     private groupKey: string;
     private orchestratorClient: OrchestratorClient;
-    private queue: Queue;
+    private queue: PQueue;
     private stopped: boolean;
     private abortControllers: Map<string, AbortController>;
     private terminatedTimer: NodeJS.Timeout | null = null;
@@ -27,7 +28,7 @@ export class OrchestratorProcessor {
         this.handler = handler;
         this.groupKey = opts.groupKey;
         this.orchestratorClient = opts.orchestratorClient;
-        this.queue = new Queue(opts.maxConcurrency);
+        this.queue = new PQueue({ concurrency: opts.maxConcurrency });
         this.abortControllers = new Map();
         this.checkForTerminatedInterval = opts.checkForTerminatedInterval || 1000;
     }
@@ -61,7 +62,9 @@ export class OrchestratorProcessor {
             if (['FAILED', 'EXPIRED', 'CANCELLED', 'SUCCEEDED'].includes(task.state)) {
                 const abortController = this.abortControllers.get(task.id);
                 if (abortController) {
-                    abortController.abort();
+                    if (!abortController.signal.aborted) {
+                        abortController.abort();
+                    }
                     this.abortControllers.delete(task.id);
                 }
             }
@@ -71,16 +74,18 @@ export class OrchestratorProcessor {
 
     private async processingLoop() {
         while (!this.stopped) {
-            if (this.queue.available() > 0) {
-                const tasks = await this.orchestratorClient.dequeue({ groupKey: this.groupKey, limit: this.queue.available() * 2, waitForCompletion: true }); // fetch more than available to keep the queue full
-                if (tasks.isErr()) {
-                    logger.error(`failed to dequeue tasks: ${stringifyError(tasks.error)}`);
-                    await new Promise((resolve) => setTimeout(resolve, 1000)); // wait for a bit before retrying to avoid hammering the server in case of repetitive errors
-                    continue;
-                }
-                for (const task of tasks.value) {
-                    await this.processTask(task);
-                }
+            // wait for the queue to have space before dequeuing more tasks
+            await this.queue.onSizeLessThan(this.queue.concurrency);
+            const available = this.queue.concurrency - this.queue.size;
+            const limit = available + this.queue.concurrency; // fetching more than available to keep the queue full
+            const tasks = await this.orchestratorClient.dequeue({ groupKey: this.groupKey, limit, longPolling: true });
+            if (tasks.isErr()) {
+                logger.error(`failed to dequeue tasks: ${stringifyError(tasks.error)}`);
+                await new Promise((resolve) => setTimeout(resolve, 1000)); // wait for a bit before retrying to avoid hammering the server in case of repetitive errors
+                continue;
+            }
+            for (const task of tasks.value) {
+                void this.processTask(task);
             }
         }
         return;
@@ -88,59 +93,25 @@ export class OrchestratorProcessor {
 
     private async processTask(task: OrchestratorTask): Promise<void> {
         this.abortControllers.set(task.id, task.abortController);
-        this.queue.run(async () => {
+        await this.queue.add(async () => {
             try {
+                if (task.abortController.signal.aborted) {
+                    // task was aborted while waiting in the queue
+                    return;
+                }
                 const res = await this.handler(task);
                 if (res.isErr()) {
-                    this.orchestratorClient.failed({ taskId: task.id, error: res.error });
+                    await this.orchestratorClient.failed({ taskId: task.id, error: res.error });
                 } else {
-                    this.orchestratorClient.succeed({ taskId: task.id, output: res.value });
+                    await this.orchestratorClient.succeed({ taskId: task.id, output: res.value });
                 }
+                //TODO what to do if failed/success fails?
+            } catch (err: unknown) {
+                const error = new Error(stringifyError(err));
+                await this.orchestratorClient.failed({ taskId: task.id, error });
+            } finally {
                 this.abortControllers.delete(task.id);
-            } catch (err) {
-                logger.error(`process uncaught error: ${stringifyError(err)}`);
             }
         });
-    }
-}
-
-class Queue {
-    private maxConcurrency: number;
-    private queue: (() => void)[];
-
-    constructor(maxConcurrency: number) {
-        this.maxConcurrency = maxConcurrency;
-        this.queue = [];
-    }
-
-    private async acquire(): Promise<void> {
-        if (this.queue.length < this.maxConcurrency) {
-            return;
-        }
-        await new Promise<void>((resolve) => {
-            this.queue.push(resolve);
-        });
-    }
-
-    private release(): void {
-        if (this.queue.length > 0) {
-            const next = this.queue.shift();
-            if (next) {
-                next();
-            }
-        }
-    }
-
-    public async run<T>(f: () => Promise<T>): Promise<T> {
-        await this.acquire();
-        try {
-            return await f();
-        } finally {
-            this.release();
-        }
-    }
-
-    public available(): number {
-        return this.maxConcurrency - this.queue.length;
     }
 }

@@ -42,6 +42,9 @@ exports[`mapping > should create one index automatically on log 1`] = `
         "enabled": false,
         "type": "object",
       },
+      "expiresAt": {
+        "type": "date",
+      },
       "id": {
         "type": "keyword",
       },

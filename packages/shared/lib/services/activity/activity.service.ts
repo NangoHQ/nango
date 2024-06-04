@@ -1,4 +1,4 @@
-import db from '../../db/database.js';
+import db from '@nangohq/database';
 import type { ActivityLog, ActivityLogMessage, LogAction } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';

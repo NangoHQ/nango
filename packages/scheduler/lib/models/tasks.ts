@@ -184,6 +184,23 @@ export async function transitionState(
     }
 
     const output = 'output' in props ? props.output : null;
+    const asPostgresJson = (val: JsonValue) => {
+        if (val === null) {
+            return null;
+        }
+        if (Array.isArray(val)) {
+            // https://github.com/brianc/node-postgres/issues/442
+            return JSON.stringify(val);
+        }
+        switch (typeof val) {
+            case 'string': {
+                return db.raw(`to_json(?::text)`, [val]);
+            }
+            default:
+                return db.raw(`to_json(?::json)`, [val]);
+        }
+    };
+
     const updated = await db
         .from<DbTask>(TASKS_TABLE)
         .where('id', props.taskId)
@@ -191,12 +208,13 @@ export async function transitionState(
             state: transition.value.to,
             last_state_transition_at: new Date(),
             terminated: validToStates.includes(transition.value.to),
-            output
+            output: asPostgresJson(output)
         })
         .returning('*');
     if (!updated?.[0]) {
         return Err(new Error(`Task with id '${props.taskId}' not found`));
     }
+
     return Ok(DbTask.from(updated[0]));
 }
 
@@ -215,7 +233,7 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
                     .from<DbTask>(TASKS_TABLE)
                     .where({ group_key: groupKey, state: 'CREATED' })
                     .where('starts_after', '<=', db.fn.now())
-                    .orderBy('created_at')
+                    .orderBy('id')
                     .limit(limit)
                     .forUpdate()
                     .skipLocked()

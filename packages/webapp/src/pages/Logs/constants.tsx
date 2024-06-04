@@ -10,7 +10,7 @@ import type {
 import { formatDateToLogFormat } from '../../utils/utils';
 import { StatusTag } from './components/StatusTag';
 import { OperationTag } from './components/OperationTag';
-import type { MultiSelectArgs } from './components/MultiSelect';
+import type { MultiSelectArgs } from '../../components/MultiSelect';
 import { ChevronRightIcon } from '@radix-ui/react-icons';
 import { ProviderTag } from './components/ProviderTag';
 
@@ -18,7 +18,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'createdAt',
         header: 'Timestamp',
-        size: 170,
+        size: 180,
         cell: ({ row }) => {
             return <div className="font-code text-s">{formatDateToLogFormat(row.original.createdAt)}</div>;
         }
@@ -42,7 +42,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'integrationId',
         header: 'Integration',
-        size: 200,
+        minSize: 280,
         cell: ({ row }) => {
             return <ProviderTag msg={row.original} />;
         }
@@ -50,17 +50,18 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'syncConfigId',
         header: 'Script',
-        size: 180,
+        minSize: 280,
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.syncConfigName}</div>;
+            return <div className="truncate font-code text-s">{row.original.syncConfigName || '-'}</div>;
         }
     },
     {
         accessorKey: 'connectionId',
         header: 'Connection',
-        size: 200,
+        minSize: 0,
+        size: 0,
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.connectionName}</div>;
+            return <div className="truncate font-code text-s">{row.original.connectionName || '-'}</div>;
         }
     },
     {

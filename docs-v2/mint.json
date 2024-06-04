@@ -397,6 +397,7 @@
                 "integrations/all/linkedin",
                 "integrations/all/mailchimp",
                 "integrations/all/marketo",
+                "integrations/all/mailgun",
                 "integrations/all/microsoft",
                 "integrations/all/microsoft-ads",
                 "integrations/all/microsoft-entra-id",

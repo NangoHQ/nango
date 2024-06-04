@@ -20,7 +20,7 @@ import {
     LogActionEnum
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import {
@@ -53,7 +53,12 @@ class ApiAuthController {
         let logCtx: LogContext | undefined;
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization API Key' },
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'auth', action: 'create_connection' },
+                    message: 'Authorization API Key',
+                    expiresAt: defaultOperationExpiration.auth()
+                },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, account.id);
@@ -291,7 +296,12 @@ class ApiAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization Basic' },
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'auth', action: 'create_connection' },
+                    message: 'Authorization Basic',
+                    expiresAt: defaultOperationExpiration.auth()
+                },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, account.id);

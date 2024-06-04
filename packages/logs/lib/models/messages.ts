@@ -36,14 +36,15 @@ export const ResponseError = errors.ResponseError;
 /**
  * Create one message
  */
-export async function createMessage(row: MessageRow): Promise<void> {
-    await client.create<MessageRow>({
+export async function createMessage(row: MessageRow): Promise<{ index: string }> {
+    const res = await client.create<MessageRow>({
         index: indexMessages.index,
         id: row.id,
         document: row,
         refresh: row.operation ? true : isTest,
         pipeline: `daily.${indexMessages.index}`
     });
+    return { index: res._index };
 }
 
 /**
@@ -161,10 +162,16 @@ export async function listOperations(opts: {
 /**
  * Get a single operation
  */
-export async function getOperation(opts: { id: MessageRow['id'] }): Promise<MessageRow> {
+export async function getOperation(opts: { id: MessageRow['id']; indexName?: string | null }): Promise<MessageRow> {
+    if (opts.indexName) {
+        const res = await client.get<OperationRow>({ index: opts.indexName, id: opts.id });
+        return res._source!;
+    }
+
     // Can't perform a getById because we don't know in which index the operation is in
     const res = await client.search<OperationRow>({
         index: indexMessages.index,
+        size: 1,
         query: {
             term: { id: opts.id }
         }
@@ -356,4 +363,22 @@ export async function listFilters(opts: {
     return {
         items: agg.buckets as any
     };
+}
+
+export async function setTimeoutForAll(opts: { wait?: boolean } = {}): Promise<void> {
+    await client.updateByQuery({
+        index: indexMessages.index,
+        wait_for_completion: opts.wait === true,
+        refresh: opts.wait === true,
+        query: {
+            bool: {
+                must: [{ range: { expiresAt: { lt: 'now' } } }],
+                must_not: { exists: { field: 'parentId' } },
+                should: [{ term: { state: 'waiting' } }, { term: { state: 'running' } }]
+            }
+        },
+        script: {
+            source: "ctx._source.state = 'timeout'"
+        }
+    });
 }

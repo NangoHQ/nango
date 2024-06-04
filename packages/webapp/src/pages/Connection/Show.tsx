@@ -1,13 +1,14 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { Loading, useModal, Modal } from '@geist-ui/core';
-import { useState, useEffect } from 'react';
+import { Loading, useModal } from '@geist-ui/core';
+import { useState, useEffect, Fragment } from 'react';
 import { toast } from 'react-toastify';
 import useSWR, { useSWRConfig } from 'swr';
 
 import { requestErrorToast, swrFetcher, useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import ActionModal from '../../components/ui/ActionModal';
+import { ErrorCircle } from '../../components/ui/label/error-circle';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../layout/DashboardLayout';
 import Info from '../../components/ui/Info';
@@ -16,10 +17,11 @@ import Button from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import Syncs from './Syncs';
 import Authorization from './Authorization';
-import type { SyncResponse, Connection } from '../../types';
+import type { SyncResponse } from '../../types';
 import PageNotFound from '../PageNotFound';
-import { isHosted } from '../../utils/utils';
+import { isHosted, getSimpleDate } from '../../utils/utils';
 import { connectSlack } from '../../utils/slack-connection';
+import type { GetConnection } from '@nangohq/types';
 
 import { useStore } from '../../store';
 
@@ -34,7 +36,7 @@ export default function ShowIntegration() {
     const { environmentAndAccount, mutate: environmentMutate } = useEnvironment(env);
 
     const [loaded, setLoaded] = useState(false);
-    const [connection, setConnection] = useState<Connection | null>(null);
+    const [connectionResponse, setConnectionResponse] = useState<GetConnection['Success'] | null>(null);
     const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const [, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -48,7 +50,6 @@ export default function ShowIntegration() {
     const navigate = useNavigate();
     const location = useLocation();
     const { setVisible, bindings } = useModal();
-    const { setVisible: setErrorVisible, bindings: errorBindings } = useModal();
     const { connectionId, providerConfigKey } = useParams();
 
     const {
@@ -90,18 +91,26 @@ export default function ShowIntegration() {
             if (res?.status === 404) {
                 setPageNotFound(true);
             } else if (res?.status === 200) {
+                const data: GetConnection['Success'] = await res.json();
+                setConnectionResponse(data);
+            } else if (res?.status === 400) {
                 const data = await res.json();
-                const connection = data['connection'];
-                setConnection({ ...connection, connection_id: connectionId });
+                if (data.connection) {
+                    setConnectionResponse(data);
+                }
             } else if (res != null) {
                 setServerErrorMessage(`
 We could not retrieve and/or refresh your access token due to the following error:
 \n\n${(await res.json()).error}
 `);
-                setConnection({
-                    providerConfigKey,
-                    connection_id: connectionId
-                } as Connection);
+                setConnectionResponse({
+                    errorLog: null,
+                    provider: null,
+                    connection: {
+                        provider_config_key: providerConfigKey,
+                        connection_id: connectionId
+                    }
+                } as GetConnection['Success']);
             }
         };
 
@@ -133,15 +142,11 @@ We could not retrieve and/or refresh your access token due to the following erro
         const res = await getConnectionDetailsAPI(connectionId, providerConfigKey, true);
 
         if (res?.status === 200) {
-            const data = await res.json();
-            setConnection(data['connection']);
+            const data: GetConnection['Success'] = await res.json();
+            setConnectionResponse(data);
 
             toast.success('Token refresh success!', { position: toast.POSITION.BOTTOM_CENTER });
         } else if (res != null) {
-            setServerErrorMessage(`
-             We could not retrieve and/or refresh your access token due to the following error:
-             \n\n${(await res.json()).error}
-            `);
             toast.error('Failed to refresh token!', { position: toast.POSITION.BOTTOM_CENTER });
         }
         setTimeout(() => {
@@ -170,7 +175,7 @@ We could not retrieve and/or refresh your access token due to the following erro
         return <PageNotFound />;
     }
 
-    if (!loaded || syncLoading) {
+    if (!loaded || syncLoading || !connectionResponse) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
                 <Loading spaceRatio={2.5} className="-top-36" />
@@ -189,30 +194,13 @@ We could not retrieve and/or refresh your access token due to the following erro
                 modalTitleColor="text-red-500"
                 setVisible={setVisible}
             />
-            <Modal {...errorBindings} wrapClassName="!h-[600px] !w-[550px] !max-w-[550px] !bg-[#0E1014] no-border-modal">
-                <div className="flex justify-between text-sm">
-                    <div>
-                        <Modal.Content className="overflow-scroll max-w-[550px] !text-sm text-white font-mono">{serverErrorMessage}</Modal.Content>
-                    </div>
-                </div>
-                <Modal.Action
-                    placeholder={null}
-                    passive
-                    className="!flex !justify-end !text-sm !bg-[#0E1014] !border-0 !h-[100px]"
-                    onClick={() => setErrorVisible(false)}
-                >
-                    <Button className="!text-text-light-gray" variant="zombieGray">
-                        Close
-                    </Button>
-                </Modal.Action>
-            </Modal>
             <div className="mx-auto">
                 <div className="flex gap-4 justify-between">
                     <div className="flex gap-6">
-                        <Link to={`/${env}/integration/${connection?.providerConfigKey}`}>
-                            {connection?.provider && (
+                        <Link to={`/${env}/integration/${connectionResponse.connection.provider_config_key}`}>
+                            {connectionResponse?.provider && (
                                 <IntegrationLogo
-                                    provider={connection.provider}
+                                    provider={connectionResponse.provider}
                                     height={24}
                                     width={24}
                                     classNames="cursor-pointer p-1 border border-border-gray rounded-xl"
@@ -241,54 +229,111 @@ We could not retrieve and/or refresh your access token due to the following erro
             <section className="mt-14">
                 <ul className="flex text-gray-400 space-x-2 font-semibold text-sm cursor-pointer">
                     <li
-                        className={`p-2 rounded ${activeTab === Tabs.Syncs ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        className={`flex items-center p-2 rounded ${activeTab === Tabs.Syncs ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
                         onClick={() => setActiveTab(Tabs.Syncs)}
                     >
                         Syncs
+                        {syncs && syncs.find((sync) => typeof sync.active_logs?.activity_log_id === 'number') && (
+                            <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>
+                        )}
                     </li>
                     <li
-                        className={`p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        className={`flex items-center p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
                         onClick={() => setActiveTab(Tabs.Authorization)}
                     >
                         Authorization
+                        {connectionResponse.errorLog && <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>}
                     </li>
                 </ul>
-
-                {!slackIsConnected && !isHosted() && (
-                    <Info size={8} color="blue" showIcon={false} padding="mt-4 p-1">
-                        <div className="flex text-sm items-center">
-                            <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
-                            Receive instant monitoring alerts on Slack.{' '}
-                            <button
-                                disabled={slackIsConnecting}
-                                onClick={createSlackConnection}
-                                className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
-                            >
-                                Set up now for the {env} environment.
-                            </button>
-                        </div>
-                    </Info>
-                )}
             </section>
 
             {serverErrorMessage && (
-                <div className="flex my-12">
-                    <Info size={14} padding="px-4 py-1.5" color="red">
-                        There was an error refreshing the credentials{' '}
-                        <span onClick={() => setErrorVisible(true)} className="cursor-pointer text-white underline">
-                            (show details)
-                        </span>
-                        .
+                <div className="flex my-4">
+                    <Info showIcon={false} size={14} padding="py-1 px-1 py-1" color="red">
+                        <div className="flex items-center text-sm">
+                            <ErrorCircle />
+                            <span className="ml-2">{serverErrorMessage}</span>
+                        </div>
                     </Info>
                 </div>
             )}
 
+            {activeTab === Tabs.Authorization && connectionResponse.errorLog && (
+                <div className="flex my-4">
+                    <Info showIcon={false} size={14} padding="py-1 px-1 py-1" color="red">
+                        <div className="flex items-center text-sm">
+                            <ErrorCircle />
+                            <span className="ml-2">There was an error refreshing the credentials</span>
+                            <Link
+                                to={`/${env}/activity?activity_log_id=${connectionResponse.errorLog.activity_log_id}&connection=${connectionResponse.connection.connection_id}&date=${getSimpleDate(connectionResponse.errorLog?.created_at?.toString())}`}
+                                className="ml-1 cursor-pointer underline"
+                            >
+                                (logs).
+                            </Link>
+                        </div>
+                    </Info>
+                </div>
+            )}
+
+            {activeTab === Tabs.Syncs && syncs && syncs.find((sync) => typeof sync.active_logs?.activity_log_id === 'number') && (
+                <div className="flex my-4">
+                    <Info showIcon={false} size={14} padding="py-1 px-1" color="red">
+                        <div className="flex items-center text-sm">
+                            <ErrorCircle />
+                            <span className="ml-2">
+                                Last sync execution failed for the following sync
+                                {syncs.filter((sync) => typeof sync.active_logs?.activity_log_id === 'number').length > 1 ? 's' : ''}:{' '}
+                                {syncs
+                                    .filter((sync) => typeof sync.active_logs?.activity_log_id === 'number')
+                                    .map((sync, index) => (
+                                        <Fragment key={sync.name}>
+                                            {sync.name} (
+                                            <Link
+                                                className="underline"
+                                                to={`/${env}/activity?activity_log_id=${sync.active_logs?.activity_log_id}&script=${sync.name}`}
+                                            >
+                                                logs
+                                            </Link>
+                                            ){index < syncs.filter((sync) => typeof sync.active_logs?.activity_log_id === 'number').length - 1 && ', '}
+                                        </Fragment>
+                                    ))}
+                                .
+                            </span>
+                        </div>
+                    </Info>
+                </div>
+            )}
+
+            {!slackIsConnected && !isHosted() && (
+                <Info size={14} color="blue" showIcon={false} padding="mt-7 p-1 py-1">
+                    <div className="flex text-sm items-center">
+                        <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
+                        Receive instant monitoring alerts on Slack.{' '}
+                        <button
+                            disabled={slackIsConnecting}
+                            onClick={createSlackConnection}
+                            className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
+                        >
+                            Set up now for the {env} environment.
+                        </button>
+                    </div>
+                </Info>
+            )}
+
             <section className="mt-10">
                 {activeTab === Tabs.Syncs && (
-                    <Syncs syncs={syncs} connection={connection} reload={reload} loaded={loaded} syncLoaded={!syncLoading} env={env} />
+                    <Syncs
+                        syncs={syncs}
+                        connection={connectionResponse.connection}
+                        provider={connectionResponse.provider}
+                        reload={reload}
+                        loaded={loaded}
+                        syncLoaded={!syncLoading}
+                        env={env}
+                    />
                 )}
                 {activeTab === Tabs.Authorization && (
-                    <Authorization connection={connection} forceRefresh={forceRefresh} loaded={loaded} syncLoaded={!syncLoading} />
+                    <Authorization connection={connectionResponse.connection} forceRefresh={forceRefresh} loaded={loaded} syncLoaded={!syncLoading} />
                 )}
             </section>
             <Helmet>

@@ -6,7 +6,7 @@ import { useSearchOperations } from '../../hooks/useLogs';
 import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
-import { MultiSelect } from './components/MultiSelect';
+import { MultiSelect } from '../../components/MultiSelect';
 import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, syncsDefaultOptions, typesDefaultOptions } from './constants';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
@@ -300,7 +300,7 @@ export const LogsSearch: React.FC = () => {
                                     <Table.Head
                                         key={header.id}
                                         style={{
-                                            width: header.getSize()
+                                            width: header.getSize() !== 0 ? header.getSize() : undefined
                                         }}
                                     >
                                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
@@ -315,8 +315,11 @@ export const LogsSearch: React.FC = () => {
                         table.getRowModel().rows.map((row) => <OperationRow key={row.original.id} row={row} />)
                     ) : operations.length <= 0 && !loading && readyToDisplay ? (
                         <Table.Row>
-                            <Table.Cell colSpan={columns.length} className="h-24 text-center">
-                                No results.
+                            <Table.Cell colSpan={columns.length} className="h-24 text-center p-0 pt-4">
+                                <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
+                                    <div className="text-center">No logs found</div>
+                                    <div className="text-gray-400">Note that logs older than 15 days are automatically cleared.</div>
+                                </div>
                             </Table.Cell>
                         </Table.Row>
                     ) : (

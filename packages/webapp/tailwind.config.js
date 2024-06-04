@@ -35,7 +35,10 @@ module.exports = {
                 white: '#FFFFFF',
 
                 // From Figma
-                'green-base': '#84D65A'
+                'green-base': '#84D65A',
+                'blue-base': '#509AF8',
+                'red-base': '#EF665B',
+                'alert-red': '#EF665B'
             },
             width: {
                 largebox: '1200px',

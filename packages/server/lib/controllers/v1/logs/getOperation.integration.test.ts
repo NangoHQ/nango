@@ -1,5 +1,6 @@
 import { logContextGetter, migrateMapping } from '@nangohq/logs';
-import { multipleMigrations, seeders } from '@nangohq/shared';
+import { multipleMigrations } from '@nangohq/database';
+import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
@@ -102,6 +103,7 @@ describe('GET /logs/operations/:operationId', () => {
                 environmentId: env.id,
                 environmentName: 'dev',
                 error: null,
+                expiresAt: expect.toBeIsoDate(),
                 id: logCtx.id,
                 jobId: null,
                 level: 'info',

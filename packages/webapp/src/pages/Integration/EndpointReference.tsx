@@ -44,9 +44,10 @@ export default function EndpointReference(props: EndpointReferenceProps) {
 
     useEffect(() => {
         if (activeFlow) {
+            const model = activeFlow.models.length > 0 ? activeFlow.models : activeFlow.returns[0];
             setSyncSnippet(
                 activeFlow.type === 'sync'
-                    ? nodeSnippet(activeFlow.models, environment.secret_key, connectionId, integration.unique_key)
+                    ? nodeSnippet(model, environment.secret_key, connectionId, integration.unique_key)
                     : nodeActionSnippet(activeFlow.name, environment.secret_key, connectionId, integration.unique_key, parseInput(activeFlow))
             );
 
@@ -103,7 +104,12 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                     if (language !== Language.Node) {
                                         setSyncSnippet(
                                             activeFlow?.type === 'sync'
-                                                ? nodeSnippet(activeFlow.models, environment.secret_key, connectionId, integration.unique_key)
+                                                ? nodeSnippet(
+                                                      activeFlow && activeFlow.models.length > 0 ? activeFlow.models : activeFlow.returns[0],
+                                                      environment.secret_key,
+                                                      connectionId,
+                                                      integration.unique_key
+                                                  )
                                                 : nodeActionSnippet(
                                                       activeFlow?.name as string,
                                                       environment.secret_key,
@@ -224,7 +230,12 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                         if (language !== Language.Node) {
                                             setSyncSnippet(
                                                 activeFlow?.type === 'sync'
-                                                    ? nodeSnippet(activeFlow.models, environment.secret_key, connectionId, integration.unique_key)
+                                                    ? nodeSnippet(
+                                                          activeFlow.models || activeFlow.returns[0],
+                                                          environment.secret_key,
+                                                          connectionId,
+                                                          integration.unique_key
+                                                      )
                                                     : nodeActionSnippet(
                                                           activeFlow?.name as string,
                                                           environment.secret_key,

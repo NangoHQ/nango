@@ -1,5 +1,6 @@
 import { logContextGetter, migrateMapping } from '@nangohq/logs';
-import { multipleMigrations, seeders } from '@nangohq/shared';
+import { seeders } from '@nangohq/shared';
+import { multipleMigrations } from '@nangohq/database';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
@@ -112,6 +113,7 @@ describe('POST /logs/operations', () => {
                     environmentId: env.id,
                     environmentName: 'dev',
                     error: null,
+                    expiresAt: expect.toBeIsoDate(),
                     id: logCtx.id,
                     jobId: null,
                     level: 'info',

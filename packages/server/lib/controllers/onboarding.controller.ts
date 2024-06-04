@@ -33,7 +33,7 @@ import {
 import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import type { GetOnboardingStatus } from '@nangohq/types';
 import type { RequestLocals } from '../utils/express.js';
@@ -432,7 +432,12 @@ class OnboardingController {
             }
 
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'action' },
+                    message: 'Start action',
+                    expiresAt: defaultOperationExpiration.action()
+                },
                 {
                     account,
                     environment,

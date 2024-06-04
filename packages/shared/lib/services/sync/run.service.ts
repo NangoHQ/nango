@@ -8,6 +8,7 @@ import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
+import { errorNotificationService } from '../notification/error.service.js';
 import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
@@ -59,6 +60,7 @@ export type SyncRunConfig = {
     isAction?: boolean;
     isInvokedImmediately?: boolean;
     isWebhook?: boolean;
+    isPostConnectionScript?: boolean;
     nangoConnection: NangoConnection;
     syncName: string;
     syncType: SyncType;
@@ -68,6 +70,7 @@ export type SyncRunConfig = {
     provider?: string;
 
     loadLocation?: string;
+    fileLocation?: string;
     debug?: boolean;
     input?: object;
 
@@ -103,6 +106,7 @@ export default class SyncRun {
 
     writeToDb: boolean;
     isAction: boolean;
+    isPostConnectionScript: boolean;
     isInvokedImmediately: boolean;
     nangoConnection: NangoConnection;
     syncName: string;
@@ -113,6 +117,7 @@ export default class SyncRun {
     activityLogId?: number;
     provider?: string;
     loadLocation?: string;
+    fileLocation?: string;
     debug?: boolean;
     input?: object;
 
@@ -141,10 +146,11 @@ export default class SyncRun {
         }
         this.isAction = config.isAction || false;
         this.isWebhook = config.isWebhook || false;
+        this.isPostConnectionScript = config.isPostConnectionScript || false;
         this.nangoConnection = config.nangoConnection;
         this.syncName = config.syncName;
         this.syncType = config.syncType;
-        this.isInvokedImmediately = Boolean(config.isAction || config.isWebhook);
+        this.isInvokedImmediately = Boolean(config.isAction || config.isWebhook || config.isPostConnectionScript);
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -188,6 +194,10 @@ export default class SyncRun {
         if (config.temporalContext) {
             this.temporalContext = config.temporalContext;
         }
+
+        if (config.fileLocation) {
+            this.fileLocation = config.fileLocation;
+        }
     }
 
     async run(
@@ -211,9 +221,20 @@ export default class SyncRun {
                 logger.info(content);
             }
         }
-        const nangoConfig = this.loadLocation
+        let nangoConfig = this.loadLocation
             ? await loadLocalNangoConfig(this.loadLocation)
             : await getSyncConfig(this.nangoConnection, this.syncName, this.isAction);
+
+        if (!nangoConfig && this.isPostConnectionScript) {
+            nangoConfig = {
+                integrations: {
+                    [this.nangoConnection.provider_config_key]: {
+                        'post-connection-scripts': [this.syncName]
+                    }
+                },
+                models: {}
+            };
+        }
 
         if (!nangoConfig) {
             const message = `No ${this.isAction ? 'action' : 'sync'} configuration was found for ${this.syncName}.`;
@@ -238,7 +259,7 @@ export default class SyncRun {
         }
 
         // if there is a matching customer integration code for the provider config key then run it
-        if (integrations[this.nangoConnection.provider_config_key]) {
+        if (integrations[this.nangoConnection.provider_config_key] || this.isPostConnectionScript) {
             let environment: Environment | null = null;
             let account: Account | null = null;
 
@@ -278,6 +299,14 @@ export default class SyncRun {
 
             if (this.isAction) {
                 syncData = (syncObject['actions'] ? syncObject['actions'][this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
+            } else if (this.isPostConnectionScript) {
+                syncData = {
+                    runs: 'every 5 minutes',
+                    returns: [],
+                    track_deletes: false,
+                    is_public: false,
+                    fileLocation: this.fileLocation
+                } as NangoIntegrationData;
             } else {
                 syncData = (syncObject['syncs'] ? syncObject['syncs'][this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
             }
@@ -470,6 +499,24 @@ export default class SyncRun {
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
+                if (this.isPostConnectionScript) {
+                    const content = `The post connection script "${this.syncName}" has been run successfully.`;
+
+                    await updateSuccessActivityLog(this.activityLogId as number, true);
+
+                    await createActivityLogMessageAndEnd({
+                        level: 'info',
+                        environment_id: this.nangoConnection.environment_id,
+                        activity_log_id: this.activityLogId as number,
+                        timestamp: Date.now(),
+                        content
+                    });
+                    await this.logCtx?.info(content);
+                    await this.logCtx?.success();
+
+                    return { success: true, error: null, response: userDefinedResults };
+                }
+
                 await this.finishFlow(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
                 return { success: true, error: null, response: true };
@@ -574,6 +621,13 @@ export default class SyncRun {
                     this.nangoConnection.environment_id,
                     this.provider as string
                 );
+            }
+
+            if (this.syncId && this.nangoConnection.id) {
+                await errorNotificationService.sync.clear({
+                    sync_id: this.syncId,
+                    connection_id: this.nangoConnection.id
+                });
             }
         }
 
@@ -799,11 +853,25 @@ export default class SyncRun {
             },
             `syncId:${this.syncId}`
         );
+
+        if (this.nangoConnection.id && this.activityLogId && this.logCtx?.id && this.syncId) {
+            await errorNotificationService.sync.create({
+                action: 'run',
+                type: 'sync',
+                sync_id: this.syncId,
+                connection_id: this.nangoConnection.id,
+                activity_log_id: this.activityLogId,
+                log_id: this.logCtx?.id,
+                active: true
+            });
+        }
     }
 
     private determineExecutionType(): string {
         if (this.isAction) {
             return 'action';
+        } else if (this.isPostConnectionScript) {
+            return 'post-connection-script';
         } else if (this.isWebhook) {
             return 'webhook';
         } else {
