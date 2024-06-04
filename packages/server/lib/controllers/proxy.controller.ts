@@ -307,9 +307,9 @@ class ProxyController {
         const contentType = responseStream.headers['content-type'];
         const isJsonResponse = contentType && contentType.includes('application/json');
         const isChunked = responseStream.headers['transfer-encoding'] === 'chunked';
-        const isZip = responseStream.headers['content-encoding'] === 'gzip';
+        const isEncoded = Boolean(responseStream.headers['content-encoding']);
 
-        if (isChunked || isZip) {
+        if (isChunked || isEncoded) {
             const passThroughStream = new PassThrough();
             responseStream.data.pipe(passThroughStream);
             passThroughStream.pipe(res);
