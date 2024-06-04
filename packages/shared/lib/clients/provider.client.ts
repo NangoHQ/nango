@@ -1,11 +1,10 @@
 import braintree from 'braintree';
 import type { Config as ProviderConfig, Connection, AuthorizationTokenResponse, RefreshTokenResponse } from '../models/index.js';
 import type { TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
-import { axiosInstance as axios } from '../utils/axios.js';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, axiosInstance as axios } from '@nangohq/utils';
 
 const stripeAppExpiresIn = 3600;
 const logger = getLogger('Provider.Client');

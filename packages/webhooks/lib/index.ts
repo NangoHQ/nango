@@ -1,1 +1,1 @@
-export * from './auth.js';
+export { sendAuth } from './auth.js';

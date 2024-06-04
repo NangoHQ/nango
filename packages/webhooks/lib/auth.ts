@@ -25,7 +25,7 @@ export const sendAuth = async ({
     activityLogId: number | null;
     logCtx?: LogContext | undefined;
 }): Promise<void> => {
-    if (!shouldSend(environment)) {
+    if (!shouldSend(environment, { auth: true })) {
         return;
     }
 
@@ -37,7 +37,7 @@ export const sendAuth = async ({
         authMode: auth_mode,
         provider,
         environment: environment.name,
-        success: !error,
+        success: Boolean(!error),
         operation
     };
 

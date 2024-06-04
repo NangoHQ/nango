@@ -1,19 +1,18 @@
 import type { AxiosError } from 'axios';
-import { axiosInstance as axios } from '../../utils/axios.js';
+import { axiosInstance as axios, stringifyError } from '@nangohq/utils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';
 import { SyncType } from '../../models/Sync.js';
-import type { NangoConnection, RecentlyCreatedConnection, RecentlyFailedConnection } from '../../models/Connection.js';
+import type { NangoConnection } from '../../models/Connection.js';
 import type { Account, Config, Environment, SyncResult } from '../../models/index.js';
 import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
-import type { NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
+import type { NangoSyncWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
 import { WebhookType } from '../../models/Webhook.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { stringifyError } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
@@ -224,99 +223,6 @@ class WebhookService {
                 await logCtx.error(`Sync webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}`, {
                     error: e
                 });
-            }
-        }
-    }
-
-    async sendAuthUpdate(
-        connection: RecentlyCreatedConnection | RecentlyFailedConnection,
-        provider: string,
-        success: boolean,
-        activityLogId: number | null,
-        logCtx?: LogContext
-    ): Promise<void> {
-        const { environment } = connection;
-
-        if (!this.shouldSendWebhook(environment, { auth: true })) {
-            return;
-        }
-
-        const { webhook_url: webhookUrl, webhook_url_secondary: webhookUrlSecondary, name: environmentName } = environment;
-
-        const body: NangoAuthWebhookBody = {
-            from: 'nango',
-            type: WebhookType.AUTH,
-            connectionId: connection.connection.connection_id,
-            providerConfigKey: connection.connection.provider_config_key,
-            authMode: connection.auth_mode,
-            provider,
-            environment: environmentName,
-            success,
-            operation: connection.operation
-        };
-
-        if (connection.error) {
-            body.error = connection.error;
-        }
-
-        const webhookUrls: { url: string; type: string }[] = [
-            { url: webhookUrl, type: 'webhookUrl' },
-            { url: webhookUrlSecondary, type: 'webhookUrlSecondary' }
-        ].filter((webhook) => webhook.url) as { url: string; type: string }[];
-
-        for (const webhookUrl of webhookUrls) {
-            const { url, type } = webhookUrl;
-
-            try {
-                const headers = this.getSignatureHeader(environment.secret_key, body);
-
-                const response = await backOff(
-                    () => {
-                        return axios.post(url, body, { headers });
-                    },
-                    { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment.id, logCtx) }
-                );
-
-                if (activityLogId) {
-                    if (response.status >= 200 && response.status < 300) {
-                        await createActivityLogMessage({
-                            level: 'info',
-                            environment_id: environment.id,
-                            activity_log_id: activityLogId,
-                            content: `Auth webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`,
-                            timestamp: Date.now()
-                        });
-                        await logCtx?.info(
-                            `Auth webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`
-                        );
-                    } else {
-                        await createActivityLogMessage({
-                            level: 'error',
-                            environment_id: environment.id,
-                            activity_log_id: activityLogId,
-                            content: `Auth Webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
-                            timestamp: Date.now()
-                        });
-                        await logCtx?.error(
-                            `Auth Webhook sent successfully to ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
-                        );
-                    }
-                }
-            } catch (err) {
-                if (activityLogId) {
-                    const errorMessage = stringifyError(err, { pretty: true });
-
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId,
-                        content: `Auth Webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}. The error was: ${errorMessage}`,
-                        timestamp: Date.now()
-                    });
-                    await logCtx?.error(`Auth Webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}`, {
-                        error: err
-                    });
-                }
             }
         }
     }

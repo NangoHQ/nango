@@ -30,10 +30,9 @@ import {
     ErrorSourceEnum,
     proxyService,
     connectionService,
-    configService,
-    axiosInstance as axios
+    configService
 } from '@nangohq/shared';
-import { metrics, getLogger } from '@nangohq/utils';
+import { metrics, getLogger, axiosInstance as axios } from '@nangohq/utils';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';

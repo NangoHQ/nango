@@ -1,8 +1,7 @@
-import axios from 'axios';
 import crypto from 'crypto';
 import { backOff } from 'exponential-backoff';
 import type { AxiosError } from 'axios';
-import { stringifyError } from '@nangohq/utils';
+import { axiosInstance as axios, stringifyError } from '@nangohq/utils';
 import type { Environment } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { createActivityLogMessage } from '@nangohq/logs';

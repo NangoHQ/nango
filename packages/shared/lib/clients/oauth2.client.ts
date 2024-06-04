@@ -9,7 +9,7 @@ import { interpolateString } from '../utils/utils.js';
 import Boom from '@hapi/boom';
 import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { httpAgent, httpsAgent } from '../utils/axios.js';
+import { httpAgent, httpsAgent } from '@nangohq/utils';
 import type { Merge } from 'type-fest';
 
 export function getSimpleOAuth2ClientConfig(

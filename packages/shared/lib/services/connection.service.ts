@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import type { Knex } from '@nangohq/database';
-import { axiosInstance as axios } from '../utils/axios.js';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Account, Environment } from '../models/index.js';
@@ -20,7 +19,7 @@ import { NangoError } from '../utils/error.js';
 
 import type { ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { Metadata, ActiveLogIds, Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2, AuthModeType } from '@nangohq/types';
-import { getLogger, stringifyError, Ok, Err } from '@nangohq/utils';
+import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
