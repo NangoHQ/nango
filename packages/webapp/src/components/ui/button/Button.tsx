@@ -20,7 +20,7 @@ export const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-5
             zinc: 'bg-active-gray hover:bg-neutral-800 text-gray-400 border border-neutral-700'
         },
         size: {
-            xs: 'h-8 py-1 px-2',
+            xs: 'h-8 py-1 px-3',
             sm: 'h-9 px-2 ',
             md: 'h-9 py-2 px-4',
             lg: 'h-11 px-8'
