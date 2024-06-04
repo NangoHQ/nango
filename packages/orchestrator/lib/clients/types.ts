@@ -5,6 +5,18 @@ import type { TaskState } from '@nangohq/scheduler';
 
 export type SchedulingProps = Omit<PostSchedule['Body'], 'scheduling'>;
 
+interface SyncArgs {
+    syncId: string;
+    syncName: string;
+    debug: boolean;
+    connection: {
+        id: number;
+        provider_config_key: string;
+        environment_id: number;
+        connection_id: string;
+    };
+    syncJobId: number;
+}
 interface ActionArgs {
     actionName: string;
     connection: {
@@ -46,7 +58,7 @@ export type ExecuteActionProps = Omit<ExecuteProps, 'args'> & { args: ActionArgs
 export type ExecuteWebhookProps = Omit<ExecuteProps, 'args'> & { args: WebhookArgs };
 export type ExecutePostConnectionProps = Omit<ExecuteProps, 'args'> & { args: PostConnectionArgs };
 
-export type OrchestratorTask = TaskAction | TaskWebhook | TaskPostConnection;
+export type OrchestratorTask = TaskSync | TaskAction | TaskWebhook | TaskPostConnection;
 
 interface TaskCommonFields {
     id: string;
@@ -54,10 +66,30 @@ interface TaskCommonFields {
     state: TaskState;
 }
 interface TaskCommon extends TaskCommonFields {
+    isSync(this: OrchestratorTask): this is TaskSync;
     isWebhook(this: OrchestratorTask): this is TaskWebhook;
     isAction(this: OrchestratorTask): this is TaskAction;
     isPostConnection(this: OrchestratorTask): this is TaskPostConnection;
     abortController: AbortController;
+}
+
+export interface TaskSync extends TaskCommon, SyncArgs {}
+export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
+    return {
+        id: props.id,
+        name: props.name,
+        syncId: props.syncId,
+        syncName: props.syncName,
+        syncJobId: props.syncJobId,
+        debug: props.debug,
+        connection: props.connection,
+        state: props.state,
+        abortController: new AbortController(),
+        isSync: () => true,
+        isWebhook: () => false,
+        isAction: () => false,
+        isPostConnection: () => false
+    };
 }
 
 export interface TaskAction extends TaskCommon, ActionArgs {}
@@ -71,6 +103,7 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         activityLogId: props.activityLogId,
         input: props.input,
         abortController: new AbortController(),
+        isSync: () => false,
         isWebhook: () => false,
         isAction: () => true,
         isPostConnection: () => false
@@ -89,6 +122,7 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         activityLogId: props.activityLogId,
         input: props.input,
         abortController: new AbortController(),
+        isSync: () => false,
         isWebhook: () => true,
         isAction: () => false,
         isPostConnection: () => false
@@ -106,6 +140,7 @@ export function TaskPostConnection(props: TaskCommonFields & PostConnectionArgs)
         fileLocation: props.fileLocation,
         activityLogId: props.activityLogId,
         abortController: new AbortController(),
+        isSync: () => false,
         isWebhook: () => false,
         isAction: () => false,
         isPostConnection: () => true

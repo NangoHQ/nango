@@ -8,7 +8,7 @@ import { EventsHandler } from '../events.js';
 import { Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
-import type { OrchestratorTask, TaskAction, TaskWebhook, TaskPostConnection } from './types.js';
+import type { OrchestratorTask } from './types.js';
 import { tracer } from 'dd-trace';
 
 const dbClient = getTestDbClient();
@@ -99,7 +99,7 @@ describe('OrchestratorProcessor', async () => {
     });
 });
 
-async function processN(handler: (task: TaskAction | TaskWebhook | TaskPostConnection) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
+async function processN(handler: (task: OrchestratorTask) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
     const processor = new OrchestratorProcessor({
         handler,
         opts: { orchestratorClient, groupKey, maxConcurrency: n, checkForTerminatedInterval: 100 }
