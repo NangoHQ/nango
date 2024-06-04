@@ -21,7 +21,6 @@ import {
     LogActionEnum,
     syncRunService,
     environmentService,
-    createActivityLogMessage,
     createActivityLogAndLogMessage,
     ErrorSourceEnum,
     errorManager,
@@ -299,13 +298,6 @@ export async function syncProvider({
         );
 
         if (debug) {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: nangoConnection?.environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `Starting sync ${syncType} for ${syncName} with syncId ${syncId} and syncJobId ${syncJobId} with execution id of ${temporalContext.info.workflowExecution.workflowId} for attempt #${temporalContext.info.attempt}`
-            });
             await logCtx.info('Starting sync', {
                 syncType,
                 syncName,

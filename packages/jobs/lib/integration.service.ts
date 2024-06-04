@@ -1,7 +1,7 @@
 import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
 import { integrationFilesAreRemote, isCloud, isProd, getLogger, stringifyError } from '@nangohq/utils';
-import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError } from '@nangohq/shared';
+import { localFileService, remoteFileService, NangoError, formatScriptError } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from 'dd-trace';
@@ -41,13 +41,6 @@ class IntegrationService implements IntegrationServiceInterface {
             this.runningScripts.set(syncId, { ...scriptObject, cancelled: true });
         } else {
             if (activityLogId && environmentId) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    content: `Failed to cancel script`,
-                    timestamp: Date.now()
-                });
                 const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
                 await logCtx.error('Failed to cancel script');
             }
@@ -88,13 +81,6 @@ class IntegrationService implements IntegrationServiceInterface {
                 const content = `Unable to find integration file for ${syncName}`;
 
                 if (activityLogId && writeToDb) {
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId,
-                        content,
-                        timestamp: Date.now()
-                    });
                     await logCtx?.error(content);
                 }
 
@@ -173,13 +159,6 @@ class IntegrationService implements IntegrationServiceInterface {
                 const { success, error, response } = formatScriptError(err, errorType, syncName);
 
                 if (activityLogId && writeToDb) {
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId,
-                        content: error.message,
-                        timestamp: Date.now()
-                    });
                     await logCtx?.error(`Failed`, { error });
                 }
                 return { success, error, response };
@@ -192,13 +171,6 @@ class IntegrationService implements IntegrationServiceInterface {
             const content = `There was an error running integration '${syncName}': ${errorMessage}`;
 
             if (activityLogId && writeToDb) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    content,
-                    timestamp: Date.now()
-                });
                 await logCtx?.error(content, { error: err });
             }
 
