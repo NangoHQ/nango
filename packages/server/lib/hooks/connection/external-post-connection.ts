@@ -41,7 +41,7 @@ export async function externalPostConnection(
     const activityLogId = await createActivityLog(log);
 
     const logCtx = await logContextGetter.create(
-        { id: String(activityLogId), operation: { type: 'auth', action: 'post_connection' }, message: 'Start external post connection' },
+        { id: String(activityLogId), operation: { type: 'auth', action: 'post_connection' }, message: 'Start external post connection script' },
         {
             account,
             environment,

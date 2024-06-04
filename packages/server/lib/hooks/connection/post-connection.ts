@@ -76,7 +76,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
         if (handler) {
             logCtx = await logContextGetter.create(
-                { operation: { type: 'auth', action: 'post_connection' }, message: 'Start internal post connection' },
+                { operation: { type: 'auth', action: 'post_connection' }, message: 'Start internal post connection script' },
                 {
                     account,
                     environment,
