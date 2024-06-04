@@ -337,7 +337,7 @@ export const LogsSearch: React.FC = () => {
                     ))}
                 </Table.Header>
                 <Table.Body>
-                    {loading && (
+                    {loading && !readyToDisplay && (
                         <Table.Row>
                             {table.getAllColumns().map((col, i) => {
                                 return (

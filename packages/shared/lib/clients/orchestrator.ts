@@ -156,7 +156,7 @@ export class Orchestrator {
                         // Errors received from temporal are raw objects not classes
                         const error = new NangoError(rawError['type'], rawError['payload'], rawError['status']);
                         res = Err(error);
-                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
+                        await logCtx.error(`Failed with error ${rawError['type']}`, { payload: rawError['payload'] });
                     } else {
                         res = Ok(response);
                     }
@@ -179,6 +179,7 @@ export class Orchestrator {
                     timestamp: Date.now(),
                     content: `Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`
                 });
+                await logCtx.error(`Failed with error ${res.error.type}`, { payload: res.error.payload });
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id,
@@ -527,11 +528,13 @@ export class Orchestrator {
                         postConnectionName: name,
                         connection: {
                             id: connection.id!,
+                            connection_id: connection.connection_id,
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
                         activityLogId,
-                        fileLocation
+                        fileLocation,
+                        input: null
                     };
                     const result = await this.client.executePostConnection({
                         name: executionId,
@@ -578,7 +581,7 @@ export class Orchestrator {
                         // Errors received from temporal are raw objects not classes
                         const error = new NangoError(rawError['type'], rawError['payload'], rawError['status']);
                         res = Err(error);
-                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
+                        await logCtx.error(`Failed with error ${rawError['type']}`, { payload: rawError['payload'] });
                     } else {
                         res = Ok(response);
                     }
@@ -601,7 +604,7 @@ export class Orchestrator {
                     timestamp: Date.now(),
                     content: `Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`
                 });
-                await logCtx.error(`Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`);
+                await logCtx.error(`Failed with error ${res.error.type}`, { payload: res.error.payload });
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: connection.environment_id,
@@ -610,6 +613,7 @@ export class Orchestrator {
                     content: `The post connection script workflow ${workflowId} did not complete successfully`
                 });
                 await logCtx.error(`The post connection script workflow ${workflowId} did not complete successfully`);
+                await logCtx.failed();
 
                 return res;
             }
@@ -625,6 +629,7 @@ export class Orchestrator {
             });
             await updateSuccessActivityLog(activityLogId, true);
             await logCtx.info(content);
+            await logCtx.success();
 
             await telemetry.log(
                 LogTypes.POST_CONNECTION_SCRIPT_SUCCESS,
@@ -654,6 +659,7 @@ export class Orchestrator {
                 content
             });
             await logCtx.error(content);
+            await logCtx.failed();
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,

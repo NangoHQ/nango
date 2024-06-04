@@ -46,7 +46,7 @@ class UnAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization Unauthenticated' },
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Create connection via Unauthenticated' },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_UNAUTH, account.id);
