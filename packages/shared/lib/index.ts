@@ -41,6 +41,7 @@ export * from './models/index.js';
 
 export * from './utils/utils.js';
 export * from './utils/error.js';
+export * from './utils/axios.js';
 export * from './constants.js';
 
 export * from './sdk/sync.js';
