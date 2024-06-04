@@ -528,9 +528,9 @@ class ConnectionService {
     ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata; active_logs: ActiveLogIds }[]> {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
-            .leftJoin(ACTIVE_LOG_TABLE, function () {
-                this.on('_nango_connections.id', '=', `${ACTIVE_LOG_TABLE}.connection_id`).andOnVal(`${ACTIVE_LOG_TABLE}.active`, true);
-            })
+            .joinRaw(
+                `LEFT JOIN LATERAL (SELECT * FROM ${ACTIVE_LOG_TABLE} WHERE _nango_connections.id = ${ACTIVE_LOG_TABLE}.connection_id AND ${ACTIVE_LOG_TABLE}.active = true LIMIT 1) ${ACTIVE_LOG_TABLE} ON true`
+            )
             .select(
                 { id: '_nango_connections.id' },
                 { connection_id: '_nango_connections.connection_id' },
@@ -547,7 +547,10 @@ class ConnectionService {
                     END as active_logs
                 `)
             )
-            .where({ '_nango_connections.environment_id': environment_id, '_nango_connections.deleted': false })
+            .where({
+                environment_id: environment_id,
+                deleted: false
+            })
             .groupBy(
                 '_nango_connections.id',
                 '_nango_connections.connection_id',
@@ -560,7 +563,7 @@ class ConnectionService {
 
         if (connectionId) {
             queryBuilder.where({
-                '_nango_connections.connection_id': connectionId
+                connection_id: connectionId
             });
         }
 
