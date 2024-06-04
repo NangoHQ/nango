@@ -6,21 +6,29 @@ import type { Config, Template } from '../models/index.js';
 import { AuthModes } from '../models/index.js';
 import configService from '../services/config.service.js';
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
+import type { NangoProps } from './sync.js';
 import { NangoAction } from './sync.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 import proxyService from '../services/proxy.service.js';
 import type { AxiosResponse } from 'axios';
+
+const nangoProps: NangoProps = {
+    secretKey: '***',
+    providerConfigKey: 'github',
+    connectionId: 'connection-1',
+    dryRun: false,
+    activityLogId: 1,
+    accountId: 1,
+    environmentId: 1,
+    lastSyncDate: new Date()
+};
 
 describe('cache', () => {
     let nangoAction: NangoAction;
     let nango: Nango;
     beforeEach(async () => {
         nangoAction = new NangoAction({
-            secretKey: '***',
-            providerConfigKey: 'github',
-            connectionId: 'connection-1',
-            dryRun: false,
-            activityLogId: 1
+            ...nangoProps
         });
         nango = new Nango({ secretKey: '***' });
         const nodeClient = (await import('@nangohq/node')).Nango;
@@ -402,22 +410,50 @@ describe('Pagination', () => {
 describe('Log', () => {
     it('should enforce activityLogId when not in dryRun', () => {
         expect(() => {
-            new NangoAction({
-                secretKey: '***',
-                providerConfigKey: 'github',
-                connectionId: 'connection-1'
-            });
+            new NangoAction({ ...nangoProps, activityLogId: undefined });
         }).toThrowError(new Error('Parameter activityLogId is required when not in dryRun'));
     });
 
     it('should not fail on null', async () => {
-        const nangoAction = new NangoAction({
-            secretKey: '***',
-            providerConfigKey: 'github',
-            connectionId: 'connection-1',
-            dryRun: true,
-            activityLogId: 1
-        });
+        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
         await nangoAction.log(null);
+    });
+
+    it('should allow level', async () => {
+        const mock = vi.fn(() => ({ response: { status: 200 } }));
+        const nangoAction = new NangoAction({ ...nangoProps }, { persistApi: mock as any });
+
+        await nangoAction.log('hello', { level: 'error' });
+
+        expect(mock).toHaveBeenCalledWith({
+            data: {
+                activityLogId: 1,
+                level: 'error',
+                msg: 'hello',
+                timestamp: expect.any(Number)
+            },
+            headers: {
+                Authorization: 'Bearer ***'
+            },
+            method: 'POST',
+            url: '/environment/1/log'
+        });
+    });
+
+    it('should enforce type: log message + object + level', async () => {
+        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
+        // @ts-expect-error Level is wrong on purpose, if it's not breaking anymore the type is broken
+        await nangoAction.log('hello', { foo: 'bar' }, { level: 'foobar' });
+    });
+
+    it('should enforce type: log message +level', async () => {
+        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
+        // @ts-expect-error Level is wrong on purpose, if it's not breaking anymore the type is broken
+        await nangoAction.log('hello', { level: 'foobar' });
+    });
+    it('should enforce type: log message + object', async () => {
+        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
+        // @ts-expect-error Level is wrong on purpose, if it's not breaking anymore the type is broken
+        await nangoAction.log('hello', { foo: 'bar' });
     });
 });

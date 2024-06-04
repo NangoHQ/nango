@@ -9,7 +9,7 @@ import { createConfigSeeds } from '../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import type { Environment } from '../models/Environment.js';
 
-describe('Connection service integration tests', async () => {
+describe('Connection service integration tests', () => {
     let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();

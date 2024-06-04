@@ -431,13 +431,12 @@ class ProxyService {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config, activityLogs) }
             );
-            return this.handleResponse(response, config, activityLogId, environment_id, options.url!).then((resp) => {
-                return { response: resp.response, activityLogs: [...activityLogs, ...resp.activityLogs] };
-            });
+
+            const handling = this.handleResponse(config, activityLogId, environment_id, options.url!);
+            return { response, activityLogs: [...activityLogs, ...handling.activityLogs] };
         } catch (e: unknown) {
-            return this.handleErrorResponse(e as AxiosError, options.url!, config, activityLogId, environment_id).then((resp) => {
-                return { response: resp.response, activityLogs: [...activityLogs, ...resp.activityLogs] };
-            });
+            const handling = this.handleErrorResponse(e as AxiosError, options.url!, config, activityLogId, environment_id);
+            return { response: handling.response, activityLogs: [...activityLogs, ...handling.activityLogs] };
         }
     }
 
@@ -536,13 +535,7 @@ class ProxyService {
         return headers;
     }
 
-    private async handleResponse(
-        response: AxiosResponse,
-        config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number,
-        environment_id: number,
-        url: string
-    ): Promise<RouteResponse & Activities> {
+    private handleResponse(config: ApplicationConstructedProxyConfiguration, activityLogId: number, environment_id: number, url: string): Activities {
         const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
 
         const activityLog: ActivityLogMessage = {
@@ -557,7 +550,6 @@ class ProxyService {
         };
 
         return {
-            response,
             activityLogs: [activityLog]
         };
     }
@@ -578,10 +570,7 @@ class ProxyService {
                 environment_id,
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
-                content: JSON.stringify({
-                    nangoComment: `The provider responded back with a ${error.response?.status} to the url: ${url}`,
-                    providerResponse: errorMessage.toString()
-                }),
+                content: errorMessage.toString(),
                 params: {
                     requestHeaders: JSON.stringify(safeHeaders, null, 2),
                     responseHeaders: JSON.stringify(error.response?.headers, null, 2)
@@ -596,13 +585,13 @@ class ProxyService {
         return activities;
     }
 
-    private async handleErrorResponse(
+    private handleErrorResponse(
         error: AxiosError,
         url: string,
         config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number
-    ): Promise<RouteResponse & Activities> {
+    ): RouteResponse & Activities {
         const activityLogs: ActivityLogMessage[] = [];
         if (!error.response?.data) {
             const {
