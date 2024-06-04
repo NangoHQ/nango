@@ -1,5 +1,6 @@
 import type { ParamsSerializerOptions } from 'axios';
-import type { Template as ProviderTemplate, HTTP_VERB, BasicApiCredentials, ApiKeyCredentials, AppCredentials } from '@nangohq/shared';
+import type { HTTP_VERB, BasicApiCredentials, ApiKeyCredentials, AppCredentials } from '@nangohq/shared';
+import type { Template as ProviderTemplate } from '@nangohq/types';
 
 export interface DBConfig {
     encryption_key_hash?: string | null;

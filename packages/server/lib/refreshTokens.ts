@@ -3,6 +3,7 @@ import db from '@nangohq/database';
 import { errorManager, ErrorSourceEnum, connectionService } from '@nangohq/shared';
 import { stringifyError, getLogger, metrics, stringToHash } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
+import { connectionRefreshFailed as connectionRefreshFailedHook } from './hooks/hooks.js';
 import tracer from 'dd-trace';
 
 const logger = getLogger('Server');
@@ -57,7 +58,8 @@ export async function exec(): Promise<void> {
                     connectionId: connection_id,
                     providerConfigKey: provider_config_key,
                     logContextGetter,
-                    instantRefresh: false
+                    instantRefresh: false,
+                    connectionRefreshFailedHook
                 });
                 if (credentialResponse.isOk()) {
                     metrics.increment(metrics.Types.REFRESH_TOKENS_SUCCESS);

@@ -1,5 +1,5 @@
 import type { AxiosError } from 'axios';
-import axios from 'axios';
+import { axiosInstance as axios } from '../../utils/axios.js';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { backOff } from 'exponential-backoff';
@@ -233,7 +233,7 @@ class WebhookService {
         provider: string,
         success: boolean,
         activityLogId: number | null,
-        logCtx?: LogContext | null
+        logCtx?: LogContext
     ): Promise<void> {
         const { environment } = connection;
 
@@ -395,7 +395,12 @@ class WebhookService {
 
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'webhook', action: 'outgoing' }, message: 'Forwarding Webhook' },
+            {
+                id: String(activityLogId),
+                operation: { type: 'webhook', action: 'outgoing' },
+                message: 'Forwarding Webhook',
+                expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+            },
             { account, environment, integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider } }
         );
 

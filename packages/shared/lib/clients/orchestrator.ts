@@ -1,5 +1,5 @@
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { Err, Ok, stringifyError, metrics, getLogger } from '@nangohq/utils';
+import { Err, Ok, stringifyError, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { NangoError } from '../utils/error.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
@@ -20,20 +20,11 @@ import type { LogLevel } from '@nangohq/types';
 import SyncClient from './sync.client.js';
 import type { Client as TemporalClient } from '@temporalio/client';
 import { LogActionEnum } from '../models/Activity.js';
-import type {
-    ExecuteReturn,
-    ExecuteActionProps,
-    ExecuteWebhookProps,
-    ExecutePostConnectionProps,
-    ActionArgs,
-    WebhookArgs,
-    PostConnectionArgs
-} from '@nangohq/nango-orchestrator';
+import type { ExecuteReturn, ExecuteActionProps, ExecuteWebhookProps, ExecutePostConnectionProps } from '@nangohq/nango-orchestrator';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import type { SyncConfig } from '../models/index.js';
-
-const logger = getLogger('orchestrator.client');
+import tracer from 'dd-trace';
 
 async function getTemporal(): Promise<TemporalClient> {
     const instance = await SyncClient.getInstance();
@@ -86,86 +77,108 @@ export class Orchestrator {
             });
             await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input: JSON.stringify(input, null, 2) });
 
-            const isOchestratorEnabled = await featureFlags.isEnabled('orchestrator:dryrun', 'global', false, false);
-            if (isOchestratorEnabled) {
+            let res: Result<any, NangoError>;
+
+            const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:immediate', 'global', false);
+            const isEnvEnabled = await featureFlags.isEnabled('orchestrator:immediate', `${environment_id}`, false);
+            const activeSpan = tracer.scope().active();
+            const spanTags = {
+                'action.name': actionName,
+                'connection.id': connection.id,
+                'connection.connection_id': connection.connection_id,
+                'connection.provider_config_key': connection.provider_config_key,
+                'connection.environment_id': connection.environment_id
+            };
+            if (isGloballyEnabled || isEnvEnabled) {
+                const span = tracer.startSpan('execute.action', {
+                    tags: spanTags,
+                    ...(activeSpan ? { childOf: activeSpan } : {})
+                });
                 try {
                     const groupKey: string = 'action';
                     const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:action:${actionName}:at:${new Date().toISOString()}:${uuid()}`;
                     const parsedInput = JSON.parse(JSON.stringify(input));
-                    const args: ActionArgs = {
-                        name: actionName,
+                    const args = {
+                        actionName,
                         connection: {
                             id: connection.id!,
+                            connection_id: connection.connection_id,
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
                         activityLogId,
                         input: parsedInput
                     };
-                    // Execute dry-mode: no await for now
-                    void this.client
-                        .executeAction({
-                            name: executionId,
-                            groupKey,
-                            args,
-                            timeoutSettingsInSecs: {
-                                createdToStarted: 5,
-                                startedToCompleted: 5,
-                                heartbeat: 10
-                            }
-                        })
-                        .then(
-                            (res) => {
-                                if (res.isErr()) {
-                                    logger.error(`Error: Execution '${executionId}' failed: ${stringifyError(res.error)}`);
-                                } else {
-                                    logger.info(`Execution '${executionId}' executed successfully with result: ${JSON.stringify(res.value)}`);
-                                }
-                            },
-                            (error) => {
-                                logger.error(`Error: Action '${executionId}' failed: ${stringifyError(error)}`);
-                            }
-                        );
+                    const actionResult = await this.client.executeAction({
+                        name: executionId,
+                        groupKey,
+                        args
+                    });
+                    res = actionResult.mapError((e) => new NangoError('action_failure', e.payload ?? { error: e.message }));
+                    if (res.isErr()) {
+                        span.setTag('error', res.error);
+                    }
                 } catch (e: unknown) {
-                    const errorMsg = `Execute: Failed to parse input object ${JSON.stringify(input)} to JsonValue: ${stringifyError(e)}`;
-                    logger.error(errorMsg);
+                    const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
+                    const error = new NangoError('action_failure', { error: errorMsg });
+                    span.setTag('error', e);
+                    return Err(error);
+                } finally {
+                    span.finish();
+                }
+            } else {
+                const span = tracer.startSpan('execute.actionTemporal', {
+                    tags: spanTags,
+                    ...(activeSpan ? { childOf: activeSpan } : {})
+                });
+                try {
+                    const temporal = await getTemporal();
+                    const actionHandler = await temporal.workflow.execute('action', {
+                        taskQueue: SYNC_TASK_QUEUE,
+                        workflowId,
+                        args: [
+                            {
+                                actionName,
+                                nangoConnection: {
+                                    id: connection.id,
+                                    connection_id: connection.connection_id,
+                                    provider_config_key: connection.provider_config_key,
+                                    environment_id: connection.environment_id
+                                },
+                                input,
+                                activityLogId
+                            }
+                        ]
+                    });
+
+                    const { error: rawError, response }: RunnerOutput = actionHandler;
+                    if (rawError) {
+                        // Errors received from temporal are raw objects not classes
+                        const error = new NangoError(rawError['type'], rawError['payload'], rawError['status']);
+                        res = Err(error);
+                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
+                    } else {
+                        res = Ok(response);
+                    }
+                    if (res.isErr()) {
+                        span.setTag('error', res.error);
+                    }
+                } catch (e: unknown) {
+                    span.setTag('error', e);
+                    throw e;
+                } finally {
+                    span.finish();
                 }
             }
 
-            const temporal = await getTemporal();
-            const actionHandler = await temporal.workflow.execute('action', {
-                taskQueue: SYNC_TASK_QUEUE,
-                workflowId,
-                args: [
-                    {
-                        actionName,
-                        nangoConnection: {
-                            id: connection.id,
-                            connection_id: connection.connection_id,
-                            provider_config_key: connection.provider_config_key,
-                            environment_id: connection.environment_id
-                        },
-                        input,
-                        activityLogId
-                    }
-                ]
-            });
-
-            const { success, error: rawError, response }: RunnerOutput = actionHandler;
-
-            // Errors received from temporal are raw objects not classes
-            const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
-            if (!success || error) {
-                if (rawError) {
-                    await createActivityLogMessageAndEnd({
-                        level: 'error',
-                        environment_id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`
-                    });
-                    await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
-                }
+            if (res.isErr()) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content: `Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`
+                });
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id,
@@ -174,11 +187,10 @@ export class Orchestrator {
                     content: `The action workflow ${workflowId} did not complete successfully`
                 });
                 await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
-
-                return Err(error!);
+                return res;
             }
 
-            const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(0, 100)}`;
+            const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
@@ -203,7 +215,7 @@ export class Orchestrator {
                 `actionName:${actionName}`
             );
 
-            return Ok(response);
+            return res;
         } catch (err) {
             const errorMessage = stringifyError(err, { pretty: true });
             const error = new NangoError('action_failure', { errorMessage });
@@ -287,7 +299,12 @@ export class Orchestrator {
 
         const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'webhook', action: 'incoming' }, message: 'Received a webhook' },
+            {
+                id: String(activityLogId),
+                operation: { type: 'webhook', action: 'incoming' },
+                message: 'Received a webhook',
+                expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+            },
             {
                 account,
                 environment,
@@ -315,71 +332,96 @@ export class Orchestrator {
             const { credentials, credentials_iv, credentials_tag, deleted, deleted_at, ...nangoConnectionWithoutCredentials } =
                 connection as unknown as NangoFullConnection;
 
-            const isOchestratorEnabled = await featureFlags.isEnabled('orchestrator:dryrun', 'global', false, false);
-            if (isOchestratorEnabled) {
+            const activeSpan = tracer.scope().active();
+            const spanTags = {
+                'webhook.name': webhookName,
+                'connection.id': connection.id,
+                'connection.connection_id': connection.connection_id,
+                'connection.provider_config_key': connection.provider_config_key,
+                'connection.environment_id': connection.environment_id
+            };
+
+            let res: Result<any, NangoError>;
+
+            const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:immediate', 'global', false);
+            const isEnvEnabled = await featureFlags.isEnabled('orchestrator:immediate', `${integration.environment_id}`, false);
+            if (isGloballyEnabled || isEnvEnabled) {
+                const span = tracer.startSpan('execute.webhook', {
+                    tags: spanTags,
+                    ...(activeSpan ? { childOf: activeSpan } : {})
+                });
                 try {
                     const groupKey: string = 'webhook';
                     const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:webhook:${webhookName}:at:${new Date().toISOString()}:${uuid()}`;
                     const parsedInput = JSON.parse(JSON.stringify(input));
-                    const args: WebhookArgs = {
-                        name: webhookName,
+                    const args = {
+                        webhookName,
                         parentSyncName: syncConfig.sync_name,
                         connection: {
                             id: connection.id!,
+                            connection_id: connection.connection_id,
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
                         input: parsedInput,
-                        activityLogId
+                        activityLogId: activityLogId!
                     };
-                    // Execute dry-mode: no await for now
-                    void this.client
-                        .executeWebhook({
-                            name: executionId,
-                            groupKey,
-                            args,
-                            timeoutSettingsInSecs: {
-                                createdToStarted: 5,
-                                startedToCompleted: 5,
-                                heartbeat: 10
-                            }
-                        })
-                        .then(
-                            (res) => {
-                                if (res.isErr()) {
-                                    logger.error(`Error: Execution '${executionId}' failed: ${stringifyError(res.error)}`);
-                                } else {
-                                    logger.info(`Execution '${executionId}' executed successfully with result: ${JSON.stringify(res.value)}`);
-                                }
-                            },
-                            (error) => {
-                                logger.error(`Error: Action '${executionId}' failed: ${stringifyError(error)}`);
-                            }
-                        );
+                    const webhookResult = await this.client.executeWebhook({
+                        name: executionId,
+                        groupKey,
+                        args
+                    });
+                    res = webhookResult.mapError((e) => new NangoError('action_failure', e.payload ?? { error: e.message }));
+                    if (res.isErr()) {
+                        span.setTag('error', res.error);
+                    }
                 } catch (e: unknown) {
-                    const errorMsg = `Execute: Failed to parse input object ${JSON.stringify(input)} to JsonValue: ${stringifyError(e)}`;
-                    logger.error(errorMsg);
+                    const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
+                    const error = new NangoError('action_failure', { error: errorMsg });
+                    span.setTag('error', e);
+                    return Err(error);
+                } finally {
+                    span.finish();
+                }
+            } else {
+                const span = tracer.startSpan('execute.webhookTemporal', {
+                    tags: spanTags,
+                    ...(activeSpan ? { childOf: activeSpan } : {})
+                });
+                try {
+                    const temporal = await getTemporal();
+                    const webhookHandler = await temporal.workflow.execute('webhook', {
+                        taskQueue: WEBHOOK_TASK_QUEUE,
+                        workflowId,
+                        args: [
+                            {
+                                name: webhookName,
+                                parentSyncName: syncConfig.sync_name,
+                                nangoConnection: nangoConnectionWithoutCredentials,
+                                input,
+                                activityLogId
+                            }
+                        ]
+                    });
+
+                    const { error, response } = webhookHandler;
+                    if (error) {
+                        res = Err(error);
+                    } else {
+                        res = Ok(response);
+                    }
+                    if (res.isErr()) {
+                        span.setTag('error', res.error);
+                    }
+                } catch (e: unknown) {
+                    span.setTag('error', e);
+                    throw e;
+                } finally {
+                    span.finish();
                 }
             }
 
-            const temporal = await getTemporal();
-            const webhookHandler = await temporal.workflow.execute('webhook', {
-                taskQueue: WEBHOOK_TASK_QUEUE,
-                workflowId,
-                args: [
-                    {
-                        name: webhookName,
-                        parentSyncName: syncConfig.sync_name,
-                        nangoConnection: nangoConnectionWithoutCredentials,
-                        input,
-                        activityLogId
-                    }
-                ]
-            });
-
-            const { success, error, response } = webhookHandler;
-
-            if (success === false || error) {
+            if (res.isErr()) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: integration.environment_id,
@@ -390,7 +432,7 @@ export class Orchestrator {
                 await logCtx.error('The webhook workflow did not complete successfully');
                 await logCtx.failed();
 
-                return Err(error);
+                return res;
             }
 
             await createActivityLogMessageAndEnd({
@@ -405,7 +447,7 @@ export class Orchestrator {
 
             await updateSuccessActivityLog(activityLogId as number, true);
 
-            return Ok(response);
+            return res;
         } catch (e) {
             const errorMessage = stringifyError(e, { pretty: true });
             const error = new NangoError('webhook_script_failure', { errorMessage });
@@ -461,80 +503,105 @@ export class Orchestrator {
             });
             await logCtx.info(`Starting post connection script workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`);
 
-            const isOchestratorEnabled = await featureFlags.isEnabled('orchestrator:dryrun', 'global', false, false);
-            if (isOchestratorEnabled) {
-                const groupKey: string = 'post-connection-script';
-                const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
-                const args: PostConnectionArgs = {
-                    name,
-                    connection: {
-                        id: connection.id!,
-                        provider_config_key: connection.provider_config_key,
-                        environment_id: connection.environment_id
-                    },
-                    activityLogId,
-                    fileLocation
-                };
+            let res: Result<any, NangoError>;
 
-                void this.client
-                    .executePostConnection({
-                        name: executionId,
-                        groupKey,
-                        args,
-                        timeoutSettingsInSecs: {
-                            createdToStarted: 5,
-                            startedToCompleted: 5,
-                            heartbeat: 10
-                        }
-                    })
-                    .then(
-                        (res) => {
-                            if (res.isErr()) {
-                                logger.error(`Error: Execution '${executionId}' failed: ${stringifyError(res.error)}`);
-                            } else {
-                                logger.info(`Execution '${executionId}' executed successfully with result: ${res.value}`);
-                            }
-                        },
-                        (error) => {
-                            logger.error(`Error: Post connection script '${executionId}' failed: ${stringifyError(error)}`);
-                        }
-                    );
-            }
-
-            const temporal = await getTemporal();
-            const postConnectionScriptHandler = await temporal.workflow.execute('postConnectionScript', {
-                taskQueue: SYNC_TASK_QUEUE,
-                workflowId,
-                args: [
-                    {
-                        name,
-                        nangoConnection: {
-                            id: connection.id,
-                            connection_id: connection.connection_id,
+            const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:immediate', 'global', false);
+            const isEnvEnabled = await featureFlags.isEnabled('orchestrator:immediate', `${connection.environment_id}`, false);
+            const activeSpan = tracer.scope().active();
+            const spanTags = {
+                'postConnection.name': name,
+                'connection.id': connection.id,
+                'connection.connection_id': connection.connection_id,
+                'connection.provider_config_key': connection.provider_config_key,
+                'connection.environment_id': connection.environment_id
+            };
+            if (isGloballyEnabled || isEnvEnabled) {
+                const span = tracer.startSpan('execute.action', {
+                    tags: spanTags,
+                    ...(activeSpan ? { childOf: activeSpan } : {})
+                });
+                try {
+                    const groupKey: string = 'post-connection-script';
+                    const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
+                    const args = {
+                        postConnectionName: name,
+                        connection: {
+                            id: connection.id!,
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
-                        fileLocation,
-                        activityLogId
-                    }
-                ]
-            });
-
-            const { success, error: rawError, response }: RunnerOutput = postConnectionScriptHandler;
-
-            // Errors received from temporal are raw objects not classes
-            const error = rawError ? new NangoError(rawError['type'], rawError['payload'], rawError['status']) : rawError;
-            if (!success || error) {
-                if (rawError) {
-                    await createActivityLogMessageAndEnd({
-                        level: 'error',
-                        environment_id: connection.environment_id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`
+                        activityLogId,
+                        fileLocation
+                    };
+                    const result = await this.client.executePostConnection({
+                        name: executionId,
+                        groupKey,
+                        args
                     });
-                    await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
+                    res = result.mapError((e) => new NangoError('post_connection_failure', e.payload ?? { error: e.message }));
+                    if (res.isErr()) {
+                        span.setTag('error', res.error);
+                    }
+                } catch (e: unknown) {
+                    span.setTag('error', e);
+                    throw e;
+                } finally {
+                    span.finish();
                 }
+            } else {
+                const span = tracer.startSpan('execute.postConnectionTemporal', {
+                    tags: spanTags,
+                    ...(activeSpan ? { childOf: activeSpan } : {})
+                });
+                try {
+                    const temporal = await getTemporal();
+                    const postConnectionScriptHandler = await temporal.workflow.execute('postConnectionScript', {
+                        taskQueue: SYNC_TASK_QUEUE,
+                        workflowId,
+                        args: [
+                            {
+                                name,
+                                nangoConnection: {
+                                    id: connection.id,
+                                    connection_id: connection.connection_id,
+                                    provider_config_key: connection.provider_config_key,
+                                    environment_id: connection.environment_id
+                                },
+                                fileLocation,
+                                activityLogId
+                            }
+                        ]
+                    });
+
+                    const { error: rawError, response }: RunnerOutput = postConnectionScriptHandler;
+                    if (rawError) {
+                        // Errors received from temporal are raw objects not classes
+                        const error = new NangoError(rawError['type'], rawError['payload'], rawError['status']);
+                        res = Err(error);
+                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
+                    } else {
+                        res = Ok(response);
+                    }
+                    if (res.isErr()) {
+                        span.setTag('error', res.error);
+                    }
+                } catch (e: unknown) {
+                    span.setTag('error', e);
+                    throw e;
+                } finally {
+                    span.finish();
+                }
+            }
+
+            if (res.isErr()) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id: connection.environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content: `Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`
+                });
+                await logCtx.error(`Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`);
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: connection.environment_id,
@@ -544,10 +611,10 @@ export class Orchestrator {
                 });
                 await logCtx.error(`The post connection script workflow ${workflowId} did not complete successfully`);
 
-                return Err(error!);
+                return res;
             }
 
-            const content = `The post connection script workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(0, 100)}`;
+            const content = `The post connection script workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
@@ -572,7 +639,7 @@ export class Orchestrator {
                 `postConnectionScript:${name}`
             );
 
-            return Ok(response);
+            return res;
         } catch (err) {
             const errorMessage = stringifyError(err, { pretty: true });
             const error = new NangoError('post_connection_script_failure', { errorMessage });

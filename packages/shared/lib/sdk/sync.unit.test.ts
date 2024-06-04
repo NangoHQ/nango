@@ -2,8 +2,8 @@
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
-import type { Config, Template } from '../models/index.js';
-import { AuthModes } from '../models/index.js';
+import type { Config } from '../models/index.js';
+import type { Template } from '@nangohq/types';
 import configService from '../services/config.service.js';
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
 import { NangoAction } from './sync.js';
@@ -121,7 +121,7 @@ describe('Pagination', () => {
 
     it('Throws error if there is no pagination config in provider template', async () => {
         const template: Template = {
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             proxy: { base_url: '' },
             authorization_url: '',
             token_url: ''
@@ -391,7 +391,7 @@ describe('Pagination', () => {
 
     const buildTemplate = (paginationConfig: CursorPagination | OffsetPagination | LinkPagination): Template => {
         return {
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             proxy: { base_url: 'https://api.github.com/', paginate: paginationConfig },
             authorization_url: '',
             token_url: ''

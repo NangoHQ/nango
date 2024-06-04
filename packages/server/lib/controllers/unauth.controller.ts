@@ -7,12 +7,10 @@ import {
     AnalyticsTypes,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
-    AuthOperation,
     updateProvider as updateProviderActivityLog,
     configService,
     connectionService,
     createActivityLogMessageAndEnd,
-    AuthModes,
     hmacService,
     ErrorSourceEnum,
     LogActionEnum
@@ -119,7 +117,7 @@ class UnAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.None) {
+            if (template.auth_mode !== 'NONE') {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environment.id,
@@ -165,7 +163,7 @@ class UnAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.None,
+                        auth_mode: 'NONE',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -193,12 +191,12 @@ class UnAuthController {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
-                        auth_mode: AuthModes.None,
+                        auth_mode: 'NONE',
                         error: {
                             type: 'unknown',
                             description: `Error during Unauth create: ${prettyError}`
                         },
-                        operation: AuthOperation.UNKNOWN
+                        operation: 'unknown'
                     },
                     'unknown',
                     activityLogId,

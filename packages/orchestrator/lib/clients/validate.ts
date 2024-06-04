@@ -33,6 +33,7 @@ export function validateTask(task: Task): Result<TaskAction | TaskWebhook | Task
                 state: action.data.state,
                 id: action.data.id,
                 name: action.data.name,
+                actionName: action.data.payload.actionName,
                 connection: action.data.payload.connection,
                 activityLogId: action.data.payload.activityLogId,
                 input: action.data.payload.input
@@ -46,6 +47,7 @@ export function validateTask(task: Task): Result<TaskAction | TaskWebhook | Task
                 id: webhook.data.id,
                 state: webhook.data.state,
                 name: webhook.data.name,
+                webhookName: webhook.data.payload.webhookName,
                 parentSyncName: webhook.data.payload.parentSyncName,
                 connection: webhook.data.payload.connection,
                 activityLogId: webhook.data.payload.activityLogId,
@@ -60,11 +62,12 @@ export function validateTask(task: Task): Result<TaskAction | TaskWebhook | Task
                 id: postConnection.data.id,
                 state: postConnection.data.state,
                 name: postConnection.data.name,
+                postConnectionName: postConnection.data.payload.postConnectionName,
                 connection: postConnection.data.payload.connection,
                 fileLocation: postConnection.data.payload.fileLocation,
                 activityLogId: postConnection.data.payload.activityLogId
             })
         );
     }
-    return Err(`Cannot validate task: ${task}`);
+    return Err(`Cannot validate task ${JSON.stringify(task)}: ${action.error || webhook.error || postConnection.error}`);
 }

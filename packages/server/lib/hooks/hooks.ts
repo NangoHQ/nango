@@ -24,11 +24,12 @@ import type {
     RecentlyFailedConnection
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
-import type { Environment, Account, IntegrationConfig, Template as ProviderTemplate } from '@nangohq/types';
+import type { Environment, IntegrationConfig, Template as ProviderTemplate } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
 import { externalPostConnection } from './connection/external-post-connection.js';
+import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 const logger = getLogger('hooks');
 
@@ -100,13 +101,11 @@ export const connectionRefreshFailed = async ({
     logCtx,
     authError,
     environment,
-    account,
     template,
     config
 }: {
     connection: Connection;
     environment: Environment;
-    account: Account;
     template: ProviderTemplate;
     config: IntegrationConfig;
     authError: { type: string; description: string };
@@ -116,19 +115,23 @@ export const connectionRefreshFailed = async ({
     await errorNotificationService.auth.create({
         type: 'auth',
         action: 'token_refresh',
-        connection_id: connection.id,
+        connection_id: connection.id!,
         activity_log_id: activityLogId,
         log_id: logCtx.id,
         active: true
     });
 
-    void webhookService.sendAuthUpdate(
-        { connection, environment, account, auth_mode: template.auth_mode, operation: AuthOperation.REFRESH, error: authError },
-        config.provider,
-        false,
+    void sendAuthWebhook({
+        connection,
+        environment,
+        auth_mode: template.auth_mode,
+        operation: 'refresh',
+        error: authError,
+        provider: config.provider,
+        type: 'auth',
         activityLogId,
         logCtx
-    );
+    });
 };
 
 export const connectionTest = async (

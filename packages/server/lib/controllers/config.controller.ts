@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
 import type {
     StandardNangoConfig,
-    Template as ProviderTemplate,
     Config as ProviderConfig,
     IntegrationWithCreds,
     Integration as ProviderIntegration,
@@ -10,10 +9,10 @@ import type {
     NangoSyncConfig
 } from '@nangohq/shared';
 import { isHosted } from '@nangohq/utils';
+import type { Template as ProviderTemplate, AuthModeType } from '@nangohq/types';
 import {
     flowService,
     getConfigWithEndpointsByProviderConfigKey,
-    AuthModes,
     errorManager,
     NangoError,
     analytics,
@@ -29,7 +28,7 @@ import { parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import type { RequestLocals } from '../utils/express.js';
 
 export interface Integration {
-    authMode: AuthModes;
+    authMode: AuthModeType;
     uniqueKey: string;
     provider: string;
     connection_count: number;
@@ -114,7 +113,7 @@ class ConfigController {
                     const activeFlows = await getFlowConfigsByParams(environment.id, config.unique_key);
 
                     const integration: Integration = {
-                        authMode: template?.auth_mode || AuthModes.App,
+                        authMode: template?.auth_mode || 'APP_STORE',
                         uniqueKey: config.unique_key,
                         provider: config.provider,
                         scripts: activeFlows.length,
@@ -122,7 +121,7 @@ class ConfigController {
                         creationDate: config.created_at
                     };
 
-                    if (template && template.auth_mode !== AuthModes.App && template.auth_mode !== AuthModes.Custom) {
+                    if (template && template.auth_mode !== 'APP_STORE' && template.auth_mode !== 'CUSTOM') {
                         integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template);
                     }
 
@@ -186,7 +185,7 @@ class ConfigController {
             const template = configService.getTemplate(provider as string);
             const authMode = template.auth_mode;
 
-            if (authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 || authMode === AuthModes.Custom) {
+            if (authMode === 'OAUTH1' || authMode === 'OAUTH2' || authMode === 'CUSTOM') {
                 if (req.body['client_id'] == null) {
                     errorManager.errRes(res, 'missing_client_id');
                     return;
@@ -199,7 +198,7 @@ class ConfigController {
 
             let oauth_client_secret = req.body['client_secret'] ?? null;
 
-            if (template.auth_mode === AuthModes.App) {
+            if (template.auth_mode === 'APP_STORE') {
                 if (!oauth_client_secret.includes('BEGIN RSA PRIVATE KEY')) {
                     errorManager.errRes(res, 'invalid_app_secret');
                     return;
@@ -209,7 +208,7 @@ class ConfigController {
 
             const custom: Config['custom'] = req.body['custom'] ?? null;
 
-            if (template.auth_mode === AuthModes.Custom) {
+            if (template.auth_mode === 'CUSTOM') {
                 if (!custom || !custom['private_key']) {
                     errorManager.errRes(res, 'missing_custom');
                     return;
@@ -329,13 +328,13 @@ class ConfigController {
             let webhook_secret = null;
             const custom = config.custom;
 
-            if (authMode === AuthModes.App && client_secret) {
+            if (authMode === 'APP_STORE' && client_secret) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
                 const hash = `${config.oauth_client_id}${config.oauth_client_secret}${config.app_link}`;
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
             }
 
-            if (authMode === AuthModes.Custom && custom) {
+            if (authMode === 'CUSTOM' && custom) {
                 const { private_key } = custom;
                 custom['private_key'] = Buffer.from(custom['private_key'] as string, 'base64').toString('ascii');
                 const hash = `${custom['app_id']}${private_key}${config.app_link}`;
@@ -481,22 +480,22 @@ class ConfigController {
             const providerTemplate = configService.getTemplate(provider);
             const authMode = providerTemplate.auth_mode;
 
-            if ((authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 || authMode === AuthModes.Custom) && req.body['oauth_client_id'] == null) {
+            if ((authMode === 'OAUTH1' || authMode === 'OAUTH2' || authMode === 'CUSTOM') && req.body['oauth_client_id'] == null) {
                 errorManager.errRes(res, 'missing_client_id');
                 return;
             }
 
-            if (authMode === AuthModes.App && req.body['oauth_client_id'] == null) {
+            if (authMode === 'APP_STORE' && req.body['oauth_client_id'] == null) {
                 errorManager.errRes(res, 'missing_app_id');
                 return;
             }
 
-            if ((authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && req.body['oauth_client_secret'] == null) {
+            if ((authMode === 'OAUTH1' || authMode === 'OAUTH2') && req.body['oauth_client_secret'] == null) {
                 errorManager.errRes(res, 'missing_client_secret');
                 return;
             }
 
-            if (authMode === AuthModes.App && req.body['oauth_client_secret'] == null) {
+            if (authMode === 'APP_STORE' && req.body['oauth_client_secret'] == null) {
                 errorManager.errRes(res, 'missing_app_secret');
                 return;
             }
@@ -510,7 +509,7 @@ class ConfigController {
 
             let oauth_client_secret = req.body['oauth_client_secret'] ?? null;
 
-            if (authMode === AuthModes.App) {
+            if (authMode === 'APP_STORE') {
                 if (!oauth_client_secret.includes('BEGIN RSA PRIVATE KEY')) {
                     errorManager.errRes(res, 'invalid_app_secret');
                     return;
@@ -520,7 +519,7 @@ class ConfigController {
 
             const custom: ProviderConfig['custom'] = req.body['custom'];
 
-            if (authMode === AuthModes.Custom) {
+            if (authMode === 'CUSTOM') {
                 if (!custom || !custom['private_key']) {
                     errorManager.errRes(res, 'missing_custom');
                     return;
@@ -599,7 +598,7 @@ class ConfigController {
             const template = configService.getTemplate(provider as string);
             const authMode = template.auth_mode;
 
-            if (authMode === AuthModes.ApiKey || authMode === AuthModes.Basic) {
+            if (authMode === 'API_KEY' || authMode === 'BASIC') {
                 errorManager.errRes(res, 'provider_config_edit_not_allowed');
                 return;
             }
@@ -609,7 +608,7 @@ class ConfigController {
                 return;
             }
 
-            if (authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 || authMode === AuthModes.Custom) {
+            if (authMode === 'OAUTH1' || authMode === 'OAUTH2' || authMode === 'CUSTOM') {
                 if (req.body['oauth_client_id'] == null) {
                     errorManager.errRes(res, 'missing_client_id');
                     return;
@@ -622,7 +621,7 @@ class ConfigController {
 
             let oauth_client_secret = req.body['oauth_client_secret'] ?? null;
 
-            if (template.auth_mode === AuthModes.App) {
+            if (template.auth_mode === 'APP_STORE') {
                 if (!oauth_client_secret.includes('BEGIN RSA PRIVATE KEY')) {
                     errorManager.errRes(res, 'invalid_app_secret');
                     return;
@@ -632,7 +631,7 @@ class ConfigController {
 
             const custom = req.body['custom'] ?? null;
 
-            if (template.auth_mode === AuthModes.Custom) {
+            if (template.auth_mode === 'CUSTOM') {
                 const { private_key } = custom;
 
                 if (!private_key.includes('BEGIN RSA PRIVATE KEY')) {

@@ -17,6 +17,7 @@ export type * from './connection/db.js';
 export type * from './environment/db.js';
 export type * from './scripts/post-connection/api.js';
 export type * from './scripts/post-connection/db.js';
+export type * from './scripts/syncs/api.js';
 export type * from './notification/active-logs/db.js';
 export type * from './connection/api/get.js';
 export type * from './integration/db.js';

@@ -1,12 +1,6 @@
-import type {
-    Config as ProviderConfig,
-    TemplateOAuth2 as ProviderTemplateOAuth2,
-    Template as ProviderTemplate,
-    OAuth2Credentials,
-    Connection
-} from '../models/index.js';
-import { AuthModes as ProviderAuthModes, OAuthAuthorizationMethod, OAuthBodyFormat } from '../models/index.js';
-import type { AccessToken } from 'simple-oauth2';
+import type { Config as ProviderConfig, OAuth2Credentials, Connection } from '../models/index.js';
+import type { TemplateOAuth2 as ProviderTemplateOAuth2, Template as ProviderTemplate } from '@nangohq/types';
+import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2';
 import { AuthorizationCode } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
 import type { ServiceResponse } from '../models/Generic.js';
@@ -15,9 +9,15 @@ import { interpolateString } from '../utils/utils.js';
 import Boom from '@hapi/boom';
 import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { httpAgent, httpsAgent } from '../utils/axios.js';
+import type { Merge } from 'type-fest';
 
-export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, template: ProviderTemplate, connectionConfig: Record<string, string>) {
-    const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url![ProviderAuthModes.OAuth2] as string);
+export function getSimpleOAuth2ClientConfig(
+    providerConfig: ProviderConfig,
+    template: ProviderTemplate,
+    connectionConfig: Record<string, string>
+): Merge<ModuleOptions, { http: WreckHttpOptions }> {
+    const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['OAuth2'] as string);
     const strippedTokenUrl = templateTokenUrl.replace(/connectionConfig\./g, '');
     const tokenUrl = new URL(interpolateString(strippedTokenUrl, connectionConfig));
     const strippedAuthorizeUrl = template.authorization_url!.replace(/connectionConfig\./g, '');
@@ -37,10 +37,22 @@ export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, temp
             authorizeHost: authorizeUrl.origin,
             authorizePath: authorizeUrl.pathname
         },
-        http: { headers: headers },
+        http: {
+            headers,
+            // @ts-expect-error badly documented feature https://github.com/hapijs/wreck/blob/ba28b0420d6b0998cd8e61be7f3f8822129c88fe/lib/index.js#L34-L40
+            agents:
+                httpAgent && httpsAgent
+                    ? {
+                          http: httpAgent,
+                          https: httpsAgent,
+                          httpsAllowUnauthorized: httpsAgent
+                      }
+                    : undefined
+        },
         options: {
-            authorizationMethod: authConfig.authorization_method || OAuthAuthorizationMethod.BODY,
-            bodyFormat: authConfig.body_format || OAuthBodyFormat.FORM,
+            authorizationMethod: authConfig.authorization_method || 'body',
+            bodyFormat: authConfig.body_format || 'form',
+            // @ts-expect-error seems unused ?
             scopeSeparator: template.scope_separator || ' '
         }
     };
@@ -62,7 +74,7 @@ export async function getFreshOAuth2Credentials(
     const simpleOAuth2ClientConfig = getSimpleOAuth2ClientConfig(config, template, connection.connection_config);
     if (template.token_request_auth_method === 'basic') {
         const headers = {
-            ...simpleOAuth2ClientConfig.http.headers,
+            ...simpleOAuth2ClientConfig.http?.headers,
             Authorization: 'Basic ' + Buffer.from(config.oauth_client_id + ':' + config.oauth_client_secret).toString('base64')
         };
         simpleOAuth2ClientConfig.http.headers = headers;
@@ -93,10 +105,14 @@ export async function getFreshOAuth2Credentials(
         }
 
         if (Boom.isBoom(e)) {
-            const payload = { external_message: e.message, external_request_details: e.output, dataMessage: errorPayload };
+            const payload = {
+                external_message: e.message,
+                external_request_details: e.output,
+                dataMessage: errorPayload instanceof Buffer ? errorPayload.toString() : errorPayload
+            };
             nangoErr = new NangoError(`refresh_token_external_error`, payload);
         } else {
-            nangoErr = new NangoError(`refresh_token_external_error`, { message: errorPayload });
+            nangoErr = new NangoError(`refresh_token_external_error`, { message: e.message });
         }
 
         errorManager.report(nangoErr.message, {
@@ -115,7 +131,7 @@ export async function getFreshOAuth2Credentials(
 
     let newCredentials: OAuth2Credentials;
     try {
-        newCredentials = connectionsManager.parseRawCredentials(rawNewAccessToken.token, ProviderAuthModes.OAuth2) as OAuth2Credentials;
+        newCredentials = connectionsManager.parseRawCredentials(rawNewAccessToken.token, 'OAUTH2') as OAuth2Credentials;
 
         if (!newCredentials.refresh_token && credentials.refresh_token != null) {
             newCredentials.refresh_token = credentials.refresh_token;

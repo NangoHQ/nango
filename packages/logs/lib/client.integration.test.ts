@@ -7,6 +7,7 @@ import { getOperation, listMessages, listOperations } from './models/messages.js
 import type { OperationRowInsert } from '@nangohq/types';
 import { afterEach } from 'node:test';
 import { logContextGetter } from './models/logContextGetter.js';
+import { indexMessages } from './es/schema.js';
 
 const account = { id: 1234, name: 'test' };
 const environment = { id: 5678, name: 'dev' };
@@ -20,7 +21,7 @@ const operationPayload: OperationRowInsert = {
 
 describe('client', () => {
     beforeAll(async () => {
-        await deleteIndex();
+        await deleteIndex({ prefix: indexMessages.index });
         await migrateMapping();
     });
     afterEach(() => {
@@ -61,6 +62,7 @@ describe('client', () => {
                     environmentId: 5678,
                     environmentName: 'dev',
                     error: null,
+                    expiresAt: expect.toBeIsoDate(),
                     id: ctx.id,
                     jobId: null,
                     level: 'info',

@@ -6,21 +6,19 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
-    AuthOperation,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     updateProvider as updateProviderActivityLog,
     configService,
     connectionService,
     createActivityLogMessageAndEnd,
-    AuthModes,
     getConnectionConfig,
     hmacService,
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import {
@@ -53,7 +51,12 @@ class ApiAuthController {
         let logCtx: LogContext | undefined;
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization API Key' },
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'auth', action: 'create_connection' },
+                    message: 'Authorization API Key',
+                    expiresAt: defaultOperationExpiration.auth()
+                },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, account.id);
@@ -126,7 +129,7 @@ class ApiAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.ApiKey) {
+            if (template.auth_mode !== 'API_KEY') {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environment.id,
@@ -154,7 +157,7 @@ class ApiAuthController {
             const { apiKey } = req.body;
 
             const credentials: ApiKeyCredentials = {
-                type: AuthModes.ApiKey,
+                type: 'API_KEY',
                 apiKey
             };
 
@@ -214,7 +217,7 @@ class ApiAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.ApiKey,
+                        auth_mode: 'API_KEY',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -242,12 +245,12 @@ class ApiAuthController {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
-                        auth_mode: AuthModes.ApiKey,
+                        auth_mode: 'API_KEY',
                         error: {
                             type: 'unknown',
                             description: `Error during API key auth: ${prettyError}`
                         },
-                        operation: AuthOperation.UNKNOWN
+                        operation: 'unknown'
                     },
                     'unknown',
                     activityLogId,
@@ -294,7 +297,12 @@ class ApiAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization Basic' },
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'auth', action: 'create_connection' },
+                    message: 'Authorization Basic',
+                    expiresAt: defaultOperationExpiration.auth()
+                },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, account.id);
@@ -370,7 +378,7 @@ class ApiAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.Basic) {
+            if (template.auth_mode !== 'BASIC') {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environment.id,
@@ -387,7 +395,7 @@ class ApiAuthController {
             }
 
             const credentials: BasicApiCredentials = {
-                type: AuthModes.Basic,
+                type: 'BASIC',
                 username,
                 password
             };
@@ -450,7 +458,7 @@ class ApiAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.Basic,
+                        auth_mode: 'BASIC',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -478,12 +486,12 @@ class ApiAuthController {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
-                        auth_mode: AuthModes.ApiKey,
+                        auth_mode: 'API_KEY',
                         error: {
                             type: 'unknown',
                             description: `Error during basic API key auth: ${prettyError}`
                         },
-                        operation: AuthOperation.UNKNOWN
+                        operation: 'unknown'
                     },
                     'unknown',
                     activityLogId,

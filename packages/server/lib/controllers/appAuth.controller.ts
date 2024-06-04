@@ -12,9 +12,7 @@ import {
     LogActionEnum,
     createActivityLogMessageAndEnd,
     telemetry,
-    AuthOperation,
-    LogTypes,
-    AuthModes
+    LogTypes
 } from '@nangohq/shared';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -102,9 +100,9 @@ class AppAuthController {
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             const template = configService.getTemplate(config.provider);
-            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.[AuthModes.App] as string);
+            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['App'] as string);
 
-            if (template.auth_mode !== AuthModes.App) {
+            if (template.auth_mode !== 'APP') {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environment.id,
@@ -129,7 +127,7 @@ class AppAuthController {
                     activity_log_id: activityLogId,
                     content: 'App types do not support the request flow. Please use the github-app-oauth provider for the request flow.',
                     timestamp: Date.now(),
-                    auth_mode: AuthModes.App,
+                    auth_mode: 'APP',
                     url: req.originalUrl
                 });
                 await logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', {
@@ -207,12 +205,12 @@ class AppAuthController {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
                         account,
-                        auth_mode: AuthModes.App,
+                        auth_mode: 'APP',
                         error: {
                             type: 'unknown',
                             description: `Error during app token retrieval call: ${error?.message}`
                         },
-                        operation: AuthOperation.UNKNOWN
+                        operation: 'unknown'
                     },
                     session.provider,
                     activityLogId,
@@ -241,7 +239,7 @@ class AppAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.App,
+                        auth_mode: 'APP',
                         operation: updatedConnection.operation
                     },
                     session.provider,
@@ -283,7 +281,7 @@ class AppAuthController {
                 activity_log_id: activityLogId,
                 content,
                 timestamp: Date.now(),
-                auth_mode: AuthModes.App,
+                auth_mode: 'APP',
                 url: req.originalUrl
             });
             await logCtx.error(error.message, { error: err, url: req.originalUrl });
@@ -300,12 +298,12 @@ class AppAuthController {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
-                    auth_mode: AuthModes.App,
+                    auth_mode: 'APP',
                     error: {
                         type: 'unknown',
                         description: content
                     },
-                    operation: AuthOperation.UNKNOWN
+                    operation: 'unknown'
                 },
                 'unknown',
                 activityLogId,
