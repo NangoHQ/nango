@@ -2787,3 +2787,6 @@ zoom:
     proxy:
         base_url: https://api.zoom.us/v2
     docs: https://docs.nango.dev/integrations/all/zoom
+zoominfo:
+    auth_mode: BASIC
+    docs: https://docs.nango.dev/integrations/all/zoominfo
