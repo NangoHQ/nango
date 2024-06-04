@@ -8,7 +8,7 @@ import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost }
 import configService from './config.service.js';
 import { compileAllFiles } from './compile.service.js';
 import verificationService from './verification.service.js';
-import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
+import { printDebug, parseSecretKey, port, enrichHeaders, http, getPkgVersion } from '../utils.js';
 import type { DeployOptions } from '../types.js';
 
 class DeployService {
@@ -132,11 +132,11 @@ class DeployService {
 
         const { flowConfigs, postConnectionScriptsByProvider } = postData;
 
-        const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
+        const url = process.env['NANGO_HOSTPORT'] + `/scripts/deploy`;
         const nangoYamlBody = localFileService.getNangoYamlFileContents('./');
 
         if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
-            const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
+            const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/scripts/deploy/confirmation`;
             try {
                 const response = await http.post(
                     confirmationUrl,
@@ -340,7 +340,8 @@ class DeployService {
                     },
                     model_schema: JSON.stringify(model_schema),
                     endpoints: flow.endpoints,
-                    webhookSubscriptions: flow.webhookSubscriptions || []
+                    webhookSubscriptions: flow.webhookSubscriptions || [],
+                    cli_version: getPkgVersion()
                 };
 
                 postData.push(body);

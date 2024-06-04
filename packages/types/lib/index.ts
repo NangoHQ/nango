@@ -20,3 +20,5 @@ export type * from './notification/active-logs/db.js';
 export type * from './connection/api/get.js';
 export type * from './integration/db.js';
 export type * from './integration/template.js';
+export type * from './scripts/deploy/api.js';
+export type * from './scripts/deploy/payload.js';
