@@ -16,14 +16,6 @@ Install the project
 npm i
 ```
 
-Install Frontend Dependencies
-
-```sh
-cd packages/frontend
-npm i
-cd -
-```
-
 Set your envs
 
 ```sh
@@ -66,12 +58,6 @@ nango init
 ```
 
 Change the .env file `NANGO_SECRET_KEY_DEV` and `NANGO_HOSTPORT`.
-
-```sh
-NANGO_SECRET_KEY_DEV="secret key from nango dashboard"
-NANGO_HOSTPORT="host:port"   # can be https://nango.dev or if running locally http://.localhost:3000
-```
-
 And deploy your changes
 
 ```sh
