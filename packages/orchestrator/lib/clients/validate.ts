@@ -45,7 +45,6 @@ export const postConnectionArgsSchema = z.object({
     postConnectionName: z.string().min(1),
     fileLocation: z.string().min(1),
     activityLogId: z.number().positive(),
-    input: jsonSchema,
     ...commonSchemaArgsFields
 });
 
