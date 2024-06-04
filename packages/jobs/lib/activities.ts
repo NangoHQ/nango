@@ -7,6 +7,7 @@ import type {
     NangoConnection,
     ContinuousSyncArgs,
     InitialSyncArgs,
+    PostConnectionScriptArgs,
     ActionArgs,
     WebhookArgs,
     SyncConfig
@@ -31,30 +32,16 @@ import {
     isInitialSyncStillRunning,
     getSyncByIdAndName,
     getLastSyncDate,
-    getSyncConfigRaw,
-    getOrchestratorUrl,
-    SlackService
+    getSyncConfigRaw
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
-import { getLogger, env, stringifyError, errorToObject } from '@nangohq/utils';
-import { BigQueryClient } from '@nangohq/data-ingestion/dist/index.js';
+import { getLogger, stringifyError, errorToObject } from '@nangohq/utils';
 import integrationService from './integration.service.js';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
-import { OrchestratorClient } from '@nangohq/nango-orchestrator';
+import { bigQueryClient, slackService } from './clients.js';
 
 const logger = getLogger('Jobs');
-
-const bigQueryClient = await BigQueryClient.createInstance({
-    datasetName: 'raw',
-    tableName: `${env}_script_runs`
-});
-
-const orchestratorClient = new OrchestratorClient({ baseUrl: getOrchestratorUrl() });
-const slackService = new SlackService({
-    orchestratorClient: orchestratorClient,
-    logContextGetter: logContextGetter
-});
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;
@@ -450,9 +437,44 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     return result.success;
 }
 
+export async function runPostConnectionScript(args: PostConnectionScriptArgs): Promise<ServiceResponse> {
+    const { name, nangoConnection, activityLogId, file_location } = args;
+
+    const providerConfig: ProviderConfig = (await configService.getProviderConfig(
+        nangoConnection?.provider_config_key,
+        nangoConnection?.environment_id
+    )) as ProviderConfig;
+
+    const context: Context = Context.current();
+
+    const syncRun = new syncRunService({
+        bigQueryClient,
+        integrationService,
+        recordsService,
+        slackService,
+        writeToDb: true,
+        nangoConnection,
+        syncName: name,
+        isAction: false,
+        isPostConnectionScript: true,
+        syncType: SyncType.POST_CONNECTION_SCRIPT,
+        isWebhook: false,
+        activityLogId,
+        logCtx: await logContextGetter.get({ id: String(activityLogId) }),
+        provider: providerConfig.provider,
+        fileLocation: file_location,
+        debug: false,
+        temporalContext: context
+    });
+
+    const result = await syncRun.run();
+
+    return result;
+}
+
 export async function reportFailure(
     error: any,
-    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs | WebhookArgs,
+    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs | WebhookArgs | PostConnectionScriptArgs,
     timeout: string,
     max_attempts: number
 ): Promise<void> {

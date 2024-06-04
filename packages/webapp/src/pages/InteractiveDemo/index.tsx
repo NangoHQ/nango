@@ -15,6 +15,7 @@ import { DeployBloc } from './DeployBloc';
 import Spinner from '../../components/ui/Spinner';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import type { GetOnboardingStatus } from '@nangohq/types';
+import { apiFetch } from '../../utils/api';
 
 export const InteractiveDemo: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
@@ -27,12 +28,6 @@ export const InteractiveDemo: React.FC = () => {
 
     const env = useStore((state) => state.env);
     const { environmentAndAccount } = useEnvironment(env);
-
-    useEffect(() => {
-        if (env !== 'dev') {
-            window.location.href = `/${env}/integrations`;
-        }
-    }, [env]);
 
     useEffect(() => {
         if (!environmentAndAccount) {
@@ -54,9 +49,8 @@ export const InteractiveDemo: React.FC = () => {
                 connection_id: connectionId
             };
 
-            const res = await fetch(`/api/v1/onboarding?${new URLSearchParams(params).toString()}`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+            const res = await apiFetch(`/api/v1/onboarding?${new URLSearchParams(params).toString()}`, {
+                method: 'GET'
             });
 
             setInitialLoad(true);
@@ -84,9 +78,8 @@ export const InteractiveDemo: React.FC = () => {
     }, [setInitialLoad, connectionId, env]);
 
     const updateProgress = async (args: { progress: number }) => {
-        const res = await fetch(`/api/v1/onboarding?env=${env}`, {
+        const res = await apiFetch(`/api/v1/onboarding?env=${env}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ progress: args.progress })
         });
 

@@ -5,11 +5,25 @@ import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js'
 import { route as putTaskRoute } from '../routes/v1/tasks/putTaskId.js';
 import { route as postHeartbeatRoute } from '../routes/v1/tasks/taskId/postHeartbeat.js';
 import type { Result, Route } from '@nangohq/utils';
-import { Ok, Err, routeFetch, stringifyError } from '@nangohq/utils';
+import { Ok, Err, routeFetch, stringifyError, getLogger } from '@nangohq/utils';
 import type { Endpoint } from '@nangohq/types';
-import type { ClientError, SchedulingProps, ExecuteActionProps, ExecuteProps, ExecuteReturn, ExecuteWebhookProps, TaskAction, TaskWebhook } from './types.js';
+import type {
+    ClientError,
+    SchedulingProps,
+    ExecuteActionProps,
+    ExecuteProps,
+    ExecuteReturn,
+    ExecuteWebhookProps,
+    ExecutePostConnectionProps,
+    TaskAction,
+    TaskWebhook,
+    TaskPostConnection,
+    OrchestratorTask
+} from './types.js';
 import { validateTask } from './validate.js';
 import type { JsonValue } from 'type-fest';
+
+const logger = getLogger('orchestrator.client');
 
 export class OrchestratorClient {
     private baseUrl: string;
@@ -55,7 +69,7 @@ export class OrchestratorClient {
             return res;
         }
         const taskId = res.value.taskId;
-        const getOutput = await this.routeFetch(getOutputRoute)({ params: { taskId }, query: { waitForCompletion: true } });
+        const getOutput = await this.routeFetch(getOutputRoute)({ params: { taskId }, query: { longPolling: true } });
         if ('error' in getOutput) {
             return Err({
                 name: getOutput.error.code,
@@ -101,7 +115,12 @@ export class OrchestratorClient {
             ...rest,
             args: {
                 ...args,
-                type: 'action' as const
+                type: 'action' as const,
+                timeoutSettingsInSecs: {
+                    createdToStarted: 30,
+                    startedToCompleted: 30,
+                    heartbeat: 999 // actions don't need to heartbeat
+                }
             }
         };
         return this.execute(schedulingProps);
@@ -113,7 +132,24 @@ export class OrchestratorClient {
             ...rest,
             args: {
                 ...args,
-                type: 'webhook' as const
+                type: 'webhook' as const,
+                timeoutSettingsInSecs: {
+                    createdToStarted: 30,
+                    startedToCompleted: 30,
+                    heartbeat: 999 // webhooks don't need to heartbeat
+                }
+            }
+        };
+        return this.execute(schedulingProps);
+    }
+
+    public async executePostConnection(props: ExecutePostConnectionProps): Promise<ExecuteReturn> {
+        const { args, ...rest } = props;
+        const schedulingProps = {
+            ...rest,
+            args: {
+                ...args,
+                type: 'post-connection-script' as const
             }
         };
         return this.execute(schedulingProps);
@@ -127,7 +163,7 @@ export class OrchestratorClient {
         ids?: string[];
         groupKey?: string;
         limit?: number;
-    }): Promise<Result<(TaskWebhook | TaskAction)[], ClientError>> {
+    }): Promise<Result<(TaskWebhook | TaskAction | TaskPostConnection)[], ClientError>> {
         const body = {
             ...(ids ? { ids } : {}),
             ...(groupKey ? { groupKey } : {}),
@@ -144,6 +180,7 @@ export class OrchestratorClient {
             const tasks = res.flatMap((task) => {
                 const validated = validateTask(task);
                 if (validated.isErr()) {
+                    logger.error(`Search: error validating task: ${JSON.stringify(validated.error.message)}`);
                     return [];
                 }
                 return [validated.value];
@@ -155,17 +192,17 @@ export class OrchestratorClient {
     public async dequeue({
         groupKey,
         limit,
-        waitForCompletion
+        longPolling
     }: {
         groupKey: string;
         limit: number;
-        waitForCompletion: boolean;
-    }): Promise<Result<(TaskWebhook | TaskAction)[], ClientError>> {
+        longPolling: boolean;
+    }): Promise<Result<OrchestratorTask[], ClientError>> {
         const res = await this.routeFetch(postDequeueRoute)({
             body: {
                 groupKey,
                 limit,
-                waitForCompletion
+                longPolling
             }
         });
         if ('error' in res) {
@@ -178,6 +215,7 @@ export class OrchestratorClient {
             const dequeuedTasks = res.flatMap((task) => {
                 const validated = validateTask(task);
                 if (validated.isErr()) {
+                    logger.error(`Dequeue: error validating task: ${JSON.stringify(validated.error.message)}`);
                     return [];
                 }
                 return [validated.value];
@@ -201,7 +239,13 @@ export class OrchestratorClient {
         }
     }
 
-    public async succeed({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<TaskAction | TaskWebhook, ClientError>> {
+    public async succeed({
+        taskId,
+        output
+    }: {
+        taskId: string;
+        output: JsonValue;
+    }): Promise<Result<TaskAction | TaskWebhook | TaskPostConnection, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
             body: { output, state: 'SUCCEEDED' }
@@ -221,7 +265,7 @@ export class OrchestratorClient {
         }
     }
 
-    public async failed({ taskId, error }: { taskId: string; error: Error }): Promise<Result<TaskAction | TaskWebhook, ClientError>> {
+    public async failed({ taskId, error }: { taskId: string; error: Error }): Promise<Result<TaskAction | TaskWebhook | TaskPostConnection, ClientError>> {
         const output = { name: error.name, message: error.message };
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
@@ -242,7 +286,7 @@ export class OrchestratorClient {
         }
     }
 
-    public async cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<TaskAction | TaskWebhook, ClientError>> {
+    public async cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<TaskAction | TaskWebhook | TaskPostConnection, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
             body: { output: reason, state: 'CANCELLED' }

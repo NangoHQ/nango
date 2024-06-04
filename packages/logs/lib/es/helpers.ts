@@ -61,7 +61,7 @@ export async function migrateMapping() {
     }
 }
 
-export async function deleteIndex() {
+export async function deleteIndex({ prefix }: { prefix: string }) {
     if (!isTest) {
         throw new Error('Trying to delete stuff in prod');
     }
@@ -70,7 +70,11 @@ export async function deleteIndex() {
         const indices = await client.cat.indices({ format: 'json' });
         await Promise.all(
             indices.map(async (index) => {
-                await client.indices.delete({ index: index.index!, ignore_unavailable: true });
+                if (!index.index?.startsWith(prefix)) {
+                    return;
+                }
+
+                await client.indices.delete({ index: index.index, ignore_unavailable: true });
             })
         );
     } catch (err) {

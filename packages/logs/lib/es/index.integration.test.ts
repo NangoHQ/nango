@@ -11,11 +11,11 @@ describe('mapping', () => {
     const today = new Date().toISOString().split('T')[0];
     let fullIndexName: string;
     beforeAll(async () => {
-        indexMessages.index = `messages-${nanoid()}`.toLocaleLowerCase();
+        indexMessages.index = `index-messages-${nanoid()}`.toLocaleLowerCase();
         fullIndexName = `${indexMessages.index}.${today}`;
 
         // Delete before otherwise it's hard to debug
-        await deleteIndex();
+        await deleteIndex({ prefix: 'index-messages' });
     });
 
     it('should not have an index before migration', async () => {

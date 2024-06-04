@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import type { Knex } from '@nangohq/database';
-import axios from 'axios';
+import { axiosInstance as axios } from '../utils/axios.js';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type {
@@ -529,9 +529,7 @@ class ConnectionService {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
             .leftJoin(ACTIVE_LOG_TABLE, function () {
-                this.on('_nango_connections.id', '=', `${ACTIVE_LOG_TABLE}.connection_id`)
-                    .andOnVal(`${ACTIVE_LOG_TABLE}.active`, true)
-                    .andOnVal(`${ACTIVE_LOG_TABLE}.type`, 'auth');
+                this.on('_nango_connections.id', '=', `${ACTIVE_LOG_TABLE}.connection_id`).andOnVal(`${ACTIVE_LOG_TABLE}.active`, true);
             })
             .select(
                 { id: '_nango_connections.id' },
@@ -704,6 +702,7 @@ class ConnectionService {
                     });
                 }
 
+                // TODO: this leak credentials to the logs
                 const errorWithPayload = new NangoError(error.type, connection);
 
                 return Err(errorWithPayload);
@@ -879,7 +878,7 @@ class ConnectionService {
                     level: 'error'
                 });
 
-                const error = new NangoError('refresh_token_external_error', e as Error);
+                const error = new NangoError('refresh_token_external_error', errorDetails);
 
                 return { success: false, error, response: null };
             } finally {

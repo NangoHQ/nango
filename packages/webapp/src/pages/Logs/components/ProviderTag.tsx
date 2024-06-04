@@ -3,7 +3,7 @@ import IntegrationLogo from '../../../components/ui/IntegrationLogo';
 
 export const ProviderTag: React.FC<{ msg: SearchMessagesData }> = ({ msg }) => {
     if (!msg.integrationId || !msg.providerName) {
-        return null;
+        return <>-</>;
     }
 
     return (

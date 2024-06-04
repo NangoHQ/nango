@@ -13,7 +13,8 @@ import {
     useEditHmacKeyAPI,
     useEditEnvVariablesAPI,
     useEditAlwaysSendWebhookAPI,
-    useEditSendAuthWebhookAPI
+    useEditSendAuthWebhookAPI,
+    apiFetch
 } from '../utils/api';
 import IntegrationLogo from '../components/ui/IntegrationLogo';
 import { isCloud, isHosted, defaultCallback } from '../utils/utils';
@@ -271,11 +272,8 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onRotateKey = async (publicKey = true) => {
-        const res = await fetch(`/api/v1/environment/rotate-key?env=${env}`, {
+        const res = await apiFetch(`/api/v1/environment/rotate-key?env=${env}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 type: publicKey ? 'public' : 'secret'
             })
@@ -297,11 +295,8 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onRevertKey = async (publicKey = true) => {
-        const res = await fetch(`/api/v1/environment/revert-key?env=${env}`, {
+        const res = await apiFetch(`/api/v1/environment/revert-key?env=${env}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 type: publicKey ? 'public' : 'secret'
             })
@@ -323,11 +318,8 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const onActivateKey = async (publicKey = true) => {
-        const res = await fetch(`/api/v1/environment/activate-key?env=${env}`, {
+        const res = await apiFetch(`/api/v1/environment/activate-key?env=${env}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 type: publicKey ? 'public' : 'secret'
             })
@@ -348,11 +340,8 @@ export const EnvironmentSettings: React.FC = () => {
     };
 
     const updateSlackNotifications = async (enabled: boolean) => {
-        await fetch(`/api/v1/environment/slack-notifications-enabled?env=${env}`, {
+        await apiFetch(`/api/v1/environment/slack-notifications-enabled?env=${env}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 slack_notifications: enabled
             })
@@ -362,7 +351,7 @@ export const EnvironmentSettings: React.FC = () => {
     const disconnectSlack = async () => {
         await updateSlackNotifications(false);
 
-        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}-${env}?env=${env}`, {
+        const res = await apiFetch(`/api/v1/connection/admin/account-${accountUUID}-${env}?env=${env}`, {
             method: 'DELETE'
         });
 

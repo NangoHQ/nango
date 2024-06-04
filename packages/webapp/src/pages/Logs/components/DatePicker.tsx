@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CalendarIcon, LightningBoltIcon } from '@radix-ui/react-icons';
-import { addDays, format } from 'date-fns';
+import { addDays, addMonths, format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
 import { cn } from '../../../utils/utils';
@@ -59,9 +59,9 @@ export const DatePicker: React.FC<{
     const [date, setDate] = useState<DateRange | undefined>();
     const [tmpDate, setTmpDate] = useState<DateRange | undefined>();
 
-    const months = useMemo(() => {
+    const defaultMonth = useMemo(() => {
         const today = new Date();
-        return today.getDate() < 24 ? 2 : 1;
+        return today.getDate() > 15 ? today : addMonths(today, -1);
     }, []);
 
     const disabledBefore = useMemo(() => {
@@ -109,16 +109,16 @@ export const DatePicker: React.FC<{
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="zombieGray" size={'xs'} className={cn('flex-grow truncate w-[230px]')}>
+                <Button variant="zombieGray" size={'xs'} className={cn('flex-grow truncate text-text-light-gray', period && 'text-white')}>
                     <CalendarIcon />
                     {display}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 text-white bg-active-gray">
+            <PopoverContent className="w-auto p-0 text-white bg-active-gray" align="end">
                 <div className="flex gap-6">
                     <Calendar
                         mode="range"
-                        defaultMonth={date?.from}
+                        defaultMonth={defaultMonth}
                         selected={tmpDate}
                         onSelect={(e) => {
                             setSelectedPreset(undefined);
@@ -131,9 +131,10 @@ export const DatePicker: React.FC<{
                             setTmpDate(e);
                         }}
                         initialFocus
-                        numberOfMonths={months}
+                        numberOfMonths={2}
                         disabled={{ before: disabledBefore, after: disabledAfter }}
                         weekStartsOn={1}
+                        showOutsideDays={false}
                     />
                     <div className="flex flex-col mt-6">
                         <Button

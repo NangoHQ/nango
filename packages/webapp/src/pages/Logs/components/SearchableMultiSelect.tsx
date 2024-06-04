@@ -8,6 +8,7 @@ import Spinner from '../../../components/ui/Spinner';
 import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
 import { useDebounce } from 'react-use';
+import { cn } from '../../../utils/utils';
 
 export interface SearchableMultiSelectArgs<T> {
     label: string;
@@ -70,7 +71,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="zombieGray" size={'xs'}>
+                <Button variant="zombieGray" size={'xs'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
                     {label}
                     {isDirty && (
                         <button
@@ -88,7 +89,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-0 text-white bg-active-gray">
+            <PopoverContent className="p-0 text-white bg-active-gray w-80" align="end">
                 <Command>
                     <Input
                         before={<MagnifyingGlassIcon className="w-4 h-4" />}
@@ -111,9 +112,16 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                                         onSelect={() => {
                                             select(option.value, !checked);
                                         }}
+                                        className="group"
                                     >
                                         <CommandCheck checked={checked} />
-                                        {option.name}
+                                        <div className="overflow-hidden">
+                                            <div className="whitespace-pre w-fit">
+                                                <div className={cn(option.name.length > 39 && 'duration-[2000ms] group-hover:translate-x-[calc(-100%+258px)]')}>
+                                                    {option.name}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </CommandItem>
                                 );
                             })}

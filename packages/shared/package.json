@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.39.32",
+    "version": "0.39.33",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/index.js",
@@ -22,7 +22,7 @@
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
         "@nangohq/database": "file:../database",
-        "@nangohq/node": "^0.39.32",
+        "@nangohq/node": "^0.39.33",
         "@nangohq/utils": "file:../utils",
         "@sentry/node": "^7.106.0",
         "@temporalio/client": "^1.9.1",
@@ -39,6 +39,8 @@
         "exponential-backoff": "^3.1.1",
         "form-data": "4.0.0",
         "fs-extra": "^11.1.1",
+        "http-proxy-agent": "^7.0.2",
+        "https-proxy-agent": "^7.0.4",
         "human-to-cron": "^0.3.1",
         "ip": "^2.0.1",
         "js-yaml": "^4.1.0",
@@ -65,7 +67,7 @@
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/records": "file:../records",
-        "@nangohq/types": "^0.39.32",
+        "@nangohq/types": "^0.39.33",
         "@octokit/types": "^9.2.1",
         "@types/amqplib": "^0.8.2",
         "@types/cors": "^2.8.12",
@@ -78,6 +80,7 @@
         "@types/parse-link-header": "^2.0.0",
         "@types/uuid": "^9.0.0",
         "typescript": "^5.3.3",
+        "type-fest": "4.14.0",
         "vitest": "0.33.0"
     },
     "files": [

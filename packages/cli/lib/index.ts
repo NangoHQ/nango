@@ -19,7 +19,7 @@ import verificationService from './services/verification.service.js';
 import dryrunService from './services/dryrun.service.js';
 import configService from './services/config.service.js';
 import { v1toV2Migration, directoryMigration } from './services/migration.service.js';
-import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
+import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 
 class NangoCommand extends Command {
@@ -186,6 +186,13 @@ program
         (async (options: DeployOptions) => {
             await deployService.prep({ ...options, env: 'local' }, environment, options.debug);
         })(options as DeployOptions);
+    });
+
+program
+    .command('cli-location', { hidden: true })
+    .alias('cli')
+    .action(() => {
+        getNangoRootPath(true);
     });
 
 program

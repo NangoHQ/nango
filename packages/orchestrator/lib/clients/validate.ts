@@ -1,8 +1,8 @@
 import { taskStates } from '@nangohq/scheduler';
 import type { Task } from '@nangohq/scheduler';
-import { TaskAction, TaskWebhook } from './types.js';
+import { TaskAction, TaskWebhook, TaskPostConnection } from './types.js';
 import { z } from 'zod';
-import { actionArgsSchema, webhookArgsSchema } from '../routes/v1/postSchedule.js';
+import { actionArgsSchema, webhookArgsSchema, postConnectionArgsSchema } from '../routes/v1/postSchedule.js';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
@@ -20,8 +20,12 @@ const webhookSchema = z.object({
     ...commonSchemaFields,
     payload: webhookArgsSchema
 });
+const postConnectionSchema = z.object({
+    ...commonSchemaFields,
+    payload: postConnectionArgsSchema
+});
 
-export function validateTask(task: Task): Result<TaskAction | TaskWebhook> {
+export function validateTask(task: Task): Result<TaskAction | TaskWebhook | TaskPostConnection> {
     const action = actionSchema.safeParse(task);
     if (action.success) {
         return Ok(
@@ -29,6 +33,7 @@ export function validateTask(task: Task): Result<TaskAction | TaskWebhook> {
                 state: action.data.state,
                 id: action.data.id,
                 name: action.data.name,
+                actionName: action.data.payload.actionName,
                 connection: action.data.payload.connection,
                 activityLogId: action.data.payload.activityLogId,
                 input: action.data.payload.input
@@ -42,6 +47,7 @@ export function validateTask(task: Task): Result<TaskAction | TaskWebhook> {
                 id: webhook.data.id,
                 state: webhook.data.state,
                 name: webhook.data.name,
+                webhookName: webhook.data.payload.webhookName,
                 parentSyncName: webhook.data.payload.parentSyncName,
                 connection: webhook.data.payload.connection,
                 activityLogId: webhook.data.payload.activityLogId,
@@ -49,5 +55,19 @@ export function validateTask(task: Task): Result<TaskAction | TaskWebhook> {
             })
         );
     }
-    return Err(`Cannot validate task: ${task}`);
+    const postConnection = postConnectionSchema.safeParse(task);
+    if (postConnection.success) {
+        return Ok(
+            TaskPostConnection({
+                id: postConnection.data.id,
+                state: postConnection.data.state,
+                name: postConnection.data.name,
+                postConnectionName: postConnection.data.payload.postConnectionName,
+                connection: postConnection.data.payload.connection,
+                fileLocation: postConnection.data.payload.fileLocation,
+                activityLogId: postConnection.data.payload.activityLogId
+            })
+        );
+    }
+    return Err(`Cannot validate task ${JSON.stringify(task)}: ${action.error || webhook.error || postConnection.error}`);
 }

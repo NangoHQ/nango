@@ -3,6 +3,7 @@ import promptly from 'promptly';
 import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
 import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
+import type { PostConnectionScriptByProvider } from '@nangohq/types';
 import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
 import configService from './config.service.js';
 import { compileAllFiles } from './compile.service.js';
@@ -123,11 +124,13 @@ class DeployService {
             return;
         }
 
-        const postData: IncomingFlowConfig[] | null = this.package(config, debug, version, optionalSyncName, optionalActionName);
+        const postData = this.package(config, debug, version, optionalSyncName, optionalActionName);
 
         if (!postData) {
             return;
         }
+
+        const { flowConfigs, postConnectionScriptsByProvider } = postData;
 
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
         const nangoYamlBody = localFileService.getNangoYamlFileContents('./');
@@ -135,7 +138,11 @@ class DeployService {
         if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
             const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
             try {
-                const response = await http.post(confirmationUrl, { syncs: postData, reconcile: false, debug, singleDeployMode }, { headers: enrichHeaders() });
+                const response = await http.post(
+                    confirmationUrl,
+                    { flowConfigs, postConnectionScriptsByProvider, reconcile: false, debug, singleDeployMode },
+                    { headers: enrichHeaders() }
+                );
                 console.log(JSON.stringify(response.data, null, 2));
                 const { newSyncs, deletedSyncs } = response.data;
 
@@ -157,7 +164,7 @@ class DeployService {
 
                 const confirmation = await promptly.confirm('Do you want to continue y/n?');
                 if (confirmation) {
-                    await this.run(url, { syncs: postData, nangoYamlBody, reconcile: true, debug, singleDeployMode });
+                    await this.run(url, { flowConfigs, postConnectionScriptsByProvider, nangoYamlBody, reconcile: true, debug, singleDeployMode });
                 } else {
                     console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                     process.exit(0);
@@ -181,13 +188,20 @@ class DeployService {
             if (debug) {
                 printDebug(`Auto confirm is set so deploy will start without confirmation`);
             }
-            await this.run(url, { syncs: postData, nangoYamlBody, reconcile: true, debug, singleDeployMode });
+            await this.run(url, { flowConfigs, postConnectionScriptsByProvider, nangoYamlBody, reconcile: true, debug, singleDeployMode });
         }
     }
 
     public async run(
         url: string,
-        body: { syncs: IncomingFlowConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean; singleDeployMode?: boolean }
+        body: {
+            flowConfigs: IncomingFlowConfig[];
+            postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
+            nangoYamlBody: string | null;
+            reconcile: boolean;
+            debug: boolean;
+            singleDeployMode?: boolean;
+        }
     ) {
         await http
             .post(url, body, { headers: enrichHeaders() })
@@ -208,12 +222,34 @@ class DeployService {
             });
     }
 
-    public package(config: StandardNangoConfig[], debug: boolean, version = '', optionalSyncName = '', optionalActionName = ''): IncomingFlowConfig[] | null {
+    public package(
+        config: StandardNangoConfig[],
+        debug: boolean,
+        version = '',
+        optionalSyncName = '',
+        optionalActionName = ''
+    ): { flowConfigs: IncomingFlowConfig[]; postConnectionScriptsByProvider: PostConnectionScriptByProvider[] } | null {
         const postData: IncomingFlowConfig[] = [];
+        const postConnectionScriptsByProvider: PostConnectionScriptByProvider[] = [];
 
         for (const integration of config) {
-            const { providerConfigKey } = integration;
+            const { providerConfigKey, postConnectionScripts } = integration;
             let { syncs, actions } = integration;
+
+            if (postConnectionScripts && postConnectionScripts.length > 0) {
+                postConnectionScriptsByProvider.push({
+                    providerConfigKey,
+                    scripts: postConnectionScripts.map((name) => {
+                        return {
+                            name,
+                            fileBody: {
+                                js: localFileService.getIntegrationFile(name, providerConfigKey, './') as string,
+                                ts: localFileService.getIntegrationTsFile(name, providerConfigKey, 'post-connection-script') as string
+                            }
+                        };
+                    })
+                });
+            }
 
             let flows = [...syncs, ...actions];
 
@@ -311,7 +347,19 @@ class DeployService {
             }
         }
 
-        return postData;
+        if (debug && postConnectionScriptsByProvider) {
+            for (const postConnectionScriptByProvider of postConnectionScriptsByProvider) {
+                const { providerConfigKey, scripts } = postConnectionScriptByProvider;
+
+                for (const script of scripts) {
+                    const { name } = script;
+
+                    printDebug(`Post connection script found for ${providerConfigKey} with name ${name}`);
+                }
+            }
+        }
+
+        return { flowConfigs: postData, postConnectionScriptsByProvider };
     }
 }
 

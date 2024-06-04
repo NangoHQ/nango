@@ -14,7 +14,7 @@ type PostDequeue = Endpoint<{
     Body: {
         groupKey: string;
         limit: number;
-        waitForCompletion: boolean;
+        longPolling: boolean;
     };
     Error: ApiError<'dequeue_failed'>;
     Success: Task[];
@@ -26,7 +26,7 @@ const validate = validateRequest<PostDequeue>({
             .object({
                 groupKey: z.string().min(1),
                 limit: z.coerce.number().positive(),
-                waitForCompletion: z.coerce.boolean()
+                longPolling: z.coerce.boolean()
             })
             .parse(data)
 });
@@ -43,8 +43,8 @@ export const routeHandler = (scheduler: Scheduler, eventEmitter: EventEmitter): 
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (req: EndpointRequest<PostDequeue>, res: EndpointResponse<PostDequeue>) => {
-        const { groupKey, limit, waitForCompletion } = req.body;
-        const waitForCompletionTimeoutMs = 60_000;
+        const { groupKey, limit, longPolling: longPolling } = req.body;
+        const longPollingTimeoutMs = 60_000;
         const eventId = `task:started:${groupKey}`;
         const cleanupAndRespond = (respond: (res: EndpointResponse<PostDequeue>) => void) => {
             if (timeout) {
@@ -67,16 +67,15 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
         };
         const timeout = setTimeout(() => {
             cleanupAndRespond((res) => res.status(200).send([]));
-        }, waitForCompletionTimeoutMs);
-
-        eventEmitter.once(eventId, onTaskStarted);
+        }, longPollingTimeoutMs);
 
         const getTasks = await scheduler.dequeue({ groupKey, limit });
         if (getTasks.isErr()) {
             cleanupAndRespond((res) => res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } }));
             return;
         }
-        if (waitForCompletion && getTasks.value.length === 0) {
+        if (longPolling && getTasks.value.length === 0) {
+            eventEmitter.once(eventId, onTaskStarted);
             await new Promise((resolve) => resolve(timeout));
         } else {
             cleanupAndRespond((res) => res.status(200).json(getTasks.value));

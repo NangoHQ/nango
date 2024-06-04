@@ -5,6 +5,7 @@ import type { GetEmailByExpiredToken, ResendVerificationEmailByUuid } from '@nan
 import { toast } from 'react-toastify';
 
 import DefaultLayout from '../../layout/DefaultLayout';
+import { apiFetch } from '../../utils/api';
 
 export function VerifyEmailByExpiredToken() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -23,7 +24,7 @@ export function VerifyEmailByExpiredToken() {
 
     useEffect(() => {
         const getEmail = async () => {
-            const res = await fetch(`/api/v1/account/email/expired-token/${token}`);
+            const res = await apiFetch(`/api/v1/account/email/expired-token/${token}`);
 
             if (res?.status === 200) {
                 const response: GetEmailByExpiredToken['Success'] = (await res.json()) as GetEmailByExpiredToken['Success'];
@@ -52,11 +53,8 @@ export function VerifyEmailByExpiredToken() {
         e.preventDefault();
         setServerErrorMessage('');
 
-        const res = await fetch('/api/v1/account/resend-verification-email/by-uuid', {
+        const res = await apiFetch('/api/v1/account/resend-verification-email/by-uuid', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 uuid
             })

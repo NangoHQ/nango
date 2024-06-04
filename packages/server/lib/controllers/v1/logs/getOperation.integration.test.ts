@@ -103,6 +103,7 @@ describe('GET /logs/operations/:operationId', () => {
                 environmentId: env.id,
                 environmentName: 'dev',
                 error: null,
+                expiresAt: expect.toBeIsoDate(),
                 id: logCtx.id,
                 jobId: null,
                 level: 'info',
