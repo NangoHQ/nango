@@ -533,8 +533,7 @@ export class Orchestrator {
                             environment_id: connection.environment_id
                         },
                         activityLogId,
-                        fileLocation,
-                        input: null
+                        fileLocation
                     };
                     const result = await this.client.executePostConnection({
                         name: executionId,
