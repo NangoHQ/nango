@@ -55,19 +55,29 @@ import { getOrchestrator } from '../utils/utils.js';
 class SyncController {
     public async deploySync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const {
-                flowConfigs,
-                postConnectionScriptsByProvider,
-                reconcile,
-                debug,
-                singleDeployMode
-            }: {
-                flowConfigs: IncomingFlowConfig[];
-                postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
-                reconcile: boolean;
-                debug: boolean;
-                singleDeployMode?: boolean;
-            } = req.body;
+            let debug: boolean;
+            let singleDeployMode: boolean | undefined;
+            let flowConfigs: IncomingFlowConfig[];
+            let postConnectionScriptsByProvider: PostConnectionScriptByProvider[] | undefined = [];
+            let reconcile: boolean;
+
+            if (req.body.syncs) {
+                ({
+                    syncs: flowConfigs,
+                    reconcile,
+                    debug,
+                    singleDeployMode
+                } = req.body as { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean });
+            } else {
+                ({ flowConfigs, postConnectionScriptsByProvider, reconcile, debug, singleDeployMode } = req.body as {
+                    flowConfigs: IncomingFlowConfig[];
+                    postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
+                    reconcile: boolean;
+                    debug: boolean;
+                    singleDeployMode?: boolean;
+                });
+            }
+
             const { environment, account } = res.locals;
             let reconcileSuccess = true;
 
@@ -132,11 +142,13 @@ class SyncController {
 
     public async confirmation(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const {
-                flowConfigs,
-                debug,
-                singleDeployMode
-            }: { flowConfigs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
+            let debug: boolean, singleDeployMode: boolean | undefined, flowConfigs: IncomingFlowConfig[];
+            if (req.body.syncs) {
+                ({ syncs: flowConfigs, debug, singleDeployMode } = req.body as { syncs: IncomingFlowConfig[]; debug: boolean; singleDeployMode?: boolean });
+            } else {
+                ({ flowConfigs, debug, singleDeployMode } = req.body as { flowConfigs: IncomingFlowConfig[]; debug: boolean; singleDeployMode?: boolean });
+            }
+
             const environmentId = res.locals['environment'].id;
 
             const result = await getAndReconcileDifferences({
