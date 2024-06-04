@@ -19,7 +19,7 @@ export default async function runAction(nango: NangoAction, input: GmailEmailInp
         return mapEmail(sentEmailResponse.data);
     } catch (error: any) {
         throw new nango.ActionError({
-            message: 'Failed to fetch fields in the gmail-send action script.',
+            message: 'Failed to send email in the gmail-send action script.',
             details: {
                 message: error?.message,
                 method: error?.config?.method,
