@@ -70,7 +70,7 @@ const App = () => {
                 >
                     <SentryRoutes>
                         <Route path="/" element={<Homepage />} />
-                        <Route element={<PrivateRoute />}>
+                        <Route element={<PrivateRoute />} key={env}>
                             {showInteractiveDemo && (
                                 <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
                                     <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />

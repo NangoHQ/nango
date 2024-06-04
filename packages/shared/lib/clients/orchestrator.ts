@@ -75,7 +75,7 @@ export class Orchestrator {
                 },
                 timestamp: Date.now()
             });
-            await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input: JSON.stringify(input, null, 2) });
+            await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input });
 
             let res: Result<any, NangoError>;
 

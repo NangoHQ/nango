@@ -23,7 +23,7 @@ import Spinner from '../../components/ui/Spinner';
 // import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { formatQuantity } from '../../utils/utils';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useDebounce, useIntersection, useInterval } from 'react-use';
+import { useDebounce, useIntersection, useInterval, usePreviousDistinct } from 'react-use';
 import { SearchableMultiSelect } from './components/SearchableMultiSelect';
 import { TypesSelect } from './components/TypesSelect';
 import { DatePicker } from './components/DatePicker';
@@ -36,6 +36,7 @@ const limit = 20;
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
+    const prevEnv = usePreviousDistinct(env);
     const [searchParams, setSearchParams] = useSearchParams();
 
     // --- Global state
@@ -53,6 +54,26 @@ export const LogsSearch: React.FC = () => {
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
     const { data, error, loading, trigger, manualFetch } = useSearchOperations(env, { limit, states, types, integrations, connections, syncs, period });
     const [operations, setOperations] = useState<SearchOperationsData[]>([]);
+
+    useEffect(
+        function resetEnv() {
+            if (prevEnv && env && prevEnv !== env) {
+                setSynced(false);
+                setReadyToDisplay(false);
+                setOperations([]);
+                setStates(statusDefaultOptions);
+                setTypes(typesDefaultOptions);
+                setIntegrations(integrationsDefaultOptions);
+                setConnections(integrationsDefaultOptions);
+                setSyncs(syncsDefaultOptions);
+                setPeriod(undefined);
+                setHasLoadedMore(false);
+                cursor.current = null;
+            }
+        },
+        [env, prevEnv]
+    );
+
     useEffect(() => {
         // Data aggregation to enable infinite scroll
         // Because states are changing we need to deduplicate and update rows
@@ -73,6 +94,7 @@ export const LogsSearch: React.FC = () => {
         });
         setReadyToDisplay(true);
     }, [data?.data]);
+
     useEffect(() => {
         if (data?.pagination.cursor && !hasLoadedMore) {
             // We set the cursor only on first page (if we haven't hit a next page)
@@ -80,6 +102,7 @@ export const LogsSearch: React.FC = () => {
             cursor.current = data.pagination.cursor;
         }
     }, [hasLoadedMore, data]);
+
     useDebounce(
         () => {
             // We clear the cursor because it's a brand new search
@@ -88,7 +111,7 @@ export const LogsSearch: React.FC = () => {
             trigger();
         },
         200,
-        [limit, states, types, integrations, connections, syncs, period]
+        [limit, states, types, integrations, connections, syncs, period, prevEnv]
     );
 
     // --- Query Params
@@ -231,6 +254,9 @@ export const LogsSearch: React.FC = () => {
 
     // Operation select
     const [operationId, setOperationId] = useState<string>();
+    const onSelectOperation = (open: boolean, operationId: string) => {
+        setOperationId(open ? operationId : undefined);
+    };
 
     if (error) {
         return (
@@ -311,9 +337,22 @@ export const LogsSearch: React.FC = () => {
                     ))}
                 </Table.Header>
                 <Table.Body>
-                    {table.getRowModel().rows?.length ? (
-                        table.getRowModel().rows.map((row) => <OperationRow key={row.original.id} row={row} />)
-                    ) : operations.length <= 0 && !loading && readyToDisplay ? (
+                    {loading && (
+                        <Table.Row>
+                            {table.getAllColumns().map((col, i) => {
+                                return (
+                                    <Table.Cell key={i}>
+                                        <Skeleton style={{ width: col.getSize() - 20 }} />
+                                    </Table.Cell>
+                                );
+                            })}
+                        </Table.Row>
+                    )}
+
+                    {table.getRowModel().rows?.length > 0 &&
+                        table.getRowModel().rows.map((row) => <OperationRow key={row.original.id} row={row} onSelectOperation={onSelectOperation} />)}
+
+                    {operations.length <= 0 && readyToDisplay && (
                         <Table.Row>
                             <Table.Cell colSpan={columns.length} className="h-24 text-center p-0 pt-4">
                                 <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
@@ -321,16 +360,6 @@ export const LogsSearch: React.FC = () => {
                                     <div className="text-gray-400">Note that logs older than 15 days are automatically cleared.</div>
                                 </div>
                             </Table.Cell>
-                        </Table.Row>
-                    ) : (
-                        <Table.Row>
-                            {table.getAllColumns().map((col, i) => {
-                                return (
-                                    <Table.Cell key={i}>
-                                        <Skeleton style={{ width: col.getSize() }} />
-                                    </Table.Cell>
-                                );
-                            })}
                         </Table.Row>
                     )}
                 </Table.Body>
@@ -349,7 +378,7 @@ export const LogsSearch: React.FC = () => {
                 </div>
             )}
 
-            {operationId && <OperationDrawer key={operationId} operationId={operationId} forceOpen={true} />}
+            {operationId && <OperationDrawer key={operationId} operationId={operationId} onClose={onSelectOperation} />}
         </DashboardLayout>
     );
 };
