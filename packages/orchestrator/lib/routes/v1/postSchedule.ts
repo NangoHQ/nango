@@ -4,8 +4,8 @@ import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
-import { jsonSchema } from '../../utils/validation.js';
 import type { TaskType } from '../../types.js';
+import { syncArgsSchema, actionArgsSchema, postConnectionArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
 const path = '/v1/schedule';
 const method = 'POST';
@@ -32,40 +32,13 @@ export type PostSchedule = Endpoint<{
     Success: { taskId: string };
 }>;
 
-const commonSchemaFields = {
-    connection: z.object({
-        id: z.number().positive(),
-        connection_id: z.string().min(1),
-        provider_config_key: z.string().min(1),
-        environment_id: z.number().positive()
-    }),
-    activityLogId: z.number().positive(),
-    input: jsonSchema
-};
-
-export const actionArgsSchema = z.object({
-    type: z.literal('action'),
-    actionName: z.string().min(1),
-    ...commonSchemaFields
-});
-export const webhookArgsSchema = z.object({
-    type: z.literal('webhook'),
-    webhookName: z.string().min(1),
-    parentSyncName: z.string().min(1),
-    ...commonSchemaFields
-});
-export const postConnectionArgsSchema = z.object({
-    type: z.literal('post-connection-script'),
-    postConnectionName: z.string().min(1),
-    fileLocation: z.string().min(1),
-    ...commonSchemaFields
-});
-
 const validate = validateRequest<PostSchedule>({
     parseBody: (data: any) => {
         function argsSchema(data: any) {
             if ('args' in data && 'type' in data.args) {
                 switch (data.args.type) {
+                    case 'sync':
+                        return syncArgsSchema;
                     case 'action':
                         return actionArgsSchema;
                     case 'webhook':

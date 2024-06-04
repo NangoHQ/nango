@@ -1,4 +1,4 @@
-import type { OrchestratorTask, TaskWebhook, TaskAction, TaskPostConnection } from '@nangohq/nango-orchestrator';
+import type { OrchestratorTask, TaskWebhook, TaskAction, TaskPostConnection, TaskSync } from '@nangohq/nango-orchestrator';
 import { jsonSchema } from '@nangohq/nango-orchestrator';
 import type { JsonValue } from 'type-fest';
 import { Err, Ok } from '@nangohq/utils';
@@ -13,6 +13,9 @@ export async function handler(task: OrchestratorTask): Promise<Result<JsonValue>
     task.abortController.signal.onabort = () => {
         abort(task);
     };
+    if (task.isSync()) {
+        return sync(task);
+    }
     if (task.isAction()) {
         return action(task);
     }
@@ -28,6 +31,10 @@ export async function handler(task: OrchestratorTask): Promise<Result<JsonValue>
 async function abort(_task: OrchestratorTask): Promise<Result<void>> {
     // TODO: Implement abort processing
     return Ok(undefined);
+}
+
+async function sync(task: TaskSync): Promise<Result<JsonValue>> {
+    return Err(`Not implemented: ${JSON.stringify({ taskId: task.id })}`);
 }
 
 async function action(task: TaskAction): Promise<Result<JsonValue>> {
