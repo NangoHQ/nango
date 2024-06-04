@@ -15,9 +15,6 @@ import type {
     ExecuteReturn,
     ExecuteWebhookProps,
     ExecutePostConnectionProps,
-    TaskAction,
-    TaskWebhook,
-    TaskPostConnection,
     OrchestratorTask
 } from './types.js';
 import { validateTask } from './validate.js';
@@ -155,15 +152,7 @@ export class OrchestratorClient {
         return this.execute(schedulingProps);
     }
 
-    public async search({
-        ids,
-        groupKey,
-        limit
-    }: {
-        ids?: string[];
-        groupKey?: string;
-        limit?: number;
-    }): Promise<Result<(TaskWebhook | TaskAction | TaskPostConnection)[], ClientError>> {
+    public async search({ ids, groupKey, limit }: { ids?: string[]; groupKey?: string; limit?: number }): Promise<Result<OrchestratorTask[], ClientError>> {
         const body = {
             ...(ids ? { ids } : {}),
             ...(groupKey ? { groupKey } : {}),
@@ -239,13 +228,7 @@ export class OrchestratorClient {
         }
     }
 
-    public async succeed({
-        taskId,
-        output
-    }: {
-        taskId: string;
-        output: JsonValue;
-    }): Promise<Result<TaskAction | TaskWebhook | TaskPostConnection, ClientError>> {
+    public async succeed({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<OrchestratorTask, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
             body: { output, state: 'SUCCEEDED' }
@@ -265,7 +248,7 @@ export class OrchestratorClient {
         }
     }
 
-    public async failed({ taskId, error }: { taskId: string; error: Error }): Promise<Result<TaskAction | TaskWebhook | TaskPostConnection, ClientError>> {
+    public async failed({ taskId, error }: { taskId: string; error: Error }): Promise<Result<OrchestratorTask, ClientError>> {
         const output = { name: error.name, message: error.message };
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
@@ -286,7 +269,7 @@ export class OrchestratorClient {
         }
     }
 
-    public async cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<TaskAction | TaskWebhook | TaskPostConnection, ClientError>> {
+    public async cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
             body: { output: reason, state: 'CANCELLED' }
