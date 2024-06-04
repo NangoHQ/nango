@@ -1,7 +1,8 @@
 import { isMainThread } from 'node:worker_threads';
 import type { JsonValue } from 'type-fest';
-import type { SchedulingProps, Task, TaskState } from './types';
+import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps } from './types';
 import * as tasks from './models/tasks.js';
+import * as schedules from './models/schedules.js';
 import type { Result } from '@nangohq/utils';
 import { stringifyError, getLogger } from '@nangohq/utils';
 import { MonitorWorker } from './monitor.worker.js';
@@ -82,7 +83,7 @@ export class Scheduler {
     }
 
     /**
-     * Schedule a task
+     * Schedule a task immediatly
      * @param props - Scheduling properties
      * @param props.scheduling - 'immediate'
      * @params props.taskProps - Task properties
@@ -101,23 +102,38 @@ export class Scheduler {
      *         heartbeatTimeoutSecs: 1
      *     }
      * };
-     * const scheduled = await scheduler.schedule(schedulingProps);
+     * const scheduled = await scheduler.immediate(schedulingProps);
      */
-    public async schedule(props: SchedulingProps): Promise<Result<Task>> {
-        switch (props.scheduling) {
-            case 'immediate': {
-                const taskProps = {
-                    ...props.taskProps,
-                    startsAfter: new Date()
-                };
-                const created = await tasks.create(this.dbClient.db, taskProps);
-                if (created.isOk()) {
-                    const task = created.value;
-                    this.onCallbacks[task.state](task);
-                }
-                return created;
-            }
+    public async immediate(props: ImmediateProps): Promise<Result<Task>> {
+        const taskProps = {
+            ...props,
+            startsAfter: new Date(),
+            scheduleId: null
+        };
+        const created = await tasks.create(this.dbClient.db, taskProps);
+        if (created.isOk()) {
+            const task = created.value;
+            this.onCallbacks[task.state](task);
         }
+        return created;
+    }
+
+    /**
+     * Create a recurring schedule
+     * @param props - Schedule properties
+     * @returns Schedule
+     * @example
+     * const schedulingProps = {
+     *    name: 'schedule-name',
+     *    startsAt: new Date(),
+     *    frequencyMs: 300_00,
+     *    payload: {foo: 'bar'}
+     * };
+     * const schedule = await scheduler.recurring(schedulingProps);
+     */
+
+    public async recurring(props: ScheduleProps): Promise<Result<Schedule>> {
+        return schedules.create(this.dbClient.db, props);
     }
 
     /**
@@ -179,20 +195,17 @@ export class Scheduler {
             this.onCallbacks[task.state](task);
             // Create a new task if the task is retryable
             if (task.retryMax > task.retryCount) {
-                const schedulingProps: SchedulingProps = {
-                    scheduling: 'immediate',
-                    taskProps: {
-                        name: task.name,
-                        payload: task.payload,
-                        groupKey: task.groupKey,
-                        retryMax: task.retryMax,
-                        retryCount: task.retryCount + 1,
-                        createdToStartedTimeoutSecs: task.createdToStartedTimeoutSecs,
-                        startedToCompletedTimeoutSecs: task.startedToCompletedTimeoutSecs,
-                        heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
-                    }
+                const taskProps: ImmediateProps = {
+                    name: task.name,
+                    payload: task.payload,
+                    groupKey: task.groupKey,
+                    retryMax: task.retryMax,
+                    retryCount: task.retryCount + 1,
+                    createdToStartedTimeoutSecs: task.createdToStartedTimeoutSecs,
+                    startedToCompletedTimeoutSecs: task.startedToCompletedTimeoutSecs,
+                    heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
                 };
-                const res = await this.schedule(schedulingProps);
+                const res = await this.immediate(taskProps);
                 if (res.isErr()) {
                     logger.error(`Error retrying task '${taskId}': ${stringifyError(res.error)}`);
                 }

@@ -1,5 +1,6 @@
-import type { TaskProps } from './models/tasks';
 import type { JsonValue } from 'type-fest';
+import type { TaskProps } from './models/tasks.js';
+import type { ScheduleProps } from './models/schedules.js';
 
 export const taskStates = ['CREATED', 'STARTED', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'] as const;
 export type TaskState = (typeof taskStates)[number];
@@ -23,9 +24,23 @@ export interface Task {
     readonly lastHeartbeatAt: Date;
     readonly output: JsonValue | null;
     readonly terminated: boolean;
+    readonly scheduleId: string | null;
 }
 
-export interface SchedulingProps {
-    taskProps: Omit<TaskProps, 'startsAfter'>;
-    scheduling: 'immediate';
+export type ImmediateProps = Omit<TaskProps, 'startsAfter' | 'scheduleId'>;
+export type { ScheduleProps };
+
+const scheduleStates = ['PAUSED', 'STARTED', 'DELETED'] as const;
+export type ScheduleState = (typeof scheduleStates)[number];
+
+export interface Schedule {
+    id: string;
+    name: string;
+    state: ScheduleState;
+    startsAt: Date;
+    frequencyMs: number;
+    payload: JsonValue;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
 }
