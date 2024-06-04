@@ -96,7 +96,7 @@ class AccountController {
 
         let logCtx: LogContext | undefined;
         try {
-            const { account, environment } = res.locals;
+            const { account, environment, user: adminUser } = res.locals;
 
             if (account.uuid !== NANGO_ADMIN_UUID) {
                 res.status(401).send({ message: 'Unauthorized' });
@@ -155,14 +155,18 @@ class AccountController {
             });
             logCtx = await logContextGetter.create(
                 { id: String(activityLogId), operation: { type: 'admin', action: 'impersonation' }, message: 'Admin logged into another account' },
-                { account, environment }
+                {
+                    account,
+                    environment,
+                    meta: { loginReason: login_reason, admin: adminUser.email, impersonating: user.id }
+                }
             );
-            await logCtx.info('A Nango admin logged into another account for the following reason', { loginReason: login_reason });
-            await logCtx.success();
+            await logCtx.info('A Nango admin logged into another account');
 
             req.login(user, (err) => {
                 if (err) {
                     next(err);
+                    void logCtx!.failed();
                     return;
                 }
 
@@ -173,9 +177,11 @@ class AccountController {
                 req.session.save((err) => {
                     if (err) {
                         next(err);
+                        void logCtx!.failed();
                         return;
                     }
 
+                    void logCtx!.success();
                     res.status(200).send({ success: true });
                 });
             });

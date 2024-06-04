@@ -443,7 +443,7 @@ class WebhookService {
                     });
                     await logCtx.info(`Webhook forward ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} was sent successfully`, {
                         status: response.status,
-                        body: body,
+                        body,
                         webhookUrl
                     });
                     await logCtx.success();
@@ -461,7 +461,7 @@ class WebhookService {
                         `Webhook forward ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} was sent successfully but received a wrong status code`,
                         {
                             status: response.status,
-                            body: body,
+                            body,
                             webhookUrl
                         }
                     );
