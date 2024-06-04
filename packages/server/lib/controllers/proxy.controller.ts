@@ -35,6 +35,7 @@ import {
 } from '@nangohq/shared';
 import { metrics, getLogger } from '@nangohq/utils';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
+import { connectionRefreshFailed as connectionRefreshFailedHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 
@@ -122,7 +123,8 @@ class ProxyController {
                 connectionId,
                 providerConfigKey,
                 logContextGetter,
-                instantRefresh: false
+                instantRefresh: false,
+                connectionRefreshFailedHook
             });
 
             if (credentialResponse.isErr()) {

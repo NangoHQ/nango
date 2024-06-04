@@ -16,7 +16,7 @@ import type { Metadata, ActiveLogIds } from '@nangohq/types';
 export type ConnectionConfig = Record<string, any>;
 
 export interface BaseConnection extends TimestampsAndDeleted {
-    id?: number;
+    id: number;
     config_id?: number;
     provider_config_key: string; // TO deprecate
     connection_id: string;

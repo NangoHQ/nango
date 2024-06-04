@@ -9,6 +9,7 @@ import {
     webhookService,
     getSyncConfigsWithConnections,
     analytics,
+    errorNotificationService,
     AnalyticsTypes
 } from '@nangohq/shared';
 import type {
@@ -19,12 +20,11 @@ import type {
     RecentlyCreatedConnection,
     Connection,
     ConnectionConfig,
-    Template as ProviderTemplate,
     HTTP_VERB,
     RecentlyFailedConnection
 } from '@nangohq/shared';
-
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
+import type { Environment, Account, IntegrationConfig, Template as ProviderTemplate } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
@@ -92,6 +92,43 @@ export const connectionCreationFailed = async (
     logCtx: LogContext
 ): Promise<void> => {
     await webhookService.sendAuthUpdate(connection, provider, false, activityLogId, logCtx);
+};
+
+export const connectionRefreshFailed = async ({
+    connection,
+    activityLogId,
+    logCtx,
+    authError,
+    environment,
+    account,
+    template,
+    config
+}: {
+    connection: Connection;
+    environment: Environment;
+    account: Account;
+    template: ProviderTemplate;
+    config: IntegrationConfig;
+    authError: { type: string; description: string };
+    activityLogId: number;
+    logCtx: LogContext;
+}): Promise<void> => {
+    await errorNotificationService.auth.create({
+        type: 'auth',
+        action: 'token_refresh',
+        connection_id: connection.id,
+        activity_log_id: activityLogId,
+        log_id: logCtx.id,
+        active: true
+    });
+
+    void webhookService.sendAuthUpdate(
+        { connection, environment, account, auth_mode: template.auth_mode, operation: AuthOperation.REFRESH, error: authError },
+        config.provider,
+        false,
+        activityLogId,
+        logCtx
+    );
 };
 
 export const connectionTest = async (
