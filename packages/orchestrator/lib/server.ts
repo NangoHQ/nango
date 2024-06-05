@@ -17,7 +17,7 @@ const logger = getLogger('Orchestrator.server');
 export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Express => {
     const server = express();
 
-    server.use(express.json({ limit: '100kb' }));
+    server.use(express.json({ limit: '10mb' }));
 
     // Logging middleware
     server.use((req: Request, res: Response, next: NextFunction) => {
