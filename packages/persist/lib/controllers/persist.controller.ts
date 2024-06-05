@@ -32,13 +32,13 @@ const MAX_LOG_CHAR = 10000;
 
 class PersistController {
     public async saveActivityLog(
-        req: Request<{ environmentId: number }, void, { activityLogId: number; level: LogLevel; msg: string }, void>,
+        req: Request<{ environmentId: number }, void, { activityLogId: number; level: LogLevel; msg: string; timestamp?: number }, void>,
         res: Response,
         next: NextFunction
     ) {
         const {
             params: { environmentId },
-            body: { activityLogId, level, msg }
+            body: { activityLogId, level, msg, timestamp }
         } = req;
         const truncatedMsg = msg.length > MAX_LOG_CHAR ? `${msg.substring(0, MAX_LOG_CHAR)}... (truncated)` : msg;
         const result = await createActivityLogMessage(
@@ -47,12 +47,19 @@ class PersistController {
                 environment_id: environmentId,
                 activity_log_id: activityLogId,
                 content: truncatedMsg,
-                timestamp: Date.now()
+                timestamp: timestamp || Date.now()
             },
             false
         );
         const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) }, { logToConsole: false });
-        await logCtx.log({ type: 'log', message: truncatedMsg, environmentId: environmentId, level: oldLevelToNewLevel[level], source: 'user' });
+        await logCtx.log({
+            type: 'log',
+            message: truncatedMsg,
+            environmentId: environmentId,
+            level: oldLevelToNewLevel[level],
+            source: 'user',
+            createdAt: (timestamp ? new Date(timestamp) : new Date()).toISOString()
+        });
 
         if (result) {
             res.status(201).send();
