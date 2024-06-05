@@ -1,9 +1,11 @@
 import type { JsonValue, SetOptional } from 'type-fest';
-import type { PostSchedule } from '../routes/v1/postSchedule.js';
+import type { PostImmediate } from '../routes/v1/postImmediate.js';
+import type { PostRecurring } from '../routes/v1/postRecurring.js';
 import type { Result } from '@nangohq/utils';
 import type { TaskState } from '@nangohq/scheduler';
 
-export type SchedulingProps = Omit<PostSchedule['Body'], 'scheduling'>;
+export type ImmediateProps = PostImmediate['Body'];
+export type RecurringProps = PostRecurring['Body'];
 
 interface SyncArgs {
     syncId: string;
@@ -53,7 +55,7 @@ interface PostConnectionArgs {
     activityLogId: number;
 }
 
-export type ExecuteProps = SetOptional<SchedulingProps, 'retry' | 'timeoutSettingsInSecs'>;
+export type ExecuteProps = SetOptional<ImmediateProps, 'retry' | 'timeoutSettingsInSecs'>;
 export type ExecuteReturn = Result<JsonValue, ClientError>;
 export type ExecuteActionProps = Omit<ExecuteProps, 'args'> & { args: ActionArgs };
 export type ExecuteWebhookProps = Omit<ExecuteProps, 'args'> & { args: WebhookArgs };
