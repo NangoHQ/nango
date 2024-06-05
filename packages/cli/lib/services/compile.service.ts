@@ -1,8 +1,9 @@
 import fs from 'fs';
-import * as tsNode from 'ts-node';
 import { glob } from 'glob';
+import * as tsNode from 'ts-node';
 import chalk from 'chalk';
 import path from 'path';
+import { build } from 'tsup';
 import { SyncConfigType, localFileService } from '@nangohq/shared';
 import type { StandardNangoConfig } from '@nangohq/shared';
 
@@ -10,7 +11,7 @@ import configService from './config.service.js';
 import { getNangoRootPath, printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
 import modelService from './model.service.js';
-import parserService from './parser.service.js';
+import ParserService from './parser.service.js';
 
 export async function compileAllFiles({
     debug,
@@ -70,7 +71,7 @@ export async function compileAllFiles({
 
     for (const file of integrationFiles) {
         try {
-            const completed = compile({ file, config, compiler, modelNames });
+            const completed = await compile({ file, config, modelNames, compiler, compilerOptions });
             if (!completed) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
                     success = false;
@@ -86,25 +87,24 @@ export async function compileAllFiles({
     return success;
 }
 
-export function compileSingleFile({
+export async function compileSingleFile({
     file,
-    tsconfig,
     config,
-    modelNames
+    modelNames,
+    tsconfig
 }: {
     file: ListedFile;
     tsconfig: string;
     config: StandardNangoConfig[];
     modelNames: string[];
 }) {
-    // This needs to be re-declared each time
-    const compiler = tsNode.create({
-        skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-        compilerOptions: JSON.parse(tsconfig).compilerOptions
-    });
-
     try {
-        compile({ file, config, compiler, modelNames });
+        const compiler = tsNode.create({
+            skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
+            compilerOptions: JSON.parse(tsconfig).compilerOptions
+        });
+        const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
+        await compile({ file, config, modelNames, compiler, compilerOptions });
     } catch (error) {
         console.error(`Error compiling ${file.inputPath}:`);
         console.error(error);
@@ -112,17 +112,19 @@ export function compileSingleFile({
     }
 }
 
-function compile({
+async function compile({
     file,
     config,
+    modelNames,
     compiler,
-    modelNames
+    compilerOptions
 }: {
     file: ListedFile;
     config: StandardNangoConfig[];
     compiler: tsNode.Service;
     modelNames: string[];
-}): boolean {
+    compilerOptions: Record<string, any>;
+}): Promise<boolean> {
     const providerConfiguration = localFileService.getProviderConfigurationFromPath(file.inputPath, config);
 
     if (!providerConfiguration) {
@@ -132,10 +134,23 @@ function compile({
     const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === file.baseName);
     const type = syncConfig?.type || SyncConfigType.SYNC;
 
-    if (!parserService.callsAreUsedCorrectly(file.inputPath, type, modelNames)) {
+    const parserService = new ParserService(file.inputPath);
+
+    if (!parserService.callsAreUsedCorrectly(type, modelNames)) {
         return false;
     }
-    const result = compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
+
+    const importedFiles = parserService.getImportedFiles();
+
+    for (const importedFile of importedFiles) {
+        const importedFilePath = path.resolve(path.dirname(file.inputPath), importedFile);
+        compiler.compile(fs.readFileSync(`${importedFilePath}.ts`, 'utf8'), `${importedFilePath}.ts`);
+
+        console.log(chalk.green(`Compiled "${importedFilePath}.ts" successfully`));
+    }
+
+    compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
+
     const dirname = path.dirname(file.outputPath);
     const extname = path.extname(file.outputPath);
     const basename = path.basename(file.outputPath, extname);
@@ -143,8 +158,22 @@ function compile({
     const fileNameWithExtension = `${basename}-${providerConfiguration.providerConfigKey}${extname}`;
     const outputPath = path.join(dirname, fileNameWithExtension);
 
-    fs.writeFileSync(outputPath, result);
+    await build({
+        entryPoints: [file.inputPath],
+        target: 'es5',
+        silent: true,
+        dts: {
+            compilerOptions: {
+                ...compilerOptions,
+                transpileOnly: true
+            }
+        },
+        outDir: dirname
+    });
+
+    fs.renameSync(file.outputPath, outputPath);
     console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
+
     return true;
 }
 
