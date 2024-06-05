@@ -71,7 +71,7 @@ export async function compileAllFiles({
 
     for (const file of integrationFiles) {
         try {
-            const completed = await compile({ file, config, modelNames, compiler, compilerOptions });
+            const completed = await compile({ file, config, modelNames, compiler });
             if (!completed) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
                     success = false;
@@ -103,8 +103,7 @@ export async function compileSingleFile({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
             compilerOptions: JSON.parse(tsconfig).compilerOptions
         });
-        const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
-        await compile({ file, config, modelNames, compiler, compilerOptions });
+        await compile({ file, config, modelNames, compiler });
     } catch (error) {
         console.error(`Error compiling ${file.inputPath}:`);
         console.error(error);
@@ -141,14 +140,12 @@ async function compile({
     file,
     config,
     modelNames,
-    compiler,
-    compilerOptions
+    compiler
 }: {
     file: ListedFile;
     config: StandardNangoConfig[];
     compiler: tsNode.Service;
     modelNames: string[];
-    compilerOptions: Record<string, any>;
 }): Promise<boolean> {
     const providerConfiguration = localFileService.getProviderConfigurationFromPath(file.inputPath, config);
 
@@ -176,14 +173,8 @@ async function compile({
 
     await build({
         entryPoints: [file.inputPath],
-        target: 'es5',
+        tsconfig: getNangoRootPath() + '/tsconfig.dev.json',
         silent: true,
-        dts: {
-            compilerOptions: {
-                ...compilerOptions,
-                transpileOnly: true
-            }
-        },
         outDir: dirname
     });
 

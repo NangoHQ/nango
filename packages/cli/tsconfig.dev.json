@@ -23,6 +23,6 @@
         "checkJs": false,
         "outDir": "nango-integrations/dist"
     },
-    "include": ["nango-integrations/*.ts", "nango-integrations/**/*.ts"],
+    "include": ["*.ts", "**/*.ts"],
     "exclude": ["node_modules"]
 }

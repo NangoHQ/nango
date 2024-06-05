@@ -282,7 +282,8 @@ export const tscWatch = async (debug = false) => {
     const watcher = chokidar.watch(watchPath, {
         ignoreInitial: false,
         ignored: (filePath: string) => {
-            return filePath === TYPES_FILE_NAME;
+            const relativePath = path.relative(__dirname, filePath);
+            return relativePath.includes('node_modules') || path.basename(filePath) === TYPES_FILE_NAME;
         }
     });
 
