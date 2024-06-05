@@ -528,6 +528,11 @@ class ConnectionService {
     ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata; active_logs: ActiveLogIds }[]> {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
+            // A connection can have multiple different syncs that are failing
+            // which means it could have different entries in the active logs table.
+            // We only need to know that the connection has any active logs
+            // and we don't want the connection to show multiple times.
+            // We use a lateral join to get only one active log.
             .joinRaw(
                 `LEFT JOIN LATERAL (SELECT * FROM ${ACTIVE_LOG_TABLE} WHERE _nango_connections.id = ${ACTIVE_LOG_TABLE}.connection_id AND ${ACTIVE_LOG_TABLE}.active = true LIMIT 1) ${ACTIVE_LOG_TABLE} ON true`
             )
