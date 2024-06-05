@@ -115,7 +115,10 @@ export const deliver = async ({
 
             if (activityLogId) {
                 if (response.status >= 200 && response.status < 300) {
-                    await logCtx?.info(`${webhookType} webhook sent successfully to the ${type} ${url} and received with a ${response.status} response code.`);
+                    await logCtx?.info(
+                        `${webhookType} webhook sent successfully to the ${type} ${url} and received with a ${response.status} response code.`,
+                        body as Record<string, unknown>
+                    );
                 } else {
                     await logCtx?.error(
                         `${webhookType} sent webhook successfully to the ${type} ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
