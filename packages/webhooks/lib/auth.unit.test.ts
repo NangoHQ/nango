@@ -5,12 +5,6 @@ import { axiosInstance } from '@nangohq/utils';
 import type { Connection, Environment } from '@nangohq/types';
 import * as logPackage from '@nangohq/logs';
 
-function mockCreateActivityLog() {
-    return vi.spyOn(logPackage, 'createActivityLog').mockImplementation(() => {
-        return Promise.resolve(1);
-    });
-}
-
 const spy = vi.spyOn(axiosInstance, 'post');
 
 const connection: Pick<Connection, 'connection_id' | 'provider_config_key'> = {
@@ -26,7 +20,6 @@ describe('Webhooks: auth notification tests', () => {
     });
 
     it('Should not send an auth webhook if the webhook url is not present even if the auth webhook is checked', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         await sendAuth({
@@ -51,7 +44,6 @@ describe('Webhooks: auth notification tests', () => {
     });
 
     it('Should not send an auth webhook if the webhook url is not present even if the auth webhook is checked', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         await sendAuth({
@@ -76,7 +68,6 @@ describe('Webhooks: auth notification tests', () => {
     });
 
     it('Should send an auth webhook if the webhook url is not present but the secondary is', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         await sendAuth({
@@ -101,7 +92,6 @@ describe('Webhooks: auth notification tests', () => {
     });
 
     it('Should send an auth webhook twice if the webhook url is present and the secondary is as well', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         await sendAuth({
@@ -126,8 +116,6 @@ describe('Webhooks: auth notification tests', () => {
     });
 
     it('Should send an auth webhook if the webhook url is present and if the auth webhook is checked', async () => {
-        mockCreateActivityLog();
-
         const logCtx = getLogCtx();
 
         await sendAuth({
@@ -151,8 +139,6 @@ describe('Webhooks: auth notification tests', () => {
     });
 
     it('Should not send an auth webhook if the webhook url is present and if the auth webhook is not checked', async () => {
-        mockCreateActivityLog();
-
         const logCtx = getLogCtx();
         await sendAuth({
             connection,

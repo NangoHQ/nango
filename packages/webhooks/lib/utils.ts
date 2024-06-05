@@ -1,10 +1,9 @@
 import crypto from 'crypto';
 import { backOff } from 'exponential-backoff';
 import type { AxiosError } from 'axios';
-import { axiosInstance as axios, stringifyError } from '@nangohq/utils';
+import { axiosInstance as axios } from '@nangohq/utils';
 import type { Environment } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import { createActivityLogMessage } from '@nangohq/logs';
 
 export const RETRY_ATTEMPTS = 7;
 
@@ -28,7 +27,6 @@ export const NON_FORWARDABLE_HEADERS = [
 
 export const retry = async (
     activityLogId: number | null,
-    environment_id: number,
     logCtx?: LogContext | null | undefined,
     error?: AxiosError,
     attemptNumber?: number
@@ -39,16 +37,6 @@ export const retry = async (
         } error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
 
         if (activityLogId) {
-            await createActivityLogMessage(
-                {
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                },
-                false
-            );
             await logCtx?.error(content);
         }
 
@@ -122,29 +110,15 @@ export const deliver = async ({
                 () => {
                     return axios.post(url, body, { headers });
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: retry.bind(this, activityLogId, environment.id, logCtx) }
+                { numOfAttempts: RETRY_ATTEMPTS, retry: retry.bind(this, activityLogId, logCtx) }
             );
 
             if (activityLogId) {
                 if (response.status >= 200 && response.status < 300) {
-                    await createActivityLogMessage({
-                        level: 'info',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId,
-                        content: `${webhookType} webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`,
-                        timestamp: Date.now()
-                    });
                     await logCtx?.info(
                         `${webhookType} webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`
                     );
                 } else {
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId,
-                        content: `${webhookType} webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
-                        timestamp: Date.now()
-                    });
                     await logCtx?.error(
                         `${webhookType} sent webhook successfully to ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
                     );
@@ -152,15 +126,6 @@ export const deliver = async ({
             }
         } catch (err) {
             if (activityLogId) {
-                const errorMessage = stringifyError(err, { pretty: true });
-
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId,
-                    content: `${webhookType} webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}. The error was: ${errorMessage}`,
-                    timestamp: Date.now()
-                });
                 await logCtx?.error(`${webhookType} webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}`, {
                     error: err
                 });
