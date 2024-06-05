@@ -115,18 +115,16 @@ export const deliver = async ({
 
             if (activityLogId) {
                 if (response.status >= 200 && response.status < 300) {
-                    await logCtx?.info(
-                        `${webhookType} webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`
-                    );
+                    await logCtx?.info(`${webhookType} webhook sent successfully to the ${type} ${url} and received with a ${response.status} response code.`);
                 } else {
                     await logCtx?.error(
-                        `${webhookType} sent webhook successfully to ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
+                        `${webhookType} sent webhook successfully to the ${type} ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
                     );
                 }
             }
         } catch (err) {
             if (activityLogId) {
-                await logCtx?.error(`${webhookType} webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}`, {
+                await logCtx?.error(`${webhookType} webhook failed to send to the ${type} to ${url}`, {
                     error: err
                 });
             }

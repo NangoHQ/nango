@@ -46,8 +46,8 @@ export const sendAuth = async ({
     }
 
     const webhooks = [
-        { url: environment.webhook_url!, type: 'webhookUrl' },
-        { url: environment.webhook_url_secondary!, type: 'webhookUrlSecondary' }
+        { url: environment.webhook_url!, type: 'webhook url' },
+        { url: environment.webhook_url_secondary!, type: 'secondary webhook url' }
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
     await deliver({
