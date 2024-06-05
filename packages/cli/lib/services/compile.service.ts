@@ -112,6 +112,33 @@ export async function compileSingleFile({
     }
 }
 
+function compileImportedFile(filePath: string, compiler: tsNode.Service, type: SyncConfigType | undefined, modelNames: string[]) {
+    let success = true;
+    const parserService = new ParserService(filePath);
+    const importedFiles = parserService.getImportedFiles();
+
+    for (const importedFile of importedFiles) {
+        const importedFilePath = path.resolve(path.dirname(filePath), importedFile);
+        const importedFilePathWithExtension = importedFilePath + '.ts';
+
+        if (importedFilePathWithExtension.includes('models.ts')) {
+            continue;
+        }
+
+        if (!parserService.callsAreUsedCorrectly(type, modelNames)) {
+            success = false;
+            continue;
+        }
+
+        compiler.compile(fs.readFileSync(importedFilePathWithExtension, 'utf8'), importedFilePathWithExtension);
+        console.log(chalk.green(`Compiled "${importedFilePathWithExtension}" successfully`));
+
+        compileImportedFile(importedFilePath + '.ts', compiler, type, modelNames);
+    }
+
+    return success;
+}
+
 async function compile({
     file,
     config,
@@ -134,19 +161,10 @@ async function compile({
     const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === file.baseName);
     const type = syncConfig?.type || SyncConfigType.SYNC;
 
-    const parserService = new ParserService(file.inputPath);
+    const success = compileImportedFile(file.inputPath, compiler, type, modelNames);
 
-    if (!parserService.callsAreUsedCorrectly(type, modelNames)) {
+    if (!success) {
         return false;
-    }
-
-    const importedFiles = parserService.getImportedFiles();
-
-    for (const importedFile of importedFiles) {
-        const importedFilePath = path.resolve(path.dirname(file.inputPath), importedFile);
-        compiler.compile(fs.readFileSync(`${importedFilePath}.ts`, 'utf8'), `${importedFilePath}.ts`);
-
-        console.log(chalk.green(`Compiled "${importedFilePath}.ts" successfully`));
     }
 
     compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
