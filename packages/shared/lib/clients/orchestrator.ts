@@ -97,7 +97,7 @@ export class Orchestrator {
                 try {
                     const groupKey: string = 'action';
                     const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:action:${actionName}:at:${new Date().toISOString()}:${uuid()}`;
-                    const parsedInput = JSON.parse(JSON.stringify(input));
+                    const parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
                     const args = {
                         actionName,
                         connection: {
@@ -353,7 +353,7 @@ export class Orchestrator {
                 try {
                     const groupKey: string = 'webhook';
                     const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:webhook:${webhookName}:at:${new Date().toISOString()}:${uuid()}`;
-                    const parsedInput = JSON.parse(JSON.stringify(input));
+                    const parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
                     const args = {
                         webhookName,
                         parentSyncName: syncConfig.sync_name,
