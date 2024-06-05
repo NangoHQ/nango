@@ -528,14 +528,6 @@ class ConnectionService {
     ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata; active_logs: ActiveLogIds }[]> {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
-            // A connection can have multiple different syncs that are failing
-            // which means it could have different entries in the active logs table.
-            // We only need to know that the connection has any active logs
-            // and we don't want the connection to show multiple times.
-            // We use a lateral join to get only one active log.
-            .joinRaw(
-                `LEFT JOIN LATERAL (SELECT * FROM ${ACTIVE_LOG_TABLE} WHERE _nango_connections.id = ${ACTIVE_LOG_TABLE}.connection_id AND ${ACTIVE_LOG_TABLE}.active = true LIMIT 1) ${ACTIVE_LOG_TABLE} ON true`
-            )
             .select(
                 { id: '_nango_connections.id' },
                 { connection_id: '_nango_connections.connection_id' },
@@ -543,13 +535,15 @@ class ConnectionService {
                 { created: '_nango_connections.created_at' },
                 '_nango_connections.metadata',
                 db.knex.raw(`
-                    CASE
-                        WHEN COUNT(${ACTIVE_LOG_TABLE}.activity_log_id) = 0 THEN NULL
-                        ELSE json_build_object(
-                            'activity_log_id', ${ACTIVE_LOG_TABLE}.activity_log_id,
-                            'log_id', ${ACTIVE_LOG_TABLE}.log_id
-                        )
-                    END as active_logs
+                  (SELECT json_build_object(
+                      'activity_log_id', activity_log_id,
+                      'log_id', log_id
+                    )
+                    FROM ${ACTIVE_LOG_TABLE}
+                    WHERE _nango_connections.id = ${ACTIVE_LOG_TABLE}.connection_id
+                      AND ${ACTIVE_LOG_TABLE}.active = true
+                    LIMIT 1
+                  ) as active_logs
                 `)
             )
             .where({
@@ -561,9 +555,7 @@ class ConnectionService {
                 '_nango_connections.connection_id',
                 '_nango_connections.provider_config_key',
                 '_nango_connections.created_at',
-                '_nango_connections.metadata',
-                `${ACTIVE_LOG_TABLE}.activity_log_id`,
-                `${ACTIVE_LOG_TABLE}.log_id`
+                '_nango_connections.metadata'
             );
 
         if (connectionId) {
