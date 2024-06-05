@@ -228,7 +228,7 @@ describe('OrchestratorClient', async () => {
     describe('succeed', () => {
         it('should support big output', async () => {
             const groupKey = rndStr();
-            const actionA = await client.schedule({
+            const actionA = await client.immediate({
                 name: 'Task',
                 groupKey,
                 retry: { count: 0, max: 0 },
