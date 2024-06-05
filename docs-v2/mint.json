@@ -333,6 +333,7 @@
                 "integrations/all/coda",
                 "integrations/all/confluence",
                 "integrations/all/contentstack",
+                "integrations/all/datev",
                 "integrations/all/deel",
                 "integrations/all/dialpad",
                 "integrations/all/digitalocean",

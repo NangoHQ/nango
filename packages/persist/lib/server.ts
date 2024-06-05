@@ -41,11 +41,14 @@ server.post(
         params: z.object({
             environmentId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber
         }),
-        body: z.object({
-            activityLogId: z.number(),
-            level: z.enum(logLevelValues),
-            msg: z.string()
-        })
+        body: z
+            .object({
+                activityLogId: z.number(),
+                level: z.enum(logLevelValues),
+                msg: z.string(),
+                timestamp: z.number().optional() // Optional until fully deployed
+            })
+            .strict()
     }),
     persistController.saveActivityLog.bind(persistController)
 );
