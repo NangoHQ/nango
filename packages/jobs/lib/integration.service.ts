@@ -159,7 +159,18 @@ class IntegrationService implements IntegrationServiceInterface {
                 const { success, error, response } = formatScriptError(err, errorType, syncName);
 
                 if (activityLogId && writeToDb) {
+<<<<<<< feat/remove-old-activities
                     await logCtx?.error(`Failed`, { error });
+=======
+                    await createActivityLogMessage({
+                        level: 'error',
+                        environment_id: environmentId,
+                        activity_log_id: activityLogId,
+                        content: error.message,
+                        timestamp: Date.now()
+                    });
+                    await logCtx?.error(error.message, { error });
+>>>>>>> master
                 }
                 return { success, error, response };
             } finally {

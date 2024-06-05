@@ -1,0 +1,33 @@
+---
+title: Datev
+sidebarTitle: Datev
+---
+
+API configuration: [`datev`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [OAuth related docs](https://developer.datev.de/datev/platform/en/node/133)
+-   [REST API docs](https://developer.datev.de/datev/platform/en/online-apis)
+-   [DATEV Postman collection](https://www.postman.com/adil-linuxbean/workspace/data/documentation/21088764-d2d642eb-6eea-4be6-8689-3d83c97d00ac?entity=request-21088764-842e0cb7-33bb-4263-8ec3-9244cbd547d3)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-   An `access_token` is valid for 15 minutes, while the `refresh_token` is valid for 11 hours.
+-   At present, only DATEV partners or `DATEV Schnittstellenanbieter` have access to DATEV Online APIs. Therefore, a DATEV partner manager will handle the application registration.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/datev.mdx)</Note>
