@@ -4,6 +4,7 @@ import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfigurat
 import { AuthModes } from '../models/index.js';
 import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import type { LogsBuffer } from '@nangohq/types';
 
 describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct a header using an api key with multiple headers', () => {
@@ -533,12 +534,13 @@ describe('Proxy service configure', () => {
         expect(error).toBeDefined();
         expect(error?.message).toContain('missing_endpoint');
         expect(logs.length).toBe(1);
-        expect(logs[0]).toMatchObject({
-            environment_id: 1,
-            activity_log_id: 1,
-            level: 'error'
+        expect(logs[0]).toStrictEqual<LogsBuffer>({
+            level: 'error',
+            createdAt: expect.any(String),
+            message: 'Proxy: a API URL endpoint is missing.'
         });
     });
+
     it('Should fail if no connectionId', () => {
         const externalConfig: UserProvidedProxyConfiguration = {
             method: 'GET',
@@ -563,12 +565,14 @@ describe('Proxy service configure', () => {
         expect(error).toBeDefined();
         expect(error?.message).toContain("Missing param 'connection_id'.");
         expect(logs.length).toBe(1);
-        expect(logs[0]).toMatchObject({
-            environment_id: 1,
-            activity_log_id: 1,
-            level: 'error'
+        expect(logs[0]).toStrictEqual<LogsBuffer>({
+            level: 'error',
+            createdAt: expect.any(String),
+            message:
+                "The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified."
         });
     });
+
     it('Should fail if no providerConfigKey', () => {
         const externalConfig: UserProvidedProxyConfiguration = {
             method: 'GET',
@@ -593,12 +597,14 @@ describe('Proxy service configure', () => {
         expect(error).toBeDefined();
         expect(error?.message).toContain('missing_provider_config_key');
         expect(logs.length).toBe(1);
-        expect(logs[0]).toMatchObject({
-            environment_id: 1,
-            activity_log_id: 1,
-            level: 'error'
+        expect(logs[0]).toStrictEqual<LogsBuffer>({
+            level: 'error',
+            createdAt: expect.any(String),
+            message:
+                "The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified."
         });
     });
+
     it('Should fail if unknown provider', () => {
         const externalConfig: UserProvidedProxyConfiguration = {
             method: 'GET',
@@ -623,12 +629,14 @@ describe('Proxy service configure', () => {
         expect(error).toBeDefined();
         expect(error?.message).toContain('proxy is either not supported');
         expect(logs.length).toBe(3);
-        expect(logs[2]).toMatchObject({
-            environment_id: 1,
-            activity_log_id: 1,
-            level: 'error'
+        expect(logs[2]).toStrictEqual<LogsBuffer>({
+            level: 'error',
+            createdAt: expect.any(String),
+            message:
+                'The proxy is either not supported for the provider unknown or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).'
         });
     });
+
     it('Should succeed', () => {
         const externalConfig: UserProvidedProxyConfiguration = {
             method: 'GET',

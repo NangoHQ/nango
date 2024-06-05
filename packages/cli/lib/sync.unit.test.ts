@@ -495,7 +495,7 @@ describe('generate function tests', () => {
         expect(modelsFile).toContain(`user: User | Account`);
     });
 
-    it('should correctly interpret a union types, array types, and record types', async () => {
+    it('should correctly interpret a union type, array types, and record types', async () => {
         await fs.promises.mkdir(testDirectory, { recursive: true });
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-types/nango.yaml`, `${testDirectory}/nango.yaml`);
         expect(generate(false, true));

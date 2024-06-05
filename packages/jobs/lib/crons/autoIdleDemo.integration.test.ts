@@ -16,11 +16,13 @@ import {
 } from '@nangohq/shared';
 import { exec } from './autoIdleDemo.js';
 import { nanoid, Ok } from '@nangohq/utils';
+import { migrateMapping } from '@nangohq/logs';
 
 describe('Auto Idle Demo', async () => {
     let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
+        await migrateMapping();
         env = await seeders.createEnvironmentSeed(0, 'dev');
         await seeders.createConfigSeeds(env);
     });

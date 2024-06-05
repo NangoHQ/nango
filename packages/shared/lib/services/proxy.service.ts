@@ -129,7 +129,7 @@ class ProxyService {
             logs.push({
                 level: 'error',
                 createdAt: new Date().toISOString(),
-                message: `${Date.now()} The proxy is either not supported for the provider ${provider} or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).`
+                message: `The proxy is either not supported for the provider ${provider} or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).`
             });
 
             return { success: false, error: new NangoError('missing_base_api_url'), response: null, logs };
