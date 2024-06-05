@@ -113,9 +113,12 @@ export async function compileSingleFile({
 }
 
 function compileImportedFile(filePath: string, compiler: tsNode.Service, type: SyncConfigType | undefined, modelNames: string[]) {
-    let success = true;
     const parserService = new ParserService(filePath);
     const importedFiles = parserService.getImportedFiles();
+
+    if (!parserService.callsAreUsedCorrectly(type, modelNames)) {
+        return false;
+    }
 
     for (const importedFile of importedFiles) {
         const importedFilePath = path.resolve(path.dirname(filePath), importedFile);
@@ -125,18 +128,13 @@ function compileImportedFile(filePath: string, compiler: tsNode.Service, type: S
             continue;
         }
 
-        if (!parserService.callsAreUsedCorrectly(type, modelNames)) {
-            success = false;
-            continue;
-        }
-
         compiler.compile(fs.readFileSync(importedFilePathWithExtension, 'utf8'), importedFilePathWithExtension);
         console.log(chalk.green(`Compiled "${importedFilePathWithExtension}" successfully`));
 
-        compileImportedFile(importedFilePath + '.ts', compiler, type, modelNames);
+        return compileImportedFile(importedFilePath + '.ts', compiler, type, modelNames);
     }
 
-    return success;
+    return true;
 }
 
 async function compile({
