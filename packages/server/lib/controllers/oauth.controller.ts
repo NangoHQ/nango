@@ -26,10 +26,8 @@ import {
     getConnectionConfig,
     interpolateStringFromObject,
     getOauthCallbackUrl,
-    getGlobalAppCallbackUrl,
     createActivityLog,
     createActivityLogMessageAndEnd,
-    createActivityLogMessage,
     updateProvider as updateProviderActivityLog,
     updateSuccess as updateSuccessActivityLog,
     updateProviderConfigAndConnectionId as updateProviderConfigAndConnectionIdActivityLog,
@@ -175,18 +173,6 @@ class OAuthController {
                 }
             }
 
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environmentId,
-                activity_log_id: activityLogId as number,
-                content: 'Authorization URL request from the client',
-                timestamp: Date.now(),
-                url: callbackUrl,
-                params: {
-                    ...connectionConfig,
-                    hmacEnabled
-                }
-            });
             await logCtx.info('Authorization URL request from the client');
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
@@ -268,20 +254,6 @@ class OAuthController {
 
                 const obfuscatedClientSecret = config.oauth_client_secret ? config.oauth_client_secret.slice(0, 4) + '***' : '';
 
-                await createActivityLogMessage({
-                    level: 'info',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId as number,
-                    content: 'Credentials override',
-                    timestamp: Date.now(),
-                    auth_mode: template.auth_mode,
-                    url: callbackUrl,
-                    params: {
-                        oauth_client_id: config.oauth_client_id,
-                        oauth_client_secret: obfuscatedClientSecret
-                    }
-                });
-
                 await logCtx.info('Credentials override', {
                     oauth_client_id: config.oauth_client_id,
                     oauth_client_secret: obfuscatedClientSecret
@@ -324,8 +296,15 @@ class OAuthController {
                     logCtx
                 });
             } else if (template.auth_mode === ProviderAuthModes.App || template.auth_mode === ProviderAuthModes.Custom) {
-                const appCallBackUrl = getGlobalAppCallbackUrl();
-                return this.appRequest(template, config, session, res, authorizationParams, appCallBackUrl, activityLogId!, environmentId, logCtx);
+                return this.appRequest({
+                    template,
+                    providerConfig: config,
+                    session,
+                    res,
+                    authorizationParams,
+                    activityLogId: activityLogId!,
+                    logCtx
+                });
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 return this.oauth1Request(template, config, session, res, callbackUrl, activityLogId!, environmentId, logCtx);
             }
@@ -346,13 +325,6 @@ class OAuthController {
         } catch (e) {
             const prettyError = stringifyError(e, { pretty: true });
             const error = WSErrBuilder.UnknownError();
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environmentId,
-                activity_log_id: activityLogId as number,
-                content: error.message + '\n' + prettyError,
-                timestamp: Date.now()
-            });
             if (logCtx) {
                 await logCtx.error(error.message, { error: e });
                 await logCtx.failed();
@@ -527,13 +499,6 @@ class OAuthController {
 
             connectionConfig['scopes'] = Array.isArray(credentials.raw['scope']) ? credentials.raw['scope'] : credentials.raw['scope'].split(' ');
 
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId as number,
-                content: `OAuth2 client credentials connection creation was successful`,
-                timestamp: Date.now()
-            });
             await logCtx.info('OAuth2 client credentials creation was successful');
             await logCtx.success();
 
@@ -561,7 +526,6 @@ class OAuthController {
                     },
                     config.provider,
                     logContextGetter,
-                    activityLogId,
                     undefined,
                     logCtx
                 );
@@ -571,13 +535,6 @@ class OAuthController {
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environment.id,
-                activity_log_id: activityLogId as number,
-                content: `Error during OAuth2 client credentials create: ${prettyError}`,
-                timestamp: Date.now()
-            });
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
@@ -589,7 +546,6 @@ class OAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     'unknown',
-                    activityLogId,
                     logCtx
                 );
                 await logCtx.error('Error during OAuth2 client credentials creation', { error: err });
@@ -644,18 +600,7 @@ class OAuthController {
         try {
             if (missesInterpolationParam(template.authorization_url!, connectionConfig)) {
                 const error = WSErrBuilder.InvalidConnectionConfig(template.authorization_url!, JSON.stringify(connectionConfig));
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    content: error.message,
-                    timestamp: Date.now(),
-                    auth_mode: template.auth_mode,
-                    url: callbackUrl,
-                    params: {
-                        ...connectionConfig
-                    }
-                });
+
                 await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
 
@@ -664,18 +609,7 @@ class OAuthController {
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
                 const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    content: error.message,
-                    timestamp: Date.now(),
-                    auth_mode: template.auth_mode,
-                    url: callbackUrl,
-                    params: {
-                        ...connectionConfig
-                    }
-                });
+
                 await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
 
@@ -744,26 +678,8 @@ class OAuthController {
                     authMode: String(template.auth_mode)
                 });
 
-                await createActivityLogMessage({
-                    level: 'info',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    content: `Redirecting to ${authorizationUri} for ${providerConfigKey} (connection ${connectionId})`,
-                    timestamp: Date.now(),
-                    url: callbackUrl,
-                    auth_mode: template.auth_mode,
-                    params: {
-                        ...allAuthParams,
-                        ...connectionConfig,
-                        grant_type: oauth2Template.token_params?.grant_type as string,
-                        scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' ') : '',
-                        external_api_url: authorizationUri
-                    }
-                });
-                await logCtx.info('Redirecting', {
+                await logCtx.info('Redirecting...', {
                     authorizationUri,
-                    providerConfigKey,
-                    connectionId,
                     allAuthParams,
                     connectionConfig,
                     grantType: oauth2Template.token_params?.grant_type as string,
@@ -778,21 +694,7 @@ class OAuthController {
                 const grantType = oauth2Template.token_params.grant_type;
                 const error = WSErrBuilder.UnknownGrantType(grantType);
 
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    content: error.message,
-                    timestamp: Date.now(),
-                    auth_mode: template.auth_mode,
-                    url: callbackUrl,
-                    params: {
-                        grant_type: grantType,
-                        basic_auth_enabled: template.token_request_auth_method === 'basic',
-                        ...connectionConfig
-                    }
-                });
-                await logCtx.error('Redirecting', {
+                await logCtx.error('Redirecting...', {
                     grantType,
                     basicAuthEnabled: template.token_request_auth_method === 'basic',
                     connectionConfig
@@ -815,36 +717,30 @@ class OAuthController {
                 level: 'error'
             });
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId,
-                content,
-                timestamp: Date.now(),
-                auth_mode: template.auth_mode,
-                url: callbackUrl,
-                params: {
-                    ...connectionConfig
-                }
-            });
-            await logCtx.error(WSErrBuilder.UnknownError().message, { error, connectionConfig });
+            await logCtx.error('OAuth2 request process failed', { error: err, connectionConfig });
             await logCtx.failed();
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
     }
 
-    private async appRequest(
-        template: ProviderTemplate,
-        providerConfig: ProviderConfig,
-        session: OAuthSession,
-        res: Response,
-        authorizationParams: Record<string, string | undefined>,
-        callbackUrl: string,
-        activityLogId: number,
-        environment_id: number,
-        logCtx: LogContext
-    ) {
+    private async appRequest({
+        template,
+        providerConfig,
+        session,
+        res,
+        authorizationParams,
+        activityLogId,
+        logCtx
+    }: {
+        template: ProviderTemplate;
+        providerConfig: ProviderConfig;
+        session: OAuthSession;
+        res: Response;
+        authorizationParams: Record<string, string | undefined>;
+        activityLogId: number;
+        logCtx: LogContext;
+    }) {
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
@@ -859,19 +755,8 @@ class OAuthController {
         try {
             if (missesInterpolationParam(template.authorization_url!, connectionConfig)) {
                 const error = WSErrBuilder.InvalidConnectionConfig(template.authorization_url!, JSON.stringify(connectionConfig));
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    content: error.message,
-                    timestamp: Date.now(),
-                    auth_mode: template.auth_mode,
-                    url: callbackUrl,
-                    params: {
-                        ...connectionConfig
-                    }
-                });
-                await logCtx.error(error.message, { ...connectionConfig });
+
+                await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -889,44 +774,16 @@ class OAuthController {
 
             const authorizationUri = `${appUrl}?${params.toString()}`;
 
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id,
-                activity_log_id: activityLogId,
-                content: `Redirecting to ${authorizationUri} for ${providerConfigKey} (connection ${connectionId})`,
-                timestamp: Date.now(),
-                url: callbackUrl,
-                auth_mode: template.auth_mode,
-                params: {
-                    ...connectionConfig,
-                    external_api_url: authorizationUri
-                }
-            });
-            await logCtx.info('Redirecting', { authorizationUri, providerConfigKey, connectionId, connectionConfig });
+            await logCtx.info('Redirecting...', { authorizationUri, connectionConfig });
 
             await addEndTimeActivityLog(activityLogId);
 
             res.redirect(authorizationUri);
         } catch (error) {
-            const prettyError = stringifyError(error, { pretty: true });
-
-            const content = WSErrBuilder.UnknownError().message + '\n' + prettyError;
-
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId,
-                content,
-                timestamp: Date.now(),
-                auth_mode: template.auth_mode,
-                url: callbackUrl,
-                params: {
-                    ...connectionConfig
-                }
-            });
-            await logCtx.error('Redirecting', { connectionConfig });
+            await logCtx.error('Error', { error, connectionConfig });
             await logCtx.failed();
 
+            const prettyError = stringifyError(error, { pretty: true });
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
     }
@@ -954,15 +811,6 @@ class OAuthController {
 
         const oAuth1CallbackURL = `${callbackUrl}?${callbackParams.toString()}`;
 
-        await createActivityLogMessage({
-            level: 'info',
-            environment_id,
-            activity_log_id: activityLogId,
-            content: `OAuth callback URL was retrieved`,
-            timestamp: Date.now(),
-            auth_mode: template.auth_mode,
-            url: oAuth1CallbackURL
-        });
         await logCtx.info('OAuth callback URL was retrieved', { url: oAuth1CallbackURL });
 
         const oAuth1Client = new OAuth1Client(config, template, oAuth1CallbackURL);
@@ -971,27 +819,14 @@ class OAuthController {
         try {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
         } catch (err) {
-            const error = errorToObject(err);
             errorManager.report(new Error('token_retrieval_error'), {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId: session.environmentId,
-                metadata: error
+                metadata: errorToObject(err)
             });
 
             const userError = WSErrBuilder.TokenError();
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId,
-                content: userError.message,
-                timestamp: Date.now(),
-                auth_mode: template.auth_mode,
-                url: oAuth1CallbackURL,
-                params: {
-                    ...error
-                }
-            });
             await logCtx.error(userError.message, { error: err, url: oAuth1CallbackURL });
             await logCtx.failed();
 
@@ -1002,20 +837,7 @@ class OAuthController {
         await oAuthSessionService.create(session);
         const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
 
-        await createActivityLogMessage({
-            level: 'info',
-            environment_id,
-            activity_log_id: activityLogId,
-            content: `Request token for ${session.providerConfigKey} (connection: ${session.connectionId}) was a success. Redirecting to: ${redirectUrl}`,
-            timestamp: Date.now(),
-            auth_mode: template.auth_mode,
-            url: oAuth1CallbackURL
-        });
-        await logCtx.info('Successfully requested token. Redirecting...', {
-            providerConfigKey: session.providerConfigKey,
-            connectionId: session.connectionId,
-            redirectUrl
-        });
+        await logCtx.info('Successfully requested token. Redirecting...', { redirectUrl });
 
         // if they end the flow early, be sure to have an end time
         await addEndTimeActivityLog(activityLogId);
@@ -1083,29 +905,22 @@ class OAuthController {
         try {
             await updateProviderConfigAndConnectionIdActivityLog(activityLogId, providerConfigKey, connectionId);
 
-            await createActivityLogMessage({
-                level: 'debug',
-                environment_id: session.environmentId,
-                activity_log_id: activityLogId,
-                content: `Received callback from ${session.providerConfigKey} for connection ${session.connectionId}`,
-                state: state as string,
-                timestamp: Date.now(),
-                url: req.originalUrl
-            });
-            await logCtx.debug('Received callback', { providerConfigKey, connectionId });
+            await logCtx.debug('Received callback');
 
             const template = configService.getTemplate(session.provider);
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            const environment = await environmentService.getById(session.environmentId);
-            const account = await environmentService.getAccountFromEnvironment(session.environmentId);
-
-            if (!environment || !account) {
+            const envAccount = await environmentService.getAccountAndEnvironment({ environmentId: session.environmentId });
+            if (!envAccount) {
                 const error = WSErrBuilder.EnvironmentOrAccountNotFound();
 
+                await logCtx.error(error.message);
+                await logCtx.failed();
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
+
+            const { account, environment } = envAccount;
 
             if (session.authMode === ProviderAuthModes.OAuth2 || session.authMode === ProviderAuthModes.Custom) {
                 return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId, environment, account, logCtx);
@@ -1114,17 +929,8 @@ class OAuthController {
             }
 
             const error = WSErrBuilder.UnknownAuthMode(session.authMode);
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: session.environmentId,
-                activity_log_id: activityLogId,
-                content: error.message,
-                state: state as string,
-                timestamp: Date.now(),
-                auth_mode: session.authMode,
-                url: req.originalUrl
-            });
-            await logCtx.error(error.message, { url: req.originalUrl });
+
+            await logCtx.error(error.message);
             await logCtx.failed();
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1139,18 +945,7 @@ class OAuthController {
             });
 
             const error = WSErrBuilder.UnknownError();
-            const content = error.message + '\n' + prettyError;
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: session.environmentId,
-                activity_log_id: activityLogId,
-                content,
-                timestamp: Date.now(),
-                params: {
-                    ...errorManager.getExpressRequestContext(req)
-                }
-            });
             await logCtx.error(error.message, { error: err, url: req.originalUrl });
             await logCtx.failed();
 
@@ -1179,21 +974,8 @@ class OAuthController {
 
         if (!code) {
             const error = WSErrBuilder.InvalidCallbackOAuth2();
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environment.id,
-                activity_log_id: activityLogId,
-                content: error.message,
-                timestamp: Date.now(),
-                params: {
-                    scopes: config.oauth_scopes,
-                    basic_auth_enabled: template.token_request_auth_method === 'basic',
-                    token_params: template.token_params as string
-                }
-            });
             await logCtx.error(error.message, {
                 scopes: config.oauth_scopes,
-                basicAuthEnabled: template.token_request_auth_method === 'basic',
                 tokenParams: template.token_params as string
             });
             await logCtx.failed();
@@ -1217,7 +999,6 @@ class OAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
-                activityLogId,
                 logCtx
             );
 
@@ -1233,16 +1014,9 @@ class OAuthController {
                 return;
             }
 
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId,
-                content: `Update request has been made for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
-                timestamp: Date.now()
-            });
             await updateSuccessActivityLog(activityLogId, true);
 
-            await logCtx.info('Update request has been made', { provider: session.provider, providerConfigKey, connectionId });
+            await logCtx.info('Update request has been made');
             await logCtx.success();
 
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
@@ -1285,28 +1059,10 @@ class OAuthController {
         try {
             let rawCredentials: object;
 
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId,
-                content: `Initiating token request for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
-                timestamp: Date.now(),
-                params: {
-                    ...additionalTokenParams,
-                    code: code as string,
-                    scopes: config.oauth_scopes,
-                    basic_auth_enabled: template.token_request_auth_method === 'basic',
-                    token_params: template.token_params as string
-                }
-            });
             await logCtx.info('Initiating token request', {
-                provider: session.provider,
-                providerConfigKey,
-                connectionId,
                 additionalTokenParams,
                 code,
                 scopes: config.oauth_scopes,
-                basicAuthEnabled: template.token_request_auth_method === 'basic',
                 tokenParams: template.token_params
             });
 
@@ -1328,14 +1084,7 @@ class OAuthController {
                 rawCredentials = accessToken.token;
             }
 
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId,
-                content: `Token response was received for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
-                timestamp: Date.now()
-            });
-            await logCtx.info('Token response received', { provider: session.provider, providerConfigKey, connectionId });
+            await logCtx.info('Token response received');
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
 
@@ -1380,7 +1129,6 @@ class OAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
-                    activityLogId,
                     logCtx
                 );
 
@@ -1506,7 +1254,6 @@ class OAuthController {
                     },
                     session.provider,
                     logContextGetter,
-                    activityLogId,
                     { initiateSync, runPostConnectionScript },
                     logCtx
                 );
@@ -1525,7 +1272,6 @@ class OAuthController {
                         },
                         config.provider,
                         logContextGetter,
-                        activityLogId,
                         { initiateSync: true, runPostConnectionScript: false },
                         logCtx
                     );
@@ -1595,7 +1341,6 @@ class OAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
-                activityLogId,
                 logCtx
             );
 
@@ -1642,7 +1387,6 @@ class OAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 session.provider,
-                activityLogId,
                 logCtx
             );
 
@@ -1706,7 +1450,6 @@ class OAuthController {
                         },
                         session.provider,
                         logContextGetter,
-                        activityLogId,
                         { initiateSync, runPostConnectionScript },
                         logCtx
                     );
@@ -1758,7 +1501,6 @@ class OAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
-                    activityLogId,
                     logCtx
                 );
 

@@ -6,7 +6,7 @@ import { SyncType, SyncConfigType } from '../../models/Sync.js';
 import environmentService from '../environment.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
-import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLog } from '../activity/activity.service.js';
+import { updateSuccess as updateSuccessActivityLog, createActivityLog } from '../activity/activity.service.js';
 import { basePublicUrl, getLogger } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
@@ -277,13 +277,6 @@ export class SlackService {
         );
 
         if (!success || !slackNotificationStatus) {
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                content: `Failed looking up the slack notification using the slack notification service. The error was: ${error}`,
-                timestamp: Date.now()
-            });
             await logCtx.error('Failed looking up the slack notification using the slack notification service', { error });
             await logCtx.failed();
 
@@ -334,32 +327,13 @@ export class SlackService {
             slackNotificationStatus.admin_slack_timestamp
         );
 
-        const content = actionResponse.isOk()
-            ? `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
-            : `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
-
-        await createActivityLogMessage({
-            level: actionResponse.isOk() ? 'info' : 'error',
-            activity_log_id: activityLogId as number,
-            environment_id: slackConnection?.environment_id,
-            timestamp: Date.now(),
-            content,
-            params: payload as unknown as Record<string, unknown>
-        });
-
         await updateSuccessActivityLog(activityLogId as number, actionResponse.isOk());
 
         if (actionResponse.isOk()) {
-            await logCtx.info(
-                `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
-                { payload }
-            );
+            await logCtx.info(`The action ${this.actionName} was successfully triggered for the ${flowType}`, { payload, syncName });
             await logCtx.success();
         } else {
-            await logCtx.error(
-                `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
-                { error: actionResponse.error, payload }
-            );
+            await logCtx.error(`The action ${this.actionName} failed to trigger for the ${flowType}`, { error: actionResponse.error, payload, syncName });
             await logCtx.failed();
         }
     }
@@ -468,25 +442,13 @@ export class SlackService {
 
         await this.sendDuplicateNotificationToNangoAdmins(payload, activityLogId as number, environment_id, logCtx, undefined, admin_slack_timestamp);
 
-        const content = actionResponse.isOk()
-            ? `The action ${this.actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
-            : `The action ${this.actionName} failed to trigger for the ${syncType} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
-
-        await createActivityLogMessage({
-            level: actionResponse.isOk() ? 'info' : 'error',
-            activity_log_id: activityLogId as number,
-            environment_id: slackConnection?.environment_id,
-            timestamp: Date.now(),
-            content,
-            params: payload as unknown as Record<string, unknown>
-        });
-
         await updateSuccessActivityLog(activityLogId as number, actionResponse.isOk());
+
         if (actionResponse.isOk()) {
-            await logCtx.info(content, payload);
+            await logCtx.info(`The action ${this.actionName} was successfully triggered for the ${syncType}`, { payload, syncName });
             await logCtx.success();
         } else {
-            await logCtx.error(content, { error: actionResponse.error });
+            await logCtx.error(`The action ${this.actionName} failed to trigger for the ${syncType}`, { error: actionResponse.error, payload, syncName });
             await logCtx.failed();
         }
     }

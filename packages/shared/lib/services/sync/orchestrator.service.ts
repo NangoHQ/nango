@@ -12,12 +12,7 @@ import {
     getSyncNamesByConnectionId,
     softDeleteSync
 } from './sync.service.js';
-import {
-    createActivityLogMessageAndEnd,
-    createActivityLog,
-    createActivityLogMessage,
-    updateSuccess as updateSuccessActivityLog
-} from '../activity/activity.service.js';
+import { createActivityLogMessageAndEnd, createActivityLog, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
@@ -39,7 +34,6 @@ import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActiv
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
 import { LogActionEnum } from '../../models/Activity.js';
-import { stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
 import type { Environment } from '../../models/Environment.js';
 
@@ -69,20 +63,12 @@ export class OrchestratorService {
         sync: IncomingFlowConfig,
         logContextGetter: LogContextGetter,
         debug = false,
-        activityLogId?: number,
         logCtx?: LogContext
     ): Promise<boolean> {
         try {
             const syncConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
-            if (debug && activityLogId) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
-                });
-                await logCtx?.debug(`Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`);
+            if (debug && logCtx) {
+                await logCtx.debug(`Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
             for (const connection of connections) {
                 const syncExists = await getSyncByIdAndName(connection.id as number, syncName);
@@ -103,44 +89,23 @@ export class OrchestratorService {
                     debug
                 );
             }
-            if (debug && activityLogId) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
-                });
-                await logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
+            if (debug && logCtx) {
+                await logCtx.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
 
             return true;
-        } catch (e) {
-            const prettyError = stringifyError(e, { pretty: true });
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environmentId,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Error starting syncs for ${syncName} with ${connections.length} connections: ${prettyError}`
-            });
-            await logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: e });
+        } catch (err) {
+            await logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: err });
 
             return false;
         }
     }
 
-    public async createSyncs(
-        syncArgs: CreateSyncArgs[],
-        logContextGetter: LogContextGetter,
-        debug = false,
-        activityLogId?: number,
-        logCtx?: LogContext
-    ): Promise<boolean> {
+    public async createSyncs(syncArgs: CreateSyncArgs[], logContextGetter: LogContextGetter, debug = false, logCtx?: LogContext): Promise<boolean> {
         let success = true;
         for (const syncToCreate of syncArgs) {
             const { connections, providerConfigKey, environmentId, sync, syncName } = syncToCreate;
-            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, logContextGetter, debug, activityLogId, logCtx);
+            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, logContextGetter, debug, logCtx);
             if (!result) {
                 success = false;
             }

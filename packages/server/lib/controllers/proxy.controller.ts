@@ -23,7 +23,6 @@ import {
     updateEndpoint as updateEndpointActivityLog,
     createActivityLog,
     createActivityLogMessageAndEnd,
-    createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     LogActionEnum,
     errorManager,
@@ -178,7 +177,6 @@ class ProxyController {
                             await logCtx.error(log.content);
                             break;
                         default:
-                            await createActivityLogMessage(log);
                             await logCtx.info(log.content);
                             break;
                     }
@@ -467,7 +465,6 @@ class ProxyController {
             );
             await Promise.all(
                 activityLogs.map(async (msg) => {
-                    await createActivityLogMessage(msg);
                     await logCtx.log({
                         type: 'log',
                         level: oldLevelToNewLevel[msg.level],

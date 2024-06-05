@@ -5,7 +5,6 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
-    createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     AuthOperation,
     updateProvider as updateProviderActivityLog,
@@ -138,13 +137,6 @@ class UnAuthController {
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId as number,
-                content: `Unauthenticated connection creation was successful`,
-                timestamp: Date.now()
-            });
             await logCtx.info('Unauthenticated connection creation was successful');
             await logCtx.success();
 
@@ -170,7 +162,6 @@ class UnAuthController {
                     },
                     config.provider,
                     logContextGetter,
-                    activityLogId,
                     undefined,
                     logCtx
                 );
@@ -180,13 +171,6 @@ class UnAuthController {
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environment.id,
-                activity_log_id: activityLogId as number,
-                content: `Error during Unauth create: ${prettyError}`,
-                timestamp: Date.now()
-            });
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
@@ -198,7 +182,6 @@ class UnAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     'unknown',
-                    activityLogId,
                     logCtx
                 );
                 await logCtx.error('Error during Unauthenticated connection creation', { error: err });

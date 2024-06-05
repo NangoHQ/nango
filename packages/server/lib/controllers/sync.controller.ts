@@ -39,7 +39,6 @@ import {
     findSyncByConnections,
     setFrequency,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    createActivityLogMessage,
     trackFetch,
     syncCommandToOperation,
     getSyncConfigRaw
@@ -714,18 +713,12 @@ class SyncController {
                     environment,
                     integration: { id: config.id!, name: config.unique_key, provider: config.provider },
                     connection: { id: connection.id!, name: connection.connection_id },
-                    syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
+                    syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name },
+                    meta: { input: { command } }
                 }
             );
 
             if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    activity_log_id: activityLogId!,
-                    environment_id: environment.id,
-                    timestamp: Date.now(),
-                    content: `Unauthorized access to run the command: "${action}" for sync: ${sync_id}`
-                });
                 await logCtx.error('Unauthorized access to run the command');
                 await logCtx.failed();
 

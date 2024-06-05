@@ -6,7 +6,7 @@ import type { Metadata } from '@nangohq/types';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
+import { createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import { getSyncConfig } from './config/config.service.js';
@@ -209,13 +209,6 @@ export default class SyncRun {
         if (this.debug) {
             const content = this.loadLocation ? `Looking for a local nango config at ${this.loadLocation}` : `Looking for a sync config for ${this.syncName}`;
             if (this.writeToDb) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id: this.nangoConnection.environment_id,
-                    activity_log_id: this.activityLogId as number,
-                    timestamp: Date.now(),
-                    content
-                });
                 await this.logCtx?.debug(content);
             } else {
                 logger.info(content);
@@ -317,13 +310,6 @@ export default class SyncRun {
                 if (this.debug) {
                     const content = `Sync config id is ${syncData.sync_config_id}`;
                     if (this.writeToDb) {
-                        await createActivityLogMessage({
-                            level: 'debug',
-                            environment_id: this.nangoConnection.environment_id,
-                            activity_log_id: this.activityLogId as number,
-                            timestamp: Date.now(),
-                            content
-                        });
                         await this.logCtx?.debug(content);
                     } else {
                         logger.info(content);
@@ -405,13 +391,6 @@ export default class SyncRun {
             if (this.debug) {
                 const content = `Last sync date is ${lastSyncDate}`;
                 if (this.writeToDb) {
-                    await createActivityLogMessage({
-                        level: 'debug',
-                        environment_id: this.nangoConnection.environment_id,
-                        activity_log_id: this.activityLogId as number,
-                        timestamp: Date.now(),
-                        content
-                    });
                     await this.logCtx?.debug(content);
                 } else {
                     logger.info(content);
@@ -696,7 +675,6 @@ export default class SyncRun {
                 results,
                 this.syncType,
                 syncStartDate,
-                this.activityLogId,
                 this.logCtx!,
                 this.environment
             );
@@ -713,13 +691,6 @@ export default class SyncRun {
             await this.logCtx?.info(content);
             await this.logCtx?.success();
         } else {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: this.nangoConnection.environment_id,
-                activity_log_id: this.activityLogId,
-                timestamp: Date.now(),
-                content
-            });
             await this.logCtx?.info(content);
         }
 

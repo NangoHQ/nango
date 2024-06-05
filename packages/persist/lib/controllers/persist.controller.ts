@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import type { LogLevel } from '@nangohq/shared';
 import { records as recordsService, format as recordsFormatter } from '@nangohq/records';
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
-import { createActivityLogMessage, errorManager, ErrorSourceEnum, LogActionEnum, updateSyncJobResult, getSyncConfigByJobId } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, LogActionEnum, updateSyncJobResult, getSyncConfigByJobId } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
@@ -41,18 +41,8 @@ class PersistController {
             body: { activityLogId, level, msg, timestamp }
         } = req;
         const truncatedMsg = msg.length > MAX_LOG_CHAR ? `${msg.substring(0, MAX_LOG_CHAR)}... (truncated)` : msg;
-        const result = await createActivityLogMessage(
-            {
-                level,
-                environment_id: environmentId,
-                activity_log_id: activityLogId,
-                content: truncatedMsg,
-                timestamp: timestamp || Date.now()
-            },
-            false
-        );
         const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) }, { logToConsole: false });
-        await logCtx.log({
+        const result = await logCtx.log({
             type: 'log',
             message: truncatedMsg,
             environmentId: environmentId,
@@ -211,14 +201,7 @@ class PersistController {
         });
         const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
         if (formatting.isErr()) {
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environmentId,
-                activity_log_id: activityLogId,
-                content: `There was an issue with the batch ${persistType}. ${formatting.error.message}`,
-                timestamp: Date.now()
-            });
-            await logCtx.error('There was an issue with the batch', { error: formatting.error, persistType });
+            await logCtx.error('There was an issue with the bast', { error: formatting.error, persistType });
             const err = new Error(`Failed to ${persistType} records ${activityLogId}`);
 
             span.setTag('error', err).finish();
@@ -228,7 +211,7 @@ class PersistController {
         const syncConfig = await getSyncConfigByJobId(syncJobId);
         if (syncConfig && !syncConfig?.models.includes(model)) {
             const err = new Error(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
-            await logCtx.error('The model is not included in the declared sync models', { model });
+            await logCtx.error(`The model '${model}' is not included in the declared sync models`);
 
             span.setTag('error', err).finish();
             return Err(err);
@@ -245,22 +228,9 @@ class PersistController {
                 }
             };
             for (const nonUniqueKey of summary.nonUniqueKeys) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    content: `Found duplicate key '${nonUniqueKey}' for model ${model}. The record was ignored.`,
-                    timestamp: Date.now()
-                });
+                await logCtx.error(`Found duplicate key '${nonUniqueKey}' for model ${model}. The record was ignored.`);
             }
 
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environmentId,
-                activity_log_id: activityLogId,
-                content: `Batch ${persistType} was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
-                timestamp: Date.now()
-            });
             await logCtx.info('Batch saved successfully', { persistType, updatedResults });
 
             await updateSyncJobResult(syncJobId, updatedResults, model);
@@ -273,13 +243,6 @@ class PersistController {
         } else {
             const content = `There was an issue with the batch ${persistType}. ${stringifyError(persistResult.error)}`;
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environmentId,
-                activity_log_id: activityLogId,
-                content,
-                timestamp: Date.now()
-            });
             await logCtx.error('There was an issue with the batch', { error: persistResult.error, persistType });
 
             errorManager.report(content, {

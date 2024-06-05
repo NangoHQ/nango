@@ -11,7 +11,7 @@ import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
 import { WebhookType } from '../../models/Webhook.js';
-import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
+import { createActivityLog, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 
@@ -38,31 +38,13 @@ const NON_FORWARDABLE_HEADERS = [
 ];
 
 class WebhookService {
-    private retry = async (
-        activityLogId: number | null,
-        environment_id: number,
-        logCtx?: LogContext | null | undefined,
-        error?: AxiosError,
-        attemptNumber?: number
-    ): Promise<boolean> => {
+    private retry = async (logCtx?: LogContext | null | undefined, error?: AxiosError, attemptNumber?: number): Promise<boolean> => {
         if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
             const content = `Webhook response received an ${
                 error?.response?.status || error?.code
-            } error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
+            } error, retrying with exponential backoff for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
 
-            if (activityLogId) {
-                await createActivityLogMessage(
-                    {
-                        level: 'error',
-                        environment_id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content
-                    },
-                    false
-                );
-                await logCtx?.error(content);
-            }
+            await logCtx?.error(content, { error });
 
             return true;
         }
@@ -116,7 +98,6 @@ class WebhookService {
         responseResults: SyncResult,
         syncType: SyncType,
         now: Date | undefined,
-        activityLogId: number,
         logCtx: LogContext,
         environment: Environment
     ) {
@@ -130,13 +111,6 @@ class WebhookService {
             responseResults.added === 0 && responseResults.updated === 0 && (responseResults.deleted === 0 || responseResults.deleted === undefined);
 
         if (!alwaysSendWebhook && noChanges) {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId,
-                content: `There were no added, updated, or deleted results. No webhook sent, as per your environment settings.`,
-                timestamp: Date.now()
-            });
             await logCtx.info('There were no added, updated, or deleted results. No webhook sent, as per your environment settings');
 
             return;
@@ -167,10 +141,6 @@ class WebhookService {
             body.responseResults.deleted = responseResults.deleted;
         }
 
-        const endingMessage = noChanges
-            ? 'with no data changes as per your environment settings.'
-            : `with the following data: ${JSON.stringify(body, null, 2)}`;
-
         const webhookUrls: { url: string; type: string }[] = [
             { url: webhookUrl, type: 'webhookUrl' },
             { url: webhookUrlSecondary, type: 'webhookUrlSecondary' }
@@ -185,44 +155,21 @@ class WebhookService {
                     () => {
                         return axios.post(url, body, { headers });
                     },
-                    { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment.id, logCtx) }
+                    { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, logCtx) }
                 );
 
                 if (response.status >= 200 && response.status < 300) {
-                    await createActivityLogMessage({
-                        level: 'info',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId,
-                        content: `Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url} ${endingMessage}`,
-                        timestamp: Date.now()
-                    });
-                    await logCtx.info(
-                        `Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url} ${endingMessage}`
-                    );
+                    await logCtx.info(`Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, { url, body });
+                    await logCtx.info(`Received "${response.status}" response code`);
                 } else {
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId,
-                        content: `Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url} ${endingMessage} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
-                        timestamp: Date.now()
-                    });
-                    await logCtx.error(
-                        `Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url} ${endingMessage} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
-                    );
+                    await logCtx.error(`Sync webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, { url, body });
+                    await logCtx.error(`Received "${response.status}" response code. Please send a 2xx on successful receipt.`);
                 }
-            } catch (e) {
-                const errorMessage = stringifyError(e, { pretty: true });
-
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId,
-                    content: `Sync webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}. The error was: ${errorMessage}`,
-                    timestamp: Date.now()
-                });
-                await logCtx.error(`Sync webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}`, {
-                    error: e
+            } catch (err) {
+                await logCtx.error(`Sync webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, {
+                    error: err,
+                    url,
+                    body
                 });
             }
         }
@@ -232,7 +179,6 @@ class WebhookService {
         connection: RecentlyCreatedConnection | RecentlyFailedConnection,
         provider: string,
         success: boolean,
-        activityLogId: number | null,
         logCtx?: LogContext | null
     ): Promise<void> {
         const { environment } = connection;
@@ -274,47 +220,30 @@ class WebhookService {
                     () => {
                         return axios.post(url, body, { headers });
                     },
-                    { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment.id, logCtx) }
+                    { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, logCtx) }
                 );
 
-                if (activityLogId) {
+                if (logCtx) {
                     if (response.status >= 200 && response.status < 300) {
-                        await createActivityLogMessage({
-                            level: 'info',
-                            environment_id: environment.id,
-                            activity_log_id: activityLogId,
-                            content: `Auth webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`,
-                            timestamp: Date.now()
+                        await logCtx.info(`Auth webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, {
+                            url,
+                            body
                         });
-                        await logCtx?.info(
-                            `Auth webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url}`
-                        );
+                        await logCtx.info(`Received "${response.status}" response code`);
                     } else {
-                        await createActivityLogMessage({
-                            level: 'error',
-                            environment_id: environment.id,
-                            activity_log_id: activityLogId,
-                            content: `Auth Webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
-                            timestamp: Date.now()
+                        await logCtx.error(`Auth webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, {
+                            url,
+                            body
                         });
-                        await logCtx?.error(
-                            `Auth Webhook sent successfully to ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
-                        );
+                        await logCtx.error(`Received "${response.status}" response code. Please send a 2xx on successful receipt.`);
                     }
                 }
             } catch (err) {
-                if (activityLogId) {
-                    const errorMessage = stringifyError(err, { pretty: true });
-
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId,
-                        content: `Auth Webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}. The error was: ${errorMessage}`,
-                        timestamp: Date.now()
-                    });
-                    await logCtx?.error(`Auth Webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}`, {
-                        error: err
+                if (logCtx) {
+                    await logCtx.error(`Auth webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, {
+                        error: err,
+                        url,
+                        body
                     });
                 }
             }
@@ -428,7 +357,7 @@ class WebhookService {
                     () => {
                         return axios.post(url, body, { headers });
                     },
-                    { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId as number, environment.id, logCtx) }
+                    { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, logCtx) }
                 );
 
                 if (response.status >= 200 && response.status < 300) {

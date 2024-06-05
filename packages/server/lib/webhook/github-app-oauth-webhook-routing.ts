@@ -98,7 +98,6 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
                 },
                 integration.provider,
                 logContextGetter,
-                activityLogId,
                 { initiateSync: true, runPostConnectionScript: false },
                 logCtx
             );

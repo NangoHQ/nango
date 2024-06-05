@@ -5,7 +5,6 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
-    createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     configService,
     connectionService,
@@ -112,7 +111,7 @@ class AppAuthController {
                     timestamp: Date.now(),
                     content: `Provider ${config.provider} does not support app creation`
                 });
-                await logCtx.error('Provider does not support app creation', { provider: config.provider });
+                await logCtx.error('Provider does not support app creation');
                 await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
@@ -123,19 +122,7 @@ class AppAuthController {
             }
 
             if (action === 'request') {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId,
-                    content: 'App types do not support the request flow. Please use the github-app-oauth provider for the request flow.',
-                    timestamp: Date.now(),
-                    auth_mode: AuthModes.App,
-                    url: req.originalUrl
-                });
-                await logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', {
-                    provider: config.provider,
-                    url: req.originalUrl
-                });
+                await logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.');
                 await logCtx.failed();
 
                 await updateSuccessActivityLog(activityLogId, false);
@@ -152,19 +139,7 @@ class AppAuthController {
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
                 const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId,
-                    content: error.message,
-                    timestamp: Date.now(),
-                    auth_mode: template.auth_mode,
-                    url: req.originalUrl,
-                    params: {
-                        ...connectionConfig
-                    }
-                });
-                await logCtx.error(error.message, { connectionConfig, url: req.originalUrl });
+                await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
@@ -212,7 +187,6 @@ class AppAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     session.provider,
-                    activityLogId,
                     logCtx
                 );
 
@@ -243,7 +217,6 @@ class AppAuthController {
                     },
                     session.provider,
                     logContextGetter,
-                    activityLogId,
                     undefined,
                     logCtx
                 );
@@ -274,16 +247,7 @@ class AppAuthController {
             const error = WSErrBuilder.UnknownError();
             const content = error.message + '\n' + prettyError;
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environment.id,
-                activity_log_id: activityLogId,
-                content,
-                timestamp: Date.now(),
-                auth_mode: AuthModes.App,
-                url: req.originalUrl
-            });
-            await logCtx.error(error.message, { error: err, url: req.originalUrl });
+            await logCtx.error(error.message, { error: err });
             await logCtx.failed();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {
@@ -302,7 +266,6 @@ class AppAuthController {
                     operation: AuthOperation.UNKNOWN
                 },
                 'unknown',
-                activityLogId,
                 logCtx
             );
 

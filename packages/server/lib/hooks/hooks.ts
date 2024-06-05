@@ -68,7 +68,6 @@ export const connectionCreated = async (
     connection: RecentlyCreatedConnection,
     provider: string,
     logContextGetter: LogContextGetter,
-    activityLogId: number | null,
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true },
     logCtx?: LogContext
 ): Promise<void> => {
@@ -82,16 +81,11 @@ export const connectionCreated = async (
         await externalPostConnection(connection, provider, logContextGetter);
     }
 
-    await webhookService.sendAuthUpdate(connection, provider, true, activityLogId, logCtx);
+    await webhookService.sendAuthUpdate(connection, provider, true, logCtx);
 };
 
-export const connectionCreationFailed = async (
-    connection: RecentlyFailedConnection,
-    provider: string,
-    activityLogId: number | null,
-    logCtx: LogContext
-): Promise<void> => {
-    await webhookService.sendAuthUpdate(connection, provider, false, activityLogId, logCtx);
+export const connectionCreationFailed = async (connection: RecentlyFailedConnection, provider: string, logCtx: LogContext): Promise<void> => {
+    await webhookService.sendAuthUpdate(connection, provider, false, logCtx);
 };
 
 export const connectionTest = async (

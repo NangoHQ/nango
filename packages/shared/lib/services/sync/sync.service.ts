@@ -4,7 +4,7 @@ import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob
 import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
-import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
+import { updateSuccess as updateSuccessActivityLog, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { updateScheduleStatus } from './schedule.service.js';
 import type { ActiveLogIds } from '@nangohq/types';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
@@ -606,15 +606,8 @@ export const getAndReconcileDifferences = async ({
                 auto_start: flow.auto_start === false ? false : true
             });
             if (performAction) {
-                if (debug && activityLogId) {
-                    await createActivityLogMessage({
-                        level: 'debug',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`
-                    });
-                    await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
+                if (debug && logCtx) {
+                    await logCtx.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
                 }
                 syncsToCreate.push({ connections, syncName: flowName, sync: flow, providerConfigKey, environmentId });
             }
@@ -627,15 +620,8 @@ export const getAndReconcileDifferences = async ({
             });
 
             if (missingConnections.length > 0) {
-                if (debug && activityLogId) {
-                    await createActivityLogMessage({
-                        level: 'debug',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`
-                    });
-                    await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`);
+                if (debug && logCtx) {
+                    await logCtx.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`);
                 }
                 syncsToCreate.push({ connections: missingConnections, syncName: flowName, sync: flow, providerConfigKey, environmentId });
             }
@@ -643,19 +629,12 @@ export const getAndReconcileDifferences = async ({
     }
 
     if (syncsToCreate.length > 0) {
-        if (debug && activityLogId) {
+        if (debug && logCtx) {
             const syncNames = syncsToCreate.map((sync) => sync.syncName);
-            await createActivityLogMessage({
-                level: 'debug',
-                environment_id: environmentId,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`
-            });
-            await logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames)}`);
+            await logCtx.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames)}`);
         }
         // this is taken out of the loop to ensure it awaits all the calls properly
-        const result = await syncOrchestrator.createSyncs(syncsToCreate, logContextGetter, debug, activityLogId!, logCtx);
+        const result = await syncOrchestrator.createSyncs(syncsToCreate, logContextGetter, debug, logCtx);
 
         if (!result) {
             if (activityLogId) {
@@ -693,15 +672,8 @@ export const getAndReconcileDifferences = async ({
                 }
 
                 if (performAction) {
-                    if (debug && activityLogId) {
-                        await createActivityLogMessage({
-                            level: 'debug',
-                            environment_id: environmentId,
-                            activity_log_id: activityLogId,
-                            timestamp: Date.now(),
-                            content: `Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`
-                        });
-                        await logCtx?.debug(`Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`);
+                    if (debug && logCtx) {
+                        await logCtx.debug(`Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`);
                     }
                     await syncOrchestrator.deleteConfig(existingSync.id, environmentId);
 
@@ -714,19 +686,12 @@ export const getAndReconcileDifferences = async ({
                         }
                     }
 
-                    if (activityLogId) {
+                    if (logCtx) {
                         const connectionDescription =
                             existingSync.type === SyncConfigType.SYNC ? ` with ${connections.length} connection${connections.length > 1 ? 's' : ''}.` : '.';
                         const content = `Successfully deleted ${existingSync.type} ${existingSync.sync_name} for ${existingSync.unique_key}${connectionDescription}`;
 
-                        await createActivityLogMessage({
-                            level: 'debug',
-                            environment_id: environmentId,
-                            activity_log_id: activityLogId,
-                            timestamp: Date.now(),
-                            content
-                        });
-                        await logCtx?.debug(content);
+                        await logCtx.debug(content);
                     }
                 }
             }

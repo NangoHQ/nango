@@ -5,12 +5,7 @@ import { NangoError } from '../utils/error.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
-import {
-    createActivityLog,
-    createActivityLogMessage,
-    createActivityLogMessageAndEnd,
-    updateSuccess as updateSuccessActivityLog
-} from '../services/activity/activity.service.js';
+import { createActivityLog, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../services/activity/activity.service.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
 import { v4 as uuid } from 'uuid';
 import featureFlags from '../utils/featureflags.js';
@@ -65,16 +60,6 @@ export class Orchestrator {
         const startTime = Date.now();
         const workflowId = `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connection.connection_id}.${uuid()}`;
         try {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id,
-                activity_log_id: activityLogId,
-                content: `Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
-                params: {
-                    input: JSON.stringify(input, null, 2)
-                },
-                timestamp: Date.now()
-            });
             await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input });
 
             let res: Result<any, NangoError>;
@@ -317,16 +302,6 @@ export class Orchestrator {
         const workflowId = `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${syncConfig.sync_name}:${webhookName}.${connection.connection_id}.${Date.now()}`;
 
         try {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: integration.environment_id,
-                activity_log_id: activityLogId as number,
-                content: `Starting webhook workflow ${workflowId} in the task queue: ${WEBHOOK_TASK_QUEUE}`,
-                params: {
-                    input: JSON.stringify(input, null, 2)
-                },
-                timestamp: Date.now()
-            });
             await logCtx.info('Starting webhook workflow', { workflowId, input });
 
             const { credentials, credentials_iv, credentials_tag, deleted, deleted_at, ...nangoConnectionWithoutCredentials } =
@@ -494,13 +469,6 @@ export class Orchestrator {
         const startTime = Date.now();
         const workflowId = `${SYNC_TASK_QUEUE}.POST_CONNECTION_SCRIPT:${name}.${connection.connection_id}.${uuid()}`;
         try {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: connection.environment_id,
-                activity_log_id: activityLogId,
-                content: `Starting post connection script workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
-                timestamp: Date.now()
-            });
             await logCtx.info(`Starting post connection script workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`);
 
             let res: Result<any, NangoError>;

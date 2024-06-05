@@ -6,7 +6,6 @@ import accountService from '../../account.service.js';
 import { updateSyncScheduleFrequency } from '../schedule.service.js';
 import {
     createActivityLog,
-    createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     updateProviderConfigKey,
     createActivityLogMessageAndEnd,
@@ -137,13 +136,6 @@ export async function deploy({
 
     if (insertData.length === 0) {
         if (debug) {
-            await createActivityLogMessage({
-                environment_id: environment.id,
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `All syncs were deleted.`
-            });
             await logCtx.debug('All syncs were deleted');
         }
         await updateSuccessActivityLog(activityLogId as number, true);
@@ -640,26 +632,13 @@ async function compileDeployInfo({
     } = flow;
     if (type === SyncConfigType.SYNC && !runs) {
         const error = new NangoError('missing_required_fields_on_deploy');
-        await createActivityLogMessage({
-            level: 'error',
-            environment_id,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `${error}`
-        });
         await logCtx.error(error.message);
+
         return { success: false, error, response: null };
     }
 
     if (!syncName || !providerConfigKey || !fileBody) {
         const error = new NangoError('missing_required_fields_on_deploy');
-        await createActivityLogMessage({
-            level: 'error',
-            environment_id,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `${error}`
-        });
         await logCtx.error(error.message);
 
         return { success: false, error, response: null };
@@ -669,13 +648,6 @@ async function compileDeployInfo({
 
     if (!config) {
         const error = new NangoError('unknown_provider_config', { providerConfigKey });
-        await createActivityLogMessage({
-            level: 'error',
-            environment_id,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `${error}`
-        });
         await logCtx.error(error.message);
 
         return { success: false, error, response: null };
@@ -688,13 +660,6 @@ async function compileDeployInfo({
         bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
 
         if (debug) {
-            await createActivityLogMessage({
-                level: 'debug',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `A previous sync config was found for ${syncName} with version ${previousSyncAndActionConfig.version}`
-            });
             await logCtx.debug('A previous sync config was found', { syncName, prevVersion: previousSyncAndActionConfig.version });
         }
 
@@ -748,13 +713,6 @@ async function compileDeployInfo({
     if (!file_location) {
         await updateSuccessActivityLog(activityLogId, false);
 
-        await createActivityLogMessage({
-            level: 'error',
-            environment_id,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `There was an error uploading the sync file ${syncName}-v${version}.js`
-        });
         await logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
 
         // this is a platform error so throw this
@@ -773,13 +731,6 @@ async function compileDeployInfo({
         }
 
         if (debug) {
-            await createActivityLogMessage({
-                level: 'debug',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `Marking ${ids.length} old sync configs as inactive for ${syncName} with version ${version} as the active sync config`
-            });
             await logCtx.debug('Marking old sync configs as inactive', { count: ids.length, syncName, activeVersion: version });
         }
     }

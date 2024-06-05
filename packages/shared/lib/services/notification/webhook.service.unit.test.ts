@@ -52,7 +52,6 @@ describe('Webhook notification tests', () => {
             } as RecentlyCreatedConnection,
             'hubspot',
             true,
-            1,
             logCtx
         );
         expect(axiosInstance.post).not.toHaveBeenCalled();
@@ -77,7 +76,6 @@ describe('Webhook notification tests', () => {
             } as RecentlyCreatedConnection,
             'hubspot',
             true,
-            1,
             logCtx
         );
         expect(axiosInstance.post).not.toHaveBeenCalled();
@@ -102,7 +100,6 @@ describe('Webhook notification tests', () => {
             } as RecentlyCreatedConnection,
             'hubspot',
             true,
-            1,
             logCtx
         );
         expect(axiosInstance.post).toHaveBeenCalledTimes(1);
@@ -127,7 +124,6 @@ describe('Webhook notification tests', () => {
             } as RecentlyCreatedConnection,
             'hubspot',
             true,
-            1,
             logCtx
         );
         expect(axiosInstance.post).toHaveBeenCalledTimes(2);
@@ -152,7 +148,6 @@ describe('Webhook notification tests', () => {
             } as RecentlyCreatedConnection,
             'hubspot',
             true,
-            1,
             logCtx
         );
         expect(axiosInstance.post).toHaveBeenCalledTimes(1);
@@ -177,7 +172,6 @@ describe('Webhook notification tests', () => {
             } as RecentlyCreatedConnection,
             'hubspot',
             true,
-            1,
             logCtx
         );
         expect(axiosInstance.post).not.toHaveBeenCalled();
@@ -271,7 +265,6 @@ describe('Webhook notification tests', () => {
             responseResults,
             SyncType.INCREMENTAL,
             new Date(),
-            1,
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: null, always_send_webhook: false } as Environment
         );
@@ -290,7 +283,6 @@ describe('Webhook notification tests', () => {
             responseResults,
             SyncType.INCREMENTAL,
             new Date(),
-            1,
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: null, always_send_webhook: true } as Environment
         );
@@ -309,7 +301,6 @@ describe('Webhook notification tests', () => {
             responseResults,
             SyncType.INCREMENTAL,
             new Date(),
-            1,
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://exmaple.com/webhook', always_send_webhook: false } as Environment
         );
@@ -328,7 +319,6 @@ describe('Webhook notification tests', () => {
             responseResults,
             SyncType.INCREMENTAL,
             new Date(),
-            1,
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://example.com/webhook', always_send_webhook: false } as Environment
         );
@@ -347,7 +337,6 @@ describe('Webhook notification tests', () => {
             responseResults,
             SyncType.INCREMENTAL,
             new Date(),
-            1,
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://example.com/webhook', always_send_webhook: true } as Environment
         );
@@ -366,7 +355,6 @@ describe('Webhook notification tests', () => {
             responseResults,
             SyncType.INCREMENTAL,
             new Date(),
-            1,
             logCtx,
             { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://example.com/webhook', always_send_webhook: true } as Environment
         );
@@ -385,7 +373,6 @@ describe('Webhook notification tests', () => {
             responseResults,
             SyncType.INCREMENTAL,
             new Date(),
-            1,
             logCtx,
             {
                 name: 'dev',

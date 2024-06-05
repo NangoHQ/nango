@@ -7,7 +7,6 @@ import {
     analytics,
     AnalyticsTypes,
     AuthOperation,
-    createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     updateProvider as updateProviderActivityLog,
     configService,
@@ -52,15 +51,6 @@ class ApiAuthController {
 
         let logCtx: LogContext | undefined;
         try {
-            logCtx = await logContextGetter.create(
-                {
-                    id: String(activityLogId),
-                    operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Authorization API Key',
-                    expiresAt: defaultOperationExpiration.auth()
-                },
-                { account, environment }
-            );
             void analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, account.id);
 
             if (!providerConfigKey) {
@@ -74,6 +64,22 @@ class ApiAuthController {
 
                 return;
             }
+
+            if (!req.body.apiKey) {
+                errorManager.errRes(res, 'missing_api_key');
+
+                return;
+            }
+
+            logCtx = await logContextGetter.create(
+                {
+                    id: String(activityLogId),
+                    operation: { type: 'auth', action: 'create_connection' },
+                    message: 'Authorization API Key',
+                    expiresAt: defaultOperationExpiration.auth()
+                },
+                { account, environment }
+            );
 
             const hmacEnabled = await hmacService.isEnabled(environment.id);
             if (hmacEnabled) {
@@ -150,12 +156,6 @@ class ApiAuthController {
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            if (!req.body.apiKey) {
-                errorManager.errRes(res, 'missing_api_key');
-
-                return;
-            }
-
             const { apiKey } = req.body;
 
             const credentials: ApiKeyCredentials = {
@@ -175,28 +175,13 @@ class ApiAuthController {
             );
 
             if (connectionResponse.isErr()) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId as number,
-                    content: `The credentials provided were not valid for the ${config.provider} provider`,
-                    timestamp: Date.now()
-                });
-                await logCtx.error('Provided credentials are invalid', { provider: config.provider });
+                await logCtx.error('Provided credentials are invalid');
                 await logCtx.failed();
 
                 errorManager.errResFromNangoErr(res, connectionResponse.error);
-
                 return;
             }
 
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId as number,
-                content: `API key auth creation was successful`,
-                timestamp: Date.now()
-            });
             await logCtx.info('API key auth creation was successful');
             await logCtx.success();
 
@@ -224,7 +209,6 @@ class ApiAuthController {
                     },
                     config.provider,
                     logContextGetter,
-                    activityLogId,
                     undefined,
                     logCtx
                 );
@@ -234,13 +218,6 @@ class ApiAuthController {
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environment.id,
-                activity_log_id: activityLogId as number,
-                content: `Error during API key auth: ${prettyError}`,
-                timestamp: Date.now()
-            });
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
@@ -252,7 +229,6 @@ class ApiAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     'unknown',
-                    activityLogId,
                     logCtx
                 );
                 await logCtx.error('Error during API key auth', { error: err });
@@ -428,14 +404,6 @@ class ApiAuthController {
 
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
 
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId as number,
-                content: `Basic API key auth creation was successful with the username ${username}`,
-                timestamp: Date.now()
-            });
-
             await updateSuccessActivityLog(activityLogId as number, true);
             await logCtx.info('Basic API key auth creation was successful', { username });
             await logCtx.success();
@@ -462,7 +430,6 @@ class ApiAuthController {
                     },
                     config.provider,
                     logContextGetter,
-                    activityLogId,
                     undefined,
                     logCtx
                 );
@@ -472,13 +439,6 @@ class ApiAuthController {
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environment.id,
-                activity_log_id: activityLogId as number,
-                content: `Error during basic API auth: ${prettyError}`,
-                timestamp: Date.now()
-            });
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
@@ -490,7 +450,6 @@ class ApiAuthController {
                         operation: AuthOperation.UNKNOWN
                     },
                     'unknown',
-                    activityLogId,
                     logCtx
                 );
                 await logCtx.error('Error during API key auth', { error: err });
