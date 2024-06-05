@@ -198,7 +198,7 @@ class ConfigController {
 
             let oauth_client_secret = req.body['client_secret'] ?? null;
 
-            if (template.auth_mode === 'APP_STORE') {
+            if (template.auth_mode === 'APP') {
                 if (!oauth_client_secret.includes('BEGIN RSA PRIVATE KEY')) {
                     errorManager.errRes(res, 'invalid_app_secret');
                     return;
@@ -328,7 +328,7 @@ class ConfigController {
             let webhook_secret = null;
             const custom = config.custom;
 
-            if (authMode === 'APP_STORE' && client_secret) {
+            if (authMode === 'APP' && client_secret) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
                 const hash = `${config.oauth_client_id}${config.oauth_client_secret}${config.app_link}`;
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
@@ -485,7 +485,7 @@ class ConfigController {
                 return;
             }
 
-            if (authMode === 'APP_STORE' && req.body['oauth_client_id'] == null) {
+            if (authMode === 'APP' && req.body['oauth_client_id'] == null) {
                 errorManager.errRes(res, 'missing_app_id');
                 return;
             }
@@ -495,7 +495,7 @@ class ConfigController {
                 return;
             }
 
-            if (authMode === 'APP_STORE' && req.body['oauth_client_secret'] == null) {
+            if (authMode === 'APP' && req.body['oauth_client_secret'] == null) {
                 errorManager.errRes(res, 'missing_app_secret');
                 return;
             }
@@ -509,7 +509,7 @@ class ConfigController {
 
             let oauth_client_secret = req.body['oauth_client_secret'] ?? null;
 
-            if (authMode === 'APP_STORE') {
+            if (authMode === 'APP') {
                 if (!oauth_client_secret.includes('BEGIN RSA PRIVATE KEY')) {
                     errorManager.errRes(res, 'invalid_app_secret');
                     return;
@@ -621,7 +621,7 @@ class ConfigController {
 
             let oauth_client_secret = req.body['oauth_client_secret'] ?? null;
 
-            if (template.auth_mode === 'APP_STORE') {
+            if (template.auth_mode === 'APP') {
                 if (!oauth_client_secret.includes('BEGIN RSA PRIVATE KEY')) {
                     errorManager.errRes(res, 'invalid_app_secret');
                     return;
