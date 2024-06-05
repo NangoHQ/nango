@@ -63,6 +63,7 @@
         "@nangohq/types": "^0.39.33",
         "@sentry/types": "7.112.2",
         "@temporalio/activity": "^1.9.1",
+        "@types/braintree": "^3.3.12",
         "@types/fs-extra": "^11.0.1",
         "@types/ip": "^1.1.0",
         "@types/js-yaml": "^4.0.5",
