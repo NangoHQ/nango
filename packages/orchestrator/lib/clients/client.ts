@@ -1,4 +1,5 @@
-import { route as postScheduleRoute } from '../routes/v1/postSchedule.js';
+import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
+import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postSearchRoute } from '../routes/v1/postSearch.js';
 import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js';
@@ -9,13 +10,14 @@ import { Ok, Err, routeFetch, stringifyError, getLogger } from '@nangohq/utils';
 import type { Endpoint } from '@nangohq/types';
 import type {
     ClientError,
-    SchedulingProps,
+    ImmediateProps,
     ExecuteActionProps,
     ExecuteProps,
     ExecuteReturn,
     ExecuteWebhookProps,
     ExecutePostConnectionProps,
-    OrchestratorTask
+    OrchestratorTask,
+    RecurringProps
 } from './types.js';
 import { validateTask } from './validate.js';
 import type { JsonValue } from 'type-fest';
@@ -33,10 +35,9 @@ export class OrchestratorClient {
         return routeFetch(this.baseUrl, route);
     }
 
-    public async schedule(props: SchedulingProps): Promise<Result<{ taskId: string }, ClientError>> {
-        const res = await this.routeFetch(postScheduleRoute)({
+    public async immediate(props: ImmediateProps): Promise<Result<{ taskId: string }, ClientError>> {
+        const res = await this.routeFetch(postImmediateRoute)({
             body: {
-                scheduling: 'immediate',
                 name: props.name,
                 groupKey: props.groupKey,
                 retry: props.retry,
@@ -47,7 +48,27 @@ export class OrchestratorClient {
         if ('error' in res) {
             return Err({
                 name: res.error.code,
-                message: res.error.message || `Error scheduling tasks`,
+                message: res.error.message || `Error scheduling  immediate task`,
+                payload: JSON.stringify(props)
+            });
+        } else {
+            return Ok(res);
+        }
+    }
+
+    public async recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }, ClientError>> {
+        const res = await this.routeFetch(postRecurringRoute)({
+            body: {
+                name: props.name,
+                startsAt: props.startsAt,
+                frequencyMs: props.frequencyMs,
+                args: props.args
+            }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error creating recurring schedule`,
                 payload: JSON.stringify(props)
             });
         } else {
@@ -60,8 +81,8 @@ export class OrchestratorClient {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
             ...props
-        } as SchedulingProps;
-        const res = await this.schedule(scheduleProps);
+        } as ImmediateProps;
+        const res = await this.immediate(scheduleProps);
         if (res.isErr()) {
             return res;
         }

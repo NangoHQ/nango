@@ -7,14 +7,13 @@ import { validateRequest } from '@nangohq/utils';
 import type { TaskType } from '../../types.js';
 import { syncArgsSchema, actionArgsSchema, postConnectionArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
-const path = '/v1/schedule';
+const path = '/v1/immediate';
 const method = 'POST';
 
-export type PostSchedule = Endpoint<{
+export type PostImmediate = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Body: {
-        scheduling: 'immediate';
         name: string;
         groupKey: string;
         retry: {
@@ -28,11 +27,11 @@ export type PostSchedule = Endpoint<{
         };
         args: JsonValue & { type: TaskType };
     };
-    Error: ApiError<'schedule_failed'>;
+    Error: ApiError<'immediate_failed'>;
     Success: { taskId: string };
 }>;
 
-const validate = validateRequest<PostSchedule>({
+const validate = validateRequest<PostImmediate>({
     parseBody: (data: any) => {
         function argsSchema(data: any) {
             if ('args' in data && 'type' in data.args) {
@@ -53,7 +52,6 @@ const validate = validateRequest<PostSchedule>({
         }
         return z
             .object({
-                scheduling: z.literal('immediate'),
                 name: z.string().min(1),
                 groupKey: z.string().min(1),
                 retry: z.object({
@@ -72,30 +70,27 @@ const validate = validateRequest<PostSchedule>({
 });
 
 const handler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<PostSchedule>, res: EndpointResponse<PostSchedule>) => {
-        const task = await scheduler.schedule({
-            scheduling: req.body.scheduling,
-            taskProps: {
-                name: req.body.name,
-                payload: req.body.args,
-                groupKey: req.body.groupKey,
-                retryMax: req.body.retry.max,
-                retryCount: req.body.retry.count,
-                createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
-                startedToCompletedTimeoutSecs: req.body.timeoutSettingsInSecs.startedToCompleted,
-                heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat
-            }
+    return async (req: EndpointRequest<PostImmediate>, res: EndpointResponse<PostImmediate>) => {
+        const task = await scheduler.immediate({
+            name: req.body.name,
+            payload: req.body.args,
+            groupKey: req.body.groupKey,
+            retryMax: req.body.retry.max,
+            retryCount: req.body.retry.count,
+            createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
+            startedToCompletedTimeoutSecs: req.body.timeoutSettingsInSecs.startedToCompleted,
+            heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat
         });
         if (task.isErr()) {
-            return res.status(500).json({ error: { code: 'schedule_failed', message: task.error.message } });
+            return res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
         }
         return res.status(201).json({ taskId: task.value.id });
     };
 };
 
-export const route: Route<PostSchedule> = { path, method };
+export const route: Route<PostImmediate> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler): RouteHandler<PostSchedule> => {
+export const routeHandler = (scheduler: Scheduler): RouteHandler<PostImmediate> => {
     return {
         ...route,
         validate,
