@@ -83,7 +83,7 @@ export class Scheduler {
     }
 
     /**
-     * Schedule a task immediatly
+     * Schedule a task immediately
      * @param props - Scheduling properties
      * @param props.scheduling - 'immediate'
      * @params props.taskProps - Task properties
