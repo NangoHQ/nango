@@ -7,24 +7,8 @@ import { init, generate } from './cli.js';
 import { exampleSyncName } from './constants.js';
 import configService from './services/config.service.js';
 import { compileAllFiles } from './services/compile.service.js';
-import ParserService from './services/parser.service.js';
-
-const copyDirectoryAndContents = async (source: string, destination: string) => {
-    await fs.promises.mkdir(destination, { recursive: true });
-
-    const files = await fs.promises.readdir(source, { withFileTypes: true });
-
-    for (const file of files) {
-        const sourcePath = path.join(source, file.name);
-        const destinationPath = path.join(destination, file.name);
-
-        if (file.isDirectory()) {
-            await copyDirectoryAndContents(sourcePath, destinationPath);
-        } else {
-            await fs.promises.copyFile(sourcePath, destinationPath);
-        }
-    }
-};
+import parserService from './services/parser.service.js';
+import { copyDirectoryAndContents } from './tests/helpers.js';
 
 describe('generate function tests', () => {
     const testDirectory = './nango-integrations';
@@ -383,62 +367,52 @@ describe('generate function tests', () => {
     });
 
     it('should not complain of try catch not being awaited', () => {
-        const parserService = new ParserService(`${fixturesPath}/sync.ts`);
-        const awaiting = parserService.callsAreUsedCorrectly(SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(true);
     });
 
     it('should complain when a return statement is used', () => {
-        const parserService = new ParserService(`${fixturesPath}/return-sync.ts`);
-        const noReturnUsed = parserService.callsAreUsedCorrectly(SyncConfigType.SYNC, ['GithubIssue']);
+        const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(noReturnUsed).toBe(false);
     });
 
     it('should not complain when a return statement is used but does not return anything', () => {
-        const parserService = new ParserService(`${fixturesPath}/void-return-sync.ts`);
-        const noReturnUsed = parserService.callsAreUsedCorrectly(SyncConfigType.SYNC, ['GithubIssue']);
+        const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/void-return-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(noReturnUsed).toBe(true);
     });
 
     it('should not complain when a return statement is used in a nested function', () => {
-        const parserService = new ParserService(`${fixturesPath}/nested-return-sync.ts`);
-        const noReturnUsed = parserService.callsAreUsedCorrectly(SyncConfigType.SYNC, ['GreenhouseEeoc']);
+        const noReturnUsed = parserService.callsAreUsedCorrectly(`${fixturesPath}/nested-return-sync.ts`, SyncConfigType.SYNC, ['GreenhouseEeoc']);
         expect(noReturnUsed).toBe(true);
     });
 
     it('should complain of a non try catch not being awaited', () => {
-        const parserService = new ParserService(`${fixturesPath}/failing-sync.ts`);
-        const awaiting = parserService.callsAreUsedCorrectly(SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
     });
 
     it('should not complain about a correct model', () => {
-        const parserService = new ParserService(`${fixturesPath}/sync.ts`);
-        const usedCorrectly = parserService.callsAreUsedCorrectly(SyncConfigType.SYNC, ['SomeBadModel']);
+        const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
         expect(usedCorrectly).toBe(true);
     });
 
     it('should not complain about awaiting when it is returned for an action', () => {
-        const parserService = new ParserService(`${fixturesPath}/async-return.ts`);
-        const awaiting = parserService.callsAreUsedCorrectly(SyncConfigType.ACTION, ['SomeModel']);
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/no-async-return.ts`, SyncConfigType.ACTION, ['SomeModel']);
         expect(awaiting).toBe(true);
     });
 
     it('should complain about an incorrect model', () => {
-        const parserService = new ParserService(`${fixturesPath}/bad-model.ts`);
-        const awaiting = parserService.callsAreUsedCorrectly(SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
     });
 
     it('should complain if retryOn is used without retries', () => {
-        const parserService = new ParserService(`${fixturesPath}/retry-on-bad.ts`);
-        const usedCorrectly = parserService.callsAreUsedCorrectly(SyncConfigType.SYNC, ['GithubIssue']);
+        const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/retry-on-bad.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(usedCorrectly).toBe(false);
     });
 
     it('should not complain if retryOn is used with retries', () => {
-        const parserService = new ParserService(`${fixturesPath}/retry-on-good.ts`);
-        const usedCorrectly = parserService.callsAreUsedCorrectly(SyncConfigType.SYNC, ['GithubIssue']);
+        const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/retry-on-good.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(usedCorrectly).toBe(false);
     });
 

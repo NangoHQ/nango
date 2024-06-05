@@ -1,0 +1,11 @@
+integrations:
+    github:
+        syncs:
+            main:
+                endpoint: /github/main
+                sync_type: incremental
+                output: Issue
+
+models:
+    Issue:
+        id: string

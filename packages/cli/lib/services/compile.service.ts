@@ -11,7 +11,7 @@ import configService from './config.service.js';
 import { getNangoRootPath, printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
 import modelService from './model.service.js';
-import ParserService from './parser.service.js';
+import parserService from './parser.service.js';
 
 export async function compileAllFiles({
     debug,
@@ -114,10 +114,9 @@ export async function compileSingleFile({
 }
 
 function compileImportedFile(filePath: string, compiler: tsNode.Service, type: SyncConfigType | undefined, modelNames: string[]) {
-    const parserService = new ParserService(filePath);
-    const importedFiles = parserService.getImportedFiles();
+    const importedFiles = parserService.getImportedFiles(filePath);
 
-    if (!parserService.callsAreUsedCorrectly(type, modelNames)) {
+    if (!parserService.callsAreUsedCorrectly(filePath, type, modelNames)) {
         return false;
     }
 

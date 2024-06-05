@@ -7,22 +7,13 @@ import parser from '@babel/parser';
 import { SyncConfigType } from '@nangohq/shared';
 
 class ParserService {
-    filePath: string;
-    ast: t.File | null = null;
-
-    constructor(filePath: string) {
+    public getImportedFiles(filePath: string): string[] {
         const code = fs.readFileSync(filePath, 'utf-8');
         const ast = parser.parse(code, { sourceType: 'module', plugins: ['typescript'] });
-
-        this.filePath = filePath;
-        this.ast = ast;
-    }
-
-    public getImportedFiles(): string[] {
         const importedFiles: string[] = [];
         const traverseFn = (traverse as any).default || traverse;
 
-        traverseFn(this.ast, {
+        traverseFn(ast, {
             ImportDeclaration(path: NodePath<t.ImportDeclaration>) {
                 const importPath = path.node.source.value;
                 importedFiles.push(importPath);
@@ -32,18 +23,21 @@ class ParserService {
         return importedFiles;
     }
 
-    public callsAreUsedCorrectly(type = SyncConfigType.SYNC, modelNames: string[]): boolean {
+    public callsAreUsedCorrectly(filePath: string, type = SyncConfigType.SYNC, modelNames: string[]): boolean {
         let areAwaited = true;
         let usedCorrectly = true;
         let noReturnUsed = true;
         let retryOnUsedCorrectly = true;
+
+        const code = fs.readFileSync(filePath, 'utf-8');
+        const ast = parser.parse(code, { sourceType: 'module', plugins: ['typescript'] });
         const traverseFn = (traverse as any).default || traverse;
 
         const awaitMessage = (call: string, lineNumber: number) =>
-            console.log(chalk.red(`nango.${call}() calls must be awaited in "${this.filePath}:${lineNumber}". Not awaiting can lead to unexpected results.`));
+            console.log(chalk.red(`nango.${call}() calls must be awaited in "${filePath}:${lineNumber}". Not awaiting can lead to unexpected results.`));
 
         const disallowedMessage = (call: string, lineNumber: number) =>
-            console.log(chalk.red(`nango.${call}() calls are not allowed in an action script. Please remove it at "${this.filePath}:${lineNumber}".`));
+            console.log(chalk.red(`nango.${call}() calls are not allowed in an action script. Please remove it at "${filePath}:${lineNumber}".`));
 
         const nangoCalls = [
             'batchSend',
@@ -74,7 +68,7 @@ class ParserService {
 
         const callsReferencingModelsToCheck = ['batchSave', 'batchDelete'];
 
-        traverseFn(this.ast, {
+        traverseFn(ast, {
             CallExpression(path: NodePath<t.CallExpression>) {
                 const lineNumber = path.node.loc?.start.line as number;
                 const callee = path.node.callee as t.MemberExpression;
@@ -117,7 +111,7 @@ class ParserService {
                                 chalk.red(
                                     `"${
                                         modelArg.value
-                                    }" is not a valid model name. Please check "${this.filePath}:${lineNumber}". The possible model names are: ${modelNames.join(
+                                    }" is not a valid model name. Please check "${filePath}:${lineNumber}". The possible model names are: ${modelNames.join(
                                         ', '
                                     )}`
                                 )
@@ -144,7 +138,7 @@ class ParserService {
                             const lineNumber = path.node.loc?.start.line as number;
                             console.log(
                                 chalk.red(
-                                    `Usage of 'retryOn' without 'retries' at "${this.filePath}:${lineNumber}". 'retryOn' should not be used if 'retries' is not set.`
+                                    `Usage of 'retryOn' without 'retries' at "${filePath}:${lineNumber}". 'retryOn' should not be used if 'retries' is not set.`
                                 )
                             );
                             retryOnUsedCorrectly = false;
@@ -184,7 +178,7 @@ class ParserService {
                         const lineNumber = declaration.loc?.start.line || 'unknown';
                         console.log(
                             chalk.red(
-                                `The default exported function fetchData at "${this.filePath}:${lineNumber}" must not return a value. Sync scripts should not return but rather use batchSave to save data.`
+                                `The default exported function fetchData at "${filePath}:${lineNumber}" must not return a value. Sync scripts should not return but rather use batchSave to save data.`
                             )
                         );
                         noReturnUsed = false;
@@ -197,4 +191,5 @@ class ParserService {
     }
 }
 
-export default ParserService;
+const parserService = new ParserService();
+export default parserService;
