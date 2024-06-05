@@ -652,7 +652,7 @@ export const getAndReconcileDifferences = async ({
                 timestamp: Date.now(),
                 content: `Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`
             });
-            await logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`);
+            await logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames)}`);
         }
         // this is taken out of the loop to ensure it awaits all the calls properly
         const result = await syncOrchestrator.createSyncs(syncsToCreate, logContextGetter, debug, activityLogId!, logCtx);

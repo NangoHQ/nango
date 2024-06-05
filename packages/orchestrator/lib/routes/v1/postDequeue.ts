@@ -58,18 +58,18 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             }
         };
         const onTaskStarted = async (_t: Task) => {
-            const getTasks = await scheduler.dequeue({ groupKey, limit });
-            if (getTasks.isErr()) {
-                cleanupAndRespond((res) => res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } }));
-            } else {
-                cleanupAndRespond((res) => res.status(200).json(getTasks.value));
-            }
+            cleanupAndRespond(async (res) => {
+                const getTasks = await scheduler.dequeue({ groupKey, limit });
+                if (getTasks.isErr()) {
+                    res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } });
+                } else {
+                    res.status(200).json(getTasks.value);
+                }
+            });
         };
         const timeout = setTimeout(() => {
             cleanupAndRespond((res) => res.status(200).send([]));
         }, longPollingTimeoutMs);
-
-        eventEmitter.once(eventId, onTaskStarted);
 
         const getTasks = await scheduler.dequeue({ groupKey, limit });
         if (getTasks.isErr()) {
@@ -77,6 +77,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             return;
         }
         if (longPolling && getTasks.value.length === 0) {
+            eventEmitter.once(eventId, onTaskStarted);
             await new Promise((resolve) => resolve(timeout));
         } else {
             cleanupAndRespond((res) => res.status(200).json(getTasks.value));

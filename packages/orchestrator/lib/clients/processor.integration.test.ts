@@ -8,7 +8,8 @@ import { EventsHandler } from '../events.js';
 import { Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
-import type { OrchestratorTask, TaskAction, TaskWebhook, TaskPostConnection } from './types.js';
+import type { OrchestratorTask } from './types.js';
+import { tracer } from 'dd-trace';
 
 const dbClient = getTestDbClient();
 const eventsHandler = new EventsHandler({
@@ -98,15 +99,15 @@ describe('OrchestratorProcessor', async () => {
     });
 });
 
-async function processN(handler: (task: TaskAction | TaskWebhook | TaskPostConnection) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
+async function processN(handler: (task: OrchestratorTask) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
     const processor = new OrchestratorProcessor({
         handler,
         opts: { orchestratorClient, groupKey, maxConcurrency: n, checkForTerminatedInterval: 100 }
     });
+    processor.start({ tracer });
     for (let i = 0; i < n; i++) {
         await scheduleTask({ groupKey });
     }
-    processor.start();
     // Wait so the processor can process all tasks
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return processor;

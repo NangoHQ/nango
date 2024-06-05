@@ -466,6 +466,30 @@ contentstack:
     authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
     token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
     docs: https://docs.nango.dev/integrations/all/contentstack
+#Untested configuration. Please reach out if you have a test account that we can use to test it.
+datev:
+    categories:
+        - legal
+        - payroll
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://login.datev.de/openid/authorize
+    token_url: https://api.datev.de/token
+    token_request_auth_method: basic
+    scope_seprator: ' '
+    default_scopes:
+        - openid
+    authorization_params:
+        response_type: code id_token
+        response_mode: query
+        nonce: AnotherRandomStringDatev
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.datev.de
+    docs: https://docs.nango.dev/integrations/all/datev
 deel:
     categories:
         - hr
@@ -1081,6 +1105,22 @@ highlevel:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
     token_url: https://services.leadconnectorhq.com/oauth/token
+    scope_separator: ' '
+    proxy:
+        base_url: https://services.leadconnectorhq.com
+    disable_pkce: true
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/highlevel
+highlevel-white-label:
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://marketplace.leadconnectorhq.com/oauth/chooselocation
+    token_url: https://services.leadconnectorhq.com/oauth/token
+    scope_separator: ' '
     proxy:
         base_url: https://services.leadconnectorhq.com
     disable_pkce: true
@@ -1338,6 +1378,14 @@ mailchimp:
     authorization_params:
         response_type: code
     docs: https://docs.nango.dev/integrations/all/mailchimp
+marketo:
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://${connectionConfig.endpointURL}
+    authorization_url: https://${connectionConfig.identityURL}/oauth/token
+    authorization_params:
+        grant_type: client_credentials
+    docs: https://docs.nango.dev/integrations/all/marketo
 microsoft:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
@@ -1694,6 +1742,7 @@ pingboard:
     proxy:
         base_url: https://app.pingboard.com/api/v2
     authorization_url: https://app.pingboard.com/oauth/token
+    scope_separator: ' '
     authorization_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/pingboard

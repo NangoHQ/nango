@@ -843,6 +843,14 @@ integrations:
                 output: GmailEmail
                 sync_type: incremental
                 endpoint: /google-mail/emails
+        actions:
+            send-email:
+                scopes: send
+                input: GmailEmailInput
+                output: GmailEmailSentOutput
+                endpoint: POST /google-mail/send
+                description: |
+                    Send an Email using Gmail.
         models:
             GmailEmail:
                 id: string
@@ -851,6 +859,14 @@ integrations:
                 date: date
                 subject: string
                 body: string
+                threadId: string
+            GmailEmailInput:
+                from: string
+                to: string
+                subject: string
+                body: string
+            GmailEmailSentOutput:
+                id: string
                 threadId: string
     greenhouse-basic:
         syncs:

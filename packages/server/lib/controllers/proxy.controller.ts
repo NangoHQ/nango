@@ -308,9 +308,9 @@ class ProxyController {
         const contentType = responseStream.headers['content-type'];
         const isJsonResponse = contentType && contentType.includes('application/json');
         const isChunked = responseStream.headers['transfer-encoding'] === 'chunked';
-        const isZip = responseStream.headers['content-encoding'] === 'gzip';
+        const isEncoded = Boolean(responseStream.headers['content-encoding']);
 
-        if (isChunked || isZip) {
+        if (isChunked || isEncoded) {
             const passThroughStream = new PassThrough();
             responseStream.data.pipe(passThroughStream);
             passThroughStream.pipe(res);
@@ -381,6 +381,7 @@ class ProxyController {
                     params: errorObject
                 });
                 await logCtx.error(`${method.toUpperCase()} request to ${url} failed`, errorObject);
+                await logCtx.failed();
             } else {
                 console.error(`Error: ${method.toUpperCase()} request to ${url} failed with the following params: ${JSON.stringify(errorObject)}`);
             }
@@ -413,6 +414,11 @@ class ProxyController {
             stringify.on('data', (data) => {
                 void this.reportError(error, url, config, activityLogId, environment_id, data, logCtx);
             });
+        } else {
+            if (activityLogId) {
+                await logCtx.error('Unknown error');
+                await logCtx.failed();
+            }
         }
     }
 
@@ -503,13 +509,14 @@ class ProxyController {
                     responseHeaders: JSON.stringify(error.response?.headers, null, 2)
                 }
             });
-            await logCtx?.error('he provider responded back with an error code', {
+            await logCtx?.error('The provider responded back with an error code', {
                 code: error.response?.status,
                 url,
                 error: errorMessage,
-                requestHeaders: JSON.stringify(safeHeaders, null, 2),
-                responseHeaders: JSON.stringify(error.response?.headers, null, 2)
+                requestHeaders: safeHeaders,
+                responseHeaders: error.response?.headers
             });
+            await logCtx?.failed();
         } else {
             const content = `The provider responded back with a ${error.response?.status} and the message ${errorMessage} to the url: ${url}.${
                 config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
