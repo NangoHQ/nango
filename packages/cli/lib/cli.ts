@@ -303,11 +303,11 @@ export const tscWatch = async (debug = false) => {
         await modelService.createModelFile();
     }
 
-    watcher.on('add', (filePath: string) => {
+    watcher.on('add', async (filePath: string) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        compileSingleFile({ file: getFileToCompile(filePath), tsconfig, config, modelNames });
+        await compileSingleFile({ file: getFileToCompile(filePath), tsconfig, config, modelNames, debug });
     });
 
     watcher.on('unlink', (filePath: string) => {
@@ -326,12 +326,12 @@ export const tscWatch = async (debug = false) => {
         }
     });
 
-    watcher.on('change', (filePath: string) => {
+    watcher.on('change', async (filePath: string) => {
         if (filePath === nangoConfigFile) {
-            compileAllFiles({ debug });
+            await compileAllFiles({ debug });
             return;
         }
-        compileSingleFile({ file: getFileToCompile(filePath), tsconfig, config, modelNames });
+        await compileSingleFile({ file: getFileToCompile(filePath), tsconfig, config, modelNames, debug });
     });
 };
 

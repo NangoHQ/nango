@@ -71,7 +71,7 @@ export async function compileAllFiles({
 
     for (const file of integrationFiles) {
         try {
-            const completed = await compile({ file, config, modelNames, compiler });
+            const completed = await compile({ file, config, modelNames, compiler, debug });
             if (!completed) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
                     success = false;
@@ -91,19 +91,21 @@ export async function compileSingleFile({
     file,
     config,
     modelNames,
-    tsconfig
+    tsconfig,
+    debug = false
 }: {
     file: ListedFile;
     tsconfig: string;
     config: StandardNangoConfig[];
     modelNames: string[];
+    debug: boolean;
 }) {
     try {
         const compiler = tsNode.create({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
             compilerOptions: JSON.parse(tsconfig).compilerOptions
         });
-        await compile({ file, config, modelNames, compiler });
+        await compile({ file, config, modelNames, compiler, debug });
     } catch (error) {
         console.error(`Error compiling ${file.inputPath}:`);
         console.error(error);
@@ -140,12 +142,14 @@ async function compile({
     file,
     config,
     modelNames,
-    compiler
+    compiler,
+    debug = false
 }: {
     file: ListedFile;
     config: StandardNangoConfig[];
     compiler: tsNode.Service;
     modelNames: string[];
+    debug: boolean;
 }): Promise<boolean> {
     const providerConfiguration = localFileService.getProviderConfigurationFromPath(file.inputPath, config);
 
@@ -174,12 +178,15 @@ async function compile({
     await build({
         entryPoints: [file.inputPath],
         tsconfig: getNangoRootPath() + '/tsconfig.dev.json',
-        silent: true,
-        outDir: dirname
+        silent: !debug,
+        outDir: dirname,
+        onSuccess: async () => {
+            if (fs.existsSync(file.outputPath)) {
+                await fs.promises.rename(file.outputPath, outputPath);
+            }
+            return;
+        }
     });
-
-    fs.renameSync(file.outputPath, outputPath);
-    console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
 
     return true;
 }
