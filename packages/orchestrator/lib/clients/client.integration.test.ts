@@ -34,9 +34,34 @@ describe('OrchestratorClient', async () => {
         scheduler.stop();
         await dbClient.clearDatabase();
     });
+
+    describe('recurring schedule', () => {
+        it('should be created', async () => {
+            const res = await client.recurring({
+                name: 'Task',
+                startsAt: new Date(),
+                frequencyMs: 300_000,
+                args: {
+                    type: 'sync',
+                    syncId: 'sync-a',
+                    syncName: rndStr(),
+                    syncJobId: 5678,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    debug: false
+                }
+            });
+            expect(res.isOk()).toBe(true);
+        });
+    });
+
     describe('heartbeat', () => {
         it('should be successful', async () => {
-            const scheduledTask = await client.schedule({
+            const scheduledTask = await client.immediate({
                 name: 'Task',
                 groupKey: rndStr(),
                 retry: { count: 0, max: 0 },
@@ -50,7 +75,7 @@ describe('OrchestratorClient', async () => {
                         provider_config_key: 'P',
                         environment_id: 456
                     },
-                    activityLogId: 789,
+                    activityLogId: '789',
                     input: { foo: 'bar' }
                 }
             });
@@ -200,10 +225,10 @@ describe('OrchestratorClient', async () => {
             }
         });
     });
-    describe('search', () => {
-        it('should returns task by ids', async () => {
+    describe('succeed', () => {
+        it('should support big output', async () => {
             const groupKey = rndStr();
-            const actionA = await client.schedule({
+            const actionA = await client.immediate({
                 name: 'Task',
                 groupKey,
                 retry: { count: 0, max: 0 },
@@ -221,7 +246,33 @@ describe('OrchestratorClient', async () => {
                     input: { foo: 'bar' }
                 }
             });
-            const actionB = await client.schedule({
+            await client.dequeue({ groupKey, limit: 1, longPolling: false });
+            const res = await client.succeed({ taskId: actionA.unwrap().taskId, output: { a: 'a'.repeat(10_000_000) } });
+            expect(res.isOk()).toBe(true);
+        });
+    });
+    describe('search', () => {
+        it('should returns task by ids', async () => {
+            const groupKey = rndStr();
+            const actionA = await client.immediate({
+                name: 'Task',
+                groupKey,
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'action',
+                    actionName: `A`,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    activityLogId: 789,
+                    input: { foo: 'bar' }
+                }
+            });
+            const actionB = await client.immediate({
                 name: 'Task',
                 groupKey,
                 retry: { count: 0, max: 0 },
@@ -252,7 +303,7 @@ describe('OrchestratorClient', async () => {
         });
         it('should return scheduled tasks', async () => {
             const groupKey = rndStr();
-            const scheduledAction = await client.schedule({
+            const scheduledAction = await client.immediate({
                 name: 'Task',
                 groupKey,
                 retry: { count: 0, max: 0 },
@@ -270,7 +321,7 @@ describe('OrchestratorClient', async () => {
                     input: { foo: 'bar' }
                 }
             });
-            const scheduledWebhook = await client.schedule({
+            const scheduledWebhook = await client.immediate({
                 name: 'Task',
                 groupKey,
                 retry: { count: 0, max: 0 },

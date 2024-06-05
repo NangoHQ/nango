@@ -362,6 +362,7 @@ export default class SyncRun {
                 accountId: this.account?.id as number,
                 connectionId: String(this.nangoConnection.connection_id),
                 environmentId: this.nangoConnection.environment_id,
+                environmentName: this.environment?.name as string,
                 providerConfigKey: String(this.nangoConnection.provider_config_key),
                 provider: this.provider as string,
                 secretKey,

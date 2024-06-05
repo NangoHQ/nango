@@ -27,7 +27,8 @@ describe('Task', () => {
                 startsAfter: new Date(),
                 createdToStartedTimeoutSecs: 10,
                 startedToCompletedTimeoutSecs: 20,
-                heartbeatTimeoutSecs: 5
+                heartbeatTimeoutSecs: 5,
+                scheduleId: null
             })
         ).unwrap();
         expect(task).toMatchObject({
@@ -45,7 +46,8 @@ describe('Task', () => {
             lastStateTransitionAt: expect.toBeIsoDateTimezone(),
             lastHeartbeatAt: expect.toBeIsoDateTimezone(),
             output: null,
-            terminated: false
+            terminated: false,
+            scheduleId: null
         });
     });
     it('should have their heartbeat updated', async () => {
@@ -192,7 +194,8 @@ async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Prom
             startsAfter: props?.startsAfter || new Date(),
             createdToStartedTimeoutSecs: props?.createdToStartedTimeoutSecs || 10,
             startedToCompletedTimeoutSecs: props?.startedToCompletedTimeoutSecs || 20,
-            heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5
+            heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5,
+            scheduleId: props?.scheduleId || null
         })
         .then((t) => t.unwrap());
 }

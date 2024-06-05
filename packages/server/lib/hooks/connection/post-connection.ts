@@ -2,7 +2,7 @@ import type { AxiosError, AxiosResponse } from 'axios';
 import type { RecentlyCreatedConnection, Connection, ConnectionConfig, HTTP_VERB, UserProvidedProxyConfiguration } from '@nangohq/shared';
 import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
-import type { LogContextGetter } from '@nangohq/logs';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
@@ -19,6 +19,7 @@ export interface InternalNango {
 
 async function execute(createdConnection: RecentlyCreatedConnection, provider: string, logContextGetter: LogContextGetter) {
     const { connection: upsertedConnection, environment, account } = createdConnection;
+    let logCtx: LogContext | undefined;
     try {
         const credentialResponse = await connectionService.getConnectionCredentials({
             account,
@@ -74,8 +75,20 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
         const handler = handlers[`${provider.replace(/-/g, '')}PostConnection`];
 
         if (handler) {
+            logCtx = await logContextGetter.create(
+                { operation: { type: 'auth', action: 'post_connection' }, message: 'Start internal post connection script' },
+                {
+                    account,
+                    environment,
+                    integration: { id: upsertedConnection.config_id!, name: upsertedConnection.provider_config_key, provider },
+                    connection: { id: upsertedConnection.id!, name: upsertedConnection.connection_id }
+                }
+            );
+
             try {
                 await handler(internalNango);
+                await logCtx.info('Success');
+                await logCtx.success();
             } catch (e) {
                 const errorDetails =
                     e instanceof Error
@@ -88,15 +101,6 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
                 const errorString = JSON.stringify(errorDetails);
 
-                const logCtx = await logContextGetter.create(
-                    { operation: { type: 'auth', action: 'post_connection' }, message: 'Authentication' },
-                    {
-                        account,
-                        environment,
-                        integration: { id: connection.config_id!, name: connection.provider_config_key, provider },
-                        connection: { id: connection.id!, name: connection.connection_id }
-                    }
-                );
                 await logCtx.error('Post connection script failed', { error: e });
                 await logCtx.failed();
 
@@ -117,6 +121,9 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             provider: provider,
             level: 'error'
         });
+
+        await logCtx?.error('Post connection script failed', { error: err });
+        await logCtx?.failed();
     }
 }
 

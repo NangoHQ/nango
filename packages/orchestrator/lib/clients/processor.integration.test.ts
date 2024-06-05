@@ -106,36 +106,33 @@ async function processN(handler: (task: OrchestratorTask) => Promise<Result<Json
     });
     processor.start({ tracer });
     for (let i = 0; i < n; i++) {
-        await scheduleTask({ groupKey });
+        await immediateTask({ groupKey });
     }
     // Wait so the processor can process all tasks
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return processor;
 }
 
-async function scheduleTask({ groupKey }: { groupKey: string }) {
-    return scheduler.schedule({
-        scheduling: 'immediate',
-        taskProps: {
-            groupKey,
-            name: 'Task',
-            retryMax: 0,
-            retryCount: 0,
-            createdToStartedTimeoutSecs: 30,
-            startedToCompletedTimeoutSecs: 30,
-            heartbeatTimeoutSecs: 30,
-            payload: {
-                type: 'action',
-                activityLogId: '1234',
-                actionName: 'Task',
-                connection: {
-                    id: 1234,
-                    connection_id: 'C',
-                    provider_config_key: 'P',
-                    environment_id: 5678
-                },
-                input: { foo: 'bar' }
-            }
+async function immediateTask({ groupKey }: { groupKey: string }) {
+    return scheduler.immediate({
+        groupKey,
+        name: 'Task',
+        retryMax: 0,
+        retryCount: 0,
+        createdToStartedTimeoutSecs: 30,
+        startedToCompletedTimeoutSecs: 30,
+        heartbeatTimeoutSecs: 30,
+        payload: {
+            type: 'action',
+            activityLogId: '1234',
+            actionName: 'Task',
+            connection: {
+                id: 1234,
+                connection_id: 'C',
+                provider_config_key: 'P',
+                environment_id: 5678
+            },
+            input: { foo: 'bar' }
         }
     });
 }

@@ -250,6 +250,7 @@ export interface NangoProps {
     accountId?: number;
     connectionId: string;
     environmentId?: number;
+    environmentName?: string;
     activityLogId?: string | undefined;
     providerConfigKey: string;
     provider?: string;
@@ -292,6 +293,7 @@ export class NangoAction {
     syncId?: string;
     nangoConnectionId?: number;
     environmentId?: number;
+    environmentName?: string;
     syncJobId?: number;
     dryRun?: boolean;
     abortSignal?: AbortSignal;
@@ -346,6 +348,10 @@ export class NangoAction {
 
         if (config.environmentId) {
             this.environmentId = config.environmentId;
+        }
+
+        if (config.environmentName) {
+            this.environmentName = config.environmentName;
         }
 
         if (config.provider) {

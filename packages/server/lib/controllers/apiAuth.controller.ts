@@ -54,7 +54,11 @@ class ApiAuthController {
             }
 
             logCtx = await logContextGetter.create(
-                { operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization API Key', expiresAt: defaultOperationExpiration.auth() },
+                {
+                    operation: { type: 'auth', action: 'create_connection' },
+                    message: 'Create connection via API Key',
+                    expiresAt: defaultOperationExpiration.auth()
+                },
                 { account, environment }
             );
 
@@ -205,7 +209,11 @@ class ApiAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization Basic', expiresAt: defaultOperationExpiration.auth() },
+                {
+                    operation: { type: 'auth', action: 'create_connection' },
+                    message: 'Create connection via Basic Auth',
+                    expiresAt: defaultOperationExpiration.auth()
+                },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, account.id);

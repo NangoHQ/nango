@@ -140,7 +140,7 @@ export class Orchestrator {
                         // Errors received from temporal are raw objects not classes
                         const error = new NangoError(rawError['type'], rawError['payload'], rawError['status']);
                         res = Err(error);
-                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
+                        await logCtx.error(`Failed with error ${rawError['type']}`, { payload: rawError['payload'] });
                     } else {
                         res = Ok(response);
                     }
@@ -424,6 +424,7 @@ export class Orchestrator {
                         postConnectionName: name,
                         connection: {
                             id: connection.id!,
+                            connection_id: connection.connection_id,
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
