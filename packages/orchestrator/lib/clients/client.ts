@@ -110,14 +110,14 @@ export class OrchestratorClient {
         const { args, ...rest } = props;
         const schedulingProps = {
             ...rest,
+            timeoutSettingsInSecs: {
+                createdToStarted: 30,
+                startedToCompleted: 15 * 60,
+                heartbeat: 999999 // actions don't need to heartbeat
+            },
             args: {
                 ...args,
-                type: 'action' as const,
-                timeoutSettingsInSecs: {
-                    createdToStarted: 30,
-                    startedToCompleted: 30,
-                    heartbeat: 999 // actions don't need to heartbeat
-                }
+                type: 'action' as const
             }
         };
         return this.execute(schedulingProps);
@@ -127,14 +127,14 @@ export class OrchestratorClient {
         const { args, ...rest } = props;
         const schedulingProps = {
             ...rest,
+            timeoutSettingsInSecs: {
+                createdToStarted: 30,
+                startedToCompleted: 15 * 60,
+                heartbeat: 999999 // webhooks don't need to heartbeat
+            },
             args: {
                 ...args,
-                type: 'webhook' as const,
-                timeoutSettingsInSecs: {
-                    createdToStarted: 30,
-                    startedToCompleted: 30,
-                    heartbeat: 999 // webhooks don't need to heartbeat
-                }
+                type: 'webhook' as const
             }
         };
         return this.execute(schedulingProps);

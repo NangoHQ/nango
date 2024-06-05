@@ -200,6 +200,32 @@ describe('OrchestratorClient', async () => {
             }
         });
     });
+    describe('succeed', () => {
+        it('should support big output', async () => {
+            const groupKey = rndStr();
+            const actionA = await client.schedule({
+                name: 'Task',
+                groupKey,
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'action',
+                    actionName: `A`,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    activityLogId: 789,
+                    input: { foo: 'bar' }
+                }
+            });
+            await client.dequeue({ groupKey, limit: 1, longPolling: false });
+            const res = await client.succeed({ taskId: actionA.unwrap().taskId, output: { a: 'a'.repeat(10_000_000) } });
+            expect(res.isOk()).toBe(true);
+        });
+    });
     describe('search', () => {
         it('should returns task by ids', async () => {
             const groupKey = rndStr();
