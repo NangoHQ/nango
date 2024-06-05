@@ -451,9 +451,9 @@ describe('Log', () => {
         // @ts-expect-error Level is wrong on purpose, if it's not breaking anymore the type is broken
         await nangoAction.log('hello', { level: 'foobar' });
     });
+
     it('should enforce type: log message + object', async () => {
         const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
-        // @ts-expect-error Level is wrong on purpose, if it's not breaking anymore the type is broken
         await nangoAction.log('hello', { foo: 'bar' });
     });
 });

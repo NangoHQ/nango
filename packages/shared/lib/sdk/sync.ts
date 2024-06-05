@@ -574,8 +574,8 @@ export class NangoAction {
      * http = green
      * silly = light green
      */
-    public async log(s: any, a?: { level: LogLevel }): Promise<void>;
-    public async log(s: string, ...args: [any, { level: LogLevel }]): Promise<void>;
+    public async log(message: any, options?: { level?: LogLevel } | { [key: string]: any; level?: never }): Promise<void>;
+    public async log(message: string, ...args: [any, { level?: LogLevel }]): Promise<void>;
     public async log(...args: [...any]): Promise<void> {
         this.exitSyncIfAborted();
         if (args.length === 0) {
