@@ -479,7 +479,7 @@ describe('Proxy service Construct URL Tests', () => {
             } as AxiosResponse
         } as AxiosError;
         const before = Date.now();
-        await proxyService.retryHandler(1, 1, mockAxiosError, 'after', 'x-rateLimit-reset-after');
+        await proxyService.retryHandler(mockAxiosError, 'after', 'x-rateLimit-reset-after');
         const after = Date.now();
         const diff = after - before;
         expect(diff).toBeGreaterThanOrEqual(1000);
@@ -500,7 +500,7 @@ describe('Proxy service Construct URL Tests', () => {
             } as AxiosResponse
         } as AxiosError;
         const before = Date.now();
-        await proxyService.retryHandler(1, 1, mockAxiosError, 'at', 'x-rateLimit-reset');
+        await proxyService.retryHandler(mockAxiosError, 'at', 'x-rateLimit-reset');
         const after = Date.now();
         const diff = after - before;
         expect(diff).toBeGreaterThan(1000);
@@ -525,15 +525,15 @@ describe('Proxy service configure', () => {
                 credentials: {} as OAuth2Credentials,
                 connection_config: {}
             },
-            existingActivityLogId: 1
+            existingActivityLogId: '1'
         };
-        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        const { success, error, response, logs } = proxyService.configure(externalConfig, internalConfig);
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toContain('missing_endpoint');
-        expect(activityLogs.length).toBe(1);
-        expect(activityLogs[0]).toMatchObject({
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toMatchObject({
             environment_id: 1,
             activity_log_id: 1,
             level: 'error'
@@ -555,15 +555,15 @@ describe('Proxy service configure', () => {
                 credentials: {} as OAuth2Credentials,
                 connection_config: {}
             },
-            existingActivityLogId: 1
+            existingActivityLogId: '1'
         };
-        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        const { success, error, response, logs } = proxyService.configure(externalConfig, internalConfig);
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toContain("Missing param 'connection_id'.");
-        expect(activityLogs.length).toBe(1);
-        expect(activityLogs[0]).toMatchObject({
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toMatchObject({
             environment_id: 1,
             activity_log_id: 1,
             level: 'error'
@@ -585,15 +585,15 @@ describe('Proxy service configure', () => {
                 credentials: {} as OAuth2Credentials,
                 connection_config: {}
             },
-            existingActivityLogId: 1
+            existingActivityLogId: '1'
         };
-        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        const { success, error, response, logs } = proxyService.configure(externalConfig, internalConfig);
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toContain('missing_provider_config_key');
-        expect(activityLogs.length).toBe(1);
-        expect(activityLogs[0]).toMatchObject({
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toMatchObject({
             environment_id: 1,
             activity_log_id: 1,
             level: 'error'
@@ -615,15 +615,15 @@ describe('Proxy service configure', () => {
                 credentials: {} as OAuth2Credentials,
                 connection_config: {}
             },
-            existingActivityLogId: 1
+            existingActivityLogId: '1'
         };
-        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        const { success, error, response, logs } = proxyService.configure(externalConfig, internalConfig);
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toContain('proxy is either not supported');
-        expect(activityLogs.length).toBe(3);
-        expect(activityLogs[2]).toMatchObject({
+        expect(logs.length).toBe(3);
+        expect(logs[2]).toMatchObject({
             environment_id: 1,
             activity_log_id: 1,
             level: 'error'
@@ -652,9 +652,9 @@ describe('Proxy service configure', () => {
                 credentials: {} as OAuth2Credentials,
                 connection_config: {}
             },
-            existingActivityLogId: 1
+            existingActivityLogId: '1'
         };
-        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        const { success, error, response, logs } = proxyService.configure(externalConfig, internalConfig);
         expect(success).toBe(true);
         expect(response).toMatchObject({
             endpoint: '/api/test',
@@ -689,6 +689,6 @@ describe('Proxy service configure', () => {
             responseType: 'blob'
         });
         expect(error).toBeNull();
-        expect(activityLogs.length).toBe(4);
+        expect(logs.length).toBe(4);
     });
 });

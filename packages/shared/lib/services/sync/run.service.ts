@@ -6,7 +6,6 @@ import type { Metadata } from '@nangohq/types';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import { getSyncConfig } from './config/config.service.js';
@@ -81,7 +80,7 @@ export type SyncRunConfig = {
     environment?: Environment;
 
     temporalContext?: Context;
-} & ({ writeToDb: true; activityLogId: number; logCtx: LogContext; slackService: SlackService } | { writeToDb: false });
+} & ({ writeToDb: true; logCtx: LogContext; slackService: SlackService } | { writeToDb: false });
 
 export interface RecordsServiceInterface {
     markNonCurrentGenerationRecordsAsDeleted({
@@ -114,7 +113,6 @@ export default class SyncRun {
 
     syncId?: string;
     syncJobId?: number;
-    activityLogId?: number;
     provider?: string;
     loadLocation?: string;
     fileLocation?: string;
@@ -163,7 +161,6 @@ export default class SyncRun {
         this.writeToDb = config.writeToDb;
         if (config.writeToDb) {
             this.slackNotificationService = config.slackService;
-            this.activityLogId = config.activityLogId;
             this.logCtx = config.logCtx;
         }
 
@@ -231,11 +228,7 @@ export default class SyncRun {
 
         if (!nangoConfig) {
             const message = `No ${this.isAction ? 'action' : 'sync'} configuration was found for ${this.syncName}.`;
-            if (this.activityLogId) {
-                await this.reportFailureForResults({ content: message, runTime: 0 });
-            } else {
-                logger.error(message);
-            }
+            await this.reportFailureForResults({ content: message, runTime: 0 });
 
             const errorType = this.determineErrorType();
             return { success: false, error: new NangoError(errorType, message, 404), response: false };
@@ -371,7 +364,6 @@ export default class SyncRun {
                 environmentId: this.nangoConnection.environment_id,
                 providerConfigKey: String(this.nangoConnection.provider_config_key),
                 provider: this.provider as string,
-                activityLogId: this.activityLogId,
                 secretKey,
                 nangoConnectionId: this.nangoConnection.id as number,
                 syncId: this.syncId,
@@ -416,8 +408,8 @@ export default class SyncRun {
                     syncId:
                         (this.syncId as string) ||
                         `${this.syncName}-${this.nangoConnection.environment_id}-${this.nangoConnection.provider_config_key}-${this.nangoConnection.connection_id}`,
-                    activityLogId: this.activityLogId,
                     nangoProps,
+                    activityLogId: this.logCtx?.id,
                     integrationData: syncData,
                     environmentId: this.nangoConnection.environment_id,
                     writeToDb: this.writeToDb,
@@ -452,15 +444,6 @@ export default class SyncRun {
                 if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
 
-                    await updateSuccessActivityLog(this.activityLogId as number, true);
-
-                    await createActivityLogMessageAndEnd({
-                        level: 'info',
-                        environment_id: this.nangoConnection.environment_id,
-                        activity_log_id: this.activityLogId as number,
-                        timestamp: Date.now(),
-                        content
-                    });
                     await this.logCtx?.info(content);
                     await this.logCtx?.success();
 
@@ -468,7 +451,7 @@ export default class SyncRun {
                         this.nangoConnection,
                         this.syncName,
                         this.syncType,
-                        this.activityLogId as number,
+                        this.logCtx!.id,
                         this.nangoConnection.environment_id,
                         this.provider as string
                     );
@@ -481,15 +464,6 @@ export default class SyncRun {
                 if (this.isPostConnectionScript) {
                     const content = `The post connection script "${this.syncName}" has been run successfully.`;
 
-                    await updateSuccessActivityLog(this.activityLogId as number, true);
-
-                    await createActivityLogMessageAndEnd({
-                        level: 'info',
-                        environment_id: this.nangoConnection.environment_id,
-                        activity_log_id: this.activityLogId as number,
-                        timestamp: Date.now(),
-                        content
-                    });
                     await this.logCtx?.info(content);
                     await this.logCtx?.success();
 
@@ -579,13 +553,12 @@ export default class SyncRun {
         version: string,
         totalRunTime: number
     ): Promise<void> {
-        if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
+        if (!this.writeToDb || !this.logCtx || !this.syncJobId) {
             return;
         }
 
         if (index === numberOfModels - 1) {
             await updateSyncJobStatus(this.syncJobId, SyncStatus.SUCCESS);
-            await updateSuccessActivityLog(this.activityLogId, true);
 
             // set the last sync date to when the sync started in case
             // the sync is long running to make sure we wouldn't miss
@@ -596,7 +569,7 @@ export default class SyncRun {
                     this.nangoConnection,
                     this.syncName,
                     this.syncType,
-                    this.activityLogId,
+                    this.logCtx.id,
                     this.nangoConnection.environment_id,
                     this.provider as string
                 );
@@ -675,19 +648,12 @@ export default class SyncRun {
                 results,
                 this.syncType,
                 syncStartDate,
-                this.logCtx!,
+                this.logCtx,
                 this.environment
             );
         }
 
         if (index === numberOfModels - 1) {
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: this.nangoConnection.environment_id,
-                activity_log_id: this.activityLogId,
-                timestamp: Date.now(),
-                content
-            });
             await this.logCtx?.info(content);
             await this.logCtx?.success();
         } else {
@@ -720,6 +686,7 @@ export default class SyncRun {
 
     async reportFailureForResults({ content, runTime, isCancel }: { content: string; runTime: number; isCancel?: true }) {
         if (!this.writeToDb) {
+            logger.error(content);
             return;
         }
 
@@ -749,7 +716,7 @@ export default class SyncRun {
                     this.nangoConnection,
                     this.syncName,
                     this.syncType,
-                    this.activityLogId as number,
+                    this.logCtx!.id,
                     this.nangoConnection.environment_id,
                     this.provider as string
                 );
@@ -770,21 +737,13 @@ export default class SyncRun {
             }
         }
 
-        if (!this.activityLogId || !this.syncJobId) {
+        if (!this.writeToDb || !this.syncJobId) {
             logger.error(content);
             return;
         }
 
-        await updateSuccessActivityLog(this.activityLogId, false);
         await updateSyncJobStatus(this.syncJobId, SyncStatus.STOPPED);
 
-        await createActivityLogMessageAndEnd({
-            level: 'error',
-            environment_id: this.nangoConnection.environment_id,
-            activity_log_id: this.activityLogId,
-            timestamp: Date.now(),
-            content
-        });
         await this.logCtx?.error(content);
         if (isCancel) {
             await this.logCtx?.cancel();
@@ -825,14 +784,13 @@ export default class SyncRun {
             `syncId:${this.syncId}`
         );
 
-        if (this.nangoConnection.id && this.activityLogId && this.logCtx?.id && this.syncId) {
+        if (this.nangoConnection.id && this.logCtx?.id && this.syncId) {
             await errorNotificationService.sync.create({
                 action: 'run',
                 type: 'sync',
                 sync_id: this.syncId,
                 connection_id: this.nangoConnection.id,
-                activity_log_id: this.activityLogId,
-                log_id: this.logCtx?.id,
+                log_id: this.logCtx.id,
                 active: true
             });
         }

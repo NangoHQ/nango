@@ -126,7 +126,7 @@ async function scheduleTask({ groupKey }: { groupKey: string }) {
             heartbeatTimeoutSecs: 30,
             payload: {
                 type: 'action',
-                activityLogId: 1234,
+                activityLogId: '1234',
                 actionName: 'Task',
                 connection: {
                     id: 1234,

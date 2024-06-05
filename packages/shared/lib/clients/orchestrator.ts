@@ -5,13 +5,11 @@ import { NangoError } from '../utils/error.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
-import { createActivityLog, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../services/activity/activity.service.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
 import { v4 as uuid } from 'uuid';
 import featureFlags from '../utils/featureflags.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { LogLevel } from '@nangohq/types';
 import SyncClient from './sync.client.js';
 import type { Client as TemporalClient } from '@temporalio/client';
 import { LogActionEnum } from '../models/Activity.js';
@@ -46,14 +44,12 @@ export class Orchestrator {
         connection,
         actionName,
         input,
-        activityLogId,
         environment_id,
         logCtx
     }: {
         connection: NangoConnection;
         actionName: string;
         input: object;
-        activityLogId: number;
         environment_id: number;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
@@ -91,7 +87,7 @@ export class Orchestrator {
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
-                        activityLogId,
+                        activityLogId: logCtx.id,
                         input: parsedInput
                     };
                     const actionResult = await this.client.executeAction({
@@ -107,6 +103,9 @@ export class Orchestrator {
                     const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
                     const error = new NangoError('action_failure', { error: errorMsg });
                     span.setTag('error', e);
+
+                    await logCtx.error('Failed to parse input', { error: e });
+
                     return Err(error);
                 } finally {
                     span.finish();
@@ -131,7 +130,7 @@ export class Orchestrator {
                                     environment_id: connection.environment_id
                                 },
                                 input,
-                                activityLogId
+                                activityLogId: logCtx.id
                             }
                         ]
                     });
@@ -157,34 +156,12 @@ export class Orchestrator {
             }
 
             if (res.isErr()) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`
-                });
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `The action workflow ${workflowId} did not complete successfully`
-                });
-                await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
+                await logCtx.error(`The action workflow ${workflowId} did not complete successfully`, { error: res.error });
                 return res;
             }
 
             const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
-            await updateSuccessActivityLog(activityLogId, true);
             await logCtx.info(content);
 
             await telemetry.log(
@@ -207,13 +184,6 @@ export class Orchestrator {
 
             const content = `The action workflow ${workflowId} failed with error: ${err}`;
 
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
             await logCtx.error(content);
 
             errorManager.report(err, {
@@ -268,24 +238,8 @@ export class Orchestrator {
         input: object;
         logContextGetter: LogContextGetter;
     }): Promise<Result<T, NangoError>> {
-        const log = {
-            level: 'info' as LogLevel,
-            success: null,
-            action: LogActionEnum.WEBHOOK,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: connection.connection_id,
-            provider_config_key: connection.provider_config_key,
-            provider: integration.provider,
-            environment_id: connection.environment_id,
-            operation_name: webhookName
-        };
-
-        const activityLogId = await createActivityLog(log);
         const logCtx = await logContextGetter.create(
             {
-                id: String(activityLogId),
                 operation: { type: 'webhook', action: 'incoming' },
                 message: 'Received a webhook',
                 expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
@@ -339,7 +293,7 @@ export class Orchestrator {
                             environment_id: connection.environment_id
                         },
                         input: parsedInput,
-                        activityLogId: activityLogId!
+                        activityLogId: logCtx.id
                     };
                     const webhookResult = await this.client.executeWebhook({
                         name: executionId,
@@ -374,7 +328,7 @@ export class Orchestrator {
                                 parentSyncName: syncConfig.sync_name,
                                 nangoConnection: nangoConnectionWithoutCredentials,
                                 input,
-                                activityLogId
+                                activityLogId: logCtx.id
                             }
                         ]
                     });
@@ -397,43 +351,20 @@ export class Orchestrator {
             }
 
             if (res.isErr()) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: integration.environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `The webhook workflow ${workflowId} did not complete successfully`
-                });
                 await logCtx.error('The webhook workflow did not complete successfully');
                 await logCtx.failed();
 
                 return res;
             }
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: integration.environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The webhook workflow ${workflowId} was successfully run.`
-            });
             await logCtx.info('The webhook workflow was successfully run');
             await logCtx.success();
-
-            await updateSuccessActivityLog(activityLogId as number, true);
 
             return res;
         } catch (e) {
             const errorMessage = stringifyError(e, { pretty: true });
             const error = new NangoError('webhook_script_failure', { errorMessage });
 
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id: integration.environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The webhook workflow ${workflowId} failed with error: ${errorMessage}`
-            });
             await logCtx.error('The webhook workflow failed', { error: e });
             await logCtx.failed();
 
@@ -457,13 +388,11 @@ export class Orchestrator {
         connection,
         name,
         fileLocation,
-        activityLogId,
         logCtx
     }: {
         connection: NangoConnection;
         name: string;
         fileLocation: string;
-        activityLogId: number;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const startTime = Date.now();
@@ -498,7 +427,7 @@ export class Orchestrator {
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
-                        activityLogId,
+                        activityLogId: logCtx.id,
                         fileLocation
                     };
                     const result = await this.client.executePostConnection({
@@ -536,7 +465,7 @@ export class Orchestrator {
                                     environment_id: connection.environment_id
                                 },
                                 fileLocation,
-                                activityLogId
+                                activityLogId: logCtx.id
                             }
                         ]
                     });
@@ -546,7 +475,6 @@ export class Orchestrator {
                         // Errors received from temporal are raw objects not classes
                         const error = new NangoError(rawError['type'], rawError['payload'], rawError['status']);
                         res = Err(error);
-                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
                     } else {
                         res = Ok(response);
                     }
@@ -562,37 +490,13 @@ export class Orchestrator {
             }
 
             if (res.isErr()) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: connection.environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`
-                });
-                await logCtx.error(`Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`);
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: connection.environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `The post connection script workflow ${workflowId} did not complete successfully`
-                });
-                await logCtx.error(`The post connection script workflow ${workflowId} did not complete successfully`);
-
+                await logCtx.error('Failed with error', { error: res.error });
                 return res;
             }
 
             const content = `The post connection script workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: connection.environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
-            await updateSuccessActivityLog(activityLogId, true);
-            await logCtx.info(content);
+            await logCtx.info('Run successfully', { output: res.value });
 
             await telemetry.log(
                 LogTypes.POST_CONNECTION_SCRIPT_SUCCESS,
@@ -614,14 +518,7 @@ export class Orchestrator {
 
             const content = `The post-connection-script workflow ${workflowId} failed with error: ${err}`;
 
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id: connection.environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
-            await logCtx.error(content);
+            await logCtx.error('Failed with error', { error: err });
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,

@@ -12,11 +12,9 @@ import {
     getSyncNamesByConnectionId,
     softDeleteSync
 } from './sync.service.js';
-import { createActivityLogMessageAndEnd, createActivityLog, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
-import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
 import type {
     Job as SyncJob,
@@ -178,25 +176,8 @@ export class OrchestratorService {
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id);
         const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
 
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: connectionId || '',
-            provider: provider!.provider,
-            provider_config_key: providerConfigKey,
-            environment_id: environment.id
-        };
-        const activityLogId = await createActivityLog(log);
-        if (!activityLogId) {
-            return { success: false, error: new NangoError('failed_to_create_activity_log'), response: false };
-        }
-
         const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
+            { operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
             { account, environment, integration: { id: provider!.id!, name: provider!.unique_key, provider: provider!.provider } }
         );
 
@@ -232,7 +213,6 @@ export class OrchestratorService {
                     scheduleId: schedule.schedule_id,
                     syncId: sync?.id,
                     command,
-                    activityLogId,
                     environmentId: environment.id,
                     providerConfigKey,
                     connectionId,
@@ -244,7 +224,7 @@ export class OrchestratorService {
                 });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environment.id, logCtx);
+                    await updateScheduleStatus(schedule.schedule_id, command, logCtx);
                 }
             }
         } else {
@@ -274,7 +254,6 @@ export class OrchestratorService {
                     scheduleId: schedule.schedule_id,
                     syncId: sync.id,
                     command,
-                    activityLogId,
                     environmentId: environment.id,
                     providerConfigKey,
                     connectionId: connection.connection_id,
@@ -285,20 +264,10 @@ export class OrchestratorService {
                     initiator
                 });
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environment.id, logCtx);
+                    await updateScheduleStatus(schedule.schedule_id, command, logCtx);
                 }
             }
         }
-
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            environment_id: environment.id,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
-        });
-
-        await updateSuccessActivityLog(activityLogId, true);
 
         await logCtx.info('Sync was successfully updated', { action, syncNames });
         await logCtx.success();
@@ -360,7 +329,7 @@ export class OrchestratorService {
 
     /**
      * Classify Sync Status
-     * @desc categornize the different scenarios of sync status
+     * @desc categorize the different scenarios of sync status
      * 1. If the schedule is paused and the job is not running, then the sync is paused
      * 2. If the schedule is paused and the job is not running then the sync is stopped (last return case)
      * 3. If the schedule is running but the last job is null then it is an error
@@ -423,7 +392,7 @@ export class OrchestratorService {
         const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
         if (syncSchedule) {
             if (syncSchedule?.schedule?.state?.paused && schedule?.status === ScheduleStatus.RUNNING) {
-                await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE, null, environmentId);
+                await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE);
                 if (status !== SyncStatus.RUNNING) {
                     status = SyncStatus.PAUSED;
                 }
@@ -440,7 +409,7 @@ export class OrchestratorService {
                     `syncId:${syncId}`
                 );
             } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
-                await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
+                await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE);
                 status = SyncStatus.STOPPED;
                 await telemetry.log(
                     LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED,

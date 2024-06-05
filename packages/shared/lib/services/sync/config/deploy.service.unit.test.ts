@@ -7,7 +7,6 @@ import * as SyncService from '../sync.service.js';
 import * as DeployConfigService from './deploy.service.js';
 import connectionService from '../../connection.service.js';
 import configService from '../../config.service.js';
-import { mockAddEndTime, mockCreateActivityLog, mockUpdateSuccess } from '../../activity/mocks.js';
 import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { Environment } from '../../../models/Environment.js';
@@ -25,10 +24,6 @@ describe('Sync config create', () => {
         vi.spyOn(environmentService, 'getAccountFromEnvironment').mockImplementation(() => {
             return Promise.resolve({ id: 1, name: '' } as Account);
         });
-
-        mockCreateActivityLog();
-        mockUpdateSuccess();
-        mockAddEndTime();
 
         // empty sync config should return back an empty array
         const emptyConfig = await DeployConfigService.deploy({

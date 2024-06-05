@@ -5,7 +5,6 @@ import { SyncType } from '../../models/Sync.js';
 import type { RecentlyCreatedConnection, NangoConnection, StoredConnection } from '../../models/Connection.js';
 import WebhookService from './webhook.service.js';
 import type { Environment } from '../../models/Environment.js';
-import { mockCreateActivityLog } from '../activity/mocks.js';
 import { LogContext, logContextGetter } from '@nangohq/logs';
 import type { Account, Config } from '../../models/index.js';
 
@@ -42,7 +41,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should not send an auth webhook if the webhook url is not present', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         await WebhookService.sendAuthUpdate(
@@ -58,7 +56,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should not send an auth webhook if the webhook url is not present even if the auth webhook is checked', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         await WebhookService.sendAuthUpdate(
@@ -82,7 +79,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should send an auth webhook if the webhook url is not present but the secondary is', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         await WebhookService.sendAuthUpdate(
@@ -106,7 +102,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should send an auth webhook twice if the webhook url is present and the secondary is as well', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         await WebhookService.sendAuthUpdate(
@@ -130,8 +125,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should send an auth webhook if the webhook url is present and if the auth webhook is checked', async () => {
-        mockCreateActivityLog();
-
         const logCtx = getLogCtx();
 
         await WebhookService.sendAuthUpdate(
@@ -154,8 +147,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should not send an auth webhook if the webhook url is present and if the auth webhook is not checked', async () => {
-        mockCreateActivityLog();
-
         const logCtx = getLogCtx();
         await WebhookService.sendAuthUpdate(
             {
@@ -178,8 +169,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should not send a forward webhook if the webhook url is not present', async () => {
-        mockCreateActivityLog();
-
         const environment = { name: 'dev', id: 1, secret_key: 'secret', webhook_url: null, always_send_webhook: false } as Environment;
         await WebhookService.forward({
             integration,
@@ -194,8 +183,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should send a forward webhook if the webhook url is not present but the secondary is', async () => {
-        mockCreateActivityLog();
-
         const environment = {
             name: 'dev',
             id: 1,
@@ -217,7 +204,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should send a forwarded webhook if the webhook url is present', async () => {
-        mockCreateActivityLog();
         const environment = { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://example.com/webhook', always_send_webhook: false } as Environment;
         await WebhookService.forward({
             integration,
@@ -232,7 +218,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should send a forwarded webhook twice if the webhook url and secondary are present', async () => {
-        mockCreateActivityLog();
         const environment = {
             name: 'dev',
             id: 1,
@@ -254,7 +239,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should not send a sync webhook if the webhook url is not present', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
@@ -272,7 +256,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should not send a sync webhook if the webhook url is not present even if always send is checked', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
@@ -290,7 +273,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should not send a sync webhook if the webhook url is present but if always send is not checked and there were no sync changes', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         const responseResults = { added: 0, updated: 0, deleted: 0 };
@@ -308,7 +290,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should send a sync webhook if the webhook url is present and if always send is not checked and there were sync changes', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
@@ -326,7 +307,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should send a sync webhook if the webhook url is present and if always send is checked and there were sync changes', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
@@ -344,7 +324,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should send an sync webhook if the webhook url is present and if always send is checked and there were no sync changes', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         const responseResults = { added: 0, updated: 0, deleted: 0 };
@@ -362,7 +341,6 @@ describe('Webhook notification tests', () => {
     });
 
     it('Should send an sync webhook twice if the webhook url and secondary are present and if always send is checked and there were no sync changes', async () => {
-        mockCreateActivityLog();
         const logCtx = getLogCtx();
 
         const responseResults = { added: 0, updated: 0, deleted: 0 };

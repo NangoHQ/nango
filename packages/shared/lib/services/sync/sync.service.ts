@@ -4,7 +4,6 @@ import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob
 import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
-import { updateSuccess as updateSuccessActivityLog, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { updateScheduleStatus } from './schedule.service.js';
 import type { ActiveLogIds } from '@nangohq/types';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
@@ -293,7 +292,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                     ...sync,
                     schedule_status: SyncStatus.PAUSED
                 };
-                await updateScheduleStatus(schedule_id, SyncCommand.PAUSE, null, nangoConnection.environment_id);
+                await updateScheduleStatus(schedule_id, SyncCommand.PAUSE);
                 await telemetry.log(
                     LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING,
                     'UI: Schedule is marked as paused in temporal but not in the database. The schedule has been updated in the database to be paused.',
@@ -315,7 +314,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<(Sync & { s
                     ...sync,
                     schedule_status: SyncStatus.RUNNING
                 };
-                await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE, null, nangoConnection.environment_id);
+                await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE);
                 await telemetry.log(
                     LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED,
                     'UI: Schedule is marked as running in temporal but not in the database. The schedule has been updated in the database to be running.',
@@ -532,7 +531,6 @@ export const getAndReconcileDifferences = async ({
     environmentId,
     flows,
     performAction,
-    activityLogId,
     debug = false,
     singleDeployMode = false,
     logCtx,
@@ -541,7 +539,6 @@ export const getAndReconcileDifferences = async ({
     environmentId: number;
     flows: IncomingFlowConfig[];
     performAction: boolean;
-    activityLogId: number | null;
     debug?: boolean | undefined;
     singleDeployMode?: boolean | undefined;
     logCtx?: LogContext;
@@ -637,10 +634,7 @@ export const getAndReconcileDifferences = async ({
         const result = await syncOrchestrator.createSyncs(syncsToCreate, logContextGetter, debug, logCtx);
 
         if (!result) {
-            if (activityLogId) {
-                await updateSuccessActivityLog(activityLogId, false);
-                await logCtx?.failed();
-            }
+            await logCtx?.failed();
             return null;
         }
     }
@@ -698,15 +692,8 @@ export const getAndReconcileDifferences = async ({
         }
     }
 
-    if (debug && activityLogId) {
-        await createActivityLogMessageAndEnd({
-            level: 'debug',
-            environment_id: environmentId,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: 'Sync deploy diff in debug mode process complete successfully.'
-        });
-        await logCtx?.debug('Sync deploy diff in debug mode process complete successfully.');
+    if (debug && logCtx) {
+        await logCtx.debug('Sync deploy diff in debug mode process complete successfully.');
     }
 
     return {

@@ -28,7 +28,7 @@ export const syncArgsSchema = z.object({
 export const actionArgsSchema = z.object({
     type: z.literal('action'),
     actionName: z.string().min(1),
-    activityLogId: z.number().positive(),
+    activityLogId: z.union([z.number().positive(), z.string()]),
     input: jsonSchema,
     ...commonSchemaArgsFields
 });
@@ -36,7 +36,7 @@ export const webhookArgsSchema = z.object({
     type: z.literal('webhook'),
     webhookName: z.string().min(1),
     parentSyncName: z.string().min(1),
-    activityLogId: z.number().positive(),
+    activityLogId: z.union([z.number().positive(), z.string()]),
     input: jsonSchema,
     ...commonSchemaArgsFields
 });
@@ -44,7 +44,7 @@ export const postConnectionArgsSchema = z.object({
     type: z.literal('post-connection-script'),
     postConnectionName: z.string().min(1),
     fileLocation: z.string().min(1),
-    activityLogId: z.number().positive(),
+    activityLogId: z.union([z.number().positive(), z.string()]),
     ...commonSchemaArgsFields
 });
 

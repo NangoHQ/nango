@@ -12,7 +12,7 @@ const logger = getLogger('integration.service');
 interface ScriptObject {
     context: Context | null;
     runner: Runner;
-    activityLogId: number | undefined;
+    activityLogId: string | undefined;
     cancelled?: boolean;
 }
 
@@ -24,7 +24,7 @@ class IntegrationService implements IntegrationServiceInterface {
         this.sendHeartbeat();
     }
 
-    async cancelScript(syncId: string, environmentId: number): Promise<void> {
+    async cancelScript(syncId: string): Promise<void> {
         const scriptObject = this.runningScripts.get(syncId);
 
         if (!scriptObject) {
@@ -40,7 +40,7 @@ class IntegrationService implements IntegrationServiceInterface {
         if (res.isOk()) {
             this.runningScripts.set(syncId, { ...scriptObject, cancelled: true });
         } else {
-            if (activityLogId && environmentId) {
+            if (activityLogId) {
                 const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
                 await logCtx.error('Failed to cancel script');
             }
@@ -80,8 +80,8 @@ class IntegrationService implements IntegrationServiceInterface {
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;
 
-                if (activityLogId && writeToDb) {
-                    await logCtx?.error(content);
+                if (logCtx && writeToDb) {
+                    await logCtx.error(content);
                 }
 
                 const error = new NangoError('Unable to find integration file', 404);
@@ -158,8 +158,8 @@ class IntegrationService implements IntegrationServiceInterface {
                 }
                 const { success, error, response } = formatScriptError(err, errorType, syncName);
 
-                if (activityLogId && writeToDb) {
-                    await logCtx?.error(error.message, { error });
+                if (logCtx && writeToDb) {
+                    await logCtx.error(error.message, { error });
                 }
                 return { success, error, response };
             } finally {
@@ -170,8 +170,8 @@ class IntegrationService implements IntegrationServiceInterface {
             const errorMessage = stringifyError(err, { pretty: true });
             const content = `There was an error running integration '${syncName}': ${errorMessage}`;
 
-            if (activityLogId && writeToDb) {
-                await logCtx?.error(content, { error: err });
+            if (logCtx && writeToDb) {
+                await logCtx.error(content, { error: err });
             }
 
             return { success: false, error: new NangoError(content, 500), response: null };

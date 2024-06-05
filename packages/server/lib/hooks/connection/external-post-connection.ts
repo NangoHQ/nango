@@ -1,5 +1,5 @@
-import type { LogLevel, RecentlyCreatedConnection } from '@nangohq/shared';
-import { createActivityLog, LogActionEnum, postConnectionScriptService } from '@nangohq/shared';
+import type { RecentlyCreatedConnection } from '@nangohq/shared';
+import { postConnectionScriptService } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
 import { getOrchestrator } from '../../utils/utils.js';
 
@@ -24,24 +24,8 @@ export async function externalPostConnection(
         return;
     }
 
-    const log = {
-        level: 'info' as LogLevel,
-        success: false,
-        action: LogActionEnum.POST_CONNECTION_SCRIPT,
-        start: Date.now(),
-        end: Date.now(),
-        timestamp: Date.now(),
-        connection_id: connection.connection_id,
-        provider,
-        provider_config_key: connection.provider_config_key,
-        environment_id: environment.id,
-        operation_name: 'post-connection-script'
-    };
-
-    const activityLogId = await createActivityLog(log);
-
     const logCtx = await logContextGetter.create(
-        { id: String(activityLogId), operation: { type: 'post-connection-script' }, message: 'Start action' },
+        { operation: { type: 'post-connection-script' }, message: 'Start action' },
         {
             account,
             environment,
@@ -57,7 +41,6 @@ export async function externalPostConnection(
             connection: createdConnection.connection,
             name,
             fileLocation,
-            activityLogId: activityLogId as number,
             logCtx
         });
     }

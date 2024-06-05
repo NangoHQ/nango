@@ -54,7 +54,6 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         syncName: task.actionName,
         isAction: true,
         syncType: SyncType.ACTION,
-        activityLogId: task.activityLogId,
         input: task.input as object, // TODO: fix type after temporal is removed
         provider: providerConfig.provider,
         debug: false
@@ -97,7 +96,6 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
         syncType: SyncType.WEBHOOK,
         syncId: sync?.id,
         isWebhook: true,
-        activityLogId: task.activityLogId,
         logCtx: await logContextGetter.get({ id: String(task.activityLogId) }),
         input: task.input as object, // TODO: fix type after temporal is removed
         provider: providerConfig.provider,

@@ -1,6 +1,6 @@
 import type { AxiosError, AxiosResponse } from 'axios';
-import type { RecentlyCreatedConnection, Connection, ConnectionConfig, LogLevel, HTTP_VERB, UserProvidedProxyConfiguration } from '@nangohq/shared';
-import { LogActionEnum, LogTypes, createActivityLogAndLogMessage, proxyService, connectionService, telemetry } from '@nangohq/shared';
+import type { RecentlyCreatedConnection, Connection, ConnectionConfig, HTTP_VERB, UserProvidedProxyConfiguration } from '@nangohq/shared';
+import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
@@ -87,27 +87,9 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                         : 'Unknown error';
 
                 const errorString = JSON.stringify(errorDetails);
-                const log = {
-                    level: 'error' as LogLevel,
-                    success: false,
-                    action: LogActionEnum.AUTH,
-                    start: Date.now(),
-                    end: Date.now(),
-                    timestamp: Date.now(),
-                    connection_id: upsertedConnection.connection_id,
-                    provider,
-                    provider_config_key: upsertedConnection.provider_config_key,
-                    environment_id: environment.id
-                };
 
-                const activityLogId = await createActivityLogAndLogMessage(log, {
-                    level: 'error',
-                    environment_id: environment.id,
-                    timestamp: Date.now(),
-                    content: `Post connection script failed with the error: ${errorString}`
-                });
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'auth', action: 'post_connection' }, message: 'Authentication' },
+                    { operation: { type: 'auth', action: 'post_connection' }, message: 'Authentication' },
                     {
                         account,
                         environment,

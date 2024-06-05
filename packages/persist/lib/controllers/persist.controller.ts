@@ -23,7 +23,7 @@ type RecordRequest = Request<
         records: Record<string, any>[];
         providerConfigKey: string;
         connectionId: string;
-        activityLogId: number;
+        activityLogId: number | string;
     },
     void
 >;
@@ -32,7 +32,7 @@ const MAX_LOG_CHAR = 10000;
 
 class PersistController {
     public async saveActivityLog(
-        req: Request<{ environmentId: number }, void, { activityLogId: number; level: LogLevel; msg: string; timestamp?: number }, void>,
+        req: Request<{ environmentId: number }, void, { activityLogId: number | string; level: LogLevel; msg: string; timestamp?: number }, void>,
         res: Response,
         next: NextFunction
     ) {
@@ -168,7 +168,7 @@ class PersistController {
         syncJobId: number;
         model: string;
         records: Record<string, any>[];
-        activityLogId: number;
+        activityLogId: number | string;
         softDelete: boolean;
         persistFunction: (records: FormattedRecord[]) => Promise<Result<UpsertSummary>>;
     }): Promise<Result<void>> {

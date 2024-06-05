@@ -10,7 +10,6 @@ import appStoreAuthController from './controllers/appStoreAuth.controller.js';
 import authMiddleware from './middleware/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
-import activityController from './controllers/activity.controller.js';
 import syncController from './controllers/sync.controller.js';
 import flowController from './controllers/flow.controller.js';
 import apiAuthController from './controllers/apiAuth.controller.js';
@@ -203,10 +202,6 @@ web.route('/api/v1/user/name').put(webAuth, userController.editName.bind(userCon
 web.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));
 web.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.bind(userController));
 web.route('/api/v1/users/invite').post(webAuth, userController.invite.bind(userController));
-
-web.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
-web.route('/api/v1/activity-messages').get(webAuth, activityController.getMessages.bind(activityController));
-web.route('/api/v1/activity-filters').get(webAuth, activityController.getPossibleFilters.bind(activityController));
 
 web.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));

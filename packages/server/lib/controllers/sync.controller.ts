@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { LogLevel, NangoConnection, HTTP_VERB, Connection, IncomingFlowConfig } from '@nangohq/shared';
+import type { NangoConnection, HTTP_VERB, Connection, IncomingFlowConfig } from '@nangohq/shared';
 import type { PostConnectionScriptByProvider } from '@nangohq/types';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
@@ -13,9 +13,6 @@ import {
     getSyncsByProviderConfigKey,
     SyncClient,
     updateScheduleStatus,
-    updateSuccess as updateSuccessActivityLog,
-    createActivityLogMessageAndEnd,
-    createActivityLog,
     getAndReconcileDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
     getProviderConfigBySyncAndAccount,
@@ -101,15 +98,13 @@ class SyncController {
             }
 
             if (reconcile) {
-                const logCtx = await logContextGetter.get({ id: String(syncConfigDeployResult?.activityLogId) });
                 const success = await getAndReconcileDifferences({
                     environmentId: environment.id,
                     flows: flowConfigs,
                     performAction: reconcile,
-                    activityLogId: syncConfigDeployResult?.activityLogId as number,
                     debug,
                     singleDeployMode,
-                    logCtx,
+                    logCtx: syncConfigDeployResult!.logCtx,
                     logContextGetter
                 });
                 if (!success) {
@@ -154,7 +149,6 @@ class SyncController {
                 environmentId,
                 flows: flowConfigs,
                 performAction: false,
-                activityLogId: null,
                 debug,
                 singleDeployMode,
                 logContextGetter
@@ -416,37 +410,13 @@ class SyncController {
                 return;
             }
 
-            const log = {
-                level: 'info' as LogLevel,
-                success: false,
-                action: LogActionEnum.ACTION,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: connection.connection_id,
-                provider: provider.provider,
-                provider_config_key: connection.provider_config_key,
-                environment_id: environmentId,
-                operation_name: action_name
-            };
-
             span.setTag('nango.actionName', action_name)
                 .setTag('nango.connectionId', connectionId)
                 .setTag('nango.environmentId', environmentId)
                 .setTag('nango.providerConfigKey', providerConfigKey);
 
-            const activityLogId = await createActivityLog(log);
-            if (!activityLogId) {
-                throw new NangoError('failed_to_create_activity_log');
-            }
-
             logCtx = await logContextGetter.create(
-                {
-                    id: String(activityLogId),
-                    operation: { type: 'action' },
-                    message: 'Start action',
-                    expiresAt: defaultOperationExpiration.action()
-                },
+                { operation: { type: 'action' }, message: 'Start action', expiresAt: defaultOperationExpiration.action() },
                 {
                     account,
                     environment,
@@ -467,7 +437,6 @@ class SyncController {
                 connection,
                 actionName: action_name,
                 input,
-                activityLogId,
                 environment_id: environmentId,
                 logCtx
             });
@@ -688,26 +657,8 @@ class SyncController {
 
             const action = CommandToActivityLog[command as SyncCommand];
 
-            const log = {
-                level: 'info' as LogLevel,
-                success: false,
-                action,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: connection.connection_id,
-                provider,
-                provider_config_key: connection.provider_config_key,
-                environment_id: environment.id,
-                operation_name: sync_name
-            };
-            const activityLogId = await createActivityLog(log);
             logCtx = await logContextGetter.create(
-                {
-                    id: String(activityLogId),
-                    operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] },
-                    message: `Trigger ${command}`
-                },
+                { operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] }, message: `Trigger ${command}` },
                 {
                     account,
                     environment,
@@ -740,7 +691,6 @@ class SyncController {
                 scheduleId: schedule_id,
                 syncId: sync_id,
                 command,
-                activityLogId: activityLogId as number,
                 environmentId: environment.id,
                 providerConfigKey: connection?.provider_config_key,
                 connectionId: connection?.connection_id,
@@ -758,17 +708,9 @@ class SyncController {
             }
 
             if (command !== SyncCommand.RUN) {
-                await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id, logCtx);
+                await updateScheduleStatus(schedule_id, command, logCtx);
             }
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Sync was updated with command: "${action}" for sync: ${sync_id}`
-            });
-            await updateSuccessActivityLog(activityLogId as number, true);
             await logCtx.info(`Sync command run successfully "${action}"`, { action, syncId: sync_id });
             await logCtx.success();
 

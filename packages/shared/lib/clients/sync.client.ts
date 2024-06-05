@@ -8,10 +8,8 @@ import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
 import type { Sync, SyncWithSchedule } from '../models/Sync.js';
 import { SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Sync.js';
-import type { LogLevel } from '../models/Activity.js';
 import { LogActionEnum } from '../models/Activity.js';
 import { SYNC_TASK_QUEUE } from '../constants.js';
-import { createActivityLog, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../services/activity/activity.service.js';
 import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig, getSyncConfigRaw } from '../services/sync/config/config.service.js';
@@ -22,7 +20,7 @@ import { createSync, clearLastSyncDate } from '../services/sync/sync.service.js'
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { isTest, isProd, getLogger, Ok, Err, stringifyError } from '@nangohq/utils';
+import { isTest, isProd, getLogger, Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { InitialSyncArgs } from '../models/worker.js';
 import environmentService from '../services/environment.service.js';
@@ -160,24 +158,6 @@ class SyncClient {
         let logCtx: LogContext | undefined;
 
         try {
-            const activityLogId = await createActivityLog({
-                level: 'info' as LogLevel,
-                success: null,
-                action: LogActionEnum.SYNC_INIT,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: nangoConnection.connection_id,
-                provider_config_key: nangoConnection.provider_config_key,
-                provider: providerConfig.provider,
-                session_id: sync?.id?.toString(),
-                environment_id: nangoConnection.environment_id,
-                operation_name: syncName
-            });
-            if (!activityLogId) {
-                return;
-            }
-
             const syncConfig = await getSyncConfigRaw({
                 environmentId: nangoConnection.environment_id,
                 config_id: providerConfig.id!,
@@ -188,7 +168,7 @@ class SyncClient {
             const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
 
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
+                { operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
                 {
                     account,
                     environment,
@@ -202,13 +182,7 @@ class SyncClient {
 
             if (!success || response === null) {
                 const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${error?.message}`;
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: nangoConnection.environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
+
                 await logCtx.error('The sync was not created or started due to an error with the sync interval', { error, runs: syncData.runs });
                 await logCtx.failed();
 
@@ -224,8 +198,6 @@ class SyncClient {
                         syncData
                     }
                 });
-
-                await updateSuccessActivityLog(activityLogId, false);
 
                 return;
             }
@@ -286,17 +258,9 @@ class SyncClient {
             await createSyncSchedule(sync.id, interval, offset, syncData.auto_start === false ? ScheduleStatus.PAUSED : ScheduleStatus.RUNNING, scheduleId);
 
             if (scheduleHandle) {
-                await createActivityLogMessageAndEnd({
-                    level: 'info',
-                    environment_id: nangoConnection.environment_id,
-                    activity_log_id: activityLogId,
-                    content: `Scheduled to run "${syncData.runs}"`,
-                    timestamp: Date.now()
-                });
                 await logCtx.info('Scheduled successfully', { runs: syncData.runs });
             }
 
-            await updateSuccessActivityLog(activityLogId, true);
             await logCtx.success();
         } catch (err) {
             errorManager.report(err, {
@@ -378,7 +342,6 @@ class SyncClient {
         scheduleId,
         syncId,
         command,
-        activityLogId,
         environmentId,
         providerConfigKey,
         connectionId,
@@ -391,7 +354,6 @@ class SyncClient {
         scheduleId: string;
         syncId: string;
         command: SyncCommand;
-        activityLogId: number;
         environmentId: number;
         providerConfigKey: string;
         connectionId: string;
@@ -462,15 +424,6 @@ class SyncClient {
 
             return Ok(true);
         } catch (err) {
-            const errorMessage = stringifyError(err, { pretty: true });
-
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id: environmentId,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `The sync command: ${command} failed with error: ${errorMessage}`
-            });
             await logCtx.error(`Sync command failed "${command}"`, { error: err, command });
 
             return Err(err as Error);
@@ -525,15 +478,7 @@ class SyncClient {
         }
     }
 
-    async updateSyncSchedule(
-        schedule_id: string,
-        interval: string,
-        offset: number,
-        environmentId: number,
-        syncName?: string,
-        _activityLogId?: number,
-        logCtx?: LogContext
-    ) {
+    async updateSyncSchedule(schedule_id: string, interval: string, offset: number, environmentId: number, syncName?: string, logCtx?: LogContext) {
         function updateFunction(scheduleDescription: ScheduleDescription) {
             scheduleDescription.spec = {
                 intervals: [

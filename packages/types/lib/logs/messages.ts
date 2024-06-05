@@ -147,3 +147,5 @@ export type OperationRow = Pick<MessageRow, OperationRequired> & Omit<MessageRow
  * What is required to insert a Message
  */
 export type MessageRowInsert = Pick<MessageRow, 'type' | 'message'> & Partial<Omit<MessageRow, 'type' | 'message'>> & { id?: string | undefined };
+
+export type LogsBuffer = Pick<MessageRow, 'level' | 'message' | 'createdAt'> & Partial<Pick<MessageRow, 'error' | 'meta'>>;

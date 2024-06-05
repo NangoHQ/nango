@@ -82,7 +82,7 @@ describe('SyncRun', () => {
         expect(syncRun.syncType).toEqual(SyncType.INCREMENTAL);
         expect(syncRun.syncId).toEqual('some-sync');
         expect(syncRun.syncJobId).toEqual(123);
-        expect(syncRun.activityLogId).toBeUndefined();
+        expect(syncRun.logCtx).toBeUndefined();
         expect(syncRun.loadLocation).toEqual('/tmp');
         expect(syncRun.debug).toEqual(true);
     });

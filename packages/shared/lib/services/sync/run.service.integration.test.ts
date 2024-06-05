@@ -6,7 +6,7 @@ import { SyncStatus, SyncType } from '../../models/Sync.js';
 import * as jobService from './job.service.js';
 import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { Connection } from '../../models/Connection.js';
-import { LogContext, logContextGetter } from '@nangohq/logs';
+import { LogContext, logContextGetter, migrateMapping } from '@nangohq/logs';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { createEnvironmentSeed } from '../../seeders/environment.seeder.js';
@@ -14,8 +14,8 @@ import { createConnectionSeeds } from '../../seeders/connection.seeder.js';
 import { createSyncSeeds } from '../../seeders/sync.seeder.js';
 import { createSyncJobSeeds } from '../../seeders/sync-job.seeder.js';
 import connectionService from '../connection.service.js';
-import { createActivityLog } from '../activity/activity.service.js';
 import { SlackService } from '../notification/slack.service.js';
+import { createActivityLogSeed } from '../../seeders/activity.seeder.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -46,6 +46,7 @@ const integrationService = new integrationServiceMock();
 describe('Running sync', () => {
     beforeAll(async () => {
         await initDb();
+        await migrateMapping();
     });
 
     afterAll(async () => {
@@ -142,17 +143,18 @@ describe('Running sync', () => {
             expect(record3._nango_metadata.first_seen_at).toEqual(record3._nango_metadata.last_modified_at);
             expect(record3._nango_metadata.last_action).toEqual('ADDED');
         });
+
         it(`should undelete record`, async () => {
             const initialRecords = [
                 { id: '1', name: 'a' },
                 { id: '2', name: 'b' }
             ];
             const expectedResult = { added: 0, updated: 0, deleted: 0 };
-            const { connection, sync, model, activityLogId } = await verifySyncRun(initialRecords, initialRecords, false, expectedResult);
+            const { connection, sync, model, logCtx } = await verifySyncRun(initialRecords, initialRecords, false, expectedResult);
 
             // records '2' is going to be deleted
             const newRecords = [{ id: '1', name: 'a' }];
-            await runJob(newRecords, activityLogId, model, connection, sync, trackDeletes, false);
+            await runJob(newRecords, logCtx, model, connection, sync, trackDeletes, false);
 
             const records = await getRecords(connection, model);
             const record = records.find((record) => record.id == '2');
@@ -162,7 +164,7 @@ describe('Running sync', () => {
             expect(record._nango_metadata.last_action).toEqual('DELETED');
 
             // records '2' should be back
-            const result = await runJob(initialRecords, activityLogId, model, connection, sync, trackDeletes, false);
+            const result = await runJob(initialRecords, logCtx, model, connection, sync, trackDeletes, false);
             expect(result).toEqual({ added: 1, updated: 0, deleted: 0 });
 
             const recordsAfter = await getRecords(connection, model);
@@ -173,6 +175,7 @@ describe('Running sync', () => {
             expect(recordAfter._nango_metadata.last_action).toEqual('ADDED');
         });
     });
+
     describe(`with softDelete=true`, () => {
         const softDelete = true;
         it(`should report records have been deleted`, async () => {
@@ -209,7 +212,6 @@ describe('SyncRun', () => {
             syncType: SyncType.INCREMENTAL,
             syncId: 'some-sync',
             syncJobId: 123,
-            activityLogId: 123,
             logCtx: new LogContext({ parentId: String(123), operation: {} as any }),
             loadLocation: '/tmp',
             debug: true
@@ -224,7 +226,7 @@ describe('SyncRun', () => {
         expect(syncRun.syncType).toEqual(SyncType.INCREMENTAL);
         expect(syncRun.syncId).toEqual('some-sync');
         expect(syncRun.syncJobId).toEqual(123);
-        expect(syncRun.activityLogId).toEqual(123);
+        expect(syncRun.logCtx?.id).toEqual('123');
         expect(syncRun.loadLocation).toEqual('/tmp');
         expect(syncRun.debug).toEqual(true);
     });
@@ -242,7 +244,7 @@ const clearDb = async () => {
 
 const runJob = async (
     rawRecords: UnencryptedRecordData[],
-    activityLogId: number,
+    logCtx: LogContext,
     model: string,
     connection: Connection,
     sync: Sync,
@@ -265,8 +267,7 @@ const runJob = async (
         syncType: SyncType.INITIAL,
         syncId: sync.id,
         syncJobId: syncJob.id,
-        activityLogId,
-        logCtx: new LogContext({ parentId: String(activityLogId), operation: {} as any })
+        logCtx
     };
     const syncRun = new SyncRun(config);
 
@@ -312,17 +313,17 @@ const verifySyncRun = async (
     trackDeletes: boolean,
     expectedResult: SyncResult,
     softDelete: boolean = false
-): Promise<{ connection: Connection; model: string; sync: Sync; activityLogId: number; records: ReturnedRecord[] }> => {
+): Promise<{ connection: Connection; model: string; sync: Sync; logCtx: LogContext; records: ReturnedRecord[] }> => {
     // Write initial records
-    const { connection, model, sync, activityLogId } = await populateRecords(initialRecords);
+    const { connection, model, sync, logCtx } = await populateRecords(initialRecords);
 
     // Run job to save new records
-    const result = await runJob(newRecords, activityLogId, model, connection, sync, trackDeletes, softDelete);
+    const result = await runJob(newRecords, logCtx, model, connection, sync, trackDeletes, softDelete);
 
     expect(result).toEqual(expectedResult);
 
     const records = await getRecords(connection, model);
-    return { connection, model, sync, activityLogId, records };
+    return { connection, model, sync, logCtx, records };
 };
 
 const getRecords = async (connection: Connection, model: string) => {
@@ -338,7 +339,7 @@ async function populateRecords(toInsert: UnencryptedRecordData[]): Promise<{
     model: string;
     sync: Sync;
     syncJob: SyncJob;
-    activityLogId: number;
+    logCtx: LogContext;
 }> {
     const {
         records,
@@ -349,21 +350,9 @@ async function populateRecords(toInsert: UnencryptedRecordData[]): Promise<{
     if (!connection) {
         throw new Error(`Connection '${connectionId}' not found`);
     }
-    const activityLogId = await createActivityLog({
-        level: 'info',
-        success: false,
-        environment_id: env.id,
-        action: 'sync',
-        start: Date.now(),
-        end: Date.now(),
-        timestamp: Date.now(),
-        connection_id: connection.connection_id,
-        provider: connection.provider_config_key,
-        provider_config_key: connection.provider_config_key
-    });
-    if (!activityLogId) {
-        throw new Error('Failed to create activity log');
-    }
+
+    const logCtx = await createActivityLogSeed(env.id);
+
     const chunkSize = 1000;
     for (let i = 0; i < records.length; i += chunkSize) {
         const res = await recordsService.upsert({ records: records.slice(i, i + chunkSize), connectionId, model });
@@ -376,7 +365,7 @@ async function populateRecords(toInsert: UnencryptedRecordData[]): Promise<{
         model,
         sync,
         syncJob,
-        activityLogId
+        logCtx
     };
 }
 

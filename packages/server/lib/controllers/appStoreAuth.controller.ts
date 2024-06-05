@@ -1,16 +1,12 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { LogLevel, AuthCredentials } from '@nangohq/shared';
+import type { AuthCredentials } from '@nangohq/shared';
 import {
-    createActivityLog,
     errorManager,
     analytics,
     AnalyticsTypes,
-    updateSuccess as updateSuccessActivityLog,
     AuthOperation,
-    updateProvider as updateProviderActivityLog,
     configService,
     connectionService,
-    createActivityLogMessageAndEnd,
     AuthModes,
     hmacService,
     ErrorSourceEnum,
@@ -28,29 +24,11 @@ class AppStoreAuthController {
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
 
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action: LogActionEnum.AUTH,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: connectionId as string,
-            provider_config_key: providerConfigKey as string,
-            environment_id: environment.id
-        };
-
-        const activityLogId = await createActivityLog(log);
         let logCtx: LogContext | undefined;
 
         try {
             logCtx = await logContextGetter.create(
-                {
-                    id: String(activityLogId),
-                    operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Authorization App Store',
-                    expiresAt: defaultOperationExpiration.auth()
-                },
+                { operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization App Store', expiresAt: defaultOperationExpiration.auth() },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, account.id);
@@ -71,13 +49,6 @@ class AppStoreAuthController {
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
                 if (!hmac) {
-                    await createActivityLogMessageAndEnd({
-                        level: 'error',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId as number,
-                        timestamp: Date.now(),
-                        content: 'Missing HMAC in query params'
-                    });
                     await logCtx.error('Missing HMAC in query params');
                     await logCtx.failed();
 
@@ -87,13 +58,6 @@ class AppStoreAuthController {
                 }
                 const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, connectionId);
                 if (!verified) {
-                    await createActivityLogMessageAndEnd({
-                        level: 'error',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId as number,
-                        timestamp: Date.now(),
-                        content: 'Invalid HMAC'
-                    });
                     await logCtx.error('Invalid HMAC');
                     await logCtx.failed();
 
@@ -106,13 +70,6 @@ class AppStoreAuthController {
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
             if (config == null) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId as number,
-                    content: `Error during App store auth: config not found`,
-                    timestamp: Date.now()
-                });
                 await logCtx.error('Invalid HMAC');
                 await logCtx.failed();
 
@@ -124,13 +81,6 @@ class AppStoreAuthController {
             const template = configService.getTemplate(config.provider);
 
             if (template.auth_mode !== AuthModes.AppStore) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `Provider ${config.provider} does not support App store auth`
-                });
                 await logCtx.error('Provider does not support API key auth', { provider: config.provider });
                 await logCtx.failed();
 
@@ -139,7 +89,6 @@ class AppStoreAuthController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, String(config.provider));
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             if (!req.body.privateKeyId) {
@@ -190,8 +139,6 @@ class AppStoreAuthController {
 
             await logCtx.info('App Store auth creation was successful');
             await logCtx.success();
-
-            await updateSuccessActivityLog(activityLogId as number, true);
 
             const [updatedConnection] = await connectionService.upsertConnection(
                 connectionId,

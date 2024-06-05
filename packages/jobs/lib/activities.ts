@@ -2,7 +2,6 @@ import { Context, CancelledFailure } from '@temporalio/activity';
 import { TimeoutFailure, TerminatedFailure } from '@temporalio/client';
 import type {
     Config as ProviderConfig,
-    LogLevel,
     ServiceResponse,
     NangoConnection,
     ContinuousSyncArgs,
@@ -17,11 +16,9 @@ import {
     SyncStatus,
     SyncType,
     configService,
-    createActivityLog,
     LogActionEnum,
     syncRunService,
     environmentService,
-    createActivityLogAndLogMessage,
     ErrorSourceEnum,
     errorManager,
     telemetry,
@@ -93,7 +90,6 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         syncName: actionName,
         isAction: true,
         syncType: SyncType.ACTION,
-        activityLogId,
         input,
         provider: providerConfig.provider,
         debug: false,
@@ -177,31 +173,11 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         });
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action: LogActionEnum.SYNC,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id,
-            provider_config_key: nangoConnection?.provider_config_key,
-            provider: '',
-            session_id: '',
-            environment_id: environmentId,
-            operation_name: syncName
-        };
         const content = `The continuous sync failed to run because of a failure to obtain the provider config for ${syncName} with the following error: ${prettyError}`;
-        const activityLogId = await createActivityLogAndLogMessage(log, {
-            level: 'error',
-            environment_id: environmentId,
-            timestamp: Date.now(),
-            content
-        });
 
         const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
         const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             {
                 account,
                 environment,
@@ -269,25 +245,9 @@ export async function syncProvider({
     let logCtx: LogContext | undefined;
 
     try {
-        const log = {
-            level: 'info' as LogLevel,
-            success: null,
-            action,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: nangoConnection.connection_id,
-            provider_config_key: nangoConnection.provider_config_key,
-            provider: providerConfig.provider,
-            session_id: syncJobId ? syncJobId?.toString() : '',
-            environment_id: nangoConnection.environment_id,
-            operation_name: syncName
-        };
-        const activityLogId = (await createActivityLog(log)) as number;
-
         const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
         logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             {
                 account,
                 environment,
@@ -319,7 +279,6 @@ export async function syncProvider({
             nangoConnection,
             syncName,
             syncType,
-            activityLogId,
             provider: providerConfig.provider,
             temporalContext,
             debug,
@@ -331,28 +290,8 @@ export async function syncProvider({
         return result.response;
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id,
-            provider_config_key: nangoConnection?.provider_config_key,
-            provider: providerConfig.provider,
-            session_id: syncJobId ? syncJobId?.toString() : '',
-            environment_id: nangoConnection?.environment_id,
-            operation_name: syncName
-        };
         const content = `The ${syncType} sync failed to run because of a failure to create the job and run the sync with the error: ${prettyError}`;
 
-        await createActivityLogAndLogMessage(log, {
-            level: 'error',
-            environment_id: nangoConnection?.environment_id,
-            timestamp: Date.now(),
-            content
-        });
         if (logCtx) {
             await logCtx.error('Failed to create the job', { error: err });
             await logCtx.failed();
@@ -416,7 +355,6 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         syncType: SyncType.WEBHOOK,
         syncId: sync?.id as string,
         isWebhook: true,
-        activityLogId,
         logCtx: await logContextGetter.get({ id: String(activityLogId) }),
         input,
         provider: providerConfig.provider,
@@ -451,7 +389,6 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
         isPostConnectionScript: true,
         syncType: SyncType.POST_CONNECTION_SCRIPT,
         isWebhook: false,
-        activityLogId,
         logCtx: await logContextGetter.get({ id: String(activityLogId) }),
         provider: providerConfig.provider,
         fileLocation: file_location,
@@ -524,9 +461,7 @@ export async function reportFailure(
 
 export async function cancelActivity(workflowArguments: InitialSyncArgs | ContinuousSyncArgs): Promise<void> {
     try {
-        const { syncId, nangoConnection } = workflowArguments;
-
-        const environmentId = nangoConnection?.environment_id;
+        const { syncId } = workflowArguments;
 
         if ('syncJobId' in workflowArguments) {
             await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
@@ -534,7 +469,7 @@ export async function cancelActivity(workflowArguments: InitialSyncArgs | Contin
             await updateLatestJobSyncStatus(workflowArguments.syncId, SyncStatus.STOPPED);
         }
 
-        await integrationService.cancelScript(syncId, environmentId);
+        await integrationService.cancelScript(syncId);
     } catch (e) {
         const content = `The sync "${workflowArguments.syncName}" with sync id ${workflowArguments.syncId} failed to cancel with the following error: ${e instanceof Error ? e.message : stringifyError(e)}`;
         errorManager.report(content, {
