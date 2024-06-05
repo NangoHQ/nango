@@ -47,6 +47,7 @@ interface PostConnectionArgs {
     postConnectionName: string;
     connection: {
         id: number;
+        connection_id: string;
         provider_config_key: string;
         environment_id: number;
     };
