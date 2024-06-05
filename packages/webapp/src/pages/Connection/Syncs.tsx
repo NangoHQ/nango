@@ -146,6 +146,8 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                     passive
                     className="!flex !justify-end !text-sm !bg-[#0E1014] !border-0 !h-[100px]"
                     onClick={() => setErrorVisible(false)}
+                    onPointerEnterCapture={null}
+                    onPointerLeaveCapture={null}
                 >
                     <Button className="!text-text-light-gray" variant="zombieGray">
                         Close
