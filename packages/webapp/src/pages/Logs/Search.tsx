@@ -31,6 +31,8 @@ import Button from '../../components/ui/button/Button';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { OperationDrawer } from './components/OperationDrawer';
 import { OperationRow } from './components/OperationRow';
+import type { DateRange } from 'react-day-picker';
+import { slidePeriod } from '../../utils/logs';
 
 const limit = 20;
 
@@ -41,8 +43,10 @@ export const LogsSearch: React.FC = () => {
 
     // --- Global state
     const [synced, setSynced] = useState(false);
+    const [operationId, setOperationId] = useState<string>();
 
     // --- Data fetch
+    const [isLive, setIsLive] = useState(true);
     const [states, setStates] = useState<SearchOperationsState[]>(statusDefaultOptions);
     const [types, setTypes] = useState<SearchOperationsType[]>(typesDefaultOptions);
     const [integrations, setIntegrations] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
@@ -52,7 +56,7 @@ export const LogsSearch: React.FC = () => {
     const cursor = useRef<SearchOperations['Body']['cursor']>();
     const [hasLoadedMore, setHasLoadedMore] = useState<boolean>(false);
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
-    const { data, error, loading, trigger, manualFetch } = useSearchOperations(env, { limit, states, types, integrations, connections, syncs, period });
+    const { data, error, loading, trigger, manualFetch } = useSearchOperations(env, { limit, states, types, integrations, connections, syncs, period }, isLive);
     const [operations, setOperations] = useState<SearchOperationsData[]>([]);
 
     useEffect(
@@ -151,7 +155,10 @@ export const LogsSearch: React.FC = () => {
             const tmpFrom = searchParams.get('from');
             const tmpTo = searchParams.get('to');
             if (tmpFrom && tmpTo) {
-                setPeriod({ from: tmpFrom, to: tmpTo });
+                const tmpLive = searchParams.get('live');
+                const isLive = tmpLive === 'true';
+                setIsLive(isLive);
+                setPeriod(isLive ? slidePeriod({ from: tmpFrom, to: tmpTo }) : { from: tmpFrom, to: tmpTo });
             }
 
             const tmpOperationId = searchParams.get('operationId');
@@ -165,11 +172,16 @@ export const LogsSearch: React.FC = () => {
     );
 
     useEffect(
-        function syncStateToQueryParams() {
-            // reset pagination and stored items
+        function resetSearchOnFilterChanges() {
             setOperations([]);
             setHasLoadedMore(false);
             setReadyToDisplay(false);
+        },
+        [states, integrations, period, connections, syncs, types]
+    );
+    useEffect(
+        function syncStateToQueryParams() {
+            // reset pagination and stored items
 
             // Sync the state back to the URL for sharing
             const tmp = new URLSearchParams({
@@ -177,7 +189,8 @@ export const LogsSearch: React.FC = () => {
                 integrations: integrations as any,
                 connections: connections as any,
                 syncs: syncs as any,
-                types: types as any
+                types: types as any,
+                live: String(isLive)
             });
             if (period) {
                 tmp.set('from', period.from);
@@ -188,7 +201,7 @@ export const LogsSearch: React.FC = () => {
             }
             setSearchParams(tmp);
         },
-        [states, integrations, period, connections, syncs, types]
+        [states, integrations, period, connections, syncs, types, operationId, isLive]
     );
 
     // --- Table Display
@@ -205,9 +218,6 @@ export const LogsSearch: React.FC = () => {
     }, [data?.pagination]);
 
     // --- Live // auto refresh
-    const isLive = useMemo(() => {
-        return !period;
-    }, [period]);
     useInterval(
         function onAutoRefresh() {
             trigger();
@@ -253,9 +263,14 @@ export const LogsSearch: React.FC = () => {
     };
 
     // Operation select
-    const [operationId, setOperationId] = useState<string>();
     const onSelectOperation = (open: boolean, operationId: string) => {
         setOperationId(open ? operationId : undefined);
+    };
+
+    // Period
+    const onPeriodChange = (range: DateRange | undefined, live: boolean) => {
+        setPeriod(range ? { from: range.from!.toISOString(), to: range.to!.toISOString() } : undefined);
+        setIsLive(live);
     };
 
     if (error) {
@@ -311,10 +326,7 @@ export const LogsSearch: React.FC = () => {
                     <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} />
                     <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} />
 
-                    <DatePicker
-                        period={period}
-                        onChange={(range) => setPeriod(range ? { from: range.from!.toISOString(), to: range.to!.toISOString() } : undefined)}
-                    />
+                    <DatePicker isLive={isLive} period={period} onChange={onPeriodChange} />
                 </div>
             </div>
             <Table.Table className="my-4 table-fixed">
