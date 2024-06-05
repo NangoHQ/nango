@@ -3,7 +3,7 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 import type { Connection, GetConnection, IntegrationConfig } from '@nangohq/types';
 import { connectionService, LogActionEnum, createActivityLogAndLogMessage, configService, errorNotificationService } from '@nangohq/shared';
-import { connectionRefreshFailed as connectionRefreshFailedHook } from '../../../hooks/hooks.js';
+import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { LogLevel } from '@nangohq/shared';
 
@@ -76,6 +76,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         providerConfigKey,
         logContextGetter,
         instantRefresh,
+        connectionRefreshSuccessHook,
         connectionRefreshFailedHook
     });
 

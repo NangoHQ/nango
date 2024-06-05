@@ -23,7 +23,6 @@ import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nan
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import { errorNotificationService } from './notification/error.service.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type {
     AppCredentials,
@@ -585,6 +584,7 @@ class ConnectionService {
         providerConfigKey,
         logContextGetter,
         instantRefresh,
+        connectionRefreshSuccessHook,
         connectionRefreshFailedHook
     }: {
         account: Account;
@@ -593,6 +593,7 @@ class ConnectionService {
         providerConfigKey: string;
         logContextGetter: LogContextGetter;
         instantRefresh: boolean;
+        connectionRefreshSuccessHook: (args: { connection: Connection; environment: Environment; config: ProviderConfig }) => Promise<void>;
         connectionRefreshFailedHook: (args: {
             connection: Connection;
             activityLogId: number;
@@ -713,8 +714,10 @@ class ConnectionService {
 
         await this.updateLastFetched(connection.id);
 
-        await errorNotificationService.auth.clear({
-            connection_id: connection.id
+        await connectionRefreshSuccessHook({
+            connection,
+            environment,
+            config
         });
 
         return Ok(connection);

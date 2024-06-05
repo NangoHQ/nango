@@ -17,6 +17,7 @@ import type { RequestLocals } from '../utils/express.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
+    connectionRefreshSuccess as connectionRefreshSuccessHook,
     connectionRefreshFailed as connectionRefreshFailedHook
 } from '../hooks/hooks.js';
 import { getOrchestratorClient } from '../utils/utils.js';
@@ -48,6 +49,7 @@ class ConnectionController {
                 providerConfigKey,
                 logContextGetter,
                 instantRefresh,
+                connectionRefreshSuccessHook,
                 connectionRefreshFailedHook
             });
 

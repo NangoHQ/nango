@@ -9,6 +9,7 @@ import {
     getSyncConfigsWithConnections,
     analytics,
     errorNotificationService,
+    SlackService,
     AnalyticsTypes
 } from '@nangohq/shared';
 import type {
@@ -23,9 +24,11 @@ import type {
     RecentlyFailedConnection
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
+import { getOrchestratorClient } from '../utils/utils.js';
 import type { Environment, IntegrationConfig, Template as ProviderTemplate } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
 import { externalPostConnection } from './connection/external-post-connection.js';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
@@ -119,6 +122,28 @@ export const connectionCreationFailed = (
     }
 };
 
+export const connectionRefreshSuccess = async ({
+    connection,
+    environment,
+    config
+}: {
+    connection: Connection;
+    environment: Environment;
+    config: IntegrationConfig;
+}): Promise<void> => {
+    if (!connection.id) {
+        return;
+    }
+
+    await errorNotificationService.auth.clear({
+        connection_id: connection.id
+    });
+
+    const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
+
+    await slackNotificationService.removeFailingConnection(connection, connection.connection_id, 'auth', null, environment.id, config.provider);
+};
+
 export const connectionRefreshFailed = async ({
     connection,
     activityLogId,
@@ -156,6 +181,10 @@ export const connectionRefreshFailed = async ({
         activityLogId,
         logCtx
     });
+
+    const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
+
+    await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', activityLogId, environment.id, config.provider);
 };
 
 export const connectionTest = async (

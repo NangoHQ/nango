@@ -34,7 +34,7 @@ import {
 } from '@nangohq/shared';
 import { metrics, getLogger, axiosInstance as axios } from '@nangohq/utils';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
-import { connectionRefreshFailed as connectionRefreshFailedHook } from '../hooks/hooks.js';
+import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 
@@ -123,6 +123,7 @@ class ProxyController {
                 providerConfigKey,
                 logContextGetter,
                 instantRefresh: false,
+                connectionRefreshSuccessHook,
                 connectionRefreshFailedHook
             });
 
