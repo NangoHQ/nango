@@ -399,7 +399,6 @@ export class SlackService {
                 resolved: false
             });
         }
-        console.log(payloadContent);
 
         const payload: NotificationPayload = {
             content: payloadContent,
