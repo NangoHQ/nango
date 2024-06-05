@@ -616,7 +616,7 @@ export default class SyncRun {
                 await this.slackNotificationService?.removeFailingConnection(
                     this.nangoConnection,
                     this.syncName,
-                    this.syncType,
+                    this.determineExecutionType(),
                     this.activityLogId,
                     this.nangoConnection.environment_id,
                     this.provider as string
@@ -777,7 +777,7 @@ export default class SyncRun {
                 await this.slackNotificationService?.reportFailure(
                     this.nangoConnection,
                     this.syncName,
-                    this.syncType,
+                    this.determineExecutionType(),
                     this.activityLogId as number,
                     this.nangoConnection.environment_id,
                     this.provider as string
