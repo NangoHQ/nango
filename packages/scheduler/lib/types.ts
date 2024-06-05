@@ -34,13 +34,19 @@ const scheduleStates = ['PAUSED', 'STARTED', 'DELETED'] as const;
 export type ScheduleState = (typeof scheduleStates)[number];
 
 export interface Schedule {
-    id: string;
-    name: string;
-    state: ScheduleState;
-    startsAt: Date;
-    frequencyMs: number;
-    payload: JsonValue;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
+    readonly id: string;
+    readonly name: string;
+    readonly state: ScheduleState;
+    readonly startsAt: Date;
+    readonly frequencyMs: number;
+    readonly payload: JsonValue;
+    readonly groupKey: string;
+    readonly retryMax: number;
+    readonly retryCount: number;
+    readonly createdToStartedTimeoutSecs: number;
+    readonly startedToCompletedTimeoutSecs: number;
+    readonly heartbeatTimeoutSecs: number;
+    readonly createdAt: Date;
+    readonly updatedAt: Date;
+    readonly deletedAt: Date | null;
 }
