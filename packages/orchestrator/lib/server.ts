@@ -1,6 +1,7 @@
 import express from 'express';
 import type { Express, Request, Response, NextFunction } from 'express';
-import { routeHandler as postScheduleHandler } from './routes/v1/postSchedule.js';
+import { routeHandler as postImmediateHandler } from './routes/v1/postImmediate.js';
+import { routeHandler as postRecurringHandler } from './routes/v1/postRecurring.js';
 import { routeHandler as postSearchHandler } from './routes/v1/postSearch.js';
 import { routeHandler as postDequeueHandler } from './routes/v1/postDequeue.js';
 import { routeHandler as putTaskHandler } from './routes/v1/tasks/putTaskId.js';
@@ -17,7 +18,7 @@ const logger = getLogger('Orchestrator.server');
 export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Express => {
     const server = express();
 
-    server.use(express.json({ limit: '100kb' }));
+    server.use(express.json({ limit: '10mb' }));
 
     // Logging middleware
     server.use((req: Request, res: Response, next: NextFunction) => {
@@ -38,7 +39,8 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
     //TODO: add auth middleware
 
     createRoute(server, getHealthHandler);
-    createRoute(server, postScheduleHandler(scheduler));
+    createRoute(server, postImmediateHandler(scheduler));
+    createRoute(server, postRecurringHandler(scheduler));
     createRoute(server, postSearchHandler(scheduler));
     createRoute(server, putTaskHandler(scheduler));
     createRoute(server, getOutputHandler(scheduler, eventEmmiter));

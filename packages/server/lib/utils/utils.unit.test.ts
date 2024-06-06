@@ -1,12 +1,11 @@
 import { expect, describe, it } from 'vitest';
 import { getConnectionMetadataFromTokenResponse, parseConnectionConfigParamsFromTemplate, getAdditionalAuthorizationParams } from './utils.js';
-import type { Template as ProviderTemplate } from '@nangohq/shared';
-import { AuthModes } from '@nangohq/shared';
+import type { Template as ProviderTemplate } from '@nangohq/types';
 
 describe('Utils unit tests', () => {
     it('Should parse config params in authorization_url', () => {
         const params = parseConnectionConfigParamsFromTemplate({
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             authorization_url: 'https://api.${connectionConfig.auth}.com/oauth/authorize',
             token_url: 'n/a',
             proxy: {
@@ -17,7 +16,7 @@ describe('Utils unit tests', () => {
     });
     it('Should parse config params in token_url', () => {
         const params = parseConnectionConfigParamsFromTemplate({
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'https://api.${connectionConfig.token}.com/oauth/access_token',
             proxy: {
@@ -29,7 +28,7 @@ describe('Utils unit tests', () => {
 
     it('Should parse config params in proxy_url', () => {
         const params = parseConnectionConfigParamsFromTemplate({
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'n/a',
             proxy: {
@@ -40,7 +39,7 @@ describe('Utils unit tests', () => {
     });
     it('Should ignore config param in proxy.base_url if in redirect_uri_metadata', () => {
         const params = parseConnectionConfigParamsFromTemplate({
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'n/a',
             redirect_uri_metadata: ['instance_url'],
@@ -52,7 +51,7 @@ describe('Utils unit tests', () => {
     });
     it('Should ignore config param in proxy.base_url if in token_response_metadata', () => {
         const params = parseConnectionConfigParamsFromTemplate({
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'n/a',
             token_response_metadata: ['api_domain'],
@@ -64,7 +63,7 @@ describe('Utils unit tests', () => {
     });
     it('Should ignore config param in proxy.headers if in redirect_uri_metadata', () => {
         const params = parseConnectionConfigParamsFromTemplate({
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'n/a',
             redirect_uri_metadata: ['some_header'],
@@ -79,7 +78,7 @@ describe('Utils unit tests', () => {
     });
     it('Should ignore config param in proxy.headers if in token_response_metadata', () => {
         const params = parseConnectionConfigParamsFromTemplate({
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'n/a',
             token_response_metadata: ['another_header'],
@@ -94,7 +93,7 @@ describe('Utils unit tests', () => {
     });
     it('Should not ignore param in token_response_metadata if also in authorization_url', () => {
         const params = parseConnectionConfigParamsFromTemplate({
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             authorization_url: 'https://${connectionConfig.provider_domain}.com/oauth/authorize',
             token_url: 'n/a',
             token_response_metadata: ['provider_domain'],
@@ -106,7 +105,7 @@ describe('Utils unit tests', () => {
     });
     it('Should not ignore param in token_response_metadata if also in token_url', () => {
         const params = parseConnectionConfigParamsFromTemplate({
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             authorization_url: 'https://provider.com/oauth/authorize',
             token_url: 'https://${connectionConfig.some_domain}.com/oauth/access_token',
             token_response_metadata: ['some_domain'],

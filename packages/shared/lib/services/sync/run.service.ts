@@ -383,6 +383,7 @@ export default class SyncRun {
                 accountId: this.account?.id as number,
                 connectionId: String(this.nangoConnection.connection_id),
                 environmentId: this.nangoConnection.environment_id,
+                environmentName: this.environment?.name as string,
                 providerConfigKey: String(this.nangoConnection.provider_config_key),
                 provider: this.provider as string,
                 activityLogId: this.activityLogId,
@@ -611,12 +612,12 @@ export default class SyncRun {
             // set the last sync date to when the sync started in case
             // the sync is long running to make sure we wouldn't miss
             // any changes while the sync is running
-            if (!this.isWebhook) {
+            if (!this.isWebhook && !this.isPostConnectionScript) {
                 await setLastSyncDate(this.syncId as string, syncStartDate);
                 await this.slackNotificationService?.removeFailingConnection(
                     this.nangoConnection,
                     this.syncName,
-                    this.syncType,
+                    this.determineExecutionType(),
                     this.activityLogId,
                     this.nangoConnection.environment_id,
                     this.provider as string
@@ -772,12 +773,12 @@ export default class SyncRun {
             });
         }
 
-        if (!this.isWebhook) {
+        if (!this.isWebhook && !this.isPostConnectionScript) {
             try {
                 await this.slackNotificationService?.reportFailure(
                     this.nangoConnection,
                     this.syncName,
-                    this.syncType,
+                    this.determineExecutionType(),
                     this.activityLogId as number,
                     this.nangoConnection.environment_id,
                     this.provider as string

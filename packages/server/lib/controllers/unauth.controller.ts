@@ -7,12 +7,10 @@ import {
     AnalyticsTypes,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
-    AuthOperation,
     updateProvider as updateProviderActivityLog,
     configService,
     connectionService,
     createActivityLogMessageAndEnd,
-    AuthModes,
     hmacService,
     ErrorSourceEnum,
     LogActionEnum
@@ -46,7 +44,7 @@ class UnAuthController {
 
         try {
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Authorization Unauthenticated' },
+                { id: String(activityLogId), operation: { type: 'auth', action: 'create_connection' }, message: 'Create connection via Unauthenticated' },
                 { account, environment }
             );
             void analytics.track(AnalyticsTypes.PRE_UNAUTH, account.id);
@@ -119,7 +117,7 @@ class UnAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.None) {
+            if (template.auth_mode !== 'NONE') {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environment.id,
@@ -165,7 +163,7 @@ class UnAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.None,
+                        auth_mode: 'NONE',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -187,20 +185,24 @@ class UnAuthController {
                 content: `Error during Unauth create: ${prettyError}`,
                 timestamp: Date.now()
             });
-            if (logCtx) {
-                void connectionCreationFailedHook(
-                    {
-                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
-                        environment,
-                        account,
-                        auth_mode: AuthModes.None,
-                        error: `Error during Unauth create: ${prettyError}`,
-                        operation: AuthOperation.UNKNOWN
+
+            connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                    environment,
+                    account,
+                    auth_mode: 'NONE',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during Unauth create: ${prettyError}`
                     },
-                    'unknown',
-                    activityLogId,
-                    logCtx
-                );
+                    operation: 'unknown'
+                },
+                'unknown',
+                activityLogId,
+                logCtx
+            );
+            if (logCtx) {
                 await logCtx.error('Error during Unauthenticated connection creation', { error: err });
                 await logCtx.failed();
             }
