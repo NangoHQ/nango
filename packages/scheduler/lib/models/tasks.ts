@@ -40,7 +40,7 @@ const TaskStateTransition = {
     }
 };
 
-interface DbTask {
+export interface DbTask {
     readonly id: string;
     readonly name: string;
     readonly payload: JsonValue;
@@ -59,7 +59,7 @@ interface DbTask {
     terminated: boolean;
     readonly schedule_id: string | null;
 }
-const DbTask = {
+export const DbTask = {
     to: (task: Task): DbTask => {
         return {
             id: task.id,

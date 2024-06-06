@@ -62,6 +62,9 @@ export class OrchestratorClient {
                 name: props.name,
                 startsAt: props.startsAt,
                 frequencyMs: props.frequencyMs,
+                groupKey: props.groupKey,
+                retry: props.retry,
+                timeoutSettingsInSecs: props.timeoutSettingsInSecs,
                 args: props.args
             }
         });
