@@ -1,18 +1,15 @@
 import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
-import { axiosInstance as axios } from '../utils/axios.js';
+import { axiosInstance as axios, getLogger } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
 import type { ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
-import { AuthModes } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
 import configService from './config.service.js';
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import type { Template as ProviderTemplate } from '../models/Provider.js';
-import { getLogger } from '@nangohq/utils';
-import type { LogsBuffer } from '@nangohq/types';
+import type { LogsBuffer, Template as ProviderTemplate } from '@nangohq/types';
 
 const logger = getLogger('Proxy');
 
@@ -81,30 +78,30 @@ class ProxyService {
 
         let token;
         switch (connection.credentials.type) {
-            case AuthModes.OAuth2:
+            case 'OAUTH2':
                 {
                     const credentials = connection.credentials;
                     token = credentials.access_token;
                 }
                 break;
-            case AuthModes.OAuth1: {
+            case 'OAUTH1': {
                 const error = new Error('OAuth1 is not supported yet in the proxy.');
                 const nangoError = new NangoError('pass_through_error', error);
                 return { success: false, error: nangoError, response: null, logs };
             }
-            case AuthModes.Basic:
+            case 'BASIC':
                 token = connection.credentials;
                 break;
-            case AuthModes.ApiKey:
+            case 'API_KEY':
                 token = connection.credentials;
                 break;
-            case AuthModes.App:
+            case 'APP':
                 {
                     const credentials = connection.credentials;
                     token = credentials.access_token;
                 }
                 break;
-            case AuthModes.OAuth2CC:
+            case 'OAUTH2_CC':
                 {
                     const credentials = connection.credentials;
                     token = credentials.token;
@@ -386,7 +383,7 @@ class ProxyService {
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
         let endpoint = apiEndpoint.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
 
-        if (config.template.auth_mode === AuthModes.ApiKey && 'proxy' in config.template && 'query' in config.template.proxy) {
+        if (config.template.auth_mode === 'API_KEY' && 'proxy' in config.template && 'query' in config.template.proxy) {
             const apiKeyProp = Object.keys(config.template.proxy.query)[0];
             const token = config.token as ApiKeyCredentials;
             endpoint += endpoint.includes('?') ? '&' : '?';
@@ -409,7 +406,7 @@ class ProxyService {
         let headers = {};
 
         switch (config.template.auth_mode) {
-            case AuthModes.Basic:
+            case 'BASIC':
                 {
                     const token = config.token as BasicApiCredentials;
                     headers = {
@@ -417,7 +414,7 @@ class ProxyService {
                     };
                 }
                 break;
-            case AuthModes.ApiKey:
+            case 'API_KEY':
                 headers = {};
                 break;
             default:
@@ -436,11 +433,11 @@ class ProxyService {
                     // into the header in addition to api key values
                     let tokenPair;
                     switch (config.template.auth_mode) {
-                        case AuthModes.OAuth2:
+                        case 'OAUTH2':
                             tokenPair = { accessToken: config.token };
                             break;
-                        case AuthModes.ApiKey:
-                        case AuthModes.OAuth2CC:
+                        case 'API_KEY':
+                        case 'OAUTH2_CC':
                             if (value.includes('connectionConfig')) {
                                 value = value.replace(/connectionConfig\./g, '');
                                 tokenPair = config.connection.connection_config;

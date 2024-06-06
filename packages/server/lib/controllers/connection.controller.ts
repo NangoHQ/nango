@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type {
     Config as ProviderConfig,
-    Template as ProviderTemplate,
     OAuth2Credentials,
     ImportedCredentials,
     AuthCredentials,
@@ -9,23 +8,18 @@ import type {
     ConnectionUpsertResponse
 } from '@nangohq/shared';
 import db from '@nangohq/database';
-import {
-    AuthModes as ProviderAuthModes,
-    configService,
-    connectionService,
-    errorManager,
-    analytics,
-    AnalyticsTypes,
-    AuthOperation,
-    NangoError,
-    accountService,
-    SlackService
-} from '@nangohq/shared';
+import type { Template as ProviderTemplate } from '@nangohq/types';
+import { configService, connectionService, errorManager, analytics, AnalyticsTypes, NangoError, accountService, SlackService } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '../hooks/hooks.js';
+import {
+    connectionCreated as connectionCreatedHook,
+    connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
+    connectionRefreshSuccess as connectionRefreshSuccessHook,
+    connectionRefreshFailed as connectionRefreshFailedHook
+} from '../hooks/hooks.js';
 import { getOrchestratorClient } from '../utils/utils.js';
 
 export type { ConnectionList };
@@ -54,7 +48,9 @@ class ConnectionController {
                 connectionId,
                 providerConfigKey,
                 logContextGetter,
-                instantRefresh
+                instantRefresh,
+                onRefreshSuccess: connectionRefreshSuccessHook,
+                onRefreshFailed: connectionRefreshFailedHook
             });
 
             if (credentialResponse.isErr()) {
@@ -65,7 +61,7 @@ class ConnectionController {
 
             const { value: connection } = credentialResponse;
 
-            if (connection && connection.credentials && connection.credentials.type === ProviderAuthModes.OAuth2 && !returnRefreshToken) {
+            if (connection && connection.credentials && connection.credentials.type === 'OAUTH2' && !returnRefreshToken) {
                 if (connection.credentials.refresh_token) {
                     delete connection.credentials.refresh_token;
                 }
@@ -335,7 +331,7 @@ class ConnectionController {
 
             let runHook = false;
 
-            if (template.auth_mode === ProviderAuthModes.OAuth2) {
+            if (template.auth_mode === 'OAUTH2') {
                 const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config, no_expiration: noExpiration } = req.body;
 
                 const { expires_at: parsedExpiresAt } = connectionService.parseRawCredentials(
@@ -402,7 +398,7 @@ class ConnectionController {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: ProviderAuthModes.OAuth2,
+                            auth_mode: 'OAUTH2',
                             operation: res.operation
                         },
                         provider,
@@ -423,7 +419,7 @@ class ConnectionController {
                 if (imported) {
                     updatedConnection = imported;
                 }
-            } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
+            } else if (template.auth_mode === 'OAUTH1') {
                 const { oauth_token, oauth_token_secret } = req.body;
 
                 if (!oauth_token) {
@@ -449,7 +445,7 @@ class ConnectionController {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: ProviderAuthModes.OAuth2,
+                            auth_mode: 'OAUTH2',
                             operation: res.operation
                         },
                         provider,
@@ -470,7 +466,7 @@ class ConnectionController {
                 if (imported) {
                     updatedConnection = imported;
                 }
-            } else if (template.auth_mode === ProviderAuthModes.Basic) {
+            } else if (template.auth_mode === 'BASIC') {
                 const { username, password } = req.body;
 
                 if (!username) {
@@ -490,7 +486,7 @@ class ConnectionController {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: ProviderAuthModes.ApiKey,
+                            auth_mode: 'API_KEY',
                             operation: res.operation
                         },
                         provider,
@@ -510,7 +506,7 @@ class ConnectionController {
                 if (imported) {
                     updatedConnection = imported;
                 }
-            } else if (template.auth_mode === ProviderAuthModes.ApiKey) {
+            } else if (template.auth_mode === 'API_KEY') {
                 const { api_key: apiKey } = req.body;
 
                 if (!apiKey) {
@@ -529,7 +525,7 @@ class ConnectionController {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: ProviderAuthModes.ApiKey,
+                            auth_mode: 'API_KEY',
                             operation: res.operation
                         },
                         provider,
@@ -550,7 +546,7 @@ class ConnectionController {
                 if (imported) {
                     updatedConnection = imported;
                 }
-            } else if (template.auth_mode === ProviderAuthModes.App) {
+            } else if (template.auth_mode === 'APP') {
                 const { app_id, installation_id } = req.body;
 
                 if (!app_id) {
@@ -596,7 +592,7 @@ class ConnectionController {
                     updatedConnection = imported;
                     runHook = true;
                 }
-            } else if (template.auth_mode === ProviderAuthModes.None) {
+            } else if (template.auth_mode === 'NONE') {
                 const [imported] = await connectionService.upsertUnauthConnection(connection_id, provider_config_key, provider, environment.id, account.id);
 
                 if (imported) {
@@ -615,7 +611,7 @@ class ConnectionController {
                         environment,
                         account,
                         auth_mode: template.auth_mode,
-                        operation: updatedConnection.operation || AuthOperation.UNKNOWN
+                        operation: updatedConnection.operation || 'unknown'
                     },
                     provider,
                     logContextGetter

@@ -5,10 +5,8 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
-    AuthOperation,
     configService,
     connectionService,
-    AuthModes,
     getConnectionConfig,
     hmacService,
     ErrorSourceEnum,
@@ -97,7 +95,7 @@ class ApiAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.ApiKey) {
+            if (template.auth_mode !== 'API_KEY') {
                 await logCtx.error('Provider does not support API key auth', { provider: config.provider });
                 await logCtx.failed();
 
@@ -111,7 +109,7 @@ class ApiAuthController {
             const { apiKey } = req.body;
 
             const credentials: ApiKeyCredentials = {
-                type: AuthModes.ApiKey,
+                type: 'API_KEY',
                 apiKey
             };
 
@@ -154,7 +152,7 @@ class ApiAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.ApiKey,
+                        auth_mode: 'API_KEY',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -169,14 +167,17 @@ class ApiAuthController {
             const prettyError = stringifyError(err, { pretty: true });
 
             if (logCtx) {
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
-                        auth_mode: AuthModes.ApiKey,
-                        error: `Error during API key auth: ${prettyError}`,
-                        operation: AuthOperation.UNKNOWN
+                        auth_mode: 'API_KEY',
+                        error: {
+                            type: 'unknown',
+                            description: `Error during API key auth: ${prettyError}`
+                        },
+                        operation: 'unknown'
                     },
                     'unknown',
                     logCtx
@@ -268,8 +269,8 @@ class ApiAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.Basic) {
-                await logCtx.error('Provider does not support Basic API auth');
+            if (template.auth_mode !== 'BASIC') {
+                await logCtx.error('Provider does not support Basic API auth', { provider: config.provider });
                 await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
@@ -278,7 +279,7 @@ class ApiAuthController {
             }
 
             const credentials: BasicApiCredentials = {
-                type: AuthModes.Basic,
+                type: 'BASIC',
                 username,
                 password
             };
@@ -323,7 +324,7 @@ class ApiAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.Basic,
+                        auth_mode: 'BASIC',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -338,14 +339,17 @@ class ApiAuthController {
             const prettyError = stringifyError(err, { pretty: true });
 
             if (logCtx) {
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
-                        auth_mode: AuthModes.ApiKey,
-                        error: `Error during basic API key auth: ${prettyError}`,
-                        operation: AuthOperation.UNKNOWN
+                        auth_mode: 'API_KEY',
+                        error: {
+                            type: 'unknown',
+                            description: `Error during basic API key auth: ${prettyError}`
+                        },
+                        operation: 'unknown'
                     },
                     'unknown',
                     logCtx

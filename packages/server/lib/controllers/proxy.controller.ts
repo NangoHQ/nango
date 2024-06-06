@@ -9,18 +9,10 @@ import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration } from '@nangohq/shared';
-import {
-    NangoError,
-    LogActionEnum,
-    errorManager,
-    ErrorSourceEnum,
-    proxyService,
-    connectionService,
-    configService,
-    axiosInstance as axios
-} from '@nangohq/shared';
-import { metrics, getLogger } from '@nangohq/utils';
+import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService } from '@nangohq/shared';
+import { metrics, getLogger, axiosInstance as axios } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
+import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 import type { LogsBuffer } from '@nangohq/types';
@@ -89,7 +81,9 @@ class ProxyController {
                 connectionId,
                 providerConfigKey,
                 logContextGetter,
-                instantRefresh: false
+                instantRefresh: false,
+                onRefreshSuccess: connectionRefreshSuccessHook,
+                onRefreshFailed: connectionRefreshFailedHook
             });
 
             if (credentialResponse.isErr()) {

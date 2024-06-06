@@ -50,6 +50,9 @@
             "path": "packages/webapp"
         },
         {
+            "path": "packages/webhooks"
+        },
+        {
             "path": "packages/data-ingestion"
         }
     ]

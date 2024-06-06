@@ -1,16 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import {
-    errorManager,
-    analytics,
-    AnalyticsTypes,
-    AuthOperation,
-    configService,
-    connectionService,
-    AuthModes,
-    hmacService,
-    ErrorSourceEnum,
-    LogActionEnum
-} from '@nangohq/shared';
+import { errorManager, analytics, AnalyticsTypes, configService, connectionService, hmacService, ErrorSourceEnum, LogActionEnum } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
@@ -79,7 +68,7 @@ class UnAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.None) {
+            if (template.auth_mode !== 'NONE') {
                 await logCtx.error('Provider does not support Unauthenticated', { provider: config.provider });
                 await logCtx.failed();
 
@@ -108,7 +97,7 @@ class UnAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.None,
+                        auth_mode: 'NONE',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -122,19 +111,22 @@ class UnAuthController {
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
-            if (logCtx) {
-                void connectionCreationFailedHook(
-                    {
-                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
-                        environment,
-                        account,
-                        auth_mode: AuthModes.None,
-                        error: `Error during Unauth create: ${prettyError}`,
-                        operation: AuthOperation.UNKNOWN
+            connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                    environment,
+                    account,
+                    auth_mode: 'NONE',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during Unauth create: ${prettyError}`
                     },
-                    'unknown',
-                    logCtx
-                );
+                    operation: 'unknown'
+                },
+                'unknown',
+                logCtx
+            );
+            if (logCtx) {
                 await logCtx.error('Error during Unauthenticated connection creation', { error: err });
                 await logCtx.failed();
             }

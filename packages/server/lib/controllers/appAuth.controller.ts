@@ -9,9 +9,7 @@ import {
     connectionService,
     LogActionEnum,
     telemetry,
-    AuthOperation,
-    LogTypes,
-    AuthModes
+    LogTypes
 } from '@nangohq/shared';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -89,10 +87,10 @@ class AppAuthController {
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             const template = configService.getTemplate(config.provider);
-            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.[AuthModes.App] as string);
+            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['App'] as string);
 
-            if (template.auth_mode !== AuthModes.App) {
-                await logCtx.error('Provider does not support app creation');
+            if (template.auth_mode !== 'APP') {
+                await logCtx.error('Provider does not support app creation', { provider: config.provider });
                 await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
@@ -147,14 +145,17 @@ class AppAuthController {
                     }
                 );
 
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
                         account,
-                        auth_mode: AuthModes.App,
-                        error: `Error during app token retrieval call: ${error?.message}`,
-                        operation: AuthOperation.UNKNOWN
+                        auth_mode: 'APP',
+                        error: {
+                            type: 'unknown',
+                            description: `Error during app token retrieval call: ${error?.message}`
+                        },
+                        operation: 'unknown'
                     },
                     session.provider,
                     logCtx
@@ -180,7 +181,7 @@ class AppAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.App,
+                        auth_mode: 'APP',
                         operation: updatedConnection.operation
                     },
                     session.provider,
@@ -217,14 +218,17 @@ class AppAuthController {
                 connectionId: String(connectionId)
             });
 
-            void connectionCreationFailedHook(
+            connectionCreationFailedHook(
                 {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
-                    auth_mode: AuthModes.App,
-                    error: content,
-                    operation: AuthOperation.UNKNOWN
+                    auth_mode: 'APP',
+                    error: {
+                        type: 'unknown',
+                        description: content
+                    },
+                    operation: 'unknown'
                 },
                 'unknown',
                 logCtx

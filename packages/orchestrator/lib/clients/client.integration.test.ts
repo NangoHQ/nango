@@ -268,7 +268,7 @@ describe('OrchestratorClient', async () => {
                         provider_config_key: 'P',
                         environment_id: 456
                     },
-                    activityLogId: 789,
+                    activityLogId: '789',
                     input: { foo: 'bar' }
                 }
             });

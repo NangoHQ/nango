@@ -19,9 +19,10 @@ import {
 import type { SyncResponse, RunSyncCommand } from '../../types';
 import type { Connection } from '@nangohq/types';
 import { UserFacingSyncCommand } from '../../types';
-import { formatFrequency, getRunTime, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun, getSimpleDate } from '../../utils/utils';
+import { formatFrequency, getRunTime, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun } from '../../utils/utils';
 import Button from '../../components/ui/button/Button';
 import { useRunSyncAPI } from '../../utils/api';
+import { getLogsUrl } from '../../utils/logs';
 
 interface SyncsProps {
     syncs: SyncResponse[] | undefined;
@@ -120,11 +121,17 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
         setShowTriggerFullLoader(false);
     };
 
-    const renderBubble = (bubbleType: ReactNode, sync: SyncResponse) => {
+    const RenderBubble = ({ sync, children }: { sync: SyncResponse; children: ReactNode }) => {
         const hasActivityLogId = sync.latest_sync?.activity_log_id !== null;
-        const linkPath = `/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connection_id}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`;
+        const linkPath = getLogsUrl({
+            env,
+            operationId: sync.latest_sync?.activity_log_id,
+            connections: connection?.connection_id,
+            syncs: sync.name,
+            day: new Date(sync.latest_sync?.updated_at)
+        });
 
-        return hasActivityLogId ? <Link to={linkPath}>{bubbleType}</Link> : <div>{bubbleType}</div>;
+        return hasActivityLogId ? <Link to={linkPath}>{children}</Link> : <div>{children}</div>;
     };
 
     if (!loaded || !syncLoaded || syncs === null) return <Loading spaceRatio={2.5} className="top-24" />;
@@ -199,34 +206,34 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                     </div>
                                     <div className="flex w-20 -ml-2">
                                         <span className="">
-                                            {sync.status === 'PAUSED' &&
-                                                renderBubble(
+                                            {sync.status === 'PAUSED' && (
+                                                <RenderBubble sync={sync}>
                                                     <Tag bgClassName="bg-yellow-500 bg-opacity-30" textClassName="text-yellow-500">
                                                         Paused
-                                                    </Tag>,
-                                                    sync
-                                                )}
-                                            {(sync?.status === 'ERROR' || sync?.status === 'STOPPED') &&
-                                                renderBubble(
+                                                    </Tag>
+                                                </RenderBubble>
+                                            )}
+                                            {(sync?.status === 'ERROR' || sync?.status === 'STOPPED') && (
+                                                <RenderBubble sync={sync}>
                                                     <Tag bgClassName="bg-red-base bg-opacity-30" textClassName="text-red-base">
                                                         Failed
-                                                    </Tag>,
-                                                    sync
-                                                )}
-                                            {sync?.status === 'RUNNING' &&
-                                                renderBubble(
+                                                    </Tag>
+                                                </RenderBubble>
+                                            )}
+                                            {sync?.status === 'RUNNING' && (
+                                                <RenderBubble sync={sync}>
                                                     <Tag bgClassName="bg-blue-base bg-opacity-30" textClassName="text-blue-base">
                                                         Syncing
-                                                    </Tag>,
-                                                    sync
-                                                )}
-                                            {sync?.status === 'SUCCESS' &&
-                                                renderBubble(
+                                                    </Tag>
+                                                </RenderBubble>
+                                            )}
+                                            {sync?.status === 'SUCCESS' && (
+                                                <RenderBubble sync={sync}>
                                                     <Tag bgClassName="bg-green-base bg-opacity-30" textClassName="text-green-base">
                                                         Success
-                                                    </Tag>,
-                                                    sync
-                                                )}
+                                                    </Tag>
+                                                </RenderBubble>
+                                            )}
                                         </span>
                                     </div>
                                     <div className="flex items-center w-10">{formatFrequency(sync.frequency)}</div>
@@ -235,7 +242,13 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                             <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.latest_sync.models)}</pre>} type="dark">
                                                 {sync.latest_sync?.activity_log_id !== null ? (
                                                     <Link
-                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connection_id}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                        to={getLogsUrl({
+                                                            env,
+                                                            operationId: sync.latest_sync?.activity_log_id,
+                                                            connections: connection?.connection_id,
+                                                            syncs: sync.name,
+                                                            day: new Date(sync.latest_sync?.updated_at)
+                                                        })}
                                                         className="block w-32 ml-1"
                                                     >
                                                         {formatDateToUSFormat(sync.latest_sync?.updated_at)}
@@ -248,7 +261,13 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                             <>
                                                 {sync.latest_sync?.activity_log_id ? (
                                                     <Link
-                                                        to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id}&connection=${connection?.connection_id}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                        to={getLogsUrl({
+                                                            env,
+                                                            operationId: sync.latest_sync?.activity_log_id,
+                                                            connections: connection?.connection_id,
+                                                            syncs: sync.name,
+                                                            day: new Date(sync.latest_sync?.updated_at)
+                                                        })}
                                                         className=""
                                                     >
                                                         {formatDateToUSFormat(sync.latest_sync?.updated_at)}
@@ -396,7 +415,13 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                                                 </span>
                                                             </div>
                                                             <Link
-                                                                to={`/${env}/activity?activity_log_id=${sync.latest_sync?.activity_log_id || sync.active_logs?.activity_log_id}&connection=${connection?.connection_id}&script=${sync.name}&date=${getSimpleDate(sync.latest_sync?.updated_at)}`}
+                                                                to={getLogsUrl({
+                                                                    env,
+                                                                    operationId: sync.latest_sync?.activity_log_id || sync.active_logs?.activity_log_id,
+                                                                    connections: connection?.connection_id,
+                                                                    syncs: sync.name,
+                                                                    day: new Date(sync.latest_sync?.updated_at)
+                                                                })}
                                                                 className={`flex items-center w-full whitespace-nowrap hover:bg-neutral-800 px-4 py-2`}
                                                             >
                                                                 <QueueListIcon className={`flex h-6 w-6 text-gray-400 cursor-pointer`} />

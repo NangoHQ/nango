@@ -1,17 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { AuthCredentials } from '@nangohq/shared';
-import {
-    errorManager,
-    analytics,
-    AnalyticsTypes,
-    AuthOperation,
-    configService,
-    connectionService,
-    AuthModes,
-    hmacService,
-    ErrorSourceEnum,
-    LogActionEnum
-} from '@nangohq/shared';
+import { errorManager, analytics, AnalyticsTypes, configService, connectionService, hmacService, ErrorSourceEnum, LogActionEnum } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
@@ -84,7 +73,7 @@ class AppStoreAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.AppStore) {
+            if (template.auth_mode !== 'APP_STORE') {
                 await logCtx.error('Provider does not support API key auth', { provider: config.provider });
                 await logCtx.failed();
 
@@ -124,14 +113,17 @@ class AppStoreAuthController {
             const { success, error, response: credentials } = await connectionService.getAppStoreCredentials(template, connectionConfig, privateKey);
 
             if (!success || !credentials) {
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
                         account,
-                        auth_mode: AuthModes.AppStore,
-                        error: `Error during App store credentials auth: ${error?.message}`,
-                        operation: AuthOperation.UNKNOWN
+                        auth_mode: 'APP_STORE',
+                        error: {
+                            type: 'credential_fetch_failure',
+                            description: `Error during App store credentials auth: ${error?.message}`
+                        },
+                        operation: 'unknown'
                     },
                     config.provider,
                     logCtx
@@ -161,7 +153,7 @@ class AppStoreAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.AppStore,
+                        auth_mode: 'APP_STORE',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -175,19 +167,22 @@ class AppStoreAuthController {
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
-            if (logCtx) {
-                void connectionCreationFailedHook(
-                    {
-                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
-                        environment,
-                        account,
-                        auth_mode: AuthModes.AppStore,
-                        error: `Error during App store auth: ${prettyError}`,
-                        operation: AuthOperation.UNKNOWN
+            connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                    environment,
+                    account,
+                    auth_mode: 'APP_STORE',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during App store auth: ${prettyError}`
                     },
-                    'unknown',
-                    logCtx
-                );
+                    operation: 'unknown'
+                },
+                'unknown',
+                logCtx
+            );
+            if (logCtx) {
                 await logCtx.error('Error during API key auth', { error: err });
                 await logCtx.failed();
             }

@@ -1,13 +1,13 @@
 import type { AxiosError } from 'axios';
-import { axiosInstance as axios } from '../../utils/axios.js';
+import { axiosInstance as axios } from '@nangohq/utils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';
 import { SyncType } from '../../models/Sync.js';
-import type { NangoConnection, RecentlyCreatedConnection, RecentlyFailedConnection } from '../../models/Connection.js';
+import type { NangoConnection } from '../../models/Connection.js';
 import type { Account, Config, Environment, SyncResult } from '../../models/index.js';
-import type { NangoSyncWebhookBody, NangoAuthWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
+import type { NangoSyncWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
 import { WebhookType } from '../../models/Webhook.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 
@@ -167,81 +167,6 @@ class WebhookService {
                     url,
                     body
                 });
-            }
-        }
-    }
-
-    async sendAuthUpdate(
-        connection: RecentlyCreatedConnection | RecentlyFailedConnection,
-        provider: string,
-        success: boolean,
-        logCtx?: LogContext | null
-    ): Promise<void> {
-        const { environment } = connection;
-
-        if (!this.shouldSendWebhook(environment, { auth: true })) {
-            return;
-        }
-
-        const { webhook_url: webhookUrl, webhook_url_secondary: webhookUrlSecondary, name: environmentName } = environment;
-
-        const body: NangoAuthWebhookBody = {
-            from: 'nango',
-            type: WebhookType.AUTH,
-            connectionId: connection.connection.connection_id,
-            providerConfigKey: connection.connection.provider_config_key,
-            authMode: connection.auth_mode,
-            provider,
-            environment: environmentName,
-            success,
-            operation: connection.operation
-        };
-
-        if (connection.error) {
-            body.error = connection.error;
-        }
-
-        const webhookUrls: { url: string; type: string }[] = [
-            { url: webhookUrl, type: 'webhookUrl' },
-            { url: webhookUrlSecondary, type: 'webhookUrlSecondary' }
-        ].filter((webhook) => webhook.url) as { url: string; type: string }[];
-
-        for (const webhookUrl of webhookUrls) {
-            const { url, type } = webhookUrl;
-
-            try {
-                const headers = this.getSignatureHeader(environment.secret_key, body);
-
-                const response = await backOff(
-                    () => {
-                        return axios.post(url, body, { headers });
-                    },
-                    { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, logCtx) }
-                );
-
-                if (logCtx) {
-                    if (response.status >= 200 && response.status < 300) {
-                        await logCtx.info(`Auth webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, {
-                            url,
-                            body
-                        });
-                        await logCtx.info(`Received "${response.status}" response code`);
-                    } else {
-                        await logCtx.error(`Auth webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, {
-                            url,
-                            body
-                        });
-                        await logCtx.error(`Received "${response.status}" response code. Please send a 2xx on successful receipt.`);
-                    }
-                }
-            } catch (err) {
-                if (logCtx) {
-                    await logCtx.error(`Auth webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, {
-                        error: err,
-                        url,
-                        body
-                    });
-                }
             }
         }
     }

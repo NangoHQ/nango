@@ -1,32 +1,22 @@
 import jwt from 'jsonwebtoken';
 import type { Knex } from '@nangohq/database';
-import { axiosInstance as axios } from '../utils/axios.js';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import type {
-    TemplateOAuth2 as ProviderTemplateOAuth2,
-    Template as ProviderTemplate,
-    Config as ProviderConfig,
-    AuthCredentials,
-    OAuth1Credentials,
-    Account,
-    Environment
-} from '../models/index.js';
+import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Account, Environment } from '../models/index.js';
 import { LogActionEnum } from '../models/Activity.js';
 import providerClient from '../clients/provider.client.js';
-import configService from '../services/config.service.js';
+import configService from './config.service.js';
 import syncOrchestrator from './sync/orchestrator.service.js';
 import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
-import type { Metadata, ActiveLogIds } from '@nangohq/types';
-import { getLogger, stringifyError, Ok, Err } from '@nangohq/utils';
+import type { Metadata, ActiveLogIds, Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2, AuthModeType } from '@nangohq/types';
+import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import { errorNotificationService } from './notification/error.service.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type {
     AppCredentials,
@@ -38,7 +28,6 @@ import type {
     BasicApiCredentials,
     ConnectionUpsertResponse
 } from '../models/Auth.js';
-import { AuthModes as ProviderAuthModes, AuthOperation } from '../models/Auth.js';
 import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
 import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
@@ -93,7 +82,7 @@ class ConnectionService {
 
             void analytics.track(AnalyticsTypes.CONNECTION_UPDATED, accountId, { provider });
 
-            return [{ connection: connection[0]!, operation: AuthOperation.OVERRIDE }];
+            return [{ connection: connection[0]!, operation: 'override' }];
         }
 
         const connection = await db.knex
@@ -113,7 +102,7 @@ class ConnectionService {
 
         void analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
 
-        return [{ connection: connection[0]!, operation: AuthOperation.CREATION }];
+        return [{ connection: connection[0]!, operation: 'creation' }];
     }
 
     public async upsertApiConnection(
@@ -146,7 +135,7 @@ class ConnectionService {
 
             void analytics.track(AnalyticsTypes.API_CONNECTION_UPDATED, accountId, { provider });
 
-            return [{ connection: connection[0]!, operation: AuthOperation.OVERRIDE }];
+            return [{ connection: connection[0]!, operation: 'override' }];
         }
         const connection = await db.knex
             .from<StoredConnection>(`_nango_connections`)
@@ -164,7 +153,7 @@ class ConnectionService {
 
         void analytics.track(AnalyticsTypes.API_CONNECTION_INSERTED, accountId, { provider });
 
-        return [{ connection: connection[0]!, operation: AuthOperation.CREATION }];
+        return [{ connection: connection[0]!, operation: 'creation' }];
     }
 
     public async upsertUnauthConnection(
@@ -191,7 +180,7 @@ class ConnectionService {
 
             void analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_UPDATED, accountId, { provider });
 
-            return [{ connection: connection[0]!, operation: AuthOperation.OVERRIDE }];
+            return [{ connection: connection[0]!, operation: 'override' }];
         }
         const connection = await db.knex
             .from<StoredConnection>(`_nango_connections`)
@@ -207,7 +196,7 @@ class ConnectionService {
 
         void analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_INSERTED, accountId, { provider });
 
-        return [{ connection: connection[0]!, operation: AuthOperation.CREATION }];
+        return [{ connection: connection[0]!, operation: 'creation' }];
     }
 
     public async importOAuthConnection(
@@ -351,19 +340,19 @@ class ConnectionService {
         // Parse the token expiration date.
         if (connection != null) {
             const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials | AppCredentials | OAuth2ClientCredentials;
-            if (credentials.type && credentials.type === ProviderAuthModes.OAuth2) {
+            if (credentials.type && credentials.type === 'OAUTH2') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
             }
 
-            if (credentials.type && credentials.type === ProviderAuthModes.App) {
+            if (credentials.type && credentials.type === 'APP') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
             }
 
-            if (credentials.type && credentials.type === ProviderAuthModes.OAuth2CC) {
+            if (credentials.type && credentials.type === 'OAUTH2_CC') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
@@ -588,7 +577,9 @@ class ConnectionService {
         connectionId,
         providerConfigKey,
         logContextGetter,
-        instantRefresh
+        instantRefresh,
+        onRefreshSuccess,
+        onRefreshFailed
     }: {
         account: Account;
         environment: Environment;
@@ -596,6 +587,16 @@ class ConnectionService {
         providerConfigKey: string;
         logContextGetter: LogContextGetter;
         instantRefresh: boolean;
+        onRefreshSuccess: (args: { connection: Connection; environment: Environment; config: ProviderConfig }) => Promise<void>;
+        onRefreshFailed: (args: {
+            connection: Connection;
+            activityLogId: string;
+            logCtx: LogContext;
+            authError: { type: string; description: string };
+            environment: Environment;
+            template: ProviderTemplate;
+            config: ProviderConfig;
+        }) => Promise<void>;
     }): Promise<Result<Connection, NangoError>> {
         if (connectionId === null) {
             const error = new NangoError('missing_connection');
@@ -628,13 +629,9 @@ class ConnectionService {
             return Err(error);
         }
 
-        const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider);
+        const template: ProviderTemplate = configService.getTemplate(config?.provider);
 
-        if (
-            connection?.credentials?.type === ProviderAuthModes.OAuth2 ||
-            connection?.credentials?.type === ProviderAuthModes.App ||
-            connection?.credentials?.type === ProviderAuthModes.OAuth2CC
-        ) {
+        if (connection?.credentials?.type === 'OAUTH2' || connection?.credentials?.type === 'APP' || connection?.credentials?.type === 'OAUTH2_CC') {
             const {
                 success,
                 error,
@@ -661,12 +658,17 @@ class ConnectionService {
                 await logCtx.error('Failed to refresh credentials', { error });
                 await logCtx.failed();
 
-                await errorNotificationService.auth.create({
-                    type: 'auth',
-                    action: 'token_refresh',
-                    connection_id: connection.id,
-                    log_id: logCtx.id,
-                    active: true
+                await onRefreshFailed({
+                    connection,
+                    activityLogId: logCtx.id,
+                    logCtx,
+                    authError: {
+                        type: error.type,
+                        description: error.message
+                    },
+                    environment,
+                    template,
+                    config
                 });
 
                 // TODO: this leak credentials to the logs
@@ -680,8 +682,10 @@ class ConnectionService {
 
         await this.updateLastFetched(connection.id);
 
-        await errorNotificationService.auth.clear({
-            connection_id: connection.id
+        await onRefreshSuccess({
+            connection,
+            environment,
+            config
         });
 
         return Ok(connection);
@@ -693,11 +697,11 @@ class ConnectionService {
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: ProviderAuthModes): AuthCredentials {
+    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType): AuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
-            case ProviderAuthModes.OAuth2: {
+            case 'OAUTH2': {
                 if (!rawCreds['access_token']) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
@@ -711,7 +715,7 @@ class ConnectionService {
                 }
 
                 const oauth2Creds: OAuth2Credentials = {
-                    type: ProviderAuthModes.OAuth2,
+                    type: 'OAUTH2',
                     access_token: rawCreds['access_token'],
                     refresh_token: rawCreds['refresh_token'],
                     expires_at: expiresAt,
@@ -721,13 +725,13 @@ class ConnectionService {
                 return oauth2Creds;
             }
 
-            case ProviderAuthModes.OAuth1: {
+            case 'OAUTH1': {
                 if (!rawCreds['oauth_token'] || !rawCreds['oauth_token_secret']) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
 
                 const oauth1Creds: OAuth1Credentials = {
-                    type: ProviderAuthModes.OAuth1,
+                    type: 'OAUTH1',
                     oauth_token: rawCreds['oauth_token'],
                     oauth_token_secret: rawCreds['oauth_token_secret'],
                     raw: rawCreds
@@ -736,7 +740,7 @@ class ConnectionService {
                 return oauth1Creds;
             }
 
-            case ProviderAuthModes.OAuth2CC: {
+            case 'OAUTH2_CC': {
                 if (!rawCreds['token']) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
@@ -750,7 +754,7 @@ class ConnectionService {
                 }
 
                 const oauth2Creds: OAuth2ClientCredentials = {
-                    type: ProviderAuthModes.OAuth2CC,
+                    type: 'OAUTH2_CC',
                     token: rawCreds['token'],
                     client_id: '',
                     client_secret: '',
@@ -861,7 +865,7 @@ class ConnectionService {
         connectionConfig: Connection['connection_config'],
         privateKey: string
     ): Promise<ServiceResponse<AppStoreCredentials>> {
-        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url![ProviderAuthModes.AppStore] as string);
+        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['AppStore'] as string);
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
 
         const now = Math.floor(Date.now() / 1000);
@@ -898,7 +902,7 @@ class ConnectionService {
         }
 
         const credentials: AppStoreCredentials = {
-            type: ProviderAuthModes.AppStore,
+            type: 'APP_STORE',
             access_token: rawCredentials?.token,
             private_key: Buffer.from(privateKey).toString('base64'),
             expires_at: rawCredentials?.expires_at,
@@ -949,7 +953,7 @@ class ConnectionService {
         config: ProviderConfig,
         connectionConfig: Connection['connection_config']
     ): Promise<ServiceResponse<AppCredentials>> {
-        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url![ProviderAuthModes.App] as string);
+        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['App'] as string);
 
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
         const privateKeyBase64 = config?.custom ? config.custom['private_key'] : config.oauth_client_secret;
@@ -976,7 +980,7 @@ class ConnectionService {
         }
 
         const credentials: AppCredentials = {
-            type: ProviderAuthModes.App,
+            type: 'APP',
             access_token: rawCredentials?.token,
             expires_at: rawCredentials?.expires_at,
             raw: rawCredentials as unknown as Record<string, unknown>
@@ -1016,7 +1020,7 @@ class ConnectionService {
                 return { success: false, error: new NangoError('invalid_client_credentials'), response: null };
             }
 
-            const parsedCreds = this.parseRawCredentials(data.data, ProviderAuthModes.OAuth2CC) as OAuth2ClientCredentials;
+            const parsedCreds = this.parseRawCredentials(data.data, 'OAUTH2_CC') as OAuth2ClientCredentials;
 
             parsedCreds.client_id = client_id;
             parsedCreds.client_secret = client_secret;
@@ -1119,7 +1123,7 @@ class ConnectionService {
         let tokenExpirationCondition =
             refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
 
-        if ((template.auth_mode === ProviderAuthModes.OAuth2 || credentials?.type === ProviderAuthModes.OAuth2) && providerConfig.provider !== 'facebook') {
+        if ((template.auth_mode === 'OAUTH2' || credentials?.type === 'OAUTH2') && providerConfig.provider !== 'facebook') {
             tokenExpirationCondition = Boolean(credentials.refresh_token && tokenExpirationCondition);
         }
 
@@ -1133,10 +1137,10 @@ class ConnectionService {
     ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials>> {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
-            const parsedCreds = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
+            const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
-        } else if (template.auth_mode === ProviderAuthModes.OAuth2CC) {
+        } else if (template.auth_mode === 'OAUTH2_CC') {
             const { client_id, client_secret } = connection.credentials as OAuth2ClientCredentials;
             const { success, error, response: credentials } = await this.getOauthClientCredentials(template, client_id, client_secret);
 
@@ -1145,7 +1149,7 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (template.auth_mode === ProviderAuthModes.AppStore) {
+        } else if (template.auth_mode === 'APP_STORE') {
             const { private_key } = connection.credentials as AppStoreCredentials;
             const { success, error, response: credentials } = await this.getAppStoreCredentials(template, connection.connection_config, private_key);
 
@@ -1154,10 +1158,7 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (
-            template.auth_mode === ProviderAuthModes.App ||
-            (template.auth_mode === ProviderAuthModes.Custom && connection?.credentials?.type !== ProviderAuthModes.OAuth2)
-        ) {
+        } else if (template.auth_mode === 'APP' || (template.auth_mode === 'CUSTOM' && connection?.credentials?.type !== 'OAUTH2')) {
             const { success, error, response: credentials } = await this.getAppCredentials(template, providerConfig, connection.connection_config);
 
             if (!success || !credentials) {
