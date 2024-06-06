@@ -1,6 +1,8 @@
 import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import * as schedules from './schedules.js';
 import { getTestDbClient } from '../db/helpers.test.js';
+import type { Schedule } from '../types.js';
+import type knex from 'knex';
 
 describe('Schedules', () => {
     const dbClient = getTestDbClient();
@@ -13,14 +15,7 @@ describe('Schedules', () => {
     });
 
     it('should be successfully created', async () => {
-        const schedule = (
-            await schedules.create(db, {
-                name: 'Test Schedule',
-                payload: { foo: 'bar' },
-                startsAt: new Date(),
-                frequencyMs: 300_000
-            })
-        ).unwrap();
+        const schedule = await createSchedule(db);
         expect(schedule).toMatchObject({
             id: expect.any(String) as string,
             name: 'Test Schedule',
@@ -34,40 +29,19 @@ describe('Schedules', () => {
         });
     });
     it('should be successfully retrieved', async () => {
-        const schedule = (
-            await schedules.create(db, {
-                name: 'Test Schedule',
-                payload: { foo: 'bar' },
-                startsAt: new Date(),
-                frequencyMs: 300_000
-            })
-        ).unwrap();
+        const schedule = await createSchedule(db);
         const retrieved = (await schedules.get(db, schedule.id)).unwrap();
         expect(retrieved).toMatchObject(schedule);
     });
     it('should be successfully deleted', async () => {
-        const schedule = (
-            await schedules.create(db, {
-                name: 'Test Schedule',
-                payload: { foo: 'bar' },
-                startsAt: new Date(),
-                frequencyMs: 300_000
-            })
-        ).unwrap();
+        const schedule = await createSchedule(db);
         const deleted = (await schedules.remove(db, schedule.id)).unwrap();
         expect(deleted.state).toBe('DELETED');
         expect(deleted.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
         expect(deleted.deletedAt).toBeInstanceOf(Date);
     });
     it('should be successfully paused/unpaused', async () => {
-        const schedule = (
-            await schedules.create(db, {
-                name: 'Test Schedule',
-                payload: { foo: 'bar' },
-                startsAt: new Date(),
-                frequencyMs: 300_000
-            })
-        ).unwrap();
+        const schedule = await createSchedule(db);
         const paused = (await schedules.transitionState(db, schedule.id, 'PAUSED')).unwrap();
         expect(paused.state).toBe('PAUSED');
         expect(paused.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
@@ -77,14 +51,7 @@ describe('Schedules', () => {
         expect(unpaused.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
     });
     it('should fail when pausing/unpausing a deleted schedule', async () => {
-        const schedule = (
-            await schedules.create(db, {
-                name: 'Test Schedule',
-                payload: { foo: 'bar' },
-                startsAt: new Date(),
-                frequencyMs: 300_000
-            })
-        ).unwrap();
+        const schedule = await createSchedule(db);
         await schedules.remove(db, schedule.id);
         const paused = await schedules.transitionState(db, schedule.id, 'PAUSED');
         expect(paused.isErr()).toBe(true);
@@ -92,28 +59,14 @@ describe('Schedules', () => {
         expect(unpaused.isErr()).toBe(true);
     });
     it('should be successfully updated', async () => {
-        const schedule = (
-            await schedules.create(db, {
-                name: 'Test Schedule',
-                payload: { foo: 'bar' },
-                startsAt: new Date(),
-                frequencyMs: 300_000
-            })
-        ).unwrap();
+        const schedule = await createSchedule(db);
         const updated = (await schedules.update(db, { id: schedule.id, frequencyMs: 600_000, payload: { i: 2 } })).unwrap();
         expect(updated.frequencyMs).toBe(600_000);
         expect(updated.payload).toMatchObject({ i: 2 });
         expect(updated.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
     });
     it('should be searchable', async () => {
-        const schedule = (
-            await schedules.create(db, {
-                name: 'Test Schedule',
-                payload: { foo: 'bar' },
-                startsAt: new Date(),
-                frequencyMs: 300_000
-            })
-        ).unwrap();
+        const schedule = await createSchedule(db);
         const byName = (await schedules.search(db, { name: schedule.name, limit: 10 })).unwrap();
         expect(byName).toEqual([schedule]);
 
@@ -124,3 +77,20 @@ describe('Schedules', () => {
         expect(deleted).toEqual([]);
     });
 });
+
+async function createSchedule(db: knex.Knex): Promise<Schedule> {
+    return (
+        await schedules.create(db, {
+            name: 'Test Schedule',
+            payload: { foo: 'bar' },
+            startsAt: new Date(),
+            frequencyMs: 300_000,
+            groupKey: 'test-group-key',
+            retryMax: 1,
+            retryCount: 0,
+            createdToStartedTimeoutSecs: 1,
+            startedToCompletedTimeoutSecs: 1,
+            heartbeatTimeoutSecs: 1
+        })
+    ).unwrap();
+}

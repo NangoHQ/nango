@@ -1,12 +1,11 @@
 import * as fs from 'fs';
 import type { MessagePort } from 'node:worker_threads';
 import { Worker, isMainThread } from 'node:worker_threads';
-import { getLogger, stringifyError } from '@nangohq/utils';
-import * as tasks from './models/tasks.js';
+import { stringifyError } from '@nangohq/utils';
+import * as tasks from '../../models/tasks.js';
 import { setTimeout } from 'node:timers/promises';
 import type knex from 'knex';
-
-const logger = getLogger('Scheduler.monitor.worker');
+import { logger } from '../../utils/logger.js';
 
 interface MessageOut {
     ids: string[];
@@ -16,7 +15,7 @@ export class MonitorWorker {
     private worker: Worker | null;
     constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
         if (isMainThread) {
-            const url = new URL('../dist/monitor.js', import.meta.url);
+            const url = new URL('../../../dist/workers/monitor/monitor.worker.boot.js', import.meta.url);
             if (!fs.existsSync(url)) {
                 throw new Error(`Monitor script not found at ${url}`);
             }
