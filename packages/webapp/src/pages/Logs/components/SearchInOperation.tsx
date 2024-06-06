@@ -202,7 +202,9 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
         <div className="flex-grow-0 overflow-hidden flex flex-col">
             <div className="flex justify-between items-center">
                 <h4 className="font-semibold text-sm flex items-center gap-2">Logs {loading && <Spinner size={1} />}</h4>
-                <div className="text-white text-xs">{totalHumanReadable} logs found</div>
+                <div className="text-white text-xs">
+                    {totalHumanReadable} {data?.pagination && data.pagination.total > 1 ? 'logs' : 'log'} found
+                </div>
             </div>
             <header className="mt-4">
                 <Input

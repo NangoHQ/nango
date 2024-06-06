@@ -19,11 +19,12 @@ import Syncs from './Syncs';
 import Authorization from './Authorization';
 import type { SyncResponse } from '../../types';
 import PageNotFound from '../PageNotFound';
-import { isHosted, getSimpleDate } from '../../utils/utils';
+import { isHosted } from '../../utils/utils';
 import { connectSlack } from '../../utils/slack-connection';
 import type { GetConnection } from '@nangohq/types';
 
 import { useStore } from '../../store';
+import { getLogsUrl } from '../../utils/logs';
 
 export enum Tabs {
     Syncs,
@@ -265,7 +266,12 @@ We could not retrieve and/or refresh your access token due to the following erro
                             <ErrorCircle />
                             <span className="ml-2">There was an error refreshing the credentials</span>
                             <Link
-                                to={`/${env}/activity?activity_log_id=${connectionResponse.errorLog.activity_log_id}&connection=${connectionResponse.connection.connection_id}&date=${getSimpleDate(connectionResponse.errorLog?.created_at?.toString())}`}
+                                to={getLogsUrl({
+                                    env,
+                                    operationId: connectionResponse.errorLog.activity_log_id,
+                                    connections: connectionResponse.connection.connection_id,
+                                    day: connectionResponse.errorLog?.created_at
+                                })}
                                 className="ml-1 cursor-pointer underline"
                             >
                                 (logs).
@@ -290,7 +296,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                             {sync.name} (
                                             <Link
                                                 className="underline"
-                                                to={`/${env}/activity?activity_log_id=${sync.active_logs?.activity_log_id}&script=${sync.name}`}
+                                                to={getLogsUrl({ env, operationId: sync.active_logs?.activity_log_id, syncs: sync.name })}
                                             >
                                                 logs
                                             </Link>

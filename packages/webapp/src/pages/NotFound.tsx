@@ -12,7 +12,8 @@ const VALID_PATHS = [
     'project-settings',
     'environment-settings',
     'user-settings',
-    'account-settings'
+    'account-settings',
+    'logs'
 ];
 
 export const NotFound: React.FC = () => {
