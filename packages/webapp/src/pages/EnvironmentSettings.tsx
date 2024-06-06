@@ -399,10 +399,23 @@ export const EnvironmentSettings: React.FC = () => {
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action placeholder={null} passive className="!text-lg" onClick={() => setVisible(false)}>
+                <Modal.Action
+                    placeholder={null}
+                    passive
+                    className="!text-lg"
+                    onClick={() => setVisible(false)}
+                    onPointerEnterCapture={null}
+                    onPointerLeaveCapture={null}
+                >
                     Cancel
                 </Modal.Action>
-                <Modal.Action placeholder={null} className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey()}>
+                <Modal.Action
+                    placeholder={null}
+                    className="!bg-red-500 !text-white !text-lg"
+                    onClick={() => onActivateKey()}
+                    onPointerEnterCapture={null}
+                    onPointerLeaveCapture={null}
+                >
                     Activate
                 </Modal.Action>
             </Modal>
@@ -423,10 +436,23 @@ export const EnvironmentSettings: React.FC = () => {
                         </Modal.Content>
                     </div>
                 </div>
-                <Modal.Action placeholder={null} passive className="!text-lg" onClick={() => setSecretVisible(false)}>
+                <Modal.Action
+                    placeholder={null}
+                    passive
+                    className="!text-lg"
+                    onClick={() => setSecretVisible(false)}
+                    onPointerEnterCapture={null}
+                    onPointerLeaveCapture={null}
+                >
                     Cancel
                 </Modal.Action>
-                <Modal.Action placeholder={null} className="!bg-red-500 !text-white !text-lg" onClick={() => onActivateKey(false)}>
+                <Modal.Action
+                    placeholder={null}
+                    className="!bg-red-500 !text-white !text-lg"
+                    onClick={() => onActivateKey(false)}
+                    onPointerEnterCapture={null}
+                    onPointerLeaveCapture={null}
+                >
                     Activate
                 </Modal.Action>
             </Modal>

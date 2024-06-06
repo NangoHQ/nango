@@ -17,6 +17,7 @@ COPY packages/utils/ packages/utils/
 COPY packages/kvstore/ packages/kvstore/
 COPY packages/logs/ packages/logs/
 COPY packages/database/ packages/database/
+COPY packages/webhooks/ packages/webhooks/
 COPY packages/node-client/ packages/node-client/
 COPY packages/records/ packages/records/
 COPY packages/scheduler/ packages/scheduler/

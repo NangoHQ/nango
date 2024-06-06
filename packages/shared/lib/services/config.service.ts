@@ -1,5 +1,6 @@
-import type { Config as ProviderConfig, Template as ProviderTemplate, TemplateAlias as ProviderTemplateAlias } from '../models/Provider.js';
+import type { Config as ProviderConfig, TemplateAlias as ProviderTemplateAlias } from '../models/Provider.js';
 import type { Connection } from '../models/Connection.js';
+import type { Template as ProviderTemplate } from '@nangohq/types';
 import db from '@nangohq/database';
 import yaml from 'js-yaml';
 import fs from 'fs';

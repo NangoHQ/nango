@@ -151,7 +151,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
             <div className="">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
                 {operation.meta ? (
-                    <div className="text-gray-400 text-sm bg-pure-black py-2">
+                    <div className="text-gray-400 text-sm bg-pure-black py-2 max-h-36 overflow-y-scroll">
                         <Prism
                             language="json"
                             className="transparent-code"

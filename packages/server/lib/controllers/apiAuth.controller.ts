@@ -6,14 +6,12 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
-    AuthOperation,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     updateProvider as updateProviderActivityLog,
     configService,
     connectionService,
     createActivityLogMessageAndEnd,
-    AuthModes,
     getConnectionConfig,
     hmacService,
     ErrorSourceEnum,
@@ -131,7 +129,7 @@ class ApiAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.ApiKey) {
+            if (template.auth_mode !== 'API_KEY') {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environment.id,
@@ -159,7 +157,7 @@ class ApiAuthController {
             const { apiKey } = req.body;
 
             const credentials: ApiKeyCredentials = {
-                type: AuthModes.ApiKey,
+                type: 'API_KEY',
                 apiKey
             };
 
@@ -219,7 +217,7 @@ class ApiAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.ApiKey,
+                        auth_mode: 'API_KEY',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -242,14 +240,17 @@ class ApiAuthController {
                 timestamp: Date.now()
             });
             if (logCtx) {
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
-                        auth_mode: AuthModes.ApiKey,
-                        error: `Error during API key auth: ${prettyError}`,
-                        operation: AuthOperation.UNKNOWN
+                        auth_mode: 'API_KEY',
+                        error: {
+                            type: 'unknown',
+                            description: `Error during API key auth: ${prettyError}`
+                        },
+                        operation: 'unknown'
                     },
                     'unknown',
                     activityLogId,
@@ -377,7 +378,7 @@ class ApiAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.Basic) {
+            if (template.auth_mode !== 'BASIC') {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environment.id,
@@ -394,7 +395,7 @@ class ApiAuthController {
             }
 
             const credentials: BasicApiCredentials = {
-                type: AuthModes.Basic,
+                type: 'BASIC',
                 username,
                 password
             };
@@ -457,7 +458,7 @@ class ApiAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.Basic,
+                        auth_mode: 'BASIC',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -480,14 +481,17 @@ class ApiAuthController {
                 timestamp: Date.now()
             });
             if (logCtx) {
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
-                        auth_mode: AuthModes.ApiKey,
-                        error: `Error during basic API key auth: ${prettyError}`,
-                        operation: AuthOperation.UNKNOWN
+                        auth_mode: 'API_KEY',
+                        error: {
+                            type: 'unknown',
+                            description: `Error during basic API key auth: ${prettyError}`
+                        },
+                        operation: 'unknown'
                     },
                     'unknown',
                     activityLogId,

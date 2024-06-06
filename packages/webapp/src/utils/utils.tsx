@@ -274,17 +274,6 @@ export function generateResponseModel(models: NangoSyncModel[], output: string |
     return { ...jsonResponse, ...metadata };
 }
 
-export function getSimpleDate(dateString: string | undefined): string {
-    if (!dateString) return '';
-
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
-}
-
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }

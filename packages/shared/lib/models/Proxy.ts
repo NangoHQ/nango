@@ -2,7 +2,7 @@ import type { ParamsSerializerOptions } from 'axios';
 import type { HTTP_VERB } from './Generic.js';
 import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials } from './Auth.js';
 import type { Connection } from './Connection.js';
-import type { Template as ProviderTemplate } from './Provider.js';
+import type { Template as ProviderTemplate } from '@nangohq/types';
 
 interface BaseProxyConfiguration {
     providerConfigKey: string;

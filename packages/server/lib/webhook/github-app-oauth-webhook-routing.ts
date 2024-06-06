@@ -1,7 +1,7 @@
 import type { InternalNango as Nango } from './internal-nango.js';
 import get from 'lodash-es/get.js';
 import type { Config as ProviderConfig, Connection, ConnectionConfig, ConnectionUpsertResponse } from '@nangohq/shared';
-import { environmentService, connectionService, configService, AuthModes as ProviderAuthModes } from '@nangohq/shared';
+import { environmentService, connectionService, configService } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -93,7 +93,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
                     connection: res.connection,
                     environment,
                     account,
-                    auth_mode: ProviderAuthModes.App,
+                    auth_mode: 'APP',
                     operation: res.operation
                 },
                 integration.provider,

@@ -1,5 +1,6 @@
+import type { AuthModeType, AuthOperationType } from '@nangohq/types';
 import type { SyncResult, SyncType } from './Sync.js';
-import type { AuthOperation, AuthModes } from './Auth.js';
+import type { FailedConnectionError } from './Connection.js';
 
 export enum WebhookType {
     SYNC = 'sync',
@@ -24,13 +25,13 @@ export interface NangoAuthWebhookBody {
     from: string;
     type: WebhookType.AUTH;
     connectionId: string;
-    authMode: AuthModes;
+    authMode: AuthModeType;
     providerConfigKey: string;
     provider: string;
     environment: string;
     success: boolean;
-    operation: AuthOperation;
-    error?: string;
+    operation: AuthOperationType;
+    error?: FailedConnectionError;
 }
 
 export interface NangoForwardWebhookBody {
