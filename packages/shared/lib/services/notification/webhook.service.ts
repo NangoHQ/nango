@@ -155,10 +155,15 @@ class WebhookService {
                 );
 
                 if (response.status >= 200 && response.status < 300) {
-                    await logCtx.info(`Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, { url, body });
-                    await logCtx.info(`Received "${response.status}" response code`);
+                    await logCtx.info(`Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, {
+                        webhookUrl,
+                        body
+                    });
                 } else {
-                    await logCtx.error(`Sync webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, { url, body });
+                    await logCtx.error(`Sync webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, {
+                        webhookUrl,
+                        body
+                    });
                     await logCtx.error(`Received "${response.status}" response code. Please send a 2xx on successful receipt.`);
                 }
             } catch (err) {
@@ -274,14 +279,11 @@ class WebhookService {
                     });
                     await logCtx.success();
                 } else {
-                    await logCtx.error(
-                        `Webhook forward ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} was sent successfully but received a wrong status code`,
-                        {
-                            status: response.status,
-                            body,
-                            webhookUrl
-                        }
-                    );
+                    await logCtx.error(`Sync webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''}`, {
+                        webhookUrl,
+                        body
+                    });
+                    await logCtx.error(`Received "${response.status}" response code. Please send a 2xx on successful receipt.`);
                     await logCtx.failed();
                 }
             } catch (err) {
