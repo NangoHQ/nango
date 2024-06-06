@@ -88,13 +88,11 @@ jobs:
               with:
                   username: ${{ secrets.DOCKER_USERNAME }}
                   password: ${{ secrets.DOCKER_PASSWORD }}
-            - name: Push tag
-              run: |
-                  docker buildx imagetools create nangohq/nango-persist:${{ github.sha }} --tag nangohq/nango-persist:${{ inputs.stage }}
             - name: Deploy persist
               run: |
-                  SERVICE_ID=${{ fromJson('{ production: "srv-cmt150ol6cac73apstq0", staging: "srv-cmsfiqqcn0vc73bhcod0" }')[inputs.stage] }}
-                  curl --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+                  SERVICE_ID=${{ fromJson('{ "production": "srv-cmt150ol6cac73apstq0", "staging": "srv-cmsfiqqcn0vc73bhcod0" }')[inputs.stage] }}
+                  curl --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"docker.io/nangohq/nango:$IMAGE_TAG_PREFIX-${{ github.sha }}\" }"
+
     deploy_orchestrator:
         if: inputs.service == 'orchestrator'
         runs-on: ubuntu-latest
