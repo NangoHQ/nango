@@ -391,7 +391,7 @@ export default function Activity() {
                 <Info color="blue" classNames="min-w-[1150px] text-sm mb-6" padding="p-2" size={15}>
                     This page is being replaced by our new faster and cleaner{' '}
                     <Link to="/logs" className="underline">
-                        Logs
+                        logs
                     </Link>{' '}
                     page
                 </Info>

@@ -315,7 +315,9 @@ export const LogsSearch: React.FC = () => {
         <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth className="p-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
-                <div className="text-white text-xs">{totalHumanReadable} logs found</div>
+                <div className="text-white text-xs">
+                    {totalHumanReadable} {data?.pagination && data.pagination.total > 1 ? 'logs' : 'log'} found
+                </div>
             </div>
             <div className="flex gap-2 justify-between">
                 <div className="w-full">{/* <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." /> */}</div>
