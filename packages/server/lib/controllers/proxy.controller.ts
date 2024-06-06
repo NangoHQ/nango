@@ -128,7 +128,7 @@ class ProxyController {
             });
 
             if (credentialResponse.isErr()) {
-                await logCtx.error('Failed to get connection credentials', { error: credentialResponse.error.message });
+                await logCtx.error('Failed to get connection credentials', { error: credentialResponse.error });
                 await logCtx.failed();
                 throw new Error(`Failed to get connection credentials: '${credentialResponse.error.message}'`);
             }

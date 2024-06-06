@@ -86,7 +86,7 @@ class OAuthController {
                 {
                     id: String(activityLogId),
                     operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Authorization OAuth',
+                    message: 'Create connection via OAuth',
                     expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }
@@ -410,7 +410,7 @@ class OAuthController {
                 {
                     id: String(activityLogId),
                     operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Authorization OAuth2 CC',
+                    message: 'Create connection via OAuth2 CC',
                     expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }

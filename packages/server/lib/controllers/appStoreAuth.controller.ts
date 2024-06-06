@@ -47,7 +47,7 @@ class AppStoreAuthController {
                 {
                     id: String(activityLogId),
                     operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Authorization App Store',
+                    message: 'Create connection via App Store',
                     expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }

@@ -54,7 +54,7 @@ class ApiAuthController {
                 {
                     id: String(activityLogId),
                     operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Authorization API Key',
+                    message: 'Create connection via API Key',
                     expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }
@@ -300,7 +300,7 @@ class ApiAuthController {
                 {
                     id: String(activityLogId),
                     operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Authorization Basic',
+                    message: 'Create connection via Basic Auth',
                     expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }
