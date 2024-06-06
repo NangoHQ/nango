@@ -91,7 +91,11 @@ jobs:
             - name: Deploy persist
               run: |
                   SERVICE_ID=${{ fromJson('{ "production": "srv-cmt150ol6cac73apstq0", "staging": "srv-cmsfiqqcn0vc73bhcod0" }')[inputs.stage] }}
-                  curl -sS -f --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"docker.io/nangohq/nango:$IMAGE_TAG_PREFIX-${{ github.sha }}\" }"
+                  IMAGE_TAG_PREFIX=${{ fromJson('{ "production": "prod", "staging": "staging" }')[inputs.stage] }}
+                  IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
+
+                  echo "Deploying $IMAGE to $SERVICE_ID"
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_orchestrator:
         if: inputs.service == 'orchestrator'
@@ -107,4 +111,7 @@ jobs:
               run: |
                   SERVICE_ID=${{ fromJson('{ "production": "srv-cp6bhl0l6cac738i3dm0", "staging": "srv-cp5qedsf7o1s739kjqtg" }')[inputs.stage] }}
                   IMAGE_TAG_PREFIX=${{ fromJson('{ "production": "prod", "staging": "staging" }')[inputs.stage] }}
-                  curl -sS -f --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"docker.io/nangohq/nango:$IMAGE_TAG_PREFIX-${{ github.sha }}\" }"
+                  IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
+
+                  echo "Deploying $IMAGE to $SERVICE_ID"
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"$IMAGE\" }"
