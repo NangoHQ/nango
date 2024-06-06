@@ -559,7 +559,7 @@ describe('generate function tests', () => {
         expect(success).toBe(true);
     });
 
-    it('should compile helper functions and throw an error if there is a complication error', async () => {
+    it('should compile helper functions and throw an error if there is a complication error with an imported file', async () => {
         const name = 'relative-imports-with-error';
         await fs.promises.rm(testDirectory, { recursive: true, force: true });
         await fs.promises.mkdir(testDirectory, { recursive: true });
@@ -573,6 +573,27 @@ describe('generate function tests', () => {
             await expect(
                 compileSingleFile({ file: getFileToCompile('./github/actions/gh-issues.ts'), tsconfig, config, modelNames, debug: true })
             ).rejects.toThrow();
+        }
+
+        await fs.promises.rm('./github', { recursive: true, force: true });
+        await fs.promises.rm('./dist', { recursive: true, force: true });
+        await fs.promises.rm('./nango.yaml', { force: true });
+        await fs.promises.rm('./models.ts', { force: true });
+    });
+
+    it('should complain if a nango call is used incorrectly in a nested file', async () => {
+        const name = 'relative-imports-with-nango-misuse';
+        await fs.promises.rm(testDirectory, { recursive: true, force: true });
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/${name}/github`, './github');
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/nango.yaml`, `./nango.yaml`);
+        const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
+
+        const { response: config } = await configService.load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        if (config) {
+            const modelNames = configService.getModelNames(config);
+            const result = await compileSingleFile({ file: getFileToCompile('./github/actions/gh-issues.ts'), tsconfig, config, modelNames, debug: true });
+            expect(result).toBe(false);
         }
 
         await fs.promises.rm('./github', { recursive: true, force: true });
