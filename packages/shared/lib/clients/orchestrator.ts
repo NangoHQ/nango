@@ -114,7 +114,8 @@ export class Orchestrator {
                         groupKey,
                         args
                     });
-                    res = actionResult.mapError((e) => new NangoError('action_failure', e.payload ?? { error: e.message }));
+
+                    res = actionResult.mapError((e) => new NangoError('action_failure', { error: e.message, ...(e.payload ? { payload: e.payload } : {}) }));
                     if (res.isErr()) {
                         span.setTag('error', res.error);
                     }
