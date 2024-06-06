@@ -3,7 +3,7 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 import { getServer } from './server.js';
 import { envs } from './env.js';
 import type { Task } from '@nangohq/scheduler';
-import { Scheduler, DatabaseClient } from '@nangohq/scheduler';
+import { Scheduler, DatabaseClient, stringifyTask } from '@nangohq/scheduler';
 import { EventsHandler } from './events.js';
 
 const logger = getLogger('Orchestrator');
@@ -20,12 +20,12 @@ try {
 
     // TODO: add logic to update syncs and syncs jobs in the database
     const eventsHandler = new EventsHandler({
-        CREATED: (task: Task) => console.log(`Task created: ${JSON.stringify(task)}`),
-        STARTED: (task: Task) => console.log(`Task started: ${JSON.stringify(task)}`),
-        SUCCEEDED: (task: Task) => console.log(`Task succeeded: ${JSON.stringify(task)}`),
-        FAILED: (task: Task) => console.log(`Task failed: ${JSON.stringify(task)}`),
-        EXPIRED: (task: Task) => console.log(`Task expired: ${JSON.stringify(task)}`),
-        CANCELLED: (task: Task) => console.log(`Task cancelled: ${JSON.stringify(task)}`)
+        CREATED: (task: Task) => logger.info(`Task created: ${stringifyTask(task)}`),
+        STARTED: (task: Task) => logger.info(`Task started: ${stringifyTask(task)}`),
+        SUCCEEDED: (task: Task) => logger.info(`Task succeeded: ${stringifyTask(task)}`),
+        FAILED: (task: Task) => logger.error(`Task failed: ${stringifyTask(task)}`),
+        EXPIRED: (task: Task) => logger.error(`Task expired: ${stringifyTask(task)}`),
+        CANCELLED: (task: Task) => logger.info(`Task cancelled: ${stringifyTask(task)}`)
     });
     const scheduler = new Scheduler({
         dbClient,

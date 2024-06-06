@@ -261,7 +261,7 @@ We could not retrieve and/or refresh your access token due to the following erro
 
             {activeTab === Tabs.Authorization && connectionResponse.errorLog && (
                 <div className="flex my-4">
-                    <Info showIcon={false} size={14} padding="py-1 px-1 py-1" color="red">
+                    <Info showIcon={false} size={14} padding="py-1 px-1" color="red">
                         <div className="flex items-center text-sm">
                             <ErrorCircle />
                             <span className="ml-2">There was an error refreshing the credentials</span>

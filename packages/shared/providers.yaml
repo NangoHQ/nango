@@ -2546,6 +2546,31 @@ uber:
 unauthenticated:
     auth_mode: NONE
     docs: https://docs.nango.dev/integrations/overview
+vimeo:
+    categories:
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://api.vimeo.com/oauth/authorize
+    token_url: https://api.vimeo.com/oauth/access_token
+    token_request_auth_method: basic
+    scope_seprator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.vimeo.com
+    docs: https://docs.nango.dev/integrations/all/vimeo
+vimeo-basic:
+    categories:
+        - video
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.vimeo.com
+        verification:
+            method: GET
+            endpoint: /
+    docs: https://docs.nango.dev/integrations/all/vimeo
 wakatime:
     categories:
         - analytics

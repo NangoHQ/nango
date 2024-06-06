@@ -37,73 +37,73 @@ describe('Scheduler', () => {
     });
 
     it('mark task as SUCCEEDED', async () => {
-        const task = await scheduleTask(scheduler);
+        const task = await immediateTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         const succeeded = (await scheduler.succeed({ taskId: task.id, output: { foo: 'bar' } })).unwrap();
         expect(succeeded.state).toBe('SUCCEEDED');
     });
     it('should retry failed task if max retries is not reached', async () => {
-        const task = await scheduleTask(scheduler, { taskProps: { retryMax: 2, retryCount: 1 } });
+        const task = await immediateTask(scheduler, { taskProps: { retryMax: 2, retryCount: 1 } });
         await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 });
         (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
         const retried = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(retried.length).toBe(1);
     });
     it('should not retry failed task if reached max retries', async () => {
-        const task = await scheduleTask(scheduler, { taskProps: { retryMax: 2, retryCount: 2 } });
+        const task = await immediateTask(scheduler, { taskProps: { retryMax: 2, retryCount: 2 } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
         const retried = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(retried.length).toBe(0);
     });
     it('should dequeue task', async () => {
-        const task = await scheduleTask(scheduler);
+        const task = await immediateTask(scheduler);
         const dequeued = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(dequeued.length).toBe(1);
     });
     it('should call callback when task is created', async () => {
-        await scheduleTask(scheduler);
+        await immediateTask(scheduler);
         expect(callbacks.CREATED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is started', async () => {
-        const task = await scheduleTask(scheduler);
+        const task = await immediateTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(callbacks.STARTED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is failed', async () => {
-        const task = await scheduleTask(scheduler);
+        const task = await immediateTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.fail({ taskId: task.id, error: { message: 'failure happend' } })).unwrap();
         expect(callbacks.FAILED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is succeeded', async () => {
-        const task = await scheduleTask(scheduler);
+        const task = await immediateTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.succeed({ taskId: task.id, output: { foo: 'bar' } })).unwrap();
         expect(callbacks.SUCCEEDED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is cancelled', async () => {
-        const task = await scheduleTask(scheduler);
+        const task = await immediateTask(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.cancel({ taskId: task.id, reason: 'cancelled by user' })).unwrap();
         expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is expired', async () => {
         const timeout = 1;
-        await scheduleTask(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeout } });
+        await immediateTask(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeout } });
         await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
         expect(callbacks.EXPIRED).toHaveBeenCalledOnce();
     });
     it('should monitor and expires created tasks if timeout is reached', async () => {
         const timeout = 1;
-        const task = await scheduleTask(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeout } });
+        const task = await immediateTask(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeout } });
         await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
         const expired = (await tasks.get(db, task.id)).unwrap();
         expect(expired.state).toBe('EXPIRED');
     });
     it('should monitor and expires started tasks if timeout is reached', async () => {
         const timeout = 1;
-        const task = await scheduleTask(scheduler, { taskProps: { startedToCompletedTimeoutSecs: timeout } });
+        const task = await immediateTask(scheduler, { taskProps: { startedToCompletedTimeoutSecs: timeout } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
         const taskAfter = (await tasks.get(db, task.id)).unwrap();
@@ -111,15 +111,16 @@ describe('Scheduler', () => {
     });
     it('should monitor and expires started tasks if heartbeat timeout is reached', async () => {
         const timeout = 1;
-        const task = await scheduleTask(scheduler, { taskProps: { heartbeatTimeoutSecs: timeout } });
+        const task = await immediateTask(scheduler, { taskProps: { heartbeatTimeoutSecs: timeout } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
         const taskAfter = (await tasks.get(db, task.id)).unwrap();
         expect(taskAfter.state).toBe('EXPIRED');
     });
+    // TODO: add tests for recurring tasks
 });
 
-async function scheduleTask(
+async function immediateTask(
     scheduler: Scheduler,
     props?: {
         taskProps?: Partial<Omit<TaskProps, 'startsAfter'>>;
@@ -136,6 +137,5 @@ async function scheduleTask(
         startedToCompletedTimeoutSecs: props?.taskProps?.startedToCompletedTimeoutSecs || 3600,
         heartbeatTimeoutSecs: props?.taskProps?.heartbeatTimeoutSecs || 600
     };
-    const scheduling = props?.scheduling || 'immediate';
-    return (await scheduler.schedule({ taskProps, scheduling })).unwrap();
+    return (await scheduler.immediate(taskProps)).unwrap();
 }

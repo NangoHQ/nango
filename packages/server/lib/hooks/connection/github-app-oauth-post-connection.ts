@@ -1,6 +1,5 @@
 import type { InternalNango as Nango } from './post-connection.js';
 import type { OAuth2Credentials } from '@nangohq/shared';
-import { AuthModes } from '@nangohq/shared';
 import axios from 'axios';
 
 export default async function execute(nango: Nango) {
@@ -21,7 +20,7 @@ export default async function execute(nango: Nango) {
         handle
     };
 
-    if (connection.credentials.type === AuthModes.OAuth2) {
+    if (connection.credentials.type === 'OAUTH2') {
         updatedConfig = {
             ...updatedConfig,
             userCredentials: connection.credentials
