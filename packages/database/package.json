@@ -17,10 +17,11 @@
     "dependencies": {
         "@nangohq/utils": "file:../utils",
         "knex": "3.1.0",
+        "pg": "8.11.3",
         "tarn": "3.0.2"
     },
     "devDependencies": {
-        "typescript": "^5.3.3",
+        "typescript": "5.3.3",
         "vitest": "0.33.0"
     },
     "files": [

@@ -23,13 +23,12 @@
         "npm": ">=6.14.11"
     },
     "dependencies": {
-        "@hapi/boom": "^10.0.1",
         "@nangohq/database": "file:../database",
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
-        "@nangohq/types": "^0.39.33",
+        "@nangohq/types": "file:../types",
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/utils": "file:../utils",
         "@workos-inc/node": "^6.2.0",
@@ -44,9 +43,7 @@
         "express": "^4.19.2",
         "express-session": "^1.17.3",
         "form-data": "^4.0.0",
-        "js-yaml": "^4.1.0",
         "jsonwebtoken": "^9.0.2",
-        "knex": "3.1.0",
         "lodash-es": "^4.17.21",
         "mailgun.js": "^8.2.1",
         "multer": "^1.4.5-lts.1",
@@ -55,8 +52,6 @@
         "passport": "^0.6.0",
         "passport-http": "^0.3.0",
         "passport-local": "^1.0.0",
-        "pg": "^8.8.0",
-        "posthog-node": "^3.1.3",
         "rate-limiter-flexible": "^5.0.0",
         "redis": "4.6.13",
         "simple-oauth2": "^5.0.0",
@@ -65,13 +60,10 @@
         "zod": "3.22.4"
     },
     "devDependencies": {
-        "@types/braintree": "^3.3.6",
         "@types/cookie-parser": "^1.4.3",
         "@types/cors": "^2.8.12",
         "@types/express": "^4.17.13",
         "@types/express-session": "^1.17.6",
-        "@types/ip": "^1.1.0",
-        "@types/js-yaml": "^4.0.5",
         "@types/jsonwebtoken": "^9.0.1",
         "@types/lodash-es": "^4.17.10",
         "@types/multer": "^1.4.11",
@@ -86,7 +78,7 @@
         "@types/ws": "^8.5.4",
         "get-port": "7.1.0",
         "nodemon": "^3.0.1",
-        "typescript": "^5.3.3",
+        "typescript": "5.3.3",
         "vitest": "0.33.0"
     }
 }
