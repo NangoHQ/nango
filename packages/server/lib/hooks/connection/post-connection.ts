@@ -4,6 +4,7 @@ import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry } f
 import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
+import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks.js';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
@@ -27,7 +28,9 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             connectionId: upsertedConnection.connection_id,
             providerConfigKey: upsertedConnection.provider_config_key,
             logContextGetter,
-            instantRefresh: false
+            instantRefresh: false,
+            onRefreshSuccess: connectionRefreshSuccessHook,
+            onRefreshFailed: connectionRefreshFailedHook
         });
 
         if (credentialResponse.isErr()) {

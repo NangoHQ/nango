@@ -1,17 +1,8 @@
-import type {
-    AuthModes,
-    AppStoreCredentials,
-    AuthCredentials,
-    ApiKeyCredentials,
-    BasicApiCredentials,
-    AppCredentials,
-    AuthOperation,
-    UnauthCredentials
-} from './Auth.js';
+import type { AppStoreCredentials, AuthCredentials, ApiKeyCredentials, BasicApiCredentials, AppCredentials, UnauthCredentials } from './Auth.js';
 import type { Account } from './Admin.js';
 import type { Environment } from './Environment.js';
 import type { TimestampsAndDeleted } from './Generic.js';
-import type { Metadata, ActiveLogIds } from '@nangohq/types';
+import type { AuthModeType, Metadata, ActiveLogIds, AuthOperationType } from '@nangohq/types';
 
 export type ConnectionConfig = Record<string, any>;
 
@@ -38,17 +29,23 @@ export interface Connection extends BaseConnection {
 
 export interface RecentlyCreatedConnection {
     connection: StoredConnection;
-    auth_mode: AuthModes;
-    error?: string;
-    operation: AuthOperation;
+    auth_mode: AuthModeType;
+    error?: FailedConnectionError;
+    operation: AuthOperationType;
     environment: Environment;
     account: Account;
 }
+
+export interface FailedConnectionError {
+    type: string;
+    description: string;
+}
+
 export interface RecentlyFailedConnection {
     connection: Pick<StoredConnection, 'connection_id' | 'provider_config_key'>;
-    auth_mode: AuthModes;
-    error?: string;
-    operation: AuthOperation;
+    auth_mode: AuthModeType;
+    error?: FailedConnectionError;
+    operation: AuthOperationType;
     environment: Environment;
     account: Account;
 }

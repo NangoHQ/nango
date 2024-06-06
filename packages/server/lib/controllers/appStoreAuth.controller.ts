@@ -7,12 +7,10 @@ import {
     AnalyticsTypes,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
-    AuthOperation,
     updateProvider as updateProviderActivityLog,
     configService,
     connectionService,
     createActivityLogMessageAndEnd,
-    AuthModes,
     hmacService,
     ErrorSourceEnum,
     LogActionEnum
@@ -124,7 +122,7 @@ class AppStoreAuthController {
 
             const template = configService.getTemplate(config.provider);
 
-            if (template.auth_mode !== AuthModes.AppStore) {
+            if (template.auth_mode !== 'APP_STORE') {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: environment.id,
@@ -172,14 +170,17 @@ class AppStoreAuthController {
             const { success, error, response: credentials } = await connectionService.getAppStoreCredentials(template, connectionConfig, privateKey);
 
             if (!success || !credentials) {
-                void connectionCreationFailedHook(
+                connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
                         account,
-                        auth_mode: AuthModes.AppStore,
-                        error: `Error during App store credentials auth: ${error?.message}`,
-                        operation: AuthOperation.UNKNOWN
+                        auth_mode: 'APP_STORE',
+                        error: {
+                            type: 'credential_fetch_failure',
+                            description: `Error during App store credentials auth: ${error?.message}`
+                        },
+                        operation: 'unknown'
                     },
                     config.provider,
                     activityLogId,
@@ -219,7 +220,7 @@ class AppStoreAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: AuthModes.AppStore,
+                        auth_mode: 'APP_STORE',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -241,20 +242,23 @@ class AppStoreAuthController {
                 content: `Error during App store auth: ${prettyError}`,
                 timestamp: Date.now()
             });
-            if (logCtx) {
-                void connectionCreationFailedHook(
-                    {
-                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
-                        environment,
-                        account,
-                        auth_mode: AuthModes.AppStore,
-                        error: `Error during App store auth: ${prettyError}`,
-                        operation: AuthOperation.UNKNOWN
+            connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                    environment,
+                    account,
+                    auth_mode: 'APP_STORE',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during App store auth: ${prettyError}`
                     },
-                    'unknown',
-                    activityLogId,
-                    logCtx
-                );
+                    operation: 'unknown'
+                },
+                'unknown',
+                activityLogId,
+                logCtx
+            );
+            if (logCtx) {
                 await logCtx.error('Error during API key auth', { error: err });
                 await logCtx.failed();
             }
