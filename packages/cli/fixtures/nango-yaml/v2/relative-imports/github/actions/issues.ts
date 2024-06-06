@@ -1,5 +1,5 @@
 import { getGreeting } from './helper';
 
-export default function fetchData(): string {
+export default function runAction(): string {
     return getGreeting();
 }

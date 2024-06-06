@@ -535,4 +535,26 @@ describe('generate function tests', () => {
 
         expect(success).toBe(true);
     });
+
+    it('should be able to compile and run imported files', async () => {
+        await fs.promises.rm(testDirectory, { recursive: true, force: true });
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/relative-imports/github`, './github');
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/relative-imports/nango.yaml`, `./nango.yaml`);
+
+        const success = await compileAllFiles({ debug: true });
+
+        // @ts-expect-error - dynamic import
+        const module = await import('./dist/issues.cjs');
+
+        const result = module.default.default();
+        expect(result).toBe('Hello, world!');
+
+        await fs.promises.rm('./github', { recursive: true, force: true });
+        await fs.promises.rm('./dist', { recursive: true, force: true });
+        await fs.promises.rm('./nango.yaml', { force: true });
+        await fs.promises.rm('./models.ts', { force: true });
+
+        expect(success).toBe(true);
+    });
 });

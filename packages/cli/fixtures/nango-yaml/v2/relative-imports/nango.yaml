@@ -1,11 +1,12 @@
 integrations:
     github:
-        syncs:
-            main:
-                endpoint: /github/main
-                sync_type: incremental
+        actions:
+            issues:
                 output: Issue
+                endpoint: /github/issue
 
 models:
+    Contact:
+        id: string
     Issue:
         id: string
