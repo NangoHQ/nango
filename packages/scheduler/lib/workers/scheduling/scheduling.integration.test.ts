@@ -23,21 +23,18 @@ describe('dueSchedules', () => {
         await addSchedule(db, { state: 'DELETED', frequency: '3 minutes' });
         const due = await dueSchedules(db);
         expect(due.isOk()).toBe(true);
-        console.log(due.unwrap());
         expect(due.unwrap().length).toBe(0);
     });
     it('should not return schedule that is paused', async () => {
         await addSchedule(db, { state: 'PAUSED', frequency: '3 minutes' });
         const due = await dueSchedules(db);
         expect(due.isOk()).toBe(true);
-        console.log(due.unwrap());
         expect(due.unwrap().length).toBe(0);
     });
     it('should not return schedule that is set to start in the future', async () => {
         await addSchedule(db, { state: 'STARTED', frequency: '3 minutes', startsAt: Seconds.after(1 * 60) });
         const due = await dueSchedules(db);
         expect(due.isOk()).toBe(true);
-        console.log(due.unwrap());
         expect(due.unwrap().length).toBe(0);
     });
     it('should not return schedule that have a recent task completed', async () => {
@@ -75,13 +72,12 @@ describe('dueSchedules', () => {
     it('should return schedule that has not run recently', async () => {
         const startsAt = Seconds.ago(6 * 60); // 10 minutes ago
         const schedule = await addSchedule(db, { startsAt, frequency: '5 minutes' });
-        const task = await addTask(db, {
+        await addTask(db, {
             scheduleId: schedule.id,
             state: 'SUCCEEDED',
             startsAfter: startsAt,
             lastStateTransitionAt: Seconds.after(20, startsAt)
         });
-        console.log(schedule, task);
         const due = await dueSchedules(db);
         expect(due.isOk()).toBe(true);
         expect(due.unwrap().length).toBe(1);
