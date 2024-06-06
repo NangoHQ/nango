@@ -155,15 +155,6 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <p>Connections</p>
                         </Link>
                         <Link
-                            to={`/${env}/activity`}
-                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                props.selectedItem === LeftNavBarItems.Activity ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
-                            }`}
-                        >
-                            <QueueListIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Activity ? 'text-white' : 'text-gray-400'}`} />
-                            <p>Activity</p>
-                        </Link>
-                        <Link
                             to={`/${env}/logs`}
                             className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                 props.selectedItem === LeftNavBarItems.Logs ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`

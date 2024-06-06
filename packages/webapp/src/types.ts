@@ -1,41 +1,5 @@
 import type { ActiveLogIds } from '@nangohq/types';
 
-export interface ActivityResponse {
-    id: number;
-    level: 'info' | 'debug' | 'error' | 'warn';
-    action:
-        | 'account'
-        | 'oauth'
-        | 'auth'
-        | 'proxy'
-        | 'token'
-        | 'sync'
-        | 'sync deploy'
-        | 'sync init'
-        | 'pause sync'
-        | 'full sync'
-        | 'restart sync'
-        | 'trigger sync'
-        | 'trigger full sync'
-        | 'cancel sync'
-        | 'action'
-        | 'webhook';
-    success: boolean | null;
-    timestamp: number;
-    start: number;
-    end: number;
-    message: string;
-    messages: Record<string, any>[];
-    connection_id: string;
-    provider_config_key: string;
-    provider: string;
-    method: string;
-    endpoint?: string;
-    operation_name?: string;
-}
-
-export type ActivityMessageResponse = Record<number, Record<string, any>[]>;
-
 export type SyncResult = Record<string, Result>;
 
 export interface Result {

@@ -58,7 +58,6 @@
         "classnames": "2.3.2",
         "clsx": "2.1.0",
         "cmdk": "1.0.0",
-        "cron-parser": "4.8.1",
         "date-fns": "3.6.0",
         "env-cmd": "10.1.0",
         "lodash": "4.17.21",
