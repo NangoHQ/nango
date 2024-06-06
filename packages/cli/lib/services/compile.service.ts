@@ -131,6 +131,12 @@ function compileImportedFile(filePath: string, compiler: tsNode.Service, type: S
             continue;
         }
 
+        const fullPath = path.resolve(importedFilePathWithExtension);
+        if (fullPath.includes(process.cwd())) {
+            console.log(chalk.red(`All imported files must live within the nango-integrations directory`));
+            return false;
+        }
+
         if (importedFilePathWithExtension.includes('models.ts')) {
             continue;
         }
