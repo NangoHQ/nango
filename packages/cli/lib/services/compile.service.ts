@@ -105,15 +105,17 @@ export async function compileSingleFile({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
             compilerOptions: JSON.parse(tsconfig).compilerOptions
         });
-        await compile({ file, config, modelNames, compiler, debug });
+
+        return compile({ file, config, modelNames, compiler, debug });
     } catch (error) {
         console.error(`Error compiling ${file.inputPath}:`);
         console.error(error);
-        return;
+        return false;
     }
 }
 
-function compileImportedFile(filePath: string, compiler: tsNode.Service, type: SyncConfigType | undefined, modelNames: string[]) {
+function compileImportedFile(filePath: string, compiler: tsNode.Service, type: SyncConfigType | undefined, modelNames: string[]): boolean {
+    let finalResult = true;
     const importedFiles = parserService.getImportedFiles(filePath);
 
     if (!parserService.callsAreUsedCorrectly(filePath, type, modelNames)) {
@@ -124,6 +126,12 @@ function compileImportedFile(filePath: string, compiler: tsNode.Service, type: S
         const importedFilePath = path.resolve(path.dirname(filePath), importedFile);
         const importedFilePathWithExtension = importedFilePath + '.ts';
 
+        /// if it is a library import then we can skip it
+        if (!fs.existsSync(importedFilePathWithExtension)) {
+            console.log('does not exist');
+            continue;
+        }
+
         if (importedFilePathWithExtension.includes('models.ts')) {
             continue;
         }
@@ -131,10 +139,10 @@ function compileImportedFile(filePath: string, compiler: tsNode.Service, type: S
         compiler.compile(fs.readFileSync(importedFilePathWithExtension, 'utf8'), importedFilePathWithExtension);
         console.log(chalk.green(`Compiled "${importedFilePathWithExtension}" successfully`));
 
-        return compileImportedFile(importedFilePath + '.ts', compiler, type, modelNames);
+        finalResult = compileImportedFile(importedFilePath + '.ts', compiler, type, modelNames);
     }
 
-    return true;
+    return finalResult;
 }
 
 async function compile({

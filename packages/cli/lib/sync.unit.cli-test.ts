@@ -6,7 +6,8 @@ import { SyncConfigType } from '@nangohq/shared';
 import { init, generate } from './cli.js';
 import { exampleSyncName } from './constants.js';
 import configService from './services/config.service.js';
-import { compileAllFiles } from './services/compile.service.js';
+import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
+import { getNangoRootPath } from './utils.js';
 import parserService from './services/parser.service.js';
 import { copyDirectoryAndContents } from './tests/helpers.js';
 
@@ -556,5 +557,27 @@ describe('generate function tests', () => {
         await fs.promises.rm('./models.ts', { force: true });
 
         expect(success).toBe(true);
+    });
+
+    it('should compile helper functions and throw an error if there is a complication error', async () => {
+        const name = 'relative-imports-with-error';
+        await fs.promises.rm(testDirectory, { recursive: true, force: true });
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/${name}/github`, './github');
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/nango.yaml`, `./nango.yaml`);
+        const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
+
+        const { response: config } = await configService.load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        if (config) {
+            const modelNames = configService.getModelNames(config);
+            await expect(
+                compileSingleFile({ file: getFileToCompile('./github/actions/gh-issues.ts'), tsconfig, config, modelNames, debug: true })
+            ).rejects.toThrow();
+        }
+
+        await fs.promises.rm('./github', { recursive: true, force: true });
+        await fs.promises.rm('./dist', { recursive: true, force: true });
+        await fs.promises.rm('./nango.yaml', { force: true });
+        await fs.promises.rm('./models.ts', { force: true });
     });
 });
