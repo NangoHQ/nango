@@ -456,8 +456,8 @@ class OAuthController {
         const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['OAuth2'] as string);
 
         try {
-            if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(template.authorization_url, JSON.stringify(connectionConfig));
+            if (missesInterpolationParam(template.authorization_url!, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig(template.authorization_url!, JSON.stringify(connectionConfig));
 
                 await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
