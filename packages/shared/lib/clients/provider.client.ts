@@ -1,17 +1,10 @@
 import braintree from 'braintree';
-import type {
-    Config as ProviderConfig,
-    Connection,
-    AuthorizationTokenResponse,
-    RefreshTokenResponse,
-    TemplateOAuth2 as ProviderTemplateOAuth2
-} from '../models/index.js';
-import { AuthModes as ProviderAuthModes } from '../models/index.js';
-import { axiosInstance as axios } from '../utils/axios.js';
+import type { Config as ProviderConfig, Connection, AuthorizationTokenResponse, RefreshTokenResponse } from '../models/index.js';
+import type { TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, axiosInstance as axios } from '@nangohq/utils';
 
 const stripeAppExpiresIn = 3600;
 const logger = getLogger('Provider.Client');
@@ -67,7 +60,7 @@ class ProviderClient {
     }
 
     public async refreshToken(template: ProviderTemplateOAuth2, config: ProviderConfig, connection: Connection): Promise<object> {
-        if (connection.credentials.type != ProviderAuthModes.OAuth2) {
+        if (connection.credentials.type !== 'OAUTH2') {
             throw new NangoError('wrong_credentials_type');
         }
 
@@ -104,7 +97,7 @@ class ProviderClient {
     }
 
     public async introspectedTokenExpired(config: ProviderConfig, connection: Connection): Promise<boolean> {
-        if (connection.credentials.type != ProviderAuthModes.OAuth2) {
+        if (connection.credentials.type !== 'OAUTH2') {
             throw new NangoError('wrong_credentials_type');
         }
 

@@ -12,6 +12,9 @@
             "path": "../logs"
         },
         {
+            "path": "../webhooks"
+        },
+        {
             "path": "../shared"
         },
         {
