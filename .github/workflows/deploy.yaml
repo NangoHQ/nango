@@ -95,6 +95,7 @@ jobs:
                   IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
+
                   curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_orchestrator:
@@ -114,4 +115,5 @@ jobs:
                   IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
+
                   curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"$IMAGE\" }"
