@@ -30,6 +30,7 @@ import { LeftNavBarItems } from '../components/LeftNavBar';
 import type { ActivityMessageResponse, ActivityResponse } from '../types';
 
 import { useStore } from '../store';
+import Info from '../components/ui/Info';
 
 interface Props {
     data: string | number | undefined;
@@ -380,16 +381,20 @@ export default function Activity() {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="relative -left-24">
-                <div className="flex items-center mb-6">
+                <div className="flex items-center mb-3">
                     <div className="flex flex-col text-left">
-                        <span className="flex items-center mb-3">
-                            <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Logs</h2>
-                        </span>
-                        <span>
-                            <p className="text-white text-left">Note that logs older than 15 days are cleared</p>
+                        <span className="flex items-center">
+                            <h2 className="text-3xl font-semibold tracking-tight text-white">Activity</h2>
                         </span>
                     </div>
                 </div>
+                <Info color="blue" classNames="min-w-[1150px] text-sm mb-6" padding="p-2" size={15}>
+                    This page is being replaced by our new faster and cleaner{' '}
+                    <Link to="/logs" className="underline">
+                        logs
+                    </Link>{' '}
+                    page
+                </Info>
                 {activities && activities.length === 0 && !status && !selectedIntegration && !selectedScript && !selectedConnection && !selectedDate ? null : (
                     <div className="flex justify-between p-3 mb-6 items-center border border-border-gray rounded-md min-w-[1150px]">
                         <div className="flex space-x-10 justify-between px-2 w-full">

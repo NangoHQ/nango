@@ -16,6 +16,16 @@ export type PostRecurring = Endpoint<{
         name: string;
         startsAt: Date;
         frequencyMs: number;
+        groupKey: string;
+        retry: {
+            count: number;
+            max: number;
+        };
+        timeoutSettingsInSecs: {
+            createdToStarted: number;
+            startedToCompleted: number;
+            heartbeat: number;
+        };
         args: JsonValue;
     };
     Error: ApiError<'recurring_failed'>;
@@ -29,6 +39,16 @@ const validate = validateRequest<PostRecurring>({
                 name: z.string().min(1),
                 startsAt: z.coerce.date(),
                 frequencyMs: z.number().int().positive(),
+                groupKey: z.string().min(1),
+                retry: z.object({
+                    count: z.number().int(),
+                    max: z.number().int()
+                }),
+                timeoutSettingsInSecs: z.object({
+                    createdToStarted: z.number().int().positive(),
+                    startedToCompleted: z.number().int().positive(),
+                    heartbeat: z.number().int().positive()
+                }),
                 args: syncArgsSchema
             })
             .parse(data);
@@ -41,7 +61,13 @@ const handler = (scheduler: Scheduler) => {
             name: req.body.name,
             payload: req.body.args,
             startsAt: req.body.startsAt,
-            frequencyMs: req.body.frequencyMs
+            frequencyMs: req.body.frequencyMs,
+            groupKey: req.body.groupKey,
+            retryCount: req.body.retry.count,
+            retryMax: req.body.retry.max,
+            createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
+            startedToCompletedTimeoutSecs: req.body.timeoutSettingsInSecs.startedToCompleted,
+            heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat
         });
         if (schedule.isErr()) {
             return res.status(500).json({ error: { code: 'recurring_failed', message: schedule.error.message } });

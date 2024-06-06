@@ -22,8 +22,7 @@
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "type-fest": "4.14.0",
-        "vitest": "0.33.0",
-        "winston": "3.8.2"
+        "vitest": "0.33.0"
     },
     "files": [
         "dist/**/*"

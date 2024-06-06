@@ -30,13 +30,19 @@ const ScheduleStateTransition = {
     }
 };
 
-interface DbSchedule {
+export interface DbSchedule {
     readonly id: string;
     readonly name: string;
     state: ScheduleState;
     readonly starts_at: Date;
     frequency: string;
     payload: JsonValue;
+    readonly group_key: string;
+    readonly retry_count: number;
+    readonly retry_max: number;
+    readonly created_to_started_timeout_secs: number;
+    readonly started_to_completed_timeout_secs: number;
+    readonly heartbeat_timeout_secs: number;
     readonly created_at: Date;
     updated_at: Date;
     deleted_at: Date | null;
@@ -63,7 +69,7 @@ function postgresIntervalInMs(i: {
     );
 }
 
-const DbSchedule = {
+export const DbSchedule = {
     to: (schedule: Schedule): DbSchedule => ({
         id: schedule.id.toString(),
         name: schedule.name,
@@ -71,6 +77,12 @@ const DbSchedule = {
         starts_at: schedule.startsAt,
         frequency: `${schedule.frequencyMs} milliseconds`,
         payload: schedule.payload,
+        group_key: schedule.groupKey,
+        retry_count: schedule.retryCount,
+        retry_max: schedule.retryMax,
+        created_to_started_timeout_secs: schedule.createdToStartedTimeoutSecs,
+        started_to_completed_timeout_secs: schedule.startedToCompletedTimeoutSecs,
+        heartbeat_timeout_secs: schedule.heartbeatTimeoutSecs,
         created_at: schedule.createdAt,
         updated_at: schedule.updatedAt,
         deleted_at: schedule.deletedAt
@@ -82,6 +94,12 @@ const DbSchedule = {
         startsAt: dbSchedule.starts_at,
         frequencyMs: postgresIntervalInMs(dbSchedule.frequency as any),
         payload: dbSchedule.payload,
+        groupKey: dbSchedule.group_key,
+        retryCount: dbSchedule.retry_count,
+        retryMax: dbSchedule.retry_max,
+        createdToStartedTimeoutSecs: dbSchedule.created_to_started_timeout_secs,
+        startedToCompletedTimeoutSecs: dbSchedule.started_to_completed_timeout_secs,
+        heartbeatTimeoutSecs: dbSchedule.heartbeat_timeout_secs,
         createdAt: dbSchedule.created_at,
         updatedAt: dbSchedule.updated_at,
         deletedAt: dbSchedule.deleted_at
