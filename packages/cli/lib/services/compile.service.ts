@@ -131,8 +131,9 @@ function compileImportedFile(filePath: string, compiler: tsNode.Service, type: S
             continue;
         }
 
+        const cwd = process.cwd().split('/').pop();
         const fullPath = path.resolve(importedFilePathWithExtension);
-        if (fullPath.includes(process.cwd())) {
+        if (cwd === 'nango-integrations' && fullPath.includes(process.cwd())) {
             console.log(chalk.red(`All imported files must live within the nango-integrations directory`));
             return false;
         }
