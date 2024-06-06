@@ -76,3 +76,8 @@ export interface Endpoint<T extends EndpointDefinition> {
      */
     Reply: ResDefaultErrors | (T['Error'] extends ApiError<any> ? T['Error'] | T['Success'] : T['Success']);
 }
+
+export interface ErrorPayload {
+    type: string;
+    description: string;
+}

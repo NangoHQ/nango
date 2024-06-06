@@ -66,6 +66,7 @@
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/records": "file:../records",
         "@nangohq/types": "^0.39.33",
+        "@nangohq/webhooks": "file:../webhooks",
         "@octokit/types": "^9.2.1",
         "@types/amqplib": "^0.8.2",
         "@types/cors": "^2.8.12",
