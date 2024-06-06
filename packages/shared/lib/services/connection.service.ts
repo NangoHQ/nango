@@ -584,8 +584,8 @@ class ConnectionService {
         providerConfigKey,
         logContextGetter,
         instantRefresh,
-        connectionRefreshSuccessHook,
-        connectionRefreshFailedHook
+        onRefreshSuccess,
+        onRefreshFailed
     }: {
         account: Account;
         environment: Environment;
@@ -593,8 +593,8 @@ class ConnectionService {
         providerConfigKey: string;
         logContextGetter: LogContextGetter;
         instantRefresh: boolean;
-        connectionRefreshSuccessHook: (args: { connection: Connection; environment: Environment; config: ProviderConfig }) => Promise<void>;
-        connectionRefreshFailedHook: (args: {
+        onRefreshSuccess: (args: { connection: Connection; environment: Environment; config: ProviderConfig }) => Promise<void>;
+        onRefreshFailed: (args: {
             connection: Connection;
             activityLogId: number;
             logCtx: LogContext;
@@ -689,7 +689,7 @@ class ConnectionService {
                 await logCtx.failed();
 
                 if (activityLogId) {
-                    await connectionRefreshFailedHook({
+                    await onRefreshFailed({
                         connection,
                         activityLogId,
                         logCtx,
@@ -714,7 +714,7 @@ class ConnectionService {
 
         await this.updateLastFetched(connection.id);
 
-        await connectionRefreshSuccessHook({
+        await onRefreshSuccess({
             connection,
             environment,
             config

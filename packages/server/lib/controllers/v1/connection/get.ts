@@ -76,8 +76,8 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         providerConfigKey,
         logContextGetter,
         instantRefresh,
-        connectionRefreshSuccessHook,
-        connectionRefreshFailedHook
+        onRefreshSuccess: connectionRefreshSuccessHook,
+        onRefreshFailed: connectionRefreshFailedHook
     });
 
     if (credentialResponse.isErr()) {

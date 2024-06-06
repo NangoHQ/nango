@@ -29,8 +29,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             providerConfigKey: upsertedConnection.provider_config_key,
             logContextGetter,
             instantRefresh: false,
-            connectionRefreshSuccessHook,
-            connectionRefreshFailedHook
+            onRefreshSuccess: connectionRefreshSuccessHook,
+            onRefreshFailed: connectionRefreshFailedHook
         });
 
         if (credentialResponse.isErr()) {

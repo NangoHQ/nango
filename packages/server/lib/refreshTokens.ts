@@ -59,8 +59,8 @@ export async function exec(): Promise<void> {
                     providerConfigKey: provider_config_key,
                     logContextGetter,
                     instantRefresh: false,
-                    connectionRefreshSuccessHook,
-                    connectionRefreshFailedHook
+                    onRefreshSuccess: connectionRefreshSuccessHook,
+                    onRefreshFailed: connectionRefreshFailedHook
                 });
                 if (credentialResponse.isOk()) {
                     metrics.increment(metrics.Types.REFRESH_TOKENS_SUCCESS);

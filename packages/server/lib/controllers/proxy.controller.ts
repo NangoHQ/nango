@@ -123,8 +123,8 @@ class ProxyController {
                 providerConfigKey,
                 logContextGetter,
                 instantRefresh: false,
-                connectionRefreshSuccessHook,
-                connectionRefreshFailedHook
+                onRefreshSuccess: connectionRefreshSuccessHook,
+                onRefreshFailed: connectionRefreshFailedHook
             });
 
             if (credentialResponse.isErr()) {
