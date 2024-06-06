@@ -44,18 +44,20 @@ export const sendSync = async ({
         return;
     }
 
+    const success = typeof error === 'undefined';
+
     const body: NangoSyncWebhookBody = {
         from: 'nango',
         type: WebhookType.SYNC,
         connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key,
         syncName,
-        success: Boolean(!error),
+        success,
         model,
         syncType
     };
 
-    if (!error) {
+    if (success) {
         body.modifiedAfter = dayjs(now).toDate().toISOString();
         if (syncType !== 'INITIAL') {
             body.queryTimeStamp = now as unknown as string;
@@ -70,7 +72,7 @@ export const sendSync = async ({
         };
     }
 
-    if (error) {
+    if (!success && error) {
         body.error = error;
         body.startedAt = dayjs(now).toDate().toISOString();
         body.failedAt = new Date().toISOString();
@@ -92,7 +94,7 @@ export const sendSync = async ({
         body,
         webhookType: 'sync',
         activityLogId,
-        endingMessage,
+        endingMessage: success ? endingMessage : '',
         environment,
         logCtx
     });
