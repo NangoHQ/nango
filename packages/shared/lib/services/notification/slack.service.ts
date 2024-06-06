@@ -279,9 +279,8 @@ export class SlackService {
         const connectionWord = count === 1 ? 'connection' : 'connections';
         const flowType = type;
         const date = new Date();
-        const dateString = date.toISOString().split('T')[0] as string;
         const payload: NotificationPayload = {
-            content: this.getMessage({ type, count, connectionWord, flowType, name, envName, originalActivityLogId, date: dateString, resolved: false }),
+            content: this.getMessage({ type, count, connectionWord, flowType, name, envName, originalActivityLogId, date, resolved: false }),
             status: 'open',
             providerConfigKey: nangoConnection.provider_config_key,
             provider
@@ -386,7 +385,7 @@ export class SlackService {
                 name: syncName,
                 envName,
                 originalActivityLogId,
-                date: new Date().toISOString().split('T')[0] as string,
+                date: new Date(),
                 resolved: true
             });
         } else {
@@ -400,7 +399,7 @@ export class SlackService {
                 name: syncName,
                 envName,
                 originalActivityLogId,
-                date: new Date().toISOString().split('T')[0] as string,
+                date: new Date(),
                 resolved: false
             });
         }
@@ -690,18 +689,29 @@ export class SlackService {
         envName: string;
         originalActivityLogId: number | null;
         name: string;
-        date: string;
+        date: Date;
         type: string;
     }) {
-        if (!originalActivityLogId) {
-            return `${basePublicUrl}/${envName}/activity?${type === 'auth' ? 'connection' : 'script'}=${name}date=${date}`;
+        const usp = new URLSearchParams();
+
+        if (originalActivityLogId) {
+            usp.set('operationId', String(originalActivityLogId));
         }
 
+        const from = new Date(date);
+        from.setHours(0, 0);
+        const to = new Date(date);
+        to.setHours(23, 59);
+        usp.set('from', from.toISOString());
+        usp.set('to', to.toISOString());
+
         if (type === 'auth') {
-            return `${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}&connection=${name}&date=${date}`;
+            usp.set('connections', name);
         } else {
-            return `${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}&script=${name}&date=${date}`;
+            usp.set('syncs', name);
         }
+
+        return `${basePublicUrl}/${envName}/logs?${usp.toString()}`;
     }
 
     private getMessage({
@@ -722,7 +732,7 @@ export class SlackService {
         name: string;
         envName: string;
         originalActivityLogId: number | null;
-        date: string;
+        date: Date;
         resolved: boolean;
     }): string {
         switch (type) {
