@@ -23,7 +23,6 @@ export enum LeftNavBarItems {
     Integrations = 0,
     Connections,
     EnvironmentSettings,
-    Activity,
     Syncs,
     AccountSettings,
     UserSettings,
