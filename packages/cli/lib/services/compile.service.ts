@@ -128,7 +128,6 @@ function compileImportedFile(filePath: string, compiler: tsNode.Service, type: S
 
         /// if it is a library import then we can skip it
         if (!fs.existsSync(importedFilePathWithExtension)) {
-            console.log('does not exist');
             continue;
         }
 
