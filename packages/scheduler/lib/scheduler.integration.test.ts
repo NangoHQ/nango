@@ -147,7 +147,7 @@ describe('Scheduler', () => {
 async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler; state?: ScheduleState }): Promise<Schedule> {
     const recurringProps = {
         name: nanoid(),
-        state,
+        state: 'STARTED' as const,
         startsAt: new Date(),
         frequencyMs: 900_000,
         payload: { foo: 'bar' },
