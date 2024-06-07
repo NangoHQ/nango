@@ -1,6 +1,6 @@
 import { expect, describe, it, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import { Scheduler } from './scheduler.js';
-import type { ImmediateProps, Schedule, Task } from './types.js';
+import type { Schedule, Task } from './types.js';
 import type { TaskProps } from './models/tasks.js';
 import * as tasks from './models/tasks.js';
 import { getTestDbClient } from './db/helpers.test.js';
@@ -150,21 +150,14 @@ async function immediate(
           }
         | { schedule: Schedule }
 ): Promise<Task> {
-    let taskProps: ImmediateProps;
+    let taskProps;
     if (props && 'schedule' in props) {
         taskProps = {
-            name: `${props.schedule.name}-${nanoid()}`,
-            payload: props.schedule.payload,
-            groupKey: props.schedule.groupKey,
-            retryMax: props.schedule.retryMax,
-            retryCount: props.schedule.retryCount,
-            createdToStartedTimeoutSecs: props.schedule.createdToStartedTimeoutSecs,
-            startedToCompletedTimeoutSecs: props.schedule.startedToCompletedTimeoutSecs,
-            heartbeatTimeoutSecs: props.schedule.heartbeatTimeoutSecs
+            scheduleName: props.schedule.name
         };
     } else {
         taskProps = {
-            name: props?.taskProps?.name || 'test',
+            name: props?.taskProps?.name || nanoid(),
             payload: props?.taskProps?.payload || {},
             groupKey: props?.taskProps?.groupKey || nanoid(),
             retryMax: props?.taskProps?.retryMax || 1,
