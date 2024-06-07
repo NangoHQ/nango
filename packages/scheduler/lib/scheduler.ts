@@ -4,11 +4,12 @@ import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps } from '.
 import * as tasks from './models/tasks.js';
 import * as schedules from './models/schedules.js';
 import type { Result } from '@nangohq/utils';
-import { stringifyError } from '@nangohq/utils';
+import { Err, stringifyError } from '@nangohq/utils';
 import { MonitorWorker } from './workers/monitor/monitor.worker.js';
 import { SchedulingWorker } from './workers/scheduling/scheduling.worker.js';
 import type { DatabaseClient } from './db/client.js';
 import { logger } from './utils/logger.js';
+import { uuidv7 } from 'uuidv7';
 
 export class Scheduler {
     private monitor: MonitorWorker | null = null;
@@ -87,14 +88,10 @@ export class Scheduler {
 
     /**
      * Schedule a task immediately
-     * @param props - Scheduling properties
-     * @param props.scheduling - 'immediate'
-     * @params props.taskProps - Task properties
+     * @param props - Scheduling properties or schedule name
      * @returns Task
      * @example
      * const schedulingProps = {
-     *     scheduling: 'immediate',
-     *     taskProps: {
      *         name: 'myName',
      *         payload: {foo: 'bar'},
      *         groupKey: 'myGroupKey',
@@ -103,16 +100,50 @@ export class Scheduler {
      *         createdToStartedTimeoutSecs: 1,
      *         startedToCompletedTimeoutSecs: 1,
      *         heartbeatTimeoutSecs: 1
-     *     }
      * };
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
-    public async immediate(props: ImmediateProps): Promise<Result<Task>> {
-        const taskProps = {
-            ...props,
-            startsAfter: new Date(),
-            scheduleId: null
-        };
+    public async immediate(props: ImmediateProps | { scheduleName: string }): Promise<Result<Task>> {
+        let taskProps: tasks.TaskProps;
+        if ('scheduleName' in props) {
+            const getSchedules = await schedules.search(this.dbClient.db, { name: props.scheduleName, limit: 1 });
+            if (getSchedules.isErr()) {
+                return Err(getSchedules.error);
+            }
+            const schedule = getSchedules.value[0];
+            if (!schedule) {
+                return Err(new Error(`Schedule '${props.scheduleName}' not found`));
+            }
+            // Not scheduling a task if another task for the same schedule is already running
+            const running = await tasks.search(this.dbClient.db, {
+                scheduleId: schedule.id,
+                states: ['CREATED', 'STARTED']
+            });
+            if (running.isErr()) {
+                return Err(running.error);
+            }
+            if (running.value.length > 0) {
+                return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
+            }
+            taskProps = {
+                name: `${schedule.name}:${uuidv7()}`,
+                payload: schedule.payload,
+                groupKey: schedule.groupKey,
+                retryMax: schedule.retryMax,
+                retryCount: 0,
+                createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
+                startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
+                heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
+                startsAfter: new Date(),
+                scheduleId: schedule.id
+            };
+        } else {
+            taskProps = {
+                ...props,
+                startsAfter: new Date(),
+                scheduleId: null
+            };
+        }
         const created = await tasks.create(this.dbClient.db, taskProps);
         if (created.isOk()) {
             const task = created.value;
@@ -131,6 +162,12 @@ export class Scheduler {
      *    startsAt: new Date(),
      *    frequencyMs: 300_00,
      *    payload: {foo: 'bar'}
+     *    groupKey: 'myGroupKey',
+     *    retryMax: 1,
+     *    retryCount: 0,
+     *    createdToStartedTimeoutSecs: 1,
+     *    startedToCompletedTimeoutSecs: 1,
+     *    heartbeatTimeoutSecs: 1
      * };
      * const schedule = await scheduler.recurring(schedulingProps);
      */
@@ -225,9 +262,9 @@ export class Scheduler {
      * @example
      * const cancelled = await scheduler.cancel({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
-    public async cancel(cancelBy: { taskId: string; reason: JsonValue } | { scheduleId: string; reason: JsonValue }): Promise<Result<Task>> {
-        if ('scheduleId' in cancelBy) {
-            throw new Error(`Cancelling tasks for schedule '${cancelBy.scheduleId}' not implemented`);
+    public async cancel(cancelBy: { taskId: string; reason: JsonValue } | { scheduleName: string; reason: JsonValue }): Promise<Result<Task>> {
+        if ('scheduleName' in cancelBy) {
+            throw new Error(`Cancelling tasks for schedule '${cancelBy.scheduleName}' not implemented`);
         }
         const cancelled = await tasks.transitionState(this.dbClient.db, {
             taskId: cancelBy.taskId,

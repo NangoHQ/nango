@@ -38,6 +38,18 @@ const orchestratorClient = {
     },
     executePostConnection: () => {
         return Promise.resolve({}) as any;
+    },
+    executeSync: () => {
+        return Promise.resolve({}) as any;
+    },
+    cancelSync: () => {
+        return Promise.resolve({}) as any;
+    },
+    pauseSync: () => {
+        return Promise.resolve({}) as any;
+    },
+    unpauseSync: () => {
+        return Promise.resolve({}) as any;
     }
 };
 const slackService = new SlackService({ orchestratorClient, logContextGetter });

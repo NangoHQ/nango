@@ -67,10 +67,10 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         return Err(error);
     }
     const res = jsonSchema.safeParse(response);
-    if (res.success) {
-        return Ok(res.data);
+    if (!res.success) {
+        return Err(`Invalid action response format: ${response}. Action: ${JSON.stringify(task)}`);
     }
-    return Err(`Invalid action response format: ${response}. Action: ${JSON.stringify(task)}`);
+    return Ok(res.data);
 }
 
 async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
@@ -111,10 +111,10 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
         return Err(error);
     }
     const res = jsonSchema.safeParse(response);
-    if (res.success) {
-        return Ok(res.data);
+    if (!res.success) {
+        return Err(`Invalid webhook response format: ${response}. Webhook: ${JSON.stringify(task)}`);
     }
-    return Err(`Invalid webhook response format: ${response}. Webhook: ${JSON.stringify(task)}`);
+    return Ok(res.data);
 }
 
 async function postConnection(task: TaskPostConnection): Promise<Result<JsonValue>> {
