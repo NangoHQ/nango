@@ -1161,6 +1161,14 @@ insightly:
             method: GET
             endpoint: /v3.1/Contacts
     docs: https://docs.nango.dev/integrations/all/insightly
+instantly:
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.instantly.ai/api
+    docs: https://docs.nango.dev/integrations/all/instantly
 instagram:
     categories:
         - marketing
