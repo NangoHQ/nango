@@ -20,9 +20,6 @@ import type {
     OrchestratorTask,
     RecurringProps,
     ExecuteSyncProps,
-    UnpauseSyncProps,
-    PauseSyncProps,
-    CancelSyncProps,
     VoidReturn
 } from './types.js';
 import { validateTask } from './validate.js';
@@ -66,6 +63,7 @@ export class OrchestratorClient {
         const res = await this.routeFetch(postRecurringRoute)({
             body: {
                 name: props.name,
+                state: props.state,
                 startsAt: props.startsAt,
                 frequencyMs: props.frequencyMs,
                 groupKey: props.groupKey,
@@ -86,30 +84,35 @@ export class OrchestratorClient {
         }
     }
 
-    // TODO
-    public async cancelSync(props: CancelSyncProps): Promise<VoidReturn> {
+    public async cancelSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
         return Err({
             name: 'not_implemented',
             message: 'Not implemented',
-            payload: { scheduleName: props.scheduleName }
+            payload: { scheduleName }
         });
     }
 
-    // TODO
-    public async pauseSync(props: PauseSyncProps): Promise<VoidReturn> {
+    public async pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
         return Err({
             name: 'not_implemented',
             message: 'Not implemented',
-            payload: { scheduleName: props.scheduleName }
+            payload: { scheduleName }
         });
     }
 
-    // TODO
-    public async unpauseSync(props: UnpauseSyncProps): Promise<VoidReturn> {
+    public async unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
         return Err({
             name: 'not_implemented',
             message: 'Not implemented',
-            payload: { scheduleName: props.scheduleName }
+            payload: { scheduleName }
+        });
+    }
+
+    public async deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return Err({
+            name: 'not_implemented',
+            message: 'Not implemented',
+            payload: { scheduleName }
         });
     }
 

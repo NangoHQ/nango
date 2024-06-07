@@ -106,7 +106,7 @@ export const DbSchedule = {
     })
 };
 
-export type ScheduleProps = Omit<Schedule, 'id' | 'state' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
 export async function create(db: knex.Knex, props: ScheduleProps): Promise<Result<Schedule>> {
     const now = new Date();
     const newSchedule: Schedule = {

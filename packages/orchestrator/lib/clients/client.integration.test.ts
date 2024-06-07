@@ -40,6 +40,7 @@ describe('OrchestratorClient', async () => {
         it('should be created', async () => {
             const res = await client.recurring({
                 name: nanoid(),
+                state: 'STARTED',
                 startsAt: new Date(),
                 frequencyMs: 300_000,
                 groupKey: nanoid(),

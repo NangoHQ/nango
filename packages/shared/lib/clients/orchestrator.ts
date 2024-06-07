@@ -26,9 +26,6 @@ import type {
     ExecuteWebhookProps,
     ExecutePostConnectionProps,
     ExecuteSyncProps,
-    CancelSyncProps,
-    PauseSyncProps,
-    UnpauseSyncProps,
     VoidReturn
 } from '@nangohq/nango-orchestrator';
 import type { Account } from '../models/Admin.js';
@@ -49,9 +46,10 @@ export interface OrchestratorClientInterface {
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
     executePostConnection(props: ExecutePostConnectionProps): Promise<ExecuteReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
-    cancelSync(props: CancelSyncProps): Promise<VoidReturn>;
-    pauseSync(props: PauseSyncProps): Promise<VoidReturn>;
-    unpauseSync(props: UnpauseSyncProps): Promise<VoidReturn>;
+    cancelSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
 }
 
 export class Orchestrator {

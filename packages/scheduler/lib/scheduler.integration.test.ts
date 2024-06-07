@@ -128,6 +128,7 @@ describe('Scheduler', () => {
 async function recurring(scheduler: Scheduler): Promise<Schedule> {
     const recurringProps = {
         name: 'recurring',
+        state: 'STARTED' as const,
         startsAt: new Date(),
         frequencyMs: 900_000,
         payload: { foo: 'bar' },
