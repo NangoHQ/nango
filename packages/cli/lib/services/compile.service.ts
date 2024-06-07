@@ -13,7 +13,7 @@ import { TYPES_FILE_NAME } from '../constants.js';
 import modelService from './model.service.js';
 import parserService from './parser.service.js';
 
-const ALLOWED_IMPORTS = ['url', 'crypto', 'zod'];
+const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto'];
 
 export async function compileAllFiles({
     debug,
