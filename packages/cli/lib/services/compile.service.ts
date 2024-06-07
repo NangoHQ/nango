@@ -13,6 +13,8 @@ import { TYPES_FILE_NAME } from '../constants.js';
 import modelService from './model.service.js';
 import parserService from './parser.service.js';
 
+const ALLOWED_IMPORTS = ['url', 'crypto', 'zod'];
+
 export async function compileAllFiles({
     debug,
     scriptName,
@@ -130,6 +132,12 @@ function compileImportedFile(filePath: string, compiler: tsNode.Service, type: S
 
         /// if it is a library import then we can skip it
         if (!fs.existsSync(importedFilePathWithExtension)) {
+            // if the library is not allowed then we should let the user know
+            // that it is not allowed and won't work early on
+            if (!ALLOWED_IMPORTS.includes(importedFile)) {
+                console.log(chalk.red(`Importing libraries is not allowed. Please remove the import "${importedFile}" from "${path.basename(filePath)}"`));
+                return false;
+            }
             continue;
         }
 
@@ -201,6 +209,7 @@ async function compile({
     await build({
         entryPoints: [file.inputPath],
         tsconfig: getNangoRootPath() + '/tsconfig.dev.json',
+        skipNodeModulesBundle: true,
         silent: !debug,
         outDir: dirname,
         onSuccess: async () => {
