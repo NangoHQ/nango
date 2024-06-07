@@ -11,13 +11,6 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    nango-persist:
-        uses: ./.github/workflows/push-container.yaml
-        secrets: inherit
-        with:
-            package: persist
-            run-cmd: ts-build
-            tags: -t nangohq/nango-persist:${{ github.event.pull_request.head.sha || github.sha }} ${{ github.ref == 'refs/heads/master' && format('-t nangohq/nango-persist:enterprise-{0} -t nangohq/nango-persist:enterprise -t nangohq/nango-persist:hosted-{1} -t nangohq/nango-persist:hosted', github.event.pull_request.head.sha || github.sha, github.event.pull_request.head.sha || github.sha)  || '' }}
     nango-jobs:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
