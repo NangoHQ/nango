@@ -42,9 +42,6 @@ const orchestratorClient = {
     executeSync: () => {
         return Promise.resolve({}) as any;
     },
-    cancelSync: () => {
-        return Promise.resolve({}) as any;
-    },
     pauseSync: () => {
         return Promise.resolve({}) as any;
     },

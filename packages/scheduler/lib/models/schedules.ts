@@ -15,7 +15,8 @@ interface ScheduleStateTransition {
 export const validScheduleStateTransitions = [
     { from: 'STARTED', to: 'PAUSED' },
     { from: 'STARTED', to: 'DELETED' },
-    { from: 'PAUSED', to: 'STARTED' }
+    { from: 'PAUSED', to: 'STARTED' },
+    { from: 'PAUSED', to: 'DELETED' }
 ] as const;
 export type ValidScheduleStateTransitions = (typeof validScheduleStateTransitions)[number];
 
@@ -112,7 +113,6 @@ export async function create(db: knex.Knex, props: ScheduleProps): Promise<Resul
     const newSchedule: Schedule = {
         ...props,
         id: uuidv7(),
-        state: 'STARTED',
         payload: props.payload,
         startsAt: now,
         frequencyMs: props.frequencyMs,
@@ -153,7 +153,13 @@ export async function transitionState(db: knex.Knex, scheduleId: string, to: Sch
         if (transition.isErr()) {
             return Err(transition.error);
         }
-        const updated = await db.from<DbSchedule>(SCHEDULES_TABLE).where('id', scheduleId).update({ state: to, updated_at: new Date() }).returning('*');
+        const now = new Date();
+        const values = {
+            state: to,
+            updated_at: now,
+            ...(to === 'DELETED' ? { deleted_at: now } : {})
+        };
+        const updated = await db.from<DbSchedule>(SCHEDULES_TABLE).where('id', scheduleId).update(values).returning('*');
         if (!updated?.[0]) {
             return Err(new Error(`Error: no schedule '${scheduleId}' updated`));
         }

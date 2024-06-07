@@ -1,6 +1,6 @@
 import { isMainThread } from 'node:worker_threads';
 import type { JsonValue } from 'type-fest';
-import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps } from './types';
+import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps, ScheduleState } from './types';
 import * as tasks from './models/tasks.js';
 import * as schedules from './models/schedules.js';
 import type { Result } from '@nangohq/utils';
@@ -82,7 +82,7 @@ export class Scheduler {
      * @example
      * const tasks = await scheduler.search({ groupKey: 'test', state: 'CREATED' });
      */
-    public async search(params?: { ids?: string[]; groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
+    public async search(params?: { ids?: string[]; groupKey?: string; state?: TaskState; scheduleId?: string; limit?: number }): Promise<Result<Task[]>> {
         return tasks.search(this.dbClient.db, params);
     }
 
@@ -256,7 +256,7 @@ export class Scheduler {
 
     /**
      * Cancel a task
-     * @param cancelBy - Cancel by task ID or schedule ID
+     * @param cancelBy - Cancel by task id or schedule name
      * @param reason - Reason for cancellation
      * @returns Task
      * @example
@@ -276,5 +276,51 @@ export class Scheduler {
             this.onCallbacks[task.state](task);
         }
         return cancelled;
+    }
+
+    /**
+     * Set schedule state
+     * @param scheduleName - Schedule name
+     * @param state - Schedule state
+     * @notes Cancels all running tasks if the schedule is paused or deleted
+     * @returns Schedule
+     * @example
+     * const schedule = await scheduler.setScheduleState({ scheduleName: 'schedule123', state: 'PAUSED' });
+     */
+    public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
+        return this.dbClient.db.transaction(async (trx) => {
+            const schedule = await schedules.search(trx, { name: scheduleName, limit: 1 });
+            if (schedule.isErr()) {
+                return Err(schedule.error);
+            }
+            if (!schedule.value[0]) {
+                return Err(`Schedule '${scheduleName}' not found`);
+            }
+
+            const cancelledTasks = [];
+            if (state === 'DELETED' || state === 'PAUSED') {
+                const runningTasks = await tasks.search(trx, {
+                    scheduleId: schedule.value[0].id,
+                    states: ['CREATED', 'STARTED']
+                });
+                if (runningTasks.isErr()) {
+                    return Err(`Error fetching tasks for schedule '${scheduleName}': ${stringifyError(runningTasks.error)}`);
+                }
+                for (const task of runningTasks.value) {
+                    const t = await tasks.transitionState(trx, { taskId: task.id, newState: 'CANCELLED', output: { reason: `schedule ${state}` } });
+                    if (t.isErr()) {
+                        return Err(`Error cancelling task '${task.id}': ${stringifyError(t.error)}`);
+                    }
+                    cancelledTasks.push(t.value);
+                }
+            }
+
+            const res = await schedules.transitionState(trx, schedule.value[0].id, state);
+            if (res.isErr()) {
+                return Err(`Error transitioning schedule '${scheduleName}': ${stringifyError(res.error)}`);
+            }
+            cancelledTasks.forEach((task) => this.onCallbacks[task.state](task));
+            return res;
+        });
     }
 }

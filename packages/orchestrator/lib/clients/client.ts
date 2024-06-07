@@ -1,5 +1,6 @@
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
+import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
 import { route as postRecurringRunRoute } from '../routes/v1/recurring/postRecurringRun.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postSearchRoute } from '../routes/v1/postSearch.js';
@@ -84,36 +85,58 @@ export class OrchestratorClient {
         }
     }
 
-    public async cancelSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
-        return Err({
-            name: 'not_implemented',
-            message: 'Not implemented',
-            payload: { scheduleName }
-        });
-    }
-
     public async pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
-        return Err({
-            name: 'not_implemented',
-            message: 'Not implemented',
-            payload: { scheduleName }
+        const res = await this.routeFetch(putRecurringRoute)({
+            body: {
+                state: 'PAUSED',
+                scheduleName: scheduleName
+            }
         });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error pausing recurring schedule`,
+                payload: { scheduleName }
+            });
+        } else {
+            return Ok(undefined);
+        }
     }
 
     public async unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
-        return Err({
-            name: 'not_implemented',
-            message: 'Not implemented',
-            payload: { scheduleName }
+        const res = await this.routeFetch(putRecurringRoute)({
+            body: {
+                state: 'STARTED',
+                scheduleName: scheduleName
+            }
         });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error pausing recurring schedule`,
+                payload: { scheduleName }
+            });
+        } else {
+            return Ok(undefined);
+        }
     }
 
     public async deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
-        return Err({
-            name: 'not_implemented',
-            message: 'Not implemented',
-            payload: { scheduleName }
+        const res = await this.routeFetch(putRecurringRoute)({
+            body: {
+                state: 'DELETED',
+                scheduleName: scheduleName
+            }
         });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error pausing recurring schedule`,
+                payload: { scheduleName }
+            });
+        } else {
+            return Ok(undefined);
+        }
     }
 
     public async executeSync(props: ExecuteSyncProps): Promise<VoidReturn> {
@@ -347,7 +370,6 @@ export class OrchestratorClient {
         }
     }
 
-    //TODO: rename to cancelTask?
     public async cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },

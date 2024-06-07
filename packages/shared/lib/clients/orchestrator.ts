@@ -46,7 +46,6 @@ export interface OrchestratorClientInterface {
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
     executePostConnection(props: ExecutePostConnectionProps): Promise<ExecuteReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
-    cancelSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
