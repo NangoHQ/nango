@@ -106,7 +106,9 @@ export async function compileSingleFile({
             compilerOptions: JSON.parse(tsconfig).compilerOptions
         });
 
-        return compile({ file, config, modelNames, compiler, debug });
+        const result = await compile({ file, config, modelNames, compiler, debug });
+
+        return result;
     } catch (error) {
         console.error(`Error compiling ${file.inputPath}:`);
         console.error(error);

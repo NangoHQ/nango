@@ -570,9 +570,8 @@ describe('generate function tests', () => {
         const { response: config } = await configService.load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
         if (config) {
             const modelNames = configService.getModelNames(config);
-            await expect(
-                compileSingleFile({ file: getFileToCompile('./github/actions/gh-issues.ts'), tsconfig, config, modelNames, debug: true })
-            ).rejects.toThrow();
+            const result = await compileSingleFile({ file: getFileToCompile('./github/actions/gh-issues.ts'), tsconfig, config, modelNames, debug: true });
+            expect(result).toBe(false);
         }
 
         await fs.promises.rm('./github', { recursive: true, force: true });
@@ -600,5 +599,28 @@ describe('generate function tests', () => {
         await fs.promises.rm('./dist', { recursive: true, force: true });
         await fs.promises.rm('./nango.yaml', { force: true });
         await fs.promises.rm('./models.ts', { force: true });
+    });
+
+    it('should not allow imports higher than the current directory', async () => {
+        const name = 'relative-imports-with-higher-import';
+        await fs.promises.rm(testDirectory, { recursive: true, force: true });
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/${name}/github`, './github');
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/nango.yaml`, `./nango.yaml`);
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/github/actions/welcomer.ts`, `../welcomer.ts`);
+        const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
+
+        const { response: config } = await configService.load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        if (config) {
+            const modelNames = configService.getModelNames(config);
+            const result = await compileSingleFile({ file: getFileToCompile('./github/actions/gh-issues.ts'), tsconfig, config, modelNames, debug: true });
+            expect(result).toBe(false);
+        }
+
+        await fs.promises.rm('./github', { recursive: true, force: true });
+        await fs.promises.rm('./dist', { recursive: true, force: true });
+        await fs.promises.rm('./nango.yaml', { force: true });
+        await fs.promises.rm('./models.ts', { force: true });
+        await fs.promises.rm('../welcomer.ts', { force: true });
     });
 });
