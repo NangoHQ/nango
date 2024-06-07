@@ -65,6 +65,7 @@ const validate = validateRequest<PostImmediate>({
                 }),
                 args: argsSchema(data)
             })
+            .strict()
             .parse(data);
     }
 });

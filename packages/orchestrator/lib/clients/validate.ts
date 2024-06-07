@@ -52,7 +52,8 @@ const commonSchemaFields = {
     id: z.string().uuid(),
     name: z.string().min(1),
     groupKey: z.string().min(1),
-    state: z.enum(taskStates)
+    state: z.enum(taskStates),
+    retryCount: z.number().int()
 };
 const syncSchema = z.object({
     ...commonSchemaFields,
@@ -79,6 +80,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 id: sync.data.id,
                 state: sync.data.state,
                 name: sync.data.name,
+                attempt: sync.data.retryCount + 1,
                 syncId: sync.data.payload.syncId,
                 syncName: sync.data.payload.syncName,
                 connection: sync.data.payload.connection,
@@ -94,6 +96,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: action.data.state,
                 id: action.data.id,
                 name: action.data.name,
+                attempt: action.data.retryCount + 1,
                 actionName: action.data.payload.actionName,
                 connection: action.data.payload.connection,
                 activityLogId: action.data.payload.activityLogId,
@@ -108,6 +111,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 id: webhook.data.id,
                 state: webhook.data.state,
                 name: webhook.data.name,
+                attempt: webhook.data.retryCount + 1,
                 webhookName: webhook.data.payload.webhookName,
                 parentSyncName: webhook.data.payload.parentSyncName,
                 connection: webhook.data.payload.connection,
@@ -123,6 +127,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 id: postConnection.data.id,
                 state: postConnection.data.state,
                 name: postConnection.data.name,
+                attempt: postConnection.data.retryCount + 1,
                 postConnectionName: postConnection.data.payload.postConnectionName,
                 connection: postConnection.data.payload.connection,
                 fileLocation: postConnection.data.payload.fileLocation,

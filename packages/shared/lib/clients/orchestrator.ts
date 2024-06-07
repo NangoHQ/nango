@@ -20,7 +20,17 @@ import type { LogLevel } from '@nangohq/types';
 import SyncClient from './sync.client.js';
 import type { Client as TemporalClient } from '@temporalio/client';
 import { LogActionEnum } from '../models/Activity.js';
-import type { ExecuteReturn, ExecuteActionProps, ExecuteWebhookProps, ExecutePostConnectionProps } from '@nangohq/nango-orchestrator';
+import type {
+    ExecuteReturn,
+    ExecuteActionProps,
+    ExecuteWebhookProps,
+    ExecutePostConnectionProps,
+    ExecuteSyncProps,
+    CancelSyncProps,
+    PauseSyncProps,
+    UnpauseSyncProps,
+    VoidReturn
+} from '@nangohq/nango-orchestrator';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import type { SyncConfig } from '../models/index.js';
@@ -38,6 +48,10 @@ export interface OrchestratorClientInterface {
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
     executePostConnection(props: ExecutePostConnectionProps): Promise<ExecuteReturn>;
+    executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
+    cancelSync(props: CancelSyncProps): Promise<VoidReturn>;
+    pauseSync(props: PauseSyncProps): Promise<VoidReturn>;
+    unpauseSync(props: UnpauseSyncProps): Promise<VoidReturn>;
 }
 
 export class Orchestrator {
@@ -571,25 +585,7 @@ export class Orchestrator {
             }
 
             if (res.isErr()) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: connection.environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`
-                });
-                await logCtx.error(`Failed with error ${res.error.type}`, { payload: res.error.payload });
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: connection.environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `The post connection script workflow ${workflowId} did not complete successfully`
-                });
-                await logCtx.error(`The post connection script workflow ${workflowId} did not complete successfully`);
-                await logCtx.failed();
-
-                return res;
+                throw res.error;
             }
 
             const content = `The post connection script workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;

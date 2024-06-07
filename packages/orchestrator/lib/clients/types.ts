@@ -3,6 +3,7 @@ import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type { PostRecurring } from '../routes/v1/postRecurring.js';
 import type { Result } from '@nangohq/utils';
 import type { TaskState } from '@nangohq/scheduler';
+import type { PostRecurringRun } from '../routes/v1/recurring/postRecurringRun.js';
 
 export type ImmediateProps = PostImmediate['Body'];
 export type RecurringProps = PostRecurring['Body'];
@@ -55,11 +56,23 @@ interface PostConnectionArgs {
     activityLogId: number;
 }
 
+export type VoidReturn = Result<void, ClientError>;
 export type ExecuteProps = SetOptional<ImmediateProps, 'retry' | 'timeoutSettingsInSecs'>;
 export type ExecuteReturn = Result<JsonValue, ClientError>;
 export type ExecuteActionProps = Omit<ExecuteProps, 'args'> & { args: ActionArgs };
 export type ExecuteWebhookProps = Omit<ExecuteProps, 'args'> & { args: WebhookArgs };
 export type ExecutePostConnectionProps = Omit<ExecuteProps, 'args'> & { args: PostConnectionArgs };
+export type ExecuteSyncProps = PostRecurringRun['Body'];
+// TODO:
+export interface CancelSyncProps {
+    scheduleName: string;
+}
+export interface PauseSyncProps {
+    scheduleName: string;
+}
+export interface UnpauseSyncProps {
+    scheduleName: string;
+}
 
 export type OrchestratorTask = TaskSync | TaskAction | TaskWebhook | TaskPostConnection;
 
@@ -67,6 +80,7 @@ interface TaskCommonFields {
     id: string;
     name: string;
     state: TaskState;
+    attempt: number;
 }
 interface TaskCommon extends TaskCommonFields {
     isSync(this: OrchestratorTask): this is TaskSync;
@@ -81,12 +95,13 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
     return {
         id: props.id,
         name: props.name,
+        state: props.state,
+        attempt: props.attempt,
         syncId: props.syncId,
         syncName: props.syncName,
         syncJobId: props.syncJobId,
         debug: props.debug,
         connection: props.connection,
-        state: props.state,
         abortController: new AbortController(),
         isSync: () => true,
         isWebhook: () => false,
@@ -100,8 +115,9 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
     return {
         id: props.id,
         name: props.name,
-        actionName: props.actionName,
         state: props.state,
+        attempt: props.attempt,
+        actionName: props.actionName,
         connection: props.connection,
         activityLogId: props.activityLogId,
         input: props.input,
@@ -119,6 +135,7 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         id: props.id,
         name: props.name,
         state: props.state,
+        attempt: props.attempt,
         webhookName: props.webhookName,
         parentSyncName: props.parentSyncName,
         connection: props.connection,
@@ -138,6 +155,7 @@ export function TaskPostConnection(props: TaskCommonFields & PostConnectionArgs)
         id: props.id,
         state: props.state,
         name: props.name,
+        attempt: props.attempt,
         postConnectionName: props.postConnectionName,
         connection: props.connection,
         fileLocation: props.fileLocation,

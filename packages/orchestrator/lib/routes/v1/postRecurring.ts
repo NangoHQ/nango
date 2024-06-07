@@ -51,6 +51,7 @@ const validate = validateRequest<PostRecurring>({
                 }),
                 args: syncArgsSchema
             })
+            .strict()
             .parse(data);
     }
 });

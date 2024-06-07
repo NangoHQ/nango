@@ -5,7 +5,7 @@ import { OrchestratorClient } from './client.js';
 import { OrchestratorProcessor } from './processor.js';
 import getPort from 'get-port';
 import { EventsHandler } from '../events.js';
-import { Ok, Err } from '@nangohq/utils';
+import { Ok, Err, nanoid } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 import type { OrchestratorTask } from './types.js';
@@ -41,7 +41,7 @@ describe('OrchestratorProcessor', async () => {
     });
 
     it('should process tasks and mark them as successful if processing succeed', async () => {
-        const groupKey = rndStr();
+        const groupKey = nanoid();
         const mockProcess = vi.fn(async (): Promise<Result<JsonValue>> => Ok({ foo: 'bar' }));
         const n = 10;
         await processN(mockProcess, groupKey, n);
@@ -53,7 +53,7 @@ describe('OrchestratorProcessor', async () => {
         }
     });
     it('should process tasks and mark them as failed if processing failed', async () => {
-        const groupKey = rndStr();
+        const groupKey = nanoid();
         const mockProcess = vi.fn(async (): Promise<Result<JsonValue>> => Err('Failed'));
         const n = 10;
         await processN(mockProcess, groupKey, n);
@@ -65,7 +65,7 @@ describe('OrchestratorProcessor', async () => {
         }
     });
     it('should cancel terminated tasks', async () => {
-        const groupKey = rndStr();
+        const groupKey = nanoid();
         const mockAbort = vi.fn((_taskId: string) => {});
         const mockProcess = vi.fn(async (task: OrchestratorTask): Promise<Result<JsonValue>> => {
             let aborted = false;
@@ -116,7 +116,7 @@ async function processN(handler: (task: OrchestratorTask) => Promise<Result<Json
 async function immediateTask({ groupKey }: { groupKey: string }) {
     return scheduler.immediate({
         groupKey,
-        name: 'Task',
+        name: nanoid(),
         retryMax: 0,
         retryCount: 0,
         createdToStartedTimeoutSecs: 30,
@@ -135,8 +135,4 @@ async function immediateTask({ groupKey }: { groupKey: string }) {
             input: { foo: 'bar' }
         }
     });
-}
-
-function rndStr() {
-    return Math.random().toString(36).substring(7);
 }

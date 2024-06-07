@@ -1,5 +1,6 @@
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
+import { route as postRecurringRunRoute } from '../routes/v1/recurring/postRecurringRun.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postSearchRoute } from '../routes/v1/postSearch.js';
 import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js';
@@ -17,7 +18,12 @@ import type {
     ExecuteWebhookProps,
     ExecutePostConnectionProps,
     OrchestratorTask,
-    RecurringProps
+    RecurringProps,
+    ExecuteSyncProps,
+    UnpauseSyncProps,
+    PauseSyncProps,
+    CancelSyncProps,
+    VoidReturn
 } from './types.js';
 import { validateTask } from './validate.js';
 import type { JsonValue } from 'type-fest';
@@ -49,7 +55,7 @@ export class OrchestratorClient {
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error scheduling  immediate task`,
-                payload: JSON.stringify(props)
+                payload: props
             });
         } else {
             return Ok(res);
@@ -69,13 +75,58 @@ export class OrchestratorClient {
             }
         });
         if ('error' in res) {
+            const startsAt = props.startsAt.toISOString();
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error creating recurring schedule`,
-                payload: JSON.stringify(props)
+                payload: { ...props, startsAt }
             });
         } else {
             return Ok(res);
+        }
+    }
+
+    // TODO
+    public async cancelSync(props: CancelSyncProps): Promise<VoidReturn> {
+        return Err({
+            name: 'not_implemented',
+            message: 'Not implemented',
+            payload: { scheduleName: props.scheduleName }
+        });
+    }
+
+    // TODO
+    public async pauseSync(props: PauseSyncProps): Promise<VoidReturn> {
+        return Err({
+            name: 'not_implemented',
+            message: 'Not implemented',
+            payload: { scheduleName: props.scheduleName }
+        });
+    }
+
+    // TODO
+    public async unpauseSync(props: UnpauseSyncProps): Promise<VoidReturn> {
+        return Err({
+            name: 'not_implemented',
+            message: 'Not implemented',
+            payload: { scheduleName: props.scheduleName }
+        });
+    }
+
+    public async executeSync(props: ExecuteSyncProps): Promise<VoidReturn> {
+        const res = await this.routeFetch(postRecurringRunRoute)({
+            body: {
+                scheduleName: props.scheduleName
+            }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error creating recurring schedule`,
+                payload: props
+            });
+        } else {
+            return Ok(undefined);
         }
     }
 
@@ -175,7 +226,7 @@ export class OrchestratorClient {
         };
         return this.execute(schedulingProps);
     }
-
+    // TODO: rename to searchTask?
     public async search({ ids, groupKey, limit }: { ids?: string[]; groupKey?: string; limit?: number }): Promise<Result<OrchestratorTask[], ClientError>> {
         const body = {
             ...(ids ? { ids } : {}),
@@ -193,7 +244,7 @@ export class OrchestratorClient {
             const tasks = res.flatMap((task) => {
                 const validated = validateTask(task);
                 if (validated.isErr()) {
-                    logger.error(`Search: error validating task: ${JSON.stringify(validated.error.message)}`);
+                    logger.error(`Search: error validating task: ${validated.error.message}`);
                     return [];
                 }
                 return [validated.value];
@@ -228,7 +279,7 @@ export class OrchestratorClient {
             const dequeuedTasks = res.flatMap((task) => {
                 const validated = validateTask(task);
                 if (validated.isErr()) {
-                    logger.error(`Dequeue: error validating task: ${JSON.stringify(validated.error.message)}`);
+                    logger.error(`Dequeue: error validating task: ${validated.error.message}`);
                     return [];
                 }
                 return [validated.value];
@@ -293,6 +344,7 @@ export class OrchestratorClient {
         }
     }
 
+    //TODO: rename to cancelTask?
     public async cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
