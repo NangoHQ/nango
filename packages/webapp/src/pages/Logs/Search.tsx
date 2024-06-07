@@ -29,7 +29,7 @@ import type {
 import Spinner from '../../components/ui/Spinner';
 // import { Input } from '../../components/ui/input/Input';
 // import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
-import { formatQuantity } from '../../utils/utils';
+import { formatQuantity, stringArrayEqual } from '../../utils/utils';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useDebounce, useIntersection, useInterval, usePreviousDistinct } from 'react-use';
 import { SearchableMultiSelect } from './components/SearchableMultiSelect';
@@ -195,19 +195,19 @@ export const LogsSearch: React.FC = () => {
 
             // Sync the state back to the URL for sharing
             const tmp = new URLSearchParams();
-            if (states.length > 0 && JSON.stringify(states) !== JSON.stringify(statusDefaultOptions)) {
+            if (states.length > 0 && !stringArrayEqual(states, statusDefaultOptions)) {
                 tmp.set('states', states as any);
             }
-            if (integrations.length > 0 && JSON.stringify(integrations) !== JSON.stringify(integrationsDefaultOptions)) {
+            if (integrations.length > 0 && !stringArrayEqual(integrations, integrationsDefaultOptions)) {
                 tmp.set('integrations', integrations as any);
             }
-            if (connections.length > 0 && JSON.stringify(connections) !== JSON.stringify(connectionsDefaultOptions)) {
+            if (connections.length > 0 && !stringArrayEqual(connections, connectionsDefaultOptions)) {
                 tmp.set('connections', connections as any);
             }
-            if (syncs.length > 0 && JSON.stringify(syncs) !== JSON.stringify(syncsDefaultOptions)) {
+            if (syncs.length > 0 && !stringArrayEqual(syncs, syncsDefaultOptions)) {
                 tmp.set('syncs', syncs as any);
             }
-            if (types.length > 0 && JSON.stringify(types) !== JSON.stringify(typesDefaultOptions)) {
+            if (types.length > 0 && !stringArrayEqual(types, typesDefaultOptions)) {
                 tmp.set('types', types as any);
             }
             if (!isLive) {
