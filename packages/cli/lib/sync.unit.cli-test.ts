@@ -6,25 +6,10 @@ import { SyncConfigType } from '@nangohq/shared';
 import { init, generate } from './cli.js';
 import { exampleSyncName } from './constants.js';
 import configService from './services/config.service.js';
-import { compileAllFiles } from './services/compile.service.js';
+import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
+import { getNangoRootPath } from './utils.js';
 import parserService from './services/parser.service.js';
-
-const copyDirectoryAndContents = async (source: string, destination: string) => {
-    await fs.promises.mkdir(destination, { recursive: true });
-
-    const files = await fs.promises.readdir(source, { withFileTypes: true });
-
-    for (const file of files) {
-        const sourcePath = path.join(source, file.name);
-        const destinationPath = path.join(destination, file.name);
-
-        if (file.isDirectory()) {
-            await copyDirectoryAndContents(sourcePath, destinationPath);
-        } else {
-            await fs.promises.copyFile(sourcePath, destinationPath);
-        }
-    }
-};
+import { copyDirectoryAndContents } from './tests/helpers.js';
 
 describe('generate function tests', () => {
     const testDirectory = './nango-integrations';
@@ -550,5 +535,92 @@ describe('generate function tests', () => {
         await fs.promises.rm('./issues.ts', { force: true });
 
         expect(success).toBe(true);
+    });
+
+    it('should be able to compile and run imported files', async () => {
+        await fs.promises.rm(testDirectory, { recursive: true, force: true });
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/relative-imports/github`, './github');
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/relative-imports/nango.yaml`, `./nango.yaml`);
+
+        const success = await compileAllFiles({ debug: true });
+
+        // @ts-expect-error - dynamic import
+        const module = await import('./dist/issues.cjs');
+
+        const result = module.default.default();
+        expect(result).toBe('Hello, world!');
+
+        await fs.promises.rm('./github', { recursive: true, force: true });
+        await fs.promises.rm('./dist', { recursive: true, force: true });
+        await fs.promises.rm('./nango.yaml', { force: true });
+        await fs.promises.rm('./models.ts', { force: true });
+
+        expect(success).toBe(true);
+    });
+
+    it('should compile helper functions and throw an error if there is a complication error with an imported file', async () => {
+        const name = 'relative-imports-with-error';
+        await fs.promises.rm(testDirectory, { recursive: true, force: true });
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/${name}/github`, './github');
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/nango.yaml`, `./nango.yaml`);
+        const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
+
+        const { response: config } = await configService.load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        if (config) {
+            const modelNames = configService.getModelNames(config);
+            const result = await compileSingleFile({ file: getFileToCompile('./github/actions/gh-issues.ts'), tsconfig, config, modelNames, debug: true });
+            expect(result).toBe(false);
+        }
+
+        await fs.promises.rm('./github', { recursive: true, force: true });
+        await fs.promises.rm('./dist', { recursive: true, force: true });
+        await fs.promises.rm('./nango.yaml', { force: true });
+        await fs.promises.rm('./models.ts', { force: true });
+    });
+
+    it('should complain if a nango call is used incorrectly in a nested file', async () => {
+        const name = 'relative-imports-with-nango-misuse';
+        await fs.promises.rm(testDirectory, { recursive: true, force: true });
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/${name}/github`, './github');
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/nango.yaml`, `./nango.yaml`);
+        const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
+
+        const { response: config } = await configService.load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        if (config) {
+            const modelNames = configService.getModelNames(config);
+            const result = await compileSingleFile({ file: getFileToCompile('./github/actions/gh-issues.ts'), tsconfig, config, modelNames, debug: true });
+            expect(result).toBe(false);
+        }
+
+        await fs.promises.rm('./github', { recursive: true, force: true });
+        await fs.promises.rm('./dist', { recursive: true, force: true });
+        await fs.promises.rm('./nango.yaml', { force: true });
+        await fs.promises.rm('./models.ts', { force: true });
+    });
+
+    it('should not allow imports higher than the current directory', async () => {
+        const name = 'relative-imports-with-higher-import';
+        await fs.promises.rm(testDirectory, { recursive: true, force: true });
+        await fs.promises.mkdir(testDirectory, { recursive: true });
+        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/${name}/github`, './github');
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/nango.yaml`, `./nango.yaml`);
+        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/github/actions/welcomer.ts`, `../welcomer.ts`);
+        const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
+
+        const { response: config } = await configService.load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        if (config) {
+            const modelNames = configService.getModelNames(config);
+            const result = await compileSingleFile({ file: getFileToCompile('./github/actions/gh-issues.ts'), tsconfig, config, modelNames, debug: true });
+            expect(result).toBe(false);
+        }
+
+        await fs.promises.rm('./github', { recursive: true, force: true });
+        await fs.promises.rm('./dist', { recursive: true, force: true });
+        await fs.promises.rm('./nango.yaml', { force: true });
+        await fs.promises.rm('./models.ts', { force: true });
+        await fs.promises.rm('../welcomer.ts', { force: true });
     });
 });

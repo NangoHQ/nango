@@ -1,8 +1,9 @@
 import fs from 'fs';
-import * as tsNode from 'ts-node';
 import { glob } from 'glob';
+import * as tsNode from 'ts-node';
 import chalk from 'chalk';
 import path from 'path';
+import { build } from 'tsup';
 import { SyncConfigType, localFileService } from '@nangohq/shared';
 import type { StandardNangoConfig } from '@nangohq/shared';
 
@@ -11,6 +12,8 @@ import { getNangoRootPath, printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
 import modelService from './model.service.js';
 import parserService from './parser.service.js';
+
+const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto'];
 
 export async function compileAllFiles({
     debug,
@@ -70,7 +73,7 @@ export async function compileAllFiles({
 
     for (const file of integrationFiles) {
         try {
-            const completed = compile({ file, config, compiler, modelNames });
+            const completed = await compile({ file, config, modelNames, compiler, debug });
             if (!completed) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
                     success = false;
@@ -86,43 +89,99 @@ export async function compileAllFiles({
     return success;
 }
 
-export function compileSingleFile({
+export async function compileSingleFile({
     file,
-    tsconfig,
     config,
-    modelNames
+    modelNames,
+    tsconfig,
+    debug = false
 }: {
     file: ListedFile;
     tsconfig: string;
     config: StandardNangoConfig[];
     modelNames: string[];
+    debug: boolean;
 }) {
-    // This needs to be re-declared each time
-    const compiler = tsNode.create({
-        skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-        compilerOptions: JSON.parse(tsconfig).compilerOptions
-    });
-
     try {
-        compile({ file, config, compiler, modelNames });
+        const compiler = tsNode.create({
+            skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
+            compilerOptions: JSON.parse(tsconfig).compilerOptions
+        });
+
+        const result = await compile({ file, config, modelNames, compiler, debug });
+
+        return result;
     } catch (error) {
         console.error(`Error compiling ${file.inputPath}:`);
         console.error(error);
-        return;
+        return false;
     }
 }
 
-function compile({
+function compileImportedFile(filePath: string, compiler: tsNode.Service, type: SyncConfigType | undefined, modelNames: string[]): boolean {
+    let finalResult = true;
+    const importedFiles = parserService.getImportedFiles(filePath);
+
+    if (!parserService.callsAreUsedCorrectly(filePath, type, modelNames)) {
+        return false;
+    }
+
+    for (const importedFile of importedFiles) {
+        const importedFilePath = path.resolve(path.dirname(filePath), importedFile);
+        const importedFilePathWithExtension = importedFilePath + '.ts';
+
+        /// if it is a library import then we can skip it
+        if (!fs.existsSync(importedFilePathWithExtension)) {
+            // if the library is not allowed then we should let the user know
+            // that it is not allowed and won't work early on
+            if (!ALLOWED_IMPORTS.includes(importedFile)) {
+                console.log(chalk.red(`Importing libraries is not allowed. Please remove the import "${importedFile}" from "${path.basename(filePath)}"`));
+                return false;
+            }
+            continue;
+        }
+
+        const cwd = process.cwd();
+        // if the file is not in the nango-integrations directory
+        // then we should not compile it
+        // if the parts of the path are shorter than the current that means it is higher
+        // than the nango-integrations directory
+        if (importedFilePathWithExtension.split(path.sep).length <= cwd.split(path.sep).length) {
+            const importedFileName = path.basename(importedFilePathWithExtension);
+            console.log(
+                chalk.red(
+                    `All imported files must live within the nango-integrations directory. Please move "${importedFileName}" into the nango-integrations directory.`
+                )
+            );
+            return false;
+        }
+
+        if (importedFilePathWithExtension.includes('models.ts')) {
+            continue;
+        }
+
+        compiler.compile(fs.readFileSync(importedFilePathWithExtension, 'utf8'), importedFilePathWithExtension);
+        console.log(chalk.green(`Compiled "${importedFilePathWithExtension}" successfully`));
+
+        finalResult = compileImportedFile(importedFilePath + '.ts', compiler, type, modelNames);
+    }
+
+    return finalResult;
+}
+
+async function compile({
     file,
     config,
+    modelNames,
     compiler,
-    modelNames
+    debug = false
 }: {
     file: ListedFile;
     config: StandardNangoConfig[];
     compiler: tsNode.Service;
     modelNames: string[];
-}): boolean {
+    debug: boolean;
+}): Promise<boolean> {
     const providerConfiguration = localFileService.getProviderConfigurationFromPath(file.inputPath, config);
 
     if (!providerConfiguration) {
@@ -132,10 +191,14 @@ function compile({
     const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === file.baseName);
     const type = syncConfig?.type || SyncConfigType.SYNC;
 
-    if (!parserService.callsAreUsedCorrectly(file.inputPath, type, modelNames)) {
+    const success = compileImportedFile(file.inputPath, compiler, type, modelNames);
+
+    if (!success) {
         return false;
     }
-    const result = compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
+
+    compiler.compile(fs.readFileSync(file.inputPath, 'utf8'), file.inputPath);
+
     const dirname = path.dirname(file.outputPath);
     const extname = path.extname(file.outputPath);
     const basename = path.basename(file.outputPath, extname);
@@ -143,8 +206,21 @@ function compile({
     const fileNameWithExtension = `${basename}-${providerConfiguration.providerConfigKey}${extname}`;
     const outputPath = path.join(dirname, fileNameWithExtension);
 
-    fs.writeFileSync(outputPath, result);
-    console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
+    await build({
+        entryPoints: [file.inputPath],
+        tsconfig: getNangoRootPath() + '/tsconfig.dev.json',
+        skipNodeModulesBundle: true,
+        silent: !debug,
+        outDir: dirname,
+        onSuccess: async () => {
+            if (fs.existsSync(file.outputPath)) {
+                await fs.promises.rename(file.outputPath, outputPath);
+                console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
+            }
+            return;
+        }
+    });
+
     return true;
 }
 

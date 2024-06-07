@@ -1,6 +1,7 @@
 import fs from 'fs';
 import chalk from 'chalk';
 import promptly from 'promptly';
+import path from 'path';
 
 import { nangoConfigFile } from '@nangohq/shared';
 import configService from './config.service.js';
@@ -15,7 +16,7 @@ class VerificationService {
         if (debug) {
             printDebug(`Current full working directory is read as: ${cwd}`);
         }
-        const currentDirectorySplit = cwd.split(/[/\\]/);
+        const currentDirectorySplit = cwd.split(path.sep);
         const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
 
         if (debug) {
