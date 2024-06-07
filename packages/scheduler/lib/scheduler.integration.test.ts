@@ -121,7 +121,7 @@ describe('Scheduler', () => {
     it('should not run an immediate task for a schedule if another task is already running', async () => {
         const schedule = await recurring(scheduler);
         await immediate(scheduler, { schedule }); // first task: OK
-        expect(await immediate(scheduler, { schedule })).toThrow();
+        await expect(immediate(scheduler, { schedule })).rejects.toThrow();
     });
 });
 
