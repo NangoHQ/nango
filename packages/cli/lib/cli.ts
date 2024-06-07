@@ -83,7 +83,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 });
                 const stripped = rendered.replace(/^\s+/, '');
 
-                if (!fs.existsSync(`${dirPrefix}/${name}.ts`)) {
+                if (!fs.existsSync(`${dirPrefix}/${providerConfigKey}/${type}s/${name}.ts`)) {
                     fs.mkdirSync(`${dirPrefix}/${providerConfigKey}/${type}s`, { recursive: true });
                     fs.writeFileSync(`${dirPrefix}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
                     if (debug) {
