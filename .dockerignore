@@ -18,7 +18,6 @@ integration-templates
 assets/
 vite*.ts
 packages/cli/
-packages/frontend/
 scripts/
 cliff.toml
 .DS_Store
