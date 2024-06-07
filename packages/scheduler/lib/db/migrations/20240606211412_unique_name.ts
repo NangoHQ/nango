@@ -5,11 +5,11 @@ import { TASKS_TABLE } from '../../models/tasks.js';
 export async function up(knex: Knex): Promise<void> {
     await knex.raw(`
             ALTER TABLE ${SCHEDULES_TABLE}
-            ADD CONSTRAINT tasks_unique_name UNIQUE (name);
+            ADD CONSTRAINT schedules_unique_name UNIQUE (name);
         `);
     await knex.raw(`
             ALTER TABLE ${TASKS_TABLE}
-            ADD CONSTRAINT schedules_unique_name UNIQUE (name);
+            ADD CONSTRAINT tasks_unique_name UNIQUE (name);
         `);
 }
 
