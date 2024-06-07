@@ -26,6 +26,8 @@ export function getLogsUrl(
         usp.set(key, val as any);
     }
 
+    usp.set('live', 'false');
+    usp.sort();
     return `/${options.env}/logs?${usp.toString()}`;
 }
 
