@@ -26,12 +26,16 @@ import type {
     ExecuteWebhookProps,
     ExecutePostConnectionProps,
     ExecuteSyncProps,
-    VoidReturn
+    VoidReturn,
+    OrchestratorTask
 } from '@nangohq/nango-orchestrator';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import type { SyncConfig } from '../models/index.js';
+import { SyncCommand } from '../models/index.js';
 import tracer from 'dd-trace';
+import { clearLastSyncDate } from '../services/sync/sync.service.js';
+import { isSyncJobRunning } from '../services/sync/job.service.js';
 
 async function getTemporal(): Promise<TemporalClient> {
     const instance = await SyncClient.getInstance();
@@ -39,6 +43,10 @@ async function getTemporal(): Promise<TemporalClient> {
         throw new Error('Temporal client not initialized');
     }
     return instance.getClient() as TemporalClient;
+}
+
+export interface RecordsServiceInterface {
+    deleteRecordsBySyncId({ syncId }: { syncId: string }): Promise<{ totalDeletedRecords: number }>;
 }
 
 export interface OrchestratorClientInterface {
@@ -49,6 +57,7 @@ export interface OrchestratorClientInterface {
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
 }
 
 export class Orchestrator {
@@ -658,5 +667,126 @@ export class Orchestrator {
             const totalRunTime = (endTime - startTime) / 1000;
             metrics.duration(metrics.Types.POST_CONNECTION_SCRIPT_RUNTIME, totalRunTime);
         }
+    }
+
+    async runSyncCommand({
+        syncId,
+        command,
+        activityLogId,
+        environmentId,
+        logCtx,
+        recordsService,
+        initiator
+    }: {
+        syncId: string;
+        command: SyncCommand;
+        activityLogId: number;
+        environmentId: number;
+        logCtx: LogContext;
+        recordsService: RecordsServiceInterface;
+        initiator: string;
+    }): Promise<Result<void>> {
+        try {
+            const cancelling = async (syncId: string): Promise<Result<void>> => {
+                const syncJob = await isSyncJobRunning(syncId);
+                if (!syncJob || !syncJob?.run_id) {
+                    return Err(`Sync job not found for syncId: ${syncId}`);
+                }
+                await this.client.cancel({ taskId: syncJob?.run_id, reason: initiator });
+                return Ok(undefined);
+            };
+            const scheduleName = `environment:${environmentId}:sync:${syncId}`;
+            switch (command) {
+                case SyncCommand.CANCEL:
+                    return cancelling(syncId);
+                case SyncCommand.PAUSE:
+                    return this.client.pauseSync({ scheduleName });
+                case SyncCommand.UNPAUSE:
+                    return await this.client.unpauseSync({ scheduleName });
+                case SyncCommand.RUN:
+                    return this.client.executeSync({ scheduleName });
+                case SyncCommand.RUN_FULL: {
+                    await cancelling(syncId);
+
+                    await clearLastSyncDate(syncId);
+                    const del = await recordsService.deleteRecordsBySyncId({ syncId });
+                    await createActivityLogMessage({
+                        level: 'info',
+                        environment_id: environmentId,
+                        activity_log_id: activityLogId,
+                        timestamp: Date.now(),
+                        content: `Records for the sync were deleted successfully`
+                    });
+                    await logCtx.info(`Records for the sync were deleted successfully`, del);
+
+                    return this.client.executeSync({ scheduleName });
+                }
+            }
+        } catch (err) {
+            const errorMessage = stringifyError(err, { pretty: true });
+
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                environment_id: environmentId,
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content: `The sync command: ${command} failed with error: ${errorMessage}`
+            });
+            await logCtx.error(`Sync command failed "${command}"`, { error: err, command });
+
+            return Err(err as Error);
+        }
+    }
+
+    // TODO: remove once temporal is removed
+    async runSyncCommandHelper(props: {
+        scheduleId: string;
+        syncId: string;
+        command: SyncCommand;
+        activityLogId: number;
+        environmentId: number;
+        providerConfigKey: string;
+        connectionId: string;
+        syncName: string;
+        nangoConnectionId?: number | undefined;
+        logCtx: LogContext;
+        recordsService: RecordsServiceInterface;
+        initiator: string;
+    }): Promise<Result<void>> {
+        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${props.environmentId}`, false);
+        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+
+        if (isOrchestrator) {
+            return await this.runSyncCommand({
+                syncId: props.syncId,
+                command: props.command,
+                activityLogId: props.activityLogId,
+                environmentId: props.environmentId,
+                logCtx: props.logCtx,
+                recordsService: props.recordsService,
+                initiator: props.initiator
+            });
+        }
+
+        const syncClient = await SyncClient.getInstance();
+        if (!syncClient) {
+            return Err(new NangoError('failed_to_get_sync_client'));
+        }
+        const res = await syncClient.runSyncCommand({
+            scheduleId: props.scheduleId,
+            syncId: props.syncId,
+            command: props.command,
+            activityLogId: props.activityLogId,
+            environmentId: props.environmentId,
+            providerConfigKey: props.providerConfigKey,
+            connectionId: props.connectionId,
+            syncName: props.syncName,
+            nangoConnectionId: props.nangoConnectionId,
+            logCtx: props.logCtx,
+            recordsService: props.recordsService,
+            initiator: props.initiator
+        });
+        return res.isErr() ? Err(res.error) : Ok(undefined);
     }
 }

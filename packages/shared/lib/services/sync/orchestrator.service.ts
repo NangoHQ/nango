@@ -42,6 +42,7 @@ import { LogActionEnum } from '../../models/Activity.js';
 import { stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
 import type { Environment } from '../../models/Environment.js';
+import type { Orchestrator } from '../../clients/orchestrator.js';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -192,6 +193,7 @@ export class OrchestratorService {
 
     public async runSyncCommand({
         recordsService,
+        orchestrator,
         environment,
         providerConfigKey,
         syncNames,
@@ -201,6 +203,7 @@ export class OrchestratorService {
         initiator
     }: {
         recordsService: RecordsServiceInterface;
+        orchestrator: Orchestrator;
         environment: Environment;
         providerConfigKey: string;
         syncNames: string[];
@@ -235,11 +238,6 @@ export class OrchestratorService {
             { account, environment, integration: { id: provider!.id!, name: provider!.unique_key, provider: provider!.provider } }
         );
 
-        const syncClient = await SyncClient.getInstance();
-        if (!syncClient) {
-            return { success: false, error: new NangoError('failed_to_get_sync_client'), response: false };
-        }
-
         if (connectionId) {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
@@ -263,7 +261,7 @@ export class OrchestratorService {
                     continue;
                 }
 
-                await syncClient.runSyncCommand({
+                await orchestrator.runSyncCommandHelper({
                     scheduleId: schedule.schedule_id,
                     syncId: sync?.id,
                     command,
@@ -305,7 +303,7 @@ export class OrchestratorService {
                     continue;
                 }
 
-                await syncClient.runSyncCommand({
+                await orchestrator.runSyncCommandHelper({
                     scheduleId: schedule.schedule_id,
                     syncId: sync.id,
                     command,
