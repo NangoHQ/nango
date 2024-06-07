@@ -192,7 +192,7 @@ export const init = async (debug = false) => {
 
     // if currently in the nango-integrations directory then don't create another one
     const cwd = process.cwd();
-    const currentDirectorySplit = cwd.split('/');
+    const currentDirectorySplit = cwd.split(path.sep);
     const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
 
     let dirExists = false;
