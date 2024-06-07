@@ -27,6 +27,7 @@ const validate = validateRequest<PostSearch>({
                 limit: z.coerce.number().positive().optional(),
                 ids: z.array(z.string().uuid()).optional()
             })
+            .strict()
             .parse(data)
 });
 

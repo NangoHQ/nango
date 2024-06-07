@@ -16,10 +16,10 @@ export async function up(knex: Knex): Promise<void> {
 export async function down(knex: Knex): Promise<void> {
     await knex.raw(`
             ALTER TABLE ${SCHEDULES_TABLE}
-            DROP CONSTRAINT tasks_unique_name;
+            DROP CONSTRAINT schedules_unique_name;
         `);
     await knex.raw(`
             ALTER TABLE ${TASKS_TABLE}
-            DROP CONSTRAINT schedules_unique_name;
+            DROP CONSTRAINT tasks_unique_name;
         `);
 }

@@ -2,8 +2,9 @@ import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import * as tasks from './tasks.js';
 import { taskStates } from '../types.js';
 import type { TaskState, Task } from '../types.js';
-import { getTestDbClient, rndStr } from '../db/helpers.test.js';
+import { getTestDbClient } from '../db/helpers.test.js';
 import type { knex } from 'knex';
+import { nanoid } from '@nangohq/utils';
 
 describe('Task', () => {
     const dbClient = getTestDbClient();
@@ -186,9 +187,9 @@ async function createTaskWithState(db: knex.Knex, state: TaskState): Promise<Tas
 async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {
     return tasks
         .create(db, {
-            name: props?.name || rndStr(),
+            name: props?.name || nanoid(),
             payload: props?.payload || {},
-            groupKey: props?.groupKey || rndStr(),
+            groupKey: props?.groupKey || nanoid(),
             retryMax: props?.retryMax || 3,
             retryCount: props?.retryCount || 1,
             startsAfter: props?.startsAfter || new Date(),

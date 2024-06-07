@@ -19,7 +19,10 @@ export type PostRecurringRun = Endpoint<{
 
 const validate = validateRequest<PostRecurringRun>({
     parseBody: (data: any) => {
-        return z.object({ scheduleName: z.string().min(1) }).parse(data);
+        return z
+            .object({ scheduleName: z.string().min(1) })
+            .strict()
+            .parse(data);
     }
 });
 

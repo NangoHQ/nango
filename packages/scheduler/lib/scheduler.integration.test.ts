@@ -3,7 +3,8 @@ import { Scheduler } from './scheduler.js';
 import type { ImmediateProps, Schedule, Task } from './types.js';
 import type { TaskProps } from './models/tasks.js';
 import * as tasks from './models/tasks.js';
-import { getTestDbClient, rndStr } from './db/helpers.test.js';
+import { getTestDbClient } from './db/helpers.test.js';
+import { nanoid } from '@nangohq/utils';
 
 describe('Scheduler', () => {
     const dbClient = getTestDbClient();
@@ -130,7 +131,7 @@ async function recurring(scheduler: Scheduler): Promise<Schedule> {
         startsAt: new Date(),
         frequencyMs: 900_000,
         payload: { foo: 'bar' },
-        groupKey: rndStr(),
+        groupKey: nanoid(),
         retryMax: 0,
         retryCount: 0,
         createdToStartedTimeoutSecs: 3600,
@@ -152,7 +153,7 @@ async function immediate(
     let taskProps: ImmediateProps;
     if (props && 'schedule' in props) {
         taskProps = {
-            name: `${props.schedule.name}-${rndStr()}`,
+            name: `${props.schedule.name}-${nanoid()}`,
             payload: props.schedule.payload,
             groupKey: props.schedule.groupKey,
             retryMax: props.schedule.retryMax,
@@ -165,7 +166,7 @@ async function immediate(
         taskProps = {
             name: props?.taskProps?.name || 'test',
             payload: props?.taskProps?.payload || {},
-            groupKey: props?.taskProps?.groupKey || rndStr(),
+            groupKey: props?.taskProps?.groupKey || nanoid(),
             retryMax: props?.taskProps?.retryMax || 1,
             retryCount: props?.taskProps?.retryCount || 0,
             createdToStartedTimeoutSecs: props?.taskProps?.createdToStartedTimeoutSecs || 3600,

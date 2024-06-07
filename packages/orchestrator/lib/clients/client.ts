@@ -55,7 +55,7 @@ export class OrchestratorClient {
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error scheduling  immediate task`,
-                payload: JSON.stringify(props)
+                payload: props
             });
         } else {
             return Ok(res);
@@ -75,10 +75,11 @@ export class OrchestratorClient {
             }
         });
         if ('error' in res) {
+            const startsAt = props.startsAt.toISOString();
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error creating recurring schedule`,
-                payload: JSON.stringify(props)
+                payload: { ...props, startsAt }
             });
         } else {
             return Ok(res);
@@ -90,7 +91,7 @@ export class OrchestratorClient {
         return Err({
             name: 'not_implemented',
             message: 'Not implemented',
-            payload: JSON.stringify({ scheduleName: props.scheduleName })
+            payload: { scheduleName: props.scheduleName }
         });
     }
 
@@ -99,7 +100,7 @@ export class OrchestratorClient {
         return Err({
             name: 'not_implemented',
             message: 'Not implemented',
-            payload: JSON.stringify({ scheduleName: props.scheduleName })
+            payload: { scheduleName: props.scheduleName }
         });
     }
 
@@ -108,7 +109,7 @@ export class OrchestratorClient {
         return Err({
             name: 'not_implemented',
             message: 'Not implemented',
-            payload: JSON.stringify({ scheduleName: props.scheduleName })
+            payload: { scheduleName: props.scheduleName }
         });
     }
 
@@ -122,7 +123,7 @@ export class OrchestratorClient {
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error creating recurring schedule`,
-                payload: JSON.stringify(props)
+                payload: props
             });
         } else {
             return Ok(undefined);
@@ -243,7 +244,7 @@ export class OrchestratorClient {
             const tasks = res.flatMap((task) => {
                 const validated = validateTask(task);
                 if (validated.isErr()) {
-                    logger.error(`Search: error validating task: ${JSON.stringify(validated.error.message)}`);
+                    logger.error(`Search: error validating task: ${validated.error.message}`);
                     return [];
                 }
                 return [validated.value];
@@ -278,7 +279,7 @@ export class OrchestratorClient {
             const dequeuedTasks = res.flatMap((task) => {
                 const validated = validateTask(task);
                 if (validated.isErr()) {
-                    logger.error(`Dequeue: error validating task: ${JSON.stringify(validated.error.message)}`);
+                    logger.error(`Dequeue: error validating task: ${validated.error.message}`);
                     return [];
                 }
                 return [validated.value];
