@@ -4,16 +4,15 @@ import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps } from '.
 import * as tasks from './models/tasks.js';
 import * as schedules from './models/schedules.js';
 import type { Result } from '@nangohq/utils';
-import { stringifyError, getLogger } from '@nangohq/utils';
-import { MonitorWorker } from './monitor.worker.js';
+import { stringifyError } from '@nangohq/utils';
+import { MonitorWorker } from './workers/monitor/monitor.worker.js';
+import { SchedulingWorker } from './workers/scheduling/scheduling.worker.js';
 import type { DatabaseClient } from './db/client.js';
-
-const logger = getLogger('Scheduler');
+import { logger } from './utils/logger.js';
 
 export class Scheduler {
-    // TODO: scheduling recurring tasks
-
     private monitor: MonitorWorker | null = null;
+    private scheduling: SchedulingWorker | null = null;
     private onCallbacks: Record<TaskState, (task: Task) => void>;
     private dbClient: DatabaseClient;
 
@@ -50,6 +49,9 @@ export class Scheduler {
                 }
             });
             this.monitor.start();
+            this.scheduling = new SchedulingWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
+            // TODO: ensure there is only one instance of the scheduler
+            this.scheduling.start();
         } else {
             throw new Error('Scheduler must be instantiated in the main thread');
         }
@@ -57,6 +59,7 @@ export class Scheduler {
 
     stop(): void {
         this.monitor?.stop();
+        this.scheduling?.stop();
     }
 
     /**

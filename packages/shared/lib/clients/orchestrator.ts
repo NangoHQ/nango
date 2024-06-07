@@ -173,23 +173,7 @@ export class Orchestrator {
             }
 
             if (res.isErr()) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`
-                });
-                await logCtx.error(`Failed with error ${res.error.type}`, { payload: res.error.payload });
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `The action workflow ${workflowId} did not complete successfully`
-                });
-                await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
-                return res;
+                throw res.error;
             }
 
             const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
@@ -424,17 +408,7 @@ export class Orchestrator {
             }
 
             if (res.isErr()) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: integration.environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `The webhook workflow ${workflowId} did not complete successfully`
-                });
-                await logCtx.error('The webhook workflow did not complete successfully');
-                await logCtx.failed();
-
-                return res;
+                throw res.error;
             }
 
             await createActivityLogMessageAndEnd({
