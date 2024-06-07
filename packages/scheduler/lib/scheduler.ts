@@ -256,16 +256,13 @@ export class Scheduler {
 
     /**
      * Cancel a task
-     * @param cancelBy - Cancel by task id or schedule name
+     * @param cancelBy - Cancel by task id
      * @param reason - Reason for cancellation
      * @returns Task
      * @example
      * const cancelled = await scheduler.cancel({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
-    public async cancel(cancelBy: { taskId: string; reason: JsonValue } | { scheduleName: string; reason: JsonValue }): Promise<Result<Task>> {
-        if ('scheduleName' in cancelBy) {
-            throw new Error(`Cancelling tasks for schedule '${cancelBy.scheduleName}' not implemented`);
-        }
+    public async cancel(cancelBy: { taskId: string; reason: JsonValue }): Promise<Result<Task>> {
         const cancelled = await tasks.transitionState(this.dbClient.db, {
             taskId: cancelBy.taskId,
             newState: 'CANCELLED',

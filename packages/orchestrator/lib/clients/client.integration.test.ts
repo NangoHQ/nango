@@ -62,12 +62,43 @@ describe('OrchestratorClient', async () => {
             });
             expect(res.isOk()).toBe(true);
         });
+        it('should be paused/unpaused/deleted', async () => {
+            const scheduleName = nanoid();
+            await client.recurring({
+                name: scheduleName,
+                state: 'STARTED',
+                startsAt: new Date(),
+                frequencyMs: 300_000,
+                groupKey: nanoid(),
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'sync',
+                    syncId: 'sync-a',
+                    syncName: nanoid(),
+                    syncJobId: 5678,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    debug: false
+                }
+            });
+            const paused = await client.pauseSync({ scheduleName });
+            expect(paused.isOk(), `pausing failed ${JSON.stringify(paused)}`).toBe(true);
+            const unpaused = await client.unpauseSync({ scheduleName });
+            expect(unpaused.isOk(), `pausing failed ${JSON.stringify(unpaused)}`).toBe(true);
+            const deleted = await client.deleteSync({ scheduleName });
+            expect(deleted.isOk(), `pausing failed ${JSON.stringify(deleted)}`).toBe(true);
+        });
     });
 
     describe('heartbeat', () => {
         it('should be successful', async () => {
             const scheduledTask = await client.immediate({
-                name: 'Task',
+                name: nanoid(),
                 groupKey: nanoid(),
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
@@ -138,7 +169,7 @@ describe('OrchestratorClient', async () => {
             });
             try {
                 const res = await client.executeAction({
-                    name: 'Task',
+                    name: nanoid(),
                     groupKey: groupKey,
                     args: {
                         actionName: 'Action',

@@ -74,7 +74,7 @@ describe('Scheduler', () => {
     it('should call callback when task is failed', async () => {
         const task = await immediate(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
-        (await scheduler.fail({ taskId: task.id, error: { message: 'failure happend' } })).unwrap();
+        (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
         expect(callbacks.FAILED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is succeeded', async () => {

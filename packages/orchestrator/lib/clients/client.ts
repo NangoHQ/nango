@@ -86,53 +86,26 @@ export class OrchestratorClient {
     }
 
     public async pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
-        const res = await this.routeFetch(putRecurringRoute)({
-            body: {
-                state: 'PAUSED',
-                scheduleName: scheduleName
-            }
-        });
-        if ('error' in res) {
-            return Err({
-                name: res.error.code,
-                message: res.error.message || `Error pausing recurring schedule`,
-                payload: { scheduleName }
-            });
-        } else {
-            return Ok(undefined);
-        }
+        return this.setSyncState({ scheduleName, state: 'PAUSED' });
     }
 
     public async unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
-        const res = await this.routeFetch(putRecurringRoute)({
-            body: {
-                state: 'STARTED',
-                scheduleName: scheduleName
-            }
-        });
-        if ('error' in res) {
-            return Err({
-                name: res.error.code,
-                message: res.error.message || `Error pausing recurring schedule`,
-                payload: { scheduleName }
-            });
-        } else {
-            return Ok(undefined);
-        }
+        return this.setSyncState({ scheduleName, state: 'STARTED' });
     }
 
     public async deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'DELETED' });
+    }
+
+    private async setSyncState({ scheduleName, state }: { scheduleName: string; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {
         const res = await this.routeFetch(putRecurringRoute)({
-            body: {
-                state: 'DELETED',
-                scheduleName: scheduleName
-            }
+            body: { state, scheduleName }
         });
         if ('error' in res) {
             return Err({
                 name: res.error.code,
-                message: res.error.message || `Error pausing recurring schedule`,
-                payload: { scheduleName }
+                message: res.error.message || `Error setting schedule state`,
+                payload: { scheduleName, state }
             });
         } else {
             return Ok(undefined);
