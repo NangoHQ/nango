@@ -69,14 +69,14 @@ export const filterHeaders = (headers: Record<string, string>): Record<string, s
     return filteredHeaders;
 };
 
-export const shouldSend = (environment: Environment, options?: { auth?: boolean; forward?: boolean }): boolean => {
+export const shouldSend = (environment: Environment, type: 'auth' | 'sync' | 'forward'): boolean => {
     const hasAnyWebhook = environment.webhook_url || environment.webhook_url_secondary;
 
-    if (options?.forward && hasAnyWebhook) {
+    if (type === 'forward' && hasAnyWebhook) {
         return true;
     }
 
-    const authNotSelected = options?.auth && !environment.send_auth_webhook;
+    const authNotSelected = type === 'auth' && !environment.send_auth_webhook;
 
     if (!hasAnyWebhook || authNotSelected) {
         return false;
@@ -91,7 +91,8 @@ export const deliver = async ({
     webhookType,
     activityLogId,
     logCtx,
-    environment
+    environment,
+    endingMessage = ''
 }: {
     webhooks: { url: string; type: string }[];
     body: unknown;
@@ -99,6 +100,7 @@ export const deliver = async ({
     activityLogId: number | null;
     environment: Environment;
     logCtx?: LogContext | undefined;
+    endingMessage?: string;
 }): Promise<void> => {
     for (const webhook of webhooks) {
         const { url, type } = webhook;
@@ -116,12 +118,13 @@ export const deliver = async ({
             if (activityLogId) {
                 if (response.status >= 200 && response.status < 300) {
                     await logCtx?.info(
-                        `${webhookType} webhook sent successfully to the ${type} ${url} and received with a ${response.status} response code.`,
+                        `${webhookType} webhook sent successfully to the ${type} ${url} and received with a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}.`,
                         body as Record<string, unknown>
                     );
                 } else {
                     await logCtx?.error(
-                        `${webhookType} sent webhook successfully to the ${type} ${url} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
+                        `${webhookType} sent webhook successfully to the ${type} ${url} but received a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`,
+                        body as Record<string, unknown>
                     );
                 }
             }

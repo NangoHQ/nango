@@ -6,6 +6,7 @@ import { SyncStatus, SyncType } from '../../models/Sync.js';
 import * as jobService from './job.service.js';
 import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { Connection } from '../../models/Connection.js';
+import type { SendSyncParams } from '@nangohq/webhooks';
 import { LogContext, logContextGetter } from '@nangohq/logs';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
@@ -42,6 +43,10 @@ const orchestratorClient = {
 const slackService = new SlackService({ orchestratorClient, logContextGetter });
 
 const integrationService = new integrationServiceMock();
+
+const sendSyncWebhookMock = async (_params: SendSyncParams) => {
+    return Promise.resolve();
+};
 
 describe('Running sync', () => {
     beforeAll(async () => {
@@ -206,6 +211,7 @@ describe('SyncRun', () => {
                 environment_id: 1
             },
             syncName: 'test_sync',
+            sendSyncWebhook: sendSyncWebhookMock,
             syncType: SyncType.INCREMENTAL,
             syncId: 'some-sync',
             syncJobId: 123,
@@ -262,6 +268,7 @@ const runJob = async (
         writeToDb: true,
         nangoConnection: connection,
         syncName: sync.name,
+        sendSyncWebhook: sendSyncWebhookMock,
         syncType: SyncType.INITIAL,
         syncId: sync.id,
         syncJobId: syncJob.id,

@@ -1,4 +1,4 @@
-import type { Connection, Environment, AuthModeType, FailedConnectionError, AuthOperationType } from '@nangohq/types';
+import type { Connection, Environment, AuthModeType, ErrorPayload, AuthOperationType } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import type { NangoAuthWebhookBody } from './types.js';
 import { deliver, shouldSend } from './utils.js';
@@ -18,14 +18,14 @@ export const sendAuth = async ({
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
     environment: Environment;
     auth_mode: AuthModeType;
-    error?: FailedConnectionError;
+    error?: ErrorPayload;
     operation: AuthOperationType;
     provider: string;
     type: string;
     activityLogId: number | null;
     logCtx?: LogContext | undefined;
 }): Promise<void> => {
-    if (!shouldSend(environment, { auth: true })) {
+    if (!shouldSend(environment, 'auth')) {
         return;
     }
 

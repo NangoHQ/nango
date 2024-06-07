@@ -4,6 +4,7 @@ import type { JsonValue } from 'type-fest';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { configService, createSyncJob, getSyncByIdAndName, syncRunService, SyncStatus, SyncType } from '@nangohq/shared';
+import { sendSync } from '@nangohq/webhooks';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import integrationService from '../integration.service.js';
@@ -49,6 +50,7 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         recordsService,
         slackService,
         writeToDb: true,
+        sendSyncWebhook: sendSync,
         logCtx: await logContextGetter.get({ id: String(task.activityLogId) }),
         nangoConnection: task.connection,
         syncName: task.actionName,
@@ -90,6 +92,7 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
         recordsService,
         slackService,
         writeToDb: true,
+        sendSyncWebhook: sendSync,
         nangoConnection: task.connection,
         syncJobId: syncJobId?.id as number,
         syncName: task.parentSyncName,

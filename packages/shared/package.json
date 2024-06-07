@@ -59,6 +59,7 @@
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/records": "file:../records",
         "@nangohq/types": "^0.39.33",
+        "@nangohq/webhooks": "file:../webhooks",
         "@sentry/types": "7.112.2",
         "@temporalio/activity": "^1.9.1",
         "@types/braintree": "^3.3.12",

@@ -1,4 +1,4 @@
-import type { SyncType, FailedConnectionError, AuthOperationType, AuthModeType, SyncResult } from '@nangohq/types';
+import type { SyncType, ErrorPayload, AuthOperationType, AuthModeType, SyncResult } from '@nangohq/types';
 import type { WebhookType } from './enums.js';
 
 export interface NangoSyncWebhookBody {
@@ -8,10 +8,16 @@ export interface NangoSyncWebhookBody {
     providerConfigKey: string;
     syncName: string;
     model: string;
-    responseResults: SyncResult;
+    responseResults?: SyncResult;
     syncType: SyncType;
-    modifiedAfter: string;
-    queryTimeStamp: string | null;
+    modifiedAfter?: string;
+    startedAt?: string;
+    failedAt?: string;
+    success: boolean;
+    error?: ErrorPayload;
+
+    // legacy
+    queryTimeStamp?: string | null;
 }
 
 export interface NangoAuthWebhookBody {
@@ -24,7 +30,7 @@ export interface NangoAuthWebhookBody {
     environment: string;
     success: boolean;
     operation: AuthOperationType;
-    error?: FailedConnectionError;
+    error?: ErrorPayload;
 }
 
 export interface NangoForwardWebhookBody {
