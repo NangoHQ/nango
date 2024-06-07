@@ -33,7 +33,7 @@ describe('Task', () => {
             })
         ).unwrap();
         expect(task).toMatchObject({
-            id: expect.any(String) as string,
+            id: expect.any(String),
             name: 'Test Task',
             payload: { foo: 'bar' },
             groupKey: 'groupA',

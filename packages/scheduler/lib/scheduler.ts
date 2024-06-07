@@ -236,7 +236,7 @@ export class Scheduler {
             // Create a new task if the task is retryable
             if (task.retryMax > task.retryCount) {
                 const taskProps: ImmediateProps = {
-                    name: task.name,
+                    name: `${task.name}:${task.retryCount + 1}`, // Append retry count to make it unique
                     payload: task.payload,
                     groupKey: task.groupKey,
                     retryMax: task.retryMax,

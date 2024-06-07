@@ -108,7 +108,6 @@ export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Resul
     const now = new Date();
     const newTask: Task = {
         ...taskProps,
-        name: `${taskProps.name}:attempt:${taskProps.retryCount + 1}`,
         id: uuidv7(),
         createdAt: now,
         state: 'CREATED',
