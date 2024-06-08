@@ -386,3 +386,17 @@ export function formatFrequency(frequency: string): string {
 
     return frequency;
 }
+
+// https://stackoverflow.com/a/42186143
+export function stringArrayEqual(prev: string[], next: string[]) {
+    // can't use toSorted yet
+    const a = [...prev].sort();
+    const b = [...next].sort();
+    let i = a.length;
+    while (i--) {
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+    return true;
+}

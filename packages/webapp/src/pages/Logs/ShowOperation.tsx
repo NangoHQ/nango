@@ -111,7 +111,11 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="font-semibold text-sm">Integration</div>
                     <div className="text-gray-400 text-s font-code truncate">
                         {operation.integrationName ? (
-                            <Link to={`/integration/${operation.integrationName}`} target="_blank" className="flex gap-2.5 items-center hover:text-white">
+                            <Link
+                                to={`/${env}/integration/${operation.integrationName}`}
+                                target="_blank"
+                                className="flex gap-2.5 items-center hover:text-white"
+                            >
                                 <ProviderTag msg={operation} />
                                 <div className="w-4">
                                     <ExternalLinkIcon className="w-[14px]" />
@@ -128,7 +132,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="text-gray-400 text-s font-code truncate">
                         {operation.connectionName ? (
                             <Link
-                                to={`/connections/${operation.integrationName}/${operation.connectionName}`}
+                                to={`/${env}/connections/${operation.integrationName}/${operation.connectionName}`}
                                 target="_blank"
                                 className="flex gap-2.5 items-center hover:text-white"
                             >
