@@ -24,6 +24,7 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/records": "file:../records",
         "@nangohq/utils": "file:../utils",
+        "@nangohq/webhooks": "file:../webhooks",
         "@temporalio/activity": "^1.9.1",
         "@temporalio/client": "^1.9.1",
         "@temporalio/worker": "^1.9.1",

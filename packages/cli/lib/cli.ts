@@ -192,7 +192,7 @@ export const init = async (debug = false) => {
 
     // if currently in the nango-integrations directory then don't create another one
     const cwd = process.cwd();
-    const currentDirectorySplit = cwd.split('/');
+    const currentDirectorySplit = cwd.split(path.sep);
     const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
 
     let dirExists = false;
@@ -282,7 +282,8 @@ export const tscWatch = async (debug = false) => {
     const watcher = chokidar.watch(watchPath, {
         ignoreInitial: false,
         ignored: (filePath: string) => {
-            return filePath === TYPES_FILE_NAME;
+            const relativePath = path.relative(__dirname, filePath);
+            return relativePath.includes('node_modules') || path.basename(filePath) === TYPES_FILE_NAME;
         }
     });
 
@@ -302,11 +303,11 @@ export const tscWatch = async (debug = false) => {
         await modelService.createModelFile();
     }
 
-    watcher.on('add', (filePath: string) => {
+    watcher.on('add', async (filePath: string) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        compileSingleFile({ file: getFileToCompile(filePath), tsconfig, config, modelNames });
+        await compileSingleFile({ file: getFileToCompile(filePath), tsconfig, config, modelNames, debug });
     });
 
     watcher.on('unlink', (filePath: string) => {
@@ -325,12 +326,12 @@ export const tscWatch = async (debug = false) => {
         }
     });
 
-    watcher.on('change', (filePath: string) => {
+    watcher.on('change', async (filePath: string) => {
         if (filePath === nangoConfigFile) {
-            compileAllFiles({ debug });
+            await compileAllFiles({ debug });
             return;
         }
-        compileSingleFile({ file: getFileToCompile(filePath), tsconfig, config, modelNames });
+        await compileSingleFile({ file: getFileToCompile(filePath), tsconfig, config, modelNames, debug });
     });
 };
 

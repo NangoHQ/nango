@@ -39,6 +39,7 @@ import { getLogger, stringifyError, errorToObject } from '@nangohq/utils';
 import integrationService from './integration.service.js';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
+import { sendSync } from '@nangohq/webhooks';
 import { bigQueryClient, slackService } from './clients.js';
 
 const logger = getLogger('Jobs');
@@ -90,6 +91,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         slackService,
         writeToDb: true,
         logCtx: await logContextGetter.get({ id: String(activityLogId) }),
+        sendSyncWebhook: sendSync,
         nangoConnection,
         syncName: actionName,
         isAction: true,
@@ -321,6 +323,7 @@ export async function syncProvider({
             integrationService,
             recordsService,
             slackService,
+            sendSyncWebhook: sendSync,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -418,6 +421,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         slackService,
         writeToDb: true,
         nangoConnection,
+        sendSyncWebhook: sendSync,
         syncJobId: syncJobId?.id as number,
         syncName: parentSyncName,
         isAction: false,
@@ -455,6 +459,7 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
         writeToDb: true,
         nangoConnection,
         syncName: name,
+        sendSyncWebhook: sendSync,
         isAction: false,
         isPostConnectionScript: true,
         syncType: SyncType.POST_CONNECTION_SCRIPT,

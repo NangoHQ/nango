@@ -27,7 +27,7 @@
         "@babel/traverse": "^7.22.5",
         "@babel/types": "^7.22.5",
         "@nangohq/shared": "^0.39.33",
-        "@vercel/ncc": "^0.36.1",
+        "@swc/core": "^1.5.25",
         "ajv": "^8.12.0",
         "ajv-errors": "^3.0.0",
         "axios": "^1.2.0",
@@ -47,6 +47,7 @@
         "promptly": "^3.2.0",
         "semver": "^7.5.2",
         "ts-node": "^10.9.1",
+        "tsup": "^8.1.0",
         "typescript": "^5.3.3",
         "vm": "^0.1.0",
         "zod": "^3.22.4"

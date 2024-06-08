@@ -131,8 +131,3 @@ export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'typ
 export type ImportedCredentials =
     | (OAuth2Credentials & Partial<Pick<AuthorizationTokenResponse, 'expires_in'>> & Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>)
     | OAuth1Credentials;
-
-export interface FailedConnectionError {
-    type: string;
-    description: string;
-}

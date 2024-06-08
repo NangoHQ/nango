@@ -4,6 +4,7 @@ import type { JsonValue } from 'type-fest';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { configService, createSyncJob, getSyncByIdAndName, syncRunService, SyncStatus, SyncType } from '@nangohq/shared';
+import { sendSync } from '@nangohq/webhooks';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import integrationService from '../integration.service.js';
@@ -49,6 +50,7 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         recordsService,
         slackService,
         writeToDb: true,
+        sendSyncWebhook: sendSync,
         logCtx: await logContextGetter.get({ id: String(task.activityLogId) }),
         nangoConnection: task.connection,
         syncName: task.actionName,
@@ -65,10 +67,10 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         return Err(error);
     }
     const res = jsonSchema.safeParse(response);
-    if (res.success) {
-        return Ok(res.data);
+    if (!res.success) {
+        return Err(`Invalid action response format: ${response}. TaskId: ${task.id}`);
     }
-    return Err(`Invalid action response format: ${response}. Action: ${JSON.stringify(task)}`);
+    return Ok(res.data);
 }
 
 async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
@@ -90,6 +92,7 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
         recordsService,
         slackService,
         writeToDb: true,
+        sendSyncWebhook: sendSync,
         nangoConnection: task.connection,
         syncJobId: syncJobId?.id as number,
         syncName: task.parentSyncName,
@@ -108,10 +111,10 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
         return Err(error);
     }
     const res = jsonSchema.safeParse(response);
-    if (res.success) {
-        return Ok(res.data);
+    if (!res.success) {
+        return Err(`Invalid webhook response format: ${response}. TaskId: ${task.id}`);
     }
-    return Err(`Invalid webhook response format: ${response}. Webhook: ${JSON.stringify(task)}`);
+    return Ok(res.data);
 }
 
 async function postConnection(task: TaskPostConnection): Promise<Result<JsonValue>> {

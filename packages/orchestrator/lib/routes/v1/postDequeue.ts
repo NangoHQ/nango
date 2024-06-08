@@ -28,6 +28,7 @@ const validate = validateRequest<PostDequeue>({
                 limit: z.coerce.number().positive(),
                 longPolling: z.coerce.boolean()
             })
+            .strict()
             .parse(data)
 });
 
