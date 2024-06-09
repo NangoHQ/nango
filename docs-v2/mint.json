@@ -406,6 +406,7 @@
                 "integrations/all/microsoft",
                 "integrations/all/microsoft-ads",
                 "integrations/all/microsoft-entra-id",
+                "integrations/all/microsoft-power-bi",
                 "integrations/all/microsoft-teams",
                 "integrations/all/microsoft-tenant-specific",
                 "integrations/all/miro",
