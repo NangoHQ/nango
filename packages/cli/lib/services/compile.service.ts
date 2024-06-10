@@ -42,8 +42,8 @@ export async function compileAllFiles({
         if (debug) {
             printDebug(`Creating ${TYPES_FILE_NAME} file`);
         }
-        await modelService.createModelFile();
     }
+    await modelService.createModelFile({ fullPath });
 
     const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
     const compiler = tsNode.create({
@@ -237,10 +237,11 @@ async function compile({
 
     await build({
         entryPoints: [file.inputPath],
-        tsconfig: getNangoRootPath() + '/tsconfig.dev.json',
+        tsconfig: path.join(getNangoRootPath()!, 'tsconfig.dev.json'),
         skipNodeModulesBundle: true,
         silent: !debug,
         outDir: path.join(fullPath, 'dist'),
+        outExtension: () => ({ js: '.cjs' }),
         onSuccess: async () => {
             if (fs.existsSync(file.outputPath)) {
                 await fs.promises.rename(file.outputPath, outputPath);

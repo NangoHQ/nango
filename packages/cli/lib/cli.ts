@@ -290,7 +290,7 @@ export async function tscWatch({ fullPath, debug = false }: { fullPath: string; 
         if (debug) {
             printDebug(`Creating ${TYPES_FILE_NAME} file`);
         }
-        await modelService.createModelFile();
+        await modelService.createModelFile({ fullPath });
     }
 
     watcher.on('add', async (filePath: string) => {
@@ -333,7 +333,7 @@ export function configWatch({ fullPath, debug = false }: { fullPath: string; deb
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
     watcher.on('change', () => {
-        void modelService.createModelFile(true);
+        void modelService.createModelFile({ fullPath, notify: true });
     });
 }
 

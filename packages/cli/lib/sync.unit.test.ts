@@ -478,7 +478,7 @@ describe('generate function tests', () => {
         await init({ absolutePath: dir });
 
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/string-literal/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).rejects.not.toThrow();
+        await expect(generate({ debug: false, fullPath: dir })).resolves.toBeUndefined();
         const modelsFile = await fs.promises.readFile(`${dir}/models.ts`, 'utf8');
         expect(modelsFile).toContain(`gender: 'male' | 'female';`);
     });
@@ -488,7 +488,7 @@ describe('generate function tests', () => {
         await init({ absolutePath: dir });
 
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-literal/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).rejects.not.toThrow();
+        await expect(generate({ debug: false, fullPath: dir })).resolves.toBeUndefined();
         const modelsFile = await fs.promises.readFile(`${dir}/models.ts`, 'utf8');
         expect(modelsFile).toContain(`gender: 'male' | null;`);
     });
@@ -498,7 +498,7 @@ describe('generate function tests', () => {
         await init({ absolutePath: dir });
 
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-literal-model/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).rejects.not.toThrow();
+        await expect(generate({ debug: false, fullPath: dir })).resolves.toBeUndefined();
         const modelsFile = await fs.promises.readFile(`${dir}/models.ts`, 'utf8');
         expect(modelsFile).toContain(`gender: 'male' | Other`);
         expect(modelsFile).toContain(`user: User | Account`);
@@ -509,7 +509,7 @@ describe('generate function tests', () => {
         await init({ absolutePath: dir });
 
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-types/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).rejects.not.toThrow();
+        await expect(generate({ debug: false, fullPath: dir })).resolves.toBeUndefined();
         const modelsFile = await fs.promises.readFile(`${dir}/models.ts`, 'utf8');
         expect(modelsFile).toContain(`record: Record<string, string>;`);
         expect(modelsFile).toContain(`und: string | null | undefined;`);
@@ -523,7 +523,7 @@ describe('generate function tests', () => {
         await init({ absolutePath: dir });
 
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/model-array-types/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).rejects.not.toThrow();
+        await expect(generate({ debug: false, fullPath: dir })).resolves.toBeUndefined();
         const modelsFile = await fs.promises.readFile(`${dir}/models.ts`, 'utf8');
         expect(modelsFile).not.toContain(`'Other[]' | null | undefined;`);
         expect(modelsFile).toContain(`Other[] | null | undefined;`);
@@ -557,7 +557,7 @@ describe('generate function tests', () => {
 
         expect(fs.existsSync(path.join(dir, 'models.ts'))).toBe(true);
         expect(fs.existsSync(path.join(dir, 'contacts.ts'))).toBe(true);
-        expect(fs.existsSync(path.join(dir, 'dist/contacts.cjs'))).toBe(true);
+        expect(fs.existsSync(path.join(dir, 'dist/contacts-hubspot.cjs'))).toBe(true);
         expect(success).toBe(true);
     });
 
