@@ -203,7 +203,7 @@ export async function remove(db: knex.Knex, id: string): Promise<Result<Schedule
     }
 }
 
-export async function search(db: knex.Knex, params: { name?: string; state?: ScheduleState; limit: number }): Promise<Result<Schedule[]>> {
+export async function search(db: knex.Knex, params: { name?: string; state?: ScheduleState; limit: number; forUpdate?: boolean }): Promise<Result<Schedule[]>> {
     try {
         const query = db.from<DbSchedule>(SCHEDULES_TABLE).limit(params.limit);
         if (params.name) {
@@ -211,6 +211,9 @@ export async function search(db: knex.Knex, params: { name?: string; state?: Sch
         }
         if (params.state) {
             query.where('state', params.state);
+        }
+        if (params.forUpdate) {
+            query.forUpdate();
         }
         const schedules = await query;
         return Ok(schedules.map(DbSchedule.from));

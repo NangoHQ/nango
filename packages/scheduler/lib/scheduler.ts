@@ -104,52 +104,55 @@ export class Scheduler {
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
     public async immediate(props: ImmediateProps | { scheduleName: string }): Promise<Result<Task>> {
-        let taskProps: tasks.TaskProps;
-        if ('scheduleName' in props) {
-            const getSchedules = await schedules.search(this.dbClient.db, { name: props.scheduleName, limit: 1 });
-            if (getSchedules.isErr()) {
-                return Err(getSchedules.error);
+        return this.dbClient.db.transaction(async (trx) => {
+            let taskProps: tasks.TaskProps;
+            if ('scheduleName' in props) {
+                // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
+                const getSchedules = await schedules.search(trx, { name: props.scheduleName, limit: 1, forUpdate: true });
+                if (getSchedules.isErr()) {
+                    return Err(getSchedules.error);
+                }
+                const schedule = getSchedules.value[0];
+                if (!schedule) {
+                    return Err(new Error(`Schedule '${props.scheduleName}' not found`));
+                }
+                // Not scheduling a task if another task for the same schedule is already running
+                const running = await tasks.search(trx, {
+                    scheduleId: schedule.id,
+                    states: ['CREATED', 'STARTED']
+                });
+                if (running.isErr()) {
+                    return Err(running.error);
+                }
+                if (running.value.length > 0) {
+                    return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
+                }
+                taskProps = {
+                    name: `${schedule.name}:${uuidv7()}`,
+                    payload: schedule.payload,
+                    groupKey: schedule.groupKey,
+                    retryMax: schedule.retryMax,
+                    retryCount: 0,
+                    createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
+                    startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
+                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
+                    startsAfter: new Date(),
+                    scheduleId: schedule.id
+                };
+            } else {
+                taskProps = {
+                    ...props,
+                    startsAfter: new Date(),
+                    scheduleId: null
+                };
             }
-            const schedule = getSchedules.value[0];
-            if (!schedule) {
-                return Err(new Error(`Schedule '${props.scheduleName}' not found`));
+            const created = await tasks.create(trx, taskProps);
+            if (created.isOk()) {
+                const task = created.value;
+                this.onCallbacks[task.state](task);
             }
-            // Not scheduling a task if another task for the same schedule is already running
-            const running = await tasks.search(this.dbClient.db, {
-                scheduleId: schedule.id,
-                states: ['CREATED', 'STARTED']
-            });
-            if (running.isErr()) {
-                return Err(running.error);
-            }
-            if (running.value.length > 0) {
-                return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
-            }
-            taskProps = {
-                name: `${schedule.name}:${uuidv7()}`,
-                payload: schedule.payload,
-                groupKey: schedule.groupKey,
-                retryMax: schedule.retryMax,
-                retryCount: 0,
-                createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
-                startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
-                heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
-                startsAfter: new Date(),
-                scheduleId: schedule.id
-            };
-        } else {
-            taskProps = {
-                ...props,
-                startsAfter: new Date(),
-                scheduleId: null
-            };
-        }
-        const created = await tasks.create(this.dbClient.db, taskProps);
-        if (created.isOk()) {
-            const task = created.value;
-            this.onCallbacks[task.state](task);
-        }
-        return created;
+            return created;
+        });
     }
 
     /**
@@ -286,7 +289,8 @@ export class Scheduler {
      */
     public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
         return this.dbClient.db.transaction(async (trx) => {
-            const schedule = await schedules.search(trx, { name: scheduleName, limit: 1 });
+            // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
+            const schedule = await schedules.search(trx, { name: scheduleName, limit: 1, forUpdate: true });
             if (schedule.isErr()) {
                 return Err(schedule.error);
             }
