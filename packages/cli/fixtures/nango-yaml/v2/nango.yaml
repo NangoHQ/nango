@@ -9,7 +9,7 @@ integrations:
                 runs: every half hour
                 scopes: public_repo
                 output: GithubIssue
-                endpoint: GET /github/issues
+                endpoint: /github/issues
                 webhook-subscriptions:
                     - issue.creation
             github-issue-example-two:
@@ -18,7 +18,7 @@ integrations:
                 sync_type: incremental
                 auto_start: true
                 runs: every hour
-                endpoint: GET /ticketing/tickets-two
+                endpoint: /ticketing/tickets-two
                 scopes: public_repo
                 output: GithubIssue2
             github-multiple-models:
@@ -27,8 +27,8 @@ integrations:
                 auto_start: true
                 runs: every 5 minutes
                 endpoint:
-                    - GET /ticketing/ticket
-                    - GET /ticketing/pr
+                    - /ticketing/ticket
+                    - /ticketing/pr
                 output:
                     - GithubIssue3
                     - GithubPR
@@ -40,7 +40,7 @@ integrations:
                 scopes: repo:read
             github-create-issue:
                 description: Creates a GitHub issue.
-                endpoint: POST /ticketing/tickets
+                endpoint: /ticketing/tickets
                 scopes: repo:write
                 input: GithubCreateIssueInput
                 output: GithubCreateOutput
