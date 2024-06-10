@@ -1,5 +1,6 @@
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
+import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
 import { route as postRecurringRunRoute } from '../routes/v1/recurring/postRecurringRun.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postSearchRoute } from '../routes/v1/postSearch.js';
@@ -20,9 +21,6 @@ import type {
     OrchestratorTask,
     RecurringProps,
     ExecuteSyncProps,
-    UnpauseSyncProps,
-    PauseSyncProps,
-    CancelSyncProps,
     VoidReturn
 } from './types.js';
 import { validateTask } from './validate.js';
@@ -66,6 +64,7 @@ export class OrchestratorClient {
         const res = await this.routeFetch(postRecurringRoute)({
             body: {
                 name: props.name,
+                state: props.state,
                 startsAt: props.startsAt,
                 frequencyMs: props.frequencyMs,
                 groupKey: props.groupKey,
@@ -86,31 +85,31 @@ export class OrchestratorClient {
         }
     }
 
-    // TODO
-    public async cancelSync(props: CancelSyncProps): Promise<VoidReturn> {
-        return Err({
-            name: 'not_implemented',
-            message: 'Not implemented',
-            payload: { scheduleName: props.scheduleName }
-        });
+    public async pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'PAUSED' });
     }
 
-    // TODO
-    public async pauseSync(props: PauseSyncProps): Promise<VoidReturn> {
-        return Err({
-            name: 'not_implemented',
-            message: 'Not implemented',
-            payload: { scheduleName: props.scheduleName }
-        });
+    public async unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'STARTED' });
     }
 
-    // TODO
-    public async unpauseSync(props: UnpauseSyncProps): Promise<VoidReturn> {
-        return Err({
-            name: 'not_implemented',
-            message: 'Not implemented',
-            payload: { scheduleName: props.scheduleName }
+    public async deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'DELETED' });
+    }
+
+    private async setSyncState({ scheduleName, state }: { scheduleName: string; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {
+        const res = await this.routeFetch(putRecurringRoute)({
+            body: { state, scheduleName }
         });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error setting schedule state`,
+                payload: { scheduleName, state }
+            });
+        } else {
+            return Ok(undefined);
+        }
     }
 
     public async executeSync(props: ExecuteSyncProps): Promise<VoidReturn> {
@@ -344,7 +343,6 @@ export class OrchestratorClient {
         }
     }
 
-    //TODO: rename to cancelTask?
     public async cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },

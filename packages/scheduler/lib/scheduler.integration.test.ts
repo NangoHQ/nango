@@ -1,6 +1,6 @@
 import { expect, describe, it, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import { Scheduler } from './scheduler.js';
-import type { Schedule, Task } from './types.js';
+import type { Schedule, ScheduleState, Task } from './types.js';
 import type { TaskProps } from './models/tasks.js';
 import * as tasks from './models/tasks.js';
 import { getTestDbClient } from './db/helpers.test.js';
@@ -74,7 +74,7 @@ describe('Scheduler', () => {
     it('should call callback when task is failed', async () => {
         const task = await immediate(scheduler);
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
-        (await scheduler.fail({ taskId: task.id, error: { message: 'failure happend' } })).unwrap();
+        (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
         expect(callbacks.FAILED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is succeeded', async () => {
@@ -119,15 +119,35 @@ describe('Scheduler', () => {
         expect(taskAfter.state).toBe('EXPIRED');
     });
     it('should not run an immediate task for a schedule if another task is already running', async () => {
-        const schedule = await recurring(scheduler);
+        const schedule = await recurring({ scheduler });
         await immediate(scheduler, { schedule }); // first task: OK
         await expect(immediate(scheduler, { schedule })).rejects.toThrow();
     });
+    it('should change schedule state', async () => {
+        const paused = await recurring({ scheduler, state: 'PAUSED' });
+        expect(paused.state).toBe('PAUSED');
+        const unpaused = (await scheduler.setScheduleState({ scheduleName: paused.name, state: 'STARTED' })).unwrap();
+        expect(unpaused.state).toBe('STARTED');
+        const deleted = (await scheduler.setScheduleState({ scheduleName: unpaused.name, state: 'DELETED' })).unwrap();
+        expect(deleted.state).toBe('DELETED');
+        expect(deleted.deletedAt).not.toBe(null);
+    });
+    it('should cancel tasks if schedule is deleted', async () => {
+        const schedule = await recurring({ scheduler });
+        await immediate(scheduler, { schedule });
+        const deleted = (await scheduler.setScheduleState({ scheduleName: schedule.name, state: 'DELETED' })).unwrap();
+        expect(deleted.state).toBe('DELETED');
+        const tasks = (await scheduler.search({ scheduleId: schedule.id })).unwrap();
+        expect(tasks.length).toBe(1);
+        expect(tasks[0]?.state).toBe('CANCELLED');
+        expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
+    });
 });
 
-async function recurring(scheduler: Scheduler): Promise<Schedule> {
+async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler; state?: ScheduleState }): Promise<Schedule> {
     const recurringProps = {
-        name: 'recurring',
+        name: nanoid(),
+        state,
         startsAt: new Date(),
         frequencyMs: 900_000,
         payload: { foo: 'bar' },

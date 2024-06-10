@@ -82,6 +82,7 @@ async function createSchedule(db: knex.Knex): Promise<Schedule> {
     return (
         await schedules.create(db, {
             name: 'Test Schedule',
+            state: 'STARTED',
             payload: { foo: 'bar' },
             startsAt: new Date(),
             frequencyMs: 300_000,
