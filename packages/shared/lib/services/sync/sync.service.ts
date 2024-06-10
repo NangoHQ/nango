@@ -18,6 +18,7 @@ import connectionService from '../connection.service.js';
 import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { LogActionEnum } from '../../models/Activity.js';
+import type { Orchestrator } from '../../clients/orchestrator.js';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -536,7 +537,8 @@ export const getAndReconcileDifferences = async ({
     debug = false,
     singleDeployMode = false,
     logCtx,
-    logContextGetter
+    logContextGetter,
+    orchestrator
 }: {
     environmentId: number;
     flows: IncomingFlowConfig[];
@@ -546,6 +548,7 @@ export const getAndReconcileDifferences = async ({
     singleDeployMode?: boolean | undefined;
     logCtx?: LogContext;
     logContextGetter: LogContextGetter;
+    orchestrator: Orchestrator;
 }): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
     const newActions: SlimAction[] = [];
@@ -709,7 +712,7 @@ export const getAndReconcileDifferences = async ({
                         for (const connection of connections) {
                             const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
                             if (syncId) {
-                                await syncOrchestrator.softDeleteSync(syncId.id, environmentId);
+                                await syncOrchestrator.softDeleteSync(syncId.id, environmentId, orchestrator);
                             }
                         }
                     }

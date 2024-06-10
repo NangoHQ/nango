@@ -844,4 +844,17 @@ export class Orchestrator {
         });
         return res.isErr() ? Err(res.error) : Ok(undefined);
     }
+
+    async deleteSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
+        const res = await this.client.deleteSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
+                metadata: { syncId, environmentId }
+            });
+        }
+        return res;
+    }
 }

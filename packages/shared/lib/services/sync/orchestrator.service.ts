@@ -161,13 +161,15 @@ export class OrchestratorService {
         await deleteSyncConfig(syncConfigId);
     }
 
-    public async softDeleteSync(syncId: string, environmentId: number) {
-        await deleteScheduleForSync(syncId, environmentId);
+    public async softDeleteSync(syncId: string, environmentId: number, orchestrator: Orchestrator) {
+        await deleteScheduleForSync(syncId, environmentId); // TODO: legacy, to remove once temporal is removed
+
+        await orchestrator.deleteSync({ syncId, environmentId });
         await softDeleteSync(syncId);
         await errorNotificationService.sync.clearBySyncId({ sync_id: syncId });
     }
 
-    public async softDeleteSyncsByConnection(connection: Connection) {
+    public async softDeleteSyncsByConnection(connection: Connection, orchestrator: Orchestrator) {
         const syncs = await getSyncsByConnectionId(connection.id!);
 
         if (!syncs) {
@@ -175,11 +177,11 @@ export class OrchestratorService {
         }
 
         for (const sync of syncs) {
-            await this.softDeleteSync(sync.id, connection.environment_id);
+            await this.softDeleteSync(sync.id, connection.environment_id, orchestrator);
         }
     }
 
-    public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string) {
+    public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string, orchestrator: Orchestrator) {
         const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
 
         if (!syncs) {
@@ -187,7 +189,7 @@ export class OrchestratorService {
         }
 
         for (const sync of syncs) {
-            await this.softDeleteSync(sync.id, environmentId);
+            await this.softDeleteSync(sync.id, environmentId, orchestrator);
         }
     }
 
