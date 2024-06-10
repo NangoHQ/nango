@@ -9,8 +9,9 @@ import type { StandardNangoConfig } from '@nangohq/shared';
 
 import configService from './config.service.js';
 import { getNangoRootPath, printDebug } from '../utils.js';
-import { loadYamlAndGeneratedModel } from './model.service.js';
+import modelService from './model.service.js';
 import parserService from './parser.service.js';
+import { TYPES_FILE_NAME } from '../constants.js';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto'];
 
@@ -37,7 +38,12 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    const configs = await loadYamlAndGeneratedModel({ fullPath, debug });
+    if (!fs.existsSync(path.join(fullPath, TYPES_FILE_NAME))) {
+        if (debug) {
+            printDebug(`Creating ${TYPES_FILE_NAME} file`);
+        }
+        await modelService.createModelFile();
+    }
 
     const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
     const compiler = tsNode.create({
@@ -49,20 +55,27 @@ export async function compileAllFiles({
         printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
     }
 
+    const { success: loadSuccess, error, response: config } = await configService.load(fullPath, debug);
+
+    if (!loadSuccess || !config) {
+        console.log(chalk.red(error?.message));
+        throw new Error('Error loading config');
+    }
+
     let scriptDirectory = fullPath;
     if (scriptName && providerConfigKey && type) {
         scriptDirectory = localFileService.resolveTsFileLocation({ scriptName, providerConfigKey, type });
         console.log(chalk.green(`Compiling ${scriptName}.ts in ${scriptDirectory}`));
     }
 
-    const integrationFiles = listFilesToCompile({ scriptName, fullPath, config: configs, debug });
+    const integrationFiles = listFilesToCompile({ scriptName, fullPath, config, debug });
     let success = true;
 
-    const modelNames = configService.getModelNames(configs);
+    const modelNames = configService.getModelNames(config);
 
     for (const file of integrationFiles) {
         try {
-            const completed = await compile({ fullPath, file, config: configs, modelNames, compiler, debug });
+            const completed = await compile({ fullPath, file, config, modelNames, compiler, debug });
             if (!completed) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
                     success = false;

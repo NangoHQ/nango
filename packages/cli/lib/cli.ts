@@ -1,6 +1,7 @@
-import fs from 'fs';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import yaml from 'js-yaml';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import ejs from 'ejs';
@@ -8,11 +9,12 @@ import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
+import type { NangoConfig } from '@nangohq/shared';
 import { localFileService, nangoConfigFile, SyncConfigType } from '@nangohq/shared';
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, getPkgVersion, printDebug } from './utils.js';
 import configService from './services/config.service.js';
-import { loadYamlAndGeneratedModel } from './services/model.service.js';
-import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
+import modelService from './services/model.service.js';
+import { NangoSyncTypesFileLocation, TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,11 +37,41 @@ export const generate = async ({ fullPath, debug = false }: { fullPath: string; 
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
     const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
 
-    const configs = await loadYamlAndGeneratedModel({ fullPath, debug });
+    const configContents = fs.readFileSync(`${fullPath}/${nangoConfigFile}`, 'utf8');
+    const configData: NangoConfig = yaml.load(configContents) as NangoConfig;
+    const { models, integrations } = configData;
+
+    const interfaceDefinitions = modelService.build(models, integrations, debug);
+
+    if (interfaceDefinitions) {
+        fs.writeFileSync(`${fullPath}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    }
+
+    if (debug) {
+        printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
+    }
+
+    // insert NangoSync types to the bottom of the file
+    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
+    fs.writeFileSync(`${fullPath}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
+
+    const { success, error, response: config } = await configService.load(fullPath, debug);
+
+    if (!success || !config) {
+        console.log(chalk.red(error?.message));
+        return;
+    }
+
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
+    fs.writeFileSync(`${fullPath}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
+
+    if (debug) {
+        printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
+    }
 
     const allSyncNames: Record<string, boolean> = {};
 
-    for (const standardConfig of configs) {
+    for (const standardConfig of config) {
         const { syncs, actions, postConnectionScripts, providerConfigKey } = standardConfig;
 
         if (postConnectionScripts) {
@@ -220,8 +252,7 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
     await generate({ debug, fullPath });
 }
 
-export const tscWatch = async (debug = false) => {
-    const fullPath = process.cwd();
+export async function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
     const { success, error, response: config } = await configService.load(fullPath);
 
@@ -246,7 +277,7 @@ export const tscWatch = async (debug = false) => {
         }
     });
 
-    const distDir = './dist';
+    const distDir = path.join(fullPath, 'dist');
 
     if (!fs.existsSync(distDir)) {
         if (debug) {
@@ -255,7 +286,12 @@ export const tscWatch = async (debug = false) => {
         fs.mkdirSync(distDir);
     }
 
-    await loadYamlAndGeneratedModel({ fullPath, debug });
+    if (!fs.existsSync(path.join(fullPath, TYPES_FILE_NAME))) {
+        if (debug) {
+            printDebug(`Creating ${TYPES_FILE_NAME} file`);
+        }
+        await modelService.createModelFile();
+    }
 
     watcher.on('add', async (filePath: string) => {
         if (filePath === nangoConfigFile) {
@@ -287,19 +323,19 @@ export const tscWatch = async (debug = false) => {
         }
         await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, config, modelNames, debug });
     });
-};
+}
 
-export const configWatch = (debug = false) => {
-    const watchPath = `./${nangoConfigFile}`;
+export function configWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
+    const watchPath = path.join(fullPath, nangoConfigFile);
     if (debug) {
         printDebug(`Watching ${watchPath}`);
     }
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
     watcher.on('change', () => {
-        void loadYamlAndGeneratedModel({ fullPath: process.cwd(), debug });
+        void modelService.createModelFile(true);
     });
-};
+}
 
 let child: ChildProcess | undefined;
 process.on('SIGINT', () => {

@@ -140,10 +140,10 @@ program
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
 
         if (compileInterfaces) {
-            configWatch(debug);
+            configWatch({ fullPath, debug });
         }
 
-        await tscWatch(debug);
+        await tscWatch({ fullPath, debug });
     });
 
 program
@@ -240,10 +240,10 @@ program
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
         if (compileInterfaces) {
-            configWatch(debug);
+            configWatch({ fullPath, debug });
         }
 
-        tscWatch(debug);
+        tscWatch({ fullPath, debug });
         await dockerRun(debug);
     });
 
