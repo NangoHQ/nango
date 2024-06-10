@@ -541,8 +541,8 @@ describe('generate function tests', () => {
 
         expect(fs.existsSync(path.join(dir, 'models.ts'))).toBe(true);
         expect(fs.existsSync(path.join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
-        expect(fs.existsSync(path.join(dir, 'dist/contacts-hubspot.cjs'))).toBe(true);
-        expect(fs.existsSync(path.join(dir, 'dist/issues-github.cjs'))).toBe(true);
+        expect(fs.existsSync(path.join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
+        expect(fs.existsSync(path.join(dir, 'dist/issues-github.js'))).toBe(true);
 
         expect(success).toBe(true);
     });
@@ -557,7 +557,7 @@ describe('generate function tests', () => {
 
         expect(fs.existsSync(path.join(dir, 'models.ts'))).toBe(true);
         expect(fs.existsSync(path.join(dir, 'contacts.ts'))).toBe(true);
-        expect(fs.existsSync(path.join(dir, 'dist/contacts-hubspot.cjs'))).toBe(true);
+        expect(fs.existsSync(path.join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
         expect(success).toBe(true);
     });
 
@@ -570,7 +570,7 @@ describe('generate function tests', () => {
 
         const success = await compileAllFiles({ fullPath: dir, debug: false });
 
-        const module = await import(`${dir}dist/issues-github.cjs`);
+        const module = await import(`${dir}dist/issues-github.js`);
 
         const result = module.default.default();
         expect(result).toBe('Hello, world!');

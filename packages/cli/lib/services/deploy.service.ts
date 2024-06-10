@@ -43,7 +43,7 @@ class DeployService {
             process.exit(1);
         }
 
-        const { success, error, response: config } = await configService.load('', debug);
+        const { success, error, response: config } = await configService.load(fullPath, debug);
 
         if (!success || !config) {
             console.log(chalk.red(error?.message));
@@ -117,7 +117,7 @@ class DeployService {
             process.exit(1);
         }
 
-        const { success, error, response: config } = await configService.load('', debug);
+        const { success, error, response: config } = await configService.load(fullPath, debug);
 
         if (!success || !config) {
             console.log(chalk.red(error?.message));

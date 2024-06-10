@@ -71,7 +71,7 @@ class DryRunService {
             return;
         }
 
-        const { success, error, response: config } = await configService.load('', debug);
+        const { success, error, response: config } = await configService.load(process.cwd(), debug);
 
         if (!success || !config) {
             console.log(chalk.red(error?.message));

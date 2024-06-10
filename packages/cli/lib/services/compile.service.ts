@@ -241,7 +241,7 @@ async function compile({
         skipNodeModulesBundle: true,
         silent: !debug,
         outDir: path.join(fullPath, 'dist'),
-        outExtension: () => ({ js: '.cjs' }),
+        outExtension: () => ({ js: '.js' }),
         onSuccess: async () => {
             if (fs.existsSync(file.outputPath)) {
                 await fs.promises.rename(file.outputPath, outputPath);
@@ -265,7 +265,7 @@ export interface ListedFile {
 export function getFileToCompile({ fullPath, filePath }: { fullPath: string; filePath: string }): ListedFile {
     return {
         inputPath: filePath,
-        outputPath: path.join(fullPath, '/dist/', path.basename(filePath, '.ts') + '.cjs'),
+        outputPath: path.join(fullPath, '/dist/', path.basename(filePath, '.ts') + '.js'),
         baseName: path.basename(filePath, '.ts')
     };
 }
