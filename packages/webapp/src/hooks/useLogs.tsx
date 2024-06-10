@@ -22,7 +22,8 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'],
             // Slide the window automatically when live
             // We do it only at query time so the URL stays shareable (datadog style)
             if (isLive && period) {
-                period = slidePeriod(period);
+                const tmp = slidePeriod(period);
+                period = { from: tmp.from!.toISOString(), to: tmp.to!.toISOString() };
             }
 
             const res = await apiFetch(`/api/v1/logs/operations?env=${env}`, {
