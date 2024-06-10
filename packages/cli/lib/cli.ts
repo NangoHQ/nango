@@ -31,7 +31,7 @@ export const version = (debug: boolean) => {
     console.log(chalk.green('Nango CLI version:'), version);
 };
 
-export const generate = async ({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) => {
+export async function generate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/sync.ejs'), 'utf8');
     const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/action.ejs'), 'utf8');
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
@@ -179,7 +179,7 @@ export const generate = async ({ fullPath, debug = false }: { fullPath: string; 
             }
         }
     }
-};
+}
 
 /**
  * Init

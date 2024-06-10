@@ -99,7 +99,7 @@ program
     .description('Generate a new Nango integration')
     .action(async function (this: Command) {
         const { debug } = this.opts();
-        await generate(debug);
+        await generate({ fullPath: process.cwd(), debug });
     });
 
 program
