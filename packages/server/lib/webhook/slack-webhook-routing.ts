@@ -1,15 +1,7 @@
-import type { InternalNango as Nango } from './internal-nango.js';
-import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { WebhookResponse } from './types.js';
+import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 
-export default async function route(
-    nango: Nango,
-    integration: ProviderConfig,
-    headers: Record<string, any>,
-    body: Record<string, any>,
-    logContextGetter: LogContextGetter
-): Promise<WebhookResponse> {
+const route: WebhookHandler = async (nango, integration, headers, body, _rawBody, logContextGetter: LogContextGetter) => {
     // slack sometimes sends the payload as a form encoded string, so we need to parse it
     // it also sends json as a x-www-form-urlencoded string, so we need to handle that too
     let payload;
@@ -33,4 +25,6 @@ export default async function route(
 
         return { parsedBody: payload, connectionIds: response?.connectionIds || [] };
     }
-}
+};
+
+export default route;

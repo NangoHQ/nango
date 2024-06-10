@@ -985,6 +985,8 @@ class ConnectionService {
         });
         await logCtx.info('App connection was approved and credentials were saved');
 
+        await logCtx.success();
+
         await updateSuccessActivityLog(Number(activityLogId), true);
     }
 

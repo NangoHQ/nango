@@ -1,7 +1,7 @@
-import type { InternalNango as Nango } from './internal-nango.js';
 import type { Config as ProviderConfig } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
+import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 
 const logger = getLogger('Webhook.Hubspot');
@@ -19,7 +19,7 @@ export function validate(integration: ProviderConfig, headers: Record<string, an
     return crypto.timingSafeEqual(signatureBuffer, hashBuffer);
 }
 
-export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any, logContextGetter: LogContextGetter) {
+const route: WebhookHandler = async (nango, integration, headers, body, _rawBody, logContextGetter: LogContextGetter) => {
     const valid = validate(integration, headers, body);
 
     if (!valid) {
@@ -27,6 +27,7 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
         return;
     }
 
+    console.log(headers);
     if (Array.isArray(body)) {
         const groupedByObjectId = body.reduce((acc, event) => {
             (acc[event.objectId] = acc[event.objectId] || []).push(event);
@@ -54,4 +55,6 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     } else {
         return nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId', logContextGetter);
     }
-}
+};
+
+export default route;
