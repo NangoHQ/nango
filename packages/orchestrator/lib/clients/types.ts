@@ -63,16 +63,6 @@ export type ExecuteActionProps = Omit<ExecuteProps, 'args'> & { args: ActionArgs
 export type ExecuteWebhookProps = Omit<ExecuteProps, 'args'> & { args: WebhookArgs };
 export type ExecutePostConnectionProps = Omit<ExecuteProps, 'args'> & { args: PostConnectionArgs };
 export type ExecuteSyncProps = PostRecurringRun['Body'];
-// TODO:
-export interface CancelSyncProps {
-    scheduleName: string;
-}
-export interface PauseSyncProps {
-    scheduleName: string;
-}
-export interface UnpauseSyncProps {
-    scheduleName: string;
-}
 
 export type OrchestratorTask = TaskSync | TaskAction | TaskWebhook | TaskPostConnection;
 

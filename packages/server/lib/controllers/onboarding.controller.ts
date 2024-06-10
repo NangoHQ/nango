@@ -26,9 +26,7 @@ import {
     LogActionEnum,
     analytics,
     AnalyticsTypes,
-    getSyncConfigRaw,
-    getOrchestratorUrl,
-    Orchestrator
+    getSyncConfigRaw
 } from '@nangohq/shared';
 import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
@@ -37,9 +35,10 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import type { GetOnboardingStatus } from '@nangohq/types';
 import type { RequestLocals } from '../utils/express.js';
-import { OrchestratorClient } from '@nangohq/nango-orchestrator';
+import { getOrchestrator } from '../utils/utils.js';
 
 const logger = getLogger('Server.Onboarding');
+const orchestrator = getOrchestrator();
 
 class OnboardingController {
     /**
@@ -262,6 +261,7 @@ class OnboardingController {
                 logger.info(`[demo] no sync were found ${environment.id}`);
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
+                    orchestrator,
                     environment,
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     syncNames: [DEMO_SYNC_NAME],
@@ -272,6 +272,7 @@ class OnboardingController {
                 });
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
+                    orchestrator,
                     environment,
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     syncNames: [DEMO_SYNC_NAME],
@@ -296,6 +297,7 @@ class OnboardingController {
                 logger.info(`[demo] no job were found ${environment.id}`);
                 await syncOrchestrator.runSyncCommand({
                     recordsService,
+                    orchestrator,
                     environment,
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
                     syncNames: [DEMO_SYNC_NAME],
@@ -447,7 +449,6 @@ class OnboardingController {
                     syncConfig: { id: syncConfig.id!, name: syncConfig?.sync_name }
                 }
             );
-            const orchestrator = new Orchestrator(new OrchestratorClient({ baseUrl: getOrchestratorUrl() }));
             const actionResponse = await orchestrator.triggerAction({
                 connection,
                 actionName: DEMO_ACTION_NAME,

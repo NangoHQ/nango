@@ -17,7 +17,7 @@ export function getSimpleOAuth2ClientConfig(
     template: ProviderTemplate,
     connectionConfig: Record<string, string>
 ): Merge<ModuleOptions, { http: WreckHttpOptions }> {
-    const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['OAuth2'] as string);
+    const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['OAUTH2'] as string);
     const strippedTokenUrl = templateTokenUrl.replace(/connectionConfig\./g, '');
     const tokenUrl = new URL(interpolateString(strippedTokenUrl, connectionConfig));
     const strippedAuthorizeUrl = template.authorization_url!.replace(/connectionConfig\./g, '');

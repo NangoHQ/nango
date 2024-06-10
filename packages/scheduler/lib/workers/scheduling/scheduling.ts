@@ -21,6 +21,9 @@ export async function dueSchedules(db: knex.Knex): Promise<Result<Schedule[]>> {
                     .from({ s: SCHEDULES_TABLE })
                     .where({ state: 'STARTED' })
                     .whereRaw('s.starts_at <= NOW()')
+                    // Locking schedules to prevent any concurrent update or concurrent scheduling of tasks
+                    .forUpdate()
+                    .skipLocked()
             )
             .select('*')
             .from<DbSchedule>({ s: SCHEDULES_TABLE })

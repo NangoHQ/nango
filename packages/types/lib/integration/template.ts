@@ -3,15 +3,15 @@ import type { AuthModeType, OAuthAuthorizationMethodType, OAuthBodyFormatType } 
 import type { EndpointMethod } from '../api.js';
 
 export interface TokenUrlObject {
-    OAuth1?: string;
-    OAuth2?: string;
-    OAuth2CC?: string;
-    Basic?: string;
-    ApiKey?: string;
-    AppStore?: string;
-    Custom?: string;
-    App?: string;
-    None?: string;
+    OAUTH1?: string;
+    OAUTH2?: string;
+    OAUTH2CC?: string;
+    BASIC?: string;
+    API_KEY?: string;
+    APP_STORE?: string;
+    CUSTOM?: string;
+    APP?: string;
+    NONE?: string;
 }
 
 export interface Template {

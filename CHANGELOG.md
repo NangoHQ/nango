@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.0] - 2024-06-10
+
+### Added
+
+- *(proxy)* Support sending requests through HTTPS_PROXY (#2243) by @mithlesh135
+- *(logs)* Timeout old operations (#2220) by @bodinsamuel
+- *(integrations)* Add support for marketo (#2234) by @hassan254-prog
+- *(processor)* Add tracing/logging to processTask function (#2250) by @TBonnin
+- *(google-mail)* Action script to send an email using google-mail integration (#2242) by @Pyloris
+- *(integrations)* Add support for highlevel white-label (#2251) by @hassan254-prog
+- Add sync type and validation for orchestrator TaskSync (#2256) by @TBonnin
+- *(integrations)* Add support for datev (#2223) by @hassan254-prog
+- *(orchestrator)* Add support for schedules (#2260) by @TBonnin
+- Expose environment name in scripts (#2268) by @TBonnin
+- *(integrations)* Add support for vimeo (#2271) by @hassan254-prog
+- *(webhooks)* [nan-1063] webhook on refresh error and slack notification (#2254) by @khaliqgant
+- *(orchestrator)* Scheduling tasks based on schedules (#2274) by @TBonnin
+- *(integrations)* Add support for instantly api key (#2265) by @jwd-dev
+- *(cli)* [nan-1106] import relative files in syncs/actions (#2273) by @khaliqgant
+- *(webhooks)* [nan 1064] webhook on sync error (#2281) by @khaliqgant
+- *(orchestrator)* Add endpoint to api/client to run a schedule (#2283) by @TBonnin
+
+### Changed
+
+- Rename orchestrator waitForCompletion param to longPolling (#2238) by @TBonnin
+- Actions and webhooks can be executed by orchestrator (#2237) by @TBonnin
+
+### Fixed
+
+- *(notificaitions)* [nan-981] Tighten up spacing + update notification display on list connections if a failure on the sync (#2247) by @khaliqgant
+- *(ui)* Use common fetch method (#2246) by @bodinsamuel
+- *(proxy)* Handle gzip response stream (#2248) by @bodinsamuel
+- *(cli)* [nan-1088] support older cli versions (#2253) by @khaliqgant
+- *(logs)* Ui feedback (#2249) by @bodinsamuel
+- *(orchestratorClient)* Race condition in dequeue (#2252) by @TBonnin
+- *(logs)* Feedback #3 (#2255) by @bodinsamuel
+- *(orchestrator)* Race condition in dequeue (#2261) by @TBonnin
+- *(proxy)* [nan-1049] if encoded at all then use pass through (#2262) by @khaliqgant
+- *(logs)* Handle buffered activities (#2257) by @bodinsamuel
+- *(integrations)* Fix mailgun logo (#2264) by @hassan254-prog
+- Actions/webhooks without input should not failed (#2267) by @TBonnin
+- *(orchestrator)* Accept bigger task output (#2270) by @TBonnin
+- Post script connection error + handle in logs (#2259) by @bodinsamuel
+- *(server)* [nan-979] Remove dupes if two or more syncs have an error for the connections list page (#2263) by @khaliqgant
+- *(logs)* Feedback #4 (#2269) by @bodinsamuel
+- *(webapp)* [nan-1086] route to the demo after verifying (#2275) by @khaliqgant
+- *(dependency)* Cleanup and upgrade some (#2272) by @bodinsamuel
+- Return error message when action fails (#2277) by @TBonnin
+- Actions/webhooks should always report failure when failing (#2278) by @TBonnin
+- *(cli)* [nan-1105] don't overwrite post connection file if it exists already (#2282) by @khaliqgant
+- *(server)* Embed router in a subpath (#2279) by @bodinsamuel
+- *(dockerfile)* Persist use unified Dockerfile (#2280) by @bodinsamuel
+- *(webapp)* [nan-1147] remove refresh option on refresh token (#2284) by @khaliqgant
+- *(logs)* Missing env, sort query params (#2288) by @bodinsamuel
+- *(docker)* Stop compiling persist, autocompile tsconfig.docker.json (#2286) by @bodinsamuel
+- *(server)* [nan-1167] fix types (#2295) by @khaliqgant
+
 ## [v0.39.33] - 2024-06-03
 
 ### Added
@@ -1214,6 +1271,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.0]: https://github.com/NangoHQ/nango/compare/v0.39.33..v0.40.0
 [v0.39.33]: https://github.com/NangoHQ/nango/compare/v0.39.32..v0.39.33
 [v0.39.32]: https://github.com/NangoHQ/nango/compare/v0.39.31..v0.39.32
 [v0.39.31]: https://github.com/NangoHQ/nango/compare/v0.39.30..v0.39.31
