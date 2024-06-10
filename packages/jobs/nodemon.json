@@ -1,5 +1,15 @@
 {
-    "watch": ["lib", "../shared/dist", "../utils/dist", "../records/dist", "../data-ingestion/dist", "../logs/dist", "../orchestrator/dist", "../../.env"],
+    "watch": [
+        "lib",
+        "../shared/dist",
+        "../utils/dist",
+        "../records/dist",
+        "../data-ingestion/dist",
+        "../logs/dist",
+        "../orchestrator/dist",
+        "../webhooks/dist",
+        "../../.env"
+    ],
     "ext": "js,ts,json",
     "ignore": ["lib/**/*.spec.ts"],
     "exec": "tsx -r dotenv/config lib/app.ts dotenv_config_path=./../../.env",
