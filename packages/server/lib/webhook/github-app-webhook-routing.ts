@@ -32,7 +32,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
         }
     }
 
-    return nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id', logContextGetter);
+    return nango.executeScriptForWebhooks(integration, body, 'action', 'installation.id', logContextGetter, 'installation_id');
 };
 
 export default route;
