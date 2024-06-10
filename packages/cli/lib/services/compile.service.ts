@@ -9,9 +9,8 @@ import type { StandardNangoConfig } from '@nangohq/shared';
 
 import configService from './config.service.js';
 import { getNangoRootPath, printDebug } from '../utils.js';
-import modelService from './model.service.js';
+import { loadYamlAndGeneratedModel } from './model.service.js';
 import parserService from './parser.service.js';
-import { TYPES_FILE_NAME } from '../constants.js';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto'];
 
@@ -38,12 +37,7 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    if (!fs.existsSync(path.join(fullPath, TYPES_FILE_NAME))) {
-        if (debug) {
-            printDebug(`Creating ${TYPES_FILE_NAME} file`);
-        }
-    }
-    await modelService.createModelFile({ fullPath });
+    const config = await loadYamlAndGeneratedModel({ fullPath, debug });
 
     const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
     const compiler = tsNode.create({
@@ -53,13 +47,6 @@ export async function compileAllFiles({
 
     if (debug) {
         printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
-    }
-
-    const { success: loadSuccess, error, response: config } = await configService.load(fullPath, debug);
-
-    if (!loadSuccess || !config) {
-        console.log(chalk.red(error?.message));
-        throw new Error('Error loading config');
     }
 
     let scriptDirectory: string | undefined;

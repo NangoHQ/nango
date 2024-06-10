@@ -131,7 +131,7 @@ export interface NangoSyncConfig {
     id?: number;
 
     // v2 additions
-    input?: NangoSyncModel;
+    input?: NangoSyncModel | null;
     sync_type?: SyncType;
     nango_yaml_version?: string;
     webhookSubscriptions?: string[];

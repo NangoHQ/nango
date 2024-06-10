@@ -232,11 +232,7 @@ const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB, singleAl
     return endpoints;
 };
 
-const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputModel: NangoSyncModel, config: NangoConfig): ServiceResponse<NangoSyncModel> => {
-    if (Object.keys(inputModel).length > 0) {
-        return { success: false, error: new NangoError('conflicting_model_and_input'), response: null };
-    }
-
+function parseModelInEndpoint(endpoint: string, allModelNames: string[], config: NangoConfig): ServiceResponse<NangoSyncModel | null> {
     const modelNameWithIdentifier = endpoint.match(/{([^}]+)}/)?.[1];
     const modelNameWithIdentifierArray = modelNameWithIdentifier?.split(':');
 
@@ -259,12 +255,11 @@ const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputMo
             return { success: false, error: new NangoError('missing_model_identifier', identifier), response: null };
         }
 
-        inputModel.name = modelNameWithIdentifier as string;
-        inputModel.fields = identifierModelFields;
+        return { success: true, error: null, response: { name: modelNameWithIdentifier!, fields: identifierModelFields } };
     }
 
-    return { success: true, error: null, response: inputModel };
-};
+    return { success: true, error: null, response: null };
+}
 
 const isEnabled = (script: NangoIntegrationDataV2, isPublic: boolean | null, preBuilt: boolean | null): boolean => {
     if (script.enabled !== undefined) {
@@ -364,31 +359,68 @@ function formModelOutput({
                 allModels.push(model);
             }
 
-            const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
+            const modelFields = getFieldsForModel(model, config);
 
-            if (modelFields) {
-                models.push({ name: model, fields: modelFields });
-                const subModels = modelFields.filter((field) => {
-                    if (typeof field?.type === 'string') {
-                        const cleanType = field.type.replace(/\[\]/g, '');
-                        return allModelNames.some((m) => m.includes(cleanType));
-                    } else {
-                        return false;
-                    }
-                });
+            if (!modelFields) {
+                continue;
+            }
 
-                for (const subModel of subModels) {
-                    const subModelFields = getFieldsForModel(subModel.type, config) as { name: string; type: string }[];
-                    if (subModelFields) {
-                        const subModelName = subModel.type.replace(/\[\]/g, '');
-                        models.push({ name: subModelName, fields: subModelFields });
-                    }
+            models.push({ name: model, fields: modelFields });
+            const subModels = modelFields.filter((field) => {
+                if (typeof field?.type === 'string') {
+                    const cleanType = field.type.replace(/\[\]/g, '');
+                    return allModelNames.some((m) => m.includes(cleanType));
+                } else {
+                    return false;
+                }
+            });
+
+            for (const subModel of subModels) {
+                const subModelFields = getFieldsForModel(subModel.type, config);
+                if (subModelFields) {
+                    const subModelName = subModel.type.replace(/\[\]/g, '');
+                    models.push({ name: subModelName, fields: subModelFields });
                 }
             }
         }
     }
 
     return { success: true, error: null, response: models };
+}
+
+export function formModelInput({
+    integrationData,
+    allModels,
+    config,
+    name
+}: {
+    integrationData: NangoIntegrationDataV2;
+    allModels: string[];
+    config: NangoConfigV2;
+    name: string;
+}): ServiceResponse<NangoSyncModel> {
+    if (!integrationData.input) {
+        return { success: true, error: null, response: null };
+    }
+
+    const input = integrationData.input;
+    if (isJsOrTsType(input)) {
+        return { success: true, error: new NangoError('invalid_input_mode', { input, name }), response: null };
+    }
+
+    if (allModels.includes(input)) {
+        return { success: false, error: new NangoError('duplicate_input_model', { input, name }), response: null };
+    }
+
+    allModels.push(input);
+
+    const modelFields = getFieldsForModel(input, config);
+
+    if (!modelFields) {
+        return { success: false, error: new NangoError('failed_to_find_input_model', { input, name }), response: null };
+    }
+
+    return { success: true, error: null, response: { name: input, fields: modelFields } };
 }
 
 function buildSyncs({
@@ -424,14 +456,13 @@ function buildSyncs({
             return { success: false, error: modelError, response: null };
         }
 
-        const inputModel: NangoSyncModel = {} as NangoSyncModel;
-
+        let inputModel: NangoSyncModel | null = null;
         if (sync.input) {
-            const modelFields = getFieldsForModel(sync.input, config) as { name: string; type: string }[];
-            if (modelFields) {
-                inputModel.name = sync.input;
-                inputModel.fields = modelFields;
+            const model = formModelInput({ allModels, config, integrationData: sync, name: syncName });
+            if (!model.success || !model.response) {
+                return { success: false, error: model.error, response: null };
             }
+            inputModel = model.response;
         }
 
         let endpoints: NangoSyncEndpoint[] = [];
@@ -563,7 +594,14 @@ function buildActions({
             return { success: false, error: modelError, response: null };
         }
 
-        let inputModel: NangoSyncModel = {} as NangoSyncModel;
+        let inputModel: NangoSyncModel | null = null;
+        if (action.input) {
+            const model = formModelInput({ allModels, config, integrationData: action, name: actionName });
+            if (!model.success || !model.response) {
+                return { success: false, error: model.error, response: null };
+            }
+            inputModel = model.response;
+        }
 
         if (action.input) {
             if (action.input.includes('{') && action.input.includes('}')) {
@@ -574,10 +612,12 @@ function buildActions({
                     throw new Error(`Model ${modelName} not found included in models definition`);
                 }
             }
-            const modelFields = getFieldsForModel(action.input, config) as { name: string; type: string }[];
+
+            const modelFields = getFieldsForModel(action.input, config);
             if (modelFields) {
-                inputModel.name = action.input;
-                inputModel.fields = modelFields;
+                inputModel = { name: action.input, fields: modelFields };
+            } else {
+                throw new Error(`Model "${action.input}" not found included in models definition`);
             }
         }
 
@@ -598,7 +638,11 @@ function buildActions({
 
             endpoints = assignEndpoints(actionEndpoint, 'POST', false, showMessages);
             if (actionEndpoint?.includes('{') && actionEndpoint.includes('}')) {
-                const { success, error, response } = parseModelInEndpoint(actionEndpoint, allModelNames, inputModel, config);
+                if (inputModel) {
+                    return { success: false, error: new NangoError('conflicting_model_and_input'), response: null };
+                }
+
+                const { success, error, response } = parseModelInEndpoint(actionEndpoint, allModelNames, config);
                 if (!success || !response) {
                     return { success, error, response: null };
                 }
@@ -629,7 +673,7 @@ function buildActions({
             version: action.version || null,
             last_deployed: action.updated_at || null,
             attributes: action.attributes || {},
-            returns: action.output as string[],
+            returns: models.length > 0 ? [models[0]!.name] : [],
             description: action?.description || action?.metadata?.description || '',
             scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
             input: inputModel,
