@@ -223,8 +223,14 @@ program
     .action(async function (this: Command) {
         const { autoConfirm, debug } = this.opts();
         const fullPath = process.cwd();
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        await verificationService.filesMatchConfig({ fullPath });
+        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
+
+        const match = await verificationService.filesMatchConfig({ fullPath });
+        if (!match) {
+            process.exitCode = 1;
+            return;
+        }
+
         const success = await compileAllFiles({ fullPath, debug });
         if (!success) {
             process.exitCode = 1;

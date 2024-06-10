@@ -108,6 +108,9 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
     const strippedModelName = modelName.replace(/\[\]/g, '');
 
     const modelData = config.models[strippedModelName];
+    if (!modelData) {
+        return null;
+    }
 
     for (const fieldName in modelData) {
         const fieldType = modelData[fieldName];
@@ -355,14 +358,21 @@ function formModelOutput({
                 return { success: false, error, response: null };
             }
 
-            if (!allModels.includes(model) && !isJsOrTsType(model)) {
+            if (isJsOrTsType(model)) {
+                continue;
+            }
+
+            if (!allModels.includes(model)) {
                 allModels.push(model);
             }
 
             const modelFields = getFieldsForModel(model, config);
-
             if (!modelFields) {
-                continue;
+                return { success: false, error: new NangoError('failed_to_find_model', { model }), response: null };
+            }
+
+            if (type === 'sync' && !modelFields.find((field) => field.name === 'id')) {
+                return { success: false, error: new NangoError('model_should_have_property_id', { model, name }), response: null };
             }
 
             models.push({ name: model, fields: modelFields });
@@ -392,32 +402,33 @@ export function formModelInput({
     integrationData,
     allModels,
     config,
-    name
+    name,
+    type
 }: {
     integrationData: NangoIntegrationDataV2;
     allModels: string[];
     config: NangoConfigV2;
     name: string;
-}): ServiceResponse<NangoSyncModel> {
+    type: 'sync' | 'action';
+}): ServiceResponse<NangoSyncModel | string> {
     if (!integrationData.input) {
         return { success: true, error: null, response: null };
     }
 
     const input = integrationData.input;
     if (isJsOrTsType(input)) {
-        return { success: true, error: new NangoError('invalid_input_mode', { input, name }), response: null };
+        return { success: true, error: null, response: input };
     }
 
     if (allModels.includes(input)) {
-        return { success: false, error: new NangoError('duplicate_input_model', { input, name }), response: null };
+        return { success: false, error: new NangoError('duplicate_model', { input, name, type }), response: null };
     }
 
     allModels.push(input);
 
     const modelFields = getFieldsForModel(input, config);
-
     if (!modelFields) {
-        return { success: false, error: new NangoError('failed_to_find_input_model', { input, name }), response: null };
+        return { success: false, error: new NangoError('failed_to_find_model', { model: input }), response: null };
     }
 
     return { success: true, error: null, response: { name: input, fields: modelFields } };
@@ -456,9 +467,9 @@ function buildSyncs({
             return { success: false, error: modelError, response: null };
         }
 
-        let inputModel: NangoSyncModel | null = null;
+        let inputModel: NangoSyncModel | string | null = null;
         if (sync.input) {
-            const model = formModelInput({ allModels, config, integrationData: sync, name: syncName });
+            const model = formModelInput({ allModels, config, integrationData: sync, name: syncName, type: 'sync' });
             if (!model.success || !model.response) {
                 return { success: false, error: model.error, response: null };
             }
@@ -594,9 +605,9 @@ function buildActions({
             return { success: false, error: modelError, response: null };
         }
 
-        let inputModel: NangoSyncModel | null = null;
+        let inputModel: NangoSyncModel | string | null = null;
         if (action.input) {
-            const model = formModelInput({ allModels, config, integrationData: action, name: actionName });
+            const model = formModelInput({ allModels, config, integrationData: action, name: actionName, type: 'action' });
             if (!model.success || !model.response) {
                 return { success: false, error: model.error, response: null };
             }
@@ -609,7 +620,7 @@ function buildActions({
                 const modelName = action.input.match(/{([^}]+)}/)?.[1];
 
                 if (!allModelNames.includes(modelName as string)) {
-                    throw new Error(`Model ${modelName} not found included in models definition`);
+                    return { success: false, error: new NangoError('failed_to_find_model', { model: modelName }), response: null };
                 }
             }
 
@@ -617,7 +628,7 @@ function buildActions({
             if (modelFields) {
                 inputModel = { name: action.input, fields: modelFields };
             } else {
-                throw new Error(`Model "${action.input}" not found included in models definition`);
+                return { success: false, error: new NangoError('failed_to_find_model', { model: action.input }), response: null };
             }
         }
 

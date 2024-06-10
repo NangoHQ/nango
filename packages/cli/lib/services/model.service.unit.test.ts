@@ -37,25 +37,6 @@ describe('buildModelTs', () => {
         expect(res).toMatchSnapshot('');
     });
 
-    it('should throw if sync model does not have an id', () => {
-        expect(() => {
-            buildModelsTS({
-                configs: [
-                    {
-                        providerConfigKey: 'foobar',
-                        actions: [],
-                        syncs: [
-                            {
-                                ...defaultSync,
-                                models: [{ name: 'Sync1', fields: [{ name: 'name', type: 'dfd' }] }]
-                            }
-                        ]
-                    }
-                ]
-            });
-        }).toThrowError(new Error('Model "Sync1" doesn\'t have an id field. This is required to be able to uniquely identify the data record.'));
-    });
-
     it('should support [key: string] model', () => {
         const res = buildModelsTS({
             configs: [

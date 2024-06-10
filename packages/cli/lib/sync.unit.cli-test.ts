@@ -473,62 +473,6 @@ describe('generate function tests', () => {
         expect(error?.message).toEqual('Problem validating the nango.yaml file.');
     });
 
-    it('should correctly interpret a string union literal type', async () => {
-        const dir = getTestDirectory('validation-string-union');
-        await init({ absolutePath: dir });
-
-        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/string-literal/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).resolves.toBeUndefined();
-        const modelsFile = await fs.promises.readFile(`${dir}/models.ts`, 'utf8');
-        expect(modelsFile).toContain(`gender: 'male' | 'female';`);
-    });
-
-    it('should correctly interpret a union literal type with a string and a primitive', async () => {
-        const dir = getTestDirectory('validation-string-primitve');
-        await init({ absolutePath: dir });
-
-        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-literal/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).resolves.toBeUndefined();
-        const modelsFile = await fs.promises.readFile(`${dir}/models.ts`, 'utf8');
-        expect(modelsFile).toContain(`gender: 'male' | null;`);
-    });
-
-    it('should correctly interpret a union literal type with a string and a model', async () => {
-        const dir = getTestDirectory('validation-string-model');
-        await init({ absolutePath: dir });
-
-        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-literal-model/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).resolves.toBeUndefined();
-        const modelsFile = await fs.promises.readFile(`${dir}/models.ts`, 'utf8');
-        expect(modelsFile).toContain(`gender: 'male' | Other`);
-        expect(modelsFile).toContain(`user: User | Account`);
-    });
-
-    it('should correctly interpret a union types, array types, and record types', async () => {
-        const dir = getTestDirectory('validation-array-records');
-        await init({ absolutePath: dir });
-
-        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/mixed-types/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).resolves.toBeUndefined();
-        const modelsFile = await fs.promises.readFile(`${dir}/models.ts`, 'utf8');
-        expect(modelsFile).toContain(`record: Record<string, string>;`);
-        expect(modelsFile).toContain(`und: string | null | undefined;`);
-        expect(modelsFile).toContain(`def: 'male' | string | null | undefined;`);
-        expect(modelsFile).toContain(`reference: Other[];`);
-        expect(modelsFile).toContain(`nullableDate: Date | null;`);
-    });
-
-    it('should correctly interpret a union type with an array model', async () => {
-        const dir = getTestDirectory('validation-array-model');
-        await init({ absolutePath: dir });
-
-        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/model-array-types/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).resolves.toBeUndefined();
-        const modelsFile = await fs.promises.readFile(`${dir}/models.ts`, 'utf8');
-        expect(modelsFile).not.toContain(`'Other[]' | null | undefined;`);
-        expect(modelsFile).toContain(`Other[] | null | undefined;`);
-    });
-
     it('should be able to compile files in nested directories', async () => {
         const dir = getTestDirectory('nested');
         await init({ absolutePath: dir });

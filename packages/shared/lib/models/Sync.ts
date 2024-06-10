@@ -143,7 +143,7 @@ export interface SyncDeploymentResult {
     providerConfigKey: string;
     type: SyncConfigType;
     last_deployed?: Date;
-    input?: string | SyncModelSchema;
+    input?: string | SyncModelSchema | undefined;
     models: string | string[];
     id?: number | undefined;
 
@@ -172,7 +172,7 @@ interface InternalIncomingPreBuiltFlowConfig {
     attributes?: object;
     metadata?: NangoConfigMetadata;
     model_schema: string;
-    input?: string | SyncModelSchema;
+    input?: string | SyncModelSchema | undefined;
     endpoints?: NangoSyncEndpoint[];
 }
 

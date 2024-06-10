@@ -317,11 +317,11 @@ class DeployService {
                     printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
                 }
 
-                if (flow.input?.fields) {
+                if (flow.input && typeof flow.input !== 'string') {
                     model_schema.push(flow.input);
                 }
 
-                const body = {
+                const body: IncomingFlowConfig = {
                     syncName,
                     providerConfigKey,
                     models: Array.isArray(models) ? models : [models],
@@ -331,7 +331,7 @@ class DeployService {
                     auto_start: flow.auto_start === false ? false : true,
                     attributes: flow.attributes || {},
                     metadata: metadata || {},
-                    input: flow.input?.name || '',
+                    input: flow.input && typeof flow.input !== 'string' ? flow.input.name : undefined,
                     sync_type: flow.sync_type as SyncType,
                     type,
                     fileBody: {

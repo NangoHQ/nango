@@ -45,7 +45,7 @@ class VerificationService {
                 if (debug) {
                     printDebug(`Running init, generate, and tsc to create ${nangoConfigFile} file, generate the integration files and then compile them.`);
                 }
-                init({ absolutePath: fullPath, debug });
+                await init({ absolutePath: fullPath, debug });
                 await generate({ fullPath, debug });
                 await compileAllFiles({ fullPath, debug });
             } else {
@@ -105,7 +105,7 @@ class VerificationService {
 
         if (!success || !config) {
             console.log(chalk.red(error?.message));
-            throw new Error('Failed to load config');
+            return false;
         }
 
         const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();

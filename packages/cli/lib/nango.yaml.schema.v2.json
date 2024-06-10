@@ -1,11 +1,13 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
+    "additionalProperties": false,
     "properties": {
         "integrations": {
             "type": "object",
             "additionalProperties": {
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "post-connection-scripts": {
                         "type": "array",
@@ -13,215 +15,216 @@
                             "type": "string"
                         },
                         "errorMessage": {
-                            "_": "nango yaml schema validation error: post-connection-scripts must be an array of strings."
+                            "_": "post-connection-scripts must be an array of strings."
                         }
                     },
                     "syncs": {
-                        "errorMessage": {
-                            "_": " "
-                        },
-                        "anyOf": [
-                            {
+                        "type": "object",
+                        "patternProperties": {
+                            "[a-zA-Z-]+": {
                                 "type": "object",
                                 "additionalProperties": false,
-                                "errorMessage": {
-                                    "_": " "
-                                }
-                            },
-                            {
-                                "type": "null",
-                                "errorMessage": {
-                                    "_": " "
-                                }
-                            },
-                            {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "type": "object",
-                                    "properties": {
-                                        "description": {
-                                            "type": "string",
-                                            "errorMessage": {
-                                                "type": "nango yaml schema validation error: description must be a string."
-                                            }
-                                        },
-                                        "sync_type": {
-                                            "type": "string",
-                                            "enum": ["incremental", "full"],
-                                            "errorMessage": {
-                                                "enum": "nango yaml schema validation error: sync_type must be either 'incremental' or 'full'."
-                                            }
-                                        },
-                                        "track_deletes": {
-                                            "type": "boolean",
-                                            "errorMessage": {
-                                                "type": "nango yaml schema validation error: track_deletes must be a boolean."
-                                            }
-                                        },
-                                        "auto_start": {
-                                            "type": "boolean",
-                                            "errorMessage": {
-                                                "type": "nango yaml schema validation error: auto_start must be a boolean."
-                                            }
-                                        },
-                                        "runs": {
-                                            "type": "string",
-                                            "errorMessage": {
-                                                "type": "nango yaml schema validation error: runs must be a string and include the word \"every\"."
-                                            }
-                                        },
-                                        "endpoint": {
-                                            "oneOf": [
-                                                { "type": "string" },
-                                                {
-                                                    "type": "array",
-                                                    "items": { "type": "string" }
-                                                }
-                                            ],
-                                            "errorMessage": {
-                                                "_": "nango yaml schema validation error: endpoint must be a string or an array of strings."
-                                            }
-                                        },
-                                        "scopes": {
-                                            "oneOf": [
-                                                { "type": "string" },
-                                                {
-                                                    "type": "array",
-                                                    "items": { "type": "string" }
-                                                }
-                                            ],
-                                            "errorMessage": {
-                                                "_": "nango yaml schema validation error: scopes must be a string or an array of strings."
-                                            }
-                                        },
-                                        "input": {
-                                            "type": "string",
-                                            "nullable": true,
-                                            "errorMessage": {
-                                                "type": "nango yaml schema validation error: input must be a string and should define any required metadata for the sync."
-                                            }
-                                        },
-                                        "output": {
-                                            "oneOf": [
-                                                { "type": "string" },
-                                                {
-                                                    "type": "array",
-                                                    "items": { "type": "string" }
-                                                }
-                                            ],
-                                            "errorMessage": {
-                                                "_": "nango yaml schema validation error: output must be a string or an array of strings."
-                                            }
-                                        },
-                                        "webhook-subscriptions": {
-                                            "oneOf": [
-                                                { "type": "string" },
-                                                {
-                                                    "type": "array",
-                                                    "items": { "type": "string" }
-                                                }
-                                            ],
-                                            "errorMessage": {
-                                                "_": "nango yaml schema validation error: webhook-subscriptions must be a string or an array of strings."
-                                            }
+                                "properties": {
+                                    "description": {
+                                        "type": "string",
+                                        "errorMessage": {
+                                            "type": "description must be a string."
                                         }
                                     },
-                                    "required": ["endpoint", "output"],
-                                    "errorMessage": {
-                                        "required": {
-                                            "endpoint": "nango yaml schema validation error: An endpoint property is required to specify how to retrieve the data from the sync.",
-                                            "output": "nango yaml schema validation error: An output property is required to specify what is the outcome of the sync."
+                                    "sync_type": {
+                                        "type": "string",
+                                        "enum": ["incremental", "full"],
+                                        "errorMessage": {
+                                            "enum": "sync_type must be either 'incremental' or 'full'."
                                         }
+                                    },
+                                    "track_deletes": {
+                                        "type": "boolean",
+                                        "errorMessage": {
+                                            "type": "track_deletes must be a boolean."
+                                        }
+                                    },
+                                    "auto_start": {
+                                        "type": "boolean",
+                                        "errorMessage": {
+                                            "type": "auto_start must be a boolean."
+                                        }
+                                    },
+                                    "runs": {
+                                        "type": "string",
+                                        "errorMessage": {
+                                            "type": "runs must be a string and include the word \"every\"."
+                                        }
+                                    },
+                                    "endpoint": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string",
+                                                "pattern": "GET\\s/.+",
+                                                "errorMessage": {
+                                                    "_": " "
+                                                }
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "pattern": "GET\\s/.+",
+                                                    "errorMessage": {
+                                                        "_": " "
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "errorMessage": {
+                                            "_": "endpoint must be a URI (or an array of URIs) with an HTTP verb, i.e: \"GET /tickets/ticket\""
+                                        }
+                                    },
+                                    "scopes": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ],
+                                        "errorMessage": {
+                                            "_": "scopes must be a string or an array of strings."
+                                        }
+                                    },
+                                    "input": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "errorMessage": {
+                                            "type": "input must be a string and should define any required metadata for the sync."
+                                        }
+                                    },
+                                    "output": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ],
+                                        "errorMessage": {
+                                            "_": "output must be a string or an array of strings."
+                                        }
+                                    },
+                                    "webhook-subscriptions": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ],
+                                        "errorMessage": {
+                                            "_": "webhook-subscriptions must be a string or an array of strings."
+                                        }
+                                    }
+                                },
+                                "required": ["endpoint", "output"],
+                                "errorMessage": {
+                                    "required": {
+                                        "endpoint": "An endpoint property is required to specify how to retrieve the data from the sync.",
+                                        "output": "An output property is required to specify what is the outcome of the sync."
                                     }
                                 }
                             }
-                        ]
+                        }
                     },
                     "actions": {
-                        "errorMessage": {
-                            "_": " "
-                        },
-                        "anyOf": [
-                            {
-                                "type": "null",
-                                "errorMessage": {
-                                    "_": " "
-                                }
-                            },
-                            {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "errorMessage": {
-                                    "_": " "
-                                }
-                            },
-                            {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "type": "object",
-                                    "properties": {
-                                        "description": {
-                                            "type": "string",
-                                            "errorMessage": {
-                                                "type": "nango yaml schema validation error: description must be a string."
-                                            }
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "description": {
+                                    "type": "string",
+                                    "errorMessage": {
+                                        "type": "description must be a string."
+                                    }
+                                },
+                                "endpoint": {
+                                    "type": "string",
+                                    "pattern": "[GET|POST|PUT|PATCH|DELETE]\\s/.+",
+                                    "errorMessage": {
+                                        "type": "endpoint must be a URI with an HTTP verb, i.e: \"POST /tickets/ticket\"",
+                                        "pattern": "endpoint must be a URI with an HTTP verb, i.e: \"POST /tickets/ticket\""
+                                    }
+                                },
+                                "scopes": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
                                         },
-                                        "endpoint": {
-                                            "type": "string",
-                                            "errorMessage": {
-                                                "type": "nango yaml schema validation error: endpoint must be a string, for example \"POST /tickets/ticket\"."
-                                            }
-                                        },
-                                        "scopes": {
-                                            "oneOf": [
-                                                { "type": "string" },
-                                                {
-                                                    "type": "array",
-                                                    "items": { "type": "string" }
-                                                }
-                                            ],
-                                            "errorMessage": {
-                                                "_": "nango yaml schema validation error: scopes must be a string or an array of strings."
-                                            }
-                                        },
-                                        "input": {
-                                            "type": "string",
-                                            "nullable": true,
-                                            "errorMessage": {
-                                                "type": "nango yaml schema validation error: input must be a string and should define any required metadata for the sync."
-                                            }
-                                        },
-                                        "output": {
-                                            "oneOf": [
-                                                { "type": "string" },
-                                                {
-                                                    "type": "array",
-                                                    "items": { "type": "string" }
-                                                }
-                                            ],
-                                            "errorMessage": {
-                                                "_": "nango yaml schema validation error: output must be a string or an array of strings."
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
                                             }
                                         }
-                                    },
-                                    "required": ["endpoint"],
+                                    ],
                                     "errorMessage": {
-                                        "required": {
-                                            "endpoint": "nango yaml schema validation error: An endpoint property is required to specify how to trigger the action."
+                                        "_": "scopes must be a string or an array of strings."
+                                    }
+                                },
+                                "input": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "errorMessage": {
+                                        "type": "input must be a string and should define any required input for the action."
+                                    }
+                                },
+                                "output": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
                                         },
-                                        "_": "nango yaml schema validation error: webhook-subscriptions is not a valid property for an action."
-                                    },
-                                    "not": {
-                                        "required": ["webhook-subscriptions"]
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    ],
+                                    "errorMessage": {
+                                        "_": "output must be a string or an array of strings."
                                     }
                                 }
+                            },
+                            "required": ["endpoint"],
+                            "errorMessage": {
+                                "required": {
+                                    "endpoint": "An endpoint property is required to specify how to trigger the action."
+                                }
                             }
-                        ]
+                        }
                     }
-                },
-                "additionalProperties": false
+                }
+            }
+        },
+        "models": {
+            "type": "object",
+            "patternProperties": {
+                "[a-zA-Z0-9_-]": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
             }
         }
-    },
-    "additionalProperties": true
+    }
 }

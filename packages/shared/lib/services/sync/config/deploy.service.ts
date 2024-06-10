@@ -808,7 +808,7 @@ async function compileDeployInfo({
         runs,
         active: true,
         model_schema: model_schema as unknown as SyncModelSchema[],
-        input: flow.input || '',
+        input: flow.input,
         sync_type: flow.sync_type,
         webhook_subscriptions: flow.webhookSubscriptions || [],
         enabled: lastSyncWasEnabled && !shouldCap

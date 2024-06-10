@@ -10,8 +10,8 @@ import util from 'util';
 import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
-import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
-import { SyncConfigType, cloudHost, stagingHost, NANGO_VERSION } from '@nangohq/shared';
+import type { NangoModel } from '@nangohq/shared';
+import { cloudHost, stagingHost, NANGO_VERSION } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { state } from './state.js';
 import https from 'node:https';
@@ -337,76 +337,6 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
             return String(rawField);
         }
     }
-}
-
-export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
-    const returnedModels = Object.keys(integrations).reduce<string[]>((acc, providerConfigKey) => {
-        const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
-        const syncNames = Object.keys(syncObject);
-        for (const syncName of syncNames) {
-            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-            if (syncData.returns) {
-                const syncReturns = Array.isArray(syncData.returns) ? syncData.returns : [syncData.returns];
-                syncReturns.forEach((modelName) => {
-                    if (!acc.includes(modelName)) {
-                        acc.push(modelName);
-                    }
-                });
-            }
-        }
-        return acc;
-    }, []);
-
-    if (!models) {
-        return null;
-    }
-
-    const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
-        const fields = models[modelName] as NangoModel;
-
-        // we only care that models that are returned have an ID field
-        // if the model is not returned from a sync script then it must be a
-        // helper model that is used to build the returned models
-        const syncForModel = Object.keys(integrations).find((providerConfigKey) => {
-            const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
-            const syncNames = Object.keys(syncObject);
-            for (const syncName of syncNames) {
-                const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-                if (syncData.returns && syncData.type !== SyncConfigType.ACTION) {
-                    return syncData.returns.includes(modelName);
-                }
-            }
-            return false;
-        });
-
-        if (returnedModels.includes(modelName) && !fields['id'] && syncForModel) {
-            throw new Error(`Model "${modelName}" doesn't have an id field. This is required to be able to uniquely identify the data record.`);
-        }
-
-        const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
-        const interfaceName = `${singularModelName.charAt(0).toUpperCase()}${singularModelName.slice(1)}`;
-        let extendsClause = '';
-        const fieldDefinitions = Object.keys(fields)
-            .filter((fieldName: string) => {
-                if (fieldName === '__extends') {
-                    const fieldModel = fields[fieldName] as unknown as string;
-                    const multipleExtends = fieldModel.split(',').map((e) => e.trim());
-                    extendsClause = ` extends ${multipleExtends.join(', ')}`;
-                    return false;
-                }
-                return true;
-            })
-            .map((fieldName: string) => {
-                const fieldModel = fields[fieldName] as string | NangoModel;
-                const fieldType = getFieldType(fieldModel, debug);
-                return `  ${fieldName}: ${fieldType};`;
-            })
-            .join('\n');
-        const interfaceDefinition = `export interface ${interfaceName}${extendsClause} {\n${fieldDefinitions}\n}\n`;
-        return interfaceDefinition;
-    });
-
-    return interfaceDefinitions;
 }
 
 export function getNangoRootPath(debug = false) {
