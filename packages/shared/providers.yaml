@@ -749,6 +749,17 @@ figma:
     proxy:
         base_url: https://api.figma.com
     docs: https://docs.nango.dev/integrations/all/figma
+fireflies:
+    categories:
+        - analytics
+        - communication
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fireflies.ai
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/fireflies
 fitbit:
     categories:
         - sports
