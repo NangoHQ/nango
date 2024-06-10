@@ -21,7 +21,7 @@
                     "syncs": {
                         "type": "object",
                         "patternProperties": {
-                            "[a-zA-Z-]+": {
+                            "[a-zA-Z0-9-]+": {
                                 "type": "object",
                                 "additionalProperties": false,
                                 "properties": {
@@ -148,68 +148,70 @@
                     },
                     "actions": {
                         "type": "object",
-                        "additionalProperties": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "description": {
-                                    "type": "string",
-                                    "errorMessage": {
-                                        "type": "description must be a string."
-                                    }
-                                },
-                                "endpoint": {
-                                    "type": "string",
-                                    "pattern": "[GET|POST|PUT|PATCH|DELETE]\\s/.+",
-                                    "errorMessage": {
-                                        "type": "endpoint must be a URI with an HTTP verb, i.e: \"POST /tickets/ticket\"",
-                                        "pattern": "endpoint must be a URI with an HTTP verb, i.e: \"POST /tickets/ticket\""
-                                    }
-                                },
-                                "scopes": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
+                        "patternProperties": {
+                            "[a-zA-Z0-9-]+": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                    "description": {
+                                        "type": "string",
+                                        "errorMessage": {
+                                            "type": "description must be a string."
                                         }
-                                    ],
-                                    "errorMessage": {
-                                        "_": "scopes must be a string or an array of strings."
-                                    }
-                                },
-                                "input": {
-                                    "type": "string",
-                                    "nullable": true,
-                                    "errorMessage": {
-                                        "type": "input must be a string and should define any required input for the action."
-                                    }
-                                },
-                                "output": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
+                                    },
+                                    "endpoint": {
+                                        "type": "string",
+                                        "pattern": "[GET|POST|PUT|PATCH|DELETE]\\s/.+",
+                                        "errorMessage": {
+                                            "type": "endpoint must be a URI with an HTTP verb, i.e: \"POST /tickets/ticket\"",
+                                            "pattern": "endpoint must be a URI with an HTTP verb, i.e: \"POST /tickets/ticket\""
                                         }
-                                    ],
-                                    "errorMessage": {
-                                        "_": "output must be a string or an array of strings."
+                                    },
+                                    "scopes": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ],
+                                        "errorMessage": {
+                                            "_": "scopes must be a string or an array of strings."
+                                        }
+                                    },
+                                    "input": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "errorMessage": {
+                                            "type": "input must be a string and should define any required input for the action."
+                                        }
+                                    },
+                                    "output": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ],
+                                        "errorMessage": {
+                                            "_": "output must be a string or an array of strings."
+                                        }
                                     }
-                                }
-                            },
-                            "required": ["endpoint"],
-                            "errorMessage": {
-                                "required": {
-                                    "endpoint": "An endpoint property is required to specify how to trigger the action."
+                                },
+                                "required": ["endpoint"],
+                                "errorMessage": {
+                                    "required": {
+                                        "endpoint": "An endpoint property is required to specify how to trigger the action."
+                                    }
                                 }
                             }
                         }
