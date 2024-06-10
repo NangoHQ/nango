@@ -12,8 +12,8 @@ import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.
 import type { DeployOptions } from '../types.js';
 
 class DeployService {
-    public async admin(environmentName: string, debug = false): Promise<void> {
-        await verificationService.necessaryFilesExist(false);
+    public async admin({ fullPath, environmentName, debug = false }: { fullPath: string; environmentName: string; debug?: boolean }): Promise<void> {
+        await verificationService.necessaryFilesExist({ fullPath, autoConfirm: false });
 
         await parseSecretKey(environmentName, debug);
 
@@ -36,7 +36,7 @@ class DeployService {
             printDebug(`Environment is set to ${environmentName}`);
         }
 
-        const successfulCompile = await compileAllFiles({ debug });
+        const successfulCompile = await compileAllFiles({ fullPath, debug });
 
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
@@ -83,9 +83,9 @@ class DeployService {
         }
     }
 
-    public async prep(options: DeployOptions, environment: string, debug = false) {
+    public async prep({ fullPath, options, environment, debug = false }: { fullPath: string; options: DeployOptions; environment: string; debug?: boolean }) {
         const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm } = options;
-        await verificationService.necessaryFilesExist(autoConfirm);
+        await verificationService.necessaryFilesExist({ fullPath, autoConfirm });
 
         await parseSecretKey(environment, debug);
 
@@ -110,7 +110,7 @@ class DeployService {
 
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
-        const successfulCompile = await compileAllFiles({ debug });
+        const successfulCompile = await compileAllFiles({ fullPath, debug });
 
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));

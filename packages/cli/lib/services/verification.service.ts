@@ -11,14 +11,22 @@ import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
 import { init, generate } from '../cli.js';
 
 class VerificationService {
-    public async necessaryFilesExist(autoConfirm: boolean, debug = false, checkDist = false) {
-        const cwd = process.cwd();
+    public async necessaryFilesExist({
+        fullPath,
+        autoConfirm,
+        debug = false,
+        checkDist = false
+    }: {
+        fullPath: string;
+        autoConfirm: boolean;
+        debug?: boolean;
+        checkDist?: boolean;
+    }) {
         if (debug) {
-            printDebug(`Current full working directory is read as: ${cwd}`);
+            printDebug(`Current full working directory is read as: ${fullPath}`);
         }
-        const currentDirectorySplit = cwd.split(path.sep);
-        const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
 
+        const currentDirectory = path.basename(fullPath);
         if (debug) {
             printDebug(`Current stripped directory is read as: ${currentDirectory}`);
         }
@@ -28,7 +36,7 @@ class VerificationService {
             process.exit(1);
         }
 
-        if (!fs.existsSync(`./${nangoConfigFile}`)) {
+        if (!fs.existsSync(path.join(fullPath, nangoConfigFile))) {
             const install = autoConfirm
                 ? true
                 : await promptly.confirm(`No ${nangoConfigFile} file was found. Would you like to create some default integrations and build them? (yes/no)`);
@@ -37,9 +45,9 @@ class VerificationService {
                 if (debug) {
                     printDebug(`Running init, generate, and tsc to create ${nangoConfigFile} file, generate the integration files and then compile them.`);
                 }
-                init(debug);
-                await generate(debug);
-                await compileAllFiles({ debug });
+                init({ absolutePath: fullPath, debug });
+                await generate({ fullPath, debug });
+                await compileAllFiles({ fullPath, debug });
             } else {
                 console.log(chalk.red(`Exiting...`));
                 process.exit(1);
@@ -54,7 +62,7 @@ class VerificationService {
             return;
         }
 
-        const distDir = './dist';
+        const distDir = path.join(fullPath, 'dist');
 
         if (!fs.existsSync(distDir)) {
             if (debug) {
@@ -69,8 +77,8 @@ class VerificationService {
                     printDebug(`Creating the dist directory and generating the default integration files.`);
                 }
                 fs.mkdirSync(distDir);
-                await generate(debug);
-                await compileAllFiles({ debug });
+                await generate({ fullPath, debug });
+                await compileAllFiles({ fullPath, debug });
             }
         } else {
             const files = fs.readdirSync(distDir);
@@ -86,14 +94,14 @@ class VerificationService {
                     if (debug) {
                         printDebug(`Generating the default integration files.`);
                     }
-                    await compileAllFiles({ debug });
+                    await compileAllFiles({ fullPath, debug });
                 }
             }
         }
     }
 
-    public async filesMatchConfig(): Promise<boolean> {
-        const { success, error, response: config } = await configService.load();
+    public async filesMatchConfig({ fullPath }: { fullPath: string }): Promise<boolean> {
+        const { success, error, response: config } = await configService.load(fullPath);
 
         if (!success || !config) {
             console.log(chalk.red(error?.message));
@@ -104,7 +112,7 @@ class VerificationService {
         const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);
 
-        const tsFiles = listFilesToCompile({ config });
+        const tsFiles = listFilesToCompile({ fullPath, config });
 
         const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
 

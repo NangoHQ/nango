@@ -16,6 +16,7 @@ export default defineConfig({
         },
         chaiConfig: {
             truncateThreshold: 10000
-        }
+        },
+        threads: false
     }
 });
