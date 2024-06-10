@@ -50,6 +50,9 @@ const orchestratorClient = {
     },
     deleteSync: () => {
         return Promise.resolve({}) as any;
+    },
+    cancel: () => {
+        return Promise.resolve({}) as any;
     }
 };
 const slackService = new SlackService({ orchestratorClient, logContextGetter });
