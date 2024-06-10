@@ -12,6 +12,13 @@ import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { Environment } from '../../../models/Environment.js';
 import type { Account } from '../../../models/Admin.js';
+import { Ok } from '@nangohq/utils';
+
+const mockOrchestrator = {
+    updateSyncFrequency() {
+        return Promise.resolve(Ok(undefined));
+    }
+};
 
 describe('Sync config create', () => {
     const environment = { id: 1, name: '' } as Environment;
@@ -37,6 +44,7 @@ describe('Sync config create', () => {
             flows: syncs,
             nangoYamlBody: '',
             logContextGetter,
+            orchestrator: mockOrchestrator,
             debug,
             postConnectionScriptsByProvider: []
         });
@@ -71,6 +79,7 @@ describe('Sync config create', () => {
             flows: syncs,
             nangoYamlBody: '',
             logContextGetter,
+            orchestrator: mockOrchestrator,
             debug,
             postConnectionScriptsByProvider: []
         });
@@ -183,7 +192,16 @@ describe('Sync config create', () => {
         });
 
         await expect(
-            DeployConfigService.deploy({ environment, account, flows: syncs, nangoYamlBody: '', logContextGetter, debug, postConnectionScriptsByProvider: [] })
+            DeployConfigService.deploy({
+                environment,
+                account,
+                flows: syncs,
+                nangoYamlBody: '',
+                logContextGetter,
+                orchestrator: mockOrchestrator,
+                debug,
+                postConnectionScriptsByProvider: []
+            })
         ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');
     });
 });

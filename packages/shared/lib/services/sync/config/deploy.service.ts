@@ -3,7 +3,6 @@ import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import environmentService from '../../environment.service.js';
 import accountService from '../../account.service.js';
-import { updateSyncScheduleFrequency } from '../schedule.service.js';
 import {
     createActivityLog,
     createActivityLogMessage,
@@ -31,6 +30,7 @@ import { postConnectionScriptService } from '../post-connection.service.js';
 import { SyncConfigType } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
+import type { Result } from '@nangohq/utils';
 import { env } from '@nangohq/utils';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
@@ -45,6 +45,24 @@ const nameOfType = 'sync/action';
 
 type FlowWithVersion = Omit<IncomingFlowConfig, 'fileBody'>;
 
+interface OrchestratorInterface {
+    updateSyncFrequency: ({
+        syncId,
+        interval,
+        syncName,
+        environmentId,
+        activityLogId,
+        logCtx
+    }: {
+        syncId: string;
+        interval: string;
+        syncName: string;
+        environmentId: number;
+        activityLogId?: number;
+        logCtx?: LogContext;
+    }) => Promise<Result<void>>;
+}
+
 export async function deploy({
     environment,
     account,
@@ -52,6 +70,7 @@ export async function deploy({
     postConnectionScriptsByProvider,
     nangoYamlBody,
     logContextGetter,
+    orchestrator,
     debug
 }: {
     environment: Environment;
@@ -60,6 +79,7 @@ export async function deploy({
     postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
     nangoYamlBody: string;
     logContextGetter: LogContextGetter;
+    orchestrator: OrchestratorInterface;
     debug?: boolean;
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
     const insertData: SyncConfig[] = [];
@@ -115,7 +135,8 @@ export async function deploy({
             accountId: account.id,
             activityLogId: activityLogId as number,
             debug: Boolean(debug),
-            logCtx
+            logCtx,
+            orchestrator
         });
 
         if (!success || !response) {
@@ -260,7 +281,8 @@ export async function deployPreBuilt(
     environment: Environment,
     configs: IncomingPreBuiltFlowConfig[],
     nangoYamlBody: string,
-    logContextGetter: LogContextGetter
+    logContextGetter: LogContextGetter,
+    orchestrator: OrchestratorInterface
 ): Promise<ServiceResponse<SyncConfigResult | null>> {
     const [firstConfig] = configs;
 
@@ -355,17 +377,22 @@ export async function deployPreBuilt(
             if (runs) {
                 const syncsConfig = await getSyncsByProviderConfigAndSyncName(environment.id, provider_config_key, sync_name);
                 for (const syncConfig of syncsConfig) {
-                    const { success, error } = await updateSyncScheduleFrequency(
-                        syncConfig.id,
-                        syncConfig.frequency || runs,
-                        sync_name,
-                        environment.id,
-                        activityLogId as number,
+                    const interval = syncConfig.frequency || runs;
+                    const res = await orchestrator.updateSyncFrequency({
+                        syncId: syncConfig.id,
+                        interval,
+                        syncName: sync_name,
+                        environmentId: environment.id,
+                        activityLogId: activityLogId as number,
                         logCtx
-                    );
-
-                    if (!success) {
-                        return { success, error, response: null };
+                    });
+                    if (res.isErr()) {
+                        const error = new NangoError('error_updating_sync_schedule_frequency', {
+                            syncId: syncConfig.id,
+                            environmentId: environment.id,
+                            interval
+                        });
+                        return { success: false, error, response: null };
                     }
                 }
             }
@@ -610,7 +637,8 @@ async function compileDeployInfo({
     accountId,
     activityLogId,
     debug,
-    logCtx
+    logCtx,
+    orchestrator
 }: {
     flow: IncomingFlowConfig;
     flowsWithVersions: FlowWithVersion[];
@@ -623,6 +651,7 @@ async function compileDeployInfo({
     activityLogId: number;
     debug: boolean;
     logCtx: LogContext;
+    orchestrator: OrchestratorInterface;
 }): Promise<ServiceResponse<FlowWithVersion[]>> {
     const {
         syncName,
@@ -702,17 +731,22 @@ async function compileDeployInfo({
             const syncsConfig = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
 
             for (const syncConfig of syncsConfig) {
-                const { success, error } = await updateSyncScheduleFrequency(
-                    syncConfig.id,
-                    syncConfig.frequency || runs,
+                const interval = syncConfig.frequency || runs;
+                const res = await orchestrator.updateSyncFrequency({
+                    syncId: syncConfig.id,
+                    interval,
                     syncName,
-                    environment_id,
-                    activityLogId,
+                    environmentId: environment_id,
+                    activityLogId: activityLogId,
                     logCtx
-                );
-
-                if (!success) {
-                    return { success, error, response: null };
+                });
+                if (res.isErr()) {
+                    const error = new NangoError('error_updating_sync_schedule_frequency', {
+                        syncId: syncConfig.id,
+                        environmentId: environment_id,
+                        interval
+                    });
+                    return { success: false, error, response: null };
                 }
             }
         }
