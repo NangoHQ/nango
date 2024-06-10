@@ -1469,6 +1469,13 @@ microsoft-entra-id:
         - other
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/microsoft-entra-id
+microsoft-power-bi:
+    categories:
+        - productivity
+    alias: microsoft
+    proxy:
+        base_url: https://api.powerbi.com
+    docs: https://docs.nango.dev/integrations/all/microsoft-power-bi
 mixpanel:
     categories:
         - analytics
