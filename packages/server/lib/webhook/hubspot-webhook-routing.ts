@@ -27,7 +27,6 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
         return;
     }
 
-    console.log(headers);
     if (Array.isArray(body)) {
         const groupedByObjectId = body.reduce((acc, event) => {
             (acc[event.objectId] = acc[event.objectId] || []).push(event);
