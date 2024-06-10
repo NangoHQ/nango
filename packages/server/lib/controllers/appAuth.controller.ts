@@ -100,7 +100,7 @@ class AppAuthController {
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             const template = configService.getTemplate(config.provider);
-            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['App'] as string);
+            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['APP'] as string);
 
             if (template.auth_mode !== 'APP') {
                 await createActivityLogMessageAndEnd({
