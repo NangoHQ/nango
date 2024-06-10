@@ -17,12 +17,23 @@ describe('listFiles', () => {
     });
 
     it('should list files with syncName', () => {
-        const files = listFilesToCompile({ scriptName: 'compile.service', fullPath: thisFolder, config: [] });
+        const files = listFilesToCompile({ scriptName: 'compile.service', scriptDirectory: '', fullPath: thisFolder, config: [] });
         expect(files.length).toBe(1);
         expect(files[0]).toStrictEqual({
             baseName: 'compile.service',
             inputPath: `${thisFolder}/compile.service.ts`,
             outputPath: `${thisFolder}/dist/compile.service.js`
+        });
+    });
+
+    it('should list files in subdirectory', () => {
+        const parent = path.join(thisFolder, '..');
+        const files = listFilesToCompile({ scriptName: 'compile.service', fullPath: parent, scriptDirectory: 'services', config: [] });
+        expect(files.length).toBe(1);
+        expect(files[0]).toStrictEqual({
+            baseName: 'compile.service',
+            inputPath: `${parent}/services/compile.service.ts`,
+            outputPath: `${parent}/dist/compile.service.js`
         });
     });
 

@@ -62,13 +62,13 @@ export async function compileAllFiles({
         throw new Error('Error loading config');
     }
 
-    let scriptDirectory = fullPath;
+    let scriptDirectory: string | undefined;
     if (scriptName && providerConfigKey && type) {
-        scriptDirectory = localFileService.resolveTsFileLocation({ scriptName, providerConfigKey, type });
-        console.log(chalk.green(`Compiling ${scriptName}.ts in ${scriptDirectory}`));
+        scriptDirectory = localFileService.resolveTsFileLocation({ scriptName, providerConfigKey, type }).replace(fullPath, '');
+        console.log(chalk.green(`Compiling ${scriptName}.ts in ${fullPath}${scriptDirectory}`));
     }
 
-    const integrationFiles = listFilesToCompile({ scriptName, fullPath, config, debug });
+    const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, config, debug });
     let success = true;
 
     const modelNames = configService.getModelNames(config);
@@ -263,20 +263,23 @@ export interface ListedFile {
 }
 
 export function getFileToCompile({ fullPath, filePath }: { fullPath: string; filePath: string }): ListedFile {
+    const baseName = path.basename(filePath, '.ts');
     return {
         inputPath: filePath,
-        outputPath: path.join(fullPath, '/dist/', path.basename(filePath, '.ts') + '.js'),
-        baseName: path.basename(filePath, '.ts')
+        outputPath: path.join(fullPath, '/dist/', `${baseName}.js`),
+        baseName
     };
 }
 
 export function listFilesToCompile({
     fullPath,
+    scriptDirectory,
     scriptName,
     config,
     debug
 }: {
     fullPath: string;
+    scriptDirectory?: string | undefined;
     scriptName?: string | undefined;
     config: StandardNangoConfig[];
     debug?: boolean;
@@ -287,7 +290,7 @@ export function listFilesToCompile({
             printDebug(`Compiling ${scriptName}.ts`);
         }
 
-        files = [`${fullPath}/${scriptName}.ts`];
+        files = [path.join(fullPath, scriptDirectory || '', `${scriptName}.ts`)];
     } else {
         files = glob.sync(`${fullPath}/*.ts`);
 
