@@ -245,7 +245,7 @@ class OAuthController {
             }
 
             // certain providers need the credentials to be specified in the config
-            if (overrideCredentials) {
+            if (overrideCredentials && (overrideCredentials['oauth_client_id_override'] || overrideCredentials['oauth_client_secret_override'])) {
                 if (overrideCredentials['oauth_client_id_override']) {
                     config.oauth_client_id = overrideCredentials['oauth_client_id_override'];
 
@@ -1556,6 +1556,7 @@ class OAuthController {
             });
 
             await logCtx.success();
+
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
