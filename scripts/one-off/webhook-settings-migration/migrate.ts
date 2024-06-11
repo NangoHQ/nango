@@ -35,8 +35,10 @@ const start = new Date();
 migrate()
     .catch((error: unknown) => {
         console.error('Error occurred during webhook settings migration:', error);
+        process.exit(1);
     })
     .finally(async () => {
         const end = new Date();
         console.log('Execution took:', (end.getTime() - start.getTime()) / 1000, 's');
+        process.exit(0);
     });
