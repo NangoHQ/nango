@@ -110,22 +110,6 @@ export function formatDateToUSFormat(dateString: string): string {
 
 export function formatDateToLogFormat(dateString: string): string {
     const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        month: 'short',
-        day: '2-digit',
-        fractionalSecondDigits: 2,
-        hour12: false
-    };
-
-    const formattedDate = date.toLocaleString('en-US', options);
-
-    if (formattedDate === 'Invalid Date') {
-        return '-';
-    }
-
     return format(date, 'MMM dd, HH:mm:ss:SS');
 }
 
