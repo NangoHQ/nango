@@ -20,9 +20,11 @@ import {
     connectionRefreshSuccess as connectionRefreshSuccessHook,
     connectionRefreshFailed as connectionRefreshFailedHook
 } from '../hooks/hooks.js';
-import { getOrchestratorClient } from '../utils/utils.js';
+import { getOrchestrator, getOrchestratorClient } from '../utils/utils.js';
 
 export type { ConnectionList };
+
+const orchestrator = getOrchestrator();
 
 class ConnectionController {
     /**
@@ -154,7 +156,7 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.deleteConnection(connection, providerConfigKey, environment.id);
+            await connectionService.deleteConnection(connection, providerConfigKey, environment.id, orchestrator);
 
             res.status(204).send();
         } catch (err) {
@@ -196,7 +198,7 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.deleteConnection(connection, integration_key, info?.environmentId as number);
+            await connectionService.deleteConnection(connection, integration_key, info?.environmentId as number, orchestrator);
 
             const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
             await slackNotificationService.closeAllOpenNotifications(environment.id);

@@ -113,7 +113,8 @@ class SyncController {
                     debug,
                     singleDeployMode,
                     logCtx,
-                    logContextGetter
+                    logContextGetter,
+                    orchestrator
                 });
                 if (!success) {
                     reconcileSuccess = false;
@@ -160,7 +161,8 @@ class SyncController {
                 activityLogId: null,
                 debug,
                 singleDeployMode,
-                logContextGetter
+                logContextGetter,
+                orchestrator
             });
 
             res.send(result);
@@ -909,7 +911,7 @@ class SyncController {
                 return;
             }
 
-            await syncOrchestrator.softDeleteSync(syncId, environmentId);
+            await syncOrchestrator.softDeleteSync(syncId, environmentId, orchestrator);
 
             res.sendStatus(204);
         } catch (e) {
