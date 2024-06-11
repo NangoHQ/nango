@@ -7,23 +7,30 @@ import { validateRequest } from '@nangohq/utils';
 const path = '/v1/recurring';
 const method = 'PUT';
 
-export type PostRecurring = Endpoint<{
+export type PutRecurring = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Body: {
-        scheduleName: string;
-        state: 'STARTED' | 'PAUSED' | 'DELETED';
+        schedule: { name: string; state: 'STARTED' | 'PAUSED' | 'DELETED' } | { name: string; frequencyMs: number };
     };
-    Error: ApiError<'recurring_failed'>;
+    Error: ApiError<'put_recurring_failed'>;
     Success: { scheduleId: string };
 }>;
 
-const validate = validateRequest<PostRecurring>({
+const validate = validateRequest<PutRecurring>({
     parseBody: (data: any) => {
         return z
             .object({
-                scheduleName: z.string().min(1),
-                state: z.enum(['STARTED', 'PAUSED', 'DELETED'])
+                schedule: z.union([
+                    z.object({
+                        name: z.string().min(1),
+                        state: z.union([z.literal('STARTED'), z.literal('PAUSED'), z.literal('DELETED')])
+                    }),
+                    z.object({
+                        name: z.string().min(1),
+                        frequencyMs: z.number().int().positive()
+                    })
+                ])
             })
             .strict()
             .parse(data);
@@ -31,19 +38,28 @@ const validate = validateRequest<PostRecurring>({
 });
 
 const handler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<PostRecurring>, res: EndpointResponse<PostRecurring>) => {
-        const { scheduleName, state } = req.body;
-        const schedule = await scheduler.setScheduleState({ scheduleName, state });
-        if (schedule.isErr()) {
-            return res.status(500).json({ error: { code: 'recurring_failed', message: schedule.error.message } });
+    return async (req: EndpointRequest<PutRecurring>, res: EndpointResponse<PutRecurring>) => {
+        const { schedule } = req.body;
+        let updatedSchedule;
+        if ('state' in schedule) {
+            updatedSchedule = await scheduler.setScheduleState({ scheduleName: schedule.name, state: schedule.state });
         }
-        return res.status(200).json({ scheduleId: schedule.value.id });
+        if ('frequencyMs' in schedule) {
+            updatedSchedule = await scheduler.setScheduleFrequency({ scheduleName: schedule.name, frequencyMs: schedule.frequencyMs });
+        }
+        if (!updatedSchedule) {
+            return res.status(400).json({ error: { code: 'put_recurring_failed', message: `invalid parameters: ${schedule}` } });
+        }
+        if (updatedSchedule.isErr()) {
+            return res.status(500).json({ error: { code: 'put_recurring_failed', message: updatedSchedule.error.message } });
+        }
+        return res.status(200).json({ scheduleId: updatedSchedule.value.id });
     };
 };
 
-export const route: Route<PostRecurring> = { path, method };
+export const route: Route<PutRecurring> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler): RouteHandler<PostRecurring> => {
+export const routeHandler = (scheduler: Scheduler): RouteHandler<PutRecurring> => {
     return {
         ...route,
         validate,

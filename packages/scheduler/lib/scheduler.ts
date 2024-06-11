@@ -324,4 +324,21 @@ export class Scheduler {
             return res;
         });
     }
+
+    public async setScheduleFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<Result<Schedule>> {
+        return this.dbClient.db.transaction(async (trx) => {
+            const schedule = await schedules.search(trx, { name: scheduleName, limit: 1, forUpdate: true });
+            if (schedule.isErr()) {
+                return Err(schedule.error);
+            }
+            if (!schedule.value[0]) {
+                return Err(`Schedule '${scheduleName}' not found`);
+            }
+            const res = await schedules.update(trx, { id: schedule.value[0].id, frequencyMs });
+            if (res.isErr()) {
+                return Err(`Error updating schedule frequency '${scheduleName}': ${stringifyError(res.error)}`);
+            }
+            return res;
+        });
+    }
 }
