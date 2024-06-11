@@ -113,7 +113,7 @@ class ConfigController {
                     const activeFlows = await getFlowConfigsByParams(environment.id, config.unique_key);
 
                     const integration: Integration = {
-                        authMode: template?.auth_mode || 'APP_STORE',
+                        authMode: template?.auth_mode || 'APP',
                         uniqueKey: config.unique_key,
                         provider: config.provider,
                         scripts: activeFlows.length,
@@ -121,7 +121,7 @@ class ConfigController {
                         creationDate: config.created_at
                     };
 
-                    if (template && template.auth_mode !== 'APP_STORE' && template.auth_mode !== 'CUSTOM') {
+                    if (template && template.auth_mode !== 'APP' && template.auth_mode !== 'CUSTOM') {
                         integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template);
                     }
 

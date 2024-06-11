@@ -1,9 +1,9 @@
-import type { InternalNango as Nango } from './internal-nango.js';
 import get from 'lodash-es/get.js';
 import type { Config as ProviderConfig, Connection, ConnectionConfig, ConnectionUpsertResponse } from '@nangohq/shared';
 import { environmentService, connectionService, configService } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
+import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 
@@ -23,7 +23,7 @@ function validate(integration: ProviderConfig, headerSignature: string, body: an
     return crypto.timingSafeEqual(trusted, untrusted);
 }
 
-export default async function route(nango: Nango, integration: ProviderConfig, headers: Record<string, any>, body: any, logContextGetter: LogContextGetter) {
+const route: WebhookHandler = async (nango, integration, headers, body, _rawBody, logContextGetter: LogContextGetter) => {
     const signature = headers['x-hub-signature-256'];
 
     if (signature) {
@@ -39,8 +39,8 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
         await handleCreateWebhook(integration, body, logContextGetter);
     }
 
-    return nango.executeScriptForWebhooks(integration, body, 'installation.id', 'installation_id', logContextGetter);
-}
+    return nango.executeScriptForWebhooks(integration, body, 'action', 'installation.id', logContextGetter, 'installation_id');
+};
 
 async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter) {
     if (!get(body, 'requester.login')) {
@@ -116,3 +116,5 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         await logCtx.success();
     }
 }
+
+export default route;

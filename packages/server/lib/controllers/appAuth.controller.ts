@@ -257,7 +257,7 @@ class AppAuthController {
                 content: 'App connection was successful and credentials were saved',
                 timestamp: Date.now()
             });
-            await logCtx.error('App connection was successful and credentials were saved');
+            await logCtx.info('App connection was successful and credentials were saved');
             await logCtx.success();
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'App auth token request succeeded', LogActionEnum.AUTH, {
