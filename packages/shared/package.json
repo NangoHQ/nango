@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.39.33",
+    "version": "0.40.0",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/index.js",
@@ -22,7 +22,7 @@
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
         "@nangohq/database": "file:../database",
-        "@nangohq/node": "^0.39.33",
+        "@nangohq/node": "^0.40.0",
         "@nangohq/utils": "file:../utils",
         "@sentry/node": "^7.106.0",
         "@temporalio/client": "^1.9.1",
@@ -58,7 +58,8 @@
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/records": "file:../records",
-        "@nangohq/types": "^0.39.33",
+        "@nangohq/types": "^0.40.0",
+        "@nangohq/webhooks": "file:../webhooks",
         "@sentry/types": "7.112.2",
         "@temporalio/activity": "^1.9.1",
         "@types/braintree": "^3.3.12",
@@ -71,8 +72,8 @@
         "@types/uuid": "^9.0.0",
         "express": "^4.19.2",
         "knex": "3.1.0",
-        "typescript": "^5.3.3",
         "type-fest": "4.14.0",
+        "typescript": "^5.3.3",
         "vitest": "0.33.0"
     },
     "files": [

@@ -2,6 +2,8 @@ import express from 'express';
 import type { Express, Request, Response, NextFunction } from 'express';
 import { routeHandler as postImmediateHandler } from './routes/v1/postImmediate.js';
 import { routeHandler as postRecurringHandler } from './routes/v1/postRecurring.js';
+import { routeHandler as putRecurringHandler } from './routes/v1/putRecurring.js';
+import { routeHandler as postRecurringRunHandler } from './routes/v1/recurring/postRecurringRun.js';
 import { routeHandler as postSearchHandler } from './routes/v1/postSearch.js';
 import { routeHandler as postDequeueHandler } from './routes/v1/postDequeue.js';
 import { routeHandler as putTaskHandler } from './routes/v1/tasks/putTaskId.js';
@@ -41,6 +43,8 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
     createRoute(server, getHealthHandler);
     createRoute(server, postImmediateHandler(scheduler));
     createRoute(server, postRecurringHandler(scheduler));
+    createRoute(server, postRecurringRunHandler(scheduler));
+    createRoute(server, putRecurringHandler(scheduler));
     createRoute(server, postSearchHandler(scheduler));
     createRoute(server, putTaskHandler(scheduler));
     createRoute(server, getOutputHandler(scheduler, eventEmmiter));

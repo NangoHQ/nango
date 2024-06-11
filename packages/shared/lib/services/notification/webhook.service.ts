@@ -4,12 +4,10 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { backOff } from 'exponential-backoff';
 import crypto from 'crypto';
-import { SyncType } from '../../models/Sync.js';
-import type { NangoConnection } from '../../models/Connection.js';
-import type { Account, Config, Environment, SyncResult } from '../../models/index.js';
+import type { Account, Config, Environment } from '../../models/index.js';
 import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
-import type { NangoSyncWebhookBody, NangoForwardWebhookBody } from '../../models/Webhook.js';
+import type { NangoForwardWebhookBody } from '../../models/Webhook.js';
 import { WebhookType } from '../../models/Webhook.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
@@ -106,125 +104,6 @@ class WebhookService {
         }
 
         return true;
-    }
-
-    async sendSyncUpdate(
-        nangoConnection: NangoConnection,
-        syncName: string,
-        model: string,
-        responseResults: SyncResult,
-        syncType: SyncType,
-        now: Date | undefined,
-        activityLogId: number,
-        logCtx: LogContext,
-        environment: Environment
-    ) {
-        if (!this.shouldSendWebhook(environment)) {
-            return;
-        }
-
-        const { webhook_url: webhookUrl, webhook_url_secondary: webhookUrlSecondary, always_send_webhook: alwaysSendWebhook } = environment;
-
-        const noChanges =
-            responseResults.added === 0 && responseResults.updated === 0 && (responseResults.deleted === 0 || responseResults.deleted === undefined);
-
-        if (!alwaysSendWebhook && noChanges) {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId,
-                content: `There were no added, updated, or deleted results. No webhook sent, as per your environment settings.`,
-                timestamp: Date.now()
-            });
-            await logCtx.info('There were no added, updated, or deleted results. No webhook sent, as per your environment settings');
-
-            return;
-        }
-
-        const body: NangoSyncWebhookBody = {
-            from: 'nango',
-            type: WebhookType.SYNC,
-            connectionId: nangoConnection.connection_id,
-            providerConfigKey: nangoConnection.provider_config_key,
-            syncName,
-            model,
-            responseResults: {
-                added: responseResults.added,
-                updated: responseResults.updated,
-                deleted: 0
-            },
-            syncType,
-            modifiedAfter: dayjs(now).toDate().toISOString(),
-            queryTimeStamp: now as unknown as string
-        };
-
-        if (syncType === SyncType.INITIAL) {
-            body.queryTimeStamp = null;
-        }
-
-        if (responseResults.deleted && responseResults.deleted > 0) {
-            body.responseResults.deleted = responseResults.deleted;
-        }
-
-        const endingMessage = noChanges
-            ? 'with no data changes as per your environment settings.'
-            : `with the following data: ${JSON.stringify(body, null, 2)}`;
-
-        const webhookUrls: { url: string; type: string }[] = [
-            { url: webhookUrl, type: 'webhookUrl' },
-            { url: webhookUrlSecondary, type: 'webhookUrlSecondary' }
-        ].filter((webhook) => webhook.url) as { url: string; type: string }[];
-
-        for (const webhookUrl of webhookUrls) {
-            const { url, type } = webhookUrl;
-            try {
-                const headers = this.getSignatureHeader(environment.secret_key, body);
-
-                const response = await backOff(
-                    () => {
-                        return axios.post(url, body, { headers });
-                    },
-                    { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment.id, logCtx) }
-                );
-
-                if (response.status >= 200 && response.status < 300) {
-                    await createActivityLogMessage({
-                        level: 'info',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId,
-                        content: `Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url} ${endingMessage}`,
-                        timestamp: Date.now()
-                    });
-                    await logCtx.info(
-                        `Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} and received with a ${response.status} response code to ${url} ${endingMessage}`
-                    );
-                } else {
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId,
-                        content: `Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url} ${endingMessage} but received a ${response.status} response code. Please send a 2xx on successful receipt.`,
-                        timestamp: Date.now()
-                    });
-                    await logCtx.error(
-                        `Sync webhook sent successfully ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url} ${endingMessage} but received a ${response.status} response code. Please send a 2xx on successful receipt.`
-                    );
-                }
-            } catch (e) {
-                const errorMessage = stringifyError(e, { pretty: true });
-
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId,
-                    content: `Sync webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}. The error was: ${errorMessage}`,
-                    timestamp: Date.now()
-                });
-                await logCtx.error(`Sync webhook failed to send ${type === 'webhookUrlSecondary' ? 'to the secondary webhook URL' : ''} to ${url}`, {
-                    error: e
-                });
-            }
-        }
     }
 
     async forward({

@@ -1,5 +1,7 @@
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
+import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
+import { route as postRecurringRunRoute } from '../routes/v1/recurring/postRecurringRun.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postSearchRoute } from '../routes/v1/postSearch.js';
 import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js';
@@ -17,7 +19,9 @@ import type {
     ExecuteWebhookProps,
     ExecutePostConnectionProps,
     OrchestratorTask,
-    RecurringProps
+    RecurringProps,
+    ExecuteSyncProps,
+    VoidReturn
 } from './types.js';
 import { validateTask } from './validate.js';
 import type { JsonValue } from 'type-fest';
@@ -49,7 +53,7 @@ export class OrchestratorClient {
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error scheduling  immediate task`,
-                payload: JSON.stringify(props)
+                payload: props
             });
         } else {
             return Ok(res);
@@ -60,6 +64,7 @@ export class OrchestratorClient {
         const res = await this.routeFetch(postRecurringRoute)({
             body: {
                 name: props.name,
+                state: props.state,
                 startsAt: props.startsAt,
                 frequencyMs: props.frequencyMs,
                 groupKey: props.groupKey,
@@ -69,13 +74,58 @@ export class OrchestratorClient {
             }
         });
         if ('error' in res) {
+            const startsAt = props.startsAt.toISOString();
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error creating recurring schedule`,
-                payload: JSON.stringify(props)
+                payload: { ...props, startsAt }
             });
         } else {
             return Ok(res);
+        }
+    }
+
+    public async pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'PAUSED' });
+    }
+
+    public async unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'STARTED' });
+    }
+
+    public async deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'DELETED' });
+    }
+
+    private async setSyncState({ scheduleName, state }: { scheduleName: string; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {
+        const res = await this.routeFetch(putRecurringRoute)({
+            body: { state, scheduleName }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error setting schedule state`,
+                payload: { scheduleName, state }
+            });
+        } else {
+            return Ok(undefined);
+        }
+    }
+
+    public async executeSync(props: ExecuteSyncProps): Promise<VoidReturn> {
+        const res = await this.routeFetch(postRecurringRunRoute)({
+            body: {
+                scheduleName: props.scheduleName
+            }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error creating recurring schedule`,
+                payload: props
+            });
+        } else {
+            return Ok(undefined);
         }
     }
 
@@ -175,7 +225,7 @@ export class OrchestratorClient {
         };
         return this.execute(schedulingProps);
     }
-
+    // TODO: rename to searchTask?
     public async search({ ids, groupKey, limit }: { ids?: string[]; groupKey?: string; limit?: number }): Promise<Result<OrchestratorTask[], ClientError>> {
         const body = {
             ...(ids ? { ids } : {}),
@@ -193,7 +243,7 @@ export class OrchestratorClient {
             const tasks = res.flatMap((task) => {
                 const validated = validateTask(task);
                 if (validated.isErr()) {
-                    logger.error(`Search: error validating task: ${JSON.stringify(validated.error.message)}`);
+                    logger.error(`Search: error validating task: ${validated.error.message}`);
                     return [];
                 }
                 return [validated.value];
@@ -228,7 +278,7 @@ export class OrchestratorClient {
             const dequeuedTasks = res.flatMap((task) => {
                 const validated = validateTask(task);
                 if (validated.isErr()) {
-                    logger.error(`Dequeue: error validating task: ${JSON.stringify(validated.error.message)}`);
+                    logger.error(`Dequeue: error validating task: ${validated.error.message}`);
                     return [];
                 }
                 return [validated.value];

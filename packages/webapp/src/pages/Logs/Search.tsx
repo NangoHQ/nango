@@ -7,7 +7,15 @@ import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
 import { MultiSelect } from '../../components/MultiSelect';
-import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, syncsDefaultOptions, typesDefaultOptions } from './constants';
+import {
+    columns,
+    connectionsDefaultOptions,
+    integrationsDefaultOptions,
+    statusDefaultOptions,
+    statusOptions,
+    syncsDefaultOptions,
+    typesDefaultOptions
+} from './constants';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
     SearchOperations,
@@ -21,7 +29,7 @@ import type {
 import Spinner from '../../components/ui/Spinner';
 // import { Input } from '../../components/ui/input/Input';
 // import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
-import { formatQuantity } from '../../utils/utils';
+import { formatQuantity, stringArrayEqual } from '../../utils/utils';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useDebounce, useIntersection, useInterval, usePreviousDistinct } from 'react-use';
 import { SearchableMultiSelect } from './components/SearchableMultiSelect';
@@ -32,7 +40,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { OperationDrawer } from './components/OperationDrawer';
 import { OperationRow } from './components/OperationRow';
 import type { DateRange } from 'react-day-picker';
-import { slidePeriod } from '../../utils/logs';
+import { getPresetRange, matchPresetFromRange, slidePeriod } from '../../utils/logs';
 
 const limit = 20;
 
@@ -52,11 +60,16 @@ export const LogsSearch: React.FC = () => {
     const [integrations, setIntegrations] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [connections, setConnections] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [syncs, setSyncs] = useState<SearchOperationsSync[]>(syncsDefaultOptions);
-    const [period, setPeriod] = useState<SearchOperationsPeriod | undefined>();
+    const [period, setPeriod] = useState<DateRange>(() => getPresetRange('last24h'));
+    const [periodString, setPeriodString] = useState<SearchOperationsPeriod>();
     const cursor = useRef<SearchOperations['Body']['cursor']>();
     const [hasLoadedMore, setHasLoadedMore] = useState<boolean>(false);
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
-    const { data, error, loading, trigger, manualFetch } = useSearchOperations(env, { limit, states, types, integrations, connections, syncs, period }, isLive);
+    const { data, error, loading, trigger, manualFetch } = useSearchOperations(
+        env,
+        { limit, states, types, integrations, connections, syncs, period: periodString },
+        isLive
+    );
     const [operations, setOperations] = useState<SearchOperationsData[]>([]);
 
     useEffect(
@@ -70,7 +83,8 @@ export const LogsSearch: React.FC = () => {
                 setIntegrations(integrationsDefaultOptions);
                 setConnections(integrationsDefaultOptions);
                 setSyncs(syncsDefaultOptions);
-                setPeriod(undefined);
+                setPeriod(getPresetRange('last24h'));
+
                 setHasLoadedMore(false);
                 cursor.current = null;
             }
@@ -137,9 +151,9 @@ export const LogsSearch: React.FC = () => {
                 setIntegrations(tmpIntegrations.split(',') as any);
             }
 
-            const tmpConnections = searchParams.get('integrations');
+            const tmpConnections = searchParams.get('connections');
             if (tmpConnections) {
-                setIntegrations(tmpConnections.split(',') as any);
+                setConnections(tmpConnections.split(',') as any);
             }
 
             const tmpSyncs = searchParams.get('syncs');
@@ -156,9 +170,9 @@ export const LogsSearch: React.FC = () => {
             const tmpTo = searchParams.get('to');
             if (tmpFrom && tmpTo) {
                 const tmpLive = searchParams.get('live');
-                const isLive = tmpLive === 'true';
+                const isLive = tmpLive === null || tmpLive === 'true';
                 setIsLive(isLive);
-                setPeriod(isLive ? slidePeriod({ from: tmpFrom, to: tmpTo }) : { from: tmpFrom, to: tmpTo });
+                setPeriod(isLive ? slidePeriod({ from: new Date(tmpFrom), to: new Date(tmpTo) }) : { from: new Date(tmpFrom), to: new Date(tmpTo) });
             }
 
             const tmpOperationId = searchParams.get('operationId');
@@ -181,27 +195,47 @@ export const LogsSearch: React.FC = () => {
     );
     useEffect(
         function syncStateToQueryParams() {
-            // reset pagination and stored items
+            if (!synced) {
+                return;
+            }
 
             // Sync the state back to the URL for sharing
-            const tmp = new URLSearchParams({
-                states: states as any,
-                integrations: integrations as any,
-                connections: connections as any,
-                syncs: syncs as any,
-                types: types as any,
-                live: String(isLive)
-            });
-            if (period) {
-                tmp.set('from', period.from);
-                tmp.set('to', period.to);
+            const tmp = new URLSearchParams();
+            if (states.length > 0 && !stringArrayEqual(states, statusDefaultOptions)) {
+                tmp.set('states', states as any);
+            }
+            if (integrations.length > 0 && !stringArrayEqual(integrations, integrationsDefaultOptions)) {
+                tmp.set('integrations', integrations as any);
+            }
+            if (connections.length > 0 && !stringArrayEqual(connections, connectionsDefaultOptions)) {
+                tmp.set('connections', connections as any);
+            }
+            if (syncs.length > 0 && !stringArrayEqual(syncs, syncsDefaultOptions)) {
+                tmp.set('syncs', syncs as any);
+            }
+            if (types.length > 0 && !stringArrayEqual(types, typesDefaultOptions)) {
+                tmp.set('types', types as any);
+            }
+            if (!isLive) {
+                tmp.set('live', 'false');
+            }
+            if (periodString) {
+                const matched = matchPresetFromRange({ from: new Date(periodString.from), to: new Date(periodString.to) });
+                if (matched?.name !== 'last24h') {
+                    tmp.set('from', periodString.from);
+                    tmp.set('to', periodString.to);
+                }
             }
             if (operationId) {
                 tmp.set('operationId', operationId);
             }
-            setSearchParams(tmp);
+
+            tmp.sort();
+            if (tmp.toString() !== searchParams.toString()) {
+                setSearchParams(tmp);
+            }
         },
-        [states, integrations, period, connections, syncs, types, operationId, isLive]
+        [states, integrations, periodString, connections, syncs, types, operationId, isLive, synced]
     );
 
     // --- Table Display
@@ -268,10 +302,13 @@ export const LogsSearch: React.FC = () => {
     };
 
     // Period
-    const onPeriodChange = (range: DateRange | undefined, live: boolean) => {
-        setPeriod(range ? { from: range.from!.toISOString(), to: range.to!.toISOString() } : undefined);
+    const onPeriodChange = (range: DateRange, live: boolean) => {
+        setPeriod(range);
         setIsLive(live);
     };
+    useEffect(() => {
+        setPeriodString({ from: period.from!.toISOString(), to: period.to!.toISOString() });
+    }, [period]);
 
     if (error) {
         return (

@@ -14,6 +14,7 @@ export type PostRecurring = Endpoint<{
     Path: typeof path;
     Body: {
         name: string;
+        state: 'STARTED' | 'PAUSED';
         startsAt: Date;
         frequencyMs: number;
         groupKey: string;
@@ -37,6 +38,7 @@ const validate = validateRequest<PostRecurring>({
         return z
             .object({
                 name: z.string().min(1),
+                state: z.enum(['STARTED', 'PAUSED']),
                 startsAt: z.coerce.date(),
                 frequencyMs: z.number().int().positive(),
                 groupKey: z.string().min(1),
@@ -51,6 +53,7 @@ const validate = validateRequest<PostRecurring>({
                 }),
                 args: syncArgsSchema
             })
+            .strict()
             .parse(data);
     }
 });
@@ -59,6 +62,7 @@ const handler = (scheduler: Scheduler) => {
     return async (req: EndpointRequest<PostRecurring>, res: EndpointResponse<PostRecurring>) => {
         const schedule = await scheduler.recurring({
             name: req.body.name,
+            state: req.body.state,
             payload: req.body.args,
             startsAt: req.body.startsAt,
             frequencyMs: req.body.frequencyMs,

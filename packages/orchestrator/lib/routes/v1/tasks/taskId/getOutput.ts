@@ -33,7 +33,7 @@ const validate = validateRequest<GetOutput>({
                     .transform((val) => val === 'true')
             })
             .parse(data),
-    parseParams: (data) => z.object({ taskId: z.string().uuid() }).parse(data)
+    parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
 });
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {

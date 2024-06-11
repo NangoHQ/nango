@@ -2,7 +2,6 @@ import { schedule } from 'node-cron';
 import {
     CommandToActivityLog,
     ErrorSourceEnum,
-    SyncClient,
     SyncCommand,
     createActivityLog,
     createActivityLogMessageAndEnd,
@@ -10,14 +9,18 @@ import {
     updateSuccess as updateSuccessActivityLog,
     updateScheduleStatus,
     findPausableDemoSyncs,
-    SpanTypes
+    SpanTypes,
+    getOrchestratorUrl,
+    Orchestrator
 } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
+import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
 const logger = getLogger('Jobs');
+const orchestrator = new Orchestrator(new OrchestratorClient({ baseUrl: getOrchestratorUrl() }));
 
 export function cronAutoIdleDemo(): void {
     schedule('1 * * * *', () => {
@@ -60,11 +63,6 @@ export async function exec(): Promise<void> {
             continue;
         }
 
-        const syncClient = await SyncClient.getInstance();
-        if (!syncClient) {
-            continue;
-        }
-
         const logCtx = await logContextGetter.create(
             { id: String(activityLogId), operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
             {
@@ -78,7 +76,7 @@ export async function exec(): Promise<void> {
 
         logger.info(`[autoidle] pausing ${sync.id}`);
 
-        const resTemporal = await syncClient.runSyncCommand({
+        const res = await orchestrator.runSyncCommandHelper({
             scheduleId: sync.schedule_id,
             syncId: sync.id,
             command: SyncCommand.PAUSE,
@@ -91,7 +89,7 @@ export async function exec(): Promise<void> {
             recordsService,
             initiator: 'auto_idle_demo'
         });
-        if (resTemporal.isErr()) {
+        if (res.isErr()) {
             await logCtx.failed();
             continue;
         }

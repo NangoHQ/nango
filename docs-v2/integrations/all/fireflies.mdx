@@ -1,0 +1,33 @@
+---
+title: Fireflies
+sidebarTitle: Fireflies
+---
+
+API configuration: [`fireflies`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [How to obtain an API key](https://docs.fireflies.ai/fundamentals/authorization#acquiring-a-token)
+-   [Fireflies Authentication](https://docs.fireflies.ai/fundamentals/authorization#making-an-authenticated-request)
+-   [Fireflies API docs](https://docs.fireflies.ai/getting-started/introduction)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- Fireflies uses `API_KEY` auth mode with `Authorization: Bearer API_KEY` as a request header to access different endpoints.
+- Fireflies enforces both rate and upload limits for its endpoints based on the subscription plan. For more details check [Fireflies limits](https://docs.fireflies.ai/fundamentals/limits)
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/fireflies.mdx)</Note>

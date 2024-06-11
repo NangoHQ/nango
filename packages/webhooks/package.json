@@ -23,7 +23,7 @@
         "exponential-backoff": "^3.1.1"
     },
     "devDependencies": {
-        "@nangohq/types": "^0.39.32",
+        "@nangohq/types": "file:../types",
         "typescript": "^5.3.3",
         "vitest": "0.33.0"
     },

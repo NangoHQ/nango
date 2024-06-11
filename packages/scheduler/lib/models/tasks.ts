@@ -138,7 +138,7 @@ export async function get(db: knex.Knex, taskId: string): Promise<Result<Task>> 
 
 export async function search(
     db: knex.Knex,
-    params?: { ids?: string[]; groupKey?: string; state?: TaskState; scheduleId?: string; limit?: number }
+    params?: { ids?: string[]; groupKey?: string; states?: TaskState[]; scheduleId?: string; limit?: number }
 ): Promise<Result<Task[]>> {
     const query = db.from<DbTask>(TASKS_TABLE);
     if (params?.ids) {
@@ -147,8 +147,8 @@ export async function search(
     if (params?.groupKey) {
         query.where('group_key', params.groupKey);
     }
-    if (params?.state) {
-        query.where('state', params.state);
+    if (params?.states) {
+        query.whereIn('state', params.states);
     }
     if (params?.scheduleId) {
         query.where('schedule_id', params.scheduleId);
