@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
 import type { ClassValue } from 'clsx';
+import { format } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 import type { Flow, SyncResult, NangoSyncModel } from '../types';
 
@@ -125,8 +126,7 @@ export function formatDateToLogFormat(dateString: string): string {
         return '-';
     }
 
-    const parts = formattedDate.split(', ');
-    return `${parts[0]} ${parts[1]}`;
+    return format(date, 'MMM dd, HH:mm:ss:SS');
 }
 
 function formatFutureRun(nextRun: number): Date | undefined {
