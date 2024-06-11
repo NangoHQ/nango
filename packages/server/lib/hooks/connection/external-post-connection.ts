@@ -20,7 +20,7 @@ export async function externalPostConnection(
 
     const postConnectionScripts = await postConnectionScriptService.getByConfig(config_id);
 
-    if (!postConnectionScripts) {
+    if (!postConnectionScripts || postConnectionScripts.length === 0) {
         return;
     }
 
