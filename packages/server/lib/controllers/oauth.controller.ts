@@ -1545,9 +1545,6 @@ class OAuthController {
                 );
             } else {
                 await updateSuccessActivityLog(activityLogId, template.auth_mode === 'CUSTOM' ? null : true);
-                if (template.auth_mode === 'CUSTOM') {
-                    await logCtx.success();
-                }
             }
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth2 token request succeeded', LogActionEnum.AUTH, {
@@ -1557,6 +1554,8 @@ class OAuthController {
                 connectionId: String(connectionId),
                 authMode: String(template.auth_mode)
             });
+
+            await logCtx.success();
 
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
         } catch (err) {
