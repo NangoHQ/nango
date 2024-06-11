@@ -17,10 +17,8 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "scripts": {
-        "postbuild": "npm run copy:types",
         "copy:files": "copyfiles -u 1 lib/templates/* dist",
-        "copy:types": "cp `node -p \"require.resolve('@nangohq/shared/dist/sdk/sync.d.ts')\"` './dist/nango-sync.d.ts'",
-        "prepublishOnly": "npm run copy:files && npm run copy:types"
+        "prepublishOnly": "npm run copy:files"
     },
     "dependencies": {
         "@babel/parser": "^7.22.5",
