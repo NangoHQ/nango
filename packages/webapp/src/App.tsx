@@ -26,7 +26,6 @@ import ResetPassword from './pages/Account/ResetPassword';
 import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
 import { EmailVerified } from './pages/Account/EmailVerified';
-import Activity from './pages/Activity';
 import AuthLink from './pages/AuthLink';
 import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
@@ -83,7 +82,7 @@ const App = () => {
                             <Route path="/:env/connections/create" element={<ConnectionCreate />} />
                             <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
                             <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
-                            <Route path="/:env/activity" element={<Activity />} />
+                            <Route path="/:env/activity" element={<Navigate to={`/${env}/logs`} replace={true} />} />
                             <Route path="/:env/logs" element={<LogsSearch />} />
                             <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
                             <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
