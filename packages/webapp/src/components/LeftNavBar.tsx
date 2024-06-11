@@ -23,7 +23,6 @@ export enum LeftNavBarItems {
     Integrations = 0,
     Connections,
     EnvironmentSettings,
-    Activity,
     Syncs,
     AccountSettings,
     UserSettings,
@@ -153,15 +152,6 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <LinkIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Connections ? 'text-white' : 'text-gray-400'}`} />
                             {errorNotifications > 0 && <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>}
                             <p>Connections</p>
-                        </Link>
-                        <Link
-                            to={`/${env}/activity`}
-                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                props.selectedItem === LeftNavBarItems.Activity ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
-                            }`}
-                        >
-                            <QueueListIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Activity ? 'text-white' : 'text-gray-400'}`} />
-                            <p>Activity</p>
                         </Link>
                         <Link
                             to={`/${env}/logs`}

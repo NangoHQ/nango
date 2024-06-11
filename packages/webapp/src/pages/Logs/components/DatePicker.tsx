@@ -6,57 +6,15 @@ import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/
 import { cn } from '../../../utils/utils';
 import Button from '../../../components/ui/button/Button';
 import { Calendar } from '../../../components/ui/Calendar';
-
-// Define presets
-const presets: { name: string; label: string }[] = [
-    { name: 'last5m', label: 'Last 5 minutes' },
-    { name: 'last1h', label: 'Last hour' },
-    { name: 'last24h', label: 'Last 24 hours' },
-    { name: 'last3', label: 'Last 3 days' },
-    { name: 'last7', label: 'Last 7 days' },
-    { name: 'last14', label: 'Last 14 days' }
-];
-const getPresetRange = (index: number): DateRange => {
-    const preset = presets[index];
-    const from = new Date();
-    const to = new Date();
-
-    switch (preset.name) {
-        case 'last5m':
-            from.setMinutes(from.getMinutes() - 5);
-            break;
-        case 'last1h':
-            from.setMinutes(from.getMinutes() - 60);
-            break;
-        case 'last24h':
-            from.setDate(from.getDate() - 1);
-            break;
-        case 'last3':
-            from.setDate(from.getDate() - 2);
-            from.setHours(0, 0, 0, 0);
-            to.setHours(23, 59, 59, 999);
-            break;
-        case 'last7':
-            from.setDate(from.getDate() - 6);
-            from.setHours(0, 0, 0, 0);
-            to.setHours(23, 59, 59, 999);
-            break;
-        case 'last14':
-            from.setDate(from.getDate() - 13);
-            from.setHours(0, 0, 0, 0);
-            to.setHours(23, 59, 59, 999);
-            break;
-    }
-
-    return { from, to };
-};
+import type { Preset } from '../../../utils/logs';
+import { getPresetRange, matchPresetFromRange, presets } from '../../../utils/logs';
 
 export const DatePicker: React.FC<{
     isLive: boolean;
-    period?: { from: string; to: string };
-    onChange: (selected: DateRange | undefined, live: boolean) => void;
+    period: DateRange;
+    onChange: (selected: DateRange, live: boolean) => void;
 }> = ({ isLive, period, onChange }) => {
-    const [selectedPreset, setSelectedPreset] = useState<number | undefined>(undefined);
+    const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
 
     const [synced, setSynced] = useState<boolean>(false);
     const [date, setDate] = useState<DateRange | undefined>();
@@ -76,8 +34,8 @@ export const DatePicker: React.FC<{
     }, []);
 
     const display = useMemo(() => {
-        if (typeof selectedPreset !== 'undefined') {
-            return presets[selectedPreset].label;
+        if (selectedPreset !== null) {
+            return selectedPreset.label;
         }
         if (!date || !date.from || !date.to) {
             return 'Last 24 hours';
@@ -88,9 +46,9 @@ export const DatePicker: React.FC<{
         return format(date.from, 'LLL dd, HH:mm');
     }, [date, selectedPreset]);
 
-    const onClickPreset = (index: number) => {
-        const range = getPresetRange(index);
-        setSelectedPreset(index);
+    const onClickPreset = (preset: Preset) => {
+        const range = getPresetRange(preset.name);
+        setSelectedPreset(preset);
         setTmpDate(range);
         onChange(range, true);
     };
@@ -112,9 +70,9 @@ export const DatePicker: React.FC<{
 
         if (!e?.from && !e?.to) {
             // Unselected everything should fallback to default preset
-            onClickPreset(2);
+            onClickPreset({ label: 'Last 24 hours', name: 'last24h' });
         } else {
-            setSelectedPreset(undefined);
+            setSelectedPreset(null);
         }
     };
 
@@ -125,13 +83,9 @@ export const DatePicker: React.FC<{
             }
 
             setSynced(true);
-            if (period) {
-                const range = { from: new Date(period.from), to: new Date(period.to) };
-                setDate(range);
-                setTmpDate(range);
-            } else {
-                setSelectedPreset(2);
-            }
+            setDate(period);
+            setTmpDate(period);
+            setSelectedPreset(matchPresetFromRange(period));
         },
         [period]
     );
@@ -142,13 +96,7 @@ export const DatePicker: React.FC<{
                 return;
             }
 
-            if (period) {
-                const range = { from: new Date(period.from), to: new Date(period.to) };
-                setDate(range);
-            } else {
-                setDate(undefined);
-                onClickPreset(2);
-            }
+            setDate(period);
         },
         [period]
     );
@@ -156,7 +104,11 @@ export const DatePicker: React.FC<{
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="zombieGray" size={'xs'} className={cn('flex-grow truncate text-text-light-gray', period && 'text-white')}>
+                <Button
+                    variant="zombieGray"
+                    size={'xs'}
+                    className={cn('flex-grow truncate text-text-light-gray', period && selectedPreset?.name !== 'last24h' && 'text-white')}
+                >
                     <CalendarIcon />
                     {display} {isLive && '(live)'}
                 </Button>
@@ -175,13 +127,13 @@ export const DatePicker: React.FC<{
                         showOutsideDays={false}
                     />
                     <div className="flex flex-col mt-6">
-                        {presets.map((preset, index) => {
+                        {presets.map((preset) => {
                             return (
                                 <Button
                                     key={preset.name}
                                     variant={'zombieGray'}
-                                    className={cn('justify-end', selectedPreset === index && 'bg-pure-black')}
-                                    onClick={() => onClickPreset(index)}
+                                    className={cn('justify-end', selectedPreset?.name === preset.name && 'bg-pure-black')}
+                                    onClick={() => onClickPreset(preset)}
                                 >
                                     {preset.label}
                                 </Button>

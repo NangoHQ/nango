@@ -27,7 +27,7 @@ export class OAuth1Client {
 
         this.client = new oAuth1.OAuth(
             this.authConfig.request_url,
-            typeof this.authConfig.token_url === 'string' ? this.authConfig.token_url : (this.authConfig.token_url?.['OAuth1'] as string),
+            typeof this.authConfig.token_url === 'string' ? this.authConfig.token_url : (this.authConfig.token_url?.['OAUTH1'] as string),
             this.config.oauth_client_id,
             this.config.oauth_client_secret,
             '1.0A',

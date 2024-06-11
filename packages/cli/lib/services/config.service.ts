@@ -7,12 +7,12 @@ import { loadLocalNangoConfig, loadStandardConfig, nangoConfigFile, determineVer
 import { getNangoRootPath, printDebug } from '../utils.js';
 
 class ConfigService {
-    public async load(loadLocation: string, debug = false): Promise<ServiceResponse<StandardNangoConfig[]>> {
+    public async load(fullPath: string, debug = false): Promise<ServiceResponse<StandardNangoConfig[]>> {
         if (debug) {
-            printDebug(`Loading ${loadLocation}`);
+            printDebug(`Loading ${fullPath}`);
         }
 
-        const localConfig = await loadLocalNangoConfig(loadLocation);
+        const localConfig = await loadLocalNangoConfig(fullPath);
         if (!localConfig) {
             return { success: false, error: new NangoError('error_loading_nango_config'), response: null };
         }

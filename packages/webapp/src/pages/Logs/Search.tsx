@@ -40,7 +40,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { OperationDrawer } from './components/OperationDrawer';
 import { OperationRow } from './components/OperationRow';
 import type { DateRange } from 'react-day-picker';
-import { slidePeriod } from '../../utils/logs';
+import { getPresetRange, matchPresetFromRange, slidePeriod } from '../../utils/logs';
 
 const limit = 20;
 
@@ -60,11 +60,16 @@ export const LogsSearch: React.FC = () => {
     const [integrations, setIntegrations] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [connections, setConnections] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [syncs, setSyncs] = useState<SearchOperationsSync[]>(syncsDefaultOptions);
-    const [period, setPeriod] = useState<SearchOperationsPeriod | undefined>();
+    const [period, setPeriod] = useState<DateRange>(() => getPresetRange('last24h'));
+    const [periodString, setPeriodString] = useState<SearchOperationsPeriod>();
     const cursor = useRef<SearchOperations['Body']['cursor']>();
     const [hasLoadedMore, setHasLoadedMore] = useState<boolean>(false);
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
-    const { data, error, loading, trigger, manualFetch } = useSearchOperations(env, { limit, states, types, integrations, connections, syncs, period }, isLive);
+    const { data, error, loading, trigger, manualFetch } = useSearchOperations(
+        env,
+        { limit, states, types, integrations, connections, syncs, period: periodString },
+        isLive
+    );
     const [operations, setOperations] = useState<SearchOperationsData[]>([]);
 
     useEffect(
@@ -78,7 +83,8 @@ export const LogsSearch: React.FC = () => {
                 setIntegrations(integrationsDefaultOptions);
                 setConnections(integrationsDefaultOptions);
                 setSyncs(syncsDefaultOptions);
-                setPeriod(undefined);
+                setPeriod(getPresetRange('last24h'));
+
                 setHasLoadedMore(false);
                 cursor.current = null;
             }
@@ -166,7 +172,7 @@ export const LogsSearch: React.FC = () => {
                 const tmpLive = searchParams.get('live');
                 const isLive = tmpLive === null || tmpLive === 'true';
                 setIsLive(isLive);
-                setPeriod(isLive ? slidePeriod({ from: tmpFrom, to: tmpTo }) : { from: tmpFrom, to: tmpTo });
+                setPeriod(isLive ? slidePeriod({ from: new Date(tmpFrom), to: new Date(tmpTo) }) : { from: new Date(tmpFrom), to: new Date(tmpTo) });
             }
 
             const tmpOperationId = searchParams.get('operationId');
@@ -213,9 +219,12 @@ export const LogsSearch: React.FC = () => {
             if (!isLive) {
                 tmp.set('live', 'false');
             }
-            if (period) {
-                tmp.set('from', period.from);
-                tmp.set('to', period.to);
+            if (periodString) {
+                const matched = matchPresetFromRange({ from: new Date(periodString.from), to: new Date(periodString.to) });
+                if (matched?.name !== 'last24h') {
+                    tmp.set('from', periodString.from);
+                    tmp.set('to', periodString.to);
+                }
             }
             if (operationId) {
                 tmp.set('operationId', operationId);
@@ -226,7 +235,7 @@ export const LogsSearch: React.FC = () => {
                 setSearchParams(tmp);
             }
         },
-        [states, integrations, period, connections, syncs, types, operationId, isLive, synced]
+        [states, integrations, periodString, connections, syncs, types, operationId, isLive, synced]
     );
 
     // --- Table Display
@@ -293,10 +302,13 @@ export const LogsSearch: React.FC = () => {
     };
 
     // Period
-    const onPeriodChange = (range: DateRange | undefined, live: boolean) => {
-        setPeriod(range ? { from: range.from!.toISOString(), to: range.to!.toISOString() } : undefined);
+    const onPeriodChange = (range: DateRange, live: boolean) => {
+        setPeriod(range);
         setIsLive(live);
     };
+    useEffect(() => {
+        setPeriodString({ from: period.from!.toISOString(), to: period.to!.toISOString() });
+    }, [period]);
 
     if (error) {
         return (

@@ -42,13 +42,16 @@ const orchestratorClient = {
     executeSync: () => {
         return Promise.resolve({}) as any;
     },
-    cancelSync: () => {
-        return Promise.resolve({}) as any;
-    },
     pauseSync: () => {
         return Promise.resolve({}) as any;
     },
     unpauseSync: () => {
+        return Promise.resolve({}) as any;
+    },
+    deleteSync: () => {
+        return Promise.resolve({}) as any;
+    },
+    cancel: () => {
         return Promise.resolve({}) as any;
     }
 };

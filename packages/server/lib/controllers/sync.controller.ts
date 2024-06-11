@@ -52,6 +52,8 @@ import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
 
+const orchestrator = getOrchestrator();
+
 class SyncController {
     public async deploySync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
@@ -300,6 +302,7 @@ class SyncController {
 
             const { success, error } = await syncOrchestrator.runSyncCommand({
                 recordsService,
+                orchestrator,
                 environment,
                 providerConfigKey: provider_config_key,
                 syncNames: syncNames as string[],
@@ -545,6 +548,7 @@ class SyncController {
 
             await syncOrchestrator.runSyncCommand({
                 recordsService,
+                orchestrator,
                 environment,
                 providerConfigKey: provider_config_key as string,
                 syncNames: syncNames as string[],
@@ -586,6 +590,7 @@ class SyncController {
 
             await syncOrchestrator.runSyncCommand({
                 recordsService,
+                orchestrator,
                 environment,
                 providerConfigKey: provider_config_key as string,
                 syncNames: syncNames as string[],
@@ -733,17 +738,7 @@ class SyncController {
                 return;
             }
 
-            const syncClient = await SyncClient.getInstance();
-
-            if (!syncClient) {
-                const error = new NangoError('failed_to_get_sync_client');
-                errorManager.errResFromNangoErr(res, error);
-                await logCtx.failed();
-
-                return;
-            }
-
-            const result = await syncClient.runSyncCommand({
+            const result = await orchestrator.runSyncCommandHelper({
                 scheduleId: schedule_id,
                 syncId: sync_id,
                 command,
