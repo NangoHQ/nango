@@ -218,7 +218,7 @@ class OnboardingController {
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id, logContextGetter, orchestrator);
 
             void analytics.track(AnalyticsTypes.DEMO_2_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ success: true });

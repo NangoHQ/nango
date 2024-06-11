@@ -5,6 +5,7 @@ import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 import { syncArgsSchema } from '../../clients/validate.js';
+import type { TaskType } from '../../types.js';
 
 const path = '/v1/recurring';
 const method = 'POST';
@@ -27,7 +28,7 @@ export type PostRecurring = Endpoint<{
             startedToCompleted: number;
             heartbeat: number;
         };
-        args: JsonValue;
+        args: JsonValue & { type: TaskType };
     };
     Error: ApiError<'recurring_failed'>;
     Success: { scheduleId: string };
