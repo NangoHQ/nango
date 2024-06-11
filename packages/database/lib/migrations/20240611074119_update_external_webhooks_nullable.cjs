@@ -12,5 +12,6 @@ exports.down = function (knex) {
     return knex.schema.alterTable(TABLE, function (t) {
         t.string('primary_url').notNullable().alter();
         t.string('secondary_url').notNullable().alter();
+        t.dropUnique(['environment_id']);
     });
 };
