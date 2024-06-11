@@ -19,6 +19,9 @@ import {
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
+import { getOrchestrator } from '../utils/utils.js';
+
+const orchestrator = getOrchestrator();
 
 class FlowController {
     public async getFlows(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -48,7 +51,7 @@ class FlowController {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environment, config, req.body.nangoYamlBody || '', logContextGetter);
+            } = await deployPreBuiltSyncConfig(environment, config, req.body.nangoYamlBody || '', logContextGetter, orchestrator);
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
@@ -115,7 +118,7 @@ class FlowController {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter);
+            } = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter, orchestrator);
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);

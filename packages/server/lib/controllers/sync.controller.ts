@@ -34,7 +34,6 @@ import {
     getActionOrModelByEndpoint,
     getSyncsBySyncConfigId,
     updateFrequency,
-    updateSyncScheduleFrequency,
     getInterval,
     findSyncByConnections,
     setFrequency,
@@ -94,7 +93,8 @@ class SyncController {
                 nangoYamlBody: req.body.nangoYamlBody || '',
                 postConnectionScriptsByProvider,
                 debug,
-                logContextGetter
+                logContextGetter,
+                orchestrator
             });
 
             if (!success) {
@@ -855,15 +855,16 @@ class SyncController {
             const syncs = await getSyncsBySyncConfigId(environment.id, Number(syncConfigId));
             const setFrequency = `every ${frequency}`;
             for (const sync of syncs) {
-                const { success: updateScheduleSuccess, error: updateScheduleError } = await updateSyncScheduleFrequency(
-                    sync.id,
-                    setFrequency,
-                    sync.name,
-                    environment.id
-                );
+                const updated = await orchestrator.updateSyncFrequency({
+                    syncId: sync.id,
+                    interval: setFrequency,
+                    syncName: sync.name,
+                    environmentId: environment.id
+                });
 
-                if (!updateScheduleSuccess) {
-                    errorManager.errResFromNangoErr(res, updateScheduleError);
+                if (updated.isErr()) {
+                    const error = new NangoError('failed_to_update_frequency', { syncId: sync.id, frequency: setFrequency });
+                    errorManager.errResFromNangoErr(res, error);
                     return;
                 }
             }
@@ -982,12 +983,18 @@ class SyncController {
 
             await setFrequency(syncId, frequency);
 
-            const { success, error } = await updateSyncScheduleFrequency(syncId, newFrequency, sync_name, connection.environment_id);
-            if (!success) {
+            const updated = await orchestrator.updateSyncFrequency({
+                syncId,
+                interval: newFrequency,
+                syncName: sync_name,
+                environmentId: connection.environment_id
+            });
+
+            if (updated.isErr()) {
+                const error = new NangoError('failed_to_update_frequency', { syncId, frequency: newFrequency });
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
-
             res.status(200).send({ frequency: newFrequency });
         } catch (e) {
             next(e);

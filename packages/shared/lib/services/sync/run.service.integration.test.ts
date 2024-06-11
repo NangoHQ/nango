@@ -51,6 +51,9 @@ const orchestratorClient = {
     deleteSync: () => {
         return Promise.resolve({}) as any;
     },
+    updateSyncFrequency: () => {
+        return Promise.resolve({}) as any;
+    },
     cancel: () => {
         return Promise.resolve({}) as any;
     }

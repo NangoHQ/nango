@@ -1,3 +1,5 @@
+import ms from 'ms';
+import type { StringValue } from 'ms';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { Err, Ok, stringifyError, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -36,6 +38,7 @@ import { SyncCommand } from '../models/index.js';
 import tracer from 'dd-trace';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { isSyncJobRunning } from '../services/sync/job.service.js';
+import { updateSyncScheduleFrequency } from '../services/sync/schedule.service.js';
 
 async function getTemporal(): Promise<TemporalClient> {
     const instance = await SyncClient.getInstance();
@@ -57,6 +60,7 @@ export interface OrchestratorClientInterface {
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
     cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
 }
 
@@ -65,6 +69,10 @@ export class Orchestrator {
 
     public constructor(client: OrchestratorClientInterface) {
         this.client = client;
+    }
+
+    private getScheduleName({ environmentId, syncId }: { environmentId: number; syncId: string }): string {
+        return `environment:${environmentId}:sync:${syncId}`;
     }
 
     async triggerAction<T = any>({
@@ -669,6 +677,53 @@ export class Orchestrator {
         }
     }
 
+    async updateSyncFrequency({
+        syncId,
+        interval,
+        syncName,
+        environmentId,
+        activityLogId,
+        logCtx
+    }: {
+        syncId: string;
+        interval: string;
+        syncName: string;
+        environmentId: number;
+        activityLogId?: number;
+        logCtx?: LogContext;
+    }): Promise<Result<void>> {
+        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
+        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+
+        // Orchestrator
+        const scheduleName = this.getScheduleName({ environmentId, syncId });
+        const frequencyMs = ms(interval as StringValue);
+        const res = await this.client.updateSyncFrequency({ scheduleName, frequencyMs });
+
+        // Legacy
+        const { success, error } = await updateSyncScheduleFrequency(syncId, interval, syncName, environmentId, activityLogId, logCtx);
+
+        if (isOrchestrator) {
+            if (res.isErr()) {
+                errorManager.report(res.error, {
+                    source: ErrorSourceEnum.PLATFORM,
+                    operation: LogActionEnum.SYNC_CLIENT,
+                    environmentId,
+                    metadata: {
+                        syncName,
+                        scheduleName,
+                        frequencyMs
+                    }
+                });
+            } else {
+                await logCtx?.info(`Sync frequency updated to ${frequencyMs}ms.`);
+            }
+            return res;
+        }
+        return success ? Ok(undefined) : Err(error?.message ?? 'Failed to update sync frequency');
+    }
+
     async runSyncCommand({
         syncId,
         command,
@@ -695,7 +750,7 @@ export class Orchestrator {
                 await this.client.cancel({ taskId: syncJob?.run_id, reason: initiator });
                 return Ok(undefined);
             };
-            const scheduleName = `environment:${environmentId}:sync:${syncId}`;
+            const scheduleName = this.getScheduleName({ environmentId, syncId });
             switch (command) {
                 case SyncCommand.CANCEL:
                     return cancelling(syncId);

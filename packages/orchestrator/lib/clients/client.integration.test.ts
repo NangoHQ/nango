@@ -62,6 +62,34 @@ describe('OrchestratorClient', async () => {
             });
             expect(res.isOk()).toBe(true);
         });
+        it('should be updatable', async () => {
+            const name = nanoid();
+            await client.recurring({
+                name,
+                state: 'STARTED',
+                startsAt: new Date(),
+                frequencyMs: 300_000,
+                groupKey: nanoid(),
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'sync',
+                    syncId: 'sync-a',
+                    syncName: nanoid(),
+                    syncJobId: 5678,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    debug: false
+                }
+            });
+
+            const res = await client.updateSyncFrequency({ scheduleName: name, frequencyMs: 600_000 });
+            expect(res.isOk()).toBe(true);
+        });
         it('should be paused/unpaused/deleted', async () => {
             const scheduleName = nanoid();
             await client.recurring({

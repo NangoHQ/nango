@@ -142,6 +142,12 @@ describe('Scheduler', () => {
         expect(tasks[0]?.state).toBe('CANCELLED');
         expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
     });
+    it('should update schedule frequency', async () => {
+        const schedule = await recurring({ scheduler });
+        const newFrequency = 1_800_000;
+        const updated = (await scheduler.setScheduleFrequency({ scheduleName: schedule.name, frequencyMs: newFrequency })).unwrap();
+        expect(updated.frequencyMs).toBe(newFrequency);
+    });
 });
 
 async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler; state?: ScheduleState }): Promise<Schedule> {
