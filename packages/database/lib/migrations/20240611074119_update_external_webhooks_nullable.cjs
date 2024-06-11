@@ -4,6 +4,7 @@ exports.up = function (knex) {
     return knex.schema.alterTable(TABLE, function (t) {
         t.string('primary_url').nullable().alter();
         t.string('secondary_url').nullable().alter();
+        t.unique(['environment_id']);
     });
 };
 

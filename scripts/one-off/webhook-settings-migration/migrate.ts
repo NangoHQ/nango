@@ -17,13 +17,17 @@ async function migrate() {
         for (const environment of environments) {
             const { id, webhook_url, webhook_url_secondary, always_send_webhook, send_auth_webhook } = environment;
 
-            await database.knex('_nango_external_webhooks').insert({
-                environment_id: id,
-                primary_url: webhook_url,
-                secondary_url: webhook_url_secondary,
-                on_sync_completion_always: always_send_webhook,
-                on_auth_creation: send_auth_webhook
-            });
+            await database
+                .knex('_nango_external_webhooks')
+                .insert({
+                    environment_id: id,
+                    primary_url: webhook_url,
+                    secondary_url: webhook_url_secondary,
+                    on_sync_completion_always: always_send_webhook,
+                    on_auth_creation: send_auth_webhook
+                })
+                .onConflict('environment_id')
+                .merge();
         }
 
         id = environments[environments.length - 1].id;
