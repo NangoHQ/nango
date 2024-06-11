@@ -38,7 +38,7 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
     let location;
 
     if (loadLocation) {
-        location = `${loadLocation}/${nangoConfigFile}`;
+        location = path.resolve(`${loadLocation}/${nangoConfigFile}`);
     } else if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
         location = path.resolve(process.env['NANGO_INTEGRATIONS_FULL_PATH'], nangoConfigFile);
     } else {
@@ -125,7 +125,7 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
                 modelFields.push({ name: `${fieldName}.${subFieldName}`, type: subFieldType as string });
             }
         } else {
-            modelFields.push({ name: fieldName, type: fieldType as string });
+            modelFields.push({ name: fieldName, type: fieldType?.trim() as string });
         }
     }
 
