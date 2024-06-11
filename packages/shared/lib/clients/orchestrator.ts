@@ -717,7 +717,7 @@ export class Orchestrator {
                     }
                 });
             } else {
-                await logCtx?.info(`Updated sync "${syncId}" frequency to ${frequencyMs}ms.`);
+                await logCtx?.info(`Sync frequency updated to ${frequencyMs}ms.`);
             }
             return res;
         }

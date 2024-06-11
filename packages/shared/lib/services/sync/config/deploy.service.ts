@@ -30,13 +30,13 @@ import { postConnectionScriptService } from '../post-connection.service.js';
 import { SyncConfigType } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
-import type { Result } from '@nangohq/utils';
 import { env } from '@nangohq/utils';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { Environment } from '../../../models/Environment.js';
 import type { Account } from '../../../models/Admin.js';
+import type { Orchestrator } from '../../../clients/orchestrator.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
@@ -44,24 +44,6 @@ const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 const nameOfType = 'sync/action';
 
 type FlowWithVersion = Omit<IncomingFlowConfig, 'fileBody'>;
-
-interface OrchestratorInterface {
-    updateSyncFrequency: ({
-        syncId,
-        interval,
-        syncName,
-        environmentId,
-        activityLogId,
-        logCtx
-    }: {
-        syncId: string;
-        interval: string;
-        syncName: string;
-        environmentId: number;
-        activityLogId?: number;
-        logCtx?: LogContext;
-    }) => Promise<Result<void>>;
-}
 
 export async function deploy({
     environment,
@@ -79,7 +61,7 @@ export async function deploy({
     postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
     nangoYamlBody: string;
     logContextGetter: LogContextGetter;
-    orchestrator: OrchestratorInterface;
+    orchestrator: Orchestrator;
     debug?: boolean;
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
     const insertData: SyncConfig[] = [];
@@ -282,7 +264,7 @@ export async function deployPreBuilt(
     configs: IncomingPreBuiltFlowConfig[],
     nangoYamlBody: string,
     logContextGetter: LogContextGetter,
-    orchestrator: OrchestratorInterface
+    orchestrator: Orchestrator
 ): Promise<ServiceResponse<SyncConfigResult | null>> {
     const [firstConfig] = configs;
 
@@ -651,7 +633,7 @@ async function compileDeployInfo({
     activityLogId: number;
     debug: boolean;
     logCtx: LogContext;
-    orchestrator: OrchestratorInterface;
+    orchestrator: Orchestrator;
 }): Promise<ServiceResponse<FlowWithVersion[]>> {
     const {
         syncName,

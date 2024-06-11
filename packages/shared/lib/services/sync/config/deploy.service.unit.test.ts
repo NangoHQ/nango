@@ -13,12 +13,21 @@ import { logContextGetter } from '@nangohq/logs';
 import type { Environment } from '../../../models/Environment.js';
 import type { Account } from '../../../models/Admin.js';
 import { Ok } from '@nangohq/utils';
+import { Orchestrator } from '../../../clients/orchestrator.js';
+import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
 
-const mockOrchestrator = {
-    updateSyncFrequency() {
-        return Promise.resolve(Ok(undefined));
-    }
+const orchestratorClientNoop: OrchestratorClientInterface = {
+    executeAction: () => Promise.resolve(Ok({})),
+    executeWebhook: () => Promise.resolve(Ok({})),
+    executePostConnection: () => Promise.resolve(Ok({})),
+    executeSync: () => Promise.resolve(Ok(undefined)),
+    cancel: () => Promise.resolve(Ok({} as any)),
+    pauseSync: () => Promise.resolve(Ok(undefined)),
+    unpauseSync: () => Promise.resolve(Ok(undefined)),
+    deleteSync: () => Promise.resolve(Ok(undefined)),
+    updateSyncFrequency: () => Promise.resolve(Ok(undefined))
 };
+const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
 
 describe('Sync config create', () => {
     const environment = { id: 1, name: '' } as Environment;
