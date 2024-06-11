@@ -64,6 +64,11 @@ export const sendSync = async ({
         }
     }
 
+    // TODO send when the failed sync update is opt in
+    if (!success) {
+        return;
+    }
+
     if (responseResults) {
         body.responseResults = {
             added: responseResults.added,
