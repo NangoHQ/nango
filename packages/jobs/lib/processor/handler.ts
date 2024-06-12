@@ -35,7 +35,7 @@ async function abort(_task: OrchestratorTask): Promise<Result<void>> {
 }
 
 async function sync(task: TaskSync): Promise<Result<JsonValue>> {
-    return Err(`Not implemented: ${JSON.stringify({ taskId: task.id })}`);
+    return Ok({ id: task.id });
 }
 
 async function action(task: TaskAction): Promise<Result<JsonValue>> {

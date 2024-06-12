@@ -4,7 +4,6 @@ import {
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
     SpanTypes,
-    SyncClient,
     proxyService,
     getSyncConfigsWithConnections,
     analytics,
@@ -24,7 +23,7 @@ import type {
     RecentlyFailedConnection
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
-import { getOrchestratorClient } from '../utils/utils.js';
+import { getOrchestrator, getOrchestratorClient } from '../utils/utils.js';
 import type { Environment, IntegrationConfig, Template as ProviderTemplate } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
@@ -32,8 +31,10 @@ import { logContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
 import { externalPostConnection } from './connection/external-post-connection.js';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
+import orchestratorService from '@nangohq/shared/lib/services/sync/orchestrator.service.js';
 
 const logger = getLogger('hooks');
+const orchestrator = getOrchestrator();
 
 export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
@@ -78,8 +79,7 @@ export const connectionCreated = async (
     const { connection, environment, auth_mode } = createdConnectionPayload;
 
     if (options.initiateSync === true && !isHosted) {
-        const syncClient = await SyncClient.getInstance();
-        await syncClient?.initiate(connection.id as number, logContextGetter);
+        await orchestratorService.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
     }
 
     if (options.runPostConnectionScript === true) {
