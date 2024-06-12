@@ -34,7 +34,7 @@ Nango is a single API to interact with all other external APIs. It should be the
 Initiate a new OAuth flow from your frontend:
 
 ```js
-nango.auth('github', 'user123');
+nango.auth('github', 'user123'); //
 ```
 
 Get structured objects from external APIs from your backend:
