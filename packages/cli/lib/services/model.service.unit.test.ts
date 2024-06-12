@@ -1,33 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildModelsTS, fieldToTypescript } from './model.service.js';
-import type { ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
-
-const defaultSync: ParsedNangoSync = {
-    name: 'default',
-    type: 'sync',
-    description: '',
-    auto_start: false,
-    input: null,
-    nango_yaml_version: 'v2',
-    runs: '',
-    endpoints: [{ POST: '/default' }],
-    layout_mode: 'root',
-    models: [],
-    scopes: [],
-    sync_type: 'full',
-    track_deletes: false,
-    webhookSubscriptions: []
-};
-const defaultAction: ParsedNangoAction = {
-    name: 'default',
-    type: 'action',
-    description: '',
-    endpoint: { POST: '/default' },
-    models: [],
-    input: null,
-    nango_yaml_version: 'v2',
-    scopes: []
-};
+import type { NangoModel } from '@nangohq/types';
 
 describe('buildModelTs', () => {
     it('should return empty (with sdk)', () => {
@@ -36,118 +9,129 @@ describe('buildModelTs', () => {
     });
 
     it('should output all interfaces', () => {
-        const res = buildModelsTS({
-            parsed: {
-                yamlVersion: 'v2',
-                models: new Map(),
-                integrations: [
+        const models: NangoModel[] = [
+            {
+                name: 'Foo',
+                fields: [
+                    { name: '__string', value: 'string', tsType: true, dynamic: true },
+                    { name: 'id', value: 'number', tsType: true }
+                ]
+            },
+            {
+                name: 'Bar',
+                fields: [
+                    { name: 'value', value: null, tsType: true },
+                    { name: 'top', value: 'boolean', tsType: true, array: true },
+                    { name: 'ref', value: 'Foo', tsType: false, model: true },
                     {
-                        providerConfigKey: 'foobar',
-                        actions: [
-                            {
-                                ...defaultAction,
-                                name: 'Action1',
-                                returns: ['Action1'],
-                                models: [{ name: 'Action1', fields: [{ name: 'name', value: 'dfd' }] }]
-                            }
+                        name: 'union',
+                        union: true,
+                        value: [
+                            { name: '0', value: 'literal1' },
+                            { name: '1', value: 'literal2' }
                         ],
-                        syncs: [
-                            {
-                                ...defaultSync,
-                                name: 'Sync1',
-                                returns: ['Sync1'],
-                                models: [{ name: 'Sync1', fields: [{ name: 'id', value: 'dfd' }] }]
-                            }
-                        ]
+                        tsType: false
+                    },
+                    {
+                        name: 'array',
+                        array: true,
+                        value: [
+                            { name: '0', value: 'arr1' },
+                            { name: '1', value: 'arr2' }
+                        ],
+                        tsType: false
                     }
                 ]
             }
-        });
-        expect(res.split('\n').slice(0, 15)).toMatchSnapshot('');
-    });
-
-    it('should support [key: string] model', () => {
+        ];
         const res = buildModelsTS({
             parsed: {
                 yamlVersion: 'v2',
-                models: new Map(),
-                integrations: [
-                    {
-                        providerConfigKey: 'foobar',
-                        actions: [],
-                        syncs: [
-                            {
-                                ...defaultSync,
-                                models: [
-                                    {
-                                        name: 'Sync1',
-                                        fields: [
-                                            { name: '[key: string]', value: 'string' },
-                                            { name: 'id', value: 'string' }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
+                models: new Map(Object.entries(models)),
+                integrations: []
             }
         });
-
-        expect(res.split('\n').slice(0, 15)).toMatchSnapshot();
+        expect(res.split('\n').slice(0, 25)).toMatchSnapshot('');
     });
 });
 
 describe('fieldToTypescript', () => {
     it('should correctly interpret a string union literal type', () => {
-        expect(fieldToTypescript({ rawField: 'male | female', modelName: 'gender', models: new Map() })).toStrictEqual("'male' | 'female'");
+        expect(
+            fieldToTypescript({
+                field: {
+                    name: 'test',
+                    union: true,
+                    value: [
+                        { name: '0', value: 'male' },
+                        { name: '1', value: 'female' }
+                    ]
+                }
+            })
+        ).toStrictEqual("'male' | 'female'");
     });
 
-    it('should correctly interpret a union literal type with a string and a primitive', () => {
-        expect(fieldToTypescript({ rawField: 'male | null', modelName: 'gender', models: new Map() })).toStrictEqual("'male' | null");
+    it('should correctly interpret a union literal type with all types', () => {
+        expect(
+            fieldToTypescript({
+                field: {
+                    name: 'test',
+                    union: true,
+                    value: [
+                        { name: '0', value: 'male' },
+                        { name: '1', value: 'string', tsType: true },
+                        { name: '1', value: null, tsType: true },
+                        { name: '2', value: undefined, tsType: true },
+                        { name: '3', value: 1, tsType: true },
+                        { name: '4', value: true, tsType: true }
+                    ]
+                }
+            })
+        ).toStrictEqual("'male' | string | null | undefined | 1 | true");
     });
 
     it('should correctly interpret a union literal with models', () => {
-        const models = new Map([
-            ['User', {}],
-            ['Account', {}]
-        ]);
-        expect(fieldToTypescript({ rawField: 'User | Account', modelName: 'user', models })).toStrictEqual('User | Account');
+        expect(
+            fieldToTypescript({
+                field: {
+                    name: 'test',
+                    union: true,
+                    value: [
+                        { name: '0', value: 'User', model: true },
+                        { name: '1', value: 'Account', model: true }
+                    ]
+                }
+            })
+        ).toStrictEqual('User | Account');
     });
 
-    it('should correctly interpret a union literal with string and model', () => {
-        const models = new Map([['Other', {}]]);
-        expect(fieldToTypescript({ rawField: 'male | Other', modelName: 'user', models })).toStrictEqual("'male' | Other");
+    it('should correctly interpret a literal array', () => {
+        expect(
+            fieldToTypescript({
+                field: {
+                    name: 'test',
+                    array: true,
+                    value: [
+                        { name: '0', value: 'User', model: true },
+                        { name: '1', value: 'Account', model: true }
+                    ]
+                }
+            })
+        ).toStrictEqual('(User | Account)[]');
     });
 
-    it('should correctly interpret a union with Date ', () => {
-        expect(fieldToTypescript({ rawField: 'Date | null', modelName: 'user', models: new Map() })).toStrictEqual('Date | null');
-    });
-
-    it('should correctly interpret a union with undefined', () => {
-        expect(fieldToTypescript({ rawField: 'male | string | undefined | null', modelName: 'user', models: new Map() })).toStrictEqual(
-            "'male' | string | undefined | null"
-        );
-    });
-
-    it('should correctly interpret an literal array', () => {
-        expect(fieldToTypescript({ rawField: 'string[]', modelName: 'user', models: new Map() })).toStrictEqual('string[]');
-    });
-
-    it('should correctly interpret a model array', () => {
-        const models = new Map([
-            ['User', {}],
-            ['Account', {}]
-        ]);
-        expect(fieldToTypescript({ rawField: 'Account[]', modelName: 'user', models })).toStrictEqual('Account[]');
-    });
-
-    it('should correctly interpret a union type with an array model', () => {
-        const models = new Map([
-            ['User', {}],
-            ['Account', {}]
-        ]);
-        expect(fieldToTypescript({ rawField: 'User[] | null', modelName: 'user', models })).toStrictEqual('User[] | null');
-        expect(fieldToTypescript({ rawField: 'User[] | Account[]', modelName: 'user', models })).toStrictEqual('User[] | Account[]');
+    it('should correctly interpret a literal array', () => {
+        expect(
+            fieldToTypescript({
+                field: {
+                    name: 'test',
+                    union: true,
+                    value: [
+                        { name: '0', value: 'User', model: true, array: true },
+                        { name: '1', value: 'string', tsType: true }
+                    ]
+                }
+            })
+        ).toStrictEqual('User[] | string');
     });
 });

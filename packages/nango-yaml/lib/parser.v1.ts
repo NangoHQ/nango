@@ -5,6 +5,7 @@ export class NangoYamlParserV1 extends NangoYamlParser {
     parse(): void {
         const yaml = this.raw as unknown as NangoYamlV1;
         const output: NangoYamlParsedIntegration[] = [];
+        this.modelsParser.parseAll();
 
         for (const providerConfigKey in yaml.integrations) {
             const integration = yaml.integrations[providerConfigKey];
@@ -28,30 +29,37 @@ export class NangoYamlParserV1 extends NangoYamlParser {
                         type: 'action',
                         name: syncOrActionName,
                         description: syncOrAction.description || '',
-                        endpoint: null,
+                        endpoint: null, // Endpoint was never allowed in v1
                         input: null,
-                        // output: [],
+                        output: null,
                         scopes: [], // Scopes was never allowed in v1
-                        nango_yaml_version: 'v1',
-                        models: []
+                        usedModels: []
                     });
                 } else {
+                    const modelOutput = this.getModelForOutput({
+                        rawOutput: syncOrAction.returns,
+                        usedModels: new Set(),
+                        name: syncOrActionName,
+                        type: 'sync'
+                    });
+                    if (!modelOutput) {
+                        continue;
+                    }
+
                     syncs.push({
                         type: 'sync',
                         name: syncOrActionName,
                         description: syncOrAction.description || '',
                         runs: syncOrAction.runs || '',
                         track_deletes: syncOrAction.track_deletes || false,
-                        endpoints: [],
+                        endpoints: [], // Endpoint was never allowed in v1
                         input: null,
-                        // output: [],
+                        output: modelOutput.map((m) => m.name),
                         scopes: [], // Scopes was never allowed in v1
                         auto_start: syncOrAction.auto_start === false ? false : true,
-                        models: [],
-                        layout_mode: 'root',
+                        usedModels: modelOutput.map((m) => m.name),
                         sync_type: 'incremental',
-                        webhookSubscriptions: [],
-                        nango_yaml_version: 'v1'
+                        webhookSubscriptions: []
                     });
                 }
             }
@@ -59,7 +67,8 @@ export class NangoYamlParserV1 extends NangoYamlParser {
             const parsedIntegration: NangoYamlParsedIntegration = {
                 providerConfigKey,
                 syncs,
-                actions
+                actions,
+                postConnectionScripts: []
             };
 
             output.push(parsedIntegration);

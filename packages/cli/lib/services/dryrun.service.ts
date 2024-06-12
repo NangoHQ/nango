@@ -71,8 +71,8 @@ class DryRunService {
             return;
         }
 
-        const { success, error, response: config } = await load(process.cwd(), debug);
-        if (!success || !config) {
+        const { success, error, response: parsed } = load(process.cwd(), debug);
+        if (!success || !parsed) {
             console.log(chalk.red(error?.message));
             return;
         }
@@ -81,13 +81,15 @@ class DryRunService {
         let isPostConnectionScript = false;
 
         if (!providerConfigKey) {
-            providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
+            providerConfigKey = parsed.integrations.find((integration) =>
+                [...integration.syncs, ...integration.actions].find((sync) => sync.name === syncName)
+            )?.providerConfigKey;
 
             if (!providerConfigKey) {
                 providerConfigKey =
-                    config.find((config) => {
-                        if (config.postConnectionScripts && config.postConnectionScripts.length > 0) {
-                            return config.postConnectionScripts.some((postConnectionScript) => postConnectionScript === syncName);
+                    parsed.integrations.find((integration) => {
+                        if (integration.postConnectionScripts && integration.postConnectionScripts.length > 0) {
+                            return integration.postConnectionScripts.some((postConnectionScript) => postConnectionScript === syncName);
                         } else {
                             return false;
                         }
@@ -105,9 +107,9 @@ class DryRunService {
             }
         }
 
-        const foundConfig = config.find((configItem) => {
-            const syncsArray = configItem.syncs || [];
-            const actionsArray = configItem.actions || [];
+        const foundConfig = parsed.integrations.find((integration) => {
+            const syncsArray = integration.syncs || [];
+            const actionsArray = integration.actions || [];
 
             return [...syncsArray, ...actionsArray].some((sync) => sync.name === syncName);
         });

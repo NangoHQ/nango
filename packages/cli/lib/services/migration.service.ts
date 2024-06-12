@@ -3,7 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import { exec } from 'child_process';
 
-import { nangoConfigFile } from '@nangohq/shared';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { printDebug, getNangoRootPath } from '../utils.js';
 import { load } from './config.service.js';
 
@@ -12,7 +12,7 @@ export const v1toV2Migration = async (loadLocation: string): Promise<void> => {
         return;
     }
 
-    const { response: parsed, success } = await load(loadLocation);
+    const { response: parsed, success } = load(loadLocation);
     if (!success || !parsed) {
         return;
     }
@@ -76,7 +76,7 @@ async function updateModelImport(filePath: string, debug = false): Promise<void>
 }
 
 export const directoryMigration = async (loadLocation: string, debug?: boolean): Promise<void> => {
-    const { response: parsed, success } = await load(loadLocation);
+    const { response: parsed, success } = load(loadLocation);
     if (!success || !parsed) {
         return;
     }

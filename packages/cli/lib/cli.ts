@@ -8,11 +8,12 @@ import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
-import { localFileService, nangoConfigFile, SyncConfigType } from '@nangohq/shared';
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, getPkgVersion, printDebug } from './utils.js';
 import { loadYamlAndGeneratedModel } from './services/model.service.js';
 import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
+import { getLayoutMode } from './utils/layoutMode.js';
+import { getProviderConfigurationFromPath, nangoConfigFile } from '@nangohq/nango-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,21 +29,21 @@ export const version = (debug: boolean) => {
     console.log(chalk.green('Nango CLI version:'), version);
 };
 
-export async function generate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
+export function generate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/sync.ejs'), 'utf8');
     const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/action.ejs'), 'utf8');
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
     const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
 
-    const res = await loadYamlAndGeneratedModel({ fullPath, debug });
+    const res = loadYamlAndGeneratedModel({ fullPath, debug });
     if (!res.success) {
         return;
     }
 
-    const config = res.response!;
+    const parsed = res.response!;
     const allSyncNames: Record<string, boolean> = {};
 
-    for (const integration of config.integrations) {
+    for (const integration of parsed.integrations) {
         const { syncs, actions, postConnectionScripts, providerConfigKey } = integration;
 
         if (postConnectionScripts) {
@@ -68,9 +69,10 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
         }
 
         for (const flow of [...syncs, ...actions]) {
-            const { name, type, returns: models, layout_mode } = flow;
+            const { name, type, returns: models } = flow;
             const { input } = flow;
-            const uniqueName = layout_mode === 'root' ? name : `${providerConfigKey}-${name}`;
+            const layoutMode = getLayoutMode({ fullPath, providerConfigKey, scriptName: name, type });
+            const uniqueName = layoutMode === 'root' ? name : `${providerConfigKey}-${name}`;
 
             if (allSyncNames[uniqueName] === undefined) {
                 // a sync and an action within the same provider cannot have the same name
@@ -91,10 +93,10 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
 
             let ejsTemplateContents = '';
 
-            if (name === exampleSyncName && type === SyncConfigType.SYNC) {
+            if (name === exampleSyncName && type === 'sync') {
                 ejsTemplateContents = githubExampleTemplateContents;
             } else {
-                ejsTemplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
+                ejsTemplateContents = type === 'sync' ? syncTemplateContents : actionTemplateContents;
             }
 
             let interfaceNames: string | string[] = [];
@@ -119,18 +121,18 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
 
             const rendered = ejs.render(ejsTemplateContents, {
                 syncName: flowNameCamel,
-                interfacePath: layout_mode === 'root' ? './' : '../../',
+                interfacePath: layoutMode === 'root' ? './' : '../../',
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
                 interfaceNames,
                 mappings,
                 inputs: input && typeof input !== 'string' ? input.name : input || '',
-                hasWebhook: type === SyncConfigType.SYNC && flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0
+                hasWebhook: type === 'sync' && flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0
             });
 
             const stripped = rendered.replace(/^\s+/, '');
 
             if (!fs.existsSync(`${fullPath}/${name}.ts`) && !fs.existsSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`)) {
-                if (layout_mode === 'root') {
+                if (layoutMode === 'root') {
                     fs.writeFileSync(`${fullPath}/${name}.ts`, stripped);
                 } else {
                     fs.mkdirSync(`${fullPath}/${providerConfigKey}/${type}s`, { recursive: true });
@@ -153,7 +155,7 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
  * If we're not currently in the nango-integrations directory create one
  * and create an example nango.yaml file
  */
-export async function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }) {
+export function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }) {
     const yamlData = fs.readFileSync(path.resolve(__dirname, `./templates/${nangoConfigFile}`), 'utf8');
 
     // if currently in the nango-integrations directory then don't create another one
@@ -216,12 +218,12 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
         }
     }
 
-    await generate({ debug, fullPath });
+    generate({ debug, fullPath });
 }
 
-export async function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
+export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
-    const res = await loadYamlAndGeneratedModel({ fullPath, debug });
+    const res = loadYamlAndGeneratedModel({ fullPath, debug });
     if (!res.success) {
         console.log(chalk.red(res.error?.message));
         if (res.error?.payload) {
@@ -230,6 +232,7 @@ export async function tscWatch({ fullPath, debug = false }: { fullPath: string; 
         return;
     }
 
+    const parsed = res.response!;
     const watchPath = ['./**/*.ts', `./${nangoConfigFile}`];
 
     if (debug) {
@@ -257,14 +260,14 @@ export async function tscWatch({ fullPath, debug = false }: { fullPath: string; 
         if (filePath === nangoConfigFile) {
             return;
         }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, config, debug });
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, parsed, debug });
     });
 
     watcher.on('unlink', (filePath: string) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        const providerConfiguration = localFileService.getProviderConfigurationFromPath(filePath, config);
+        const providerConfiguration = getProviderConfigurationFromPath({ filePath, parsed });
         const baseName = path.basename(filePath, '.ts');
         const fileName = providerConfiguration ? `${baseName}-${providerConfiguration.providerConfigKey}.js` : `${baseName}.js`;
         const jsFilePath = `./dist/${fileName}`;
@@ -281,7 +284,7 @@ export async function tscWatch({ fullPath, debug = false }: { fullPath: string; 
             await compileAllFiles({ fullPath, debug });
             return;
         }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, config, debug });
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, parsed, debug });
     });
 }
 
@@ -293,7 +296,7 @@ export function configWatch({ fullPath, debug = false }: { fullPath: string; deb
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
     watcher.on('change', () => {
-        void loadYamlAndGeneratedModel({ fullPath, debug });
+        loadYamlAndGeneratedModel({ fullPath, debug });
     });
 }
 

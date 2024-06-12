@@ -44,7 +44,7 @@ class DeployService {
             process.exit(1);
         }
 
-        const { success, error, response: parsed } = await load(fullPath, debug);
+        const { success, error, response: parsed } = load(fullPath, debug);
 
         if (!success || !parsed) {
             console.log(chalk.red(error?.message));
@@ -70,7 +70,7 @@ class DeployService {
 
         try {
             await http
-                .post(url, { targetAccountUUID, targetEnvironment: environmentName, config: flowData, nangoYamlBody }, { headers: enrichHeaders() })
+                .post(url, { targetAccountUUID, targetEnvironment: environmentName, parsed: flowData, nangoYamlBody }, { headers: enrichHeaders() })
                 .then(() => {
                     console.log(chalk.green(`Successfully deployed the syncs/actions to the users account.`));
                 })
@@ -118,14 +118,14 @@ class DeployService {
             process.exit(1);
         }
 
-        const { success, error, response: config } = await load(fullPath, debug);
+        const { success, error, response: parsed } = load(fullPath, debug);
 
-        if (!success || !config) {
+        if (!success || !parsed) {
             console.log(chalk.red(error?.message));
             return;
         }
 
-        const postData = this.package(config, debug, version, optionalSyncName, optionalActionName);
+        const postData = this.package(parsed, debug, version, optionalSyncName, optionalActionName);
 
         if (!postData) {
             return;
@@ -177,7 +177,7 @@ class DeployService {
                 }
                 let errorMessage;
                 if (err instanceof AxiosError) {
-                    const errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.config?.method };
+                    const errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.parsed?.method };
                     errorMessage = JSON.stringify(errorObject, null, 2);
                 } else {
                     errorMessage = JSON.stringify(err, null, 2);

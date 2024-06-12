@@ -15,7 +15,6 @@ import {
     ParserErrorDuplicateModel,
     ParserErrorEndpointsMismatch,
     ParserErrorInvalidRuns,
-    ParserErrorMissingId,
     ParserErrorModelNotFound
 } from './errors.js';
 import { getInterval, isJsOrTsType } from './helpers.js';
@@ -74,12 +73,18 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 continue;
             }
 
+            const modelNames = new Set<string>();
+
             const modelOutput = this.getModelForOutput({ rawOutput: sync.output, usedModels, name: syncName, type: 'sync' });
             if (!modelOutput) {
                 continue;
             }
+            modelOutput.forEach((m) => modelNames.add(m.name));
 
             const modelInput = this.getModelForInput({ usedModels, rawInput: sync.input, name: syncName, type: 'sync' });
+            if (modelInput) {
+                modelNames.add(modelInput.name);
+            }
 
             const endpoints: NangoSyncEndpoint[] = [];
             if (sync.endpoint) {
@@ -129,18 +134,15 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 type: 'sync',
                 description: sync.description || '',
                 sync_type: sync.sync_type === 'incremental' ? 'incremental' : 'full',
-                models: [],
+                usedModels: Array.from(modelNames),
                 runs: sync.runs,
                 track_deletes: sync.track_deletes || false,
                 auto_start: sync.auto_start === false ? false : true,
-                input: modelInput,
+                input: modelInput?.name || null,
+                output: modelOutput.map((m) => m.name),
                 scopes: Array.isArray(sync.scopes) ? sync.scopes : sync.scopes ? sync.scopes?.split(',') : [],
                 endpoints,
-                nango_yaml_version: 'v2',
-                webhookSubscriptions,
-                layout_mode: 'root'
-                // TODO
-                // layout_mode: localFileService.getLayoutMode(syncName, providerConfigKey, 'sync')
+                webhookSubscriptions
             };
 
             parsedSyncs.push(parsedSync);
@@ -182,82 +184,17 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 name: actionName,
                 type: 'action',
                 description: action.description || '',
-                models: [],
                 scopes: Array.isArray(action.scopes) ? action.scopes : String(action.scopes)?.split(','),
-                input: modelInput,
-                endpoint,
-                nango_yaml_version: 'v2'
+                input: modelInput?.name || null,
+                output: modelOutput.length > 0 ? modelOutput.map((m) => m.name) : null,
+                usedModels: [],
+                endpoint
             };
 
             parsedActions.push(parsedAction);
         }
 
         return parsedActions;
-    }
-
-    getModelForOutput({
-        rawOutput,
-        usedModels,
-        name,
-        type
-    }: {
-        rawOutput: string | string[] | undefined;
-        usedModels: Set<string>;
-        name: string;
-        type: 'sync' | 'action';
-    }): NangoModel[] | null {
-        if (!rawOutput) {
-            return null;
-        }
-
-        const models: NangoModel[] = [];
-
-        const output = Array.isArray(rawOutput) ? rawOutput : [rawOutput];
-        for (const modelOrType of output) {
-            if (isJsOrTsType(modelOrType)) {
-                continue;
-            }
-
-            if (type === 'sync' && usedModels.has(modelOrType)) {
-                this.errors.push(new ParserErrorDuplicateModel({ model: modelOrType, path: `${type} > ${name}` }));
-                continue;
-            }
-
-            const model = this.modelsParser.get(modelOrType);
-            if (!model) {
-                this.errors.push(new ParserErrorModelNotFound({ model: modelOrType, path: `${type} > ${name}` }));
-                continue;
-            }
-
-            usedModels.add(modelOrType);
-
-            if (type === 'sync' && !model.fields.find((field) => field.name === 'id')) {
-                this.errors.push(new ParserErrorMissingId({ model: modelOrType, path: `${type} > ${name}` }));
-                continue;
-            }
-
-            models.push(model);
-            // const subModels = modelFields.response.filter((field) => {
-            //     if (typeof field?.type === 'string') {
-            //         const cleanType = field.type.replace(/\[\]/g, '');
-            //         return allModelNames.has(cleanType);
-            //     } else {
-            //         return false;
-            //     }
-            // });
-
-            // for (const subModel of subModels) {
-            //     const subModelFields = getFieldsForModel(subModel.type, config);
-            //     if (!subModelFields.response) {
-            //         return { success: false, error: subModelFields.error, response: null };
-            //     }
-
-            //     const subModelName = subModel.type.replace(/\[\]/g, '');
-            //     models.push({ name: subModelName, fields: subModelFields.response });
-            // }
-        }
-
-        return models;
     }
 
     getModelForInput({

@@ -11,7 +11,6 @@ import figlet from 'figlet';
 import path from 'path';
 import * as dotenv from 'dotenv';
 
-import { nangoConfigFile } from '@nangohq/shared';
 import { init, generate, tscWatch, configWatch, dockerRun, version } from './cli.js';
 import deployService from './services/deploy.service.js';
 import { compileAllFiles } from './services/compile.service.js';
@@ -21,6 +20,7 @@ import { v1toV2Migration, directoryMigration } from './services/migration.servic
 import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 import { load } from './services/config.service.js';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -89,7 +89,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts();
         const fullPath = process.cwd();
-        await init({ absolutePath: fullPath, debug });
+        init({ absolutePath: fullPath, debug });
 
         console.log(chalk.green(`Nango integrations initialized!`));
     });
@@ -99,7 +99,7 @@ program
     .description('Generate a new Nango integration')
     .action(async function (this: Command) {
         const { debug } = this.opts();
-        await generate({ fullPath: process.cwd(), debug });
+        generate({ fullPath: process.cwd(), debug });
     });
 
 program
@@ -143,7 +143,7 @@ program
             configWatch({ fullPath, debug });
         }
 
-        await tscWatch({ fullPath, debug });
+        tscWatch({ fullPath, debug });
     });
 
 program
@@ -225,7 +225,7 @@ program
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
 
-        const match = await verificationService.filesMatchConfig({ fullPath });
+        const match = verificationService.filesMatchConfig({ fullPath });
         if (!match) {
             process.exitCode = 1;
             return;
@@ -269,7 +269,7 @@ program
         const { autoConfirm } = this.opts();
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm });
-        const { success, error, response: parsed } = await load(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
+        const { success, error, response: parsed } = load(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
 
         if (!success || !parsed) {
             console.log(chalk.red(error?.message));

@@ -4,7 +4,7 @@ import { getInterval, isJsOrTsType } from './helpers.js';
 describe('Nango Config Interval tests', () => {
     it('throws error when interval is less than 5 minutes', () => {
         const interval = getInterval('every 4m', new Date());
-        expect(interval).toBe(new Error('sync_interval_too_short'));
+        expect(interval).toStrictEqual(new Error('sync_interval_too_short'));
     });
 
     it('Can parse every half day', () => {
@@ -56,7 +56,7 @@ describe('Nango Config Interval tests', () => {
     it('Returns error for unsupported interval format', () => {
         const date = new Date('2023-07-18T00:00:00');
         const interval = getInterval('every yearasdad', date);
-        expect(interval).toBe(new Error('sync_interval_invalid'));
+        expect(interval).toStrictEqual(new Error('sync_interval_invalid'));
     });
 
     it('Can parse intervals with different starting offset', () => {
@@ -85,11 +85,6 @@ describe('isJsOrTsType ', () => {
         expect(isJsOrTsType('boolean')).toBe(true);
     });
 
-    it('recognizes null and undefined', () => {
-        expect(isJsOrTsType('null')).toBe(true);
-        expect(isJsOrTsType('undefined')).toBe(true);
-    });
-
     it('recognizes function types', () => {
         expect(isJsOrTsType('Function')).toBe(true);
     });
@@ -115,10 +110,6 @@ describe('isJsOrTsType ', () => {
         expect(isJsOrTsType('String')).toBe(true);
         expect(isJsOrTsType('Number')).toBe(true);
         expect(isJsOrTsType('Boolean')).toBe(true);
-        expect(isJsOrTsType('integer')).toBe(true);
-        expect(isJsOrTsType('int')).toBe(true);
-        expect(isJsOrTsType('bool')).toBe(true);
-        expect(isJsOrTsType('char')).toBe(true);
     });
 
     it('recognizes built-in object types', () => {
@@ -151,11 +142,10 @@ describe('isJsOrTsType ', () => {
         expect(isJsOrTsType('string{}')).toBe(false); // Invalid syntax
     });
 
-    it('recognizes array types', () => {
+    it('recognizes shorthand array types', () => {
         expect(isJsOrTsType('string[]')).toBe(true);
         expect(isJsOrTsType('number[]')).toBe(true);
         expect(isJsOrTsType('boolean[]')).toBe(true);
-        expect(isJsOrTsType('bool[]')).toBe(true);
         expect(isJsOrTsType('Map<string, string>[]')).toBe(true);
         expect(isJsOrTsType('Set<number>[]')).toBe(true);
         expect(isJsOrTsType('Promise<boolean>[]')).toBe(true);

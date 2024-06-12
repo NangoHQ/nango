@@ -8,7 +8,7 @@ const thisFolder = path.dirname(fileURLToPath(import.meta.url));
 
 describe('listFiles', () => {
     it('should list files with glob', () => {
-        const files = listFilesToCompile({ fullPath: thisFolder, config: { integrations: [], models: new Map(), yamlVersion: 'v2' } });
+        const files = listFilesToCompile({ fullPath: thisFolder, parsed: { integrations: [], models: new Map(), yamlVersion: 'v2' } });
         expect(files.length).toBeGreaterThan(1);
         expect(files[0]).toStrictEqual({
             baseName: 'verification.service',
@@ -18,7 +18,7 @@ describe('listFiles', () => {
     });
 
     it('should list files with syncName', () => {
-        const files = listFilesToCompile({ scriptName: 'compile.service', scriptDirectory: '', fullPath: thisFolder, config: {} as NangoYamlParsed });
+        const files = listFilesToCompile({ scriptName: 'compile.service', scriptDirectory: '', fullPath: thisFolder, parsed: {} as NangoYamlParsed });
         expect(files.length).toBe(1);
         expect(files[0]).toStrictEqual({
             baseName: 'compile.service',
@@ -29,7 +29,7 @@ describe('listFiles', () => {
 
     it('should list files in subdirectory', () => {
         const parent = path.join(thisFolder, '..');
-        const files = listFilesToCompile({ scriptName: 'compile.service', fullPath: parent, scriptDirectory: 'services', config: {} as NangoYamlParsed });
+        const files = listFilesToCompile({ scriptName: 'compile.service', fullPath: parent, scriptDirectory: 'services', parsed: {} as NangoYamlParsed });
         expect(files.length).toBe(1);
         expect(files[0]).toStrictEqual({
             baseName: 'compile.service',

@@ -972,7 +972,7 @@ class SyncController {
             // When "frequency === null" we revert the value stored in the sync config
             if (!newFrequency) {
                 const providerId = await configService.getIdByProviderConfigKey(envId, provider_config_key);
-                const syncConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(envId, providerId, sync_name);
+                const syncConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(envId, providerId!, sync_name);
                 if (syncConfigs.length <= 0) {
                     res.status(400).send({ message: 'Invalid sync_name' });
                     return;

@@ -10,7 +10,6 @@ import util from 'util';
 import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
-import type { NangoModel } from '@nangohq/shared';
 import { cloudHost, stagingHost, NANGO_VERSION } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { state } from './state.js';
@@ -272,73 +271,6 @@ export function getUserAgent(): string {
     return `nango-cli/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})`;
 }
 
-export function getFieldType(rawField: string | NangoModel, debug = false): string {
-    if (typeof rawField === 'string') {
-        let field = rawField;
-        let hasNull = false;
-        let hasUndefined = false;
-        let tsType = '';
-        if (field.includes('null')) {
-            field = field.replace(/\s*\|\s*null\s*/g, '');
-            hasNull = true;
-        }
-
-        if (field === 'undefined') {
-            if (debug) {
-                printDebug(`Field is defined undefined which isn't recommended.`);
-            }
-            return 'undefined';
-        }
-
-        if (field.includes('undefined')) {
-            field = field.replace(/\s*\|\s*undefined\s*/g, '');
-            hasUndefined = true;
-        }
-
-        switch (field) {
-            case 'boolean':
-            case 'bool':
-                tsType = 'boolean';
-                break;
-            case 'string':
-                tsType = 'string';
-                break;
-            case 'char':
-                tsType = 'string';
-                break;
-            case 'integer':
-            case 'int':
-            case 'number':
-                tsType = 'number';
-                break;
-            case 'date':
-                tsType = 'Date';
-                break;
-            default:
-                tsType = field;
-        }
-
-        if (hasNull) {
-            tsType = `${tsType} | null`;
-        }
-
-        if (hasUndefined) {
-            tsType = `${tsType} | undefined`;
-        }
-        return tsType;
-    } else {
-        try {
-            const nestedFields = Object.keys(rawField)
-                .map((fieldName: string) => `  ${fieldName}: ${getFieldType(rawField[fieldName] as string | NangoModel)};`)
-                .join('\n');
-            return `{\n${nestedFields}\n}`;
-        } catch (_) {
-            console.log(chalk.red(`Failed to parse field ${rawField} so just returning it back as a string`));
-            return String(rawField);
-        }
-    }
-}
-
 export function getNangoRootPath(debug = false) {
     const packagePath = getPackagePath(debug);
     if (!packagePath) {
@@ -356,6 +288,10 @@ export function getNangoRootPath(debug = false) {
 }
 
 function getPackagePath(debug = false) {
+    if (process.env['CI'] || process.env['VITEST']) {
+        return path.join(__dirname);
+    }
+
     try {
         if (isLocallyInstalled('nango', debug)) {
             if (debug) {

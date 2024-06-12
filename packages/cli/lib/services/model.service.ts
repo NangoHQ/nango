@@ -8,14 +8,13 @@ import { NANGO_VERSION } from '@nangohq/shared';
 import { getNangoRootPath, printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
 import { load } from './config.service.js';
-import { isJsOrTsType } from '@nangohq/nango-yaml';
 
 export type ModelsMap = Map<string, Record<string, any>>;
 
 /**
  * Load nango.yaml and generate model.ts
  */
-export async function loadYamlAndGeneratedModel({ fullPath, debug = false }: { fullPath: string; debug?: boolean }): Promise<ServiceResponse<NangoYamlParsed>> {
+export function loadYamlAndGeneratedModel({ fullPath, debug = false }: { fullPath: string; debug?: boolean }): ServiceResponse<NangoYamlParsed> {
     if (debug) {
         printDebug(`Generating ${TYPES_FILE_NAME} file`);
     }
@@ -31,7 +30,7 @@ export async function loadYamlAndGeneratedModel({ fullPath, debug = false }: { f
         }
     }
 
-    const { success, error, response: parsed } = await load(fullPath, debug);
+    const { success, error, response: parsed } = load(fullPath, debug);
     if (!success || !parsed) {
         console.log(chalk.red(error?.message));
         if (error?.payload) {
@@ -82,26 +81,9 @@ export const NangoFlows = ${JSON.stringify(parsed.integrations, null, 2)} as con
 }
 
 export function generateInterfaces({ parsed }: { parsed: NangoYamlParsed }): string[] {
-    const models: ModelsMap = new Map<string, Record<string, any>>();
-
     const interfaces: string[] = [];
-    for (const integration of parsed.integrations) {
-        // Syncs
-        for (const sync of integration.syncs) {
-            for (const model of sync.models) {
-                interfaces.push(modelToTypescript({ model, models }));
-            }
-        }
-
-        // Actions
-        for (const action of integration.actions) {
-            for (const model of action.models) {
-                interfaces.push(modelToTypescript({ model, models }));
-            }
-            if (action.input && typeof action.input !== 'string') {
-                interfaces.push(modelToTypescript({ model: action.input, models }));
-            }
-        }
+    for (const [, model] of parsed.models) {
+        interfaces.push(modelToTypescript({ model }));
     }
 
     return interfaces;
@@ -110,28 +92,27 @@ export function generateInterfaces({ parsed }: { parsed: NangoYamlParsed }): str
 /**
  * Transform a JSON model to its Typescript equivalent
  */
-export function modelToTypescript({ model, models }: { model: NangoModel; models: ModelsMap }) {
+export function modelToTypescript({ model }: { model: NangoModel }) {
     const output: string[] = [];
-    const interfaceName = `${model.name.charAt(0).toUpperCase()}${model.name.slice(1)}`;
-    output.push(`export interface ${interfaceName} {`);
+    output.push(`export interface ${model.name} {`);
 
-    output.push(...fieldsToTypescript({ fields: model.fields, models }));
+    output.push(...fieldsToTypescript({ fields: model.fields }));
 
     output.push(`};`);
     return output.join('\n');
 }
 
-export function fieldsToTypescript({ models, fields }: { fields: NangoModelField[]; models: ModelsMap }) {
+export function fieldsToTypescript({ fields }: { fields: NangoModelField[] }) {
     const output: string[] = [];
     const dynamic = fields.find((field) => field.dynamic);
 
     // Insert dynamic key at the beginning
     if (dynamic) {
-        if (typeof dynamic.value === 'string') {
-            const ts = fieldToTypescript({ rawField: dynamic.value, models, modelName: dynamic.name });
-            output.push(`  ${dynamic.name}: ${ts};`);
+        if (!Array.isArray(dynamic.value)) {
+            const ts = fieldToTypescript({ field: dynamic });
+            output.push(`  [key: string]: ${ts};`);
         } else {
-            output.push(`  [key: string]: {${fieldsToTypescript({ models, fields: dynamic.type }).join('\n')}};`);
+            output.push(`  [key: string]: {${fieldsToTypescript({ fields: dynamic.value }).join('\n')}};`);
         }
     }
 
@@ -140,59 +121,41 @@ export function fieldsToTypescript({ models, fields }: { fields: NangoModelField
         if (field.dynamic) {
             continue;
         }
-        if (typeof field.value === 'string') {
-            const ts = fieldToTypescript({ rawField: field.value, models, modelName: field.name });
-            output.push(`  ${field.name}: ${ts};`);
-        } else {
-            output.push(`  ${field.name}: {${fieldsToTypescript({ models, fields: field.value }).join('\n')}};`);
-        }
+
+        // if (!Array.isArray(field.value)) {
+        //     const ts = fieldToTypescript({ field });
+        //     output.push(`  ${field.name}: ${ts};`);
+        // } else {
+        output.push(`  ${field.name}: ${fieldToTypescript({ field: field })};`);
+        // }
     }
+
     return output;
 }
 
 /**
  * Transform a field definition to its typescript equivalent
  */
-export function fieldToTypescript({ rawField, modelName, models }: { rawField: string; modelName: string; models: ModelsMap }): string {
-    if (rawField.toString().endsWith(',') || rawField.toString().endsWith(';')) {
-        throw new Error(`Field "${rawField}" in the model ${modelName} ends with a comma or semicolon which is not allowed.`);
-    }
-
-    const types = rawField.split('|');
-    const acc = [];
-    for (const rawType of types) {
-        const trimmed = rawType.trim();
-        const isArray = trimmed.endsWith('[]');
-        const type = isArray ? fixType(trimmed.substring(0, trimmed.length - 2)) : fixType(trimmed);
-
-        if (isJsOrTsType(type) || models.has(type)) {
-            acc.push(`${type}${isArray ? '[]' : ''}`);
-        } else {
-            acc.push(`'${type}'${isArray ? '[]' : ''}`);
+export function fieldToTypescript({ field }: { field: NangoModelField }): string | boolean | null | undefined | number {
+    if (Array.isArray(field.value)) {
+        if (field.union) {
+            return field.value.map((f) => fieldToTypescript({ field: f })).join(' | ');
         }
+        if (field.array) {
+            return `(${field.value.map((f) => fieldToTypescript({ field: f })).join(' | ')})[]`;
+        }
+        return 'unknown';
     }
-
-    return acc.join(' | ');
-}
-
-/**
- * Fix small mistakes users can make (= alias)
- */
-export function fixType(type: string) {
-    switch (type) {
-        case 'bool':
-            return 'boolean';
-        case 'char':
-        case 'varchar':
-            return 'string';
-        case 'integer':
-        case 'int':
-            return 'number';
-        case 'date':
-            return 'Date';
-        default:
-            return type;
+    if (field.model || field.tsType) {
+        return `${field.value}${field.array ? '[]' : ''}`;
     }
+    if (field.value === null) {
+        return 'null';
+    }
+    if (typeof field.value === 'string') {
+        return `'${field.value}${field.array ? '[]' : ''}'`;
+    }
+    return `${field.value}${field.array ? '[]' : ''}`;
 }
 
 /**

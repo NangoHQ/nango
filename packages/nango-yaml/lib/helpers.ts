@@ -1,6 +1,7 @@
+import path from 'node:path';
 import ms from 'ms';
 import type { StringValue } from 'ms';
-import type { NangoYaml } from '@nangohq/types';
+import type { NangoYaml, NangoYamlParsed, NangoYamlParsedIntegration } from '@nangohq/types';
 
 interface IntervalResponse {
     interval: StringValue;
@@ -102,26 +103,87 @@ export function getInterval(runs: string, date: Date): IntervalResponse | Error 
 }
 
 export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
-    primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],
-    aliases: ['String', 'Number', 'Boolean', 'BigInt', 'Symbol', 'Undefined', 'Null', 'bool', 'char', 'integer', 'int', 'date', 'object'],
+    primitives: ['string', 'number', 'boolean', 'bigint', 'symbol'],
     builtInObjects: ['Object', 'Array', 'Function', 'Date', 'RegExp', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Error'],
     utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick']
 };
+export const typesAliases: Record<string, string> = {
+    integer: 'number',
+    int: 'number',
+    char: 'string',
+    varchar: 'string',
+    float: 'number',
+    bool: 'boolean'
+};
+
+const types = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES)
+    .flat()
+    .map((v) => v.toLocaleLowerCase());
+const typesWithGenerics = [...JAVASCRIPT_AND_TYPESCRIPT_TYPES.builtInObjects, ...JAVASCRIPT_AND_TYPESCRIPT_TYPES.utilityTypes];
 
 export function isJsOrTsType(type?: string): boolean {
     if (!type) {
         return false;
     }
 
-    const baseType = type.replace(/\[\]$/, '');
-
-    const simpleTypes = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES).flat();
-    if (simpleTypes.includes(baseType)) {
+    const baseType = type.replace(/\[\]$/, '').toLocaleLowerCase();
+    if (types.includes(baseType)) {
         return true;
     }
 
-    const typesWithGenerics = [...JAVASCRIPT_AND_TYPESCRIPT_TYPES.builtInObjects, ...JAVASCRIPT_AND_TYPESCRIPT_TYPES.utilityTypes];
-    const genericTypeRegex = new RegExp(`^(${typesWithGenerics.join('|')})<.+>$`);
+    const genericTypeRegex = new RegExp(`^(${typesWithGenerics.join('|')})<.+>$`, 'i');
 
     return genericTypeRegex.test(baseType);
+}
+
+export function getPotentialTypeAlias(value: string): string {
+    const is = typesAliases[value.toLocaleLowerCase()];
+    return is || value;
+}
+
+export function getPotentialDataType(value: string): string {
+    const is = typesAliases[value.toLocaleLowerCase()];
+    return is || value;
+}
+
+export function getNativeDataTypeOrValue(value: string) {
+    const alias = getPotentialTypeAlias(value);
+    if (typeof alias === 'string' && alias && types.includes(alias)) {
+        return alias;
+    }
+
+    const int = parseInt(value, 10);
+    if (!Number.isNaN(int)) {
+        return int;
+    }
+
+    switch (value) {
+        case 'true':
+            return true;
+        case 'false':
+            return false;
+        case 'null':
+            return null;
+        case 'undefined':
+            return undefined;
+        default:
+            return value;
+    }
+}
+
+export function getProviderConfigurationFromPath({ filePath, parsed }: { filePath: string; parsed: NangoYamlParsed }): NangoYamlParsedIntegration | null {
+    const pathSegments = filePath.split('/');
+    const scriptType = pathSegments.length > 1 ? pathSegments[pathSegments.length - 2] : null;
+    const isNested = scriptType === 'syncs' || scriptType === 'actions' || scriptType === 'post-connection-scripts';
+
+    const baseName = path.basename(filePath, '.ts');
+    let providerConfiguration: NangoYamlParsedIntegration | null = null;
+    if (isNested) {
+        const providerConfigKey = pathSegments[pathSegments.length - 3];
+        providerConfiguration = parsed.integrations.find((config) => config.providerConfigKey === providerConfigKey) || null;
+    } else {
+        providerConfiguration = parsed.integrations.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === baseName)) || null;
+    }
+
+    return providerConfiguration;
 }

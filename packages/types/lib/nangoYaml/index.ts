@@ -75,48 +75,33 @@ export interface NangoYamlParsedIntegration {
     providerConfigKey: string;
     syncs: ParsedNangoSync[];
     actions: ParsedNangoAction[];
-    postConnectionScripts?: string[];
+    postConnectionScripts: string[];
 }
 export interface ParsedNangoSync {
     name: string;
     type: 'sync';
     endpoints: NangoSyncEndpoint[];
-    // output: string | string[];
-    layout_mode: LayoutMode;
     description: string;
     sync_type: SyncTypeLiteral;
     track_deletes: boolean;
     auto_start: boolean;
     runs: string;
     scopes: string[];
-    input: NangoModel | NangoModelField | null;
-    // returns: NangoModel[];
-    models: NangoModel[];
+    input: string | null;
+    output: string[] | null;
+    usedModels: string[];
     webhookSubscriptions: string[];
-    nango_yaml_version: 'v1' | 'v2';
-
-    // attributes?: object;
-    // metadata?: NangoConfigMetadata;
-    // is_public?: boolean | null;
-    // pre_built?: boolean | null;
-    // version?: string | null;
-    // last_deployed?: string | null;
-    // id?: number;
-
-    // enabled?: boolean;
 }
 
 export interface ParsedNangoAction {
     name: string;
     type: 'action';
     description: string;
-    input: NangoModel | NangoModelField | null;
+    input: string | null;
+    output: string[] | null;
     endpoint: NangoSyncEndpoint | null;
-    // output: NangoModel[];
     scopes: string[];
-    // returns: NangoModel[];
-    models: NangoModel[];
-    nango_yaml_version: 'v1' | 'v2';
+    usedModels: string[];
 }
 
 export type LayoutMode = 'root' | 'nested';
@@ -127,10 +112,12 @@ export interface NangoModel {
 }
 export interface NangoModelField {
     name: string;
-    value: string | number | boolean | null | NangoModelField[];
+    value: string | number | boolean | null | undefined | NangoModelField[];
     dynamic?: boolean;
     tsType?: boolean;
     model?: boolean;
+    array?: boolean;
+    union?: boolean;
 }
 
 export type NangoSyncEndpoint = {
