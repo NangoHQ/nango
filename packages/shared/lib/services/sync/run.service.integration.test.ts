@@ -30,33 +30,16 @@ class integrationServiceMock implements IntegrationServiceInterface {
 }
 
 const orchestratorClient = {
-    executeAction: () => {
-        return Promise.resolve({}) as any;
-    },
-    executeWebhook: () => {
-        return Promise.resolve({}) as any;
-    },
-    executePostConnection: () => {
-        return Promise.resolve({}) as any;
-    },
-    executeSync: () => {
-        return Promise.resolve({}) as any;
-    },
-    pauseSync: () => {
-        return Promise.resolve({}) as any;
-    },
-    unpauseSync: () => {
-        return Promise.resolve({}) as any;
-    },
-    deleteSync: () => {
-        return Promise.resolve({}) as any;
-    },
-    updateSyncFrequency: () => {
-        return Promise.resolve({}) as any;
-    },
-    cancel: () => {
-        return Promise.resolve({}) as any;
-    }
+    recurring: () => Promise.resolve({}) as any,
+    executeAction: () => Promise.resolve({}) as any,
+    executeWebhook: () => Promise.resolve({}) as any,
+    executePostConnection: () => Promise.resolve({}) as any,
+    executeSync: () => Promise.resolve({}) as any,
+    cancel: () => Promise.resolve({}) as any,
+    pauseSync: () => Promise.resolve({}) as any,
+    unpauseSync: () => Promise.resolve({}) as any,
+    deleteSync: () => Promise.resolve({}) as any,
+    updateSyncFrequency: () => Promise.resolve({}) as any
 };
 const slackService = new SlackService({ orchestratorClient, logContextGetter });
 

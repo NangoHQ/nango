@@ -200,7 +200,7 @@ export async function deploy({
             timestamp: Date.now(),
             content: `Successfully deployed the ${nameOfType}${flowsWithVersions.length > 1 ? 's' : ''} ${JSON.stringify(flowsWithVersions, null, 2)}`
         });
-        await logCtx.info(`Successfully deployed ${flowsWithVersions.length} items${flowsWithVersions.length > 1 ? 's' : ''}`, {
+        await logCtx.info(`Successfully deployed ${flowsWithVersions.length} script${flowsWithVersions.length > 1 ? 's' : ''}`, {
             nameOfType,
             count: flowsWithVersions.length,
             syncNames: flowsWithVersions.map((flow) => flow['syncName']),

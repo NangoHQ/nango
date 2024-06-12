@@ -58,7 +58,7 @@ class FlowController {
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environment.id, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environment.id, logContextGetter, orchestrator);
 
             res.sendStatus(200);
         } catch (e) {
@@ -125,7 +125,7 @@ class FlowController {
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter, orchestrator);
 
             res.status(201).send(preBuiltResponse.result);
         } catch (e) {
@@ -213,7 +213,7 @@ class FlowController {
 
             await enableConfig(Number(id));
 
-            await syncOrchestrator.triggerIfConnectionsExist([flow], environment.id, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist([flow], environment.id, logContextGetter, orchestrator);
 
             res.status(200).send([{ ...flow, enabled: true }]);
         } catch (e) {

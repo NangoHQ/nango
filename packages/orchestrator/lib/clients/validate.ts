@@ -20,7 +20,6 @@ export const syncArgsSchema = z.object({
     type: z.literal('sync'),
     syncId: z.string().min(1),
     syncName: z.string().min(1),
-    syncJobId: z.number().int().positive(),
     debug: z.boolean(),
     ...commonSchemaArgsFields
 });
@@ -84,7 +83,6 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 syncId: sync.data.payload.syncId,
                 syncName: sync.data.payload.syncName,
                 connection: sync.data.payload.connection,
-                syncJobId: sync.data.payload.syncJobId,
                 debug: sync.data.payload.debug
             })
         );

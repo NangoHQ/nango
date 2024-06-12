@@ -12,20 +12,20 @@ import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { Environment } from '../../../models/Environment.js';
 import type { Account } from '../../../models/Admin.js';
-import { Ok } from '@nangohq/utils';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
-    executeAction: () => Promise.resolve(Ok({})),
-    executeWebhook: () => Promise.resolve(Ok({})),
-    executePostConnection: () => Promise.resolve(Ok({})),
-    executeSync: () => Promise.resolve(Ok(undefined)),
-    cancel: () => Promise.resolve(Ok({} as any)),
-    pauseSync: () => Promise.resolve(Ok(undefined)),
-    unpauseSync: () => Promise.resolve(Ok(undefined)),
-    deleteSync: () => Promise.resolve(Ok(undefined)),
-    updateSyncFrequency: () => Promise.resolve(Ok(undefined))
+    recurring: () => Promise.resolve({}) as any,
+    executeAction: () => Promise.resolve({}) as any,
+    executeWebhook: () => Promise.resolve({}) as any,
+    executePostConnection: () => Promise.resolve({}) as any,
+    executeSync: () => Promise.resolve({}) as any,
+    cancel: () => Promise.resolve({}) as any,
+    pauseSync: () => Promise.resolve({}) as any,
+    unpauseSync: () => Promise.resolve({}) as any,
+    deleteSync: () => Promise.resolve({}) as any,
+    updateSyncFrequency: () => Promise.resolve({}) as any
 };
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
 
