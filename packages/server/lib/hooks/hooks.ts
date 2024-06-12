@@ -9,7 +9,8 @@ import {
     analytics,
     errorNotificationService,
     SlackService,
-    AnalyticsTypes
+    AnalyticsTypes,
+    syncOrchestrator
 } from '@nangohq/shared';
 import type {
     ApplicationConstructedProxyConfiguration,
@@ -31,7 +32,6 @@ import { logContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
 import { externalPostConnection } from './connection/external-post-connection.js';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
-import orchestratorService from '@nangohq/shared/lib/services/sync/orchestrator.service.js';
 
 const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
@@ -79,7 +79,7 @@ export const connectionCreated = async (
     const { connection, environment, auth_mode } = createdConnectionPayload;
 
     if (options.initiateSync === true && !isHosted) {
-        await orchestratorService.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
+        await syncOrchestrator.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
     }
 
     if (options.runPostConnectionScript === true) {
