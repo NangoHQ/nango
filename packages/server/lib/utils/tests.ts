@@ -83,7 +83,9 @@ export function isSuccess<TType extends Record<string, any>>(json: TType): asser
  */
 export function shouldBeProtected({ res, json }: { res: Response; json: any }) {
     isError(json);
-    expect(json).toStrictEqual({ error: 'Authentication failed. The request is missing the Authorization header.', payload: {}, type: 'missing_auth_header' });
+    expect(json).toStrictEqual({
+        error: { message: 'Authentication failed. The request is missing the Authorization header.', payload: {}, code: 'missing_auth_header' }
+    });
     expect(res.status).toBe(401);
 }
 
