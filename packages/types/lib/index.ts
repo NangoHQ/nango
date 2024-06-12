@@ -14,6 +14,8 @@ export type * from './user/api.js';
 export type * from './connection/api/metadata.js';
 export type * from './connection/db.js';
 
+export type * from './proxy/api.js';
+
 export type * from './environment/db.js';
 export type * from './scripts/post-connection/api.js';
 export type * from './scripts/post-connection/db.js';
@@ -24,3 +26,7 @@ export type * from './integration/db.js';
 export type * from './integration/template.js';
 export type * from './auth/api.js';
 export type * from './auth/db.js';
+
+export type * from './nangoYaml/index.js';
+
+export type * from './utils.js';

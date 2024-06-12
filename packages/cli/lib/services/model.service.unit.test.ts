@@ -5,12 +5,12 @@ import type { NangoSyncConfig } from '@nangohq/shared';
 const defaultSync: NangoSyncConfig = { name: 'default', runs: '', returns: ['default'], endpoints: [{ POST: '/default' }], layout_mode: 'root', models: [] };
 
 describe('buildModelTs', () => {
-    it('should return empty', () => {
+    it('should return empty (with sdk)', () => {
         const res = buildModelsTS({ configs: [] });
         expect(res).toMatchSnapshot('');
     });
 
-    it('should output full model.ts', () => {
+    it('should output all interfaces', () => {
         const res = buildModelsTS({
             configs: [
                 {
@@ -34,7 +34,7 @@ describe('buildModelTs', () => {
                 }
             ]
         });
-        expect(res).toMatchSnapshot('');
+        expect(res.split('\n').slice(0, 15)).toMatchSnapshot('');
     });
 
     it('should support [key: string] model', () => {
@@ -61,7 +61,7 @@ describe('buildModelTs', () => {
             ]
         });
 
-        expect(res.split('\n').slice(0, 6)).toMatchSnapshot();
+        expect(res.split('\n').slice(0, 15)).toMatchSnapshot();
     });
 });
 

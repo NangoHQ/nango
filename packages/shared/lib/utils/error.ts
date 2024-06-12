@@ -586,6 +586,16 @@ export class NangoError extends Error {
                 this.message = `Model "${this.payload['model']}" doesn't have an id field. This is required to be able to uniquely identify the data record.`;
                 break;
 
+            case 'failed_to_parse_nango_yaml':
+                this.status = 400;
+                this.message = `Your nango.yaml contains some errors`;
+                break;
+
+            case 'failed_to_parse_models':
+                this.status = 400;
+                this.message = `Property models in your nango.yaml is invalid`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

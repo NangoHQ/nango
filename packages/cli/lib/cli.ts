@@ -230,6 +230,9 @@ export async function tscWatch({ fullPath, debug = false }: { fullPath: string; 
 
     if (!success || !config) {
         console.log(chalk.red(error?.message));
+        if (error?.payload) {
+            console.log(error.payload);
+        }
         return;
     }
 

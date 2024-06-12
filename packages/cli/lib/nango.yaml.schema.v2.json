@@ -33,7 +33,10 @@
                                     },
                                     "sync_type": {
                                         "type": "string",
-                                        "enum": ["incremental", "full"],
+                                        "enum": [
+                                            "incremental",
+                                            "full"
+                                        ],
                                         "errorMessage": {
                                             "enum": "sync_type must be either 'incremental' or 'full'."
                                         }
@@ -136,7 +139,11 @@
                                         }
                                     }
                                 },
-                                "required": ["endpoint", "output"],
+                                "required": [
+                                    "endpoint",
+                                    "output",
+                                    "runs"
+                                ],
                                 "errorMessage": {
                                     "required": {
                                         "endpoint": "An endpoint property is required to specify how to retrieve the data from the sync.",
@@ -207,7 +214,9 @@
                                         }
                                     }
                                 },
-                                "required": ["endpoint"],
+                                "required": [
+                                    "endpoint"
+                                ],
                                 "errorMessage": {
                                     "required": {
                                         "endpoint": "An endpoint property is required to specify how to trigger the action."

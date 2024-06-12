@@ -18,7 +18,7 @@ import {
     updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
 import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
-import { getInterval } from '../services/nango-config.service.js';
+import { getInterval } from '../nangoYaml/helpers.js';
 import { getSyncConfig, getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';

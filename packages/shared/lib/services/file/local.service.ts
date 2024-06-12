@@ -148,7 +148,7 @@ class LocalFileService {
      * 4. If there are no files in the root directory at all then it should be
      * 'nested' since that is the new default
      * 5. If we're initializing then we should default to nested
-     * 6. Falback to nested
+     * 6. Fallback to nested
      */
     public getLayoutMode(scriptName: string, providerConfigKey: string, type: string): LayoutMode {
         if (fs.existsSync(`./${scriptName}.ts`)) {
