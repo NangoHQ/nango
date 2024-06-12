@@ -7,8 +7,8 @@ export class NangoYamlParserV1 extends NangoYamlParser {
         const output: NangoYamlParsedIntegration[] = [];
         this.modelsParser.parseAll();
 
-        for (const providerConfigKey in yaml.integrations) {
-            const integration = yaml.integrations[providerConfigKey];
+        for (const integrationName in yaml.integrations) {
+            const integration = yaml.integrations[integrationName];
             if (!integration) {
                 continue;
             }
@@ -40,7 +40,8 @@ export class NangoYamlParserV1 extends NangoYamlParser {
                         rawOutput: syncOrAction.returns,
                         usedModels: new Set(),
                         name: syncOrActionName,
-                        type: 'sync'
+                        type: 'sync',
+                        integrationName
                     });
                     if (!modelOutput) {
                         continue;
@@ -65,7 +66,7 @@ export class NangoYamlParserV1 extends NangoYamlParser {
             }
 
             const parsedIntegration: NangoYamlParsedIntegration = {
-                providerConfigKey,
+                providerConfigKey: integrationName,
                 syncs,
                 actions,
                 postConnectionScripts: []

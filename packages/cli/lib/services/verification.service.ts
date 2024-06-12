@@ -105,9 +105,6 @@ class VerificationService {
 
         if (!success || !parsed) {
             console.log(chalk.red(error?.message));
-            if (error?.payload) {
-                console.log(error.payload);
-            }
             return false;
         }
 

@@ -1,8 +1,7 @@
 import type { NangoModel, NangoYaml, NangoYamlParsed } from '@nangohq/types';
 import { ModelsParser } from './modelsParser.js';
-import { ParserErrorDuplicateModel, ParserErrorModelNotFound, ParserErrorMissingId } from './errors.js';
+import { ParserErrorDuplicateModel, ParserErrorMissingId, ParserErrorModelIsLiteral } from './errors.js';
 import type { ParserError } from './errors.js';
-import { isJsOrTsType } from './helpers.js';
 
 export abstract class NangoYamlParser {
     raw: NangoYaml;
@@ -25,12 +24,14 @@ export abstract class NangoYamlParser {
         rawOutput,
         usedModels,
         name,
-        type
+        type,
+        integrationName
     }: {
         rawOutput: string | string[] | undefined;
         usedModels: Set<string>;
         name: string;
         type: 'sync' | 'action';
+        integrationName: string;
     }): NangoModel[] | null {
         if (!rawOutput) {
             return null;
@@ -40,29 +41,33 @@ export abstract class NangoYamlParser {
 
         const output = Array.isArray(rawOutput) ? rawOutput : [rawOutput];
         for (const modelOrType of output) {
-            if (isJsOrTsType(modelOrType)) {
-                continue;
-            }
-
-            if (type === 'sync' && usedModels.has(modelOrType)) {
-                this.errors.push(new ParserErrorDuplicateModel({ model: modelOrType, path: `${type} > ${name}` }));
-                continue;
-            }
-
             const model = this.modelsParser.get(modelOrType);
-            if (!model) {
-                this.errors.push(new ParserErrorModelNotFound({ model: modelOrType, path: `${type} > ${name}` }));
+            if (model) {
+                if (type === 'sync' && usedModels.has(modelOrType)) {
+                    this.errors.push(new ParserErrorDuplicateModel({ model: modelOrType, path: [integrationName, type, name, '[output]'] }));
+                    continue;
+                }
+
+                usedModels.add(modelOrType);
+                models.push(model);
+
+                if (type === 'sync' && !model.fields.find((field) => field.name === 'id')) {
+                    this.errors.push(new ParserErrorMissingId({ model: modelOrType, path: [integrationName, type, name, '[output]'] }));
+                    continue;
+                }
                 continue;
             }
 
-            usedModels.add(modelOrType);
+            // Create anonymous model for validation
+            const parsed = this.modelsParser.parseFields({ fields: { output: modelOrType }, parent: name });
 
-            if (type === 'sync' && !model.fields.find((field) => field.name === 'id')) {
-                this.errors.push(new ParserErrorMissingId({ model: modelOrType, path: `${type} > ${name}` }));
-                continue;
-            }
+            this.warnings.push(new ParserErrorModelIsLiteral({ model: modelOrType, path: [integrationName, type, name, '[output]'] }));
 
-            models.push(model);
+            const anon = `Anonymous_${integrationName.replace(/[^A-Za-z0-9_]/g, '')}_${type}_${name.replace(/[^A-Za-z0-9_]/g, '')}_output`;
+            const anonModel: NangoModel = { name: anon, fields: parsed, isAnon: true };
+            this.modelsParser.parsed.set(anon, anonModel);
+            usedModels.add(anon);
+            models.push(anonModel);
         }
 
         return models;

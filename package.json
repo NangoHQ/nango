@@ -92,7 +92,7 @@
         "zx": "8.0.2"
     },
     "lint-staged": {
-        "*.{js,jsx,ts,tsx,ejs,cjs}": [
+        "*.{js,jsx,ts,tsx,cjs}": [
             "eslint --fix --quiet"
         ],
         "*.{html,css,json,yaml}": [

@@ -34,7 +34,19 @@ export function load(fullPath: string, debug = false): ServiceResponse<NangoYaml
 
         parser.parse();
         if (parser.errors.length > 0) {
-            return { success: false, error: new NangoError('failed_to_parse_nango_yaml', parser.errors), response: null };
+            for (const error of parser.errors) {
+                console.log(chalk.underline(chalk.white(error.path)));
+                console.log(`  ${chalk.red('error')} ${error.message}${error.code ? chalk.dim(` [${error.code}]`) : ''}`);
+                console.log('');
+            }
+            return { success: false, error: new NangoError('failed_to_parse_nango_yaml'), response: null };
+        }
+        if (parser.warnings.length > 0) {
+            parser.warnings.forEach((warn) => {
+                console.log(chalk.underline(chalk.white(warn.path)));
+                console.log(`${chalk.yellow(warn.message)} [${warn.code}]`);
+                console.log('');
+            });
         }
 
         return { success: true, error: null, response: parser.parsed! };

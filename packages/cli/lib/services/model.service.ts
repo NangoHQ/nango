@@ -33,9 +33,6 @@ export function loadYamlAndGeneratedModel({ fullPath, debug = false }: { fullPat
     const { success, error, response: parsed } = load(fullPath, debug);
     if (!success || !parsed) {
         console.log(chalk.red(error?.message));
-        if (error?.payload) {
-            console.log(error.payload);
-        }
         return { success: false, error: null, response: null };
     }
 
@@ -94,11 +91,14 @@ export function generateInterfaces({ parsed }: { parsed: NangoYamlParsed }): str
  */
 export function modelToTypescript({ model }: { model: NangoModel }) {
     const output: string[] = [];
-    output.push(`export interface ${model.name} {`);
-
-    output.push(...fieldsToTypescript({ fields: model.fields }));
-
-    output.push(`};`);
+    if (model.isAnon) {
+        output.push(`/** @deprecated We advice to use a proper model */`);
+        output.push(`export type ${model.name} = ${fieldToTypescript({ field: model.fields[0]! })}`);
+    } else {
+        output.push(`export interface ${model.name} {`);
+        output.push(...fieldsToTypescript({ fields: model.fields }));
+        output.push(`};`);
+    }
     return output.join('\n');
 }
 
@@ -109,8 +109,7 @@ export function fieldsToTypescript({ fields }: { fields: NangoModelField[] }) {
     // Insert dynamic key at the beginning
     if (dynamic) {
         if (!Array.isArray(dynamic.value)) {
-            const ts = fieldToTypescript({ field: dynamic });
-            output.push(`  [key: string]: ${ts};`);
+            output.push(`  [key: string]: ${fieldToTypescript({ field: dynamic })};`);
         } else {
             output.push(`  [key: string]: {${fieldsToTypescript({ fields: dynamic.value }).join('\n')}};`);
         }
@@ -122,12 +121,7 @@ export function fieldsToTypescript({ fields }: { fields: NangoModelField[] }) {
             continue;
         }
 
-        // if (!Array.isArray(field.value)) {
-        //     const ts = fieldToTypescript({ field });
-        //     output.push(`  ${field.name}: ${ts};`);
-        // } else {
         output.push(`  ${field.name}: ${fieldToTypescript({ field: field })};`);
-        // }
     }
 
     return output;
@@ -144,7 +138,8 @@ export function fieldToTypescript({ field }: { field: NangoModelField }): string
         if (field.array) {
             return `(${field.value.map((f) => fieldToTypescript({ field: f })).join(' | ')})[]`;
         }
-        return 'unknown';
+
+        return `{${fieldsToTypescript({ fields: field.value }).join('\n')}}`;
     }
     if (field.model || field.tsType) {
         return `${field.value}${field.array ? '[]' : ''}`;

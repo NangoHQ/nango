@@ -1,7 +1,6 @@
 import type {
     HTTP_VERB,
     NangoModel,
-    NangoModelField,
     NangoSyncEndpoint,
     NangoYamlParsedIntegration,
     NangoYamlV2,
@@ -15,9 +14,9 @@ import {
     ParserErrorDuplicateModel,
     ParserErrorEndpointsMismatch,
     ParserErrorInvalidRuns,
-    ParserErrorModelNotFound
+    ParserErrorModelIsLiteral
 } from './errors.js';
-import { getInterval, isJsOrTsType } from './helpers.js';
+import { getInterval } from './helpers.js';
 
 export class NangoYamlParserV2 extends NangoYamlParser {
     parse(): boolean {
@@ -30,8 +29,8 @@ export class NangoYamlParserV2 extends NangoYamlParser {
             return false;
         }
 
-        for (const providerConfigKey in yaml.integrations) {
-            const integration = yaml.integrations[providerConfigKey];
+        for (const integrationName in yaml.integrations) {
+            const integration = yaml.integrations[integrationName];
             if (!integration) {
                 continue;
             }
@@ -43,11 +42,11 @@ export class NangoYamlParserV2 extends NangoYamlParser {
             const actions = integration['actions'];
             const postConnectionScripts: string[] = integration['post-connection-scripts'] || [];
 
-            const parsedSyncs = this.parseSyncs({ syncs, usedModels });
-            const parseActions = this.parseActions({ actions, usedModels });
+            const parsedSyncs = this.parseSyncs({ syncs, usedModels, integrationName });
+            const parseActions = this.parseActions({ actions, usedModels, integrationName });
 
             const parsedIntegration: NangoYamlParsedIntegration = {
-                providerConfigKey,
+                providerConfigKey: integrationName,
                 syncs: parsedSyncs,
                 actions: parseActions,
                 postConnectionScripts
@@ -64,7 +63,15 @@ export class NangoYamlParserV2 extends NangoYamlParser {
         return this.errors.length <= 0;
     }
 
-    parseSyncs({ syncs, usedModels }: { syncs: NangoYamlV2Integration['syncs']; usedModels: Set<string> }): ParsedNangoSync[] {
+    parseSyncs({
+        syncs,
+        usedModels,
+        integrationName
+    }: {
+        syncs: NangoYamlV2Integration['syncs'];
+        usedModels: Set<string>;
+        integrationName: string;
+    }): ParsedNangoSync[] {
         const parsedSyncs: ParsedNangoSync[] = [];
 
         for (const syncName in syncs) {
@@ -75,13 +82,13 @@ export class NangoYamlParserV2 extends NangoYamlParser {
 
             const modelNames = new Set<string>();
 
-            const modelOutput = this.getModelForOutput({ rawOutput: sync.output, usedModels, name: syncName, type: 'sync' });
+            const modelOutput = this.getModelForOutput({ rawOutput: sync.output, usedModels, name: syncName, type: 'sync', integrationName });
             if (!modelOutput) {
                 continue;
             }
             modelOutput.forEach((m) => modelNames.add(m.name));
 
-            const modelInput = this.getModelForInput({ usedModels, rawInput: sync.input, name: syncName, type: 'sync' });
+            const modelInput = this.getModelForInput({ usedModels, rawInput: sync.input, name: syncName, type: 'sync', integrationName });
             if (modelInput) {
                 modelNames.add(modelInput.name);
             }
@@ -91,7 +98,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 const tmp = Array.isArray(sync.endpoint) ? sync.endpoint : [sync.endpoint];
 
                 if (tmp.length !== modelOutput.length) {
-                    this.errors.push(new ParserErrorEndpointsMismatch({ syncName: syncName, path: `syncs > ${syncName}` }));
+                    this.errors.push(new ParserErrorEndpointsMismatch({ syncName: syncName, path: [integrationName, 'syncs', syncName] }));
                     continue;
                 }
 
@@ -100,7 +107,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                     const split = endpoint.split(' ') as [HTTP_VERB, string];
 
                     if (this.endpoints.has(endpoint)) {
-                        this.errors.push(new ParserErrorDuplicateEndpoint({ endpoint: endpoint, path: `syncs > ${syncName}` }));
+                        this.errors.push(new ParserErrorDuplicateEndpoint({ endpoint: endpoint, path: [integrationName, 'syncs', syncName] }));
                         failed = true;
                         break;
                     }
@@ -116,7 +123,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
 
             const interval = getInterval(sync.runs, new Date());
             if (interval instanceof Error) {
-                this.errors.push(new ParserErrorInvalidRuns({ message: interval.message, path: `syncs > ${syncName}` }));
+                this.errors.push(new ParserErrorInvalidRuns({ message: interval.message, path: [integrationName, 'syncs', syncName] }));
                 continue;
             }
 
@@ -140,7 +147,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 auto_start: sync.auto_start === false ? false : true,
                 input: modelInput?.name || null,
                 output: modelOutput.map((m) => m.name),
-                scopes: Array.isArray(sync.scopes) ? sync.scopes : sync.scopes ? sync.scopes?.split(',') : [],
+                scopes: Array.isArray(sync.scopes) ? sync.scopes : sync.scopes ? sync.scopes.split(',') : [],
                 endpoints,
                 webhookSubscriptions
             };
@@ -151,7 +158,15 @@ export class NangoYamlParserV2 extends NangoYamlParser {
         return parsedSyncs;
     }
 
-    parseActions({ actions, usedModels }: { actions: NangoYamlV2Integration['actions']; usedModels: Set<string> }): ParsedNangoAction[] {
+    parseActions({
+        actions,
+        usedModels,
+        integrationName
+    }: {
+        actions: NangoYamlV2Integration['actions'];
+        usedModels: Set<string>;
+        integrationName: string;
+    }): ParsedNangoAction[] {
         const parsedActions: ParsedNangoAction[] = [];
 
         for (const actionName in actions) {
@@ -160,19 +175,16 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 continue;
             }
 
-            const modelOutput = this.getModelForOutput({ rawOutput: action.output, usedModels, name: actionName, type: 'action' });
-            if (!modelOutput) {
-                continue;
-            }
+            const modelOutput = this.getModelForOutput({ rawOutput: action.output, usedModels, name: actionName, type: 'action', integrationName });
 
-            const modelInput = this.getModelForInput({ usedModels, rawInput: action.input, name: actionName, type: 'action' });
+            const modelInput = this.getModelForInput({ usedModels, rawInput: action.input, name: actionName, type: 'action', integrationName });
 
             const endpoint: NangoSyncEndpoint = {};
             if (action.endpoint) {
                 const split = action.endpoint.split(' ') as [HTTP_VERB, string];
 
                 if (this.endpoints.has(action.endpoint)) {
-                    this.errors.push(new ParserErrorDuplicateEndpoint({ endpoint: action.endpoint, path: `actions > ${actionName}` }));
+                    this.errors.push(new ParserErrorDuplicateEndpoint({ endpoint: action.endpoint, path: [integrationName, 'syncs', actionName] }));
                     continue;
                 }
 
@@ -184,9 +196,9 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 name: actionName,
                 type: 'action',
                 description: action.description || '',
-                scopes: Array.isArray(action.scopes) ? action.scopes : String(action.scopes)?.split(','),
+                scopes: Array.isArray(action.scopes) ? action.scopes : action.scopes ? action.scopes.split(',') : [],
                 input: modelInput?.name || null,
-                output: modelOutput.length > 0 ? modelOutput.map((m) => m.name) : null,
+                output: modelOutput && modelOutput.length > 0 ? modelOutput.map((m) => m.name) : null,
                 usedModels: [],
                 endpoint
             };
@@ -201,33 +213,38 @@ export class NangoYamlParserV2 extends NangoYamlParser {
         rawInput,
         usedModels,
         name,
-        type
+        type,
+        integrationName
     }: {
         rawInput: string | undefined;
         usedModels: Set<string>;
         name: string;
         type: 'sync' | 'action';
-    }): NangoModel | NangoModelField | null {
+        integrationName: string;
+    }): NangoModel | null {
         if (!rawInput) {
             return null;
         }
 
-        if (isJsOrTsType(rawInput)) {
-            return { name: 'input', value: rawInput, tsType: true };
-        }
-
         if (usedModels.has(rawInput)) {
-            this.warnings.push(new ParserErrorDuplicateModel({ model: rawInput, path: `${type} > ${name}` }));
+            this.warnings.push(new ParserErrorDuplicateModel({ model: rawInput, path: [integrationName, type, name, '[input]'] }));
         }
-
-        usedModels.add(rawInput);
 
         const model = this.modelsParser.get(rawInput);
-        if (!model) {
-            this.errors.push(new ParserErrorModelNotFound({ model: rawInput, path: `${type} > ${name}` }));
-            return null;
+        if (model) {
+            usedModels.add(rawInput);
+            return model;
         }
 
-        return model;
+        // Create anonymous model for validation
+        const parsed = this.modelsParser.parseFields({ fields: { input: rawInput }, parent: name });
+
+        this.warnings.push(new ParserErrorModelIsLiteral({ model: rawInput, path: [integrationName, type, name, '[input]'] }));
+
+        const anon = `Anonymous_${integrationName.replace(/[^A-Za-z0-9_]/g, '')}_${type}_${name.replace(/[^A-Za-z0-9_]/g, '')}_input`;
+        const anonModel: NangoModel = { name: anon, fields: parsed, isAnon: true };
+        this.modelsParser.parsed.set(anon, anonModel);
+        usedModels.add(anon);
+        return anonModel;
     }
 }

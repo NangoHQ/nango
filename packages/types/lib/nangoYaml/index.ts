@@ -109,6 +109,7 @@ export type LayoutMode = 'root' | 'nested';
 export interface NangoModel {
     name: string;
     fields: NangoModelField[];
+    isAnon?: boolean;
 }
 export interface NangoModelField {
     name: string;

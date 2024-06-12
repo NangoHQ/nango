@@ -40,8 +40,17 @@ describe('buildModelTs', () => {
                             { name: '1', value: 'arr2' }
                         ],
                         tsType: false
+                    },
+                    {
+                        name: 'obj',
+                        value: [{ name: 'nes', value: 'ted' }]
                     }
                 ]
+            },
+            {
+                name: 'Anonymous_unauthenticated_action_returnType_input',
+                fields: [{ name: 'input', value: 'number', tsType: true }],
+                isAnon: true
             }
         ];
         const res = buildModelsTS({

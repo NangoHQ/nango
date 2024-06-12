@@ -43,7 +43,7 @@ export class ModelsParser {
     ifModelParse({ name, parent }: { name: string; parent: string }): true | false {
         if (this.references.has(`${parent}-${name}`) || parent === name) {
             this.references.add(`${parent}-${name}`);
-            this.warnings.push(new ParserError({ code: 'cyclic', message: `Cyclic import ${parent}->${name}`, path: `${parent} > ${name}` }));
+            this.warnings.push(new ParserError({ code: 'cyclic', message: `Cyclic import ${parent}->${name}`, path: [parent, name] }));
             return true;
         }
 
@@ -56,7 +56,7 @@ export class ModelsParser {
         // Model does not exists but that could just mean string literal
         if (!this.raw[name]) {
             this.warnings.push(
-                new ParserError({ code: 'model_not_found', message: `Model "${name}" is not defined, using as string literal`, path: `${parent} > ${name}` })
+                new ParserError({ code: 'model_not_found', message: `Model "${name}" is not defined, using as string literal`, path: [parent, name] })
             );
             return false;
         }
@@ -66,7 +66,7 @@ export class ModelsParser {
         return true;
     }
 
-    parseFields({ fields, parent }: { fields: NangoYamlModelFields; parent: string }): NangoModelField[] | undefined {
+    parseFields({ fields, parent }: { fields: NangoYamlModelFields; parent: string }): NangoModelField[] {
         const parsed: NangoModelField[] = [];
         let dynamicField: NangoModelField | null = null;
 
@@ -83,7 +83,7 @@ export class ModelsParser {
                             new ParserError({
                                 code: 'model_extends_not_found',
                                 message: `Model "${parent}" is extending "${trimmed}", but it does not exists`,
-                                path: parent
+                                path: [parent, name]
                             })
                         );
                         continue;
@@ -106,9 +106,7 @@ export class ModelsParser {
             if (Array.isArray(value)) {
                 const acc = this.parseFields({ fields: value as unknown as NangoYamlModelFields, parent });
                 if (!acc) {
-                    this.errors.push(
-                        new ParserError({ code: 'failed_to_parse_array', message: `Failed to parse array in "${parent}"`, path: `${parent} > ${name}` })
-                    );
+                    this.errors.push(new ParserError({ code: 'failed_to_parse_array', message: `Failed to parse array in "${parent}"`, path: [parent, name] }));
                     continue;
                 }
 
@@ -127,7 +125,7 @@ export class ModelsParser {
                 const acc = this.parseFields({ fields: value, parent });
                 if (!acc) {
                     this.errors.push(
-                        new ParserError({ code: 'failed_to_parse_object', message: `Failed to parse object in "${parent}"`, path: `${parent} > ${name}` })
+                        new ParserError({ code: 'failed_to_parse_object', message: `Failed to parse object in "${parent}"`, path: [parent, name] })
                     );
                     continue;
                 }
@@ -148,9 +146,7 @@ export class ModelsParser {
                 const types = value.split('|').map((v) => v.trim());
                 const acc = this.parseFields({ fields: types as unknown as NangoYamlModelFields, parent });
                 if (!acc) {
-                    this.errors.push(
-                        new ParserError({ code: 'failed_to_parse_union', message: `Failed to parse union in "${parent}"`, path: `${parent} > ${name}` })
-                    );
+                    this.errors.push(new ParserError({ code: 'failed_to_parse_union', message: `Failed to parse union in "${parent}"`, path: [parent, name] }));
                     continue;
                 }
 

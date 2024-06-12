@@ -81,6 +81,13 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
                 process.exit(1);
             }
 
+            if (fs.existsSync(`${fullPath}/${name}.ts`) || fs.existsSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`)) {
+                if (debug) {
+                    printDebug(`${name}.ts file already exists, so will not overwrite it.`);
+                }
+                continue;
+            }
+
             if (debug) {
                 printDebug(`Generating ${name} integration`);
             }
@@ -98,7 +105,7 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
                 ejsTemplateContents = type === 'sync' ? syncTemplateContents : actionTemplateContents;
             }
 
-            const models = output ? [...output, input] : [input];
+            const models = (output ? [...output, input] : [input]).filter(Boolean);
             const rendered = ejs.render(ejsTemplateContents, {
                 syncName: flowNameCamel,
                 interfacePath: layoutMode === 'root' ? './' : '../../',
@@ -111,20 +118,14 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
 
             const stripped = rendered.replace(/^\s+/, '');
 
-            if (!fs.existsSync(`${fullPath}/${name}.ts`) && !fs.existsSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`)) {
-                if (layoutMode === 'root') {
-                    fs.writeFileSync(`${fullPath}/${name}.ts`, stripped);
-                } else {
-                    fs.mkdirSync(`${fullPath}/${providerConfigKey}/${type}s`, { recursive: true });
-                    fs.writeFileSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
-                }
-                if (debug) {
-                    printDebug(`Created ${name}.ts file`);
-                }
+            if (layoutMode === 'root') {
+                fs.writeFileSync(`${fullPath}/${name}.ts`, stripped);
             } else {
-                if (debug) {
-                    printDebug(`${name}.ts file already exists, so will not overwrite it.`);
-                }
+                fs.mkdirSync(`${fullPath}/${providerConfigKey}/${type}s`, { recursive: true });
+                fs.writeFileSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
+            }
+            if (debug) {
+                console.log(chalk.green(`Created ${name}.ts file`));
             }
         }
     }

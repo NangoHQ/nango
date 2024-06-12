@@ -61,7 +61,11 @@ describe('parse', () => {
                 Test: { name: 'Test', fields: [] }
             });
             expect(parser.errors).toStrictEqual([
-                new ParserError({ code: 'model_extends_not_found', message: `Model "Test" is extending "Unknown", but it does not exists`, path: 'Test' })
+                new ParserError({
+                    code: 'model_extends_not_found',
+                    message: `Model "Test" is extending "Unknown", but it does not exists`,
+                    path: ['Test', '__extends']
+                })
             ]);
         });
 
@@ -266,7 +270,7 @@ describe('parse', () => {
                 Test: { name: 'Test', fields: [{ name: 'user', value: 'User', array: false }] }
             });
             expect(parser.warnings).toStrictEqual([
-                new ParserError({ code: 'model_not_found', message: `Model "User" is not defined, using as string literal`, path: 'Test > User' })
+                new ParserError({ code: 'model_not_found', message: `Model "User" is not defined, using as string literal`, path: ['Test', 'User'] })
             ]);
         });
 
@@ -274,7 +278,7 @@ describe('parse', () => {
             const parser = new ModelsParser({ raw: { Test: { user: 'Test' } } });
             parser.parseAll();
 
-            expect(parser.warnings).toStrictEqual([new ParserError({ code: 'cyclic', message: `Cyclic import Test->Test`, path: 'Test > Test' })]);
+            expect(parser.warnings).toStrictEqual([new ParserError({ code: 'cyclic', message: `Cyclic import Test->Test`, path: ['Test', 'Test'] })]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 Test: { name: 'Test', fields: [{ name: 'user', value: 'Test', model: true }] }
             });
@@ -284,7 +288,7 @@ describe('parse', () => {
             const parser = new ModelsParser({ raw: { Test: { user: { author: 'Test' } } } });
             parser.parseAll();
 
-            expect(parser.warnings).toStrictEqual([new ParserError({ code: 'cyclic', message: `Cyclic import Test->Test`, path: 'Test > Test' })]);
+            expect(parser.warnings).toStrictEqual([new ParserError({ code: 'cyclic', message: `Cyclic import Test->Test`, path: ['Test', 'Test'] })]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 Test: { name: 'Test', fields: [{ name: 'user', value: [{ name: 'author', value: 'Test', model: true }] }] }
             });
@@ -294,7 +298,7 @@ describe('parse', () => {
             const parser = new ModelsParser({ raw: { Test: { user: ['Test'] } } });
             parser.parseAll();
 
-            expect(parser.warnings).toStrictEqual([new ParserError({ code: 'cyclic', message: `Cyclic import Test->Test`, path: 'Test > Test' })]);
+            expect(parser.warnings).toStrictEqual([new ParserError({ code: 'cyclic', message: `Cyclic import Test->Test`, path: ['Test', 'Test'] })]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 Test: { name: 'Test', fields: [{ name: 'user', array: true, value: [{ name: '0', value: 'Test', model: true }] }] }
             });

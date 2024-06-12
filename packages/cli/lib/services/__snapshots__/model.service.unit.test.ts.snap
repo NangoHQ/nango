@@ -20,13 +20,13 @@ exports[`buildModelTs > should output all interfaces 1`] = `
   "  ref: Foo;",
   "  union: 'literal1' | 'literal2';",
   "  array: ('arr1' | 'arr2')[];",
+  "  obj: {  nes: 'ted';};",
   "};",
+  "",
+  "/** @deprecated We advice to use a proper model */",
+  "export type Anonymous_unauthenticated_action_returnType_input = number",
   "// ------ /Models",
   "",
-  "// ------ SDK",
-  "",
-  "/// <reference types=\\"node\\" />",
-  "import { Nango } from '@nangohq/node';",
 ]
 `;
 
