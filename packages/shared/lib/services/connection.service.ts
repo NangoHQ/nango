@@ -60,7 +60,7 @@ class ConnectionService {
         providerConfigKey: string,
         provider: string,
         parsedRawCredentials: AuthCredentials,
-        connectionConfig: Record<string, string | boolean>,
+        connectionConfig: ConnectionConfig,
         environment_id: number,
         accountId: number,
         metadata?: Metadata

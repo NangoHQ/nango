@@ -127,9 +127,9 @@ class ErrorManager {
         if (err) {
             logger.error(`Response error: ${JSON.stringify({ statusCode: err.status, type: err.type, payload: err.payload, message: err.message })}`);
             if (!err.message) {
-                res.status(err.status || 500).send({ type: err.type || 'unknown_error', payload: err.payload });
+                res.status(err.status || 500).send({ error: { code: err.type || 'unknown_error', payload: err.payload } });
             } else {
-                res.status(err.status || 500).send({ error: err.message, type: err.type, payload: err.payload });
+                res.status(err.status || 500).send({ error: { message: err.message, code: err.type, payload: err.payload } });
             }
         } else {
             res.status(500).json({ error: { code: 'unknown_empty_error' } });
