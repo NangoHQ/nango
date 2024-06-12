@@ -1,4 +1,3 @@
-import { NangoError } from '../utils/error.js';
 import type {
     HTTP_VERB,
     NangoModel,
@@ -10,26 +9,26 @@ import type {
     ParsedNangoAction,
     ParsedNangoSync
 } from '@nangohq/types';
+import { NangoYamlParser } from './parser.js';
 import {
-    NangoYamlParser,
     ParserErrorDuplicateEndpoint,
     ParserErrorDuplicateModel,
     ParserErrorEndpointsMismatch,
     ParserErrorInvalidRuns,
     ParserErrorMissingId,
     ParserErrorModelNotFound
-} from './parser.js';
-import { isJsOrTsType } from '../utils/utils.js';
-import { getInterval } from './helpers.js';
+} from './errors.js';
+import { getInterval, isJsOrTsType } from './helpers.js';
 
 export class NangoYamlParserV2 extends NangoYamlParser {
-    parse(): void {
+    parse(): boolean {
         const yaml = this.raw as unknown as NangoYamlV2;
         const output: NangoYamlParsedIntegration[] = [];
         this.modelsParser.parseAll();
 
         if (this.modelsParser.errors.length > 0) {
-            throw new NangoError('failed_to_parse_models', this.modelsParser.errors);
+            this.errors.push(...this.modelsParser.errors);
+            return false;
         }
 
         for (const providerConfigKey in yaml.integrations) {
@@ -60,8 +59,10 @@ export class NangoYamlParserV2 extends NangoYamlParser {
 
         this.parsed = {
             yamlVersion: 'v2',
-            integrations: output
+            integrations: output,
+            models: this.modelsParser.parsed
         };
+        return this.errors.length <= 0;
     }
 
     parseSyncs({ syncs, usedModels }: { syncs: NangoYamlV2Integration['syncs']; usedModels: Set<string> }): ParsedNangoSync[] {
@@ -108,9 +109,9 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 }
             }
 
-            const { success, error } = getInterval(sync.runs, new Date());
-            if (!success) {
-                this.errors.push(new ParserErrorInvalidRuns({ message: error!.message, path: `syncs > ${syncName}` }));
+            const interval = getInterval(sync.runs, new Date());
+            if (interval instanceof Error) {
+                this.errors.push(new ParserErrorInvalidRuns({ message: interval.message, path: `syncs > ${syncName}` }));
                 continue;
             }
 

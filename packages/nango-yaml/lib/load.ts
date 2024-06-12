@@ -8,13 +8,7 @@ import { determineVersion } from './helpers.js';
 import type { NangoYamlParser } from './parser.js';
 import { NangoYamlParserV1 } from './parser.v1';
 import { NangoYamlParserV2 } from './parser.v2';
-
-export * from './parser.js';
-export * from './parser.v1.js';
-export * from './parser.v2.js';
-export * from './helpers.js';
-
-const nangoConfigFile = 'nango.yaml';
+import { nangoConfigFile } from './constant.js';
 
 /**
  * Load nango.yaml

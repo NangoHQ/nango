@@ -5,12 +5,11 @@ import chalk from 'chalk';
 import path from 'path';
 import { build } from 'tsup';
 import { SyncConfigType, localFileService } from '@nangohq/shared';
-import type { StandardNangoConfig } from '@nangohq/shared';
 
-import configService from './config.service.js';
 import { getNangoRootPath, printDebug } from '../utils.js';
 import { loadYamlAndGeneratedModel } from './model.service.js';
 import parserService from './parser.service.js';
+import type { NangoYamlParsed } from '@nangohq/types';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto'];
 
@@ -62,11 +61,9 @@ export async function compileAllFiles({
     const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, config, debug });
     let success = true;
 
-    const modelNames = configService.getModelNames(config);
-
     for (const file of integrationFiles) {
         try {
-            const completed = await compile({ fullPath, file, config, modelNames, compiler, debug });
+            const completed = await compile({ fullPath, file, config, compiler, debug });
             if (!completed) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
                     success = false;
@@ -86,15 +83,13 @@ export async function compileSingleFile({
     fullPath,
     file,
     config,
-    modelNames,
     tsconfig,
     debug = false
 }: {
     fullPath: string;
     file: ListedFile;
     tsconfig: string;
-    config: StandardNangoConfig[];
-    modelNames: string[];
+    config: NangoYamlParsed;
     debug: boolean;
 }) {
     try {
@@ -107,7 +102,6 @@ export async function compileSingleFile({
             fullPath,
             file,
             config,
-            modelNames,
             compiler,
             debug
         });
@@ -187,15 +181,13 @@ async function compile({
     fullPath,
     file,
     config,
-    modelNames,
     compiler,
     debug = false
 }: {
     fullPath: string;
     file: ListedFile;
-    config: StandardNangoConfig[];
+    config: NangoYamlParsed;
     compiler: tsNode.Service;
-    modelNames: string[];
     debug: boolean;
 }): Promise<boolean> {
     const providerConfiguration = localFileService.getProviderConfigurationFromPath(file.inputPath, config);
@@ -272,7 +264,7 @@ export function listFilesToCompile({
     fullPath: string;
     scriptDirectory?: string | undefined;
     scriptName?: string | undefined;
-    config: StandardNangoConfig[];
+    config: NangoYamlParsed;
     debug?: boolean;
 }): ListedFile[] {
     let files: string[] = [];
@@ -290,32 +282,30 @@ export function listFilesToCompile({
             printDebug(`No files found in the root: ${fullPath}`);
         }
 
-        if (config) {
-            config.forEach((providerConfig) => {
-                const syncPath = `${providerConfig.providerConfigKey}/syncs`;
-                const actionPath = `${providerConfig.providerConfigKey}/actions`;
-                const postConnectionPath = `${providerConfig.providerConfigKey}/post-connection-scripts`;
+        config.integrations.forEach((integration) => {
+            const syncPath = `${integration.providerConfigKey}/syncs`;
+            const actionPath = `${integration.providerConfigKey}/actions`;
+            const postConnectionPath = `${integration.providerConfigKey}/post-connection-scripts`;
 
-                files = [
-                    ...files,
-                    ...glob.sync(`${fullPath}/${syncPath}/*.ts`),
-                    ...glob.sync(`${fullPath}/${actionPath}/*.ts`),
-                    ...glob.sync(`${fullPath}/${postConnectionPath}/*.ts`)
-                ];
+            files = [
+                ...files,
+                ...glob.sync(`${fullPath}/${syncPath}/*.ts`),
+                ...glob.sync(`${fullPath}/${actionPath}/*.ts`),
+                ...glob.sync(`${fullPath}/${postConnectionPath}/*.ts`)
+            ];
 
-                if (debug) {
-                    if (glob.sync(`${fullPath}/${syncPath}/*.ts`).length > 0) {
-                        printDebug(`Found nested sync files in ${syncPath}`);
-                    }
-                    if (glob.sync(`${fullPath}/${actionPath}/*.ts`).length > 0) {
-                        printDebug(`Found nested action files in ${actionPath}`);
-                    }
-                    if (glob.sync(`${fullPath}/${postConnectionPath}/*.ts`).length > 0) {
-                        printDebug(`Found nested post connection script files in ${postConnectionPath}`);
-                    }
+            if (debug) {
+                if (glob.sync(`${fullPath}/${syncPath}/*.ts`).length > 0) {
+                    printDebug(`Found nested sync files in ${syncPath}`);
                 }
-            });
-        }
+                if (glob.sync(`${fullPath}/${actionPath}/*.ts`).length > 0) {
+                    printDebug(`Found nested action files in ${actionPath}`);
+                }
+                if (glob.sync(`${fullPath}/${postConnectionPath}/*.ts`).length > 0) {
+                    printDebug(`Found nested post connection script files in ${postConnectionPath}`);
+                }
+            }
+        });
     }
 
     return files.map((filePath) => {

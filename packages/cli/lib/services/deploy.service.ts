@@ -2,14 +2,15 @@ import chalk from 'chalk';
 import promptly from 'promptly';
 import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
-import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
-import type { PostConnectionScriptByProvider } from '@nangohq/types';
-import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
-import configService from './config.service.js';
+import type { SyncType, SyncDeploymentResult, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
+import type { NangoYamlParsed, PostConnectionScriptByProvider } from '@nangohq/types';
+import { SyncConfigType, localFileService, stagingHost, cloudHost } from '@nangohq/shared';
 import { compileAllFiles } from './compile.service.js';
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
 import type { DeployOptions } from '../types.js';
+import { load } from './config.service.js';
+import { getInterval } from '@nangohq/nango-yaml';
 
 class DeployService {
     public async admin({ fullPath, environmentName, debug = false }: { fullPath: string; environmentName: string; debug?: boolean }): Promise<void> {
@@ -43,14 +44,14 @@ class DeployService {
             process.exit(1);
         }
 
-        const { success, error, response: config } = await configService.load(fullPath, debug);
+        const { success, error, response: parsed } = await load(fullPath, debug);
 
-        if (!success || !config) {
+        if (!success || !parsed) {
             console.log(chalk.red(error?.message));
             return;
         }
 
-        const flowData = this.package(config, debug);
+        const flowData = this.package(parsed, debug);
 
         if (!flowData) {
             return;
@@ -117,7 +118,7 @@ class DeployService {
             process.exit(1);
         }
 
-        const { success, error, response: config } = await configService.load(fullPath, debug);
+        const { success, error, response: config } = await load(fullPath, debug);
 
         if (!success || !config) {
             console.log(chalk.red(error?.message));
@@ -223,7 +224,7 @@ class DeployService {
     }
 
     public package(
-        config: StandardNangoConfig[],
+        parsed: NangoYamlParsed,
         debug: boolean,
         version = '',
         optionalSyncName = '',
@@ -232,7 +233,7 @@ class DeployService {
         const postData: IncomingFlowConfig[] = [];
         const postConnectionScriptsByProvider: PostConnectionScriptByProvider[] = [];
 
-        for (const integration of config) {
+        for (const integration of parsed.integrations) {
             const { providerConfigKey, postConnectionScripts } = integration;
             let { syncs, actions } = integration;
 
@@ -304,10 +305,10 @@ class DeployService {
                 }
 
                 if (runs && type === SyncConfigType.SYNC) {
-                    const { success, error } = getInterval(runs, new Date());
+                    const interval = getInterval(runs, new Date());
 
-                    if (!success) {
-                        console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${error?.message}`));
+                    if (interval instanceof Error) {
+                        console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${interval.message}`));
 
                         return null;
                     }

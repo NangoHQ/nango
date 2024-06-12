@@ -26,6 +26,9 @@
             "path": "packages/node-client"
         },
         {
+            "path": "packages/nango-yaml"
+        },
+        {
             "path": "packages/persist"
         },
         {

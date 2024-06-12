@@ -4,10 +4,11 @@ import path from 'node:path';
 import chalk from 'chalk';
 import type { NangoModel, NangoModelField, NangoYamlParsed } from '@nangohq/types';
 import type { ServiceResponse } from '@nangohq/shared';
-import { NANGO_VERSION, isJsOrTsType } from '@nangohq/shared';
+import { NANGO_VERSION } from '@nangohq/shared';
 import { getNangoRootPath, printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
 import { load } from './config.service.js';
+import { isJsOrTsType } from '@nangohq/nango-yaml';
 
 export type ModelsMap = Map<string, Record<string, any>>;
 
@@ -82,23 +83,6 @@ export const NangoFlows = ${JSON.stringify(parsed.integrations, null, 2)} as con
 
 export function generateInterfaces({ parsed }: { parsed: NangoYamlParsed }): string[] {
     const models: ModelsMap = new Map<string, Record<string, any>>();
-
-    // List all models
-    for (const integration of parsed.integrations) {
-        for (const sync of integration.syncs) {
-            for (const model of sync.models) {
-                models.set(model.name, model.fields);
-            }
-        }
-        for (const action of integration.actions) {
-            for (const model of action.models) {
-                models.set(model.name, model.fields);
-            }
-            if (action.input && typeof action.input !== 'string') {
-                models.set(action.input.name, action.input.fields);
-            }
-        }
-    }
 
     const interfaces: string[] = [];
     for (const integration of parsed.integrations) {

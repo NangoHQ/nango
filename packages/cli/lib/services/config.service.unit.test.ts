@@ -39,6 +39,7 @@ integrations:
     syncs:
       foobar:
         input: boolean
+        runs: every day
 `)
         );
         expect(res).toMatchObject([
@@ -60,6 +61,7 @@ integrations:
   test:
     syncs:
       foobar:
+        runs: every day
         endpoint: GET /test
         output: boolean
         iinput: boolean
@@ -82,6 +84,7 @@ integrations:
   test:
     syncs:
       foobar:
+        runs: every day
         endpoint: /test
         output: boolean
 `)

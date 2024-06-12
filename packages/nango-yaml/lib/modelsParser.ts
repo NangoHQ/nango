@@ -1,11 +1,12 @@
 import type { NangoModel, NangoModelField, NangoYamlModel, NangoYamlModelFields } from '@nangohq/types';
-import { isJsOrTsType } from '../utils/utils.js';
+import { isJsOrTsType } from './helpers.js';
+import { ParserError } from './errors.js';
 
 export class ModelsParser {
-    parsed = new Map<string, NangoModelField[]>();
+    parsed = new Map<string, NangoModel>();
     references = new Set<string>();
-    errors: string[] = [];
-    warnings: string[] = [];
+    errors: ParserError[] = [];
+    warnings: ParserError[] = [];
 
     raw: NangoYamlModel;
 
@@ -29,20 +30,20 @@ export class ModelsParser {
             return undefined;
         }
 
-        return { name, fields: parsed };
+        return parsed;
     }
 
     parseOne({ name, fields }: { name: string; fields: NangoYamlModelFields }): void {
         const parsed = this.parseFields({ fields, parent: name });
         if (parsed) {
-            this.parsed.set(name, parsed);
+            this.parsed.set(name, { name, fields: parsed });
         }
     }
 
     isModelParse({ name, parent }: { name: string; parent: string }): true | false {
         if (this.references.has(`${parent}-${name}`) || parent === name) {
             this.references.add(`${parent}-${name}`);
-            this.warnings.push(`Cyclic import ${parent}->${name}`);
+            this.warnings.push(new ParserError({ code: 'cyclic', message: `Cyclic import ${parent}->${name}`, path: `${parent} > ${name}` }));
             return true;
         }
 
@@ -54,7 +55,9 @@ export class ModelsParser {
 
         // Model does not exists but that could just mean string literal
         if (!this.raw[name]) {
-            this.warnings.push(`Model "${name}" is not defined, using as string literal`);
+            this.warnings.push(
+                new ParserError({ code: 'model_not_found', message: `Model "${name}" is not defined, using as string literal`, path: `${parent} > ${name}` })
+            );
             return false;
         }
 
@@ -75,13 +78,19 @@ export class ModelsParser {
                     const trimmed = extendedModel.trim();
                     const isModel = this.isModelParse({ name: trimmed, parent });
                     if (!isModel) {
-                        this.errors.push(`Model "${parent}" is extending "${trimmed}", but it does not exists`);
+                        this.errors.push(
+                            new ParserError({
+                                code: 'model_extends_not_found',
+                                message: `Model "${parent}" is extending "${trimmed}", but it does not exists`,
+                                path: parent
+                            })
+                        );
                         continue;
                     }
 
                     // Merge parent
                     const extendedFields = this.parsed.get(trimmed)!;
-                    for (const field of extendedFields) {
+                    for (const field of extendedFields.fields) {
                         if (field.dynamic) {
                             dynamicField = field;
                         } else {
@@ -92,7 +101,9 @@ export class ModelsParser {
             } else if (Array.isArray(value)) {
                 const acc = this.parseFields({ fields: value as unknown as NangoYamlModelFields, parent });
                 if (!acc) {
-                    this.errors.push(`Failed to parse object in "${parent}"`);
+                    this.errors.push(
+                        new ParserError({ code: 'failed_to_parse_array', message: `Failed to parse array in "${parent}"`, path: `${parent} > ${name}` })
+                    );
                     continue;
                 }
 
@@ -102,7 +113,9 @@ export class ModelsParser {
             } else if (typeof value === 'object') {
                 const acc = this.parseFields({ fields: value, parent });
                 if (!acc) {
-                    this.errors.push(`Failed to parse object in "${parent}"`);
+                    this.errors.push(
+                        new ParserError({ code: 'failed_to_parse_object', message: `Failed to parse object in "${parent}"`, path: `${parent} > ${name}` })
+                    );
                     continue;
                 }
 

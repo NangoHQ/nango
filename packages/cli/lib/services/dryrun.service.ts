@@ -6,10 +6,10 @@ import type { Metadata } from '@nangohq/types';
 import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
-import configService from './config.service.js';
 import { compileAllFiles } from './compile.service.js';
 import integrationService from './local-integration.service.js';
 import type { RecordsServiceInterface } from '@nangohq/shared/lib/services/sync/run.service.js';
+import { load } from './config.service.js';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -71,8 +71,7 @@ class DryRunService {
             return;
         }
 
-        const { success, error, response: config } = await configService.load(process.cwd(), debug);
-
+        const { success, error, response: config } = await load(process.cwd(), debug);
         if (!success || !config) {
             console.log(chalk.red(error?.message));
             return;

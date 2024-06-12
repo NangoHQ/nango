@@ -12,6 +12,9 @@
             "path": "../logs"
         },
         {
+            "path": "../nango-yaml"
+        },
+        {
             "path": "../node-client"
         },
         {
@@ -30,5 +33,8 @@
             "path": "../orchestrator"
         }
     ],
-    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
+    "include": [
+        "lib/**/*",
+        "../utils/lib/vitest.d.ts",
+    ]
 }

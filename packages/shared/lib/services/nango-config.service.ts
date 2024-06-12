@@ -19,8 +19,7 @@ import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import { SyncType, SyncConfigType } from '../models/Sync.js';
 import localFileService from './file/local.service.js';
 import { NangoError } from '../utils/error.js';
-import { isJsOrTsType } from '../utils/utils.js';
-import { determineVersion, getInterval } from '../nangoYaml/helpers.js';
+import { determineVersion, getInterval, isJsOrTsType } from '@nangohq/nango-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -497,10 +496,9 @@ function buildSyncs({
 
         const runs = sync?.runs || 'every day';
 
-        const { success, error } = getInterval(runs, new Date());
-
-        if (!success) {
-            return { success: false, error, response: null };
+        const interval = getInterval(runs, new Date());
+        if (interval instanceof Error) {
+            return { success: false, error: new NangoError(interval.message), response: null };
         }
 
         let webhookSubscriptions: string[] = [];

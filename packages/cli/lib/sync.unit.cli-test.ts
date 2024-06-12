@@ -5,11 +5,11 @@ import yaml from 'js-yaml';
 import { SyncConfigType } from '@nangohq/shared';
 import { init, generate } from './cli.js';
 import { exampleSyncName } from './constants.js';
-import configService from './services/config.service.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
 import { getNangoRootPath } from './utils.js';
 import parserService from './services/parser.service.js';
 import { copyDirectoryAndContents } from './tests/helpers.js';
+import { load } from './services/config.service.js';
 
 function getTestDirectory(name: string) {
     const dir = `/tmp/${name}/nango-integrations/`;
@@ -428,7 +428,7 @@ describe('generate function tests', () => {
     });
 
     it('should parse a nango.yaml file that is version 1 as expected', async () => {
-        const { response: config } = await configService.load(path.resolve(__dirname, `../fixtures/nango-yaml/v1/valid`));
+        const { response: config } = await load(path.resolve(__dirname, `../fixtures/nango-yaml/v1/valid`));
         expect(config).toBeDefined();
         expect(config).toMatchSnapshot();
     });
@@ -454,20 +454,20 @@ describe('generate function tests', () => {
     });
 
     it('should parse a nango.yaml file that is version 2 as expected', async () => {
-        const { response: config } = await configService.load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/valid`));
+        const { response: config } = await load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/valid`));
         expect(config).toBeDefined();
         expect(config).toMatchSnapshot();
     });
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- missing endpoint', async () => {
-        const { response: config, error } = await configService.load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/invalid.1`));
+        const { response: config, error } = await load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/invalid.1`));
         expect(config).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toMatchSnapshot();
     });
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- webhook subscriptions are not allowed in an action', async () => {
-        const { response: config, error } = await configService.load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/invalid.2`));
+        const { response: config, error } = await load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/invalid.2`));
         expect(config).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toEqual('Problem validating the nango.yaml file.');
@@ -531,15 +531,13 @@ describe('generate function tests', () => {
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/nango.yaml`, `${dir}/nango.yaml`);
         const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
-        const { response: config } = await configService.load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        const { response: config } = await load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
         expect(config).not.toBeNull();
-        const modelNames = configService.getModelNames(config!);
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: path.join(dir, './github/actions/gh-issues.ts') }),
             tsconfig,
             config: config!,
-            modelNames,
             debug: false
         });
         expect(result).toBe(false);
@@ -554,15 +552,13 @@ describe('generate function tests', () => {
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/nango.yaml`, `${dir}/nango.yaml`);
         const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
-        const { response: config } = await configService.load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        const { response: config } = await load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
         expect(config).not.toBeNull();
-        const modelNames = configService.getModelNames(config!);
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: path.join(dir, './github/actions/gh-issues.ts') }),
             tsconfig,
             config: config!,
-            modelNames,
             debug: false
         });
         expect(result).toBe(false);
@@ -578,15 +574,13 @@ describe('generate function tests', () => {
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/github/actions/welcomer.ts`, `${dir}/welcomer.ts`);
         const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
-        const { response: config } = await configService.load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        const { response: config } = await load(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
         expect(config).not.toBeNull();
-        const modelNames = configService.getModelNames(config!);
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: path.join(dir, './github/actions/gh-issues.ts') }),
             tsconfig,
             config: config!,
-            modelNames,
             debug: false
         });
         expect(result).toBe(false);

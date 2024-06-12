@@ -1,64 +1,97 @@
 import { describe, expect, it } from 'vitest';
 import { buildModelsTS, fieldToTypescript } from './model.service.js';
-import type { NangoSyncConfig } from '@nangohq/shared';
+import type { ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
 
-const defaultSync: NangoSyncConfig = { name: 'default', runs: '', returns: ['default'], endpoints: [{ POST: '/default' }], layout_mode: 'root', models: [] };
+const defaultSync: ParsedNangoSync = {
+    name: 'default',
+    type: 'sync',
+    description: '',
+    auto_start: false,
+    input: null,
+    nango_yaml_version: 'v2',
+    runs: '',
+    endpoints: [{ POST: '/default' }],
+    layout_mode: 'root',
+    models: [],
+    scopes: [],
+    sync_type: 'full',
+    track_deletes: false,
+    webhookSubscriptions: []
+};
+const defaultAction: ParsedNangoAction = {
+    name: 'default',
+    type: 'action',
+    description: '',
+    endpoint: { POST: '/default' },
+    models: [],
+    input: null,
+    nango_yaml_version: 'v2',
+    scopes: []
+};
 
 describe('buildModelTs', () => {
     it('should return empty (with sdk)', () => {
-        const res = buildModelsTS({ configs: [] });
+        const res = buildModelsTS({ parsed: { yamlVersion: 'v2', integrations: [], models: new Map() } });
         expect(res).toMatchSnapshot('');
     });
 
     it('should output all interfaces', () => {
         const res = buildModelsTS({
-            configs: [
-                {
-                    providerConfigKey: 'foobar',
-                    actions: [
-                        {
-                            ...defaultSync,
-                            name: 'Action1',
-                            returns: ['Action1'],
-                            models: [{ name: 'Action1', fields: [{ name: 'name', type: 'dfd' }] }]
-                        }
-                    ],
-                    syncs: [
-                        {
-                            ...defaultSync,
-                            name: 'Sync1',
-                            returns: ['Sync1'],
-                            models: [{ name: 'Sync1', fields: [{ name: 'id', type: 'dfd' }] }]
-                        }
-                    ]
-                }
-            ]
+            parsed: {
+                yamlVersion: 'v2',
+                models: new Map(),
+                integrations: [
+                    {
+                        providerConfigKey: 'foobar',
+                        actions: [
+                            {
+                                ...defaultAction,
+                                name: 'Action1',
+                                returns: ['Action1'],
+                                models: [{ name: 'Action1', fields: [{ name: 'name', value: 'dfd' }] }]
+                            }
+                        ],
+                        syncs: [
+                            {
+                                ...defaultSync,
+                                name: 'Sync1',
+                                returns: ['Sync1'],
+                                models: [{ name: 'Sync1', fields: [{ name: 'id', value: 'dfd' }] }]
+                            }
+                        ]
+                    }
+                ]
+            }
         });
         expect(res.split('\n').slice(0, 15)).toMatchSnapshot('');
     });
 
     it('should support [key: string] model', () => {
         const res = buildModelsTS({
-            configs: [
-                {
-                    providerConfigKey: 'foobar',
-                    actions: [],
-                    syncs: [
-                        {
-                            ...defaultSync,
-                            models: [
-                                {
-                                    name: 'Sync1',
-                                    fields: [
-                                        { name: '[key: string]', type: 'string' },
-                                        { name: 'id', type: 'string' }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
+            parsed: {
+                yamlVersion: 'v2',
+                models: new Map(),
+                integrations: [
+                    {
+                        providerConfigKey: 'foobar',
+                        actions: [],
+                        syncs: [
+                            {
+                                ...defaultSync,
+                                models: [
+                                    {
+                                        name: 'Sync1',
+                                        fields: [
+                                            { name: '[key: string]', value: 'string' },
+                                            { name: 'id', value: 'string' }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
         });
 
         expect(res.split('\n').slice(0, 15)).toMatchSnapshot();

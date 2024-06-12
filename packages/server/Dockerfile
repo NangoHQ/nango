@@ -19,6 +19,7 @@ COPY packages/logs/ packages/logs/
 COPY packages/database/ packages/database/
 COPY packages/webhooks/ packages/webhooks/
 COPY packages/node-client/ packages/node-client/
+COPY packages/nango-yaml/ packages/nango-yaml/
 COPY packages/records/ packages/records/
 COPY packages/scheduler/ packages/scheduler/
 COPY packages/orchestrator/ packages/orchestrator/

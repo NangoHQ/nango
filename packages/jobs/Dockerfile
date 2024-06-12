@@ -9,6 +9,7 @@ ENV SERVER_RUN_MODE=DOCKERIZED
 WORKDIR /nango
 
 COPY packages/node-client/ packages/node-client/
+COPY packages/nango-yaml/ packages/nango-yaml/
 COPY packages/shared/ packages/shared/
 COPY packages/utils/ packages/utils/
 COPY packages/records/ packages/records/

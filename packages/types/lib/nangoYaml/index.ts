@@ -69,6 +69,7 @@ export type NangoYaml = NangoYamlV1 | NangoYamlV2;
 export interface NangoYamlParsed {
     yamlVersion: 'v1' | 'v2';
     integrations: NangoYamlParsedIntegration[];
+    models: Map<string, NangoModel>;
 }
 export interface NangoYamlParsedIntegration {
     providerConfigKey: string;

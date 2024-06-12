@@ -18,7 +18,7 @@ import {
     updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
 import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
-import { getInterval } from '../nangoYaml/helpers.js';
+import { getInterval } from '@nangohq/nango-yaml';
 import { getSyncConfig, getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
@@ -203,10 +203,9 @@ class SyncClient {
                 }
             );
 
-            const { success, error, response } = getInterval(syncData.runs, new Date());
-
-            if (!success || response === null) {
-                const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${error?.message}`;
+            const intervalParsing = getInterval(syncData.runs, new Date());
+            if (intervalParsing instanceof Error) {
+                const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${intervalParsing.message}`;
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: nangoConnection.environment_id,
@@ -214,7 +213,10 @@ class SyncClient {
                     timestamp: Date.now(),
                     content
                 });
-                await logCtx.error('The sync was not created or started due to an error with the sync interval', { error, runs: syncData.runs });
+                await logCtx.error('The sync was not created or started due to an error with the sync interval', {
+                    error: intervalParsing,
+                    runs: syncData.runs
+                });
                 await logCtx.failed();
 
                 errorManager.report(content, {
@@ -257,7 +259,7 @@ class SyncClient {
                 await createSyncJob(sync.id, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
             }
 
-            const { interval, offset } = response;
+            const { interval, offset } = intervalParsing;
             const scheduleId = generateScheduleId(sync, syncName, nangoConnection.connection_id);
 
             const scheduleHandle = await this.client?.schedule.create({
@@ -438,9 +440,9 @@ class SyncClient {
                         const schedule = await getScheduleById(scheduleId);
                         if (schedule) {
                             const { frequency } = schedule;
-                            const { success, response } = getInterval(frequency, new Date());
-                            if (success && response) {
-                                const { offset } = response;
+                            const interval = getInterval(frequency, new Date());
+                            if (!(interval instanceof Error)) {
+                                const { offset } = interval;
                                 await this.updateSyncSchedule(scheduleId, frequency, offset, environmentId);
                                 await updateOffset(scheduleId, offset);
                             }

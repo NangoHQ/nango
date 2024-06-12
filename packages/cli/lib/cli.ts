@@ -10,7 +10,6 @@ import type { ChildProcess } from 'node:child_process';
 
 import { localFileService, nangoConfigFile, SyncConfigType } from '@nangohq/shared';
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, getPkgVersion, printDebug } from './utils.js';
-import configService from './services/config.service.js';
 import { loadYamlAndGeneratedModel } from './services/model.service.js';
 import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
@@ -43,8 +42,8 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
     const config = res.response!;
     const allSyncNames: Record<string, boolean> = {};
 
-    for (const standardConfig of config) {
-        const { syncs, actions, postConnectionScripts, providerConfigKey } = standardConfig;
+    for (const integration of config.integrations) {
+        const { syncs, actions, postConnectionScripts, providerConfigKey } = integration;
 
         if (postConnectionScripts) {
             const type = 'post-connection-script';
@@ -70,7 +69,7 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
 
         for (const flow of [...syncs, ...actions]) {
             const { name, type, returns: models, layout_mode } = flow;
-            let { input } = flow;
+            const { input } = flow;
             const uniqueName = layout_mode === 'root' ? name : `${providerConfigKey}-${name}`;
 
             if (allSyncNames[uniqueName] === undefined) {
@@ -116,10 +115,6 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
                         type: model
                     }));
                 }
-            }
-
-            if (input && Object.keys(input).length === 0) {
-                input = undefined;
             }
 
             const rendered = ejs.render(ejsTemplateContents, {
@@ -226,17 +221,14 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
 
 export async function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
-    const { success, error, response: config } = await configService.load(fullPath);
-
-    if (!success || !config) {
-        console.log(chalk.red(error?.message));
-        if (error?.payload) {
-            console.log(error.payload);
+    const res = await loadYamlAndGeneratedModel({ fullPath, debug });
+    if (!res.success) {
+        console.log(chalk.red(res.error?.message));
+        if (res.error?.payload) {
+            console.log(res.error.payload);
         }
         return;
     }
-
-    const modelNames = configService.getModelNames(config);
 
     const watchPath = ['./**/*.ts', `./${nangoConfigFile}`];
 
@@ -261,16 +253,11 @@ export async function tscWatch({ fullPath, debug = false }: { fullPath: string; 
         fs.mkdirSync(distDir);
     }
 
-    const res = await loadYamlAndGeneratedModel({ fullPath, debug });
-    if (!res.success) {
-        return;
-    }
-
     watcher.on('add', async (filePath: string) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, config, modelNames, debug });
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, config, debug });
     });
 
     watcher.on('unlink', (filePath: string) => {
@@ -294,7 +281,7 @@ export async function tscWatch({ fullPath, debug = false }: { fullPath: string; 
             await compileAllFiles({ fullPath, debug });
             return;
         }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, config, modelNames, debug });
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, config, debug });
     });
 }
 

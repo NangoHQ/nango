@@ -22,6 +22,7 @@
         "@datadog/datadog-api-client": "^1.16.0",
         "@hapi/boom": "^10.0.1",
         "@nangohq/database": "file:../database",
+        "@nangohq/nango-yaml": "^0.40.0",
         "@nangohq/node": "^0.40.0",
         "@nangohq/utils": "file:../utils",
         "@sentry/node": "^7.106.0",

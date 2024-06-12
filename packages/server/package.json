@@ -26,6 +26,7 @@
         "@nangohq/database": "file:../database",
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
+        "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/types": "file:../types",

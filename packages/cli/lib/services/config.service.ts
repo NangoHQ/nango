@@ -6,7 +6,8 @@ import chalk from 'chalk';
 import { getNangoRootPath, printDebug } from '../utils.js';
 import type { NangoYamlParsed } from '@nangohq/types';
 import type { ServiceResponse } from '@nangohq/shared';
-import { NangoError, determineVersion, loadNangoYaml } from '@nangohq/shared';
+import { NangoError } from '@nangohq/shared';
+import { determineVersion, loadNangoYaml } from '@nangohq/nango-yaml';
 
 export interface ValidationMessage {
     msg: string;
@@ -15,13 +16,13 @@ export interface ValidationMessage {
     params?: Record<string, any> | undefined;
 }
 
-export async function load(fullPath: string, debug = false): Promise<ServiceResponse<NangoYamlParsed>> {
+export function load(fullPath: string, debug = false): ServiceResponse<NangoYamlParsed> {
     if (debug) {
         printDebug(`Loading ${fullPath}`);
     }
 
     try {
-        const parser = await loadNangoYaml({ fullPath });
+        const parser = loadNangoYaml({ fullPath });
         if (debug) {
             printDebug(`Config file found`);
         }
@@ -41,22 +42,6 @@ export async function load(fullPath: string, debug = false): Promise<ServiceResp
         return { success: false, error: new NangoError('error_loading_nango_config'), response: null };
     }
 }
-
-// public getModelNames(config: StandardNangoConfig[]): string[] {
-//     const modelNames = config.reduce((acc: string[], config) => {
-//         const syncs = config.syncs || [];
-//         const actions = config.actions || [];
-//         const allSyncs = [...syncs, ...actions];
-//         const models = allSyncs.reduce((acc: string[], sync) => {
-//             const models = sync.models || [];
-//             const names = models.map((model) => model.name);
-//             return [...acc, ...names];
-//         }, []);
-//         return [...acc, ...models];
-//     }, []);
-
-//     return modelNames;
-// }
 
 /**
  * Output validation errors to console

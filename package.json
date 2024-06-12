@@ -9,6 +9,7 @@
         "packages/kvstore",
         "packages/logs",
         "packages/node-client",
+        "packages/nango-yaml",
         "packages/records",
         "packages/server",
         "packages/runner",

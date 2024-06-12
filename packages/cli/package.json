@@ -25,6 +25,7 @@
         "@babel/traverse": "^7.22.5",
         "@babel/types": "^7.22.5",
         "@nangohq/shared": "^0.40.0",
+        "@nangohq/nango-yaml": "^0.40.0",
         "@swc/core": "^1.5.25",
         "ajv": "^8.12.0",
         "ajv-errors": "^3.0.0",

@@ -6,13 +6,11 @@
     },
     "references": [
         {
-            "path": "../shared"
-        },
-        {
-            "path": "../nango-yaml"
-        },
+            "path": "../types"
+        }
     ],
     "include": [
-        "lib/**/*"
+        "lib/**/*",
+        "../utils/lib/vitest.d.ts",
     ]
 }

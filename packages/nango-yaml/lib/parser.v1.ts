@@ -67,7 +67,8 @@ export class NangoYamlParserV1 extends NangoYamlParser {
 
         this.parsed = {
             yamlVersion: 'v1',
-            integrations: output
+            integrations: output,
+            models: this.modelsParser.parsed
         };
     }
 }

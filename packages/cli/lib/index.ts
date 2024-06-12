@@ -17,10 +17,10 @@ import deployService from './services/deploy.service.js';
 import { compileAllFiles } from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
 import dryrunService from './services/dryrun.service.js';
-import configService from './services/config.service.js';
 import { v1toV2Migration, directoryMigration } from './services/migration.service.js';
 import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
+import { load } from './services/config.service.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -269,9 +269,9 @@ program
         const { autoConfirm } = this.opts();
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm });
-        const { success, error, response: config } = await configService.load(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
+        const { success, error, response: parsed } = await load(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
 
-        if (!success || !config) {
+        if (!success || !parsed) {
             console.log(chalk.red(error?.message));
             if (error?.payload) {
                 console.log(error.payload);
@@ -279,7 +279,7 @@ program
             process.exitCode = 1;
         }
 
-        console.log(chalk.green(JSON.stringify(config, null, 2)));
+        console.log(chalk.green(JSON.stringify(parsed, null, 2)));
     });
 
 // admin only commands
