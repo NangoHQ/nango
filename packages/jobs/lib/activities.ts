@@ -32,7 +32,8 @@ import {
     isInitialSyncStillRunning,
     getSyncByIdAndName,
     getLastSyncDate,
-    getSyncConfigRaw
+    getSyncConfigRaw,
+    featureFlags
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
 import { getLogger, stringifyError, errorToObject } from '@nangohq/utils';
@@ -47,6 +48,13 @@ const logger = getLogger('Jobs');
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
+
+    const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+    const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
+    const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+    if (isOrchestrator) {
+        return false;
+    }
 
     // https://typescript.temporal.io/api/classes/activity.Context
     const context: Context = Context.current();
@@ -112,6 +120,13 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     const { syncId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
     let syncJobId;
+
+    const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+    const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
+    const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+    if (isOrchestrator) {
+        return false;
+    }
 
     const initialSyncStillRunning = await isInitialSyncStillRunning(syncId);
 

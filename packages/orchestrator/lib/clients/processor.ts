@@ -100,6 +100,7 @@ export class OrchestratorProcessor {
     }
 
     private async processTask(task: OrchestratorTask, ctx: { tracer: Tracer }): Promise<void> {
+        let heartbeat: NodeJS.Timeout;
         this.abortControllers.set(task.id, task.abortController);
         await this.queue.add(async () => {
             const active = ctx.tracer.scope().active();
@@ -113,6 +114,7 @@ export class OrchestratorProcessor {
                     logger.info(`task ${task.id} was aborted before processing started`);
                     return;
                 }
+                heartbeat = this.heartbeat(task);
                 const res = await this.handler(task);
                 if (res.isErr()) {
                     const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error: res.error });
@@ -141,8 +143,18 @@ export class OrchestratorProcessor {
                 }
             } finally {
                 this.abortControllers.delete(task.id);
+                clearInterval(heartbeat);
                 span.finish();
             }
         });
+    }
+
+    private heartbeat(task: OrchestratorTask): NodeJS.Timeout {
+        return setInterval(async () => {
+            const res = await this.orchestratorClient.heartbeat({ taskId: task.id });
+            if (res.isErr()) {
+                logger.error(`failed to send heartbeat for task ${task.id}: ${stringifyError(res.error)}`);
+            }
+        }, 300_000);
     }
 }
