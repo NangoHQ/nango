@@ -6,8 +6,8 @@ import type { NangoYaml } from '@nangohq/types';
 
 import { determineVersion } from './helpers.js';
 import type { NangoYamlParser } from './parser.js';
-import { NangoYamlParserV1 } from './parser.v1';
-import { NangoYamlParserV2 } from './parser.v2';
+import { NangoYamlParserV1 } from './parser.v1.js';
+import { NangoYamlParserV2 } from './parser.v2.js';
 import { nangoConfigFile } from './constant.js';
 
 /**

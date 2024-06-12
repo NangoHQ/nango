@@ -69,8 +69,7 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
         }
 
         for (const flow of [...syncs, ...actions]) {
-            const { name, type, returns: models } = flow;
-            const { input } = flow;
+            const { name, type, output, input } = flow;
             const layoutMode = getLayoutMode({ fullPath, providerConfigKey, scriptName: name, type });
             const uniqueName = layoutMode === 'root' ? name : `${providerConfigKey}-${name}`;
 
@@ -99,33 +98,14 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
                 ejsTemplateContents = type === 'sync' ? syncTemplateContents : actionTemplateContents;
             }
 
-            let interfaceNames: string | string[] = [];
-            let mappings: { name: string; type: string } | { name: string; type: string }[] = [];
-
-            if (typeof models === 'string') {
-                const formattedName = models;
-                interfaceNames = formattedName;
-                mappings = {
-                    name: models,
-                    type: formattedName
-                };
-            } else {
-                if (models && models.length !== 0) {
-                    interfaceNames = models;
-                    mappings = models.map((model) => ({
-                        name: model,
-                        type: model
-                    }));
-                }
-            }
-
+            const models = output ? [...output, input] : [input];
             const rendered = ejs.render(ejsTemplateContents, {
                 syncName: flowNameCamel,
                 interfacePath: layoutMode === 'root' ? './' : '../../',
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
-                interfaceNames,
-                mappings,
-                inputs: input && typeof input !== 'string' ? input.name : input || '',
+                output: output && output.length > 0 ? output.join(' | ') : null,
+                input: input,
+                modelNames: models.join(', '),
                 hasWebhook: type === 'sync' && flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0
             });
 

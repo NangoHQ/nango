@@ -141,11 +141,6 @@ export function getPotentialTypeAlias(value: string): string {
     return is || value;
 }
 
-export function getPotentialDataType(value: string): string {
-    const is = typesAliases[value.toLocaleLowerCase()];
-    return is || value;
-}
-
 export function getNativeDataTypeOrValue(value: string) {
     const alias = getPotentialTypeAlias(value);
     if (typeof alias === 'string' && alias && types.includes(alias)) {
@@ -157,7 +152,7 @@ export function getNativeDataTypeOrValue(value: string) {
         return int;
     }
 
-    switch (value) {
+    switch (value.toLocaleLowerCase()) {
         case 'true':
             return true;
         case 'false':

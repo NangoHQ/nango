@@ -33,7 +33,7 @@ export function load(fullPath: string, debug = false): ServiceResponse<NangoYaml
         }
 
         parser.parse();
-        if (parser.errors) {
+        if (parser.errors.length > 0) {
             return { success: false, error: new NangoError('failed_to_parse_nango_yaml', parser.errors), response: null };
         }
 
