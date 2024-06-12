@@ -1,6 +1,6 @@
 import type { NangoModel, NangoModelField, NangoYamlModel, NangoYamlModelFields } from '@nangohq/types';
-import { getNativeDataTypeOrValue, isJsOrTsType } from './helpers.js';
-import { ParserError } from './errors.js';
+import { getNativeDataType, getPotentialTypeAlias, isDisallowedType, shouldQuote } from './helpers.js';
+import { ParserError, ParserErrorCycle, ParserErrorDataSyntax, ParserErrorExtendsNotFound, ParserErrorInvalidModelName } from './errors.js';
 
 export class ModelsParser {
     parsed = new Map<string, NangoModel>();
@@ -16,6 +16,10 @@ export class ModelsParser {
 
     parseAll() {
         for (const [name, fields] of Object.entries(this.raw)) {
+            if (shouldQuote(name)) {
+                this.errors.push(new ParserErrorInvalidModelName({ model: name, path: [name] }));
+                continue;
+            }
             if (this.parsed.has(name)) {
                 continue;
             }
@@ -43,7 +47,7 @@ export class ModelsParser {
     ifModelParse({ name, parent }: { name: string; parent: string }): true | false {
         if (this.references.has(`${parent}-${name}`) || parent === name) {
             this.references.add(`${parent}-${name}`);
-            this.warnings.push(new ParserError({ code: 'cyclic', message: `Cyclic import ${parent}->${name}`, path: [parent, name] }));
+            this.warnings.push(new ParserErrorCycle({ name }));
             return true;
         }
 
@@ -56,7 +60,7 @@ export class ModelsParser {
         // Model does not exists but that could just mean string literal
         if (!this.raw[name]) {
             this.warnings.push(
-                new ParserError({ code: 'model_not_found', message: `Model "${name}" is not defined, using as string literal`, path: [parent, name] })
+                new ParserError({ code: 'model_not_found_fallback', message: `Model "${name}" is not defined, using as string literal`, path: [parent, name] })
             );
             return false;
         }
@@ -70,7 +74,10 @@ export class ModelsParser {
         const parsed: NangoModelField[] = [];
         let dynamicField: NangoModelField | null = null;
 
-        for (const [name, value] of Object.entries(fields)) {
+        for (const [nameTmp, value] of Object.entries(fields)) {
+            const optional = nameTmp.endsWith('?');
+            const name = optional ? nameTmp.substring(0, nameTmp.length - 1) : nameTmp;
+
             // Special key to extends models
             if (name === '__extends') {
                 const extendedModels = (value as string).split(',');
@@ -79,13 +86,7 @@ export class ModelsParser {
                     const trimmed = extendedModel.trim();
                     const isModel = this.ifModelParse({ name: trimmed, parent });
                     if (!isModel) {
-                        this.errors.push(
-                            new ParserError({
-                                code: 'model_extends_not_found',
-                                message: `Model "${parent}" is extending "${trimmed}", but it does not exists`,
-                                path: [parent, name]
-                            })
-                        );
+                        this.errors.push(new ParserErrorExtendsNotFound({ model: parent, inherit: trimmed, path: [parent, name] }));
                         continue;
                     }
 
@@ -110,12 +111,12 @@ export class ModelsParser {
                     continue;
                 }
 
-                parsed.push({ name, value: acc, array: true });
+                parsed.push({ name, value: acc, array: true, optional });
                 continue;
             }
 
             // Standard data types that requires no change
-            if (typeof value === 'boolean' || typeof value === 'number' || value === null) {
+            if (typeof value === 'boolean' || typeof value === 'number' || value === null || value === undefined) {
                 parsed.push({ name, value, tsType: true });
                 continue;
             }
@@ -130,13 +131,13 @@ export class ModelsParser {
                     continue;
                 }
 
-                parsed.push({ name, value: acc });
+                parsed.push({ name, value: acc, optional });
                 continue;
             }
 
             // Special key for dynamic interface `[key: string]: *`
             if (name === '__string') {
-                dynamicField = { name, value, dynamic: true };
+                dynamicField = { name, value, dynamic: true, optional };
                 continue;
             }
 
@@ -150,7 +151,7 @@ export class ModelsParser {
                     continue;
                 }
 
-                parsed.push({ name, value: acc, union: true });
+                parsed.push({ name, value: acc, union: true, optional });
                 continue;
             }
 
@@ -159,28 +160,35 @@ export class ModelsParser {
             // - native data type (null, true, false)
             // - model
             const isArray = value.endsWith('[]');
-            const valueClean = getNativeDataTypeOrValue(isArray ? value.substring(0, value.length - 2) : value);
+            const valueClean = isArray ? value.substring(0, value.length - 2) : value;
 
-            // Native data type
-            if (typeof valueClean !== 'string') {
-                parsed.push({ name, value: valueClean, tsType: true, array: isArray });
+            const alias = getPotentialTypeAlias(valueClean);
+            if (alias) {
+                parsed.push({ name, value: alias, tsType: true, array: isArray, optional });
                 continue;
             }
 
-            if (isJsOrTsType(valueClean)) {
-                parsed.push({ name, value: valueClean, tsType: true, array: isArray });
+            const native = getNativeDataType(valueClean);
+            if (!(native instanceof Error)) {
+                parsed.push({ name, value: native, tsType: true, array: isArray, optional });
+                continue;
+            }
+
+            if (isDisallowedType(valueClean)) {
+                this.warnings.push(new ParserErrorDataSyntax({ value: valueClean, path: [parent, name] }));
+                parsed.push({ name, value: valueClean, array: isArray, optional });
                 continue;
             }
 
             // Model name
             const isModel = this.ifModelParse({ name: valueClean, parent });
             if (isModel) {
-                parsed.push({ name, value, model: true });
+                parsed.push({ name, value, model: true, optional });
                 continue;
             }
 
             // Literal string
-            parsed.push({ name, value: valueClean, array: isArray });
+            parsed.push({ name, value: valueClean, array: isArray, optional });
         }
 
         if (dynamicField) {

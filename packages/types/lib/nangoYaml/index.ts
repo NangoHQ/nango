@@ -119,6 +119,7 @@ export interface NangoModelField {
     model?: boolean;
     array?: boolean;
     union?: boolean;
+    optional?: boolean;
 }
 
 export type NangoSyncEndpoint = {

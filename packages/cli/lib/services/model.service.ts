@@ -8,6 +8,7 @@ import { NANGO_VERSION } from '@nangohq/shared';
 import { getNangoRootPath, printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
 import { load } from './config.service.js';
+import { shouldQuote } from '@nangohq/nango-yaml';
 
 export type ModelsMap = Map<string, Record<string, any>>;
 
@@ -92,7 +93,7 @@ export function generateInterfaces({ parsed }: { parsed: NangoYamlParsed }): str
 export function modelToTypescript({ model }: { model: NangoModel }) {
     const output: string[] = [];
     if (model.isAnon) {
-        output.push(`/** @deprecated We advice to use a proper model */`);
+        output.push(`/** @deprecated It is recommended to use a Model */`);
         output.push(`export type ${model.name} = ${fieldToTypescript({ field: model.fields[0]! })}`);
     } else {
         output.push(`export interface ${model.name} {`);
@@ -121,7 +122,7 @@ export function fieldsToTypescript({ fields }: { fields: NangoModelField[] }) {
             continue;
         }
 
-        output.push(`  ${field.name}: ${fieldToTypescript({ field: field })};`);
+        output.push(`  ${shouldQuote(field.name) ? `"${field.name}"` : field.name}${field.optional ? '?' : ''}: ${fieldToTypescript({ field: field })};`);
     }
 
     return output;

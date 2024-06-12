@@ -1,13 +1,13 @@
 import { expect, describe, it } from 'vitest';
 import { ModelsParser } from './modelsParser.js';
-import { ParserError } from './errors.js';
+import { ParserError, ParserErrorCycle, ParserErrorDataSyntax, ParserErrorExtendsNotFound, ParserErrorInvalidModelName } from './errors.js';
 
 describe('parse', () => {
     it('should parse simple object', () => {
         const parser = new ModelsParser({ raw: { Test: { id: 'string' } } });
         parser.parseAll();
         expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-            Test: { name: 'Test', fields: [{ name: 'id', value: 'string', tsType: true, array: false }] }
+            Test: { name: 'Test', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }
         });
     });
 
@@ -17,7 +17,7 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: '__string', value: 'string', dynamic: true }] }
+                Test: { name: 'Test', fields: [{ name: '__string', value: 'string', dynamic: true, optional: false }] }
             });
         });
     });
@@ -28,8 +28,8 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'id', value: 1, tsType: true, array: false }] },
-                TestBase: { name: 'TestBase', fields: [{ name: 'id', value: 1, tsType: true, array: false }] }
+                Test: { name: 'Test', fields: [{ name: 'id', value: 1, tsType: true, array: false, optional: false }] },
+                TestBase: { name: 'TestBase', fields: [{ name: 'id', value: 1, tsType: true, array: false, optional: false }] }
             });
         });
 
@@ -38,9 +38,9 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'id', value: 'number', tsType: true, array: false }] },
-                TestBase: { name: 'TestBase', fields: [{ name: 'id', value: 'number', tsType: true, array: false }] },
-                TestBase2: { name: 'TestBase2', fields: [{ name: 'id', value: 'number', tsType: true, array: false }] }
+                Test: { name: 'Test', fields: [{ name: 'id', value: 'number', tsType: true, array: false, optional: false }] },
+                TestBase: { name: 'TestBase', fields: [{ name: 'id', value: 'number', tsType: true, array: false, optional: false }] },
+                TestBase2: { name: 'TestBase2', fields: [{ name: 'id', value: 'number', tsType: true, array: false, optional: false }] }
             });
         });
 
@@ -49,7 +49,7 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: '__string', value: 'string', dynamic: true }] }
+                Test: { name: 'Test', fields: [{ name: '__string', value: 'string', dynamic: true, optional: false }] }
             });
         });
 
@@ -60,13 +60,7 @@ describe('parse', () => {
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 Test: { name: 'Test', fields: [] }
             });
-            expect(parser.errors).toStrictEqual([
-                new ParserError({
-                    code: 'model_extends_not_found',
-                    message: `Model "Test" is extending "Unknown", but it does not exists`,
-                    path: ['Test', '__extends']
-                })
-            ]);
+            expect(parser.errors).toStrictEqual([new ParserErrorExtendsNotFound({ model: 'Test', inherit: 'Unknown', path: ['Test', '__extends'] })]);
         });
 
         it('should handle multiple __extends', () => {
@@ -77,12 +71,12 @@ describe('parse', () => {
                 Test: {
                     name: 'Test',
                     fields: [
-                        { name: 'id', value: null, tsType: true, array: false },
-                        { name: 'name', value: null, tsType: true, array: false }
+                        { name: 'id', value: null, tsType: true, array: false, optional: false },
+                        { name: 'name', value: null, tsType: true, array: false, optional: false }
                     ]
                 },
-                Test1: { name: 'Test1', fields: [{ name: 'id', value: null, tsType: true, array: false }] },
-                Test2: { name: 'Test2', fields: [{ name: 'name', value: null, tsType: true, array: false }] }
+                Test1: { name: 'Test1', fields: [{ name: 'id', value: null, tsType: true, array: false, optional: false }] },
+                Test2: { name: 'Test2', fields: [{ name: 'name', value: null, tsType: true, array: false, optional: false }] }
             });
         });
     });
@@ -93,7 +87,10 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'sub', value: [{ name: 'id', value: 'boolean', tsType: true, array: false }] }] }
+                Test: {
+                    name: 'Test',
+                    fields: [{ name: 'sub', optional: false, value: [{ name: 'id', value: 'boolean', tsType: true, array: false, optional: false }] }]
+                }
             });
         });
 
@@ -102,8 +99,11 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'sub', value: [{ name: '__string', value: 'number', dynamic: true }] }] },
-                TestBase: { name: 'TestBase', fields: [{ name: '__string', value: 'number', dynamic: true }] }
+                Test: {
+                    name: 'Test',
+                    fields: [{ name: 'sub', optional: false, value: [{ name: '__string', value: 'number', dynamic: true, optional: false }] }]
+                },
+                TestBase: { name: 'TestBase', fields: [{ name: '__string', value: 'number', dynamic: true, optional: false }] }
             });
         });
     });
@@ -115,7 +115,7 @@ describe('parse', () => {
 
             expect(parser.errors).toStrictEqual([]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', value: 'literal', array: false }] }
+                Test: { name: 'Test', fields: [{ name: 'user', value: 'literal', array: false, optional: false }] }
             });
         });
     });
@@ -132,10 +132,11 @@ describe('parse', () => {
                     fields: [
                         {
                             name: 'user',
+                            optional: false,
                             array: true,
                             value: [
-                                { name: '0', value: 'foo', array: false },
-                                { name: '1', value: 'bar', array: false }
+                                { name: '0', value: 'foo', array: false, optional: false },
+                                { name: '1', value: 'bar', array: false, optional: false }
                             ]
                         }
                     ]
@@ -154,15 +155,16 @@ describe('parse', () => {
                     fields: [
                         {
                             name: 'user',
+                            optional: false,
                             array: true,
                             value: [
-                                { name: '0', value: 'string', tsType: true, array: false },
-                                { name: '1', value: 'User', model: true }
+                                { name: '0', value: 'string', tsType: true, array: false, optional: false },
+                                { name: '1', value: 'User', model: true, optional: false }
                             ]
                         }
                     ]
                 },
-                User: { name: 'User', fields: [{ name: 'id', value: 'string', tsType: true, array: false }] }
+                User: { name: 'User', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }
             });
         });
     });
@@ -179,9 +181,10 @@ describe('parse', () => {
                     fields: [
                         {
                             name: 'user',
+                            optional: false,
                             value: [
-                                { name: '0', value: 'literal1', array: false },
-                                { name: '1', value: 'literal2', array: false }
+                                { name: '0', value: 'literal1', array: false, optional: false },
+                                { name: '1', value: 'literal2', array: false, optional: false }
                             ],
                             union: true
                         }
@@ -196,17 +199,18 @@ describe('parse', () => {
 
             expect(parser.errors).toStrictEqual([]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                GithubIssue: { name: 'GithubIssue', fields: [{ name: 'id', value: 'string', tsType: true, array: false }] },
+                GithubIssue: { name: 'GithubIssue', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] },
                 Test: {
                     name: 'Test',
                     fields: [
                         {
                             name: 'user',
+                            optional: false,
                             value: [
-                                { name: '0', value: true, tsType: true, array: false },
-                                { name: '1', value: 'literal', array: false },
-                                { name: '2', value: 'GithubIssue', model: true },
-                                { name: '3', value: 'boolean', tsType: true, array: true }
+                                { name: '0', value: true, tsType: true, array: false, optional: false },
+                                { name: '1', value: 'literal', array: false, optional: false },
+                                { name: '2', value: 'GithubIssue', model: true, optional: false },
+                                { name: '3', value: 'boolean', tsType: true, array: true, optional: false }
                             ],
                             union: true
                         }
@@ -216,14 +220,62 @@ describe('parse', () => {
         });
     });
 
-    describe('exotic data type', () => {
-        it('should handle Date', () => {
-            const parser = new ModelsParser({ raw: { Test: { user: 'Date' } } });
+    describe('optional type', () => {
+        it('should handle optional type', () => {
+            const parser = new ModelsParser({ raw: { Test: { 'user?': 'string' } } });
             parser.parseAll();
 
             expect(parser.errors).toStrictEqual([]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', value: 'Date', tsType: true, array: false }] }
+                Test: {
+                    name: 'Test',
+                    fields: [{ name: 'user', value: 'string', tsType: true, array: false, optional: true }]
+                }
+            });
+        });
+        it('should not confuse ? when not at the end', () => {
+            const parser = new ModelsParser({ raw: { Test: { 'use?r': 'string' } } });
+            parser.parseAll();
+
+            expect(parser.errors).toStrictEqual([]);
+            expect(Object.fromEntries(parser.parsed)).toStrictEqual({
+                Test: {
+                    name: 'Test',
+                    fields: [{ name: 'use?r', value: 'string', tsType: true, array: false, optional: false }]
+                }
+            });
+        });
+    });
+
+    describe('exotic model name', () => {
+        it.each(['è!à"', '<>', ':=ù'])('should handle exotic model name', (val) => {
+            const parser = new ModelsParser({ raw: { [val]: { user: 'string' } } });
+            parser.parseAll();
+
+            expect(parser.errors).toStrictEqual([new ParserErrorInvalidModelName({ model: val, path: [val] })]);
+            expect(Object.fromEntries(parser.parsed)).toStrictEqual({});
+        });
+    });
+
+    describe('exotic data type', () => {
+        it.each(['date', 'Date'])('should handle Date', (val) => {
+            const parser = new ModelsParser({ raw: { Test: { user: val } } });
+            parser.parseAll();
+
+            expect(parser.errors).toStrictEqual([]);
+            expect(Object.fromEntries(parser.parsed)).toStrictEqual({
+                Test: { name: 'Test', fields: [{ name: 'user', value: 'Date', tsType: true, array: false, optional: false }] }
+            });
+        });
+
+        it.each(['Pick<', 'Omit<', 'Array<', 'Readonly<'])('should refuse typescript advanced feature', (val) => {
+            const parser = new ModelsParser({ raw: { Test: { user: val } } });
+            parser.parseAll();
+
+            expect(parser.errors).toStrictEqual([]);
+            expect(parser.warnings).toStrictEqual([new ParserErrorDataSyntax({ value: val, path: ['Test', 'user'] })]);
+            expect(Object.fromEntries(parser.parsed)).toStrictEqual({
+                Test: { name: 'Test', fields: [{ name: 'user', value: val, array: false, optional: false }] }
             });
         });
     });
@@ -235,7 +287,7 @@ describe('parse', () => {
 
             expect(parser.errors).toStrictEqual([]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', value: true, tsType: true, array: true }] }
+                Test: { name: 'Test', fields: [{ name: 'user', value: true, tsType: true, array: true, optional: false }] }
             });
         });
     });
@@ -246,8 +298,8 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                User: { name: 'User', fields: [{ name: 'id', value: 'string', tsType: true, array: false }] },
-                Test: { name: 'Test', fields: [{ name: 'user', value: 'User', model: true }] }
+                User: { name: 'User', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] },
+                Test: { name: 'Test', fields: [{ name: 'user', value: 'User', model: true, optional: false }] }
             });
             expect(parser.warnings).toStrictEqual([]);
         });
@@ -257,8 +309,8 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', value: 'User', model: true }] },
-                User: { name: 'User', fields: [{ name: 'id', value: 'string', tsType: true, array: false }] }
+                Test: { name: 'Test', fields: [{ name: 'user', value: 'User', model: true, optional: false }] },
+                User: { name: 'User', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }
             });
         });
 
@@ -267,10 +319,10 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', value: 'User', array: false }] }
+                Test: { name: 'Test', fields: [{ name: 'user', value: 'User', array: false, optional: false }] }
             });
             expect(parser.warnings).toStrictEqual([
-                new ParserError({ code: 'model_not_found', message: `Model "User" is not defined, using as string literal`, path: ['Test', 'User'] })
+                new ParserError({ code: 'model_not_found_fallback', message: `Model "User" is not defined, using as string literal`, path: ['Test', 'User'] })
             ]);
         });
 
@@ -278,9 +330,9 @@ describe('parse', () => {
             const parser = new ModelsParser({ raw: { Test: { user: 'Test' } } });
             parser.parseAll();
 
-            expect(parser.warnings).toStrictEqual([new ParserError({ code: 'cyclic', message: `Cyclic import Test->Test`, path: ['Test', 'Test'] })]);
+            expect(parser.warnings).toStrictEqual([new ParserErrorCycle({ name: 'Test' })]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', value: 'Test', model: true }] }
+                Test: { name: 'Test', fields: [{ name: 'user', value: 'Test', model: true, optional: false }] }
             });
         });
 
@@ -288,9 +340,9 @@ describe('parse', () => {
             const parser = new ModelsParser({ raw: { Test: { user: { author: 'Test' } } } });
             parser.parseAll();
 
-            expect(parser.warnings).toStrictEqual([new ParserError({ code: 'cyclic', message: `Cyclic import Test->Test`, path: ['Test', 'Test'] })]);
+            expect(parser.warnings).toStrictEqual([new ParserErrorCycle({ name: 'Test' })]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', value: [{ name: 'author', value: 'Test', model: true }] }] }
+                Test: { name: 'Test', fields: [{ name: 'user', optional: false, value: [{ name: 'author', value: 'Test', model: true, optional: false }] }] }
             });
         });
 
@@ -298,9 +350,12 @@ describe('parse', () => {
             const parser = new ModelsParser({ raw: { Test: { user: ['Test'] } } });
             parser.parseAll();
 
-            expect(parser.warnings).toStrictEqual([new ParserError({ code: 'cyclic', message: `Cyclic import Test->Test`, path: ['Test', 'Test'] })]);
+            expect(parser.warnings).toStrictEqual([new ParserErrorCycle({ name: 'Test' })]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', array: true, value: [{ name: '0', value: 'Test', model: true }] }] }
+                Test: {
+                    name: 'Test',
+                    fields: [{ name: 'user', optional: false, array: true, value: [{ name: '0', value: 'Test', model: true, optional: false }] }]
+                }
             });
         });
     });

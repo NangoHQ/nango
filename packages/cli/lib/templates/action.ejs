@@ -1,4 +1,3 @@
-
 import type { NangoAction<%= modelNames ? ', ' + modelNames : '' %> } from '<%= interfacePath %><%= interfaceFileName %>';
 
 export default async function runAction(nango: NangoAction<%= input ? ', input: ' + input : ', input?: void' %>): Promise<<%= output ? output : 'void' %>> {

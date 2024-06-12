@@ -18,7 +18,7 @@ export abstract class NangoYamlParser {
         this.modelsParser = new ModelsParser({ raw: raw.models });
     }
 
-    abstract parse(): void;
+    abstract parse(): boolean;
 
     getModelForOutput({
         rawOutput,

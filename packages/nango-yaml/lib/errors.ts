@@ -10,6 +10,16 @@ export class ParserError {
     }
 }
 
+export class ParserErrorInvalidModelName extends ParserError {
+    constructor(options: { model: string; path: string[] }) {
+        super({
+            code: 'invalid_model_name',
+            message: `Model "${options.model}" contains invalid characters`,
+            path: options.path
+        });
+    }
+}
+
 export class ParserErrorDuplicateModel extends ParserError {
     constructor(options: { model: string; path: string[] }) {
         super({
@@ -74,7 +84,37 @@ export class ParserErrorModelIsLiteral extends ParserError {
     constructor(options: { model: string; path: string[] }) {
         super({
             code: 'model_is_literal',
-            message: `Parsed a literal type "${options.model}" maybe it's a mistake. We advice using fully fledged Model for input and output`,
+            message: `A literal type "${options.model}" was parsed, which might be an error. It is recommended to use a Model for input and output.`,
+            path: options.path
+        });
+    }
+}
+
+export class ParserErrorCycle extends ParserError {
+    constructor(options: { name: string }) {
+        super({
+            code: 'cyclic_model',
+            message: `Cyclic import ${options.name}->${options.name}`,
+            path: [options.name]
+        });
+    }
+}
+
+export class ParserErrorExtendsNotFound extends ParserError {
+    constructor(options: { model: string; inherit: string; path: string[] }) {
+        super({
+            code: 'model_extends_not_found',
+            message: `Model "${options.model}" is extending "${options.inherit}", but it does not exists`,
+            path: options.path
+        });
+    }
+}
+
+export class ParserErrorDataSyntax extends ParserError {
+    constructor(options: { value: string; path: string[] }) {
+        super({
+            code: 'data_syntax_warning',
+            message: `Data type "${options.value}" contains some unsupported typescript syntax`,
             path: options.path
         });
     }

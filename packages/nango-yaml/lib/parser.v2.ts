@@ -28,6 +28,9 @@ export class NangoYamlParserV2 extends NangoYamlParser {
             this.errors.push(...this.modelsParser.errors);
             return false;
         }
+        if (this.modelsParser.warnings.length > 0) {
+            this.warnings.push(...this.modelsParser.warnings);
+        }
 
         for (const integrationName in yaml.integrations) {
             const integration = yaml.integrations[integrationName];

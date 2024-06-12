@@ -105,29 +105,20 @@ export function getInterval(runs: string, date: Date): IntervalResponse | Error 
 export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
     primitives: ['string', 'number', 'boolean', 'bigint', 'symbol'],
     builtInObjects: ['Object', 'Array', 'Function', 'Date', 'RegExp', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Error'],
-    utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick']
+    utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick', 'Omit', 'Awaited', 'Required', 'Exclude', 'Extract', 'Uppercase', 'Lowercase']
 };
-export const typesAliases: Record<string, string> = {
-    integer: 'number',
-    int: 'number',
-    char: 'string',
-    varchar: 'string',
-    float: 'number',
-    bool: 'boolean'
-};
-
-const types = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES)
+const typesLowercase = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES)
     .flat()
     .map((v) => v.toLocaleLowerCase());
 const typesWithGenerics = [...JAVASCRIPT_AND_TYPESCRIPT_TYPES.builtInObjects, ...JAVASCRIPT_AND_TYPESCRIPT_TYPES.utilityTypes];
-
+// Only used externally
 export function isJsOrTsType(type?: string): boolean {
     if (!type) {
         return false;
     }
 
     const baseType = type.replace(/\[\]$/, '').toLocaleLowerCase();
-    if (types.includes(baseType)) {
+    if (typesLowercase.includes(baseType)) {
         return true;
     }
 
@@ -136,17 +127,25 @@ export function isJsOrTsType(type?: string): boolean {
     return genericTypeRegex.test(baseType);
 }
 
-export function getPotentialTypeAlias(value: string): string {
-    const is = typesAliases[value.toLocaleLowerCase()];
-    return is || value;
+export const typesAliases: Record<string, string> = {
+    integer: 'number',
+    int: 'number',
+    char: 'string',
+    varchar: 'string',
+    float: 'number',
+    bool: 'boolean',
+    string: 'string',
+    number: 'number',
+    boolean: 'boolean',
+    bigint: 'bigint',
+    date: 'Date'
+};
+
+export function getPotentialTypeAlias(value: string): string | undefined {
+    return typesAliases[value.toLocaleLowerCase()];
 }
 
-export function getNativeDataTypeOrValue(value: string) {
-    const alias = getPotentialTypeAlias(value);
-    if (typeof alias === 'string' && alias && types.includes(alias)) {
-        return alias;
-    }
-
+export function getNativeDataType(value: string): number | boolean | null | undefined | Error {
     const int = parseInt(value, 10);
     if (!Number.isNaN(int)) {
         return int;
@@ -162,8 +161,17 @@ export function getNativeDataTypeOrValue(value: string) {
         case 'undefined':
             return undefined;
         default:
-            return value;
+            return new Error();
     }
+}
+
+export function isDisallowedType(value: string) {
+    return typesWithGenerics.some((type) => value.startsWith(`${type}<`));
+}
+
+const regQuote = /^[a-zA-Z0-9_]+$/;
+export function shouldQuote(name: string) {
+    return !regQuote.test(name);
 }
 
 export function getProviderConfigurationFromPath({ filePath, parsed }: { filePath: string; parsed: NangoYamlParsed }): NangoYamlParsedIntegration | null {

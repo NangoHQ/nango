@@ -2,10 +2,18 @@ import type { NangoYamlParsedIntegration, NangoYamlV1, ParsedNangoAction, Parsed
 import { NangoYamlParser } from './parser.js';
 
 export class NangoYamlParserV1 extends NangoYamlParser {
-    parse(): void {
+    parse(): boolean {
         const yaml = this.raw as unknown as NangoYamlV1;
         const output: NangoYamlParsedIntegration[] = [];
         this.modelsParser.parseAll();
+
+        if (this.modelsParser.errors.length > 0) {
+            this.errors.push(...this.modelsParser.errors);
+            return false;
+        }
+        if (this.modelsParser.warnings.length > 0) {
+            this.warnings.push(...this.modelsParser.warnings);
+        }
 
         for (const integrationName in yaml.integrations) {
             const integration = yaml.integrations[integrationName];
@@ -80,5 +88,7 @@ export class NangoYamlParserV1 extends NangoYamlParser {
             integrations: output,
             models: this.modelsParser.parsed
         };
+
+        return this.errors.length <= 0;
     }
 }

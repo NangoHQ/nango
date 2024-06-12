@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildModelsTS, fieldToTypescript } from './model.service.js';
+import { buildModelsTS, fieldToTypescript, fieldsToTypescript } from './model.service.js';
 import type { NangoModel } from '@nangohq/types';
 
 describe('buildModelTs', () => {
@@ -22,7 +22,7 @@ describe('buildModelTs', () => {
                 fields: [
                     { name: 'value', value: null, tsType: true },
                     { name: 'top', value: 'boolean', tsType: true, array: true },
-                    { name: 'ref', value: 'Foo', tsType: false, model: true },
+                    { name: 'ref', value: 'Foo', tsType: false, model: true, optional: true },
                     {
                         name: 'union',
                         union: true,
@@ -61,6 +61,13 @@ describe('buildModelTs', () => {
             }
         });
         expect(res.split('\n').slice(0, 25)).toMatchSnapshot('');
+    });
+});
+
+describe('fieldsToTypescript', () => {
+    it.each(['a-b', 'a!b', 'a@', 'a&', 'a#', 'a(', 'a)', 'a%'])('should handle exotic key name', (val) => {
+        const res = fieldsToTypescript({ fields: [{ name: val, value: 'string' }] });
+        expect(res[0]).toStrictEqual(`  "${val}": 'string';`);
     });
 });
 
