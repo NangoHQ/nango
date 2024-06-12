@@ -1,6 +1,6 @@
 import { taskStates } from '@nangohq/scheduler';
-import type { Task } from '@nangohq/scheduler';
-import type { OrchestratorTask } from './types.js';
+import type { Schedule, Task } from '@nangohq/scheduler';
+import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
 import { TaskAction, TaskWebhook, TaskPostConnection, TaskSync } from './types.js';
 import { z } from 'zod';
 import { Err, Ok } from '@nangohq/utils';
@@ -134,4 +134,49 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
         );
     }
     return Err(`Cannot validate task ${JSON.stringify(task)}: ${action.error || webhook.error || postConnection.error}`);
+}
+
+export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedule> {
+    const scheduleSchema = z
+        .object({
+            id: z.string().uuid(),
+            name: z.string().min(1),
+            state: z.enum(['STARTED', 'PAUSED', 'DELETED']),
+            startsAt: z.coerce.date(),
+            frequencyMs: z.number().int().positive(),
+            payload: jsonSchema,
+            groupKey: z.string().min(1),
+            retryMax: z.number().int(),
+            retryCount: z.number().int(),
+            createdToStartedTimeoutSecs: z.number().int(),
+            startedToCompletedTimeoutSecs: z.number().int(),
+            heartbeatTimeoutSecs: z.number().int(),
+            createdAt: z.coerce.date(),
+            updatedAt: z.coerce.date(),
+            deletedAt: z.coerce.date().nullable()
+        })
+        .strict();
+    const getNextDueDate = (startsAt: Date, frequencyMs: number) => {
+        const now = new Date();
+        const startDate = new Date(startsAt);
+        if (startDate >= now) {
+            return startDate;
+        }
+        const timeDiff = now.getTime() - startDate.getTime();
+        const nextDueDate = new Date(now.getTime() + frequencyMs - (timeDiff % frequencyMs));
+
+        return nextDueDate;
+    };
+    const validation = scheduleSchema.safeParse(schedule);
+    if (validation.success) {
+        const schedule: OrchestratorSchedule = {
+            id: validation.data.id,
+            name: validation.data.name,
+            state: validation.data.state,
+            frequencyMs: validation.data.frequencyMs,
+            nextDueDate: getNextDueDate(validation.data.startsAt, validation.data.frequencyMs)
+        };
+        return Ok(schedule);
+    }
+    return Err(`Cannot validate task ${JSON.stringify(schedule)}: ${validation.error}`);
 }

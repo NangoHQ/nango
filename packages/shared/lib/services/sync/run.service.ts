@@ -903,7 +903,7 @@ export default class SyncRun {
         }
 
         await updateSuccessActivityLog(this.activityLogId, false);
-        await updateSyncJobStatus(this.syncJobId, SyncStatus.STOPPED);
+        await updateSyncJobStatus(this.syncJobId, SyncStatus.ERROR);
 
         await createActivityLogMessageAndEnd({
             level: 'error',

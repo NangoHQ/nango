@@ -249,7 +249,7 @@ class SyncController {
                 return;
             }
 
-            const syncs = await getSyncs(connection);
+            const syncs = await getSyncs(connection, orchestrator);
 
             res.send(syncs);
         } catch (e) {
@@ -656,7 +656,15 @@ class SyncController {
                 success,
                 error,
                 response: syncsWithStatus
-            } = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames, connection_id as string, false, connection);
+            } = await syncOrchestrator.getSyncStatus(
+                environmentId,
+                provider_config_key as string,
+                syncNames,
+                orchestrator,
+                connection_id as string,
+                false,
+                connection
+            );
 
             if (!success || !syncsWithStatus) {
                 errorManager.errResFromNangoErr(res, error);

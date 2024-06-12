@@ -248,7 +248,7 @@ class OnboardingController {
                 success,
                 error,
                 response: status
-            } = await syncOrchestrator.getSyncStatus(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], req.body.connectionId, true);
+            } = await syncOrchestrator.getSyncStatus(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], orchestrator, req.body.connectionId, true);
 
             if (!success || !status) {
                 void analytics.track(AnalyticsTypes.DEMO_4_ERR, account.id, { user_id: user.id });

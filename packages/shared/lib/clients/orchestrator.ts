@@ -30,7 +30,9 @@ import type {
     ExecuteSyncProps,
     VoidReturn,
     OrchestratorTask,
-    RecurringProps
+    RecurringProps,
+    SchedulesReturn,
+    OrchestratorSchedule
 } from '@nangohq/nango-orchestrator';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
@@ -66,6 +68,7 @@ export interface OrchestratorClientInterface {
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
     cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
+    searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
 }
 
 export class Orchestrator {
@@ -77,6 +80,20 @@ export class Orchestrator {
 
     private getScheduleName({ environmentId, syncId }: { environmentId: number; syncId: string }): string {
         return `environment:${environmentId}:sync:${syncId}`;
+    }
+
+    async searchSchedules(props: { syncId: string; environmentId: number }[]): Promise<Result<Map<string, OrchestratorSchedule>>> {
+        const scheduleNames = props.map(({ syncId, environmentId }) => this.getScheduleName({ environmentId, syncId }));
+        const schedules = await this.client.searchSchedules({ scheduleNames, limit: scheduleNames.length });
+        if (schedules.isErr()) {
+            return Err(`Failed to get schedules: ${stringifyError(schedules.error)}`);
+        }
+        const scheduleMap = schedules.value.reduce((map, schedule) => {
+            const syncId = schedule.name.split(':').pop()!;
+            map.set(syncId, schedule);
+            return map;
+        }, new Map<string, OrchestratorSchedule>());
+        return Ok(scheduleMap);
     }
 
     async triggerAction<T = any>({

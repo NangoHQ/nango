@@ -1,31 +1,29 @@
 import { z } from 'zod';
-import type { Scheduler, Task } from '@nangohq/scheduler';
+import type { Scheduler, Schedule } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 
-const path = '/v1/search';
+const path = '/v1/schedules/search';
 const method = 'POST';
 
 type PostSearch = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Body: {
-        ids?: string[] | undefined;
-        groupKey?: string | undefined;
-        limit?: number | undefined;
+        names?: string[] | undefined;
+        limit: number;
     };
     Error: ApiError<'search_failed'>;
-    Success: Task[];
+    Success: Schedule[];
 }>;
 
 const validate = validateRequest<PostSearch>({
     parseBody: (data) =>
         z
             .object({
-                groupKey: z.string().min(1).optional(),
-                limit: z.coerce.number().positive().optional(),
-                ids: z.array(z.string().uuid()).optional()
+                names: z.array(z.string().min(1)).optional(),
+                limit: z.number().int()
             })
             .strict()
             .parse(data)
@@ -33,16 +31,15 @@ const validate = validateRequest<PostSearch>({
 
 const handler = (scheduler: Scheduler) => {
     return async (req: EndpointRequest<PostSearch>, res: EndpointResponse<PostSearch>) => {
-        const { ids, groupKey, limit } = req.body;
-        const getTasks = await scheduler.search({
-            ...(ids ? { ids } : {}),
-            ...(groupKey ? { groupKey } : {}),
-            ...(limit ? { limit } : {})
+        const { names, limit } = req.body;
+        const getSchedules = await scheduler.searchSchedules({
+            limit,
+            ...(names ? { names } : {})
         });
-        if (getTasks.isErr()) {
-            return res.status(500).json({ error: { code: 'search_failed', message: getTasks.error.message } });
+        if (getSchedules.isErr()) {
+            return res.status(500).json({ error: { code: 'search_failed', message: getSchedules.error.message } });
         }
-        return res.status(201).json(getTasks.value);
+        return res.status(201).json(getSchedules.value);
     };
 };
 

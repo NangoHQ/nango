@@ -137,7 +137,7 @@ describe('Scheduler', () => {
         await immediate(scheduler, { schedule });
         const deleted = (await scheduler.setScheduleState({ scheduleName: schedule.name, state: 'DELETED' })).unwrap();
         expect(deleted.state).toBe('DELETED');
-        const tasks = (await scheduler.search({ scheduleId: schedule.id })).unwrap();
+        const tasks = (await scheduler.searchTasks({ scheduleId: schedule.id })).unwrap();
         expect(tasks.length).toBe(1);
         expect(tasks[0]?.state).toBe('CANCELLED');
         expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
@@ -147,6 +147,12 @@ describe('Scheduler', () => {
         const newFrequency = 1_800_000;
         const updated = (await scheduler.setScheduleFrequency({ scheduleName: schedule.name, frequencyMs: newFrequency })).unwrap();
         expect(updated.frequencyMs).toBe(newFrequency);
+    });
+    it('should search schedules by name', async () => {
+        const schedule = await recurring({ scheduler });
+        const found = (await scheduler.searchSchedules({ names: [schedule.name], limit: 1 })).unwrap();
+        expect(found.length).toBe(1);
+        expect(found[0]?.id).toBe(schedule.id);
     });
 });
 
