@@ -82,7 +82,7 @@ describe('parse', () => {
     });
 
     describe('object literal', () => {
-        it('should handle object', () => {
+        it('should handle yaml object', () => {
             const parser = new ModelsParser({ raw: { Test: { sub: { id: 'boolean' } } } });
             parser.parseAll();
 
@@ -104,6 +104,18 @@ describe('parse', () => {
                     fields: [{ name: 'sub', optional: false, value: [{ name: '__string', value: 'number', dynamic: true, optional: false }] }]
                 },
                 TestBase: { name: 'TestBase', fields: [{ name: '__string', value: 'number', dynamic: true, optional: false }] }
+            });
+        });
+
+        it('should handle literal object name', () => {
+            const parser = new ModelsParser({ raw: { Test: { sub: 'object' } } });
+            parser.parseAll();
+
+            expect(Object.fromEntries(parser.parsed)).toStrictEqual({
+                Test: {
+                    name: 'Test',
+                    fields: [{ name: 'sub', optional: false, tsType: true, value: 'object', array: false }]
+                }
             });
         });
     });
