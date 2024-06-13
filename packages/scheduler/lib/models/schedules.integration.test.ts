@@ -67,7 +67,7 @@ describe('Schedules', () => {
     });
     it('should be searchable', async () => {
         const schedule = await createSchedule(db);
-        const byName = (await schedules.search(db, { name: schedule.name, limit: 10 })).unwrap();
+        const byName = (await schedules.search(db, { names: [schedule.name], limit: 10 })).unwrap();
         expect(byName).toEqual([schedule]);
 
         const started = (await schedules.search(db, { state: 'STARTED', limit: 10 })).unwrap();

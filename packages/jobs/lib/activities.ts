@@ -125,7 +125,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
     const isOrchestrator = isGloballyEnabled || isEnvEnabled;
     if (isOrchestrator) {
-        return false;
+        return true;
     }
 
     const initialSyncStillRunning = await isInitialSyncStillRunning(syncId);

@@ -47,7 +47,7 @@ describe('OrchestratorProcessor', async () => {
         await processN(mockProcess, groupKey, n);
 
         expect(mockProcess).toHaveBeenCalledTimes(n);
-        const tasks = await scheduler.search({ groupKey });
+        const tasks = await scheduler.searchTasks({ groupKey });
         for (const task of tasks.unwrap()) {
             expect(task.state).toBe('SUCCEEDED');
         }
@@ -59,7 +59,7 @@ describe('OrchestratorProcessor', async () => {
         await processN(mockProcess, groupKey, n);
 
         expect(mockProcess).toHaveBeenCalledTimes(n);
-        const tasks = await scheduler.search({ groupKey });
+        const tasks = await scheduler.searchTasks({ groupKey });
         for (const task of tasks.unwrap()) {
             expect(task.state).toBe('FAILED');
         }
@@ -82,7 +82,7 @@ describe('OrchestratorProcessor', async () => {
 
         // Cancel all tasks after 100 ms
         const cancellingTimeout = setTimeout(async () => {
-            const tasks = await scheduler.search({ groupKey });
+            const tasks = await scheduler.searchTasks({ groupKey });
             for (const task of tasks.unwrap()) {
                 await scheduler.cancel({ taskId: task.id, reason: { message: 'Cancelling task' } });
             }
@@ -91,7 +91,7 @@ describe('OrchestratorProcessor', async () => {
         await processN(mockProcess, groupKey, n);
 
         expect(mockProcess).toHaveBeenCalledTimes(n);
-        const tasks = await scheduler.search({ groupKey, state: 'CANCELLED' });
+        const tasks = await scheduler.searchTasks({ groupKey, state: 'CANCELLED' });
         for (const task of tasks.unwrap()) {
             expect(mockAbort).toHaveBeenCalledWith(task.id);
         }
