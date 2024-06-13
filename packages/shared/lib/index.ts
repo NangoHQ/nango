@@ -1,4 +1,5 @@
 import * as seeders from './seeders/index.js';
+import * as externalWebhookService from './services/external-webook.service.js';
 import configService from './services/config.service.js';
 import encryptionManager from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
@@ -52,6 +53,7 @@ export {
     configService,
     connectionService,
     encryptionManager,
+    externalWebhookService,
     providerClientManager,
     SyncClient,
     errorManager,

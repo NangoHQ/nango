@@ -19,7 +19,7 @@ import ShowIntegration from './pages/Integration/Show';
 import ConnectionList from './pages/Connection/List';
 import Connection from './pages/Connection/Show';
 import ConnectionCreate from './pages/Connection/Create';
-import { EnvironmentSettings } from './pages/EnvironmentSettings';
+import { EnvironmentSettings } from './pages/Environment/Settings';
 import { PrivateRoute } from './components/PrivateRoute';
 import ForgotPassword from './pages/Account/ForgotPassword';
 import ResetPassword from './pages/Account/ResetPassword';
