@@ -1,14 +1,11 @@
-import './loadEnv.js';
-import { database } from '@nangohq/database';
+exports.config = { transaction: false };
 
-async function migrate() {
-    console.log('Starting webhook settings migration...');
-
+exports.up = async function (knex) {
     let id = 0;
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-        const environments = await database.knex.select('*').from('_nango_environments').where('id', '>', id).orderBy('id').limit(1000);
+        const environments = await knex.select('*').from('_nango_environments').where('id', '>', id).orderBy('id').limit(100);
 
         if (environments.length === 0) {
             break;
@@ -17,8 +14,7 @@ async function migrate() {
         for (const environment of environments) {
             const { id, webhook_url, webhook_url_secondary, always_send_webhook, send_auth_webhook } = environment;
 
-            await database
-                .knex('_nango_external_webhooks')
+            await knex('_nango_external_webhooks')
                 .insert({
                     environment_id: id,
                     primary_url: webhook_url,
@@ -32,17 +28,8 @@ async function migrate() {
 
         id = environments[environments.length - 1].id;
     }
-}
+};
 
-const start = new Date();
-
-migrate()
-    .catch((error: unknown) => {
-        console.error('Error occurred during webhook settings migration:', error);
-        process.exit(1);
-    })
-    .finally(async () => {
-        const end = new Date();
-        console.log('Execution took:', (end.getTime() - start.getTime()) / 1000, 's');
-        process.exit(0);
-    });
+exports.down = function (knex) {
+    return knex('_nango_external_webhooks').delete();
+};
