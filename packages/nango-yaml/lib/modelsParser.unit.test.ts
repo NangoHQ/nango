@@ -293,13 +293,25 @@ describe('parse', () => {
     });
 
     describe('typescript arrays', () => {
-        it('should handle Date', () => {
+        it('should handle arrays', () => {
             const parser = new ModelsParser({ raw: { Test: { user: 'true[]' } } });
             parser.parseAll();
 
             expect(parser.errors).toStrictEqual([]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 Test: { name: 'Test', fields: [{ name: 'user', value: true, tsType: true, array: true, optional: false }] }
+            });
+        });
+    });
+
+    describe('typescript any', () => {
+        it('should handle any', () => {
+            const parser = new ModelsParser({ raw: { Test: { user: 'any[]' } } });
+            parser.parseAll();
+
+            expect(parser.errors).toStrictEqual([]);
+            expect(Object.fromEntries(parser.parsed)).toStrictEqual({
+                Test: { name: 'Test', fields: [{ name: 'user', value: 'any', tsType: true, array: true, optional: false }] }
             });
         });
     });

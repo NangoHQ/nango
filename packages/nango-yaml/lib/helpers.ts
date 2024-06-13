@@ -139,7 +139,8 @@ export const typesAliases: Record<string, string> = {
     boolean: 'boolean',
     bigint: 'bigint',
     date: 'Date',
-    object: 'object'
+    object: 'object',
+    any: 'any'
 };
 
 export function getPotentialTypeAlias(value: string): string | undefined {

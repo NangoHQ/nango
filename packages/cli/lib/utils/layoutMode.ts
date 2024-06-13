@@ -1,3 +1,4 @@
+import type { LayoutMode } from '@nangohq/types';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -22,7 +23,7 @@ export function getLayoutMode({
     scriptName: string;
     providerConfigKey: string;
     type: string;
-}): 'root' | 'nested' {
+}): LayoutMode {
     if (fs.existsSync(path.join(fullPath, `${scriptName}.ts`))) {
         return 'root';
     }
