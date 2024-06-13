@@ -296,24 +296,8 @@ class EnvironmentService {
         return db.knex.from<Environment>(TABLE).where({ id }).update({ callback_url: callbackUrl }, ['id']);
     }
 
-    async editWebhookUrl(webhookUrl: string, id: number): Promise<Environment | null> {
-        return db.knex.from<Environment>(TABLE).where({ id }).update({ webhook_url: webhookUrl }, ['id']);
-    }
-
-    async editSecondaryWebhookUrl(webhookUrl: string, id: number): Promise<Environment | null> {
-        return db.knex.from<Environment>(TABLE).where({ id }).update({ webhook_url_secondary: webhookUrl }, ['id']);
-    }
-
     async editHmacEnabled(hmacEnabled: boolean, id: number): Promise<Environment | null> {
         return db.knex.from<Environment>(TABLE).where({ id }).update({ hmac_enabled: hmacEnabled }, ['id']);
-    }
-
-    async editAlwaysSendWebhook(always_send_webhook: boolean, id: number): Promise<Environment | null> {
-        return db.knex.from<Environment>(TABLE).where({ id }).update({ always_send_webhook }, ['id']);
-    }
-
-    async editSendAuthWebhook(send_auth_webhook: boolean, id: number): Promise<Environment | null> {
-        return db.knex.from<Environment>(TABLE).where({ id }).update({ send_auth_webhook }, ['id']);
     }
 
     async editSlackNotifications(slack_notifications: boolean, id: number): Promise<Environment | null> {

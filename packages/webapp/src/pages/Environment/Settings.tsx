@@ -24,13 +24,7 @@ import Button from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { connectSlack } from '../../utils/slack-connection';
 import WebhookCheckboxes from './WebhookCheckboxes';
-
-export interface CheckboxState {
-    alwaysSendWebhook: boolean;
-    sendAuthWebhook: boolean;
-    sendRefreshFailedWebhook: boolean;
-    sendSyncFailedWebhook: boolean;
-}
+import type { WebhookSettings as CheckboxState } from '@nangohq/types';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -105,7 +99,7 @@ export const EnvironmentSettings: React.FC = () => {
             setWebhookCheckboxSettings({
                 alwaysSendWebhook: webhook_settings.on_sync_completion_always,
                 sendAuthWebhook: webhook_settings.on_auth_creation,
-                sendRefreshFailedWebhook: webhook_settings.on_auth_refesh_error,
+                sendRefreshFailedWebhook: webhook_settings.on_auth_refresh_error,
                 sendSyncFailedWebhook: webhook_settings.on_sync_error
             });
             setWebhookUrl(webhook_settings.primary_url);
@@ -768,7 +762,7 @@ export const EnvironmentSettings: React.FC = () => {
                             </div>
                         </div>
                         <div>
-                            {!environmentAndAccount?.environment.webhook_url_secondary && !webhookSecondaryEditMode ? (
+                            {!environmentAndAccount?.webhook_settings?.secondary_url && !webhookSecondaryEditMode ? (
                                 <button
                                     onClick={() => setWebhookSecondaryEditMode(true)}
                                     className="mx-8 mt-4 hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm"

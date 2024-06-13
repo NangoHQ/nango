@@ -24,3 +24,6 @@ export type * from './integration/db.js';
 export type * from './integration/template.js';
 export type * from './auth/api.js';
 export type * from './auth/db.js';
+export type * from './environment/db.js';
+export type * from './environment/api/webhook.js';
+export type * from './webhooks/api.js';

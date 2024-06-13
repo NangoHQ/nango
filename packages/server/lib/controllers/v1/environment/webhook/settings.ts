@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import type { UpdateWebhookSettings } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { externalWebhookService } from '@nangohq/shared';
 
 const validation = z
     .object({
@@ -20,10 +21,19 @@ export const updateWebhookSettings = asyncWrapper<UpdateWebhookSettings>(async (
     }
 
     const val = validation.safeParse(req.body);
+
     if (!val.success) {
         res.status(400).send({
             error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }
         });
         return;
     }
+
+    const { environment } = res.locals;
+
+    const { data: settings } = val;
+
+    await externalWebhookService.update(environment.id, settings);
+
+    res.send(settings);
 });

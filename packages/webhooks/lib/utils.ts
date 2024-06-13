@@ -2,8 +2,8 @@ import crypto from 'crypto';
 import { backOff } from 'exponential-backoff';
 import type { AxiosError } from 'axios';
 import { axiosInstance as axios } from '@nangohq/utils';
-import type { Environment } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
+import type { SyncType, AuthOperationType, Environment, ExternalWebhook } from '@nangohq/types';
 
 export const RETRY_ATTEMPTS = 7;
 
@@ -69,17 +69,43 @@ export const filterHeaders = (headers: Record<string, string>): Record<string, s
     return filteredHeaders;
 };
 
-export const shouldSend = (environment: Environment, type: 'auth' | 'sync' | 'forward'): boolean => {
-    const hasAnyWebhook = environment.webhook_url || environment.webhook_url_secondary;
+export const shouldSend = ({
+    webhookSettings,
+    success,
+    type,
+    operation
+}: {
+    webhookSettings: ExternalWebhook;
+    success: boolean;
+    type: 'auth' | 'sync' | 'forward';
+    operation: SyncType | AuthOperationType;
+}): boolean => {
+    const hasAnyWebhook = Boolean(webhookSettings.primary_url || webhookSettings.secondary_url);
 
-    if (type === 'forward' && hasAnyWebhook) {
+    if (type === 'forward') {
+        return hasAnyWebhook;
+    }
+
+    if (!hasAnyWebhook) {
+        return false;
+    }
+
+    if (type === 'auth') {
+        if (operation === 'creation' && !webhookSettings.on_auth_creation) {
+            return false;
+        }
+
+        if (operation === 'refresh' && !webhookSettings.on_auth_refresh_error) {
+            return false;
+        }
+
         return true;
     }
 
-    const authNotSelected = type === 'auth' && !environment.send_auth_webhook;
-
-    if (!hasAnyWebhook || authNotSelected) {
-        return false;
+    if (type === 'sync') {
+        if (!success && !webhookSettings.on_sync_error) {
+            return false;
+        }
     }
 
     return true;

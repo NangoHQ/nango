@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendAuth } from './auth.js';
+import { getSignatureHeader } from './utils.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { Connection, Environment } from '@nangohq/types';
+import type { Connection, Environment, ExternalWebhook } from '@nangohq/types';
 import * as logPackage from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
@@ -10,6 +11,17 @@ const spy = vi.spyOn(axiosInstance, 'post');
 const connection: Pick<Connection, 'connection_id' | 'provider_config_key'> = {
     connection_id: '1',
     provider_config_key: 'providerkey'
+};
+
+const webhookSettings: ExternalWebhook = {
+    id: 1,
+    environment_id: 1,
+    primary_url: 'http://example.com/webhook',
+    secondary_url: 'http://example.com/webhook-secondary',
+    on_sync_completion_always: true,
+    on_auth_creation: true,
+    on_auth_refresh_error: true,
+    on_sync_error: true
 };
 
 const getLogCtx = () => new logPackage.LogContext({ parentId: '1', operation: {} as any }, { dryRun: true, logToConsole: false });
@@ -24,15 +36,18 @@ describe('Webhooks: auth notification tests', () => {
 
         await sendAuth({
             connection,
+            success: true,
             environment: {
                 name: 'dev',
                 id: 1,
-                secret_key: 'secret',
-                send_auth_webhook: true,
-                webhook_url: null,
-                webhook_url_secondary: null,
-                always_send_webhook: true
+                secret_key: 'secret'
             } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                primary_url: '',
+                secondary_url: '',
+                on_auth_creation: true
+            },
             provider: 'hubspot',
             type: 'auth',
             auth_mode: 'OAUTH2',
@@ -43,20 +58,22 @@ describe('Webhooks: auth notification tests', () => {
         expect(spy).not.toHaveBeenCalled();
     });
 
-    it('Should not send an auth webhook if the webhook url is not present even if the auth webhook is checked', async () => {
+    it('Should send an auth webhook if the primary webhook url is present but the secondary is not', async () => {
         const logCtx = getLogCtx();
 
         await sendAuth({
             connection,
+            success: true,
             environment: {
                 name: 'dev',
                 id: 1,
-                secret_key: 'secret',
-                send_auth_webhook: true,
-                webhook_url: null,
-                webhook_url_secondary: null,
-                always_send_webhook: true
+                secret_key: 'secret'
             } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                secondary_url: '',
+                on_auth_creation: true
+            },
             provider: 'hubspot',
             type: 'auth',
             auth_mode: 'OAUTH2',
@@ -64,7 +81,7 @@ describe('Webhooks: auth notification tests', () => {
             activityLogId: 1,
             logCtx
         });
-        expect(spy).not.toHaveBeenCalled();
+        expect(spy).toHaveBeenCalledTimes(1);
     });
 
     it('Should send an auth webhook if the webhook url is not present but the secondary is', async () => {
@@ -72,15 +89,18 @@ describe('Webhooks: auth notification tests', () => {
 
         await sendAuth({
             connection,
+            success: true,
             environment: {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret',
-                send_auth_webhook: true,
-                webhook_url: null,
-                webhook_url_secondary: 'http://example.com/webhook-secondary',
                 always_send_webhook: true
             } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                on_auth_creation: true,
+                primary_url: ''
+            },
             provider: 'hubspot',
             type: 'auth',
             auth_mode: 'OAUTH2',
@@ -96,15 +116,16 @@ describe('Webhooks: auth notification tests', () => {
 
         await sendAuth({
             connection,
+            success: true,
             environment: {
                 name: 'dev',
                 id: 1,
-                secret_key: 'secret',
-                send_auth_webhook: true,
-                webhook_url: 'http://example.com/webhook',
-                webhook_url_secondary: 'http://example.com/webhook-secondary',
-                always_send_webhook: true
+                secret_key: 'secret'
             } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                on_auth_creation: true
+            },
             provider: 'hubspot',
             type: 'auth',
             auth_mode: 'OAUTH2',
@@ -115,19 +136,22 @@ describe('Webhooks: auth notification tests', () => {
         expect(spy).toHaveBeenCalledTimes(2);
     });
 
-    it('Should send an auth webhook if the webhook url is present and if the auth webhook is checked', async () => {
+    it('Should send an auth webhook if the webhook url is present and if the auth webhook is checked and the operation failed', async () => {
         const logCtx = getLogCtx();
 
         await sendAuth({
             connection,
+            success: false,
             environment: {
                 name: 'dev',
                 id: 1,
-                secret_key: 'secret',
-                send_auth_webhook: true,
-                webhook_url: 'http://example.com/webhook',
-                always_send_webhook: true
+                secret_key: 'secret'
             } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                secondary_url: '',
+                on_auth_creation: true
+            },
             provider: 'hubspot',
             type: 'auth',
             auth_mode: 'OAUTH2',
@@ -142,15 +166,16 @@ describe('Webhooks: auth notification tests', () => {
         const logCtx = getLogCtx();
         await sendAuth({
             connection,
+            success: true,
             environment: {
                 name: 'dev',
                 id: 1,
-                secret_key: 'secret',
-                send_auth_webhook: false,
-                webhook_url: 'http://example.com/webhook',
-                webhook_url_secondary: 'http://example.com/webhook-secondary',
-                always_send_webhook: false
+                secret_key: 'secret'
             } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                on_auth_creation: false
+            },
             provider: 'hubspot',
             activityLogId: 1,
             type: 'auth',
@@ -159,5 +184,128 @@ describe('Webhooks: auth notification tests', () => {
             logCtx
         });
         expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('Should not send an auth webhook if on refresh error is checked but there is no webhook url', async () => {
+        const logCtx = getLogCtx();
+        await sendAuth({
+            connection,
+            success: true,
+            environment: {
+                name: 'dev',
+                id: 1,
+                secret_key: 'secret'
+            } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                primary_url: '',
+                secondary_url: '',
+                on_auth_creation: true,
+                on_auth_refresh_error: true
+            },
+            provider: 'hubspot',
+            activityLogId: 1,
+            type: 'auth',
+            auth_mode: 'OAUTH2',
+            operation: 'refresh',
+            logCtx
+        });
+        expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('Should send an auth webhook if on refresh error is checked', async () => {
+        const logCtx = getLogCtx();
+        await sendAuth({
+            connection,
+            success: true,
+            environment: {
+                name: 'dev',
+                id: 1,
+                secret_key: 'secret'
+            } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                secondary_url: '',
+                on_auth_creation: true,
+                on_auth_refresh_error: true
+            },
+            provider: 'hubspot',
+            activityLogId: 1,
+            type: 'auth',
+            auth_mode: 'OAUTH2',
+            operation: 'refresh',
+            logCtx
+        });
+        expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('Should not send an auth webhook if on refresh error is not checked', async () => {
+        const logCtx = getLogCtx();
+        await sendAuth({
+            connection,
+            success: true,
+            environment: {
+                name: 'dev',
+                id: 1,
+                secret_key: 'secret'
+            } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                on_auth_creation: true,
+                on_auth_refresh_error: false
+            },
+            provider: 'hubspot',
+            activityLogId: 1,
+            type: 'auth',
+            auth_mode: 'OAUTH2',
+            operation: 'refresh',
+            logCtx
+        });
+
+        expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('Should send an auth webhook twice if on refresh error is checked and there are two webhook urls', async () => {
+        const logCtx = getLogCtx();
+        await sendAuth({
+            connection,
+            success: true,
+            environment: {
+                name: 'dev',
+                id: 1,
+                secret_key: 'secret'
+            } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                on_auth_creation: false,
+                on_auth_refresh_error: true
+            },
+            provider: 'hubspot',
+            activityLogId: 1,
+            type: 'auth',
+            auth_mode: 'OAUTH2',
+            operation: 'refresh',
+            logCtx
+        });
+
+        expect(spy).toHaveBeenCalledTimes(2);
+
+        const body = {
+            from: 'nango',
+            type: 'auth',
+            connectionId: connection.connection_id,
+            providerConfigKey: connection.provider_config_key,
+            authMode: 'OAUTH2',
+            provider: 'hubspot',
+            environment: 'dev',
+            success: true,
+            operation: 'refresh'
+        };
+
+        const headers = getSignatureHeader('secret', body);
+
+        expect(spy).toHaveBeenNthCalledWith(1, 'http://example.com/webhook', expect.objectContaining(body), expect.objectContaining({ headers }));
+
+        expect(spy).toHaveBeenNthCalledWith(2, 'http://example.com/webhook-secondary', expect.objectContaining(body), expect.objectContaining({ headers }));
     });
 });

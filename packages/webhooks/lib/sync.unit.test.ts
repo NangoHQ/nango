@@ -2,7 +2,7 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendSync } from './sync.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { Connection, Environment } from '@nangohq/types';
+import type { Connection, Environment, ExternalWebhook } from '@nangohq/types';
 import * as logPackage from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
@@ -10,6 +10,17 @@ const spy = vi.spyOn(axiosInstance, 'post');
 const connection: Pick<Connection, 'connection_id' | 'provider_config_key'> = {
     connection_id: '1',
     provider_config_key: 'providerkey'
+};
+
+const webhookSettings: ExternalWebhook = {
+    id: 1,
+    environment_id: 1,
+    primary_url: 'http://example.com/webhook',
+    secondary_url: 'http://example.com/webhook-secondary',
+    on_sync_completion_always: true,
+    on_auth_creation: true,
+    on_auth_refresh_error: true,
+    on_sync_error: true
 };
 
 const getLogCtx = () => new logPackage.LogContext({ parentId: '1', operation: {} as any }, { dryRun: true, logToConsole: false });
@@ -22,13 +33,21 @@ describe('Webhooks: sync notification tests', () => {
     it('Should not send a sync webhook if the webhook url is not present', async () => {
         const logCtx = getLogCtx();
         const responseResults = { added: 10, updated: 0, deleted: 0 };
+
         await sendSync({
             connection,
-            environment: { name: 'dev', id: 1, secret_key: 'secret', webhook_url: null, always_send_webhook: false } as Environment,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment,
+            webhookSettings: {
+                ...webhookSettings,
+                primary_url: '',
+                secondary_url: '',
+                on_sync_completion_always: false
+            },
             syncName: 'syncName',
             model: 'model',
             responseResults,
-            syncType: 'INCREMENTAL',
+            success: true,
+            operation: 'INCREMENTAL',
             now: new Date(),
             activityLogId: 1,
             logCtx
@@ -45,11 +64,18 @@ describe('Webhooks: sync notification tests', () => {
             syncName: 'syncName',
             model: 'model',
             responseResults,
-            syncType: 'INCREMENTAL',
+            success: true,
+            operation: 'INCREMENTAL',
             now: new Date(),
             activityLogId: 1,
             logCtx,
-            environment: { name: 'dev', id: 1, secret_key: 'secret', webhook_url: null, always_send_webhook: true } as Environment
+            webhookSettings: {
+                ...webhookSettings,
+                primary_url: '',
+                secondary_url: '',
+                on_sync_completion_always: true
+            },
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
         });
         expect(axiosInstance.post).not.toHaveBeenCalled();
     });
@@ -63,11 +89,17 @@ describe('Webhooks: sync notification tests', () => {
             syncName: 'syncName',
             model: 'model',
             responseResults,
-            syncType: 'INCREMENTAL',
+            operation: 'INCREMENTAL',
+            success: true,
             now: new Date(),
             activityLogId: 1,
             logCtx,
-            environment: { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://exmaple.com/webhook', always_send_webhook: false } as Environment
+            webhookSettings: {
+                ...webhookSettings,
+                secondary_url: '',
+                on_sync_completion_always: false
+            },
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
         });
         expect(spy).not.toHaveBeenCalled();
     });
@@ -81,11 +113,17 @@ describe('Webhooks: sync notification tests', () => {
             syncName: 'syncName',
             model: 'model',
             responseResults,
-            syncType: 'INCREMENTAL',
+            operation: 'INCREMENTAL',
+            success: true,
             now: new Date(),
             activityLogId: 1,
             logCtx,
-            environment: { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://example.com/webhook', always_send_webhook: false } as Environment
+            webhookSettings: {
+                ...webhookSettings,
+                secondary_url: '',
+                on_sync_completion_always: false
+            },
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
         });
         expect(spy).toHaveBeenCalled();
     });
@@ -99,11 +137,17 @@ describe('Webhooks: sync notification tests', () => {
             syncName: 'syncName',
             model: 'model',
             responseResults,
-            syncType: 'INCREMENTAL',
+            operation: 'INCREMENTAL',
+            success: true,
             now: new Date(),
             activityLogId: 1,
             logCtx,
-            environment: { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://example.com/webhook', always_send_webhook: true } as Environment
+            webhookSettings: {
+                ...webhookSettings,
+                secondary_url: '',
+                on_sync_completion_always: true
+            },
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
         });
         expect(spy).toHaveBeenCalled();
     });
@@ -117,11 +161,17 @@ describe('Webhooks: sync notification tests', () => {
             syncName: 'syncName',
             model: 'model',
             responseResults,
-            syncType: 'INCREMENTAL',
+            operation: 'INCREMENTAL',
             now: new Date(),
             activityLogId: 1,
             logCtx,
-            environment: { name: 'dev', id: 1, secret_key: 'secret', webhook_url: 'http://example.com/webhook', always_send_webhook: true } as Environment
+            success: true,
+            webhookSettings: {
+                ...webhookSettings,
+                secondary_url: '',
+                on_sync_completion_always: true
+            },
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
         });
         expect(spy).toHaveBeenCalled();
     });
@@ -135,19 +185,49 @@ describe('Webhooks: sync notification tests', () => {
             syncName: 'syncName',
             model: 'model',
             responseResults,
-            syncType: 'INCREMENTAL',
+            operation: 'INCREMENTAL',
             now: new Date(),
+            success: true,
             activityLogId: 1,
             logCtx,
+            webhookSettings: {
+                ...webhookSettings,
+                on_sync_completion_always: true
+            },
             environment: {
                 name: 'dev',
                 id: 1,
-                secret_key: 'secret',
-                webhook_url: 'http://example.com/webhook',
-                webhook_url_secondary: 'http://example.com/webhook-secondary',
-                always_send_webhook: true
+                secret_key: 'secret'
             } as Environment
         });
         expect(spy).toHaveBeenCalledTimes(2);
+    });
+
+    it('Should not send an error webhook if the option is not checked', async () => {
+        const logCtx = getLogCtx();
+
+        const error = {
+            type: 'error',
+            description: 'error description'
+        };
+
+        await sendSync({
+            connection,
+            syncName: 'syncName',
+            model: 'model',
+            success: false,
+            error,
+            operation: 'INCREMENTAL',
+            now: new Date(),
+            activityLogId: 1,
+            logCtx,
+            webhookSettings: {
+                ...webhookSettings,
+                on_sync_error: false
+            },
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
+        });
+
+        expect(spy).not.toHaveBeenCalled();
     });
 });

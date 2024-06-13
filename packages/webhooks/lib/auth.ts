@@ -1,13 +1,13 @@
-import type { Connection, Environment, AuthModeType, ErrorPayload, AuthOperationType } from '@nangohq/types';
+import type { NangoAuthWebhookBody, ExternalWebhook, Connection, Environment, AuthModeType, ErrorPayload, AuthOperationType } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import type { NangoAuthWebhookBody } from './types.js';
 import { deliver, shouldSend } from './utils.js';
-import { WebhookType } from './enums.js';
 
 export const sendAuth = async ({
     connection,
     environment,
+    webhookSettings,
     auth_mode,
+    success,
     error,
     operation,
     provider,
@@ -17,7 +17,9 @@ export const sendAuth = async ({
 }: {
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
     environment: Environment;
+    webhookSettings: ExternalWebhook | null;
     auth_mode: AuthModeType;
+    success: boolean;
     error?: ErrorPayload;
     operation: AuthOperationType;
     provider: string;
@@ -25,15 +27,17 @@ export const sendAuth = async ({
     activityLogId: number | null;
     logCtx?: LogContext | undefined;
 }): Promise<void> => {
-    if (!shouldSend(environment, 'auth')) {
+    if (!webhookSettings) {
         return;
     }
 
-    const success = typeof error === 'undefined';
+    if (!shouldSend({ success, type: 'auth', webhookSettings, operation })) {
+        return;
+    }
 
     const body: NangoAuthWebhookBody = {
         from: 'nango',
-        type: WebhookType.AUTH,
+        type: 'auth',
         connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key,
         authMode: auth_mode,
@@ -47,14 +51,9 @@ export const sendAuth = async ({
         body.error = error;
     }
 
-    // TODO when settings are available send this webhook
-    if (!success) {
-        return;
-    }
-
     const webhooks = [
-        { url: environment.webhook_url!, type: 'webhook url' },
-        { url: environment.webhook_url_secondary!, type: 'secondary webhook url' }
+        { url: webhookSettings.primary_url, type: 'webhook url' },
+        { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
     await deliver({

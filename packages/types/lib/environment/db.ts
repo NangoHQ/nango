@@ -48,6 +48,6 @@ export interface ExternalWebhook extends Timestamps {
     secondary_url: string;
     on_sync_completion_always: boolean;
     on_auth_creation: boolean;
-    on_auth_refesh_error: boolean;
+    on_auth_refresh_error: boolean;
     on_sync_error: boolean;
 }

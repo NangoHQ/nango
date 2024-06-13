@@ -2,7 +2,7 @@ import { toast } from 'react-toastify';
 import type { ChangeEvent } from 'react';
 import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
-import type { CheckboxState } from './Settings';
+import type { WebhookSettings as CheckboxState } from '@nangohq/types';
 import { apiFetch } from '../../utils/api';
 
 interface CheckboxConfig {
@@ -11,7 +11,6 @@ interface CheckboxConfig {
     stateKey: keyof CheckboxState;
 }
 
-// TODO
 const checkboxesConfig: CheckboxConfig[] = [
     {
         label: 'Send Webhooks For Empty Sync Responses',
@@ -54,9 +53,7 @@ const CheckboxForm: React.FC<CheckboxFormProps> = ({ env, checkboxState, setChec
     const handleSubmit = async (data: CheckboxState) => {
         const res = await apiFetch(`/api/v1/environment/webhook/settings?env=${env}`, {
             method: 'PATCH',
-            body: JSON.stringify({
-                data
-            })
+            body: JSON.stringify(data)
         });
 
         if (res.status !== 200) {

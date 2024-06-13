@@ -34,6 +34,8 @@ import tracer from 'dd-trace';
 import { getConnection as getConnectionWeb } from './controllers/v1/connection/get.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
+import { updateWebhookSettings } from './controllers/v1/environment/webhook/settings.js';
+import { updatePrimaryUrl, updateSecondaryUrl } from './controllers/v1/environment/webhook/url.js';
 import {
     getEmailByUuid,
     resendVerificationEmailByUuid,
@@ -168,17 +170,16 @@ web.route('/api/v1/account/admin/switch').post(webAuth, accountController.switch
 
 web.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
 web.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
-web.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));
-web.route('/api/v1/environment/webhook-secondary').post(webAuth, environmentController.updateSecondaryWebhookURL.bind(environmentController));
+web.route('/api/v1/environment/webhook/url/primary').patch(webAuth, updatePrimaryUrl);
+web.route('/api/v1/environment/webhook/url/secondary').patch(webAuth, updateSecondaryUrl);
 web.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
 web.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
-web.route('/api/v1/environment/webhook-send').post(webAuth, environmentController.updateAlwaysSendWebhook.bind(environmentController));
-web.route('/api/v1/environment/webhook-auth-send').post(webAuth, environmentController.updateSendAuthWebhook.bind(environmentController));
 web.route('/api/v1/environment/slack-notifications-enabled').post(webAuth, environmentController.updateSlackNotificationsEnabled.bind(environmentController));
 web.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 web.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
 web.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
 web.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
+web.route('/api/v1/environment/webhook/settings').patch(webAuth, updateWebhookSettings);
 web.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 

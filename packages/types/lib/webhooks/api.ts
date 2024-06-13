@@ -1,28 +1,37 @@
-import type { SyncType, ErrorPayload, AuthOperationType, AuthModeType, SyncResult } from '@nangohq/types';
-import type { WebhookType } from './enums.js';
+import type { AuthOperationType, AuthModeType } from '../auth/api.js';
+import type { SyncResult, SyncType } from '../scripts/syncs/api.js';
+import type { ErrorPayload } from '../api.js';
+
+export type WebhookTypes = 'sync' | 'auth' | 'forward';
 
 export interface NangoSyncWebhookBody {
     from: string;
-    type: WebhookType.SYNC;
+    type: 'sync';
     connectionId: string;
     providerConfigKey: string;
     syncName: string;
-    model: string;
-    responseResults?: SyncResult;
-    syncType: SyncType;
-    modifiedAfter?: string;
-    startedAt?: string;
-    failedAt?: string;
     success: boolean;
-    error?: ErrorPayload;
+    model: string;
+    syncType: SyncType;
+}
+
+export interface NangoSyncWebhookBodySuccess extends NangoSyncWebhookBody {
+    modifiedAfter: string;
+    responseResults: SyncResult;
 
     // legacy
     queryTimeStamp?: string | null;
 }
 
+export interface NangoSyncWebhookBodyError {
+    error: ErrorPayload;
+    startedAt: string;
+    failedAt: string;
+}
+
 export interface NangoAuthWebhookBody {
     from: string;
-    type: WebhookType.AUTH;
+    type: 'auth';
     connectionId: string;
     authMode: AuthModeType;
     providerConfigKey: string;
@@ -35,7 +44,7 @@ export interface NangoAuthWebhookBody {
 
 export interface NangoForwardWebhookBody {
     from: string;
-    type: WebhookType.FORWARD;
+    type: WebhookTypes;
     connectionId?: string;
     providerConfigKey: string;
     payload: unknown;
