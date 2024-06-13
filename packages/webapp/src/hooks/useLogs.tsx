@@ -53,7 +53,7 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'],
         }
         if (man.error) {
             setData(undefined);
-            setError(man.error as any);
+            setError((typeof man.error === 'string' || man.error instanceof Error ? { error: { message: man.error } } : man.error) as any);
             return;
         }
 

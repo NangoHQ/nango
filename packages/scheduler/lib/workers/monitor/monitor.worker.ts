@@ -7,7 +7,7 @@ import { setTimeout } from 'node:timers/promises';
 import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
 
-interface MessageOut {
+interface ExpiredTasksMessage {
     ids: string[];
 }
 
@@ -47,7 +47,7 @@ export class MonitorWorker {
         }
     }
 
-    on(callback: (message: MessageOut) => void): void {
+    on(callback: (message: ExpiredTasksMessage) => void): void {
         this.worker?.on('message', callback);
     }
 }
@@ -98,14 +98,10 @@ export class MonitorChild {
             if (expired.value.length > 0) {
                 const taskIds = expired.value.map((t) => t.id);
                 if (taskIds.length > 0 && !this.cancelled) {
-                    this.send({ ids: taskIds });
+                    this.parent.postMessage({ ids: taskIds }); // Notifying parent that tasks have expired
                 }
                 logger.info(`Expired tasks: ${JSON.stringify(expired.value.map((t) => t.id))} `);
             }
         }
-    }
-
-    send(message: MessageOut) {
-        this.parent.postMessage(message);
     }
 }

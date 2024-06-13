@@ -83,14 +83,12 @@ export const sendSync = async ({
                 updated: responseResults.updated,
                 deleted: 0
             },
-            modifiedAfter: dayjs(now).toDate().toISOString()
+            modifiedAfter: dayjs(now).toDate().toISOString(),
+            queryTimeStamp: operation !== 'INITIAL' ? (now as unknown as string) : null
         };
 
         if (responseResults.deleted && responseResults.deleted > 0) {
             successBody.responseResults.deleted = responseResults.deleted;
-        }
-        if (operation !== 'INITIAL') {
-            successBody.queryTimeStamp = now as unknown as string;
         }
         endingMessage = noChanges ? 'with no data changes as per your environment settings.' : 'with data changes.';
     } else {

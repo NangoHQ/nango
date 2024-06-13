@@ -50,15 +50,25 @@ export async function externalPostConnection(
         }
     );
 
+    let failed = false;
     for (const postConnectionScript of postConnectionScripts) {
         const { name, file_location: fileLocation } = postConnectionScript;
 
-        await getOrchestrator().triggerPostConnectionScript({
+        const res = await getOrchestrator().triggerPostConnectionScript({
             connection: createdConnection.connection,
             name,
             fileLocation,
             activityLogId: activityLogId as number,
             logCtx
         });
+        if (res.isErr()) {
+            failed = true;
+        }
+    }
+
+    if (failed) {
+        await logCtx.failed();
+    } else {
+        await logCtx.success();
     }
 }

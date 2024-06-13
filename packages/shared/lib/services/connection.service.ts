@@ -12,7 +12,7 @@ import type { ActivityLogMessage, ActivityLog, LogLevel } from '../models/Activi
 import { LogActionEnum } from '../models/Activity.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
-import syncOrchestrator from './sync/orchestrator.service.js';
+import syncManager from './sync/manager.service.js';
 import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
@@ -573,7 +573,7 @@ class ConnectionService {
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
-        await syncOrchestrator.softDeleteSyncsByConnection(connection, orchestrator);
+        await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
 
         return del;
     }
@@ -708,18 +708,18 @@ class ConnectionService {
                 const errorWithPayload = new NangoError(error.type, connection);
 
                 return Err(errorWithPayload);
+            } else {
+                await onRefreshSuccess({
+                    connection,
+                    environment,
+                    config
+                });
             }
 
             connection.credentials = credentials as OAuth2Credentials;
         }
 
         await this.updateLastFetched(connection.id);
-
-        await onRefreshSuccess({
-            connection,
-            environment,
-            config
-        });
 
         return Ok(connection);
     }

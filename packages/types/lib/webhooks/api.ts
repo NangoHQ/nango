@@ -19,8 +19,8 @@ export interface NangoSyncWebhookBodySuccess extends NangoSyncWebhookBody {
     responseResults: SyncResult;
     success: true;
 
-    // legacy
-    queryTimeStamp?: string | null;
+    // legacy, use modifiedAfter instead
+    queryTimeStamp: string | null;
 }
 
 export interface NangoSyncWebhookBodyError {

@@ -7,7 +7,7 @@ import {
     flowService,
     SyncConfigType,
     deployPreBuilt as deployPreBuiltSyncConfig,
-    syncOrchestrator,
+    syncManager,
     getOnboardingProvider,
     createOnboardingProvider,
     DEMO_GITHUB_CONFIG_KEY,
@@ -218,7 +218,7 @@ class OnboardingController {
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id, logContextGetter, orchestrator);
+            await syncManager.triggerIfConnectionsExist(deploy.response.result, environment.id, logContextGetter, orchestrator);
 
             void analytics.track(AnalyticsTypes.DEMO_2_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ success: true });
@@ -248,7 +248,7 @@ class OnboardingController {
                 success,
                 error,
                 response: status
-            } = await syncOrchestrator.getSyncStatus(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], req.body.connectionId, true);
+            } = await syncManager.getSyncStatus(environment.id, DEMO_GITHUB_CONFIG_KEY, [DEMO_SYNC_NAME], orchestrator, req.body.connectionId, true);
 
             if (!success || !status) {
                 void analytics.track(AnalyticsTypes.DEMO_4_ERR, account.id, { user_id: user.id });
@@ -259,7 +259,7 @@ class OnboardingController {
             if (status.length <= 0) {
                 // If for any reason we don't have a sync, because of a partial state
                 logger.info(`[demo] no sync were found ${environment.id}`);
-                await syncOrchestrator.runSyncCommand({
+                await syncManager.runSyncCommand({
                     recordsService,
                     orchestrator,
                     environment,
@@ -270,7 +270,7 @@ class OnboardingController {
                     connectionId: req.body.connectionId,
                     initiator: 'demo'
                 });
-                await syncOrchestrator.runSyncCommand({
+                await syncManager.runSyncCommand({
                     recordsService,
                     orchestrator,
                     environment,
@@ -295,7 +295,7 @@ class OnboardingController {
             if (!job.nextScheduledSyncAt && job.jobStatus === SyncStatus.PAUSED) {
                 // If the sync has never run
                 logger.info(`[demo] no job were found ${environment.id}`);
-                await syncOrchestrator.runSyncCommand({
+                await syncManager.runSyncCommand({
                     recordsService,
                     orchestrator,
                     environment,

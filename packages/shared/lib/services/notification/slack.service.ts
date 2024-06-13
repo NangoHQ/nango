@@ -1,4 +1,4 @@
-import { schema, dbNamespace } from '@nangohq/database';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import type { SlackNotification } from '../../models/SlackNotification.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -551,6 +551,7 @@ export class SlackService {
     async addFailingConnection(nangoConnection: NangoConnection, name: string, type: string): Promise<ServiceResponse<NotificationResponse>> {
         const isOpen = await this.hasOpenNotification(nangoConnection, name);
 
+        logger.info(`Notifying ${nangoConnection.id} type:${type} name:${name}`);
         if (!isOpen) {
             const created = await this.createNotification(nangoConnection, name, type);
 
@@ -634,14 +635,15 @@ export class SlackService {
         const { id, connection_list, slack_timestamp, admin_slack_timestamp } = isOpen;
 
         const index = connection_list.indexOf(nangoConnection.id as number);
-
         if (index === -1) {
             return;
         }
 
+        logger.info(`Resolving ${nangoConnection.id} type:${type} name:${name}`);
+
         connection_list.splice(index, 1);
 
-        await schema()
+        await db.knex
             .from<SlackNotification>(TABLE)
             .where({ id: id as number })
             .update({
