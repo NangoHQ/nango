@@ -1,4 +1,10 @@
-# Contributes
+# Contribution Guidelines
+
+To support a new API, simply ask the Nango team to add it with fast turnaround (2-5 days) on the [community](https://nango.dev/slack).
+
+For contributions, please [submit an issue](https://github.com/NangoHQ/nango/issues) describing your intent to contribute with details about your problem & solution. We will get back to you within 24h. Once we aligned & your change is approved by a team member, you can start implementing the change and submit a PR.
+
+# Contributing
 
 You can run Nango locally with Docker ([step-by-step guide](https://docs.nango.dev/host/self-host/local)), contribute an API ([step-by-step guide](https://docs.nango.dev/customize/guides/contribute-an-api)) and contribute an integration template ([step-by-step guide](https://docs.nango.dev/contribute-an-integration-template)).
 
