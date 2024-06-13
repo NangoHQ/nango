@@ -17,7 +17,6 @@ import proxyService from './services/proxy.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator, { syncCommandToOperation } from './services/sync/orchestrator.service.js';
 import flowService from './services/flow.service.js';
-import webhookService from './services/notification/webhook.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import featureFlags from './utils/featureflags.js';
@@ -71,7 +70,6 @@ export {
     hmacService,
     proxyService,
     flowService,
-    webhookService,
     errorNotificationService,
     analytics,
     AnalyticsTypes,

@@ -2,7 +2,7 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendSync } from './sync.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { Connection, Environment, ExternalWebhook } from '@nangohq/types';
+import type { NangoSyncWebhookBodySuccess, Connection, Environment, ExternalWebhook } from '@nangohq/types';
 import * as logPackage from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
@@ -203,6 +203,68 @@ describe('Webhooks: sync notification tests', () => {
         expect(spy).toHaveBeenCalledTimes(2);
     });
 
+    it('Should send a webhook with the correct body on sync success', async () => {
+        const logCtx = getLogCtx();
+
+        const now = new Date();
+
+        const responseResults = { added: 10, updated: 0, deleted: 0 };
+        await sendSync({
+            connection,
+            syncName: 'syncName',
+            model: 'model',
+            responseResults,
+            operation: 'INCREMENTAL',
+            now,
+            success: true,
+            activityLogId: 1,
+            logCtx,
+            webhookSettings: webhookSettings,
+            environment: {
+                name: 'dev',
+                id: 1,
+                secret_key: 'secret'
+            } as Environment
+        });
+
+        const body: NangoSyncWebhookBodySuccess = {
+            from: 'nango',
+            type: 'sync',
+            modifiedAfter: now.toISOString(),
+            model: 'model',
+            queryTimeStamp: now as unknown as string,
+            responseResults,
+            connectionId: connection.connection_id,
+            syncName: 'syncName',
+            providerConfigKey: connection.provider_config_key,
+            success: true,
+            syncType: 'INCREMENTAL'
+        };
+        expect(spy).toHaveBeenCalledTimes(2);
+
+        expect(spy).toHaveBeenNthCalledWith(
+            1,
+            'http://example.com/webhook',
+            expect.objectContaining(body),
+            expect.objectContaining({
+                headers: {
+                    'X-Nango-Signature': expect.toBeSha256()
+                }
+            })
+        );
+
+        expect(spy).toHaveBeenNthCalledWith(
+            2,
+            'http://example.com/webhook-secondary',
+            expect.objectContaining(body),
+            expect.objectContaining({
+                headers: {
+                    'X-Nango-Signature': expect.toBeSha256()
+                }
+            })
+        );
+    });
+
     it('Should not send an error webhook if the option is not checked', async () => {
         const logCtx = getLogCtx();
 
@@ -229,5 +291,33 @@ describe('Webhooks: sync notification tests', () => {
         });
 
         expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('Should send an error webhook if the option is checked with the correct body', async () => {
+        const logCtx = getLogCtx();
+
+        const error = {
+            type: 'error',
+            description: 'error description'
+        };
+
+        await sendSync({
+            connection,
+            syncName: 'syncName',
+            model: 'model',
+            success: false,
+            error,
+            operation: 'INCREMENTAL',
+            now: new Date(),
+            activityLogId: 1,
+            logCtx,
+            webhookSettings: {
+                ...webhookSettings,
+                on_sync_error: true
+            },
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
+        });
+
+        expect(spy).toHaveBeenCalled();
     });
 });

@@ -5,6 +5,7 @@ import type {
     ExternalWebhook,
     Connection,
     Environment,
+    WebhookTypes,
     AuthModeType,
     ErrorPayload,
     AuthOperationType
@@ -33,7 +34,7 @@ export const sendAuth = async ({
     error?: ErrorPayload;
     operation: AuthOperationType;
     provider: string;
-    type: string;
+    type: WebhookTypes;
     activityLogId: number | null;
     logCtx?: LogContext | undefined;
 } & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> => {

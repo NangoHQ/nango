@@ -3,7 +3,7 @@ import { backOff } from 'exponential-backoff';
 import type { AxiosError } from 'axios';
 import { axiosInstance as axios } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
-import type { SyncType, AuthOperationType, Environment, ExternalWebhook } from '@nangohq/types';
+import type { WebhookTypes, SyncType, AuthOperationType, Environment, ExternalWebhook } from '@nangohq/types';
 
 export const RETRY_ATTEMPTS = 7;
 
@@ -123,7 +123,7 @@ export const deliver = async ({
 }: {
     webhooks: { url: string; type: string }[];
     body: unknown;
-    webhookType: 'auth' | 'forward' | 'sync';
+    webhookType: WebhookTypes;
     activityLogId: number | null;
     environment: Environment;
     logCtx?: LogContext | undefined;

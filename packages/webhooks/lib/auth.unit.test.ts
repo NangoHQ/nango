@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendAuth } from './auth.js';
-import { getSignatureHeader } from './utils.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { Connection, Environment, ExternalWebhook } from '@nangohq/types';
+import type { NangoAuthWebhookBodySuccess, Connection, Environment, ExternalWebhook } from '@nangohq/types';
 import * as logPackage from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
@@ -269,7 +268,7 @@ describe('Webhooks: auth notification tests', () => {
         expect(spy).not.toHaveBeenCalled();
     });
 
-    it('Should send an auth webhook twice if on refresh error is checked and there are two webhook urls', async () => {
+    it('Should send an auth webhook twice if on refresh error is checked and there are two webhook urls with the correct body', async () => {
         const logCtx = getLogCtx();
         await sendAuth({
             connection,
@@ -294,7 +293,7 @@ describe('Webhooks: auth notification tests', () => {
 
         expect(spy).toHaveBeenCalledTimes(2);
 
-        const body = {
+        const body: NangoAuthWebhookBodySuccess = {
             from: 'nango',
             type: 'auth',
             connectionId: connection.connection_id,
@@ -306,10 +305,26 @@ describe('Webhooks: auth notification tests', () => {
             operation: 'refresh'
         };
 
-        const headers = getSignatureHeader('secret', body);
+        expect(spy).toHaveBeenNthCalledWith(
+            1,
+            'http://example.com/webhook',
+            expect.objectContaining(body),
+            expect.objectContaining({
+                headers: {
+                    'X-Nango-Signature': expect.toBeSha256()
+                }
+            })
+        );
 
-        expect(spy).toHaveBeenNthCalledWith(1, 'http://example.com/webhook', expect.objectContaining(body), expect.objectContaining({ headers }));
-
-        expect(spy).toHaveBeenNthCalledWith(2, 'http://example.com/webhook-secondary', expect.objectContaining(body), expect.objectContaining({ headers }));
+        expect(spy).toHaveBeenNthCalledWith(
+            2,
+            'http://example.com/webhook-secondary',
+            expect.objectContaining(body),
+            expect.objectContaining({
+                headers: {
+                    'X-Nango-Signature': expect.toBeSha256()
+                }
+            })
+        );
     });
 });
