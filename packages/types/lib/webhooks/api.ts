@@ -10,7 +10,6 @@ export interface NangoSyncWebhookBody {
     connectionId: string;
     providerConfigKey: string;
     syncName: string;
-    success: boolean;
     model: string;
     syncType: SyncType;
 }
@@ -18,12 +17,14 @@ export interface NangoSyncWebhookBody {
 export interface NangoSyncWebhookBodySuccess extends NangoSyncWebhookBody {
     modifiedAfter: string;
     responseResults: SyncResult;
+    success: true;
 
     // legacy
     queryTimeStamp?: string | null;
 }
 
 export interface NangoSyncWebhookBodyError {
+    success: false;
     error: ErrorPayload;
     startedAt: string;
     failedAt: string;
@@ -37,9 +38,16 @@ export interface NangoAuthWebhookBody {
     providerConfigKey: string;
     provider: string;
     environment: string;
-    success: boolean;
     operation: AuthOperationType;
-    error?: ErrorPayload;
+}
+
+export interface NangoAuthWebhookBodySuccess extends NangoAuthWebhookBody {
+    success: true;
+}
+
+export interface NangoAuthWebhookBodyError extends NangoAuthWebhookBody {
+    success: false;
+    error: ErrorPayload;
 }
 
 export interface NangoForwardWebhookBody {

@@ -1,4 +1,14 @@
-import type { NangoAuthWebhookBody, ExternalWebhook, Connection, Environment, AuthModeType, ErrorPayload, AuthOperationType } from '@nangohq/types';
+import type {
+    NangoAuthWebhookBody,
+    NangoAuthWebhookBodySuccess,
+    NangoAuthWebhookBodyError,
+    ExternalWebhook,
+    Connection,
+    Environment,
+    AuthModeType,
+    ErrorPayload,
+    AuthOperationType
+} from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
 
@@ -26,7 +36,7 @@ export const sendAuth = async ({
     type: string;
     activityLogId: number | null;
     logCtx?: LogContext | undefined;
-}): Promise<void> => {
+} & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> => {
     if (!webhookSettings) {
         return;
     }
@@ -34,6 +44,9 @@ export const sendAuth = async ({
     if (!shouldSend({ success, type: 'auth', webhookSettings, operation })) {
         return;
     }
+
+    let successBody: NangoAuthWebhookBodySuccess = {} as NangoAuthWebhookBodySuccess;
+    let errorBody: NangoAuthWebhookBodyError = {} as NangoAuthWebhookBodyError;
 
     const body: NangoAuthWebhookBody = {
         from: 'nango',
@@ -43,12 +56,20 @@ export const sendAuth = async ({
         authMode: auth_mode,
         provider,
         environment: environment.name,
-        success,
         operation
     };
 
-    if (error) {
-        body.error = error;
+    if (success) {
+        successBody = {
+            ...body,
+            success: true
+        };
+    } else {
+        errorBody = {
+            ...body,
+            success: false,
+            error
+        };
     }
 
     const webhooks = [
@@ -58,7 +79,7 @@ export const sendAuth = async ({
 
     await deliver({
         webhooks,
-        body,
+        body: success ? successBody : errorBody,
         webhookType: type,
         activityLogId,
         environment,

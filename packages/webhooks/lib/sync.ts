@@ -37,12 +37,12 @@ export const sendSync = async ({
     model: string;
     now: Date | undefined;
     operation: SyncType;
-    responseResults?: SyncResult;
     error?: ErrorPayload;
+    responseResults?: SyncResult;
     success: boolean;
     activityLogId: number | null;
     logCtx?: LogContext | undefined;
-} & ({ success: true; responseResults: SyncResult } | { success: false })): Promise<void> => {
+} & ({ success: true; responseResults: SyncResult } | { success: false; error: ErrorPayload })): Promise<void> => {
     if (!webhookSettings) {
         return;
     }
@@ -57,7 +57,6 @@ export const sendSync = async ({
         connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key,
         syncName,
-        success,
         model,
         syncType: operation
     };
@@ -78,6 +77,7 @@ export const sendSync = async ({
 
         successBody = {
             ...body,
+            success: true,
             responseResults: {
                 added: responseResults.added,
                 updated: responseResults.updated,
@@ -96,7 +96,8 @@ export const sendSync = async ({
     } else {
         errorBody = {
             ...body,
-            error: error!,
+            success: false,
+            error: error,
             startedAt: dayjs(now).toDate().toISOString(),
             failedAt: new Date().toISOString()
         };

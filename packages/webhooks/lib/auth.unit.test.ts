@@ -142,6 +142,10 @@ describe('Webhooks: auth notification tests', () => {
         await sendAuth({
             connection,
             success: false,
+            error: {
+                type: 'error',
+                description: 'error description'
+            },
             environment: {
                 name: 'dev',
                 id: 1,
