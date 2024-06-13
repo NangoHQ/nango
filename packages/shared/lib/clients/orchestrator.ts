@@ -617,7 +617,6 @@ export class Orchestrator {
             });
             await updateSuccessActivityLog(activityLogId, true);
             await logCtx.info(content);
-            await logCtx.success();
 
             await telemetry.log(
                 LogTypes.POST_CONNECTION_SCRIPT_SUCCESS,
@@ -647,7 +646,6 @@ export class Orchestrator {
                 content
             });
             await logCtx.error(content);
-            await logCtx.failed();
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -982,7 +980,7 @@ export class Orchestrator {
                 state: syncData.auto_start ? 'STARTED' : 'PAUSED',
                 frequencyMs: ms(interval.value as StringValue),
                 groupKey: 'sync',
-                retry: { count: 0, max: 3 },
+                retry: { max: 3 },
                 timeoutSettingsInSecs: {
                     createdToStarted: 60 * 60, // 1 hour
                     startedToCompleted: 60 * 60 * 24, // 1 day

@@ -8,6 +8,10 @@ import { logger } from '../../utils/logger.js';
 import { dueSchedules } from './scheduling.js';
 import * as tasks from '../../models/tasks.js';
 
+interface CreatedTasksMessage {
+    ids: string[];
+}
+
 export class SchedulingWorker {
     private worker: Worker | null;
     constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
@@ -42,6 +46,10 @@ export class SchedulingWorker {
             this.worker.postMessage('stop');
             this.worker = null;
         }
+    }
+
+    on(callback: (message: CreatedTasksMessage) => void): void {
+        this.worker?.on('message', callback);
     }
 }
 
@@ -90,6 +98,7 @@ export class SchedulingChild {
                 logger.error(`Failed to get due schedules: ${schedules.error}`);
                 return;
             }
+            const taskIds = [];
             for (const schedule of schedules.value) {
                 const task = await tasks.create(trx, {
                     scheduleId: schedule.id,
@@ -97,7 +106,7 @@ export class SchedulingChild {
                     name: `${schedule.name}:${new Date().toISOString()}`,
                     payload: schedule.payload,
                     groupKey: schedule.groupKey,
-                    retryCount: schedule.retryCount,
+                    retryCount: 0,
                     retryMax: schedule.retryMax,
                     createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
                     startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
@@ -107,6 +116,10 @@ export class SchedulingChild {
                     logger.error(`Failed to create task for schedule: ${schedule.id}`);
                     return;
                 }
+                taskIds.push(task.value.id);
+            }
+            if (taskIds.length > 0) {
+                this.parent.postMessage({ ids: taskIds }); // notifying parent that tasks have been created
             }
         });
     }

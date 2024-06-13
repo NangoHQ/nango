@@ -21,7 +21,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'createdAt',
         header: 'Timestamp',
-        size: 170,
+        size: 180,
         cell: ({ row }) => {
             return <div className="font-code text-s">{formatDateToLogFormat(row.original.createdAt)}</div>;
         }
