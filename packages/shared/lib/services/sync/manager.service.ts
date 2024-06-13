@@ -475,6 +475,10 @@ export class SyncManagerService {
             case 'PAUSED':
                 return SyncStatus.PAUSED;
             case 'STARTED':
+                if (jobStatus === SyncStatus.STOPPED) {
+                    // job status doesn't have a ERROR status
+                    return SyncStatus.ERROR;
+                }
                 return jobStatus || SyncStatus.SUCCESS;
             default:
                 return SyncStatus.STOPPED;
