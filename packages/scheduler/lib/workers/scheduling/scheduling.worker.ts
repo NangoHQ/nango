@@ -97,7 +97,7 @@ export class SchedulingChild {
                     name: `${schedule.name}:${new Date().toISOString()}`,
                     payload: schedule.payload,
                     groupKey: schedule.groupKey,
-                    retryCount: schedule.retryCount,
+                    retryCount: 0,
                     retryMax: schedule.retryMax,
                     createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
                     startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,

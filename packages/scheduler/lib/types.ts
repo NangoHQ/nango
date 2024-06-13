@@ -42,7 +42,6 @@ export interface Schedule {
     readonly payload: JsonValue;
     readonly groupKey: string;
     readonly retryMax: number;
-    readonly retryCount: number;
     readonly createdToStartedTimeoutSecs: number;
     readonly startedToCompletedTimeoutSecs: number;
     readonly heartbeatTimeoutSecs: number;

@@ -44,7 +44,7 @@ describe('OrchestratorClient', async () => {
                 startsAt: new Date(),
                 frequencyMs: 300_000,
                 groupKey: nanoid(),
-                retry: { count: 0, max: 0 },
+                retry: { max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
                     type: 'sync',
@@ -70,7 +70,7 @@ describe('OrchestratorClient', async () => {
                 startsAt: new Date(),
                 frequencyMs: 300_000,
                 groupKey: nanoid(),
-                retry: { count: 0, max: 0 },
+                retry: { max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
                     type: 'sync',
@@ -98,7 +98,7 @@ describe('OrchestratorClient', async () => {
                 startsAt: new Date(),
                 frequencyMs: 300_000,
                 groupKey: nanoid(),
-                retry: { count: 0, max: 0 },
+                retry: { max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
                     type: 'sync',

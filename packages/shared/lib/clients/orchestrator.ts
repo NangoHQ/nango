@@ -982,7 +982,7 @@ export class Orchestrator {
                 state: syncData.auto_start ? 'STARTED' : 'PAUSED',
                 frequencyMs: ms(interval.value as StringValue),
                 groupKey: 'sync',
-                retry: { count: 0, max: 3 },
+                retry: { max: 3 },
                 timeoutSettingsInSecs: {
                     createdToStarted: 60 * 60, // 1 hour
                     startedToCompleted: 60 * 60 * 24, // 1 day
