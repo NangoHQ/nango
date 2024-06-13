@@ -66,7 +66,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
         environmentId: providerConfig.environment_id,
         config_id: providerConfig.id!,
         name: syncName,
-        isAction: true
+        isAction: false
     }))!;
 
     return syncProvider({
