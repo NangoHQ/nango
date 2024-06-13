@@ -43,11 +43,7 @@ integrations:
                 output: AshbyCandidate
                 description: |
                     Fetches a list of all candidates from your ashby account
-                metadata:
-                    description: >
-                        We need to save a candidatelastsyncToken to track and update
-                        candidates' synchronizations
-                    scopes: candidatelastsyncToken
+                scopes: candidatelastsyncToken
                 sync_type: incremental
                 endpoint: GET /ashby/candidates
             jobs:
@@ -55,11 +51,7 @@ integrations:
                 output: AshbyJob
                 description: |
                     Fetches a list of all jobs from your ashby account
-                metadata:
-                    description: >
-                        We need to save a jobslastsyncToken to track and update jobs'
-                        synchronizations
-                    scopes: jobslastsyncToken
+                scopes: jobslastsyncToken
                 sync_type: incremental
                 endpoint: GET /ashby/jobs
         actions:
