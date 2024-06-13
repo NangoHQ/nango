@@ -612,27 +612,31 @@ export default class SyncRun {
 
     async finishFlow(models: string[], syncStartDate: Date, version: string, totalRunTime: number, trackDeletes?: boolean): Promise<void> {
         let i = 0;
-        for (const model of models) {
-            let deletedKeys: string[] = [];
-            if (!this.isWebhook && trackDeletes) {
-                deletedKeys = await this.recordsService.markNonCurrentGenerationRecordsAsDeleted({
-                    connectionId: this.nangoConnection.id as number,
-                    model,
-                    syncId: this.syncId as string,
-                    generation: this.syncJobId as number
-                });
-            }
 
-            await this.reportResults(
-                model,
-                { addedKeys: [], updatedKeys: [], deletedKeys, nonUniqueKeys: [] },
-                i,
-                models.length,
-                syncStartDate,
-                version,
-                totalRunTime
-            );
-            i++;
+        if (!this.isAction && !this.isWebhook && !this.isPostConnectionScript) {
+            for (const model of models) {
+                let deletedKeys: string[] = [];
+                if (trackDeletes) {
+                    deletedKeys = await this.recordsService.markNonCurrentGenerationRecordsAsDeleted({
+                        connectionId: this.nangoConnection.id as number,
+                        model,
+                        syncId: this.syncId as string,
+                        generation: this.syncJobId as number
+                    });
+                }
+
+                await this.reportResults(
+                    model,
+                    { addedKeys: [], updatedKeys: [], deletedKeys, nonUniqueKeys: [] },
+                    i,
+                    models.length,
+                    syncStartDate,
+                    version,
+                    totalRunTime
+                );
+                i++;
+            }
+            await this.logCtx?.success();
         }
 
         // we only want to report to bigquery once if it is a multi model sync

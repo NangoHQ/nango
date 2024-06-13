@@ -1,9 +1,10 @@
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
 import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
-import { route as postRecurringRunRoute } from '../routes/v1/recurring/postRecurringRun.js';
+import { route as postScheduleRunRoute } from '../routes/v1/schedules/postRun.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
-import { route as postSearchRoute } from '../routes/v1/postSearch.js';
+import { route as postTasksSearchRoute } from '../routes/v1/tasks/postSearch.js';
+import { route as postSchedulesSearchRoute } from '../routes/v1/schedules/postSearch.js';
 import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js';
 import { route as putTaskRoute } from '../routes/v1/tasks/putTaskId.js';
 import { route as postHeartbeatRoute } from '../routes/v1/tasks/taskId/postHeartbeat.js';
@@ -21,9 +22,10 @@ import type {
     OrchestratorTask,
     RecurringProps,
     ExecuteSyncProps,
-    VoidReturn
+    VoidReturn,
+    SchedulesReturn
 } from './types.js';
-import { validateTask } from './validate.js';
+import { validateTask, validateSchedule } from './validate.js';
 import type { JsonValue } from 'type-fest';
 
 const logger = getLogger('orchestrator.client');
@@ -128,7 +130,7 @@ export class OrchestratorClient {
     }
 
     public async executeSync(props: ExecuteSyncProps): Promise<VoidReturn> {
-        const res = await this.routeFetch(postRecurringRunRoute)({
+        const res = await this.routeFetch(postScheduleRunRoute)({
             body: {
                 scheduleName: props.scheduleName
             }
@@ -240,14 +242,21 @@ export class OrchestratorClient {
         };
         return this.execute(schedulingProps);
     }
-    // TODO: rename to searchTask?
-    public async search({ ids, groupKey, limit }: { ids?: string[]; groupKey?: string; limit?: number }): Promise<Result<OrchestratorTask[], ClientError>> {
+    public async searchTasks({
+        ids,
+        groupKey,
+        limit
+    }: {
+        ids?: string[];
+        groupKey?: string;
+        limit?: number;
+    }): Promise<Result<OrchestratorTask[], ClientError>> {
         const body = {
             ...(ids ? { ids } : {}),
             ...(groupKey ? { groupKey } : {}),
             ...(limit ? { limit } : {})
         };
-        const res = await this.routeFetch(postSearchRoute)({ body });
+        const res = await this.routeFetch(postTasksSearchRoute)({ body });
         if ('error' in res) {
             return Err({
                 name: res.error.code,
@@ -264,6 +273,29 @@ export class OrchestratorClient {
                 return [validated.value];
             });
             return Ok(tasks);
+        }
+    }
+
+    public async searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn> {
+        const res = await this.routeFetch(postSchedulesSearchRoute)({
+            body: { names: scheduleNames, limit }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error listing schedules`,
+                payload: { scheduleNames }
+            });
+        } else {
+            const schedule = res.flatMap((schedule) => {
+                const validated = validateSchedule(schedule);
+                if (validated.isErr()) {
+                    logger.error(`search: error validating schedule: ${validated.error.message}`);
+                    return [];
+                }
+                return [validated.value];
+            });
+            return Ok(schedule);
         }
     }
 

@@ -7,7 +7,7 @@ import {
     errorManager,
     configService,
     deployPreBuilt as deployPreBuiltSyncConfig,
-    syncOrchestrator,
+    syncManager,
     remoteFileService,
     getAllSyncsAndActions,
     getNangoConfigIdAndLocationFromId,
@@ -58,7 +58,7 @@ class FlowController {
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environment.id, logContextGetter, orchestrator);
+            await syncManager.triggerIfConnectionsExist(preBuiltResponse.result, environment.id, logContextGetter, orchestrator);
 
             res.sendStatus(200);
         } catch (e) {
@@ -125,7 +125,7 @@ class FlowController {
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter, orchestrator);
+            await syncManager.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter, orchestrator);
 
             res.status(201).send(preBuiltResponse.result);
         } catch (e) {
@@ -213,7 +213,7 @@ class FlowController {
 
             await enableConfig(Number(id));
 
-            await syncOrchestrator.triggerIfConnectionsExist([flow], environment.id, logContextGetter, orchestrator);
+            await syncManager.triggerIfConnectionsExist([flow], environment.id, logContextGetter, orchestrator);
 
             res.status(200).send([{ ...flow, enabled: true }]);
         } catch (e) {
@@ -246,7 +246,7 @@ class FlowController {
                 const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
 
                 for (const sync of syncs) {
-                    await syncOrchestrator.softDeleteSync(sync.id, environmentId, orchestrator);
+                    await syncManager.softDeleteSync(sync.id, environmentId, orchestrator);
                 }
             }
 

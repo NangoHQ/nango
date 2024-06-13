@@ -28,7 +28,7 @@ import {
     LogActionEnum,
     NangoError,
     configService,
-    syncOrchestrator,
+    syncManager,
     getAttributes,
     flowService,
     getActionOrModelByEndpoint,
@@ -249,7 +249,7 @@ class SyncController {
                 return;
             }
 
-            const syncs = await getSyncs(connection);
+            const syncs = await getSyncs(connection, orchestrator);
 
             res.send(syncs);
         } catch (e) {
@@ -302,7 +302,7 @@ class SyncController {
 
             const { environment } = res.locals;
 
-            const { success, error } = await syncOrchestrator.runSyncCommand({
+            const { success, error } = await syncManager.runSyncCommand({
                 recordsService,
                 orchestrator,
                 environment,
@@ -548,7 +548,7 @@ class SyncController {
 
             const { environment } = res.locals;
 
-            await syncOrchestrator.runSyncCommand({
+            await syncManager.runSyncCommand({
                 recordsService,
                 orchestrator,
                 environment,
@@ -590,7 +590,7 @@ class SyncController {
 
             const { environment } = res.locals;
 
-            await syncOrchestrator.runSyncCommand({
+            await syncManager.runSyncCommand({
                 recordsService,
                 orchestrator,
                 environment,
@@ -656,7 +656,15 @@ class SyncController {
                 success,
                 error,
                 response: syncsWithStatus
-            } = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames, connection_id as string, false, connection);
+            } = await syncManager.getSyncStatus(
+                environmentId,
+                provider_config_key as string,
+                syncNames,
+                orchestrator,
+                connection_id as string,
+                false,
+                connection
+            );
 
             if (!success || !syncsWithStatus) {
                 errorManager.errResFromNangoErr(res, error);
@@ -911,7 +919,7 @@ class SyncController {
                 return;
             }
 
-            await syncOrchestrator.softDeleteSync(syncId, environmentId, orchestrator);
+            await syncManager.softDeleteSync(syncId, environmentId, orchestrator);
 
             res.sendStatus(204);
         } catch (e) {

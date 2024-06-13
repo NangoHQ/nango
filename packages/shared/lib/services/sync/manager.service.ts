@@ -23,15 +23,7 @@ import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
-import type {
-    Job as SyncJob,
-    Schedule as SyncSchedule,
-    SyncDeploymentResult,
-    IncomingFlowConfig,
-    Sync,
-    SyncType,
-    ReportedSyncJobStatus
-} from '../../models/Sync.js';
+import type { SyncDeploymentResult, IncomingFlowConfig, Sync, SyncType, ReportedSyncJobStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -44,6 +36,7 @@ import environmentService from '../environment.service.js';
 import type { Environment } from '../../models/Environment.js';
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
+import { featureFlags } from '../../index.js';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -62,9 +55,9 @@ interface CreateSyncArgs {
     syncName: string;
 }
 
-const logger = getLogger('orchestrator.service');
+const logger = getLogger('sync.manager');
 
-export class OrchestratorService {
+export class SyncManagerService {
     public async createSyncForConnection(nangoConnectionId: number, logContextGetter: LogContextGetter, orchestrator: Orchestrator): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
         const nangoConfig = await getSyncConfig(nangoConnection);
@@ -401,6 +394,7 @@ export class OrchestratorService {
         environmentId: number,
         providerConfigKey: string,
         syncNames: string[],
+        orchestrator: Orchestrator,
         connectionId?: string,
         includeJobStatus = false,
         optionalConnection?: Connection | null
@@ -423,8 +417,7 @@ export class OrchestratorService {
                     continue;
                 }
 
-                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id, environmentId);
-                const reportedStatus = this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
+                const reportedStatus = await this.syncStatus(sync, environmentId, includeJobStatus, orchestrator);
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -439,8 +432,7 @@ export class OrchestratorService {
             }
 
             for (const sync of syncs) {
-                const { schedule, latestJob, status, nextScheduledSyncAt } = await this.fetchSyncData(sync?.id, environmentId);
-                const reportedStatus = this.reportedStatus(sync, latestJob, schedule, status, nextScheduledSyncAt, includeJobStatus);
+                const reportedStatus = await this.syncStatus(sync, environmentId, includeJobStatus, orchestrator);
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -459,7 +451,7 @@ export class OrchestratorService {
      * 5. If the job status is running then it is running
      * 6. If the job status is success then it is success
      */
-    public classifySyncStatus(jobStatus: SyncStatus, scheduleStatus: ScheduleStatus): SyncStatus {
+    public legacyClassifySyncStatus(jobStatus: SyncStatus, scheduleStatus: ScheduleStatus): SyncStatus {
         if (scheduleStatus === ScheduleStatus.PAUSED && jobStatus !== SyncStatus.RUNNING) {
             return SyncStatus.PAUSED;
         } else if (scheduleStatus === ScheduleStatus.RUNNING && jobStatus === null) {
@@ -473,6 +465,24 @@ export class OrchestratorService {
         }
 
         return SyncStatus.STOPPED;
+    }
+
+    public classifySyncStatus(jobStatus: SyncStatus, scheduleState: 'STARTED' | 'PAUSED' | 'DELETED'): SyncStatus {
+        if (jobStatus === SyncStatus.RUNNING) {
+            return SyncStatus.RUNNING;
+        }
+        switch (scheduleState) {
+            case 'PAUSED':
+                return SyncStatus.PAUSED;
+            case 'STARTED':
+                if (jobStatus === SyncStatus.STOPPED) {
+                    // job status doesn't have a ERROR status
+                    return SyncStatus.ERROR;
+                }
+                return jobStatus || SyncStatus.SUCCESS;
+            default:
+                return SyncStatus.STOPPED;
+        }
     }
 
     /**
@@ -511,13 +521,42 @@ export class OrchestratorService {
             );
         }
     }
-    // TODO:
-    private async fetchSyncData(syncId: string, environmentId: number) {
-        const syncClient = await SyncClient.getInstance();
-        const schedule = await getSchedule(syncId);
-        const latestJob = await getLatestSyncJob(syncId);
-        let status = this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus);
 
+    private async syncStatus(sync: Sync, environmentId: number, includeJobStatus: boolean, orchestrator: Orchestrator): Promise<ReportedSyncJobStatus> {
+        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
+        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+        if (isOrchestrator) {
+            const latestJob = await getLatestSyncJob(sync.id);
+            const schedules = await orchestrator.searchSchedules([{ syncId: sync.id, environmentId }]);
+            if (schedules.isErr()) {
+                throw new Error(`Failed to get schedule for sync ${sync.id} in environment ${environmentId}: ${stringifyError(schedules.error)}`);
+            }
+            const schedule = schedules.value.get(sync.id);
+            if (!schedule) {
+                throw new Error(`Schedule for sync ${sync.id} and environment ${environmentId} not found`);
+            }
+            return {
+                id: sync.id,
+                type: latestJob?.type as SyncType,
+                finishedAt: latestJob?.updated_at,
+                nextScheduledSyncAt: schedule.nextDueDate,
+                name: sync.name,
+                status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule.state),
+                frequency: sync.frequency,
+                latestResult: latestJob?.result,
+                latestExecutionStatus: latestJob?.status,
+                ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})
+            } as ReportedSyncJobStatus;
+        }
+        return this.legacySyncStatus(sync, environmentId, includeJobStatus);
+    }
+
+    private async legacySyncStatus(sync: Sync, environmentId: number, includeJobStatus: boolean): Promise<ReportedSyncJobStatus> {
+        const syncClient = await SyncClient.getInstance();
+        const schedule = await getSchedule(sync.id);
+        const latestJob = await getLatestSyncJob(sync.id);
+        let status = this.legacyClassifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus);
         const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
         if (syncSchedule) {
             if (syncSchedule?.schedule?.state?.paused && schedule?.status === ScheduleStatus.RUNNING) {
@@ -531,11 +570,11 @@ export class OrchestratorService {
                     LogActionEnum.SYNC,
                     {
                         environmentId: String(environmentId),
-                        syncId,
+                        syncId: sync.id,
                         scheduleId: String(schedule?.schedule_id),
                         level: 'warn'
                     },
-                    `syncId:${syncId}`
+                    `syncId:${sync.id}`
                 );
             } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
                 await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
@@ -546,11 +585,11 @@ export class OrchestratorService {
                     LogActionEnum.SYNC,
                     {
                         environmentId: String(environmentId),
-                        syncId,
+                        syncId: sync.id,
                         scheduleId: String(schedule?.schedule_id),
                         level: 'warn'
                     },
-                    `syncId:${syncId}`
+                    `syncId:${sync.id}`
                 );
             }
         }
@@ -559,21 +598,10 @@ export class OrchestratorService {
         if (status !== SyncStatus.PAUSED) {
             if (syncSchedule && syncSchedule?.info && syncSchedule?.info.futureActionTimes && syncSchedule?.info?.futureActionTimes?.length > 0) {
                 const futureRun = syncSchedule.info.futureActionTimes[0];
-                nextScheduledSyncAt = syncClient?.formatFutureRun(futureRun?.seconds?.toNumber() as number);
+                nextScheduledSyncAt = syncClient?.formatFutureRun(futureRun?.seconds?.toNumber() as number) || null;
             }
         }
 
-        return { schedule, latestJob, status, nextScheduledSyncAt };
-    }
-
-    private reportedStatus(
-        sync: Sync,
-        latestJob: SyncJob | null,
-        schedule: SyncSchedule | null,
-        status: SyncStatus,
-        nextScheduledSyncAt?: string | Date | null,
-        includeJobStatus = false
-    ) {
         const reportedStatus: ReportedSyncJobStatus = {
             id: sync?.id,
             type: latestJob?.type as SyncType,
@@ -583,7 +611,7 @@ export class OrchestratorService {
             status,
             frequency: schedule?.frequency,
             latestResult: latestJob?.result,
-            latestExecutionStatus: latestJob?.status === SyncStatus.STOPPED ? SyncStatus.ERROR : latestJob?.status
+            latestExecutionStatus: latestJob?.status
         } as ReportedSyncJobStatus;
 
         if (includeJobStatus) {
@@ -594,4 +622,4 @@ export class OrchestratorService {
     }
 }
 
-export default new OrchestratorService();
+export default new SyncManagerService();

@@ -4,7 +4,7 @@ import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 
-const path = '/v1/search';
+const path = '/v1/tasks/search';
 const method = 'POST';
 
 type PostSearch = Endpoint<{
@@ -34,7 +34,7 @@ const validate = validateRequest<PostSearch>({
 const handler = (scheduler: Scheduler) => {
     return async (req: EndpointRequest<PostSearch>, res: EndpointResponse<PostSearch>) => {
         const { ids, groupKey, limit } = req.body;
-        const getTasks = await scheduler.search({
+        const getTasks = await scheduler.searchTasks({
             ...(ids ? { ids } : {}),
             ...(groupKey ? { groupKey } : {}),
             ...(limit ? { limit } : {})
@@ -42,7 +42,7 @@ const handler = (scheduler: Scheduler) => {
         if (getTasks.isErr()) {
             return res.status(500).json({ error: { code: 'search_failed', message: getTasks.error.message } });
         }
-        return res.status(201).json(getTasks.value);
+        return res.status(200).json(getTasks.value);
     };
 };
 

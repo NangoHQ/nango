@@ -92,8 +92,25 @@ export class Scheduler {
      * @example
      * const tasks = await scheduler.search({ groupKey: 'test', state: 'CREATED' });
      */
-    public async search(params?: { ids?: string[]; groupKey?: string; state?: TaskState; scheduleId?: string; limit?: number }): Promise<Result<Task[]>> {
+    public async searchTasks(params?: { ids?: string[]; groupKey?: string; state?: TaskState; scheduleId?: string; limit?: number }): Promise<Result<Task[]>> {
         return tasks.search(this.dbClient.db, params);
+    }
+
+    /**
+     * Search schedules
+     * @param params
+     * @param params.names - Schedule names
+     * @example
+     * const tasks = await scheduler.searchSchedules({ names: ['scheduleA'] });
+     */
+    public async searchSchedules(params: {
+        id?: string;
+        names?: string[];
+        state?: ScheduleState;
+        limit: number;
+        forUpdate?: boolean;
+    }): Promise<Result<Schedule[]>> {
+        return schedules.search(this.dbClient.db, params);
     }
 
     /**
@@ -118,7 +135,7 @@ export class Scheduler {
             let taskProps: tasks.TaskProps;
             if ('scheduleName' in props) {
                 // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
-                const getSchedules = await schedules.search(trx, { name: props.scheduleName, limit: 1, forUpdate: true });
+                const getSchedules = await schedules.search(trx, { names: [props.scheduleName], limit: 1, forUpdate: true });
                 if (getSchedules.isErr()) {
                     return Err(getSchedules.error);
                 }
@@ -313,7 +330,7 @@ export class Scheduler {
     public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
         return this.dbClient.db.transaction(async (trx) => {
             // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
-            const schedule = await schedules.search(trx, { name: scheduleName, limit: 1, forUpdate: true });
+            const schedule = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
             if (schedule.isErr()) {
                 return Err(schedule.error);
             }
@@ -348,9 +365,17 @@ export class Scheduler {
         });
     }
 
+    /**
+     * Set schedule frequency
+     * @param scheduleName - Schedule name
+     * @param frequencyMs - Frequency in milliseconds
+     * @returns Schedule
+     * @example
+     * const schedule = await scheduler.setScheduleFrequency({ scheduleName: 'schedule123', frequencyMs: 600_000 });
+     */
     public async setScheduleFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<Result<Schedule>> {
         return this.dbClient.db.transaction(async (trx) => {
-            const schedule = await schedules.search(trx, { name: scheduleName, limit: 1, forUpdate: true });
+            const schedule = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
             if (schedule.isErr()) {
                 return Err(schedule.error);
             }
