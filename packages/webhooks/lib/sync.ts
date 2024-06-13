@@ -58,6 +58,7 @@ export const sendSync = async ({
     };
 
     if (success) {
+        body.queryTimeStamp = null;
         body.modifiedAfter = dayjs(now).toDate().toISOString();
         if (syncType !== 'INITIAL') {
             body.queryTimeStamp = now as unknown as string;
