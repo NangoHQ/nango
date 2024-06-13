@@ -10,7 +10,7 @@ integrations:
                     is not required.
                 output: OrganizationalUnit
                 sync_type: full
-                endpoint: /microsoft-teams/microsoft-org-unit
+                endpoint: GET /microsoft-teams/microsoft-org-unit
                 scopes:
                     - GroupMember.Read.All
             users:
@@ -24,7 +24,7 @@ integrations:
                     metadata is required.
                 output: User
                 sync_type: full
-                endpoint: /microsoft-teams/microsoft-users
+                endpoint: GET /microsoft-teams/microsoft-users
                 scopes:
                     - User.Read.All
 models:

@@ -10,15 +10,15 @@ integrations:
                     - IntercomConversationMessage
                 sync_type: incremental
                 endpoint:
-                    - /intercom/conversations
-                    - /intercom/conversations-message
+                    - GET /intercom/conversations
+                    - GET /intercom/conversations-message
             contacts:
                 runs: every 6 hours
                 description: |
                     Fetches a list of contacts from Intercom
                 output: IntercomContact
                 sync_type: full
-                endpoint: /intercom/contacts
+                endpoint: GET /intercom/contacts
 models:
     IntercomContact:
         id: string

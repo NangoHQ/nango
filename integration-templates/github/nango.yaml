@@ -8,7 +8,7 @@ integrations:
                 scopes: public_repo
                 description: |
                     Fetches Github issues from all a user's repositories
-                endpoint: /github/issues
+                endpoint: GET /github/issues
             issues-lite:
                 runs: every day
                 auto_start: false
@@ -17,7 +17,7 @@ integrations:
                 scopes: public_repo
                 description: |
                     Fetches Github issues but up to a maximum of 15
-                endpoint: /github/issues-lite
+                endpoint: GET /github/issues-lite
             list-files:
                 runs: every hour
                 description: |
@@ -26,7 +26,7 @@ integrations:
                 auto_start: false
                 input: GithubIssueRepoInput
                 output: GithubRepoFile
-                endpoint: /github/list-files
+                endpoint: GET /github/list-files
                 scopes: repo
             issues-demo:
                 runs: every 5 minutes

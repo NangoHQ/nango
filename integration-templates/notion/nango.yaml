@@ -10,7 +10,7 @@ integrations:
                     a `rich_text` property.
                 output: NotionPage
                 sync_type: incremental
-                endpoint: /notion/pages
+                endpoint: GET /notion/pages
             rich-pages:
                 runs: every 6 hours
                 track_deletes: true
@@ -20,7 +20,7 @@ integrations:
                     images, tables, uploaded files, etc into their markdown counterparts.
                 output: NotionRichPage
                 sync_type: incremental
-                endpoint: /notion/rich-pages
+                endpoint: GET /notion/rich-pages
 models:
     NotionPage:
         id: string

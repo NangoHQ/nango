@@ -8,7 +8,7 @@ integrations:
                 runs: every 5 minutes
                 output: GoogleCalendarEvent
                 sync_type: incremental
-                endpoint: /google-calendar/events
+                endpoint: GET /google-calendar/events
                 scopes: https://www.googleapis.com/auth/calendar.readonly
             calendars:
                 description: |
@@ -17,7 +17,7 @@ integrations:
                 runs: every hour
                 output: GoogleCalendar
                 sync_type: full
-                endpoint: /google-calendar/calendars
+                endpoint: GET /google-calendar/calendars
                 scopes: https://www.googleapis.com/auth/calendar.readonly
 models:
     GoogleCalendar:

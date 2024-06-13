@@ -7,7 +7,7 @@ integrations:
                     Fetches a list of current employees from bamboohr
                 output: BamboohrEmployee
                 sync_type: incremental
-                endpoint: /bamboohr/employees
+                endpoint: GET /bamboohr/employees
         actions:
             create-employee:
                 description: |

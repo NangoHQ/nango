@@ -7,7 +7,7 @@ integrations:
                     Fetches a list of issues from Jira
                 output: JiraIssue
                 sync_type: incremental
-                endpoint: /jira/issues
+                endpoint: GET /jira/issues
 models:
     JiraIssue:
         id: integer

@@ -9,7 +9,7 @@ integrations:
                     - default
                 output: AsanaTask
                 sync_type: full
-                endpoint: /asana/tasks
+                endpoint: GET /asana/tasks
 models:
     AsanaTask:
         id: string
