@@ -42,7 +42,7 @@ const handler = (scheduler: Scheduler) => {
         if (getTasks.isErr()) {
             return res.status(500).json({ error: { code: 'search_failed', message: getTasks.error.message } });
         }
-        return res.status(201).json(getTasks.value);
+        return res.status(200).json(getTasks.value);
     };
 };
 

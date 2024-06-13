@@ -85,7 +85,7 @@ const handler = (scheduler: Scheduler) => {
         if (task.isErr()) {
             return res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
         }
-        return res.status(201).json({ taskId: task.value.id });
+        return res.status(200).json({ taskId: task.value.id });
     };
 };
 
