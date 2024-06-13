@@ -71,6 +71,19 @@ export interface OrchestratorClientInterface {
     searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
 }
 
+const ScheduleName = {
+    get: ({ environmentId, syncId }: { environmentId: number; syncId: string }): string => {
+        return `environment:${environmentId}:sync:${syncId}`;
+    },
+    parse: (scheduleName: string): Result<{ environmentId: number; syncId: string }> => {
+        const parts = scheduleName.split(':');
+        if (parts.length !== 4 || parts[0] !== 'environment' || isNaN(Number(parts[1])) || parts[2] !== 'sync' || !parts[3] || parts[3].length === 0) {
+            return Err(`Invalid schedule name: ${scheduleName}. expected format: environment:<environmentId>:sync:<syncId>`);
+        }
+        return Ok({ environmentId: Number(parts[1]), syncId: parts[3] });
+    }
+};
+
 export class Orchestrator {
     private client: OrchestratorClientInterface;
 
@@ -78,19 +91,17 @@ export class Orchestrator {
         this.client = client;
     }
 
-    private getScheduleName({ environmentId, syncId }: { environmentId: number; syncId: string }): string {
-        return `environment:${environmentId}:sync:${syncId}`;
-    }
-
     async searchSchedules(props: { syncId: string; environmentId: number }[]): Promise<Result<Map<string, OrchestratorSchedule>>> {
-        const scheduleNames = props.map(({ syncId, environmentId }) => this.getScheduleName({ environmentId, syncId }));
+        const scheduleNames = props.map(({ syncId, environmentId }) => ScheduleName.get({ environmentId, syncId }));
         const schedules = await this.client.searchSchedules({ scheduleNames, limit: scheduleNames.length });
         if (schedules.isErr()) {
             return Err(`Failed to get schedules: ${stringifyError(schedules.error)}`);
         }
         const scheduleMap = schedules.value.reduce((map, schedule) => {
-            const syncId = schedule.name.split(':').pop()!;
-            map.set(syncId, schedule);
+            const parsed = ScheduleName.parse(schedule.name);
+            if (parsed.isOk()) {
+                map.set(parsed.value.syncId, schedule);
+            }
             return map;
         }, new Map<string, OrchestratorSchedule>());
         return Ok(scheduleMap);
@@ -716,7 +727,7 @@ export class Orchestrator {
         const isOrchestrator = isGloballyEnabled || isEnvEnabled;
 
         // Orchestrator
-        const scheduleName = this.getScheduleName({ environmentId, syncId });
+        const scheduleName = ScheduleName.get({ environmentId, syncId });
         const frequencyMs = ms(interval as StringValue);
         const res = await this.client.updateSyncFrequency({ scheduleName, frequencyMs });
 
@@ -769,7 +780,7 @@ export class Orchestrator {
                 await this.client.cancel({ taskId: syncJob?.run_id, reason: initiator });
                 return Ok(undefined);
             };
-            const scheduleName = this.getScheduleName({ environmentId, syncId });
+            const scheduleName = ScheduleName.get({ environmentId, syncId });
             switch (command) {
                 case SyncCommand.CANCEL:
                     return cancelling(syncId);
@@ -993,7 +1004,7 @@ export class Orchestrator {
             }
 
             const schedule = await this.client.recurring({
-                name: this.getScheduleName({ environmentId: nangoConnection.environment_id, syncId: sync.id }),
+                name: ScheduleName.get({ environmentId: nangoConnection.environment_id, syncId: sync.id }),
                 state: syncData.auto_start ? 'STARTED' : 'PAUSED',
                 frequencyMs: ms(interval.value as StringValue),
                 groupKey: 'sync',
