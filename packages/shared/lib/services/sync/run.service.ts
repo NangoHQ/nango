@@ -543,7 +543,6 @@ export default class SyncRun {
                         content
                     });
                     await this.logCtx?.info(content);
-                    await this.logCtx?.success();
 
                     await this.slackNotificationService?.removeFailingConnection(
                         this.nangoConnection,
@@ -783,7 +782,6 @@ export default class SyncRun {
                 content
             });
             await this.logCtx?.info(content);
-            await this.logCtx?.success();
         } else {
             await createActivityLogMessage({
                 level: 'info',
