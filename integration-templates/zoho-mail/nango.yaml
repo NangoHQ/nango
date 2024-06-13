@@ -72,6 +72,7 @@ models:
         depUniqId: string
         status: string
     ZohoMailEmail:
+        id: string
         summary: string
         sentDateInGMT: string
         calendarType: number
