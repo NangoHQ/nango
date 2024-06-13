@@ -508,6 +508,14 @@ class ProxyService {
                         case AuthModes.OAuth2:
                             tokenPair = { accessToken: config.token };
                             break;
+                        case AuthModes.Basic:
+                            if (value.includes('connectionConfig')) {
+                                value = value.replace(/connectionConfig\./g, '');
+                                tokenPair = config.connection.connection_config;
+                            } else {
+                                tokenPair = config.token;
+                            }
+                            break;
                         case AuthModes.ApiKey:
                         case AuthModes.OAuth2CC:
                             if (value.includes('connectionConfig')) {
