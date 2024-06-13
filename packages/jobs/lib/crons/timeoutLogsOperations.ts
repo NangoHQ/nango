@@ -18,6 +18,7 @@ export function timeoutLogsOperations(): void {
             try {
                 logger.info(`Timeouting old operations...`);
                 await model.setTimeoutForAll();
+                logger.info(`✅ Timeouted`);
             } catch (err) {
                 errorManager.report(err, { source: ErrorSourceEnum.PLATFORM }, tracer);
             }

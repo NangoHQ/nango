@@ -372,9 +372,16 @@ export async function setTimeoutForAll(opts: { wait?: boolean } = {}): Promise<v
         refresh: opts.wait === true,
         query: {
             bool: {
-                must: [{ range: { expiresAt: { lt: 'now' } } }],
+                filter: [
+                    { range: { expiresAt: { lt: 'now' } } },
+                    {
+                        bool: {
+                            should: [{ term: { state: 'waiting' } }, { term: { state: 'running' } }]
+                        }
+                    }
+                ],
                 must_not: { exists: { field: 'parentId' } },
-                should: [{ term: { state: 'waiting' } }, { term: { state: 'running' } }]
+                should: []
             }
         },
         script: {
