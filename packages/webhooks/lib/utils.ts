@@ -78,7 +78,7 @@ export const shouldSend = ({
     webhookSettings: ExternalWebhook;
     success: boolean;
     type: 'auth' | 'sync' | 'forward';
-    operation: SyncType | AuthOperationType;
+    operation: SyncType | AuthOperationType | 'incoming_webhook';
 }): boolean => {
     const hasAnyWebhook = Boolean(webhookSettings.primary_url || webhookSettings.secondary_url);
 
@@ -118,21 +118,26 @@ export const deliver = async ({
     activityLogId,
     logCtx,
     environment,
-    endingMessage = ''
+    endingMessage = '',
+    incomingHeaders
 }: {
     webhooks: { url: string; type: string }[];
     body: unknown;
-    webhookType: string;
+    webhookType: 'auth' | 'forward' | 'sync';
     activityLogId: number | null;
     environment: Environment;
     logCtx?: LogContext | undefined;
     endingMessage?: string;
+    incomingHeaders?: Record<string, string>;
 }): Promise<void> => {
     for (const webhook of webhooks) {
         const { url, type } = webhook;
 
         try {
-            const headers = getSignatureHeader(environment.secret_key, body);
+            const headers = {
+                ...getSignatureHeader(environment.secret_key, body),
+                ...filterHeaders(incomingHeaders || {})
+            };
 
             const response = await backOff(
                 () => {
@@ -141,17 +146,23 @@ export const deliver = async ({
                 { numOfAttempts: RETRY_ATTEMPTS, retry: retry.bind(this, activityLogId, logCtx) }
             );
 
-            if (activityLogId) {
+            if (logCtx) {
                 if (response.status >= 200 && response.status < 300) {
-                    await logCtx?.info(
+                    await logCtx.info(
                         `${webhookType} webhook sent successfully to the ${type} ${url} and received with a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}.`,
                         body as Record<string, unknown>
                     );
+                    if (webhookType === 'forward') {
+                        await logCtx.success();
+                    }
                 } else {
-                    await logCtx?.error(
+                    await logCtx.error(
                         `${webhookType} sent webhook successfully to the ${type} ${url} but received a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`,
                         body as Record<string, unknown>
                     );
+                    if (webhookType === 'forward') {
+                        await logCtx.failed();
+                    }
                 }
             }
         } catch (err) {

@@ -1,9 +1,10 @@
-import { configService, environmentService, webhookService, telemetry, LogTypes, LogActionEnum } from '@nangohq/shared';
+import { externalWebhookService, configService, environmentService, telemetry, LogTypes, LogActionEnum } from '@nangohq/shared';
 import { internalNango } from './internal-nango.js';
 import { getLogger } from '@nangohq/utils';
 import * as webhookHandlers from './index.js';
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
+import { forwardWebhook } from '@nangohq/webhooks';
 
 const logger = getLogger('Webhook.Manager');
 
@@ -60,10 +61,13 @@ async function execute(
     const webhookBodyToForward = res?.parsedBody || body;
     const connectionIds = res?.connectionIds || [];
 
-    await webhookService.forward({
+    const webhookSettings = await externalWebhookService.get(environment.id);
+
+    await forwardWebhook({
         integration,
         account,
         environment,
+        webhookSettings,
         connectionIds,
         payload: webhookBodyToForward,
         webhookOriginalHeaders: headers,
