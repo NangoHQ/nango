@@ -24,7 +24,7 @@ import {
     getFlowConfigsByParams,
     getGlobalWebhookReceiveUrl
 } from '@nangohq/shared';
-import { parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
+import { getOrchestrator, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import type { RequestLocals } from '../utils/express.js';
 
 export interface Integration {
@@ -45,6 +45,8 @@ interface FlowConfigs {
     enabledFlows: NangoSyncConfig[];
     disabledFlows: NangoSyncConfig[];
 }
+
+const orchestrator = getOrchestrator();
 
 const separateFlows = (flows: NangoSyncConfig[]): FlowConfigs => {
     return flows.reduce(
@@ -113,7 +115,7 @@ class ConfigController {
                     const activeFlows = await getFlowConfigsByParams(environment.id, config.unique_key);
 
                     const integration: Integration = {
-                        authMode: template?.auth_mode || 'APP_STORE',
+                        authMode: template?.auth_mode || 'APP',
                         uniqueKey: config.unique_key,
                         provider: config.provider,
                         scripts: activeFlows.length,
@@ -121,7 +123,7 @@ class ConfigController {
                         creationDate: config.created_at
                     };
 
-                    if (template && template.auth_mode !== 'APP_STORE' && template.auth_mode !== 'CUSTOM') {
+                    if (template && template.auth_mode !== 'APP' && template.auth_mode !== 'CUSTOM') {
                         integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template);
                     }
 
@@ -681,7 +683,7 @@ class ConfigController {
                 return;
             }
 
-            await configService.deleteProviderConfig(providerConfigKey, environmentId);
+            await configService.deleteProviderConfig(providerConfigKey, environmentId, orchestrator);
 
             res.status(204).send();
         } catch (err) {

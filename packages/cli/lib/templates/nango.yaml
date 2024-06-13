@@ -5,8 +5,7 @@ integrations:
         description: |
           Fetches the Github issues from all a user's repositories.
           Details: full sync, doesn't track deletes, metadata is not required.
-        type: sync
-        endpoint: /example/github/issues
+        endpoint: GET /example/github/issues
         sync_type: full
         scopes: public_repo
         track_deletes: false

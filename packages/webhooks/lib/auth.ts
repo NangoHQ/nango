@@ -29,6 +29,8 @@ export const sendAuth = async ({
         return;
     }
 
+    const success = typeof error === 'undefined';
+
     const body: NangoAuthWebhookBody = {
         from: 'nango',
         type: WebhookType.AUTH,
@@ -37,12 +39,17 @@ export const sendAuth = async ({
         authMode: auth_mode,
         provider,
         environment: environment.name,
-        success: Boolean(!error),
+        success,
         operation
     };
 
     if (error) {
         body.error = error;
+    }
+
+    // TODO when settings are available send this webhook
+    if (!success) {
+        return;
     }
 
     const webhooks = [

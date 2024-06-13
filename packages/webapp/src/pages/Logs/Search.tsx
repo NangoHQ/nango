@@ -327,7 +327,12 @@ export const LogsSearch: React.FC = () => {
                     </div>
                 ) : (
                     <Info color={'red'} classNames="text-xs" size={20}>
-                        An error occurred, refresh your page or reach out to the support.
+                        An error occurred, refresh your page or reach out to the support.{' '}
+                        {error.error.code === 'generic_error_support' && (
+                            <>
+                                (id: <span className="select-all">{error.error.payload}</span>)
+                            </>
+                        )}
                     </Info>
                 )}
             </DashboardLayout>

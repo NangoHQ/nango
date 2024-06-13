@@ -1,3 +1,5 @@
+import ms from 'ms';
+import type { StringValue } from 'ms';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { Err, Ok, stringifyError, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -27,15 +29,19 @@ import type {
     ExecutePostConnectionProps,
     ExecuteSyncProps,
     VoidReturn,
-    OrchestratorTask
+    OrchestratorTask,
+    RecurringProps
 } from '@nangohq/nango-orchestrator';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
-import type { SyncConfig } from '../models/index.js';
+import type { NangoIntegrationData, Sync, SyncConfig } from '../models/index.js';
 import { SyncCommand } from '../models/index.js';
 import tracer from 'dd-trace';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { isSyncJobRunning } from '../services/sync/job.service.js';
+import { updateSyncScheduleFrequency } from '../services/sync/schedule.service.js';
+import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
+import environmentService from '../services/environment.service.js';
 
 async function getTemporal(): Promise<TemporalClient> {
     const instance = await SyncClient.getInstance();
@@ -50,6 +56,7 @@ export interface RecordsServiceInterface {
 }
 
 export interface OrchestratorClientInterface {
+    recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
     executePostConnection(props: ExecutePostConnectionProps): Promise<ExecuteReturn>;
@@ -57,6 +64,7 @@ export interface OrchestratorClientInterface {
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
     cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
 }
 
@@ -65,6 +73,10 @@ export class Orchestrator {
 
     public constructor(client: OrchestratorClientInterface) {
         this.client = client;
+    }
+
+    private getScheduleName({ environmentId, syncId }: { environmentId: number; syncId: string }): string {
+        return `environment:${environmentId}:sync:${syncId}`;
     }
 
     async triggerAction<T = any>({
@@ -669,6 +681,53 @@ export class Orchestrator {
         }
     }
 
+    async updateSyncFrequency({
+        syncId,
+        interval,
+        syncName,
+        environmentId,
+        activityLogId,
+        logCtx
+    }: {
+        syncId: string;
+        interval: string;
+        syncName: string;
+        environmentId: number;
+        activityLogId?: number;
+        logCtx?: LogContext;
+    }): Promise<Result<void>> {
+        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
+        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+
+        // Orchestrator
+        const scheduleName = this.getScheduleName({ environmentId, syncId });
+        const frequencyMs = ms(interval as StringValue);
+        const res = await this.client.updateSyncFrequency({ scheduleName, frequencyMs });
+
+        // Legacy
+        const { success, error } = await updateSyncScheduleFrequency(syncId, interval, syncName, environmentId, activityLogId, logCtx);
+
+        if (isOrchestrator) {
+            if (res.isErr()) {
+                errorManager.report(res.error, {
+                    source: ErrorSourceEnum.PLATFORM,
+                    operation: LogActionEnum.SYNC_CLIENT,
+                    environmentId,
+                    metadata: {
+                        syncName,
+                        scheduleName,
+                        frequencyMs
+                    }
+                });
+            } else {
+                await logCtx?.info(`Sync frequency updated to ${frequencyMs}ms.`);
+            }
+            return res;
+        }
+        return success ? Ok(undefined) : Err(error?.message ?? 'Failed to update sync frequency');
+    }
+
     async runSyncCommand({
         syncId,
         command,
@@ -695,7 +754,7 @@ export class Orchestrator {
                 await this.client.cancel({ taskId: syncJob?.run_id, reason: initiator });
                 return Ok(undefined);
             };
-            const scheduleName = `environment:${environmentId}:sync:${syncId}`;
+            const scheduleName = this.getScheduleName({ environmentId, syncId });
             switch (command) {
                 case SyncCommand.CANCEL:
                     return cancelling(syncId);
@@ -757,8 +816,8 @@ export class Orchestrator {
         const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${props.environmentId}`, false);
         const isOrchestrator = isGloballyEnabled || isEnvEnabled;
 
-        if (isOrchestrator) {
-            return await this.runSyncCommand({
+        const runWithOrchestrator = () => {
+            return this.runSyncCommand({
                 syncId: props.syncId,
                 command: props.command,
                 activityLogId: props.activityLogId,
@@ -767,26 +826,301 @@ export class Orchestrator {
                 recordsService: props.recordsService,
                 initiator: props.initiator
             });
+        };
+        const runLegacy = async (): Promise<Result<void>> => {
+            const syncClient = await SyncClient.getInstance();
+            if (!syncClient) {
+                return Err(new NangoError('failed_to_get_sync_client'));
+            }
+            const res = await syncClient.runSyncCommand({
+                scheduleId: props.scheduleId,
+                syncId: props.syncId,
+                command: props.command,
+                activityLogId: props.activityLogId,
+                environmentId: props.environmentId,
+                providerConfigKey: props.providerConfigKey,
+                connectionId: props.connectionId,
+                syncName: props.syncName,
+                nangoConnectionId: props.nangoConnectionId,
+                logCtx: props.logCtx,
+                recordsService: props.recordsService,
+                initiator: props.initiator
+            });
+            return res.isErr() ? Err(res.error) : Ok(undefined);
+        };
+        const isRunFullCommand = props.command === SyncCommand.RUN_FULL;
+
+        if (isRunFullCommand) {
+            // RUN_FULL command is triggering side effect (deleting records, ...)
+            // so we run only orchestrator OR legacy
+            if (isOrchestrator) {
+                return runWithOrchestrator();
+            }
+            return await runLegacy();
+        } else {
+            // if the command is NOT a run command,
+            // we run BOTH orchestrator and legacy
+            const [resOrchestrator, resLegacy] = await Promise.all([runWithOrchestrator(), runLegacy()]);
+            if (isOrchestrator) {
+                return resOrchestrator;
+            }
+            return resLegacy;
         }
+    }
+
+    async deleteSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
+        const res = await this.client.deleteSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
+                metadata: { syncId, environmentId }
+            });
+        }
+        return res;
+    }
+
+    async scheduleSync({
+        nangoConnection,
+        sync,
+        providerConfig,
+        syncName,
+        syncData,
+        logContextGetter,
+        debug = false,
+        shouldLog
+    }: {
+        nangoConnection: NangoConnection;
+        sync: Sync;
+        providerConfig: ProviderConfig;
+        syncName: string;
+        syncData: NangoIntegrationData;
+        logContextGetter: LogContextGetter;
+        debug?: boolean;
+        shouldLog: boolean; // to remove once temporal is removed
+    }): Promise<Result<void>> {
+        let logCtx: LogContext | undefined;
+
+        try {
+            const activityLogId = await createActivityLog({
+                level: 'info' as LogLevel,
+                success: null,
+                action: LogActionEnum.SYNC_INIT,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: nangoConnection.connection_id,
+                provider_config_key: nangoConnection.provider_config_key,
+                provider: providerConfig.provider,
+                session_id: sync?.id?.toString(),
+                environment_id: nangoConnection.environment_id,
+                operation_name: syncName
+            });
+            if (!activityLogId) {
+                return Err(new NangoError('failed_to_create_activity_log'));
+            }
+
+            const syncConfig = await getSyncConfigRaw({
+                environmentId: nangoConnection.environment_id,
+                config_id: providerConfig.id!,
+                name: syncName,
+                isAction: false
+            });
+
+            const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
+
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
+                {
+                    account,
+                    environment,
+                    integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                    connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
+                    syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name }
+                },
+                { dryRun: shouldLog }
+            );
+
+            const interval = this.cleanInterval(syncData.runs);
+
+            if (interval.isErr()) {
+                const content = `The sync was not scheduled due to an error with the sync interval "${syncData.runs}": ${interval.error.message}`;
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id: nangoConnection.environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content
+                });
+                await logCtx.error('The sync was not created or started due to an error with the sync interval', {
+                    error: interval.error,
+                    runs: syncData.runs
+                });
+                await logCtx.failed();
+
+                errorManager.report(content, {
+                    source: ErrorSourceEnum.CUSTOMER,
+                    operation: LogActionEnum.SYNC_CLIENT,
+                    environmentId: nangoConnection.environment_id,
+                    metadata: {
+                        connectionDetails: nangoConnection,
+                        providerConfig,
+                        syncName,
+                        sync,
+                        syncData
+                    }
+                });
+
+                await updateSuccessActivityLog(activityLogId, false);
+
+                return Err(interval.error);
+            }
+
+            const schedule = await this.client.recurring({
+                name: this.getScheduleName({ environmentId: nangoConnection.environment_id, syncId: sync.id }),
+                state: syncData.auto_start ? 'STARTED' : 'PAUSED',
+                frequencyMs: ms(interval.value as StringValue),
+                groupKey: 'sync',
+                retry: { count: 0, max: 3 },
+                timeoutSettingsInSecs: {
+                    createdToStarted: 60 * 60, // 1 hour
+                    startedToCompleted: 60 * 60 * 24, // 1 day
+                    heartbeat: 30 * 60 // 30 minutes
+                },
+                startsAt: new Date(),
+                args: {
+                    type: 'sync',
+                    syncId: sync.id,
+                    syncName,
+                    debug,
+                    connection: {
+                        id: nangoConnection.id!,
+                        provider_config_key: nangoConnection.provider_config_key,
+                        environment_id: nangoConnection.environment_id,
+                        connection_id: nangoConnection.connection_id
+                    }
+                }
+            });
+
+            if (schedule.isErr()) {
+                throw schedule.error;
+            }
+
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                environment_id: nangoConnection.environment_id,
+                activity_log_id: activityLogId,
+                content: `Scheduled to run "${syncData.runs}"`,
+                timestamp: Date.now()
+            });
+            await logCtx.info('Scheduled successfully', { runs: syncData.runs });
+            await logCtx.success();
+            return Ok(undefined);
+        } catch (err) {
+            errorManager.report(err, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC_CLIENT,
+                environmentId: nangoConnection.environment_id,
+                metadata: {
+                    syncName,
+                    connectionDetails: JSON.stringify(nangoConnection),
+                    syncId: sync.id,
+                    providerConfig,
+                    syncData: JSON.stringify(syncData)
+                }
+            });
+            if (logCtx) {
+                await logCtx.error('Failed to init sync', { error: err });
+                await logCtx.failed();
+            }
+            return Err(`Failed to schedule sync: ${err}`);
+        }
+    }
+    // TODO: remove once temporal is removed
+    async scheduleSyncHelper(
+        nangoConnection: NangoConnection,
+        sync: Sync,
+        providerConfig: ProviderConfig,
+        syncName: string,
+        syncData: NangoIntegrationData,
+        logContextGetter: LogContextGetter,
+        debug = false
+    ): Promise<Result<void>> {
+        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${nangoConnection.environment_id}`, false);
+        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+
+        const res = await this.scheduleSync({
+            nangoConnection,
+            sync,
+            providerConfig,
+            syncName,
+            syncData,
+            logContextGetter,
+            shouldLog: isOrchestrator,
+            debug
+        });
 
         const syncClient = await SyncClient.getInstance();
-        if (!syncClient) {
-            return Err(new NangoError('failed_to_get_sync_client'));
+
+        let resTemporal: Result<void>;
+        if (syncClient) {
+            try {
+                const shouldLog = !isOrchestrator;
+                await syncClient.startContinuous(nangoConnection, sync, providerConfig, syncName, syncData, logContextGetter, shouldLog, debug);
+                resTemporal = Ok(undefined);
+            } catch (e) {
+                resTemporal = Err(`Failed to schedule sync: ${e}`);
+            }
+        } else {
+            resTemporal = Err(new NangoError('failed_to_get_sync_client'));
         }
-        const res = await syncClient.runSyncCommand({
-            scheduleId: props.scheduleId,
-            syncId: props.syncId,
-            command: props.command,
-            activityLogId: props.activityLogId,
-            environmentId: props.environmentId,
-            providerConfigKey: props.providerConfigKey,
-            connectionId: props.connectionId,
-            syncName: props.syncName,
-            nangoConnectionId: props.nangoConnectionId,
-            logCtx: props.logCtx,
-            recordsService: props.recordsService,
-            initiator: props.initiator
-        });
-        return res.isErr() ? Err(res.error) : Ok(undefined);
+
+        return isOrchestrator ? res : resTemporal;
+    }
+
+    private cleanInterval(runs: string): Result<string> {
+        if (runs === 'every half day') {
+            return Ok('12h');
+        }
+
+        if (runs === 'every half hour') {
+            return Ok('30m');
+        }
+
+        if (runs === 'every quarter hour') {
+            return Ok('15m');
+        }
+
+        if (runs === 'every hour') {
+            return Ok('1h');
+        }
+
+        if (runs === 'every day') {
+            return Ok('1d');
+        }
+
+        if (runs === 'every month') {
+            return Ok('30d');
+        }
+
+        if (runs === 'every week') {
+            return Ok('7d');
+        }
+
+        const interval = runs.replace('every ', '') as StringValue;
+
+        if (!ms(interval)) {
+            const error = new NangoError('sync_interval_invalid');
+            return Err(error);
+        }
+
+        if (ms(interval) < ms('5m')) {
+            const error = new NangoError('sync_interval_too_short');
+            return Err(error);
+        }
+
+        return Ok(interval);
     }
 }

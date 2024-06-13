@@ -54,7 +54,7 @@
         "passport-local": "^1.0.0",
         "rate-limiter-flexible": "^5.0.0",
         "redis": "4.6.13",
-        "simple-oauth2": "^5.0.0",
+        "simple-oauth2": "^5.0.1",
         "uuid": "^9.0.0",
         "ws": "^8.12.1",
         "zod": "3.22.4"

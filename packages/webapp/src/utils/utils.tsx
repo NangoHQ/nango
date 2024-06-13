@@ -1,8 +1,8 @@
-import parser from 'cron-parser';
 import { clsx } from 'clsx';
 import type { ClassValue } from 'clsx';
+import { format } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
-import type { FlowEndpoint, Flow, SyncResult, NangoSyncModel } from '../types';
+import type { Flow, SyncResult, NangoSyncModel } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
@@ -52,44 +52,6 @@ export function baseUrl() {
 
 export function defaultCallback() {
     return baseUrl() + '/oauth/callback';
-}
-
-export function formatTimestamp(timestamp: number): string {
-    const date = new Date(timestamp);
-
-    if (isNaN(date.getTime())) {
-        return '';
-    }
-
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-
-    const formattedDate = `${hours}:${minutes}:${seconds} - ${month}/${day}/${year}`;
-
-    return formattedDate;
-}
-
-export function formatTimestampWithTZ(timestamp: number): string {
-    const date = new Date(timestamp);
-    if (isNaN(date.getTime())) {
-        return '';
-    }
-
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
-
-    const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
-
-    return formattedDate;
 }
 
 export function elapsedTime(start: Date | number, end: Date | number): string {
@@ -148,29 +110,7 @@ export function formatDateToUSFormat(dateString: string): string {
 
 export function formatDateToLogFormat(dateString: string): string {
     const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        month: 'short',
-        day: '2-digit',
-        fractionalSecondDigits: 2,
-        hour12: false
-    };
-
-    const formattedDate = date.toLocaleString('en-US', options);
-
-    if (formattedDate === 'Invalid Date') {
-        return '-';
-    }
-
-    const parts = formattedDate.split(', ');
-    return `${parts[0]} ${parts[1]}`;
-}
-
-export function parseCron(frequency: string): string {
-    const interval = parser.parseExpression(frequency);
-    return formatDateToUSFormat(interval.next().toISOString());
+    return format(date, 'MMM dd, HH:mm:ss:SS');
 }
 
 function formatFutureRun(nextRun: number): Date | undefined {
@@ -260,39 +200,6 @@ export function getRunTime(created_at: string, updated_at: string): string {
     return runtime.trim() || '-';
 }
 
-/**
- * Calculate Total Runtime
- * @desc iterate over each timestamp and calculate the total runtime
- * to get the total runtime for the total of array timestamps
- */
-export function calculateTotalRuntime(timestamps: { created_at: string; updated_at: string }[]): string {
-    let totalRuntime = 0;
-
-    timestamps.forEach((timestamp) => {
-        const createdAt = new Date(timestamp.created_at);
-        const updatedAt = new Date(timestamp.updated_at);
-
-        const diffMilliseconds = updatedAt.getTime() - createdAt.getTime();
-
-        totalRuntime += diffMilliseconds;
-    });
-
-    const seconds = Math.floor((totalRuntime / 1000) % 60);
-    const minutes = Math.floor((totalRuntime / (1000 * 60)) % 60);
-    const hours = Math.floor((totalRuntime / (1000 * 60 * 60)) % 24);
-    const days = Math.floor(totalRuntime / (1000 * 60 * 60 * 24));
-
-    let runtime = '';
-    if (days > 0) runtime += `${days}d `;
-    if (hours > 0) runtime += `${hours}h `;
-    if (minutes > 0) runtime += `${minutes}m `;
-    if (seconds > 0) runtime += `${seconds}s`;
-
-    const result = runtime.trim();
-
-    return result === '' ? '-' : result;
-}
-
 export function createExampleForType(type: string): any {
     if (typeof type !== 'string') {
         return {};
@@ -349,14 +256,6 @@ export function generateResponseModel(models: NangoSyncModel[], output: string |
         }
     };
     return { ...jsonResponse, ...metadata };
-}
-
-export function parseEndpoint(endpoint: string | FlowEndpoint): string {
-    if (typeof endpoint === 'string') {
-        return endpoint;
-    }
-
-    return Object.values(endpoint)[0];
 }
 
 export function cn(...inputs: ClassValue[]) {

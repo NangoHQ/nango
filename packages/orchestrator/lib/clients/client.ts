@@ -99,13 +99,28 @@ export class OrchestratorClient {
 
     private async setSyncState({ scheduleName, state }: { scheduleName: string; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {
         const res = await this.routeFetch(putRecurringRoute)({
-            body: { state, scheduleName }
+            body: { schedule: { name: scheduleName, state } }
         });
         if ('error' in res) {
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error setting schedule state`,
                 payload: { scheduleName, state }
+            });
+        } else {
+            return Ok(undefined);
+        }
+    }
+
+    public async updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn> {
+        const res = await this.routeFetch(putRecurringRoute)({
+            body: { schedule: { name: scheduleName, frequencyMs } }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error updateing schedule frequency`,
+                payload: { scheduleName, frequencyMs }
             });
         } else {
             return Ok(undefined);

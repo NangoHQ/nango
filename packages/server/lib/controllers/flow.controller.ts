@@ -19,6 +19,9 @@ import {
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
+import { getOrchestrator } from '../utils/utils.js';
+
+const orchestrator = getOrchestrator();
 
 class FlowController {
     public async getFlows(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -48,14 +51,14 @@ class FlowController {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environment, config, req.body.nangoYamlBody || '', logContextGetter);
+            } = await deployPreBuiltSyncConfig(environment, config, req.body.nangoYamlBody || '', logContextGetter, orchestrator);
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environment.id, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environment.id, logContextGetter, orchestrator);
 
             res.sendStatus(200);
         } catch (e) {
@@ -115,14 +118,14 @@ class FlowController {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter);
+            } = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter, orchestrator);
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter, orchestrator);
 
             res.status(201).send(preBuiltResponse.result);
         } catch (e) {
@@ -210,7 +213,7 @@ class FlowController {
 
             await enableConfig(Number(id));
 
-            await syncOrchestrator.triggerIfConnectionsExist([flow], environment.id, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist([flow], environment.id, logContextGetter, orchestrator);
 
             res.status(200).send([{ ...flow, enabled: true }]);
         } catch (e) {
@@ -243,7 +246,7 @@ class FlowController {
                 const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
 
                 for (const sync of syncs) {
-                    await syncOrchestrator.softDeleteSync(sync.id, environmentId);
+                    await syncOrchestrator.softDeleteSync(sync.id, environmentId, orchestrator);
                 }
             }
 

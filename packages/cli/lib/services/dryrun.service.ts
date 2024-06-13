@@ -71,7 +71,7 @@ class DryRunService {
             return;
         }
 
-        const { success, error, response: config } = await configService.load('', debug);
+        const { success, error, response: config } = await configService.load(process.cwd(), debug);
 
         if (!success || !config) {
             console.log(chalk.red(error?.message));
@@ -174,7 +174,7 @@ class DryRunService {
             type = 'post-connection-script';
         }
 
-        const result = await compileAllFiles({ debug, scriptName: syncName, providerConfigKey, type });
+        const result = await compileAllFiles({ fullPath: process.cwd(), debug, scriptName: syncName, providerConfigKey, type });
 
         if (!result) {
             console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
