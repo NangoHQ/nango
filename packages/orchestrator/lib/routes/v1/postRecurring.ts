@@ -20,7 +20,6 @@ export type PostRecurring = Endpoint<{
         frequencyMs: number;
         groupKey: string;
         retry: {
-            count: number;
             max: number;
         };
         timeoutSettingsInSecs: {
@@ -44,7 +43,6 @@ const validate = validateRequest<PostRecurring>({
                 frequencyMs: z.number().int().positive(),
                 groupKey: z.string().min(1),
                 retry: z.object({
-                    count: z.number().int(),
                     max: z.number().int()
                 }),
                 timeoutSettingsInSecs: z.object({
@@ -68,7 +66,6 @@ const handler = (scheduler: Scheduler) => {
             startsAt: req.body.startsAt,
             frequencyMs: req.body.frequencyMs,
             groupKey: req.body.groupKey,
-            retryCount: req.body.retry.count,
             retryMax: req.body.retry.max,
             createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
             startedToCompletedTimeoutSecs: req.body.timeoutSettingsInSecs.startedToCompleted,

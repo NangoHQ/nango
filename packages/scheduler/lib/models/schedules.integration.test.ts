@@ -88,7 +88,6 @@ async function createSchedule(db: knex.Knex): Promise<Schedule> {
             frequencyMs: 300_000,
             groupKey: 'test-group-key',
             retryMax: 1,
-            retryCount: 0,
             createdToStartedTimeoutSecs: 1,
             startedToCompletedTimeoutSecs: 1,
             heartbeatTimeoutSecs: 1

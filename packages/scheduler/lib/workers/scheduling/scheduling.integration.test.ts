@@ -102,7 +102,6 @@ async function addSchedule(db: knex.Knex, params?: { state?: ScheduleState; star
         frequency: params?.frequency || '5 minutes',
         payload: {},
         group_key: Math.random().toString(36).substring(7),
-        retry_count: 0,
         retry_max: 0,
         created_to_started_timeout_secs: 1,
         started_to_completed_timeout_secs: 1,
