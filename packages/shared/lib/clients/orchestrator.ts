@@ -617,7 +617,6 @@ export class Orchestrator {
             });
             await updateSuccessActivityLog(activityLogId, true);
             await logCtx.info(content);
-            await logCtx.success();
 
             await telemetry.log(
                 LogTypes.POST_CONNECTION_SCRIPT_SUCCESS,
@@ -647,7 +646,6 @@ export class Orchestrator {
                 content
             });
             await logCtx.error(content);
-            await logCtx.failed();
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
