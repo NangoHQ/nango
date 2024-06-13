@@ -39,7 +39,8 @@ const orchestratorClient = {
     pauseSync: () => Promise.resolve({}) as any,
     unpauseSync: () => Promise.resolve({}) as any,
     deleteSync: () => Promise.resolve({}) as any,
-    updateSyncFrequency: () => Promise.resolve({}) as any
+    updateSyncFrequency: () => Promise.resolve({}) as any,
+    searchSchedules: () => Promise.resolve({}) as any
 };
 const slackService = new SlackService({ orchestratorClient, logContextGetter });
 

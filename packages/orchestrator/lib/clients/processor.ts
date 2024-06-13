@@ -54,7 +54,7 @@ export class OrchestratorProcessor {
             return;
         }
         const ids = Array.from(this.abortControllers.keys());
-        const search = await this.orchestratorClient.search({ ids });
+        const search = await this.orchestratorClient.searchTasks({ ids });
         if (search.isErr()) {
             return Err(search.error);
         }
