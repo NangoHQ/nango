@@ -708,18 +708,18 @@ class ConnectionService {
                 const errorWithPayload = new NangoError(error.type, connection);
 
                 return Err(errorWithPayload);
+            } else {
+                await onRefreshSuccess({
+                    connection,
+                    environment,
+                    config
+                });
             }
 
             connection.credentials = credentials as OAuth2Credentials;
         }
 
         await this.updateLastFetched(connection.id);
-
-        await onRefreshSuccess({
-            connection,
-            environment,
-            config
-        });
 
         return Ok(connection);
     }
