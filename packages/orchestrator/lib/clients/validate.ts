@@ -147,7 +147,6 @@ export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedul
             payload: jsonSchema,
             groupKey: z.string().min(1),
             retryMax: z.number().int(),
-            retryCount: z.number().int(),
             createdToStartedTimeoutSecs: z.number().int(),
             startedToCompletedTimeoutSecs: z.number().int(),
             heartbeatTimeoutSecs: z.number().int(),
