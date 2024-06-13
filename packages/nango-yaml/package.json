@@ -1,27 +1,27 @@
 {
-  "name": "@nangohq/nango-yaml",
-  "version": "0.40.0",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "private": true,
-  "scripts": {
-    "build": "rimraf ./dist && tsc"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/NangoHQ/nango.git",
-    "directory": "packages/logs"
-  },
-  "dependencies": {
-    "ms": "3.0.0-canary.1",
-    "js-yaml": "^4.1.0"
-  },
-  "devDependencies": {
-    "@nangohq/types": "^0.40.0",
-    "vitest": "0.33.0"
-  },
-  "files": [
-    "dist/**/*"
-  ]
+    "name": "@nangohq/nango-yaml",
+    "version": "0.40.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "private": true,
+    "scripts": {
+        "build": "rimraf ./dist && tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/nango-yaml"
+    },
+    "dependencies": {
+        "ms": "3.0.0-canary.1",
+        "js-yaml": "^4.1.0"
+    },
+    "devDependencies": {
+        "@nangohq/types": "^0.40.0",
+        "vitest": "0.33.0"
+    },
+    "files": [
+        "dist/**/*"
+    ]
 }

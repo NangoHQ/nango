@@ -37,7 +37,7 @@ describe('parse', () => {
                     actions: []
                 }
             ],
-            models: new Map([['GithubIssue', { name: 'GithubIssue', fields: [{ name: 'id', value: 'string', tsType: true, array: false }] }]]),
+            models: new Map([['GithubIssue', { name: 'GithubIssue', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }]]),
             yamlVersion: 'v2'
         });
     });
@@ -82,11 +82,15 @@ describe('parse', () => {
             models: new Map([
                 [
                     'Anonymous_provider_sync_top_output',
-                    { name: 'Anonymous_provider_sync_top_output', fields: [{ name: 'output', value: 'foobar', array: false }], isAnon: true }
+                    { name: 'Anonymous_provider_sync_top_output', fields: [{ name: 'output', value: 'foobar', array: false, optional: false }], isAnon: true }
                 ],
                 [
                     'Anonymous_provider_sync_top_input',
-                    { name: 'Anonymous_provider_sync_top_input', fields: [{ name: 'input', value: 'boolean', tsType: true, array: false }], isAnon: true }
+                    {
+                        name: 'Anonymous_provider_sync_top_input',
+                        fields: [{ name: 'input', value: 'boolean', tsType: true, array: false, optional: false }],
+                        isAnon: true
+                    }
                 ]
             ]),
             yamlVersion: 'v2'

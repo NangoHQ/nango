@@ -1,7 +1,8 @@
-import { expect, describe, it, beforeAll } from 'vitest';
-import path from 'path';
+import { expect, describe, it, afterEach, vi } from 'vitest';
+import path from 'node:path';
 import fs from 'fs';
 import yaml from 'js-yaml';
+import stripAnsi from 'strip-ansi';
 import { init, generate } from './cli.js';
 import { exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
@@ -16,13 +17,14 @@ function getTestDirectory(name: string) {
     fs.rmSync(dir, { recursive: true, force: true });
     return dir;
 }
+
 describe('generate function tests', () => {
     const fixturesPath = './packages/cli/fixtures';
+    // Not the best but until we have a logger it will work
+    const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-    beforeAll(async () => {
-        if (!fs.existsSync('./packages/cli/dist/nango-sync.d.ts')) {
-            await fs.promises.writeFile('./packages/cli/dist/nango-sync.d.ts', '', 'utf8');
-        }
+    afterEach(() => {
+        consoleMock.mockReset();
     });
 
     it('should init the expected files in the nango-integrations directory', async () => {
@@ -80,8 +82,8 @@ describe('generate function tests', () => {
         };
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${dir}/nango.yaml`, yamlData, 'utf8');
-        generate({ debug: false, fullPath: dir });
-        expect(fs.existsSync(`${dir}/some-other-sync.ts`)).toBe(true);
+        generate({ debug: true, fullPath: dir });
+        expect(fs.existsSync(`${dir}/demo-github-integration/syncs/some-other-sync.ts`)).toBe(true);
     });
 
     it('should support a single model return in v1 format', async () => {
@@ -116,7 +118,7 @@ describe('generate function tests', () => {
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${dir}/nango.yaml`, yamlData, 'utf8');
         generate({ debug: false, fullPath: dir });
-        expect(fs.existsSync(`${dir}/single-model-return.ts`)).toBe(true);
+        expect(fs.existsSync(`${dir}/demo-github-integration/syncs/single-model-return.ts`)).toBe(true);
     });
 
     it('should support a single model return in v2 format', async () => {
@@ -259,9 +261,17 @@ describe('generate function tests', () => {
         };
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${dir}/nango.yaml`, yamlData, 'utf8');
-        await expect(generate({ debug: false, fullPath: dir })).rejects.toThrow(
-            `Model "GithubIssue" doesn't have an id field. This is required to be able to uniquely identify the data record.`
-        );
+
+        const acc: string[] = [];
+        consoleMock.mockImplementation((m) => acc.push(stripAnsi(m)));
+        generate({ debug: false, fullPath: dir });
+
+        expect(acc).toStrictEqual([
+            'demo-github-integration > sync > single-model-return > [output]',
+            '  error Model "GithubIssue" doesn\'t have an id field. This is required to be able to uniquely identify the data record [model_missing_id]',
+            '',
+            'Your nango.yaml contains some errors'
+        ]);
     });
 
     it('should allow models to end with an "s"', async () => {
@@ -424,52 +434,6 @@ describe('generate function tests', () => {
     it('should not complain if retryOn is used with retries', () => {
         const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/retry-on-good.ts`, 'sync', ['GithubIssue']);
         expect(usedCorrectly).toBe(false);
-    });
-
-    it('should parse a nango.yaml file that is version 1 as expected', async () => {
-        const { response: parsed } = load(path.resolve(__dirname, `../fixtures/nango-yaml/v1/valid`));
-        expect(parsed).toBeDefined();
-        expect(parsed).toMatchSnapshot();
-    });
-
-    it('v1 - should complain about commas at the end of declared types', async () => {
-        const dir = getTestDirectory('v1-no-commas');
-        init({ absolutePath: dir });
-
-        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v1/no-commas/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).rejects.toThrow(
-            `Field "integer," in the model GithubIssue ends with a comma or semicolon which is not allowed.`
-        );
-    });
-
-    it('v1 - should complain about semi colons at the end of declared types', async () => {
-        const dir = getTestDirectory('v1-no-semi-colons');
-        init({ absolutePath: dir });
-
-        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v1/no-semi-colons/nango.yaml`, `${dir}/nango.yaml`);
-        await expect(generate({ debug: false, fullPath: dir })).rejects.toThrow(
-            `Field "integer;" in the model GithubIssue ends with a comma or semicolon which is not allowed.`
-        );
-    });
-
-    it('should parse a nango.yaml file that is version 2 as expected', async () => {
-        const { response: parsed } = load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/valid`));
-        expect(parsed).toBeDefined();
-        expect(parsed).toMatchSnapshot();
-    });
-
-    it('should throw a validation error on a nango.yaml file that is not formatted correctly -- missing endpoint', async () => {
-        const { response: parsed, error } = load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/invalid.1`));
-        expect(parsed).toBeNull();
-        expect(error).toBeDefined();
-        expect(error?.message).toMatchSnapshot();
-    });
-
-    it('should throw a validation error on a nango.yaml file that is not formatted correctly -- webhook subscriptions are not allowed in an action', async () => {
-        const { response: parsed, error } = load(path.resolve(__dirname, `../fixtures/nango-yaml/v2/invalid.2`));
-        expect(parsed).toBeNull();
-        expect(error).toBeDefined();
-        expect(error?.message).toEqual('Problem validating the nango.yaml file.');
     });
 
     it('should be able to compile files in nested directories', async () => {

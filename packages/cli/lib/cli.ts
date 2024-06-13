@@ -89,7 +89,7 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
             }
 
             if (debug) {
-                printDebug(`Generating ${name} integration`);
+                printDebug(`Generating ${name} integration in layout mode ${layoutMode}`);
             }
 
             const flowNameCamel = name
