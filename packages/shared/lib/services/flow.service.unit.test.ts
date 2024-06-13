@@ -172,7 +172,7 @@ describe('Flow service tests', () => {
                 tasks: {
                     description: `Fetches a list of tasks from Asana, retrieving tasks from only the first project of the first workspace
 `,
-                    endpoint: '/asana/tasks',
+                    endpoint: 'GET /asana/tasks',
                     output: 'AsanaTask',
                     runs: 'every 30min',
                     scopes: ['default'],
