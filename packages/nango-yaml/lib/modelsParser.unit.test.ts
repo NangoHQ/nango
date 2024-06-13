@@ -133,7 +133,7 @@ describe('parse', () => {
     });
 
     describe('array literal', () => {
-        it('should handle array literal', () => {
+        it('should handle array', () => {
             const parser = new ModelsParser({ raw: { Test: { user: ['foo', 'bar'] } } });
             parser.parseAll();
 
@@ -300,6 +300,19 @@ describe('parse', () => {
             expect(parser.errors).toStrictEqual([]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 Test: { name: 'Test', fields: [{ name: 'user', value: true, tsType: true, array: true, optional: false }] }
+            });
+        });
+
+        it('should handle array type', () => {
+            const parser = new ModelsParser({ raw: { Test: { user: 'array' } } });
+            parser.parseAll();
+
+            expect(parser.errors).toStrictEqual([]);
+            expect(Object.fromEntries(parser.parsed)).toStrictEqual({
+                Test: {
+                    name: 'Test',
+                    fields: [{ name: 'user', tsType: true, value: 'any[]', optional: false, array: false }]
+                }
             });
         });
     });
