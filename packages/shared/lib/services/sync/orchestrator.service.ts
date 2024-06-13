@@ -526,7 +526,7 @@ export class OrchestratorService {
             const latestJob = await getLatestSyncJob(sync.id);
             const schedules = await orchestrator.searchSchedules([{ syncId: sync.id, environmentId }]);
             if (schedules.isErr()) {
-                throw new Error(`Failed to get schedule for sync ${sync.id} in environment ${environmentId}: ${schedules.error}`);
+                throw new Error(`Failed to get schedule for sync ${sync.id} in environment ${environmentId}: ${stringifyError(schedules.error)}`);
             }
             const schedule = schedules.value.get(sync.id);
             if (!schedule) {

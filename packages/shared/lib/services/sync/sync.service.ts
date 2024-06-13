@@ -20,6 +20,7 @@ import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import { featureFlags } from '../../index.js';
+import { stringifyError } from '@nangohq/utils';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -298,7 +299,7 @@ export const getSyncs = async (
         });
         const schedules = await orchestrator.searchSchedules(searchSchedulesProps);
         if (schedules.isErr()) {
-            throw new Error(`Failed to get schedules for environment ${nangoConnection.environment_id}: ${schedules.error}`);
+            throw new Error(`Failed to get schedules for environment ${nangoConnection.environment_id}: ${stringifyError(schedules.error)}`);
         }
         return result.map((sync) => {
             const schedule = schedules.value.get(sync.id);
