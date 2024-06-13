@@ -31,7 +31,7 @@
         "prettier-watch": "onchange './**/*.{ts,tsx}' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts,.tsx",
         "lint:fix": "eslint . --ext .ts,.tsx --fix",
-        "ts-build": "tsc -b tsconfig.build.json && npm run -w nango postbuild",
+        "ts-build": "tsc -b tsconfig.build.json",
         "ts-build:docker": "tsc -b tsconfig.docker.json",
         "ts-clean": "npx rimraf packages/*/tsconfig.tsbuildinfo packages/*/dist",
         "docker-build": "docker build -f packages/server/Dockerfile -t nango-server:latest .",

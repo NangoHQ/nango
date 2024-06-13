@@ -85,7 +85,7 @@ class DeployService {
 
     public async prep({ fullPath, options, environment, debug = false }: { fullPath: string; options: DeployOptions; environment: string; debug?: boolean }) {
         const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm } = options;
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm });
+        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, checkDist: false });
 
         await parseSecretKey(environment, debug);
 
@@ -108,6 +108,13 @@ class DeployService {
             printDebug(`Environment is set to ${environment}`);
         }
 
+        const { success, error, response: parsed } = load(fullPath, debug);
+
+        if (!success || !parsed) {
+            console.log(chalk.red(error?.message));
+            return;
+        }
+
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
         const successfulCompile = await compileAllFiles({ fullPath, debug });
@@ -115,13 +122,6 @@ class DeployService {
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exit(1);
-        }
-
-        const { success, error, response: parsed } = load(fullPath, debug);
-
-        if (!success || !parsed) {
-            console.log(chalk.red(error?.message));
-            return;
         }
 
         const postData = this.package(parsed, debug, version, optionalSyncName, optionalActionName);

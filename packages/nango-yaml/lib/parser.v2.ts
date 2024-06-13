@@ -178,9 +178,17 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 continue;
             }
 
+            const modelNames = new Set<string>();
+
             const modelOutput = this.getModelForOutput({ rawOutput: action.output, usedModels, name: actionName, type: 'action', integrationName });
+            if (modelOutput && modelOutput.length > 0) {
+                modelOutput.forEach((m) => modelNames.add(m.name));
+            }
 
             const modelInput = this.getModelForInput({ usedModels, rawInput: action.input, name: actionName, type: 'action', integrationName });
+            if (modelInput) {
+                modelNames.add(modelInput.name);
+            }
 
             const endpoint: NangoSyncEndpoint = {};
             if (action.endpoint) {
@@ -202,7 +210,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 scopes: Array.isArray(action.scopes) ? action.scopes : action.scopes ? action.scopes.split(',') : [],
                 input: modelInput?.name || null,
                 output: modelOutput && modelOutput.length > 0 ? modelOutput.map((m) => m.name) : null,
-                usedModels: [],
+                usedModels: Array.from(modelNames),
                 endpoint
             };
 

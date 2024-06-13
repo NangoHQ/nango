@@ -70,6 +70,7 @@ export interface ReportedSyncJobStatus {
     latestExecutionStatus: SyncStatus;
 }
 
+// TODO: change that to use Parsed type
 export interface SyncModelSchema {
     name: string;
     fields: {

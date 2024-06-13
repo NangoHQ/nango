@@ -148,7 +148,9 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
             "repo:read",
           ],
           "type": "action",
-          "usedModels": [],
+          "usedModels": [
+            "GithubIssueAction",
+          ],
         },
         {
           "description": "Creates a GitHub issue.",
@@ -164,7 +166,10 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
             "repo:write",
           ],
           "type": "action",
-          "usedModels": [],
+          "usedModels": [
+            "GithubCreateOutput",
+            "GithubCreateIssueInput",
+          ],
         },
         {
           "description": "Deletes a GitHub issue.",
@@ -180,7 +185,9 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
             "repo:write",
           ],
           "type": "action",
-          "usedModels": [],
+          "usedModels": [
+            "Anonymous_demogithubintegration_action_githubdeleteissue_output",
+          ],
         },
       ],
       "postConnectionScripts": [],
