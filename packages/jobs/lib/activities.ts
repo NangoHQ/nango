@@ -53,7 +53,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
     const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
     const isOrchestrator = isGloballyEnabled || isEnvEnabled;
     if (isOrchestrator) {
-        return false;
+        return true;
     }
 
     // https://typescript.temporal.io/api/classes/activity.Context
@@ -66,7 +66,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
         environmentId: providerConfig.environment_id,
         config_id: providerConfig.id!,
         name: syncName,
-        isAction: false
+        isAction: true
     }))!;
 
     return syncProvider({
