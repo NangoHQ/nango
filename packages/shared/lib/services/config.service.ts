@@ -9,7 +9,7 @@ import { isCloud, nanoid } from '@nangohq/utils';
 import { dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import syncOrchestrator from './sync/orchestrator.service.js';
+import syncManager from './sync/manager.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -179,7 +179,7 @@ class ConfigService {
 
         const { id } = idResult;
 
-        await syncOrchestrator.deleteSyncsByProviderConfig(environment_id, providerConfigKey, orchestrator);
+        await syncManager.deleteSyncsByProviderConfig(environment_id, providerConfigKey, orchestrator);
 
         if (isCloud) {
             const config = await this.getProviderConfig(providerConfigKey, environment_id);

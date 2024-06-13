@@ -13,7 +13,7 @@ import {
     getSyncConfigsByProviderConfigKey,
     getActionConfigByNameAndProviderConfigKey
 } from './config/config.service.js';
-import syncOrchestrator from './orchestrator.service.js';
+import syncManager from './manager.service.js';
 import connectionService from '../connection.service.js';
 import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
@@ -306,7 +306,7 @@ export const getSyncs = async (
             if (schedule) {
                 return {
                     ...sync,
-                    status: syncOrchestrator.classifySyncStatus(sync?.latest_sync?.status, schedule.state),
+                    status: syncManager.classifySyncStatus(sync?.latest_sync?.status, schedule.state),
                     futureActionTimes: schedule.state === 'PAUSED' ? [] : [schedule.nextDueDate.getTime() / 1000]
                 };
             }
@@ -371,7 +371,7 @@ export const getSyncs = async (
 
             return {
                 ...sync,
-                status: syncOrchestrator.legacyClassifySyncStatus(sync?.latest_sync?.status, sync?.schedule_status),
+                status: syncManager.legacyClassifySyncStatus(sync?.latest_sync?.status, sync?.schedule_status),
                 futureActionTimes
             };
         });
@@ -687,7 +687,7 @@ export const getAndReconcileDifferences = async ({
             await logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames)}`);
         }
         // this is taken out of the loop to ensure it awaits all the calls properly
-        const result = await syncOrchestrator.createSyncs(syncsToCreate, logContextGetter, orchestrator, debug, activityLogId!, logCtx);
+        const result = await syncManager.createSyncs(syncsToCreate, logContextGetter, orchestrator, debug, activityLogId!, logCtx);
 
         if (!result) {
             if (activityLogId) {
@@ -735,13 +735,13 @@ export const getAndReconcileDifferences = async ({
                         });
                         await logCtx?.debug(`Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`);
                     }
-                    await syncOrchestrator.deleteConfig(existingSync.id, environmentId);
+                    await syncManager.deleteConfig(existingSync.id, environmentId);
 
                     if (existingSync.type === SyncConfigType.SYNC) {
                         for (const connection of connections) {
                             const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
                             if (syncId) {
-                                await syncOrchestrator.softDeleteSync(syncId.id, environmentId, orchestrator);
+                                await syncManager.softDeleteSync(syncId.id, environmentId, orchestrator);
                             }
                         }
                     }

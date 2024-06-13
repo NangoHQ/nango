@@ -55,9 +55,9 @@ interface CreateSyncArgs {
     syncName: string;
 }
 
-const logger = getLogger('orchestrator.service');
+const logger = getLogger('sync.manager');
 
-export class OrchestratorService {
+export class SyncManagerService {
     public async createSyncForConnection(nangoConnectionId: number, logContextGetter: LogContextGetter, orchestrator: Orchestrator): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
         const nangoConfig = await getSyncConfig(nangoConnection);
@@ -618,4 +618,4 @@ export class OrchestratorService {
     }
 }
 
-export default new OrchestratorService();
+export default new SyncManagerService();
