@@ -18,7 +18,6 @@ interface SyncArgs {
         environment_id: number;
         connection_id: string;
     };
-    syncJobId: number;
 }
 interface ActionArgs {
     actionName: string;
@@ -89,7 +88,6 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         attempt: props.attempt,
         syncId: props.syncId,
         syncName: props.syncName,
-        syncJobId: props.syncJobId,
         debug: props.debug,
         connection: props.connection,
         abortController: new AbortController(),

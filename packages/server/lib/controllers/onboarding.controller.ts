@@ -211,14 +211,14 @@ class OnboardingController {
                 }
             ];
 
-            const deploy = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter);
+            const deploy = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter, orchestrator);
             if (!deploy.success || deploy.response === null) {
                 void analytics.track(AnalyticsTypes.DEMO_2_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, deploy.error);
                 return;
             }
 
-            await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id, logContextGetter);
+            await syncOrchestrator.triggerIfConnectionsExist(deploy.response.result, environment.id, logContextGetter, orchestrator);
 
             void analytics.track(AnalyticsTypes.DEMO_2_SUCCESS, account.id, { user_id: user.id });
             res.status(200).json({ success: true });

@@ -1,4 +1,4 @@
-import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.service.js';
+import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig } from './config/config.service.js';
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { getLatestSyncJob } from './job.service.js';
@@ -22,7 +22,7 @@ import { errorNotificationService } from '../notification/error.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
-import type { Connection } from '../../models/Connection.js';
+import type { Connection, NangoConnection } from '../../models/Connection.js';
 import type {
     Job as SyncJob,
     Schedule as SyncSchedule,
@@ -39,10 +39,11 @@ import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActiv
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
 import { LogActionEnum } from '../../models/Activity.js';
-import { stringifyError } from '@nangohq/utils';
+import { getLogger, stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
 import type { Environment } from '../../models/Environment.js';
 import type { Orchestrator } from '../../clients/orchestrator.js';
+import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -61,14 +62,58 @@ interface CreateSyncArgs {
     syncName: string;
 }
 
+const logger = getLogger('orchestrator.service');
+
 export class OrchestratorService {
-    public async create(
+    public async createSyncForConnection(nangoConnectionId: number, logContextGetter: LogContextGetter, orchestrator: Orchestrator): Promise<void> {
+        const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
+        const nangoConfig = await getSyncConfig(nangoConnection);
+        if (!nangoConfig) {
+            logger.error(
+                'Failed to load the Nango config - will not start any syncs! If you expect to see a sync make sure you used the nango cli deploy command'
+            );
+            return;
+        }
+        const { integrations }: NangoConfig = nangoConfig;
+        const providerConfigKey = nangoConnection?.provider_config_key;
+
+        if (!integrations[providerConfigKey]) {
+            return;
+        }
+
+        const syncClient = await SyncClient.getInstance();
+        if (!syncClient) {
+            return;
+        }
+
+        const providerConfig: ProviderConfig = (await configService.getProviderConfig(
+            nangoConnection?.provider_config_key,
+            nangoConnection?.environment_id
+        )) as ProviderConfig;
+
+        const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
+        const syncNames = Object.keys(syncObject);
+        for (const syncName of syncNames) {
+            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+
+            if (!syncData.enabled) {
+                continue;
+            }
+            const sync = await createSync(nangoConnectionId, syncName);
+            if (sync) {
+                await orchestrator.scheduleSyncHelper(nangoConnection, sync, providerConfig, syncName, syncData, logContextGetter);
+            }
+        }
+    }
+
+    public async createSyncForConnections(
         connections: Connection[],
         syncName: string,
         providerConfigKey: string,
         environmentId: number,
         sync: IncomingFlowConfig,
         logContextGetter: LogContextGetter,
+        orchestrator: Orchestrator,
         debug = false,
         activityLogId?: number,
         logCtx?: LogContext
@@ -93,8 +138,7 @@ export class OrchestratorService {
                 }
 
                 const createdSync = await createSync(connection.id as number, syncName);
-                const syncClient = await SyncClient.getInstance();
-                await syncClient?.startContinuous(
+                orchestrator.scheduleSyncHelper(
                     connection,
                     createdSync as Sync,
                     syncConfig as ProviderConfig,
@@ -134,6 +178,7 @@ export class OrchestratorService {
     public async createSyncs(
         syncArgs: CreateSyncArgs[],
         logContextGetter: LogContextGetter,
+        orchestrator: Orchestrator,
         debug = false,
         activityLogId?: number,
         logCtx?: LogContext
@@ -141,7 +186,18 @@ export class OrchestratorService {
         let success = true;
         for (const syncToCreate of syncArgs) {
             const { connections, providerConfigKey, environmentId, sync, syncName } = syncToCreate;
-            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, logContextGetter, debug, activityLogId, logCtx);
+            const result = await this.createSyncForConnections(
+                connections,
+                syncName,
+                providerConfigKey,
+                environmentId,
+                sync,
+                logContextGetter,
+                orchestrator,
+                debug,
+                activityLogId,
+                logCtx
+            );
             if (!result) {
                 success = false;
             }
@@ -161,13 +217,15 @@ export class OrchestratorService {
         await deleteSyncConfig(syncConfigId);
     }
 
-    public async softDeleteSync(syncId: string, environmentId: number) {
-        await deleteScheduleForSync(syncId, environmentId);
+    public async softDeleteSync(syncId: string, environmentId: number, orchestrator: Orchestrator) {
+        await deleteScheduleForSync(syncId, environmentId); // TODO: legacy, to remove once temporal is removed
+
+        await orchestrator.deleteSync({ syncId, environmentId });
         await softDeleteSync(syncId);
         await errorNotificationService.sync.clearBySyncId({ sync_id: syncId });
     }
 
-    public async softDeleteSyncsByConnection(connection: Connection) {
+    public async softDeleteSyncsByConnection(connection: Connection, orchestrator: Orchestrator) {
         const syncs = await getSyncsByConnectionId(connection.id!);
 
         if (!syncs) {
@@ -175,11 +233,11 @@ export class OrchestratorService {
         }
 
         for (const sync of syncs) {
-            await this.softDeleteSync(sync.id, connection.environment_id);
+            await this.softDeleteSync(sync.id, connection.environment_id, orchestrator);
         }
     }
 
-    public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string) {
+    public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string, orchestrator: Orchestrator) {
         const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
 
         if (!syncs) {
@@ -187,7 +245,7 @@ export class OrchestratorService {
         }
 
         for (const sync of syncs) {
-            await this.softDeleteSync(sync.id, environmentId);
+            await this.softDeleteSync(sync.id, environmentId, orchestrator);
         }
     }
 
@@ -421,7 +479,12 @@ export class OrchestratorService {
      * Trigger If Connections Exist
      * @desc for the recently deploy flows, create the sync and trigger it if there are connections
      */
-    public async triggerIfConnectionsExist(flows: SyncDeploymentResult[], environmentId: number, logContextGetter: LogContextGetter) {
+    public async triggerIfConnectionsExist(
+        flows: SyncDeploymentResult[],
+        environmentId: number,
+        logContextGetter: LogContextGetter,
+        orchestrator: Orchestrator
+    ) {
         for (const flow of flows) {
             if (flow.type === SyncConfigType.ACTION) {
                 continue;
@@ -436,17 +499,19 @@ export class OrchestratorService {
             const { providerConfigKey } = flow;
             const name = flow.name || flow.syncName;
 
-            await this.create(
+            await this.createSyncForConnections(
                 existingConnections as Connection[],
                 name as string,
                 providerConfigKey,
                 environmentId,
                 flow as unknown as IncomingFlowConfig,
                 logContextGetter,
+                orchestrator,
                 false
             );
         }
     }
+    // TODO:
     private async fetchSyncData(syncId: string, environmentId: number) {
         const syncClient = await SyncClient.getInstance();
         const schedule = await getSchedule(syncId);

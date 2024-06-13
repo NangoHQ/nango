@@ -41,6 +41,7 @@ import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
 import type { KVStore } from '../utils/kvstore/KVStore.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
+import type { Orchestrator } from '../clients/orchestrator.js';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -59,7 +60,7 @@ class ConnectionService {
         providerConfigKey: string,
         provider: string,
         parsedRawCredentials: AuthCredentials,
-        connectionConfig: Record<string, string | boolean>,
+        connectionConfig: ConnectionConfig,
         environment_id: number,
         accountId: number,
         metadata?: Metadata
@@ -561,7 +562,7 @@ class ConnectionService {
         return [...new Set(connections.map((config) => config.connection_id))];
     }
 
-    public async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
+    public async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number, orchestrator: Orchestrator): Promise<number> {
         const del = await db.knex
             .from<Connection>(`_nango_connections`)
             .where({
@@ -572,7 +573,7 @@ class ConnectionService {
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
-        await syncOrchestrator.softDeleteSyncsByConnection(connection);
+        await syncOrchestrator.softDeleteSyncsByConnection(connection, orchestrator);
 
         return del;
     }

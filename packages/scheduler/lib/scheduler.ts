@@ -232,29 +232,42 @@ export class Scheduler {
      * const failed = await scheduler.fail({ taskId: '00000000-0000-0000-0000-000000000000', error: {message: 'error'});
      */
     public async fail({ taskId, error }: { taskId: string; error: JsonValue }): Promise<Result<Task>> {
-        const failed = await tasks.transitionState(this.dbClient.db, { taskId, newState: 'FAILED', output: error });
-        if (failed.isOk()) {
-            const task = failed.value;
-            this.onCallbacks[task.state](task);
-            // Create a new task if the task is retryable
-            if (task.retryMax > task.retryCount) {
-                const taskProps: ImmediateProps = {
-                    name: `${task.name}:${task.retryCount + 1}`, // Append retry count to make it unique
-                    payload: task.payload,
-                    groupKey: task.groupKey,
-                    retryMax: task.retryMax,
-                    retryCount: task.retryCount + 1,
-                    createdToStartedTimeoutSecs: task.createdToStartedTimeoutSecs,
-                    startedToCompletedTimeoutSecs: task.startedToCompletedTimeoutSecs,
-                    heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
-                };
-                const res = await this.immediate(taskProps);
-                if (res.isErr()) {
-                    logger.error(`Error retrying task '${taskId}': ${stringifyError(res.error)}`);
+        return await this.dbClient.db.transaction(async (trx) => {
+            const task = await tasks.get(trx, taskId);
+            if (task.isErr()) {
+                return Err(`fail: Error fetching task '${taskId}': ${stringifyError(task.error)}`);
+            }
+            // if task is from a schedule,
+            // lock the schedule to prevent concurrent update or scheduling of tasks
+            // while we are potentially creating a new retry task
+            if (task.value.scheduleId) {
+                await schedules.search(trx, { id: task.value.scheduleId, limit: 1, forUpdate: true });
+            }
+
+            const failed = await tasks.transitionState(trx, { taskId, newState: 'FAILED', output: error });
+            if (failed.isOk()) {
+                const task = failed.value;
+                this.onCallbacks[task.state](task);
+                // Create a new task if the task is retryable
+                if (task.retryMax > task.retryCount) {
+                    const taskProps: ImmediateProps = {
+                        name: `${task.name}:${task.retryCount + 1}`, // Append retry count to make it unique
+                        payload: task.payload,
+                        groupKey: task.groupKey,
+                        retryMax: task.retryMax,
+                        retryCount: task.retryCount + 1,
+                        createdToStartedTimeoutSecs: task.createdToStartedTimeoutSecs,
+                        startedToCompletedTimeoutSecs: task.startedToCompletedTimeoutSecs,
+                        heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
+                    };
+                    const res = await this.immediate(taskProps);
+                    if (res.isErr()) {
+                        logger.error(`Error retrying task '${taskId}': ${stringifyError(res.error)}`);
+                    }
                 }
             }
-        }
-        return failed;
+            return failed;
+        });
     }
 
     /**
@@ -321,6 +334,23 @@ export class Scheduler {
                 return Err(`Error transitioning schedule '${scheduleName}': ${stringifyError(res.error)}`);
             }
             cancelledTasks.forEach((task) => this.onCallbacks[task.state](task));
+            return res;
+        });
+    }
+
+    public async setScheduleFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<Result<Schedule>> {
+        return this.dbClient.db.transaction(async (trx) => {
+            const schedule = await schedules.search(trx, { name: scheduleName, limit: 1, forUpdate: true });
+            if (schedule.isErr()) {
+                return Err(schedule.error);
+            }
+            if (!schedule.value[0]) {
+                return Err(`Schedule '${scheduleName}' not found`);
+            }
+            const res = await schedules.update(trx, { id: schedule.value[0].id, frequencyMs });
+            if (res.isErr()) {
+                return Err(`Error updating schedule frequency '${scheduleName}': ${stringifyError(res.error)}`);
+            }
             return res;
         });
     }

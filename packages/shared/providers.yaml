@@ -1235,6 +1235,18 @@ jira:
     post_connection_script: jira-post-connection
     webhook_routing_script: jira-webhook-routing
     docs: https://docs.nango.dev/integrations/all/jira
+jira-data-center:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.endpointURL}/rest/oauth2/latest/authorize
+    authorization_params:
+        grant_type: authorization_code
+    token_url: https://${connectionConfig.endpointURL}/rest/oauth2/latest/token
+    connection_configuration:
+        - endpointURL
+    docs: https://docs.nango.dev/integrations/all/jira-data-center
 helpscout-docs:
     auth_mode: BASIC
     proxy:
