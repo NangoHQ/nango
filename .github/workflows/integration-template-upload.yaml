@@ -39,11 +39,20 @@ jobs:
               if: steps.changed-files-specific.outputs.any_changed == 'true'
               run: |
                   wd=$(pwd)
+
+                  echo "Changed files:"
+                  echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
+
                   for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
                     dir=$(dirname $file)
 
-                    dir=${dir//\/syncs/}
-                    dir=${dir//\/actions/}
+                    parts=(${dir//\// })
+                    if [ ${#parts[@]} -gt 1 ]; then
+                      unset parts[-2]
+                    fi
+
+                    dir=$(IFS=/; echo "${parts[*]}")
+
                     integration=$(basename $dir)
 
                     mkdir -p /tmp/nango-temp/nango-integrations
