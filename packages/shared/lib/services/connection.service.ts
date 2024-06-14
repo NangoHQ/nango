@@ -799,7 +799,7 @@ class ConnectionService {
         }
     }
 
-    public async refreshCredentialsIfNeeded({
+    private async refreshCredentialsIfNeeded({
         connection,
         providerConfig,
         template,
