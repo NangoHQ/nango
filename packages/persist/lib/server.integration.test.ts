@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import type { AuthCredentials, Connection, Sync, Job as SyncJob, Environment, Account } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
 import { environmentService, connectionService, createSync, createSyncJob, SyncType, SyncStatus, accountService } from '@nangohq/shared';
-import { logContextGetter, migrateMapping } from '@nangohq/logs';
+import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { migrate as migrateRecords } from '@nangohq/records';
 
 const mockSecretKey = 'secret-key';
@@ -24,7 +24,7 @@ describe('Persist API', () => {
     beforeAll(async () => {
         await multipleMigrations();
         await migrateRecords();
-        await migrateMapping();
+        await migrateLogsMapping();
         seed = await initDb();
         server.listen(port);
 
