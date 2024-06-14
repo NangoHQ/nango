@@ -41,24 +41,26 @@ export class Scheduler {
             this.monitor = new MonitorWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
             this.monitor.on(async (message) => {
                 const { ids } = message;
-                for (const taskId of ids) {
-                    const fetched = await tasks.get(this.dbClient.db, taskId);
-                    if (fetched.isOk()) {
-                        const task = fetched.value;
-                        this.onCallbacks[task.state](task);
-                    }
+                const fetched = await tasks.search(this.dbClient.db, { ids, limit: ids.length });
+                if (fetched.isErr()) {
+                    logger.error(`Error fetching tasks expired by monitor: ${stringifyError(fetched.error)}`);
+                    return;
+                }
+                for (const task of fetched.value) {
+                    this.onCallbacks[task.state](task);
                 }
             });
             this.monitor.start();
             this.scheduling = new SchedulingWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
             this.scheduling.on(async (message) => {
                 const { ids } = message;
-                for (const taskId of ids) {
-                    const fetched = await tasks.get(this.dbClient.db, taskId);
-                    if (fetched.isOk()) {
-                        const task = fetched.value;
-                        this.onCallbacks[task.state](task);
-                    }
+                const fetched = await tasks.search(this.dbClient.db, { ids, limit: ids.length });
+                if (fetched.isErr()) {
+                    logger.error(`Error fetching tasks created by scheduling: ${stringifyError(fetched.error)}`);
+                    return;
+                }
+                for (const task of fetched.value) {
+                    this.onCallbacks[task.state](task);
                 }
             });
             // TODO: ensure there is only one instance of the scheduler
