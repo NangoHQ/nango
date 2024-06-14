@@ -187,6 +187,8 @@ asana:
         grant_type: refresh_token
     proxy:
         base_url: https://app.asana.com
+        retry:
+            after: 'Retry-After'
         paginate:
             type: cursor
             cursor_path_in_response: next_page.offset
@@ -2581,6 +2583,21 @@ uber:
     proxy:
         base_url: https://api.uber.com
     docs: https://docs.nango.dev/integrations/all/uber
+unanet:
+    categories:
+        - crm
+        - erp
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        headers:
+            x-compass-firm-id: ${connectionConfig.firmId}
+            x-compass-api-key: ${connectionConfig.apiKey}
+        base_url: https://compass.cosential.com
+        verification:
+            method: GET
+            endpoint: /api/projects
+    docs: https://docs.nango.dev/integrations/all/unanet
 unauthenticated:
     auth_mode: NONE
     docs: https://docs.nango.dev/integrations/overview

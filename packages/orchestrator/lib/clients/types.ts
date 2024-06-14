@@ -2,8 +2,8 @@ import type { JsonValue, SetOptional } from 'type-fest';
 import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type { PostRecurring } from '../routes/v1/postRecurring.js';
 import type { Result } from '@nangohq/utils';
-import type { TaskState } from '@nangohq/scheduler';
-import type { PostRecurringRun } from '../routes/v1/recurring/postRecurringRun.js';
+import type { ScheduleState, TaskState } from '@nangohq/scheduler';
+import type { PostScheduleRun } from '../routes/v1/schedules/postRun.js';
 
 export type ImmediateProps = PostImmediate['Body'];
 export type RecurringProps = PostRecurring['Body'];
@@ -54,14 +54,22 @@ interface PostConnectionArgs {
     fileLocation: string;
     activityLogId: number;
 }
-
+export type SchedulesReturn = Result<OrchestratorSchedule[]>;
 export type VoidReturn = Result<void, ClientError>;
 export type ExecuteProps = SetOptional<ImmediateProps, 'retry' | 'timeoutSettingsInSecs'>;
 export type ExecuteReturn = Result<JsonValue, ClientError>;
 export type ExecuteActionProps = Omit<ExecuteProps, 'args'> & { args: ActionArgs };
 export type ExecuteWebhookProps = Omit<ExecuteProps, 'args'> & { args: WebhookArgs };
 export type ExecutePostConnectionProps = Omit<ExecuteProps, 'args'> & { args: PostConnectionArgs };
-export type ExecuteSyncProps = PostRecurringRun['Body'];
+export type ExecuteSyncProps = PostScheduleRun['Body'];
+
+export interface OrchestratorSchedule {
+    id: string;
+    name: string;
+    frequencyMs: number;
+    state: ScheduleState;
+    nextDueDate: Date;
+}
 
 export type OrchestratorTask = TaskSync | TaskAction | TaskWebhook | TaskPostConnection;
 

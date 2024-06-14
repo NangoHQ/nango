@@ -66,7 +66,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
         environmentId: providerConfig.environment_id,
         config_id: providerConfig.id!,
         name: syncName,
-        isAction: true
+        isAction: false
     }))!;
 
     return syncProvider({
@@ -125,7 +125,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
     const isOrchestrator = isGloballyEnabled || isEnvEnabled;
     if (isOrchestrator) {
-        return false;
+        return true;
     }
 
     const initialSyncStillRunning = await isInitialSyncStillRunning(syncId);

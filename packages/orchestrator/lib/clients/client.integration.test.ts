@@ -121,6 +121,34 @@ describe('OrchestratorClient', async () => {
             const deleted = await client.deleteSync({ scheduleName });
             expect(deleted.isOk(), `pausing failed ${JSON.stringify(deleted)}`).toBe(true);
         });
+        it('should be searchable', async () => {
+            const name = nanoid();
+            await client.recurring({
+                name,
+                state: 'STARTED',
+                startsAt: new Date(),
+                frequencyMs: 300_000,
+                groupKey: nanoid(),
+                retry: { max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'sync',
+                    syncId: 'sync-a',
+                    syncName: nanoid(),
+                    syncJobId: 5678,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    debug: false
+                }
+            });
+            const res = (await client.searchSchedules({ scheduleNames: [name], limit: 1 })).unwrap();
+            expect(res.length).toBe(1);
+            expect(res[0]?.name).toBe(name);
+        });
     });
 
     describe('heartbeat', () => {
@@ -355,7 +383,7 @@ describe('OrchestratorClient', async () => {
                 }
             });
             const ids = [actionA.unwrap().taskId, actionB.unwrap().taskId];
-            const res = await client.search({ ids });
+            const res = await client.searchTasks({ ids });
             expect(res.unwrap().length).toBe(2);
             expect(res.unwrap().map((task) => task.id)).toEqual(ids);
         });
@@ -418,7 +446,7 @@ class MockProcessor {
 
     constructor({ groupKey, process }: { groupKey: string; process: (task: Task) => void }) {
         this.interval = setInterval(async () => {
-            const tasks = (await scheduler.search({ groupKey })).unwrap();
+            const tasks = (await scheduler.searchTasks({ groupKey })).unwrap();
             for (const task of tasks) {
                 switch (task.state) {
                     case 'CREATED':

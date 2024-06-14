@@ -12,7 +12,7 @@ import type { ActivityLogMessage, ActivityLog, LogLevel } from '../models/Activi
 import { LogActionEnum } from '../models/Activity.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
-import syncOrchestrator from './sync/orchestrator.service.js';
+import syncManager from './sync/manager.service.js';
 import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
@@ -573,7 +573,7 @@ class ConnectionService {
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
-        await syncOrchestrator.softDeleteSyncsByConnection(connection, orchestrator);
+        await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
 
         return del;
     }
@@ -639,11 +639,7 @@ class ConnectionService {
         const template: ProviderTemplate = configService.getTemplate(config?.provider);
 
         if (connection?.credentials?.type === 'OAUTH2' || connection?.credentials?.type === 'APP' || connection?.credentials?.type === 'OAUTH2_CC') {
-            const {
-                success,
-                error,
-                response: credentials
-            } = await this.refreshCredentialsIfNeeded({
+            const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connection,
                 providerConfig: config,
                 template: template as ProviderTemplateOAuth2,
@@ -651,7 +647,7 @@ class ConnectionService {
                 instantRefresh
             });
 
-            if (!success && error) {
+            if ((!success && error) || !response) {
                 const log: ActivityLog = {
                     level: 'error' as LogLevel,
                     success: false,
@@ -695,8 +691,8 @@ class ConnectionService {
                         activityLogId,
                         logCtx,
                         authError: {
-                            type: error.type,
-                            description: error.message
+                            type: error!.type,
+                            description: error!.message
                         },
                         environment,
                         template,
@@ -705,10 +701,10 @@ class ConnectionService {
                 }
 
                 // TODO: this leak credentials to the logs
-                const errorWithPayload = new NangoError(error.type, connection);
+                const errorWithPayload = new NangoError(error!.type, connection);
 
                 return Err(errorWithPayload);
-            } else {
+            } else if (response.refreshed) {
                 await onRefreshSuccess({
                     connection,
                     environment,
@@ -716,7 +712,7 @@ class ConnectionService {
                 });
             }
 
-            connection.credentials = credentials as OAuth2Credentials;
+            connection.credentials = response.credentials as OAuth2Credentials;
         }
 
         await this.updateLastFetched(connection.id);
@@ -803,7 +799,7 @@ class ConnectionService {
         }
     }
 
-    public async refreshCredentialsIfNeeded({
+    private async refreshCredentialsIfNeeded({
         connection,
         providerConfig,
         template,
@@ -815,7 +811,7 @@ class ConnectionService {
         template: ProviderTemplateOAuth2;
         environment_id: number;
         instantRefresh?: boolean;
-    }): Promise<ServiceResponse<OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials>> {
+    }): Promise<ServiceResponse<{ refreshed: boolean; credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials }>> {
         const connectionId = connection.connection_id;
         const credentials = connection.credentials as OAuth2Credentials;
         const providerConfigKey = connection.provider_config_key;
@@ -863,7 +859,7 @@ class ConnectionService {
                     provider: providerConfig.provider
                 });
 
-                return { success: true, error: null, response: newCredentials };
+                return { success: true, error: null, response: { refreshed: shouldRefresh, credentials: newCredentials } };
             } catch (e: any) {
                 const errorMessage = e.message || 'Unknown error';
                 const errorDetails = {
@@ -890,7 +886,7 @@ class ConnectionService {
             }
         }
 
-        return { success: true, error: null, response: credentials };
+        return { success: true, error: null, response: { refreshed: shouldRefresh, credentials } };
     }
 
     public async getAppStoreCredentials(

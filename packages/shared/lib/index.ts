@@ -14,7 +14,7 @@ import localFileService from './services/file/local.service.js';
 import hmacService from './services/hmac.service.js';
 import proxyService from './services/proxy.service.js';
 import syncRunService from './services/sync/run.service.js';
-import syncOrchestrator, { syncCommandToOperation } from './services/sync/orchestrator.service.js';
+import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
 import flowService from './services/flow.service.js';
 import webhookService from './services/notification/webhook.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
@@ -65,7 +65,7 @@ export {
     remoteFileService,
     localFileService,
     syncRunService,
-    syncOrchestrator,
+    syncManager,
     hmacService,
     proxyService,
     flowService,

@@ -10,7 +10,7 @@ import {
     errorNotificationService,
     SlackService,
     AnalyticsTypes,
-    syncOrchestrator
+    syncManager
 } from '@nangohq/shared';
 import type {
     ApplicationConstructedProxyConfiguration,
@@ -79,7 +79,7 @@ export const connectionCreated = async (
     const { connection, environment, auth_mode } = createdConnectionPayload;
 
     if (options.initiateSync === true && !isHosted) {
-        await syncOrchestrator.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
+        await syncManager.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
     }
 
     if (options.runPostConnectionScript === true) {
