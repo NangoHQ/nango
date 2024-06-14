@@ -295,7 +295,6 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
                     })
                     .forUpdate()
                     .skipLocked()
-                    .debug(true)
             )
             .returning('*');
         if (!tasks?.[0]) {
