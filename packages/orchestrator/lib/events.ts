@@ -23,10 +23,11 @@ export class EventsHandler extends EventEmitter {
         this.onCallbacks = {
             CREATED: (task: Task) => {
                 on.CREATED(task);
-                this.emit(`task:started:${task.groupKey}`, task);
+                this.emit(`task:created:${task.groupKey}`, task);
             },
             STARTED: (task: Task) => {
                 on.STARTED(task);
+                this.emit(`task:started:${task.id}`, task);
             },
             SUCCEEDED: (task: Task) => {
                 on.SUCCEEDED(task);

@@ -46,7 +46,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (req: EndpointRequest<PostDequeue>, res: EndpointResponse<PostDequeue>) => {
         const { groupKey, limit, longPolling: longPolling } = req.body;
         const longPollingTimeoutMs = 60_000;
-        const eventId = `task:started:${groupKey}`;
+        const eventId = `task:created:${groupKey}`;
         const cleanupAndRespond = (respond: (res: EndpointResponse<PostDequeue>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
