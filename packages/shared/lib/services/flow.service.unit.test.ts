@@ -157,26 +157,27 @@ describe('Flow service tests', () => {
         expect(flows).not.toStrictEqual({});
         expect(flows).toHaveProperty('integrations');
         expect(Object.keys(flows.integrations).length).toBeGreaterThan(20);
-        expect(flows.integrations['asana']).toStrictEqual({
+        expect(flows.integrations).toHaveProperty('github');
+        expect(flows.integrations['algolia']).toStrictEqual({
             models: {
-                AsanaTask: {
-                    completed: 'boolean',
-                    created_at: 'date',
-                    id: 'string',
-                    modified_at: 'date',
+                AlgoliaContact: {
+                    createdAt: 'date',
+                    taskID: 'number',
+                    objectID: 'string'
+                },
+                AlgoliaCreateContactInput: {
                     name: 'string',
-                    project_id: 'string'
+                    company: 'string',
+                    email: 'string'
                 }
             },
-            syncs: {
-                tasks: {
-                    description: `Fetches a list of tasks from Asana, retrieving tasks from only the first project of the first workspace
+            actions: {
+                'create-contacts': {
+                    description: `Action to add a single record contact to an index
 `,
-                    endpoint: '/asana/tasks',
-                    output: 'AsanaTask',
-                    runs: 'every 30min',
-                    scopes: ['default'],
-                    sync_type: 'full'
+                    output: 'AlgoliaContact',
+                    input: 'AlgoliaCreateContactInput',
+                    endpoint: 'POST /algolia/create-contacts'
                 }
             }
         });
