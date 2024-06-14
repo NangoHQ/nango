@@ -26,7 +26,10 @@ export class LogContextStateless {
 
     async log(data: MessageRowInsert): Promise<void> {
         if (this.logToConsole) {
-            logger.info(`[debug] log(${JSON.stringify(data)})`);
+            const obj: Record<string, any> = {};
+            if (data.error) obj['error'] = data.error;
+            if (data.meta) obj['meta'] = data.meta;
+            logger[data.level!](`${this.dryRun ? '[dry] ' : ''}log: ${data.message}`, Object.keys(obj).length > 0 ? obj : undefined);
         }
         if (this.dryRun) {
             return;
@@ -127,7 +130,7 @@ export class LogContext extends LogContextStateless {
 
     private async logOrExec(log: string, callback: () => Promise<void>) {
         if (this.logToConsole) {
-            logger.info(`[debug] ${log}(${this.id})`);
+            logger.info(`${this.dryRun ? '[dry] ' : ''}${log}(${this.id})`);
         }
         if (this.dryRun) {
             return;
