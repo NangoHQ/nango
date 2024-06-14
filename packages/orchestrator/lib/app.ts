@@ -32,6 +32,11 @@ try {
         on: eventsHandler.onCallbacks
     });
 
+    // default max listerner is 10
+    // but we need more listeners
+    // each processor fetching from a group_key adds a listerner for the long-polling dequeue
+    eventsHandler.setMaxListeners(Infinity);
+
     const server = getServer(scheduler, eventsHandler);
     const port = envs.NANGO_ORCHESTRATOR_PORT;
     server.listen(port, () => {
