@@ -28,36 +28,36 @@ integrations:
                 runs: every hour
                 description: Retrieve all users that exist in the workspace
                 output: User
-                endpoint: GET ticketing/users
+                endpoint: GET /ticketing/users
                 sync_type: incremental
             workspaces:
                 runs: every hour
                 description: Retrieve all workspaces for a user
                 output: AsanaWorkspace
-                endpoint: GET ticketing/workspaces
+                endpoint: GET /ticketing/workspaces
             projects:
                 runs: every hour
                 description: Retrieves all projects for a user
                 output: AsanaProject
-                endpoint: GET ticketing/projects
+                endpoint: GET /ticketing/projects
         actions:
             fetch-workspaces:
                 description: >-
                     Fetch the workspaces with a limit (default 10) of a user to allow them
                     to selection of projects to sync
-                endpoint: GET ticketing/workspaces/limit
+                endpoint: GET /ticketing/workspaces/limit
                 output: BaseAsanaModel[]
                 input: Limit
             fetch-projects:
                 description: >-
                     Fetch the projects with a limit (default 10) given a workspace of a
                     user to allow selection when choosing the tasks to sync.
-                endpoint: GET ticketing/projects/limit
+                endpoint: GET /ticketing/projects/limit
                 output: BaseAsanaModel[]
                 input: AsanaProjectInput
             create-task:
                 input: CreateAsanaTask
-                endpoint: POST ticketing/task
+                endpoint: POST /ticketing/task
                 output: Task
                 description: >
                     Create a task using Asana specific fields and return a unified model
@@ -66,11 +66,11 @@ integrations:
             update-task:
                 description: Update a task and be able to assign the task to a specific user
                 input: AsanaUpdateTask
-                endpoint: PATCH ticketing/task
+                endpoint: PATCH /ticketing/task
                 output: AsanaTask
             delete-task:
                 input: Id
-                endpoint: DELETE ticketing/task
+                endpoint: DELETE /ticketing/task
                 output: boolean
         models:
             Id:
