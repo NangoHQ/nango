@@ -1,8 +1,6 @@
 import type { NangoSync, BaseAsanaModel, AsanaTask, Task } from '../../models';
-// eslint-disable-next-line import/extensions
-import { toUser } from '../mappers/to-user';
-// eslint-disable-next-line import/extensions
-import { toTask } from '../mappers/to-task';
+import { toUser } from '../mappers/to-user.js';
+import { toTask } from '../mappers/to-task.js';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const lastSyncDate = nango.lastSyncDate;

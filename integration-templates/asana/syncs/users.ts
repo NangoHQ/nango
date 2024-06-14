@@ -1,6 +1,5 @@
 import type { NangoSync, AsanaWorkspace, AsanaUser, User } from '../../models';
-// eslint-disable-next-line import/extensions
-import { toUser } from '../mappers/to-user';
+import { toUser } from '../mappers/to-user.js';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     for await (const workspaces of nango.paginate<AsanaWorkspace>({

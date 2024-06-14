@@ -1,6 +1,5 @@
 import type { NangoAction, AsanaTask, Task, CreateAsanaTask, NangoActionError } from '../../models';
-// eslint-disable-next-line import/extensions
-import { toTask } from '../mappers/to-task';
+import { toTask } from '../mappers/to-task.js';
 
 export default async function runAction(nango: NangoAction, input: CreateAsanaTask): Promise<Task> {
     if (!input.parent && !input.projects) {
