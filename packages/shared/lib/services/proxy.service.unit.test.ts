@@ -1,7 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import proxyService from './proxy.service.js';
 import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, OAuth2Credentials } from '../models/index.js';
-import { AuthModes } from '../models/index.js';
 import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
@@ -15,7 +14,7 @@ describe('Proxy service Construct Header Tests', () => {
             token: { apiKey: 'sweet-secret-token' },
             method: 'GET' as HTTP_VERB,
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 authorization_url: 'https://api.nangostarter.com',
                 token_url: 'https://api.nangostarter.com',
                 proxy: {
@@ -44,7 +43,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct headers for Basic auth', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.Basic
+                auth_mode: 'BASIC'
             },
             token: {
                 username: 'testuser',
@@ -62,7 +61,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct headers for Basic auth with no password', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.Basic
+                auth_mode: 'BASIC'
             },
             token: {
                 username: 'testuser'
@@ -79,7 +78,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct headers for Basic auth + any custom headers', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.Basic,
+                auth_mode: 'BASIC',
                 proxy: {
                     headers: {
                         'X-Test': 'test'
@@ -103,7 +102,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct headers with an Authorization override', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.Basic
+                auth_mode: 'BASIC'
             },
             token: {
                 username: 'testuser',
@@ -160,7 +159,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly merge provided headers', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     headers: {
                         'My-Token': '${apiKey}'
@@ -186,7 +185,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should construct headers for an api key', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     headers: {
                         'X-Api-Key': '${apiKey}',
@@ -283,7 +282,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
                     query: {
@@ -306,7 +305,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.key property', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
                     query: {
@@ -328,7 +327,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property with existing query params', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
                     query: {
@@ -350,7 +349,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('Should insert a proxy query and a headers', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
                     query: {
@@ -384,7 +383,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('Should handle Proxy base URL interpolation with connection configuration param', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.OAuth2,
+                auth_mode: 'OAUTH2',
                 proxy: {
                     base_url: 'https://www.zohoapis.${connectionConfig.extension}'
                 }
@@ -404,7 +403,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('Should handle Proxy base URL interpolation with connection metadata param', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.OAuth2,
+                auth_mode: 'OAUTH2',
                 proxy: {
                     base_url: '${metadata.instance_url}'
                 }

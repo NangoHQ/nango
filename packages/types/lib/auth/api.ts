@@ -1,4 +1,3 @@
-import type { Template } from '../integration/template.js';
 import type { BaseConnection } from '../connection/db.js';
 
 export interface AuthModes {
@@ -18,6 +17,7 @@ export type AuthModeType = AuthModes[keyof AuthModes];
 export interface AuthOperation {
     CREATION: 'creation';
     OVERRIDE: 'override';
+    REFRESH: 'refresh';
     UNKNOWN: 'unknown';
 }
 
@@ -28,6 +28,10 @@ export interface OAuthAuthorizationMethod {
     HEADER: 'header';
 }
 
+export type OAuthAuthorizationMethodType = OAuthAuthorizationMethod[keyof OAuthAuthorizationMethod];
+
+export type OAuthBodyFormatType = OAuthBodyFormat[keyof OAuthBodyFormat];
+
 export interface OAuthBodyFormat {
     FORM: 'form';
     JSON: 'json';
@@ -36,38 +40,6 @@ export interface OAuthBodyFormat {
 export interface ConnectionUpsertResponse {
     id: number;
     operation: AuthOperation;
-}
-
-export interface TemplateOAuth2 extends Template {
-    auth_mode: AuthModes['OAuth2'] | AuthModes['Custom'];
-
-    disable_pkce?: boolean; // Defaults to false (=PKCE used) if not provided
-
-    token_params?: {
-        grant_type?: 'authorization_code' | 'client_credentials';
-    };
-
-    refresh_params?: {
-        grant_type: 'refresh_token';
-    };
-    authorization_method?: OAuthAuthorizationMethod;
-    body_format?: OAuthBodyFormat;
-
-    refresh_url?: string;
-
-    token_request_auth_method?: 'basic';
-}
-
-export interface TemplateOAuth1 extends Template {
-    auth_mode: AuthModes['OAuth1'];
-
-    request_url: string;
-    request_params?: Record<string, string>;
-    request_http_method?: 'GET' | 'PUT' | 'POST'; // Defaults to POST if not provided
-
-    token_http_method?: 'GET' | 'PUT' | 'POST'; // Defaults to POST if not provided
-
-    signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
 }
 
 export interface OAuth1RequestTokenResult {

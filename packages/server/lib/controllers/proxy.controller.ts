@@ -30,11 +30,11 @@ import {
     ErrorSourceEnum,
     proxyService,
     connectionService,
-    configService,
-    axiosInstance as axios
+    configService
 } from '@nangohq/shared';
-import { metrics, getLogger } from '@nangohq/utils';
+import { metrics, getLogger, axiosInstance as axios } from '@nangohq/utils';
 import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
+import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 
@@ -122,11 +122,13 @@ class ProxyController {
                 connectionId,
                 providerConfigKey,
                 logContextGetter,
-                instantRefresh: false
+                instantRefresh: false,
+                onRefreshSuccess: connectionRefreshSuccessHook,
+                onRefreshFailed: connectionRefreshFailedHook
             });
 
             if (credentialResponse.isErr()) {
-                await logCtx.error('Failed to get connection credentials', { error: credentialResponse.error.message });
+                await logCtx.error('Failed to get connection credentials', { error: credentialResponse.error });
                 await logCtx.failed();
                 throw new Error(`Failed to get connection credentials: '${credentialResponse.error.message}'`);
             }

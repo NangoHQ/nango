@@ -1,24 +1,6 @@
+import type { AuthModeType, AuthOperationType } from '@nangohq/types';
 import type { ServiceResponse } from './Generic.js';
-import type { Template } from './Provider.js';
 import type { BaseConnection, StoredConnection } from './Connection.js';
-
-export enum AuthModes {
-    OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2',
-    OAuth2CC = 'OAUTH2_CC',
-    Basic = 'BASIC',
-    ApiKey = 'API_KEY',
-    AppStore = 'APP_STORE',
-    Custom = 'CUSTOM',
-    App = 'APP',
-    None = 'NONE'
-}
-
-export enum AuthOperation {
-    CREATION = 'creation',
-    OVERRIDE = 'override',
-    UNKNOWN = 'unknown'
-}
 
 export enum OAuthAuthorizationMethod {
     BODY = 'body',
@@ -32,7 +14,7 @@ export enum OAuthBodyFormat {
 
 export interface ConnectionUpsertResponse {
     connection: StoredConnection;
-    operation: AuthOperation;
+    operation: AuthOperationType;
 }
 
 export interface OAuthSession {
@@ -40,7 +22,7 @@ export interface OAuthSession {
     provider: string;
     connectionId: string;
     callbackUrl: string;
-    authMode: AuthModes;
+    authMode: AuthModeType;
     id: string;
     connectionConfig: Record<string, string>;
     environmentId: number;
@@ -54,38 +36,6 @@ export interface OAuthSession {
     activityLogId: string;
 }
 
-export interface TemplateOAuth2 extends Template {
-    auth_mode: AuthModes.OAuth2 | AuthModes.Custom;
-
-    disable_pkce?: boolean; // Defaults to false (=PKCE used) if not provided
-
-    token_params?: {
-        grant_type?: 'authorization_code' | 'client_credentials';
-    };
-
-    refresh_params?: {
-        grant_type: 'refresh_token';
-    };
-    authorization_method?: OAuthAuthorizationMethod;
-    body_format?: OAuthBodyFormat;
-
-    refresh_url?: string;
-
-    token_request_auth_method?: 'basic';
-}
-
-export interface TemplateOAuth1 extends Template {
-    auth_mode: AuthModes.OAuth1;
-
-    request_url: string;
-    request_params?: Record<string, string>;
-    request_http_method?: 'GET' | 'PUT' | 'POST'; // Defaults to POST if not provided
-
-    token_http_method?: 'GET' | 'PUT' | 'POST'; // Defaults to POST if not provided
-
-    signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
-}
-
 export interface OAuth1RequestTokenResult {
     request_token: string;
     request_token_secret: string;
@@ -93,32 +43,32 @@ export interface OAuth1RequestTokenResult {
 }
 
 export interface CredentialsCommon<T = Record<string, any>> {
-    type: AuthModes;
+    type: AuthModeType;
     raw: T;
 }
 
 export interface BasicApiCredentials {
-    type?: AuthModes.Basic;
+    type?: 'BASIC';
     username: string;
     password: string;
 }
 
 export interface ApiKeyCredentials {
-    type?: AuthModes.ApiKey;
+    type?: 'API_KEY';
     apiKey: string;
 }
 
 export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
 
 export interface AppCredentials {
-    type?: AuthModes.App;
+    type?: 'APP';
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
 }
 
 export interface AppStoreCredentials {
-    type?: AuthModes.AppStore;
+    type?: 'APP_STORE';
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
@@ -126,7 +76,7 @@ export interface AppStoreCredentials {
 }
 
 export interface OAuth2Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth2;
+    type: 'OAUTH2';
     access_token: string;
 
     refresh_token?: string;
@@ -139,7 +89,7 @@ export interface OAuth2Credentials extends CredentialsCommon {
 }
 
 export interface OAuth2ClientCredentials extends CredentialsCommon {
-    type: AuthModes.OAuth2CC;
+    type: 'OAUTH2_CC';
     token: string;
 
     expires_at?: Date | undefined;
@@ -149,7 +99,7 @@ export interface OAuth2ClientCredentials extends CredentialsCommon {
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth1;
+    type: 'OAUTH1';
     oauth_token: string;
     oauth_token_secret: string;
 }

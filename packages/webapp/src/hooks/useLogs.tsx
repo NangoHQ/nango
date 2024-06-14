@@ -2,8 +2,9 @@ import type { GetOperation, SearchFilters, SearchMessages, SearchOperations } fr
 import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
 import { apiFetch, swrFetcher } from '../utils/api';
+import { slidePeriod } from '../utils/logs';
 
-export function useSearchOperations(env: string, body: SearchOperations['Body']) {
+export function useSearchOperations(env: string, body: SearchOperations['Body'], isLive: boolean) {
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<SearchOperations['Success']>();
     const [error, setError] = useState<SearchOperations['Errors']>();
@@ -17,9 +18,17 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'])
         setLoading(true);
         signal.current = new AbortController();
         try {
+            let period = body.period;
+            // Slide the window automatically when live
+            // We do it only at query time so the URL stays shareable (datadog style)
+            if (isLive && period) {
+                const tmp = slidePeriod(period);
+                period = { from: tmp.from!.toISOString(), to: tmp.to!.toISOString() };
+            }
+
             const res = await apiFetch(`/api/v1/logs/operations?env=${env}`, {
                 method: 'POST',
-                body: JSON.stringify({ ...body, cursor }),
+                body: JSON.stringify({ ...body, period, cursor }),
                 signal: signal.current.signal
             });
             if (res.status !== 200) {
@@ -44,7 +53,7 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'])
         }
         if (man.error) {
             setData(undefined);
-            setError(man.error as any);
+            setError((typeof man.error === 'string' || man.error instanceof Error ? { error: { message: man.error } } : man.error) as any);
             return;
         }
 

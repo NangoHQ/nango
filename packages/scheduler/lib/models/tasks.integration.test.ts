@@ -4,6 +4,7 @@ import { taskStates } from '../types.js';
 import type { TaskState, Task } from '../types.js';
 import { getTestDbClient } from '../db/helpers.test.js';
 import type { knex } from 'knex';
+import { nanoid } from '@nangohq/utils';
 
 describe('Task', () => {
     const dbClient = getTestDbClient();
@@ -27,11 +28,12 @@ describe('Task', () => {
                 startsAfter: new Date(),
                 createdToStartedTimeoutSecs: 10,
                 startedToCompletedTimeoutSecs: 20,
-                heartbeatTimeoutSecs: 5
+                heartbeatTimeoutSecs: 5,
+                scheduleId: null
             })
         ).unwrap();
         expect(task).toMatchObject({
-            id: expect.any(String) as string,
+            id: expect.any(String),
             name: 'Test Task',
             payload: { foo: 'bar' },
             groupKey: 'groupA',
@@ -45,7 +47,8 @@ describe('Task', () => {
             lastStateTransitionAt: expect.toBeIsoDateTimezone(),
             lastHeartbeatAt: expect.toBeIsoDateTimezone(),
             output: null,
-            terminated: false
+            terminated: false,
+            scheduleId: null
         });
     });
     it('should have their heartbeat updated', async () => {
@@ -140,11 +143,11 @@ describe('Task', () => {
         expect(l2.length).toBe(1);
         expect(l2.map((t) => t.id)).toStrictEqual([t1.id]);
 
-        const l3 = (await tasks.search(db, { state: 'CREATED' })).unwrap();
+        const l3 = (await tasks.search(db, { states: ['CREATED'] })).unwrap();
         expect(l3.length).toBe(2);
         expect(l3.map((t) => t.id)).toStrictEqual([t2.id, t3.id]);
 
-        const l4 = (await tasks.search(db, { state: 'CREATED', groupKey: 'unkown' })).unwrap();
+        const l4 = (await tasks.search(db, { states: ['CREATED'], groupKey: 'unkown' })).unwrap();
         expect(l4.length).toBe(0);
 
         const l5 = (await tasks.search(db, { ids: [t1.id, t2.id] })).unwrap();
@@ -184,23 +187,20 @@ async function createTaskWithState(db: knex.Knex, state: TaskState): Promise<Tas
 async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {
     return tasks
         .create(db, {
-            name: props?.name || rndString(),
+            name: props?.name || nanoid(),
             payload: props?.payload || {},
-            groupKey: props?.groupKey || rndString(),
+            groupKey: props?.groupKey || nanoid(),
             retryMax: props?.retryMax || 3,
             retryCount: props?.retryCount || 1,
             startsAfter: props?.startsAfter || new Date(),
             createdToStartedTimeoutSecs: props?.createdToStartedTimeoutSecs || 10,
             startedToCompletedTimeoutSecs: props?.startedToCompletedTimeoutSecs || 20,
-            heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5
+            heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5,
+            scheduleId: props?.scheduleId || null
         })
         .then((t) => t.unwrap());
 }
 
 async function startTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {
     return createTask(db, props).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'STARTED' })).unwrap());
-}
-
-function rndString(): string {
-    return (Math.random() + 1).toString(36).substring(2, 5);
 }

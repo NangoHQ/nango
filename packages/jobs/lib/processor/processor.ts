@@ -21,10 +21,17 @@ export class Processor {
     start() {
         logger.info('Starting task processors');
         try {
+            const syncWorker = new ProcessorWorker({
+                orchestratorUrl: this.orchestratorServiceUrl,
+                groupKey: 'sync',
+                maxConcurrency: 200
+            });
+            syncWorker.start();
+
             const actionWorker = new ProcessorWorker({
                 orchestratorUrl: this.orchestratorServiceUrl,
                 groupKey: 'action',
-                maxConcurrency: 500
+                maxConcurrency: 200
             });
             actionWorker.start();
 
@@ -34,7 +41,7 @@ export class Processor {
                 maxConcurrency: 50
             });
             webhookWorker.start();
-            this.workers = [actionWorker, webhookWorker];
+            this.workers = [syncWorker, actionWorker, webhookWorker];
             this.stopped = false;
         } catch (e) {
             logger.error(e);

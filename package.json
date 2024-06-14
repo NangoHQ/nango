@@ -20,7 +20,8 @@
         "packages/utils",
         "packages/data-ingestion",
         "packages/types",
-        "packages/database"
+        "packages/database",
+        "packages/webhooks"
     ],
     "scripts": {
         "create:migration": "cd packages/database/lib && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
@@ -56,9 +57,10 @@
         "watch:dev:apps": "npm run dev:watch:apps",
         "dw": "npm run dev:watch",
         "dwa": "npm run dev:watch:apps",
-        "test": "concurrently --kill-others \"npm run test:unit\" \"npm run test:integration\"",
+        "test": "concurrently --kill-others \"npm run test:unit\" \"npm run test:integration\" \"npm run test:cli\"",
         "test:unit": "vitest",
         "test:integration": "vitest --config ./vite.integration.config.ts",
+        "test:cli": "vitest --config ./vite.cli.config.ts",
         "docs": "cd ./docs-v2 && npx mintlify dev --port 3033",
         "nango": "cd ./packages/server && npm run nango",
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d"
@@ -76,14 +78,15 @@
         "eslint-plugin-react": "7.33.2",
         "eslint-plugin-react-hooks": "4.6.0",
         "git-cliff": "2.2.1",
-        "husky": "^8.0.3",
+        "husky": "8.0.3",
         "js-yaml": "4.1.0",
         "lint-staged": "15.2.2",
-        "onchange": "^7.1.0",
+        "onchange": "7.1.0",
         "prettier": "3.2.5",
+        "rimraf": "5.0.1",
         "testcontainers": "^9.12.0",
         "tsx": "^4.6.2",
-        "typescript": "^5.3.3",
+        "typescript": "5.3.3",
         "vitest": "0.33.0",
         "zx": "8.0.2"
     },

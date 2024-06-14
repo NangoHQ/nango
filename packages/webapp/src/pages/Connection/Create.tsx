@@ -18,7 +18,7 @@ import { LeftNavBarItems } from '../../components/LeftNavBar';
 import SecretInput from '../../components/ui/input/SecretInput';
 import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { useStore } from '../../store';
-import { AuthModes } from '../../types';
+import type { AuthModeType } from '@nangohq/types';
 import { useEnvironment } from '../../hooks/useEnvironment';
 
 export default function IntegrationCreate() {
@@ -31,7 +31,7 @@ export default function IntegrationCreate() {
     const navigate = useNavigate();
     const [integration, setIntegration] = useState<Integration | null>(null);
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
-    const [authMode, setAuthMode] = useState<AuthModes>(AuthModes.OAuth2);
+    const [authMode, setAuthMode] = useState<AuthModeType>('OAUTH2');
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
     const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
     const [authorizationParamsError, setAuthorizationParamsError] = useState<boolean>(false);
@@ -128,20 +128,20 @@ export default function IntegrationCreate() {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         Object.keys(params).forEach((key) => params[key] === '' && delete params[key]);
 
-        if (authMode === AuthModes.Basic) {
+        if (authMode === 'BASIC') {
             credentials = {
                 username: apiAuthUsername,
                 password: apiAuthPassword
             };
         }
 
-        if (authMode === AuthModes.ApiKey) {
+        if (authMode === 'API_KEY') {
             credentials = {
                 apiKey
             };
         }
 
-        if (authMode === AuthModes.AppStore) {
+        if (authMode === 'APP_STORE') {
             credentials = {
                 privateKeyId,
                 issuerId,
@@ -149,7 +149,7 @@ export default function IntegrationCreate() {
             };
         }
 
-        if (authMode === AuthModes.OAuth2) {
+        if (authMode === 'OAUTH2') {
             credentials = {
                 oauth_client_id_override: oAuthClientId,
                 oauth_client_secret_override: oAuthClientSecret
@@ -163,14 +163,14 @@ export default function IntegrationCreate() {
             }
         }
 
-        if (authMode === AuthModes.OAuth2CC) {
+        if (authMode === 'OAUTH2_CC') {
             credentials = {
                 client_id: oAuthClientId,
                 client_secret: oAuthClientSecret
             };
         }
 
-        nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
+        nango[authMode === 'NONE' ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
             user_scope: selectedScopes || [],
             params,
             authorization_params: authorizationParams || {},
@@ -270,7 +270,7 @@ export default function IntegrationCreate() {
             }
         }
 
-        if (authMode === AuthModes.OAuth2 && oauthSelectedScopes.length > 0) {
+        if (authMode === 'OAUTH2' && oauthSelectedScopes.length > 0) {
             if (connectionConfigParamsStr) {
                 connectionConfigParamsStr += ', ';
             } else {
@@ -311,7 +311,7 @@ export default function IntegrationCreate() {
         }
 
         let apiAuthString = '';
-        if (integration?.authMode === AuthModes.ApiKey) {
+        if (integration?.authMode === 'API_KEY') {
             apiAuthString = `
     credentials: {
       apiKey: '${apiKey}'
@@ -319,7 +319,7 @@ export default function IntegrationCreate() {
   `;
         }
 
-        if (integration?.authMode === AuthModes.Basic) {
+        if (integration?.authMode === 'BASIC') {
             apiAuthString = `
     credentials: {
       username: '${apiAuthUsername}',
@@ -330,7 +330,7 @@ export default function IntegrationCreate() {
 
         let appStoreAuthString = '';
 
-        if (integration?.authMode === AuthModes.AppStore) {
+        if (integration?.authMode === 'APP_STORE') {
             appStoreAuthString = `
     credentials: {
         privateKeyId: '${privateKeyId}',
@@ -342,7 +342,7 @@ export default function IntegrationCreate() {
 
         let oauthCredentialsString = '';
 
-        if (integration?.authMode === AuthModes.OAuth2 && oAuthClientId && oAuthClientSecret) {
+        if (integration?.authMode === 'OAUTH2' && oAuthClientId && oAuthClientSecret) {
             oauthCredentialsString = `
     credentials: {
         oauth_client_id_override: '${oAuthClientId}',
@@ -353,7 +353,7 @@ export default function IntegrationCreate() {
 
         let oauth2ClientCredentialsString = '';
 
-        if (integration?.authMode === AuthModes.OAuth2CC) {
+        if (integration?.authMode === 'OAUTH2_CC') {
             if (oAuthClientId && oAuthClientSecret) {
                 oauth2ClientCredentialsString = `
     credentials: {
@@ -409,7 +409,7 @@ export default function IntegrationCreate() {
 
 const nango = new Nango(${argsStr});
 
-nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
+nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
   .then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
   }).catch((err: { message: string; type: string }) => {
@@ -500,7 +500,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
-                            {authMode === AuthModes.OAuth2CC && (
+                            {authMode === 'OAUTH2_CC' && (
                                 <>
                                     <div className="flex flex-col">
                                         <div className="flex items-center mb-1">
@@ -629,7 +629,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             ))}
 
-                            {(authMode === AuthModes.ApiKey || authMode === AuthModes.Basic) && (
+                            {(authMode === 'API_KEY' || authMode === 'BASIC') && (
                                 <div>
                                     <div>
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
@@ -638,7 +638,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                         <p className="mt-3 mb-5">{authMode}</p>
                                     </div>
 
-                                    {authMode === AuthModes.Basic && (
+                                    {authMode === 'BASIC' && (
                                         <div>
                                             <div className="flex mt-6">
                                                 <label htmlFor="username" className="text-text-light-gray block text-sm font-semibold">
@@ -673,7 +673,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             </div>
                                         </div>
                                     )}
-                                    {authMode === AuthModes.ApiKey && (
+                                    {authMode === 'API_KEY' && (
                                         <div>
                                             <div className="flex mt-6">
                                                 <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
@@ -707,7 +707,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
-                            {authMode === AuthModes.App && (
+                            {authMode === 'APP' && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="optional_authorization_params" className="text-text-light-gray block text-sm font-semibold">
@@ -742,7 +742,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
-                            {authMode === AuthModes.AppStore && (
+                            {authMode === 'APP_STORE' && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
@@ -833,7 +833,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
-                            {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && (
+                            {(authMode === 'OAUTH1' || authMode === 'OAUTH2') && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="optional_authorization_params" className="text-text-light-gray block text-sm font-semibold">
@@ -872,7 +872,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}
                                 <div className="flex">
                                     <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
-                                        {authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 ? <>Start OAuth Flow</> : <>Create Connection</>}
+                                        {authMode === 'OAUTH1' || authMode === 'OAUTH2' ? <>Start OAuth Flow</> : <>Create Connection</>}
                                     </button>
                                     <label htmlFor="email" className="text-text-light-gray block text-sm pt-5 ml-4">
                                         or from your frontend:

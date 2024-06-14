@@ -32,13 +32,15 @@ import {
     isInitialSyncStillRunning,
     getSyncByIdAndName,
     getLastSyncDate,
-    getSyncConfigRaw
+    getSyncConfigRaw,
+    featureFlags
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
 import { getLogger, stringifyError, errorToObject } from '@nangohq/utils';
 import integrationService from './integration.service.js';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
+import { sendSync } from '@nangohq/webhooks';
 import { bigQueryClient, slackService } from './clients.js';
 
 const logger = getLogger('Jobs');
@@ -46,6 +48,13 @@ const logger = getLogger('Jobs');
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
+
+    const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+    const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
+    const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+    if (isOrchestrator) {
+        return true;
+    }
 
     // https://typescript.temporal.io/api/classes/activity.Context
     const context: Context = Context.current();
@@ -90,6 +99,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         slackService,
         writeToDb: true,
         logCtx: await logContextGetter.get({ id: String(activityLogId) }),
+        sendSyncWebhook: sendSync,
         nangoConnection,
         syncName: actionName,
         isAction: true,
@@ -110,6 +120,13 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     const { syncId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
     let syncJobId;
+
+    const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+    const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
+    const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+    if (isOrchestrator) {
+        return true;
+    }
 
     const initialSyncStillRunning = await isInitialSyncStillRunning(syncId);
 
@@ -321,6 +338,7 @@ export async function syncProvider({
             integrationService,
             recordsService,
             slackService,
+            sendSyncWebhook: sendSync,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -418,6 +436,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         slackService,
         writeToDb: true,
         nangoConnection,
+        sendSyncWebhook: sendSync,
         syncJobId: syncJobId?.id as number,
         syncName: parentSyncName,
         isAction: false,
@@ -455,6 +474,7 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
         writeToDb: true,
         nangoConnection,
         syncName: name,
+        sendSyncWebhook: sendSync,
         isAction: false,
         isPostConnectionScript: true,
         syncType: SyncType.POST_CONNECTION_SCRIPT,

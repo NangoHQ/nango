@@ -156,12 +156,7 @@ export default function Authorization(props: AuthorizationProps) {
             {connection.credentials.type === AuthModes.OAuth2 && connection.credentials.refresh_token && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Refresh Token</span>
-                    <SecretInput
-                        disabled
-                        value={refreshing ? 'Refreshing...' : connection.credentials.refresh_token}
-                        copy={true}
-                        refresh={handleForceRefresh}
-                    />
+                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.refresh_token} copy={true} />
                 </div>
             )}
             <div className="flex flex-col">

@@ -440,6 +440,20 @@ integrations:
                 type: string
             ExpensifyListPolicyOutput:
                 policyList: array
+    fireflies:
+        actions:
+            add-to-live:
+                output: FirefliesAddtoLiveResponse
+                input: FirefliesAddtoLiveInput
+                description: |
+                    Action to add the Fireflies.ai bot to an ongoing meeting
+                endpoint: POST /fireflies/add-to-live
+        models:
+            FirefliesAddtoLiveInput:
+                query: string
+                variables: object
+            FirefliesAddtoLiveResponse:
+                data: object
     github:
         syncs:
             issues:
@@ -1311,6 +1325,20 @@ integrations:
                 first_name: string
                 last_name: string
                 email: string
+    instantly:
+        actions:
+            set-campaign-name:
+                output: InstantlySetCampaignNameResponse
+                input: InstantlySetCampaignNameInput
+                description: |
+                    Action to set a campaign name
+                endpoint: POST /instantly/set-campaign-name
+        models:
+            InstantlySetCampaignNameResponse:
+                status: string
+            InstantlySetCampaignNameInput:
+                campaign_id: string
+                name: string
     intercom:
         syncs:
             conversations:

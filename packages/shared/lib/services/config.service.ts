@@ -1,5 +1,6 @@
-import type { Config as ProviderConfig, Template as ProviderTemplate, TemplateAlias as ProviderTemplateAlias } from '../models/Provider.js';
+import type { Config as ProviderConfig, TemplateAlias as ProviderTemplateAlias } from '../models/Provider.js';
 import type { Connection } from '../models/Connection.js';
+import type { Template as ProviderTemplate } from '@nangohq/types';
 import db from '@nangohq/database';
 import yaml from 'js-yaml';
 import fs from 'fs';
@@ -8,9 +9,10 @@ import { isCloud, nanoid } from '@nangohq/utils';
 import { dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import syncOrchestrator from './sync/orchestrator.service.js';
+import syncManager from './sync/manager.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
+import type { Orchestrator } from '../clients/orchestrator.js';
 
 class ConfigService {
     templates: Record<string, ProviderTemplate> | null;
@@ -166,7 +168,7 @@ class ConfigService {
         return { id: id[0]?.id, unique_key: config.unique_key } as Pick<ProviderConfig, 'id' | 'unique_key'>;
     }
 
-    async deleteProviderConfig(providerConfigKey: string, environment_id: number): Promise<number> {
+    async deleteProviderConfig(providerConfigKey: string, environment_id: number, orchestrator: Orchestrator): Promise<number> {
         const idResult = (
             await db.knex.select('id').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, environment_id, deleted: false })
         )[0];
@@ -177,7 +179,7 @@ class ConfigService {
 
         const { id } = idResult;
 
-        await syncOrchestrator.deleteSyncsByProviderConfig(environment_id, providerConfigKey);
+        await syncManager.deleteSyncsByProviderConfig(environment_id, providerConfigKey, orchestrator);
 
         if (isCloud) {
             const config = await this.getProviderConfig(providerConfigKey, environment_id);

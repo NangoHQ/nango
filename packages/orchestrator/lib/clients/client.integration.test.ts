@@ -5,6 +5,7 @@ import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 import getPort from 'get-port';
 import { EventsHandler } from '../events.js';
+import { nanoid } from '@nangohq/utils';
 
 const dbClient = getTestDbClient();
 const eventsHandler = new EventsHandler({
@@ -34,16 +35,132 @@ describe('OrchestratorClient', async () => {
         scheduler.stop();
         await dbClient.clearDatabase();
     });
+
+    describe('recurring schedule', () => {
+        it('should be created', async () => {
+            const res = await client.recurring({
+                name: nanoid(),
+                state: 'STARTED',
+                startsAt: new Date(),
+                frequencyMs: 300_000,
+                groupKey: nanoid(),
+                retry: { max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'sync',
+                    syncId: 'sync-a',
+                    syncName: nanoid(),
+                    syncJobId: 5678,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    debug: false
+                }
+            });
+            expect(res.isOk()).toBe(true);
+        });
+        it('should be updatable', async () => {
+            const name = nanoid();
+            await client.recurring({
+                name,
+                state: 'STARTED',
+                startsAt: new Date(),
+                frequencyMs: 300_000,
+                groupKey: nanoid(),
+                retry: { max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'sync',
+                    syncId: 'sync-a',
+                    syncName: nanoid(),
+                    syncJobId: 5678,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    debug: false
+                }
+            });
+
+            const res = await client.updateSyncFrequency({ scheduleName: name, frequencyMs: 600_000 });
+            expect(res.isOk()).toBe(true);
+        });
+        it('should be paused/unpaused/deleted', async () => {
+            const scheduleName = nanoid();
+            await client.recurring({
+                name: scheduleName,
+                state: 'STARTED',
+                startsAt: new Date(),
+                frequencyMs: 300_000,
+                groupKey: nanoid(),
+                retry: { max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'sync',
+                    syncId: 'sync-a',
+                    syncName: nanoid(),
+                    syncJobId: 5678,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    debug: false
+                }
+            });
+            const paused = await client.pauseSync({ scheduleName });
+            expect(paused.isOk(), `pausing failed ${JSON.stringify(paused)}`).toBe(true);
+            const unpaused = await client.unpauseSync({ scheduleName });
+            expect(unpaused.isOk(), `pausing failed ${JSON.stringify(unpaused)}`).toBe(true);
+            const deleted = await client.deleteSync({ scheduleName });
+            expect(deleted.isOk(), `pausing failed ${JSON.stringify(deleted)}`).toBe(true);
+        });
+        it('should be searchable', async () => {
+            const name = nanoid();
+            await client.recurring({
+                name,
+                state: 'STARTED',
+                startsAt: new Date(),
+                frequencyMs: 300_000,
+                groupKey: nanoid(),
+                retry: { max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'sync',
+                    syncId: 'sync-a',
+                    syncName: nanoid(),
+                    syncJobId: 5678,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    debug: false
+                }
+            });
+            const res = (await client.searchSchedules({ scheduleNames: [name], limit: 1 })).unwrap();
+            expect(res.length).toBe(1);
+            expect(res[0]?.name).toBe(name);
+        });
+    });
+
     describe('heartbeat', () => {
         it('should be successful', async () => {
-            const scheduledTask = await client.schedule({
-                name: 'Task',
-                groupKey: rndStr(),
+            const scheduledTask = await client.immediate({
+                name: nanoid(),
+                groupKey: nanoid(),
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
                     type: 'action',
-                    actionName: rndStr(),
+                    actionName: nanoid(),
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -66,7 +183,7 @@ describe('OrchestratorClient', async () => {
 
     describe('executeAction', () => {
         it('should be successful when action task succeed', async () => {
-            const groupKey = rndStr();
+            const groupKey = nanoid();
             const output = { count: 9 };
 
             const processor = new MockProcessor({
@@ -77,7 +194,7 @@ describe('OrchestratorClient', async () => {
             });
             try {
                 const res = await client.executeAction({
-                    name: 'Task',
+                    name: nanoid(),
                     groupKey: groupKey,
                     args: {
                         actionName: 'Action',
@@ -97,7 +214,7 @@ describe('OrchestratorClient', async () => {
             }
         });
         it('should return an error if action task fails', async () => {
-            const groupKey = rndStr();
+            const groupKey = nanoid();
 
             const errorPayload = { message: 'something bad happened' };
             const processor = new MockProcessor({
@@ -108,7 +225,7 @@ describe('OrchestratorClient', async () => {
             });
             try {
                 const res = await client.executeAction({
-                    name: 'Task',
+                    name: nanoid(),
                     groupKey: groupKey,
                     args: {
                         actionName: 'Action',
@@ -133,7 +250,7 @@ describe('OrchestratorClient', async () => {
     });
     describe('executeWebhook', () => {
         it('should be successful when action task succeed', async () => {
-            const groupKey = rndStr();
+            const groupKey = nanoid();
             const output = { count: 9 };
 
             const processor = new MockProcessor({
@@ -144,7 +261,7 @@ describe('OrchestratorClient', async () => {
             });
             try {
                 const res = await client.executeWebhook({
-                    name: 'Task',
+                    name: nanoid(),
                     groupKey: groupKey,
                     args: {
                         webhookName: 'W',
@@ -165,7 +282,7 @@ describe('OrchestratorClient', async () => {
             }
         });
         it('should return an error if action task fails', async () => {
-            const groupKey = rndStr();
+            const groupKey = nanoid();
 
             const errorPayload = { message: 'something bad happened' };
             const processor = new MockProcessor({
@@ -176,11 +293,11 @@ describe('OrchestratorClient', async () => {
             });
             try {
                 const res = await client.executeWebhook({
-                    name: 'Task',
+                    name: nanoid(),
                     groupKey: groupKey,
                     args: {
                         webhookName: 'W',
-                        parentSyncName: rndStr(),
+                        parentSyncName: nanoid(),
                         connection: {
                             id: 1234,
                             connection_id: 'C',
@@ -200,11 +317,11 @@ describe('OrchestratorClient', async () => {
             }
         });
     });
-    describe('search', () => {
-        it('should returns task by ids', async () => {
-            const groupKey = rndStr();
-            const actionA = await client.schedule({
-                name: 'Task',
+    describe('succeed', () => {
+        it('should support big output', async () => {
+            const groupKey = nanoid();
+            const actionA = await client.immediate({
+                name: nanoid(),
                 groupKey,
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
@@ -221,8 +338,34 @@ describe('OrchestratorClient', async () => {
                     input: { foo: 'bar' }
                 }
             });
-            const actionB = await client.schedule({
-                name: 'Task',
+            await client.dequeue({ groupKey, limit: 1, longPolling: false });
+            const res = await client.succeed({ taskId: actionA.unwrap().taskId, output: { a: 'a'.repeat(10_000_000) } });
+            expect(res.isOk()).toBe(true);
+        });
+    });
+    describe('search', () => {
+        it('should returns task by ids', async () => {
+            const groupKey = nanoid();
+            const actionA = await client.immediate({
+                name: nanoid(),
+                groupKey,
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'action',
+                    actionName: `A`,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    activityLogId: 789,
+                    input: { foo: 'bar' }
+                }
+            });
+            const actionB = await client.immediate({
+                name: nanoid(),
                 groupKey,
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
@@ -240,7 +383,7 @@ describe('OrchestratorClient', async () => {
                 }
             });
             const ids = [actionA.unwrap().taskId, actionB.unwrap().taskId];
-            const res = await client.search({ ids });
+            const res = await client.searchTasks({ ids });
             expect(res.unwrap().length).toBe(2);
             expect(res.unwrap().map((task) => task.id)).toEqual(ids);
         });
@@ -251,9 +394,9 @@ describe('OrchestratorClient', async () => {
             expect(res.unwrap()).toEqual([]);
         });
         it('should return scheduled tasks', async () => {
-            const groupKey = rndStr();
-            const scheduledAction = await client.schedule({
-                name: 'Task',
+            const groupKey = nanoid();
+            const scheduledAction = await client.immediate({
+                name: nanoid(),
                 groupKey,
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
@@ -270,8 +413,8 @@ describe('OrchestratorClient', async () => {
                     input: { foo: 'bar' }
                 }
             });
-            const scheduledWebhook = await client.schedule({
-                name: 'Task',
+            const scheduledWebhook = await client.immediate({
+                name: nanoid(),
                 groupKey,
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
@@ -303,7 +446,7 @@ class MockProcessor {
 
     constructor({ groupKey, process }: { groupKey: string; process: (task: Task) => void }) {
         this.interval = setInterval(async () => {
-            const tasks = (await scheduler.search({ groupKey })).unwrap();
+            const tasks = (await scheduler.searchTasks({ groupKey })).unwrap();
             for (const task of tasks) {
                 switch (task.state) {
                     case 'CREATED':
@@ -320,8 +463,4 @@ class MockProcessor {
     stop() {
         clearTimeout(this.interval);
     }
-}
-
-function rndStr() {
-    return Math.random().toString(36).substring(7);
 }

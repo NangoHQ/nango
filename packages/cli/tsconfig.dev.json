@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "ES5",
+        "target": "esnext",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -21,9 +21,8 @@
         "sourceMap": false,
         "composite": false,
         "checkJs": false,
-        "rootDir": "nango-integrations",
         "outDir": "nango-integrations/dist"
     },
-    "include": ["nango-integrations"],
+    "include": ["*.ts", "**/*.ts"],
     "exclude": ["node_modules"]
 }
