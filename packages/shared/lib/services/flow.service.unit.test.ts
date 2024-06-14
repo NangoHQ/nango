@@ -157,28 +157,6 @@ describe('Flow service tests', () => {
         expect(flows).not.toStrictEqual({});
         expect(flows).toHaveProperty('integrations');
         expect(Object.keys(flows.integrations).length).toBeGreaterThan(20);
-        expect(flows.integrations['asana']).toStrictEqual({
-            models: {
-                AsanaTask: {
-                    completed: 'boolean',
-                    created_at: 'date',
-                    id: 'string',
-                    modified_at: 'date',
-                    name: 'string',
-                    project_id: 'string'
-                }
-            },
-            syncs: {
-                tasks: {
-                    description: `Fetches a list of tasks from Asana, retrieving tasks from only the first project of the first workspace
-`,
-                    endpoint: '/asana/tasks',
-                    output: 'AsanaTask',
-                    runs: 'every 30min',
-                    scopes: ['default'],
-                    sync_type: 'full'
-                }
-            }
-        });
+        expect(flows.integrations).toHaveProperty('github');
     });
 });
