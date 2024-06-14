@@ -158,5 +158,28 @@ describe('Flow service tests', () => {
         expect(flows).toHaveProperty('integrations');
         expect(Object.keys(flows.integrations).length).toBeGreaterThan(20);
         expect(flows.integrations).toHaveProperty('github');
+        expect(flows.integrations['algolia']).toStrictEqual({
+            models: {
+                AlgoliaContact: {
+                    createdAt: 'date',
+                    taskID: 'number',
+                    objectID: 'string'
+                },
+                AlgoliaCreateContactInput: {
+                    name: 'string',
+                    company: 'string',
+                    email: 'string'
+                }
+            },
+            actions: {
+                'create-contacts': {
+                    description: `Action to add a single record contact to an index
+`,
+                    output: 'AlgoliaContact',
+                    input: 'AlgoliaCreateContactInput',
+                    endpoint: 'POST /algolia/create-contacts'
+                }
+            }
+        });
     });
 });
