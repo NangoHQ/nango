@@ -728,8 +728,26 @@ export class Orchestrator {
 
         // Orchestrator
         const scheduleName = ScheduleName.get({ environmentId, syncId });
-        const frequencyMs = ms(interval as StringValue);
-        const res = await this.client.updateSyncFrequency({ scheduleName, frequencyMs });
+
+        const cleanInterval = this.cleanInterval(interval);
+        if (isOrchestrator && cleanInterval.isErr()) {
+            errorManager.report(cleanInterval.error, {
+                source: ErrorSourceEnum.CUSTOMER,
+                operation: LogActionEnum.SYNC_CLIENT,
+                environmentId,
+                metadata: {
+                    syncName,
+                    scheduleName,
+                    interval
+                }
+            });
+            return Err(cleanInterval.error);
+        }
+        let res: Result<void> = Ok(undefined);
+        if (cleanInterval.isOk()) {
+            const frequencyMs = ms(cleanInterval.value as StringValue);
+            res = await this.client.updateSyncFrequency({ scheduleName, frequencyMs });
+        }
 
         // Legacy
         const { success, error } = await updateSyncScheduleFrequency(syncId, interval, syncName, environmentId, activityLogId, logCtx);
@@ -743,11 +761,11 @@ export class Orchestrator {
                     metadata: {
                         syncName,
                         scheduleName,
-                        frequencyMs
+                        interval
                     }
                 });
             } else {
-                await logCtx?.info(`Sync frequency updated to ${frequencyMs}ms.`);
+                await logCtx?.info(`Sync frequency updated to ${interval}ms.`);
             }
             return res;
         }
