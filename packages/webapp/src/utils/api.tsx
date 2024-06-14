@@ -269,7 +269,7 @@ export function useEditWebhookUrlAPI(env: string) {
                 body: JSON.stringify({ url: webhookUrl })
             };
 
-            const res = await apiFetch(`/api/v1/environment/webhook/url/primary?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/environment/webhook/primary-url?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();
@@ -296,7 +296,7 @@ export function useEditWebhookSecondaryUrlAPI(env: string) {
                 body: JSON.stringify({ url: webhookSecondaryUrl })
             };
 
-            const res = await apiFetch(`/api/v1/environment/webhook/url/secondary?env=${env}`, options);
+            const res = await apiFetch(`/api/v1/environment/webhook/secondary-url?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();

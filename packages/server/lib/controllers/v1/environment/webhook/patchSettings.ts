@@ -13,7 +13,7 @@ const validation = z
     })
     .strict();
 
-export const updateWebhookSettings = asyncWrapper<UpdateWebhookSettings>(async (req, res) => {
+export const patchSettings = asyncWrapper<UpdateWebhookSettings>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

@@ -3,9 +3,11 @@ import type { NangoSyncWebhookBodySuccess, NangoSyncWebhookBodyError, NangoAuthW
 
 export type {
     NangoSyncWebhookBodySuccess,
+    /** @deprecated use NangoSyncWebhookBodySuccess */
     NangoSyncWebhookBodySuccess as NangoSyncWebhookBody,
     NangoSyncWebhookBodyError,
     NangoAuthWebhookBodySuccess,
+    /** @deprecated use NangoAuthWebhookBodySuccess */
     NangoAuthWebhookBodySuccess as NangoAuthWebhookBody,
     NangoAuthWebhookBodyError
 };

@@ -129,7 +129,9 @@ export const deliver = async ({
     logCtx?: LogContext | undefined;
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
-}): Promise<void> => {
+}): Promise<boolean> => {
+    let success = true;
+
     for (const webhook of webhooks) {
         const { url, type } = webhook;
 
@@ -152,17 +154,12 @@ export const deliver = async ({
                         `${webhookType} webhook sent successfully to the ${type} ${url} and received with a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}.`,
                         body as Record<string, unknown>
                     );
-                    if (webhookType === 'forward') {
-                        await logCtx.success();
-                    }
                 } else {
                     await logCtx.error(
                         `${webhookType} sent webhook successfully to the ${type} ${url} but received a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`,
                         body as Record<string, unknown>
                     );
-                    if (webhookType === 'forward') {
-                        await logCtx.failed();
-                    }
+                    success = false;
                 }
             }
         } catch (err) {
@@ -171,6 +168,10 @@ export const deliver = async ({
                     error: err
                 });
             }
+
+            success = false;
         }
     }
+
+    return success;
 };

@@ -55,7 +55,7 @@ export const forwardWebhook = async ({
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
     if (!connectionIds || connectionIds.length === 0) {
-        await deliver({
+        const result = await deliver({
             webhooks,
             body: payload,
             webhookType: 'forward',
@@ -63,11 +63,15 @@ export const forwardWebhook = async ({
             environment,
             logCtx
         });
+
+        result ? await logCtx.success() : await logCtx.failed();
+
         return;
     }
 
+    let success = true;
     for (const connectionId of connectionIds) {
-        await deliver({
+        const result = await deliver({
             webhooks,
             body: {
                 ...body,
@@ -79,5 +83,11 @@ export const forwardWebhook = async ({
             logCtx,
             incomingHeaders: webhookOriginalHeaders
         });
+
+        if (!result) {
+            success = false;
+        }
     }
+
+    success ? await logCtx.success() : await logCtx.failed();
 };

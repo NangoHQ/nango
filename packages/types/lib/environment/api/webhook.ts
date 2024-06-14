@@ -22,12 +22,14 @@ export type UpdatePrimaryUrl = Endpoint<{
     Querystring: {
         env: string;
     };
-    Path: '/api/v1/environment/webhook/url/primary';
+    Path: '/api/v1/environment/webhook/url/primary-url';
     Body: {
         url: string;
     };
     Success: {
-        url: string;
+        data: {
+            url: string;
+        };
     };
 }>;
 
@@ -36,11 +38,13 @@ export type UpdateSecondaryUrl = Endpoint<{
     Querystring: {
         env: string;
     };
-    Path: '/api/v1/environment/webhook/url/secondary';
+    Path: '/api/v1/environment/webhook/secondary-url';
     Body: {
         url: string;
     };
     Success: {
-        url: string;
+        data: {
+            url: string;
+        };
     };
 }>;
