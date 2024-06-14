@@ -33,7 +33,6 @@ export async function up(knex: Knex): Promise<void> {
                 terminated boolean
             );
         `);
-        // TODO: add indexes
     });
 }
 

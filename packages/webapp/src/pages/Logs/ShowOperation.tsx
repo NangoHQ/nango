@@ -102,7 +102,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Type</div>
                     <div className="text-gray-400 text-xs pt-[1px]">
-                        <OperationTag operation={operation.operation!} highlight />
+                        <OperationTag message={operation.message} operation={operation.operation!} highlight />
                     </div>
                 </div>
             </div>
@@ -111,7 +111,11 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="font-semibold text-sm">Integration</div>
                     <div className="text-gray-400 text-s font-code truncate">
                         {operation.integrationName ? (
-                            <Link to={`/integration/${operation.integrationName}`} target="_blank" className="flex gap-2.5 items-center hover:text-white">
+                            <Link
+                                to={`/${env}/integration/${operation.integrationName}`}
+                                target="_blank"
+                                className="flex gap-2.5 items-center hover:text-white"
+                            >
                                 <ProviderTag msg={operation} />
                                 <div className="w-4">
                                     <ExternalLinkIcon className="w-[14px]" />
@@ -128,7 +132,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="text-gray-400 text-s font-code truncate">
                         {operation.connectionName ? (
                             <Link
-                                to={`/connections/${operation.integrationName}/${operation.connectionName}`}
+                                to={`/${env}/connections/${operation.integrationName}/${operation.connectionName}`}
                                 target="_blank"
                                 className="flex gap-2.5 items-center hover:text-white"
                             >
@@ -151,7 +155,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
             <div className="">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
                 {operation.meta ? (
-                    <div className="text-gray-400 text-sm bg-pure-black py-2">
+                    <div className="text-gray-400 text-sm bg-pure-black py-2 max-h-36 overflow-y-scroll">
                         <Prism
                             language="json"
                             className="transparent-code"

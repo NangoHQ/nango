@@ -28,13 +28,12 @@ import {
     LogActionEnum,
     NangoError,
     configService,
-    syncOrchestrator,
+    syncManager,
     getAttributes,
     flowService,
     getActionOrModelByEndpoint,
     getSyncsBySyncConfigId,
     updateFrequency,
-    updateSyncScheduleFrequency,
     getInterval,
     findSyncByConnections,
     setFrequency,
@@ -51,6 +50,8 @@ import { isHosted } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
+
+const orchestrator = getOrchestrator();
 
 class SyncController {
     public async deploySync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -92,7 +93,8 @@ class SyncController {
                 nangoYamlBody: req.body.nangoYamlBody || '',
                 postConnectionScriptsByProvider,
                 debug,
-                logContextGetter
+                logContextGetter,
+                orchestrator
             });
 
             if (!success) {
@@ -111,7 +113,8 @@ class SyncController {
                     debug,
                     singleDeployMode,
                     logCtx,
-                    logContextGetter
+                    logContextGetter,
+                    orchestrator
                 });
                 if (!success) {
                     reconcileSuccess = false;
@@ -158,7 +161,8 @@ class SyncController {
                 activityLogId: null,
                 debug,
                 singleDeployMode,
-                logContextGetter
+                logContextGetter,
+                orchestrator
             });
 
             res.send(result);
@@ -245,7 +249,7 @@ class SyncController {
                 return;
             }
 
-            const syncs = await getSyncs(connection);
+            const syncs = await getSyncs(connection, orchestrator);
 
             res.send(syncs);
         } catch (e) {
@@ -298,8 +302,9 @@ class SyncController {
 
             const { environment } = res.locals;
 
-            const { success, error } = await syncOrchestrator.runSyncCommand({
+            const { success, error } = await syncManager.runSyncCommand({
                 recordsService,
+                orchestrator,
                 environment,
                 providerConfigKey: provider_config_key,
                 syncNames: syncNames as string[],
@@ -543,8 +548,9 @@ class SyncController {
 
             const { environment } = res.locals;
 
-            await syncOrchestrator.runSyncCommand({
+            await syncManager.runSyncCommand({
                 recordsService,
+                orchestrator,
                 environment,
                 providerConfigKey: provider_config_key as string,
                 syncNames: syncNames as string[],
@@ -584,8 +590,9 @@ class SyncController {
 
             const { environment } = res.locals;
 
-            await syncOrchestrator.runSyncCommand({
+            await syncManager.runSyncCommand({
                 recordsService,
+                orchestrator,
                 environment,
                 providerConfigKey: provider_config_key as string,
                 syncNames: syncNames as string[],
@@ -649,7 +656,15 @@ class SyncController {
                 success,
                 error,
                 response: syncsWithStatus
-            } = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames, connection_id as string, false, connection);
+            } = await syncManager.getSyncStatus(
+                environmentId,
+                provider_config_key as string,
+                syncNames,
+                orchestrator,
+                connection_id as string,
+                false,
+                connection
+            );
 
             if (!success || !syncsWithStatus) {
                 errorManager.errResFromNangoErr(res, error);
@@ -733,17 +748,7 @@ class SyncController {
                 return;
             }
 
-            const syncClient = await SyncClient.getInstance();
-
-            if (!syncClient) {
-                const error = new NangoError('failed_to_get_sync_client');
-                errorManager.errResFromNangoErr(res, error);
-                await logCtx.failed();
-
-                return;
-            }
-
-            const result = await syncClient.runSyncCommand({
+            const result = await orchestrator.runSyncCommandHelper({
                 scheduleId: schedule_id,
                 syncId: sync_id,
                 command,
@@ -860,15 +865,16 @@ class SyncController {
             const syncs = await getSyncsBySyncConfigId(environment.id, Number(syncConfigId));
             const setFrequency = `every ${frequency}`;
             for (const sync of syncs) {
-                const { success: updateScheduleSuccess, error: updateScheduleError } = await updateSyncScheduleFrequency(
-                    sync.id,
-                    setFrequency,
-                    sync.name,
-                    environment.id
-                );
+                const updated = await orchestrator.updateSyncFrequency({
+                    syncId: sync.id,
+                    interval: setFrequency,
+                    syncName: sync.name,
+                    environmentId: environment.id
+                });
 
-                if (!updateScheduleSuccess) {
-                    errorManager.errResFromNangoErr(res, updateScheduleError);
+                if (updated.isErr()) {
+                    const error = new NangoError('failed_to_update_frequency', { syncId: sync.id, frequency: setFrequency });
+                    errorManager.errResFromNangoErr(res, error);
                     return;
                 }
             }
@@ -913,7 +919,7 @@ class SyncController {
                 return;
             }
 
-            await syncOrchestrator.softDeleteSync(syncId, environmentId);
+            await syncManager.softDeleteSync(syncId, environmentId, orchestrator);
 
             res.sendStatus(204);
         } catch (e) {
@@ -987,12 +993,18 @@ class SyncController {
 
             await setFrequency(syncId, frequency);
 
-            const { success, error } = await updateSyncScheduleFrequency(syncId, newFrequency, sync_name, connection.environment_id);
-            if (!success) {
+            const updated = await orchestrator.updateSyncFrequency({
+                syncId,
+                interval: newFrequency,
+                syncName: sync_name,
+                environmentId: connection.environment_id
+            });
+
+            if (updated.isErr()) {
+                const error = new NangoError('failed_to_update_frequency', { syncId, frequency: newFrequency });
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
-
             res.status(200).send({ frequency: newFrequency });
         } catch (e) {
             next(e);

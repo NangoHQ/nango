@@ -225,7 +225,9 @@ export default function ConnectionList() {
                                             <p className="break-words break-all">{providerConfigKey}</p>
                                         </div>
                                         <div className="flex w-20">
-                                            <p className="">{formatDate(creationDate)}</p>
+                                            <time dateTime={creationDate} title={creationDate}>
+                                                {formatDate(creationDate)}
+                                            </time>
                                         </div>
                                     </div>
                                 )

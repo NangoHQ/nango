@@ -187,6 +187,8 @@ asana:
         grant_type: refresh_token
     proxy:
         base_url: https://app.asana.com
+        retry:
+            after: 'Retry-After'
         paginate:
             type: cursor
             cursor_path_in_response: next_page.offset
@@ -749,6 +751,17 @@ figma:
     proxy:
         base_url: https://api.figma.com
     docs: https://docs.nango.dev/integrations/all/figma
+fireflies:
+    categories:
+        - analytics
+        - communication
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fireflies.ai
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/fireflies
 fitbit:
     categories:
         - sports
@@ -1161,6 +1174,14 @@ insightly:
             method: GET
             endpoint: /v3.1/Contacts
     docs: https://docs.nango.dev/integrations/all/insightly
+instantly:
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.instantly.ai/api
+    docs: https://docs.nango.dev/integrations/all/instantly
 instagram:
     categories:
         - marketing
@@ -1216,6 +1237,18 @@ jira:
     post_connection_script: jira-post-connection
     webhook_routing_script: jira-webhook-routing
     docs: https://docs.nango.dev/integrations/all/jira
+jira-data-center:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.endpointURL}/rest/oauth2/latest/authorize
+    authorization_params:
+        grant_type: authorization_code
+    token_url: https://${connectionConfig.endpointURL}/rest/oauth2/latest/token
+    connection_configuration:
+        - endpointURL
+    docs: https://docs.nango.dev/integrations/all/jira-data-center
 helpscout-docs:
     auth_mode: BASIC
     proxy:
@@ -1378,6 +1411,7 @@ mailchimp:
     authorization_params:
         response_type: code
     docs: https://docs.nango.dev/integrations/all/mailchimp
+#Untested configuration. Please reach out if you have a test account that we can use to test it.
 marketo:
     auth_mode: OAUTH2_CC
     proxy:
@@ -1449,6 +1483,13 @@ microsoft-entra-id:
         - other
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/microsoft-entra-id
+microsoft-power-bi:
+    categories:
+        - productivity
+    alias: microsoft
+    proxy:
+        base_url: https://api.powerbi.com
+    docs: https://docs.nango.dev/integrations/all/microsoft-power-bi
 mixpanel:
     categories:
         - analytics
@@ -2545,6 +2586,31 @@ uber:
 unauthenticated:
     auth_mode: NONE
     docs: https://docs.nango.dev/integrations/overview
+vimeo:
+    categories:
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://api.vimeo.com/oauth/authorize
+    token_url: https://api.vimeo.com/oauth/access_token
+    token_request_auth_method: basic
+    scope_seprator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.vimeo.com
+    docs: https://docs.nango.dev/integrations/all/vimeo
+vimeo-basic:
+    categories:
+        - video
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.vimeo.com
+        verification:
+            method: GET
+            endpoint: /
+    docs: https://docs.nango.dev/integrations/all/vimeo
 wakatime:
     categories:
         - analytics

@@ -1,6 +1,6 @@
 import { taskStates } from '@nangohq/scheduler';
-import type { Task } from '@nangohq/scheduler';
-import type { OrchestratorTask } from './types.js';
+import type { Schedule, Task } from '@nangohq/scheduler';
+import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
 import { TaskAction, TaskWebhook, TaskPostConnection, TaskSync } from './types.js';
 import { z } from 'zod';
 import { Err, Ok } from '@nangohq/utils';
@@ -20,7 +20,6 @@ export const syncArgsSchema = z.object({
     type: z.literal('sync'),
     syncId: z.string().min(1),
     syncName: z.string().min(1),
-    syncJobId: z.number().int().positive(),
     debug: z.boolean(),
     ...commonSchemaArgsFields
 });
@@ -52,7 +51,8 @@ const commonSchemaFields = {
     id: z.string().uuid(),
     name: z.string().min(1),
     groupKey: z.string().min(1),
-    state: z.enum(taskStates)
+    state: z.enum(taskStates),
+    retryCount: z.number().int()
 };
 const syncSchema = z.object({
     ...commonSchemaFields,
@@ -79,10 +79,10 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 id: sync.data.id,
                 state: sync.data.state,
                 name: sync.data.name,
+                attempt: sync.data.retryCount + 1,
                 syncId: sync.data.payload.syncId,
                 syncName: sync.data.payload.syncName,
                 connection: sync.data.payload.connection,
-                syncJobId: sync.data.payload.syncJobId,
                 debug: sync.data.payload.debug
             })
         );
@@ -94,6 +94,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: action.data.state,
                 id: action.data.id,
                 name: action.data.name,
+                attempt: action.data.retryCount + 1,
                 actionName: action.data.payload.actionName,
                 connection: action.data.payload.connection,
                 activityLogId: action.data.payload.activityLogId,
@@ -108,6 +109,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 id: webhook.data.id,
                 state: webhook.data.state,
                 name: webhook.data.name,
+                attempt: webhook.data.retryCount + 1,
                 webhookName: webhook.data.payload.webhookName,
                 parentSyncName: webhook.data.payload.parentSyncName,
                 connection: webhook.data.payload.connection,
@@ -123,6 +125,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 id: postConnection.data.id,
                 state: postConnection.data.state,
                 name: postConnection.data.name,
+                attempt: postConnection.data.retryCount + 1,
                 postConnectionName: postConnection.data.payload.postConnectionName,
                 connection: postConnection.data.payload.connection,
                 fileLocation: postConnection.data.payload.fileLocation,
@@ -131,4 +134,48 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
         );
     }
     return Err(`Cannot validate task ${JSON.stringify(task)}: ${action.error || webhook.error || postConnection.error}`);
+}
+
+export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedule> {
+    const scheduleSchema = z
+        .object({
+            id: z.string().uuid(),
+            name: z.string().min(1),
+            state: z.enum(['STARTED', 'PAUSED', 'DELETED']),
+            startsAt: z.coerce.date(),
+            frequencyMs: z.number().int().positive(),
+            payload: jsonSchema,
+            groupKey: z.string().min(1),
+            retryMax: z.number().int(),
+            createdToStartedTimeoutSecs: z.number().int(),
+            startedToCompletedTimeoutSecs: z.number().int(),
+            heartbeatTimeoutSecs: z.number().int(),
+            createdAt: z.coerce.date(),
+            updatedAt: z.coerce.date(),
+            deletedAt: z.coerce.date().nullable()
+        })
+        .strict();
+    const getNextDueDate = (startsAt: Date, frequencyMs: number) => {
+        const now = new Date();
+        const startDate = new Date(startsAt);
+        if (startDate >= now) {
+            return startDate;
+        }
+        const timeDiff = now.getTime() - startDate.getTime();
+        const nextDueDate = new Date(now.getTime() + frequencyMs - (timeDiff % frequencyMs));
+
+        return nextDueDate;
+    };
+    const validation = scheduleSchema.safeParse(schedule);
+    if (validation.success) {
+        const schedule: OrchestratorSchedule = {
+            id: validation.data.id,
+            name: validation.data.name,
+            state: validation.data.state,
+            frequencyMs: validation.data.frequencyMs,
+            nextDueDate: getNextDueDate(validation.data.startsAt, validation.data.frequencyMs)
+        };
+        return Ok(schedule);
+    }
+    return Err(`Cannot validate task ${JSON.stringify(schedule)}: ${validation.error}`);
 }

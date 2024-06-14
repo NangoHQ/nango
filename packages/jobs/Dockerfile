@@ -20,6 +20,7 @@ COPY packages/database/ packages/database/
 COPY packages/runner/ packages/runner/
 COPY packages/scheduler/ packages/scheduler/
 COPY packages/orchestrator/ packages/orchestrator/
+COPY packages/webhooks/ packages/webhooks/
 COPY package*.json ./
 
 RUN npm pkg delete scripts.prepare

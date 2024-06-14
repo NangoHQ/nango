@@ -140,10 +140,10 @@ export default function AccountSettings() {
                 <Modal.Content>
                     <p>This action cannot be undone, are you sure?</p>
                 </Modal.Content>
-                <Modal.Action placeholder={null} passive onClick={() => cancelSuspendMember()}>
+                <Modal.Action placeholder={null} passive onClick={() => cancelSuspendMember()} onPointerEnterCapture={null} onPointerLeaveCapture={null}>
                     Cancel
                 </Modal.Action>
-                <Modal.Action placeholder={null} onClick={() => confirmSuspendMember()}>
+                <Modal.Action placeholder={null} onClick={() => confirmSuspendMember()} onPointerEnterCapture={null} onPointerLeaveCapture={null}>
                     Submit
                 </Modal.Action>
             </Modal>
@@ -156,10 +156,10 @@ export default function AccountSettings() {
                         <button type="submit" className="hidden" />
                     </form>
                 </Modal.Content>
-                <Modal.Action placeholder={null} passive onClick={() => setInviteVisible(false)}>
+                <Modal.Action placeholder={null} passive onClick={() => setInviteVisible(false)} onPointerEnterCapture={null} onPointerLeaveCapture={null}>
                     Cancel
                 </Modal.Action>
-                <Modal.Action placeholder={null} onClick={handleSubmit}>
+                <Modal.Action placeholder={null} onClick={handleSubmit} onPointerEnterCapture={null} onPointerLeaveCapture={null}>
                     Submit
                 </Modal.Action>
             </Modal>

@@ -1,17 +1,17 @@
 import type { RetryHeaderConfig, CursorPagination, LinkPagination, OffsetPagination } from '../proxy/api.js';
-import type { AuthModeType } from '../auth/api.js';
+import type { AuthModeType, OAuthAuthorizationMethodType, OAuthBodyFormatType } from '../auth/api.js';
 import type { EndpointMethod } from '../api.js';
 
 export interface TokenUrlObject {
-    OAuth1?: string;
-    OAuth2?: string;
-    OAuth2CC?: string;
-    Basic?: string;
-    ApiKey?: string;
-    AppStore?: string;
-    Custom?: string;
-    App?: string;
-    None?: string;
+    OAUTH1?: string;
+    OAUTH2?: string;
+    OAUTH2CC?: string;
+    BASIC?: string;
+    API_KEY?: string;
+    APP_STORE?: string;
+    CUSTOM?: string;
+    APP?: string;
+    NONE?: string;
 }
 
 export interface Template {
@@ -48,4 +48,36 @@ export interface Template {
     post_connection_script?: string;
     categories?: string[];
     connection_configuration?: string[];
+}
+
+export interface TemplateOAuth2 extends Template {
+    auth_mode: 'OAUTH2' | 'CUSTOM';
+
+    disable_pkce?: boolean; // Defaults to false (=PKCE used) if not provided
+
+    token_params?: {
+        grant_type?: 'authorization_code' | 'client_credentials';
+    };
+
+    refresh_params?: {
+        grant_type: 'refresh_token';
+    };
+    authorization_method?: OAuthAuthorizationMethodType;
+    body_format?: OAuthBodyFormatType;
+
+    refresh_url?: string;
+
+    token_request_auth_method?: 'basic';
+}
+
+export interface TemplateOAuth1 extends Template {
+    auth_mode: 'OAUTH1';
+
+    request_url: string;
+    request_params?: Record<string, string>;
+    request_http_method?: 'GET' | 'PUT' | 'POST'; // Defaults to POST if not provided
+
+    token_http_method?: 'GET' | 'PUT' | 'POST'; // Defaults to POST if not provided
+
+    signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
 }

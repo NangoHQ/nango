@@ -1,6 +1,5 @@
 import oAuth1 from 'oauth';
-import type { Config as ProviderConfig, TemplateOAuth1 as ProviderTemplateOAuth1, Template as ProviderTemplate } from '@nangohq/shared';
-import { AuthModes } from '@nangohq/shared';
+import type { IntegrationConfig, TemplateOAuth1 as ProviderTemplateOAuth1, Template as ProviderTemplate } from '@nangohq/types';
 
 interface OAuth1RequestTokenResult {
     request_token: string;
@@ -17,10 +16,10 @@ interface OAuth1RequestTokenResult {
 // For reference, this is a pretty good graphic on the OAuth 1.0a flow: https://oauth.net/core/1.0/#anchor9
 export class OAuth1Client {
     private client: oAuth1.OAuth;
-    private config: ProviderConfig;
+    private config: IntegrationConfig;
     private authConfig: ProviderTemplateOAuth1;
 
-    constructor(config: ProviderConfig, template: ProviderTemplate, callbackUrl: string) {
+    constructor(config: IntegrationConfig, template: ProviderTemplate, callbackUrl: string) {
         this.config = config;
 
         this.authConfig = template as ProviderTemplateOAuth1;
@@ -28,7 +27,7 @@ export class OAuth1Client {
 
         this.client = new oAuth1.OAuth(
             this.authConfig.request_url,
-            typeof this.authConfig.token_url === 'string' ? this.authConfig.token_url : (this.authConfig.token_url?.[AuthModes.OAuth1] as string),
+            typeof this.authConfig.token_url === 'string' ? this.authConfig.token_url : (this.authConfig.token_url?.['OAUTH1'] as string),
             this.config.oauth_client_id,
             this.config.oauth_client_secret,
             '1.0A',

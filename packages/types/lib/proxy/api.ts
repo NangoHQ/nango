@@ -4,7 +4,7 @@ import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials } from '../
 import type { Connection } from '../connection/db.js';
 import type { Template as ProviderTemplate } from '../integration/template.js';
 
-interface BaseProxyConfiguration {
+export interface BaseProxyConfiguration {
     providerConfigKey: string;
     connectionId: string;
     endpoint: string;

@@ -6,6 +6,7 @@ import { isJsOrTsType, SyncConfigType, nangoConfigFile } from '@nangohq/shared';
 import { printDebug, getNangoRootPath } from '../utils.js';
 import { TYPES_FILE_NAME, NangoSyncTypesFileLocation } from '../constants.js';
 import configService from './config.service.js';
+import path from 'path';
 
 class ModelService {
     public build(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
@@ -167,20 +168,28 @@ class ModelService {
         }
     }
 
-    public async createModelFile(notify = false) {
-        const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
+    public async createModelFile({ fullPath, notify = false }: { fullPath: string; notify?: boolean }) {
+        const configContents = fs.readFileSync(path.join(fullPath, nangoConfigFile), 'utf8');
         const configData: NangoConfig = yaml.load(configContents) as NangoConfig;
         const { models, integrations } = configData;
         const interfaceDefinitions = modelService.build(models, integrations);
         if (interfaceDefinitions) {
-            fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+            fs.writeFileSync(path.join(fullPath, TYPES_FILE_NAME), interfaceDefinitions.join('\n'));
+        }
+
+        if (!fs.existsSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`)) {
+            throw new Error(`Failed to load ${NangoSyncTypesFileLocation}`);
         }
 
         // insert NangoSync types to the bottom of the file
         const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
-        fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
+        if (!typesContent) {
+            throw new Error(`Empty ${NangoSyncTypesFileLocation}`);
+        }
 
-        const { success, error, response: config } = await configService.load();
+        fs.writeFileSync(path.join(fullPath, TYPES_FILE_NAME), typesContent, { flag: 'a' });
+
+        const { success, error, response: config } = await configService.load(fullPath);
 
         if (!success || !config) {
             // eslint-disable-next-line no-console
@@ -189,7 +198,7 @@ class ModelService {
         }
 
         const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
-        fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
+        fs.writeFileSync(path.join(fullPath, TYPES_FILE_NAME), flowConfig, { flag: 'a' });
 
         if (notify) {
             // eslint-disable-next-line no-console

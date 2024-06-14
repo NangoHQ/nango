@@ -53,7 +53,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
 
         expect(statusSpy).toHaveBeenCalledWith(400);
         let err = new NangoError('missing_body');
-        expect(sendMock).toHaveBeenCalledWith({ error: err.message, type: err.type, payload: err.payload });
+        expect(sendMock).toHaveBeenCalledWith({ error: { message: err.message, code: err.type, payload: err.payload } });
 
         sendMock.mockReset();
 
@@ -66,7 +66,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
         await configController.createProviderConfig(req as unknown as Request, res, next as NextFunction);
         expect(statusSpy).toHaveBeenCalledWith(400);
         err = new NangoError('missing_provider_config');
-        expect(sendMock).toHaveBeenCalledWith({ error: err.message, type: err.type, payload: err.payload });
+        expect(sendMock).toHaveBeenCalledWith({ error: { message: err.message, code: err.type, payload: err.payload } });
     });
 
     it('CREATE a provider config successfully and then LIST', async () => {

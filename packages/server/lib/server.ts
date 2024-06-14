@@ -1,11 +1,12 @@
 import './tracer.js';
-import './utils/config.js';
+import './utils/loadEnv.js';
 
+import express from 'express';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
-import http from 'http';
+import http from 'node:http';
 import db from '@nangohq/database';
-import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getPort, getWebsocketsPath } from '@nangohq/shared';
+import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getServerPort, getWebsocketsPath } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
@@ -13,11 +14,14 @@ import { migrate as migrateRecords } from '@nangohq/records';
 import { start as migrateLogs } from '@nangohq/logs';
 
 import publisher from './clients/publisher.client.js';
-import { app } from './routes.js';
+import { router } from './routes.js';
 import { refreshTokens } from './refreshTokens.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
+
+const app = express();
+app.use('/', router);
 
 const server = http.createServer(app);
 
@@ -46,7 +50,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 await oAuthSessionService.clearStaleSessions();
 refreshTokens();
 
-const port = getPort();
+const port = getServerPort();
 server.listen(port, () => {
     logger.info(`✅ Nango Server with version ${NANGO_VERSION} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
     logger.info(

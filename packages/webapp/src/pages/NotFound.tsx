@@ -8,11 +8,11 @@ const VALID_PATHS = [
     'integrations',
     'syncs',
     'connections',
-    'activity',
     'project-settings',
     'environment-settings',
     'user-settings',
-    'account-settings'
+    'account-settings',
+    'logs'
 ];
 
 export const NotFound: React.FC = () => {
