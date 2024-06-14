@@ -24,7 +24,7 @@ export class LogContextStateless {
         this.logToConsole = options.logToConsole ?? true;
     }
 
-    async log(data: MessageRowInsert): Promise<void> {
+    async log(data: MessageRowInsert): Promise<boolean> {
         if (this.logToConsole) {
             const obj: Record<string, any> = {};
             if (data.error) obj['error'] = data.error;
@@ -32,36 +32,38 @@ export class LogContextStateless {
             logger[data.level!](`${this.dryRun ? '[dry] ' : ''}log: ${data.message}`, Object.keys(obj).length > 0 ? obj : undefined);
         }
         if (this.dryRun) {
-            return;
+            return true;
         }
 
         const start = Date.now();
         try {
             await createMessage(getFormattedMessage({ ...data, parentId: this.id }));
+            return true;
         } catch (err) {
             // TODO: reup throw
             logger.error(`failed_to_insert_in_es: ${stringifyError(err)}`);
+            return false;
         } finally {
             metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start);
         }
     }
 
-    async debug(message: string, meta: MessageMeta | null = null): Promise<void> {
-        await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
+    async debug(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+        return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
     }
 
-    async info(message: string, meta: MessageMeta | null = null): Promise<void> {
-        await this.log({ type: 'log', level: 'info', message, meta, source: 'internal' });
+    async info(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+        return await this.log({ type: 'log', level: 'info', message, meta, source: 'internal' });
     }
 
-    async warn(message: string, meta: MessageMeta | null = null): Promise<void> {
-        await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal' });
+    async warn(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+        return await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal' });
     }
 
-    async error(message: string, meta: (MessageMeta & { error?: unknown; err?: never; e?: never }) | null = null): Promise<void> {
+    async error(message: string, meta: (MessageMeta & { error?: unknown; err?: never; e?: never }) | null = null): Promise<boolean> {
         const { error, ...rest } = meta || {};
         const err = error ? { name: 'Unknown Error', message: 'unknown error', ...errorToObject(error) } : null;
-        await this.log({
+        return await this.log({
             type: 'log',
             level: 'error',
             message,
@@ -74,13 +76,13 @@ export class LogContextStateless {
     /**
      * @deprecated Only there for retro compat
      */
-    async trace(message: string, meta: MessageMeta | null = null): Promise<void> {
-        await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
+    async trace(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+        return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
     }
 
-    async http(message: string, data: Pick<MessageRow, 'request' | 'response' | 'meta'>): Promise<void> {
+    async http(message: string, data: Pick<MessageRow, 'request' | 'response' | 'meta'>): Promise<boolean> {
         const level: MessageRow['level'] = data.response && data.response.code >= 400 ? 'error' : 'info';
-        await this.log({ type: 'http', level, message, ...data, source: 'internal' });
+        return await this.log({ type: 'http', level, message, ...data, source: 'internal' });
     }
 }
 
