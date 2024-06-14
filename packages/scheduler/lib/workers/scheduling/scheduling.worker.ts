@@ -114,9 +114,9 @@ export class SchedulingChild {
                 });
                 if (task.isErr()) {
                     logger.error(`Failed to create task for schedule: ${schedule.id}`);
-                    return;
+                } else {
+                    taskIds.push(task.value.id);
                 }
-                taskIds.push(task.value.id);
             }
             if (taskIds.length > 0) {
                 this.parent.postMessage({ ids: taskIds }); // notifying parent that tasks have been created

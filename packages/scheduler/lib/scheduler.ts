@@ -4,7 +4,7 @@ import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps, Schedule
 import * as tasks from './models/tasks.js';
 import * as schedules from './models/schedules.js';
 import type { Result } from '@nangohq/utils';
-import { Err, stringifyError } from '@nangohq/utils';
+import { Err, Ok, stringifyError } from '@nangohq/utils';
 import { MonitorWorker } from './workers/monitor/monitor.worker.js';
 import { SchedulingWorker } from './workers/scheduling/scheduling.worker.js';
 import type { DatabaseClient } from './db/client.js';
@@ -41,24 +41,26 @@ export class Scheduler {
             this.monitor = new MonitorWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
             this.monitor.on(async (message) => {
                 const { ids } = message;
-                for (const taskId of ids) {
-                    const fetched = await tasks.get(this.dbClient.db, taskId);
-                    if (fetched.isOk()) {
-                        const task = fetched.value;
-                        this.onCallbacks[task.state](task);
-                    }
+                const fetched = await tasks.search(this.dbClient.db, { ids, limit: ids.length });
+                if (fetched.isErr()) {
+                    logger.error(`Error fetching tasks expired by monitor: ${stringifyError(fetched.error)}`);
+                    return;
+                }
+                for (const task of fetched.value) {
+                    this.onCallbacks[task.state](task);
                 }
             });
             this.monitor.start();
             this.scheduling = new SchedulingWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
             this.scheduling.on(async (message) => {
                 const { ids } = message;
-                for (const taskId of ids) {
-                    const fetched = await tasks.get(this.dbClient.db, taskId);
-                    if (fetched.isOk()) {
-                        const task = fetched.value;
-                        this.onCallbacks[task.state](task);
-                    }
+                const fetched = await tasks.search(this.dbClient.db, { ids, limit: ids.length });
+                if (fetched.isErr()) {
+                    logger.error(`Error fetching tasks created by scheduling: ${stringifyError(fetched.error)}`);
+                    return;
+                }
+                for (const task of fetched.value) {
+                    this.onCallbacks[task.state](task);
                 }
             });
             // TODO: ensure there is only one instance of the scheduler
@@ -330,18 +332,24 @@ export class Scheduler {
     public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
         return this.dbClient.db.transaction(async (trx) => {
             // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
-            const schedule = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
-            if (schedule.isErr()) {
-                return Err(schedule.error);
+            const found = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
+            if (found.isErr()) {
+                return Err(found.error);
             }
-            if (!schedule.value[0]) {
+            if (!found.value[0]) {
                 return Err(`Schedule '${scheduleName}' not found`);
+            }
+            const schedule = found.value[0];
+
+            if (schedule.state === state) {
+                // No-op if the schedule is already in the desired state
+                return Ok(schedule);
             }
 
             const cancelledTasks = [];
             if (state === 'DELETED' || state === 'PAUSED') {
                 const runningTasks = await tasks.search(trx, {
-                    scheduleId: schedule.value[0].id,
+                    scheduleId: schedule.id,
                     states: ['CREATED', 'STARTED']
                 });
                 if (runningTasks.isErr()) {
@@ -356,7 +364,7 @@ export class Scheduler {
                 }
             }
 
-            const res = await schedules.transitionState(trx, schedule.value[0].id, state);
+            const res = await schedules.transitionState(trx, schedule.id, state);
             if (res.isErr()) {
                 return Err(`Error transitioning schedule '${scheduleName}': ${stringifyError(res.error)}`);
             }
