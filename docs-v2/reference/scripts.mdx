@@ -416,6 +416,39 @@ In this case, the response to the trigger action call will be:
 }
 ```
 
+# Relative imports in scripts
+
+You can import relative files into your scripts to allow for code abstraction and to
+maintain DRY (Don't Repeat Yourself) principles. This means you can reuse code across
+different scripts by importing it. The imported file must live in the `nango-integrations`
+directory and can be imported in the following way:
+
+```ts
+import type { GithubIssueDemo, NangoSync } from '../../models';
+import { issueMapper } from '../mappers/issue-mappper';
+
+export default async function fetchData(nango: NangoSync) {
+    // Fetch issues from GitHub.
+    const res = await nango.get({
+        endpoint: '/repos/NangoHQ/interactive-demo/issues?labels=demo&sort=created&direction=asc'
+    });
+
+    // Persist issues to the Nango cache.
+    await nango.batchSave(issueMapper(res.data), 'GithubIssueDemo');
+}
+```
+
+Note that you cannot import third-party modules at this time. Additionally, if there is a compilation error in an imported file, the entry point file will also fail to compile.
+
+# Pre-included Dependencies
+
+Some libraries are pre-included for usage in scripts:
+- [zod](https://github.com/colinhacks/zod)
+- [crypto / node:crypto](https://nodejs.org/api/crypto.html#crypto)
+- [url / node:url](https://nodejs.org/api/url.html#url)
+
+Please reach out in the [community](https://nango.dev/slack) if you would like to request additional ones.
+
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
