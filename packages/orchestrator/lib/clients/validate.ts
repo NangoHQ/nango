@@ -133,7 +133,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
             })
         );
     }
-    return Err(`Cannot validate task ${JSON.stringify(task)}: ${action.error || webhook.error || postConnection.error}`);
+    return Err(`Cannot validate task ${JSON.stringify(task)}: ${sync.error || action.error || webhook.error || postConnection.error}`);
 }
 
 export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedule> {
