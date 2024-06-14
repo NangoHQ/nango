@@ -330,6 +330,7 @@
                 "integrations/all/braintree",
                 "integrations/all/brex",
                 "integrations/all/calendly",
+                "integrations/all/checkr-partner",
                 "integrations/all/clari-copilot",
                 "integrations/all/clickup",
                 "integrations/all/close",

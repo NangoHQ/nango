@@ -407,6 +407,34 @@ calendly:
     proxy:
         base_url: https://api.calendly.com
     docs: https://docs.nango.dev/integrations/all/calendly
+checkr-partner:
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://partners.checkr.com/authorize/${connectionConfig.client_id}
+    token_url: https://api.checkr.com/oauth/tokens
+    disable_pkce: true
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        retry:
+            at: 'X-Ratelimit-Reset'
+        base_url: https://api.checkr.com
+    docs: https://docs.nango.dev/integrations/all/checkr
+checkr-partner-staging:
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://partners.checkrhq-staging.net/authorize/${connectionConfig.client_id}
+    token_url: https://api.checkr-staging.com/oauth/tokens
+    disable_pkce: true
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        retry:
+            at: 'X-Ratelimit-Reset'
+        base_url: https://api.checkr-staging.com
+    docs: https://docs.nango.dev/integrations/all/checkr
 chorus:
     auth_mode: BASIC
     proxy:
