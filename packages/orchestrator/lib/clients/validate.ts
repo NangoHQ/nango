@@ -3,7 +3,7 @@ import type { Schedule, Task } from '@nangohq/scheduler';
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
 import { TaskAction, TaskWebhook, TaskPostConnection, TaskSync } from './types.js';
 import { z } from 'zod';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { jsonSchema } from '../utils/validation.js';
 
@@ -133,7 +133,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
             })
         );
     }
-    return Err(`Cannot validate task ${JSON.stringify(task)}: ${sync.error || action.error || webhook.error || postConnection.error}`);
+    return Err(`Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || postConnection.error)}`);
 }
 
 export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedule> {
