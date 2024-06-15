@@ -484,6 +484,7 @@ class OAuthController {
             }
 
             const template = configService.getTemplate(config.provider);
+            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['OAUTH2'] as string);
 
             if (template.auth_mode !== 'OAUTH2_CC') {
                 await createActivityLogMessageAndEnd({
@@ -501,10 +502,34 @@ class OAuthController {
                 return;
             }
 
+            if (missesInterpolationParam(tokenUrl, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
+                await createActivityLogMessage({
+                    level: 'error',
+                    environment_id: environment.id,
+                    activity_log_id: activityLogId as number,
+                    content: error.message,
+                    timestamp: Date.now(),
+                    auth_mode: template.auth_mode,
+                    params: {
+                        ...connectionConfig
+                    }
+                });
+                await logCtx.error(error.message, { connectionConfig });
+                await logCtx.failed();
+
+                errorManager.errRes(res, error.message);
+                return;
+            }
+
             await updateProviderActivityLog(activityLogId as number, String(config.provider));
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            const { success, error, response: credentials } = await connectionService.getOauthClientCredentials(template, client_id, client_secret);
+            const {
+                success,
+                error,
+                response: credentials
+            } = await connectionService.getOauthClientCredentials(template as ProviderTemplateOAuth2, client_id, client_secret, connectionConfig);
 
             if (!success || !credentials) {
                 await createActivityLogMessageAndEnd({
@@ -521,8 +546,6 @@ class OAuthController {
 
                 return;
             }
-
-            connectionConfig['scopes'] = Array.isArray(credentials.raw['scope']) ? credentials.raw['scope'] : credentials.raw['scope'].split(' ');
 
             await createActivityLogMessage({
                 level: 'info',

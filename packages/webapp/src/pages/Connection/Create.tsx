@@ -37,6 +37,7 @@ export default function IntegrationCreate() {
     const [authorizationParamsError, setAuthorizationParamsError] = useState<boolean>(false);
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
     const [oauthSelectedScopes, oauthAddToScopesSet, oauthRemoveFromSelectedSet] = useSet<string>();
+    const [oauthccSelectedScopes, oauthccAddToScopesSet, oauthccRemoveFromSelectedSet] = useSet<string>();
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
     const [websocketsPath, setWebsocketsPath] = useState<string>('');
@@ -168,6 +169,13 @@ export default function IntegrationCreate() {
                 client_id: oAuthClientId,
                 client_secret: oAuthClientSecret
             };
+
+            if (oauthccSelectedScopes.length > 0) {
+                params = {
+                    ...params,
+                    oauth_scopes: oauthccSelectedScopes.join(',')
+                };
+            }
         }
 
         nango[authMode === 'NONE' ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
@@ -378,6 +386,10 @@ export default function IntegrationCreate() {
     }
   `;
             }
+            if (authMode === 'OAUTH2_CC' && oauthccSelectedScopes.length > 0) {
+                connectionConfigParamsStr = connectionConfigParamsStr ? `${connectionConfigParamsStr.slice(0, -2)}, ` : 'params: { ';
+                connectionConfigParamsStr += `oauth_scopes: '${oauthccSelectedScopes.join(',')}' }`;
+            }
         }
 
         const connectionConfigStr =
@@ -533,6 +545,24 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                                 required
                                                 optionalvalue={oAuthClientSecret}
                                                 setoptionalvalue={setOAuthClientSecret}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Scopes</span>
+                                        </div>
+                                        <div className="mt-1">
+                                            <TagsInput
+                                                id="oauth_scopes"
+                                                name="oauth_scopes"
+                                                type="text"
+                                                defaultValue={''}
+                                                selectedScopes={oauthccSelectedScopes}
+                                                addToScopesSet={oauthccAddToScopesSet}
+                                                removeFromSelectedSet={oauthccRemoveFromSelectedSet}
+                                                minLength={1}
+                                                onChange={() => null}
                                             />
                                         </div>
                                     </div>
