@@ -90,17 +90,60 @@ integrations:
             User:
                 created_at: string | null
                 modified_at: string | null
+                id: string
+                name: string
+                email: string | null
+                avatar_url: string | null
             Task:
                 created_at: string | null
                 modified_at: string | null
+                id: string
+                title: string
+                url: string
+                status: string
+                description: string | null
+                assignee: User | null
+                due_date: string | null
             AsanaProjectInput:
                 limit: number | undefined
+                workspace: string
             CreateAsanaTask:
                 name: string
                 workspace: string | undefined
                 parent: string | undefined
                 projects: string[] | undefined
-            AsanaTask: {}
+            AsanaTask:
+                created_at: string | null
+                modified_at: string | null
+                gid: string
+                resource_type: string
+                name: string
+                completed: boolean
+                due_date: string | null
+                tags: string[]
+                start_on: string | null
+                due_at: string | null
+                due_on: string | null
+                completed_at: string | null
+                actual_time_minutes: number
+                assignee: AsanaUser | null
+                start_at: string | null
+                num_hearts: number
+                num_likes: number
+                workspace: BaseAsanaModel
+                hearted: boolean
+                hearts: string[]
+                liked: boolean
+                likes: string[]
+                notes: string
+                assignee_status: string
+                followers: BaseAsanaModel[]
+                parent:
+                    gid: string
+                    resource_type: string
+                    name: string
+                    resource_subtype: string
+                permalink_url: string
             AsanaPhoto:
                 image_1024x1024: string
                 image_128x128: string
@@ -112,6 +155,10 @@ integrations:
                 gid: string
                 resource_type: string
                 name: string
+                id: string
+                email: string
+                photo: AsanaPhoto | null
+                workspace: string | undefined
             AsanaUpdateTask:
                 id: string
                 due_at: string | undefined
@@ -127,6 +174,7 @@ integrations:
                 gid: string
                 resource_type: string
                 name: string
+                is_organization: boolean
             AsanaProject:
                 gid: string
                 resource_type: string
@@ -1191,6 +1239,8 @@ integrations:
                 candidate: CandidateInformation
                 result_url: string
                 report_url: string
+                send_email: boolean
+                interview_metadata: object
             HackerRankWorkInterview:
                 id: string
                 status: string
