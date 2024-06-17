@@ -6,7 +6,7 @@ integrations:
                 output: CheckrPartnerStagingAccount
                 description: |
                     Fetches account details for the authenticated account.
-                endpoint: /checkr-partner-staging/account
+                endpoint: GET /checkr-partner-staging/account
                 sync_type: full
 models:
     CheckrPartnerStagingAccount:
