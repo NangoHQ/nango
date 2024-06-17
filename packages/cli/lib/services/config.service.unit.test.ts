@@ -31,7 +31,7 @@ describe('load', () => {
         const { response: parsed, error } = load(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.1`));
         expect(parsed).toBeNull();
         expect(error).toBeDefined();
-        expect(error).toStrictEqual(new NangoError('pass_through_error'));
+        expect(error).toStrictEqual(new NangoError('failed_to_parse_nango_yaml'));
         expect(acc.join('')).toContain('An endpoint property is required to specify how to retrieve the data from the sync');
     });
 
@@ -42,7 +42,7 @@ describe('load', () => {
         const { response: parsed, error } = load(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.2`));
         expect(parsed).toBeNull();
         expect(error).toBeDefined();
-        expect(error).toStrictEqual(new NangoError('pass_through_error'));
+        expect(error).toStrictEqual(new NangoError('failed_to_parse_nango_yaml'));
         expect(acc.join('')).toContain('additionalProperty: webhook-subscription');
     });
 });

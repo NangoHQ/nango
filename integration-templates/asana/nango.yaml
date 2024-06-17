@@ -145,6 +145,7 @@ models:
         workspace: string | undefined
     AsanaWorkspace:
         __extends: BaseAsanaModel
+        id: string
         is_organization: boolean
     AsanaProject:
         __extends: BaseAsanaModel
