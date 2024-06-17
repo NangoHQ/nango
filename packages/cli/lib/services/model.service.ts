@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
+import { resolve } from 'import-meta-resolve';
 import chalk from 'chalk';
 import type { NangoModel, NangoModelField, NangoYamlParsed } from '@nangohq/types';
 import type { ServiceResponse } from '@nangohq/shared';
@@ -151,7 +151,7 @@ export function fieldToTypescript({ field }: { field: NangoModelField }): string
  * Generate SDK types
  */
 export function generateSDKTypes() {
-    const filePath = import.meta.resolve('@nangohq/shared/dist/sdk/sync.d.ts');
+    const filePath = resolve('@nangohq/shared/dist/sdk/sync.d.ts', import.meta.url);
     const typesContent = fs.readFileSync(filePath.replace('file://', ''), 'utf8');
 
     return `
