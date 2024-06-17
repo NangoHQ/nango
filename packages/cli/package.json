@@ -74,7 +74,7 @@
         "webpack-node-externals": "^3.0.0"
     },
     "engines": {
-        "node": ">=18.0"
+        "node": ">=18.19.0"
     },
     "files": [
         "dist/**/*",

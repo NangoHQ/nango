@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import type { NangoModel, NangoModelField, NangoYamlParsed } from '@nangohq/types';
 import type { ServiceResponse } from '@nangohq/shared';
 import { NANGO_VERSION } from '@nangohq/shared';
-import { getNangoRootPath, printDebug } from '../utils.js';
+import { printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
 import { load } from './config.service.js';
 import { shouldQuote } from '@nangohq/nango-yaml';
@@ -151,7 +151,8 @@ export function fieldToTypescript({ field }: { field: NangoModelField }): string
  * Generate SDK types
  */
 export function generateSDKTypes() {
-    const typesContent = fs.readFileSync(`${getNangoRootPath()}/../shared/dist/sdk/sync.d.ts`, 'utf8');
+    const filePath = import.meta.resolve('@nangohq/shared/dist/sdk/sync.d.ts');
+    const typesContent = fs.readFileSync(filePath.replace('file://', ''), 'utf8');
 
     return `
 ${typesContent}
