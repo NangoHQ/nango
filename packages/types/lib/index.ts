@@ -30,3 +30,6 @@ export type * from './auth/db.js';
 export type * from './nangoYaml/index.js';
 
 export type * from './utils.js';
+export type * from './environment/db.js';
+export type * from './environment/api/webhook.js';
+export type * from './webhooks/api.js';

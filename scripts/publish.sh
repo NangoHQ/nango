@@ -82,6 +82,7 @@ popd
 bump_and_npm_publish "@nangohq/types" "$VERSION"
 bump_other_pkg "shared" "types"
 bump_other_pkg "cli" "types"
+bump_other_pkg "node-client" "types"
 
 # NangoYaml
 bump_and_npm_publish "@nangohq/nango-yaml" "$VERSION"

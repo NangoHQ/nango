@@ -9,6 +9,7 @@ import {
     analytics,
     errorNotificationService,
     SlackService,
+    externalWebhookService,
     AnalyticsTypes,
     syncManager
 } from '@nangohq/shared';
@@ -87,10 +88,14 @@ export const connectionCreated = async (
         await externalPostConnection(createdConnectionPayload, provider, logContextGetter);
     }
 
+    const webhookSettings = await externalWebhookService.get(environment.id);
+
     void sendAuthWebhook({
         connection,
         environment,
+        webhookSettings,
         auth_mode,
+        success: true,
         operation: 'creation',
         provider,
         type: 'auth',
@@ -99,19 +104,23 @@ export const connectionCreated = async (
     });
 };
 
-export const connectionCreationFailed = (
+export const connectionCreationFailed = async (
     failedConnectionPayload: RecentlyFailedConnection,
     provider: string,
     activityLogId: number | null,
     logCtx?: LogContext
-): void => {
+): Promise<void> => {
     const { connection, environment, auth_mode, error } = failedConnectionPayload;
 
     if (error) {
+        const webhookSettings = await externalWebhookService.get(environment.id);
+
         void sendAuthWebhook({
             connection,
             environment,
+            webhookSettings,
             auth_mode,
+            success: false,
             error,
             operation: 'creation',
             provider,
@@ -170,12 +179,16 @@ export const connectionRefreshFailed = async ({
         active: true
     });
 
+    const webhookSettings = await externalWebhookService.get(environment.id);
+
     void sendAuthWebhook({
         connection,
         environment,
+        webhookSettings,
         auth_mode: template.auth_mode,
         operation: 'refresh',
         error: authError,
+        success: false,
         provider: config.provider,
         type: 'auth',
         activityLogId,

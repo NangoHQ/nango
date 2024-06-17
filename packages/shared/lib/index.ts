@@ -1,4 +1,5 @@
 import * as seeders from './seeders/index.js';
+import * as externalWebhookService from './services/external-webhook.service.js';
 import configService from './services/config.service.js';
 import encryptionManager from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
@@ -16,7 +17,6 @@ import proxyService from './services/proxy.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
 import flowService from './services/flow.service.js';
-import webhookService from './services/notification/webhook.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import featureFlags from './utils/featureflags.js';
@@ -52,6 +52,7 @@ export {
     configService,
     connectionService,
     encryptionManager,
+    externalWebhookService,
     providerClientManager,
     SyncClient,
     errorManager,
@@ -69,7 +70,6 @@ export {
     hmacService,
     proxyService,
     flowService,
-    webhookService,
     errorNotificationService,
     analytics,
     AnalyticsTypes,

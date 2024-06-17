@@ -1,13 +1,24 @@
-import type { Connection, Environment, AuthModeType, ErrorPayload, AuthOperationType } from '@nangohq/types';
+import type {
+    NangoAuthWebhookBody,
+    NangoAuthWebhookBodySuccess,
+    NangoAuthWebhookBodyError,
+    ExternalWebhook,
+    Connection,
+    Environment,
+    WebhookTypes,
+    AuthModeType,
+    ErrorPayload,
+    AuthOperationType
+} from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import type { NangoAuthWebhookBody } from './types.js';
 import { deliver, shouldSend } from './utils.js';
-import { WebhookType } from './enums.js';
 
 export const sendAuth = async ({
     connection,
     environment,
+    webhookSettings,
     auth_mode,
+    success,
     error,
     operation,
     provider,
@@ -17,49 +28,59 @@ export const sendAuth = async ({
 }: {
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
     environment: Environment;
+    webhookSettings: ExternalWebhook | null;
     auth_mode: AuthModeType;
+    success: boolean;
     error?: ErrorPayload;
     operation: AuthOperationType;
     provider: string;
-    type: string;
+    type: WebhookTypes;
     activityLogId: number | null;
     logCtx?: LogContext | undefined;
-}): Promise<void> => {
-    if (!shouldSend(environment, 'auth')) {
+} & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> => {
+    if (!webhookSettings) {
         return;
     }
 
-    const success = typeof error === 'undefined';
+    if (!shouldSend({ success, type: 'auth', webhookSettings, operation })) {
+        return;
+    }
+
+    let successBody: NangoAuthWebhookBodySuccess = {} as NangoAuthWebhookBodySuccess;
+    let errorBody: NangoAuthWebhookBodyError = {} as NangoAuthWebhookBodyError;
 
     const body: NangoAuthWebhookBody = {
         from: 'nango',
-        type: WebhookType.AUTH,
+        type: 'auth',
         connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key,
         authMode: auth_mode,
         provider,
         environment: environment.name,
-        success,
         operation
     };
 
-    if (error) {
-        body.error = error;
-    }
-
-    // TODO when settings are available send this webhook
-    if (!success) {
-        return;
+    if (success) {
+        successBody = {
+            ...body,
+            success: true
+        };
+    } else {
+        errorBody = {
+            ...body,
+            success: false,
+            error
+        };
     }
 
     const webhooks = [
-        { url: environment.webhook_url!, type: 'webhook url' },
-        { url: environment.webhook_url_secondary!, type: 'secondary webhook url' }
+        { url: webhookSettings.primary_url, type: 'webhook url' },
+        { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
     await deliver({
         webhooks,
-        body,
+        body: success ? successBody : errorBody,
         webhookType: type,
         activityLogId,
         environment,

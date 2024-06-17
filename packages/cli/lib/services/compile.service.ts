@@ -137,7 +137,8 @@ function compileImportedFile({
 
     for (const importedFile of importedFiles) {
         const importedFilePath = path.resolve(path.dirname(filePath), importedFile);
-        const importedFilePathWithExtension = importedFilePath + '.ts';
+        const importedFilePathWithoutExtension = path.join(path.dirname(importedFilePath), path.basename(importedFilePath, path.extname(importedFilePath)));
+        const importedFilePathWithExtension = importedFilePathWithoutExtension + '.ts';
 
         /// if it is a library import then we can skip it
         if (!fs.existsSync(importedFilePathWithExtension)) {
@@ -172,7 +173,7 @@ function compileImportedFile({
         compiler.compile(fs.readFileSync(importedFilePathWithExtension, 'utf8'), importedFilePathWithExtension);
         console.log(chalk.green(`Compiled "${importedFilePathWithExtension}" successfully`));
 
-        finalResult = compileImportedFile({ fullPath, filePath: importedFilePath + '.ts', compiler, type, parsed });
+        finalResult = compileImportedFile({ fullPath, filePath: importedFilePathWithExtension, compiler, type, parsed });
     }
 
     return finalResult;

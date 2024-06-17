@@ -2,8 +2,8 @@ import crypto from 'crypto';
 import { backOff } from 'exponential-backoff';
 import type { AxiosError } from 'axios';
 import { axiosInstance as axios } from '@nangohq/utils';
-import type { Environment } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
+import type { WebhookTypes, SyncType, AuthOperationType, Environment, ExternalWebhook } from '@nangohq/types';
 
 export const RETRY_ATTEMPTS = 7;
 
@@ -69,17 +69,43 @@ export const filterHeaders = (headers: Record<string, string>): Record<string, s
     return filteredHeaders;
 };
 
-export const shouldSend = (environment: Environment, type: 'auth' | 'sync' | 'forward'): boolean => {
-    const hasAnyWebhook = environment.webhook_url || environment.webhook_url_secondary;
+export const shouldSend = ({
+    webhookSettings,
+    success,
+    type,
+    operation
+}: {
+    webhookSettings: ExternalWebhook;
+    success: boolean;
+    type: 'auth' | 'sync' | 'forward';
+    operation: SyncType | AuthOperationType | 'incoming_webhook';
+}): boolean => {
+    const hasAnyWebhook = Boolean(webhookSettings.primary_url || webhookSettings.secondary_url);
 
-    if (type === 'forward' && hasAnyWebhook) {
+    if (type === 'forward') {
+        return hasAnyWebhook;
+    }
+
+    if (!hasAnyWebhook) {
+        return false;
+    }
+
+    if (type === 'auth') {
+        if (operation === 'creation' && !webhookSettings.on_auth_creation) {
+            return false;
+        }
+
+        if (operation === 'refresh' && !webhookSettings.on_auth_refresh_error) {
+            return false;
+        }
+
         return true;
     }
 
-    const authNotSelected = type === 'auth' && !environment.send_auth_webhook;
-
-    if (!hasAnyWebhook || authNotSelected) {
-        return false;
+    if (type === 'sync') {
+        if (!success && !webhookSettings.on_sync_error) {
+            return false;
+        }
     }
 
     return true;
@@ -92,21 +118,28 @@ export const deliver = async ({
     activityLogId,
     logCtx,
     environment,
-    endingMessage = ''
+    endingMessage = '',
+    incomingHeaders
 }: {
     webhooks: { url: string; type: string }[];
     body: unknown;
-    webhookType: string;
+    webhookType: WebhookTypes;
     activityLogId: number | null;
     environment: Environment;
     logCtx?: LogContext | undefined;
     endingMessage?: string;
-}): Promise<void> => {
+    incomingHeaders?: Record<string, string>;
+}): Promise<boolean> => {
+    let success = true;
+
     for (const webhook of webhooks) {
         const { url, type } = webhook;
 
         try {
-            const headers = getSignatureHeader(environment.secret_key, body);
+            const headers = {
+                ...getSignatureHeader(environment.secret_key, body),
+                ...filterHeaders(incomingHeaders || {})
+            };
 
             const response = await backOff(
                 () => {
@@ -115,17 +148,18 @@ export const deliver = async ({
                 { numOfAttempts: RETRY_ATTEMPTS, retry: retry.bind(this, activityLogId, logCtx) }
             );
 
-            if (activityLogId) {
+            if (logCtx) {
                 if (response.status >= 200 && response.status < 300) {
-                    await logCtx?.info(
+                    await logCtx.info(
                         `${webhookType} webhook sent successfully to the ${type} ${url} and received with a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}.`,
                         body as Record<string, unknown>
                     );
                 } else {
-                    await logCtx?.error(
+                    await logCtx.error(
                         `${webhookType} sent webhook successfully to the ${type} ${url} but received a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`,
                         body as Record<string, unknown>
                     );
+                    success = false;
                 }
             }
         } catch (err) {
@@ -134,6 +168,10 @@ export const deliver = async ({
                     error: err
                 });
             }
+
+            success = false;
         }
     }
+
+    return success;
 };
