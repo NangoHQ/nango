@@ -4,7 +4,6 @@
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "private": true,
     "scripts": {
         "build": "rimraf ./dist && tsc"
     },

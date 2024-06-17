@@ -177,7 +177,7 @@ describe('parse', () => {
                             array: true,
                             value: [
                                 { name: '0', value: 'string', tsType: true, array: false, optional: false },
-                                { name: '1', value: 'User', model: true, optional: false }
+                                { name: '1', value: 'User', model: true, optional: false, array: false }
                             ]
                         }
                     ]
@@ -342,7 +342,7 @@ describe('parse', () => {
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 User: { name: 'User', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] },
-                Test: { name: 'Test', fields: [{ name: 'user', value: 'User', model: true, optional: false }] }
+                Test: { name: 'Test', fields: [{ name: 'user', value: 'User', model: true, optional: false, array: false }] }
             });
             expect(parser.warnings).toStrictEqual([]);
         });
@@ -352,7 +352,7 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', value: 'User', model: true, optional: false }] },
+                Test: { name: 'Test', fields: [{ name: 'user', value: 'User', model: true, optional: false, array: false }] },
                 User: { name: 'User', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }
             });
         });
@@ -375,7 +375,7 @@ describe('parse', () => {
 
             expect(parser.warnings).toStrictEqual([new ParserErrorCycle({ name: 'Test' })]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', value: 'Test', model: true, optional: false }] }
+                Test: { name: 'Test', fields: [{ name: 'user', value: 'Test', model: true, optional: false, array: false }] }
             });
         });
 
@@ -385,7 +385,10 @@ describe('parse', () => {
 
             expect(parser.warnings).toStrictEqual([new ParserErrorCycle({ name: 'Test' })]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: 'user', optional: false, value: [{ name: 'author', value: 'Test', model: true, optional: false }] }] }
+                Test: {
+                    name: 'Test',
+                    fields: [{ name: 'user', optional: false, value: [{ name: 'author', value: 'Test', model: true, optional: false, array: false }] }]
+                }
             });
         });
 
@@ -397,7 +400,7 @@ describe('parse', () => {
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 Test: {
                     name: 'Test',
-                    fields: [{ name: 'user', optional: false, array: true, value: [{ name: '0', value: 'Test', model: true, optional: false }] }]
+                    fields: [{ name: 'user', optional: false, array: true, value: [{ name: '0', value: 'Test', model: true, optional: false, array: false }] }]
                 }
             });
         });
