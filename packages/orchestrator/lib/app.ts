@@ -18,7 +18,6 @@ try {
     const dbClient = new DatabaseClient({ url: databaseUrl, schema: databaseSchema });
     await dbClient.migrate();
 
-    // TODO: add logic to update syncs and syncs jobs in the database
     const eventsHandler = new EventsHandler({
         CREATED: (task: Task) => logger.info(`Task created: ${stringifyTask(task)}`),
         STARTED: (task: Task) => logger.info(`Task started: ${stringifyTask(task)}`),
@@ -41,6 +40,11 @@ try {
     const port = envs.NANGO_ORCHESTRATOR_PORT;
     server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
+    });
+
+    // handle SIGTERM
+    process.on('SIGTERM', () => {
+        scheduler.stop();
     });
 } catch (err) {
     logger.error(`Orchestrator API error: ${stringifyError(err)}`);

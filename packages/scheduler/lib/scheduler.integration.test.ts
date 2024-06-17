@@ -34,6 +34,7 @@ describe('Scheduler', () => {
 
     afterAll(async () => {
         scheduler.stop();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         await dbClient.clearDatabase();
     });
 

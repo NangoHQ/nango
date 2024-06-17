@@ -6,6 +6,7 @@ import { OrchestratorClient } from './client.js';
 import getPort from 'get-port';
 import { EventsHandler } from '../events.js';
 import { nanoid } from '@nangohq/utils';
+import { setTimeout } from 'timers/promises';
 
 const dbClient = getTestDbClient();
 const eventsHandler = new EventsHandler({
@@ -33,6 +34,7 @@ describe('OrchestratorClient', async () => {
 
     afterAll(async () => {
         scheduler.stop();
+        await setTimeout(1000); // waiting for the scheduler to stop
         await dbClient.clearDatabase();
     });
 

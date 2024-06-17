@@ -7,6 +7,8 @@ import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
 import { dueSchedules } from './scheduling.js';
 import * as tasks from '../../models/tasks.js';
+import { LeaderElection } from '../leader.election.js';
+import { uuidv7 } from 'uuidv7';
 
 interface CreatedTasksMessage {
     ids: string[];
@@ -58,12 +60,19 @@ export class SchedulingChild {
     private parent: MessagePort;
     private cancelled: boolean = false;
     private tickIntervalMs = 100;
+    private electionLeader: LeaderElection;
+    private nodeId = uuidv7();
 
     constructor(parent: MessagePort, db: knex.Knex) {
         if (isMainThread) {
             throw new Error('Scheduling should not be instantiated in the main thread');
         }
         this.db = db;
+        this.electionLeader = new LeaderElection({
+            db,
+            leaseTimeoutMs: 30_000,
+            leaderKey: 'scheduling'
+        });
         this.parent = parent;
         this.parent.on('message', async (msg: 'start' | 'stop') => {
             switch (msg) {
@@ -71,7 +80,7 @@ export class SchedulingChild {
                     await this.start();
                     break;
                 case 'stop':
-                    this.stop();
+                    await this.stop();
                     break;
             }
         });
@@ -81,14 +90,20 @@ export class SchedulingChild {
         logger.info('Starting scheduling...');
         // eslint-disable-next-line no-constant-condition
         while (!this.cancelled) {
+            const leader = await this.electionLeader.elect(this.nodeId);
+            if (leader.isErr()) {
+                await setTimeout(this.electionLeader.leaseTimeoutMs);
+                continue;
+            }
             await this.schedule();
             await setTimeout(this.tickIntervalMs);
         }
     }
 
-    stop(): void {
+    async stop(): Promise<void> {
         logger.info('Stopping scheduling...');
         this.cancelled = true;
+        await this.electionLeader.release(this.nodeId);
     }
 
     async schedule(): Promise<void> {
