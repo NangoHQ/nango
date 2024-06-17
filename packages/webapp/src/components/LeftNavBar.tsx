@@ -160,9 +160,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             }`}
                         >
                             <QueueListIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Logs ? 'text-white' : 'text-gray-400'}`} />
-                            <p className="flex gap-4 items-center">
-                                Logs <span className="text-xs text-green-400">beta</span>
-                            </p>
+                            <p className="flex gap-4 items-center">Logs</p>
                         </Link>
                         <Link
                             to={`/${env}/environment-settings`}
