@@ -1049,7 +1049,6 @@ class ConnectionService {
         const headers: Record<string, string> = {};
         const params = new URLSearchParams();
 
-        console.log('hassan');
         const bodyFormat = template.body_format || 'form';
         headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
 
