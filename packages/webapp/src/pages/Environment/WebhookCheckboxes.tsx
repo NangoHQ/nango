@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 import type { ChangeEvent } from 'react';
 import { HelpCircle } from '@geist-ui/icons';
@@ -42,15 +43,20 @@ interface CheckboxFormProps {
 }
 
 const CheckboxForm: React.FC<CheckboxFormProps> = ({ env, checkboxState, setCheckboxState, mutate }) => {
+    const [isLoading, setIsLoading] = useState(false);
+
     const handleCheckboxChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
         const updatedState = { ...checkboxState, [name]: checked };
         setCheckboxState(updatedState);
 
-        await handleSubmit(updatedState);
+        const data: CheckboxState = Object.fromEntries(Object.entries(updatedState).map(([key, value]) => [key, Boolean(value)])) as unknown as CheckboxState;
+
+        await handleSubmit(data);
     };
 
     const handleSubmit = async (data: CheckboxState) => {
+        setIsLoading(true);
         const res = await apiFetch(`/api/v1/environment/webhook/settings?env=${env}`, {
             method: 'PATCH',
             body: JSON.stringify(data)
@@ -62,6 +68,7 @@ const CheckboxForm: React.FC<CheckboxFormProps> = ({ env, checkboxState, setChec
             toast.success('Webhook settings updated successfully!', { position: toast.POSITION.BOTTOM_CENTER });
             mutate();
         }
+        setIsLoading(false);
     };
 
     return (
@@ -69,7 +76,7 @@ const CheckboxForm: React.FC<CheckboxFormProps> = ({ env, checkboxState, setChec
             {checkboxesConfig.map(({ label, tooltip, stateKey }) => (
                 <div key={stateKey} className="mx-8 mt-8">
                     <div className="flex items-center mb-2">
-                        <label htmlFor={stateKey} className="text-text-light-gray text-sm font-semibold">
+                        <label htmlFor={stateKey} className={`${isLoading ? 'text-gray-700' : 'text-text-light-gray'} text-sm font-semibold`}>
                             {label}
                         </label>
                         <Tooltip
@@ -84,7 +91,8 @@ const CheckboxForm: React.FC<CheckboxFormProps> = ({ env, checkboxState, setChec
                         <input
                             type="checkbox"
                             name={stateKey}
-                            className="flex ml-3 bg-black"
+                            disabled={isLoading}
+                            className={`flex ml-3 bg-black ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                             checked={checkboxState[stateKey]}
                             onChange={handleCheckboxChange}
                         />

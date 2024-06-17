@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.1] - 2024-06-17
+
+### Added
+
+- *(orchestrator)* Pause/unpause/delete sync (#2289) by @TBonnin
+- *(orchestrator)* Implement runSyncCommand (#2290) by @TBonnin
+- *(integrations)* Add support for fireflies (#2287) by @hassan254-prog
+- *(integrations)* Add support for microsoft power bi (#2293) by @hassan254-prog
+- *(logs)* Remove v1 UI (#2276) by @bodinsamuel
+- *(orchestrator)* Add update frequency (#2298) by @TBonnin
+- *(integrations)* Add Jira Data Center support (#2308) by @zdhickman
+- Schedule syncs via the orchestrator (#2309) by @TBonnin
+- Add contribution guidelines (#2285) by @bastienbeurier
+- *(webhooks)* [nan-1142] migrate to the external webhooks table (#2302) by @khaliqgant
+- Process syncs via the orchestrator (#2315) by @TBonnin
+- *(asana)* [nan-1187] retry after for asana (#2328) by @khaliqgant
+- *(integrations)* Add support for unanet (#2330) by @hassan254-prog
+- *(integrations)* [nan-1187] add asana templates (#2334) by @khaliqgant
+- *(docs)* [nan-1172] relative file imports documentation (#2336) by @khaliqgant
+- *(webhooks)* [nan-1142] update options on environment settings to allow more use settings (#2319) by @khaliqgant
+
+### Changed
+
+- Delete sync schedule (#2301) by @TBonnin
+- Getting sync data from orchestrator (#2316) by @TBonnin
+- Disable sync retry (#2322) by @TBonnin
+- *(logger)* Handle object, better local output (#2321) by @bodinsamuel
+- *(logs.v1)* Remove from persist (#2332) by @bodinsamuel
+
+### Fixed
+
+- *(logs)* Match preset from date range (#2294) by @bodinsamuel
+- Missing webhooks dependencies in jobs (#2299) by @TBonnin
+- Prevent concurrent scheduling of tasks (#2296) by @TBonnin
+- *(cli)* Use absolute path (#2297) by @bodinsamuel
+- *(webhooks)* [nan-1178] disable automatic opt in for webhook settings (#2306) by @khaliqgant
+- *(webhooks)* [nan-1173] fix webhooks (#2300) by @khaliqgant
+- *(deps)* Simple-oauth2 5.0.1 (#2305) by @bodinsamuel
+- *(scheduler)* Retrying when task fails can interfere with scheduling (#2310) by @TBonnin
+- *(logs)* Cosmetic fix (#2307) by @bodinsamuel
+- Incorrect import of orchestratorService (#2314) by @TBonnin
+- *(ui)* Make the connection creation date into a <time> element with a title (#2313) by @eabruzzese
+- *(scheduler)* Remove retry_count column for schedules (#2318) by @TBonnin
+- Event should be emitted when task is created by scheduling worker (#2317) by @TBonnin
+- *(logs)* Correct timeout (#2320) by @bodinsamuel
+- *(slack)* Only notify success when refreshing (#2323) by @bodinsamuel
+- *(webhooks)* [nan-1204] make queryTimestamp always present (#2324) by @khaliqgant
+- *(logs)* Missing success for syncs (#2325) by @bodinsamuel
+- *(jobs)* Wrong boolean for getSyncConfigRaw (#2327) by @bodinsamuel
+- *(slack)* Only notify success if it has refreshed (again) (#2333) by @bodinsamuel
+- Orchestrator bugs (#2331) by @TBonnin
+- Remove orchestrator event emmitter max listeners limit (#2335) by @TBonnin
+- *(integration-templates)* [nan-1187] add slash (#2340) by @khaliqgant
+- Remove schedule_id column in schedules (#2338) by @TBonnin
+- *(orchestrator)* Accept every in sync interval (#2341) by @TBonnin
+- *(webhook-settings)* [nan-1142] visual feedback while checkboxes are loading and ensure all values are boolean (#2344) by @khaliqgant
+
 ## [v0.40.0] - 2024-06-10
 
 ### Added
@@ -1271,6 +1328,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.1]: https://github.com/NangoHQ/nango/compare/v0.40.0..v0.40.1
 [v0.40.0]: https://github.com/NangoHQ/nango/compare/v0.39.33..v0.40.0
 [v0.39.33]: https://github.com/NangoHQ/nango/compare/v0.39.32..v0.39.33
 [v0.39.32]: https://github.com/NangoHQ/nango/compare/v0.39.31..v0.39.32
