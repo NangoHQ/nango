@@ -710,6 +710,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
     "GithubCreateOutput" => {
       "fields": [
         {
+          "array": false,
           "model": true,
           "name": "result",
           "optional": false,
