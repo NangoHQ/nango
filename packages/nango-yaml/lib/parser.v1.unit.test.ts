@@ -1,13 +1,18 @@
 import { expect, describe, it } from 'vitest';
 import { NangoYamlParserV1 } from './parser.v1.js';
 import type { NangoYamlParsed, NangoYamlV1 } from '@nangohq/types';
-import { ParserErrorModelIsLiteral } from './errors.js';
+import { ParserErrorMissingId } from './errors.js';
 
 describe('parse', () => {
     it('should parse', () => {
         const v1: NangoYamlV1 = {
             models: { GithubIssue: { id: 'string' } },
-            integrations: { provider: { sync: { type: 'sync', runs: 'every day', returns: 'GithubIssue' } } }
+            integrations: {
+                provider: {
+                    sync: { type: 'sync', runs: 'every day', returns: 'GithubIssue' },
+                    createIssue: { type: 'action', returns: 'GithubIssue' }
+                }
+            }
         };
         const parser = new NangoYamlParserV1({ raw: v1 });
         parser.parse();
@@ -34,7 +39,18 @@ describe('parse', () => {
                         }
                     ],
                     postConnectionScripts: [],
-                    actions: []
+                    actions: [
+                        {
+                            description: '',
+                            input: null,
+                            endpoint: null,
+                            name: 'createIssue',
+                            output: ['GithubIssue'],
+                            scopes: [],
+                            type: 'action',
+                            usedModels: ['GithubIssue']
+                        }
+                    ]
                 }
             ],
             models: new Map([['GithubIssue', { name: 'GithubIssue', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }]]),
@@ -49,8 +65,10 @@ describe('parse', () => {
         };
         const parser = new NangoYamlParserV1({ raw: v1 });
         parser.parse();
-        expect(parser.errors).toStrictEqual([]);
-        expect(parser.warnings).toStrictEqual([new ParserErrorModelIsLiteral({ model: 'test', path: ['provider', 'sync', 'hello', '[output]'] })]);
+        expect(parser.errors).toStrictEqual([
+            new ParserErrorMissingId({ model: 'Anonymous_provider_sync_hello_output', path: ['provider', 'syncs', 'hello', '[output]'] })
+        ]);
+        expect(parser.warnings).toStrictEqual([]);
         expect(parser.parsed).toStrictEqual<NangoYamlParsed>({
             integrations: [
                 {

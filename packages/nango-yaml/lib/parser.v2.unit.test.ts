@@ -1,13 +1,18 @@
 import { expect, describe, it } from 'vitest';
 import { NangoYamlParserV2 } from './parser.v2.js';
 import type { NangoYamlParsed, NangoYamlV2 } from '@nangohq/types';
-import { ParserErrorModelIsLiteral } from './errors.js';
+import { ParserErrorMissingId, ParserErrorModelIsLiteral, ParserErrorModelNotFound } from './errors.js';
 
 describe('parse', () => {
     it('should parse', () => {
         const v2: NangoYamlV2 = {
             models: { GithubIssue: { id: 'string' } },
-            integrations: { provider: { syncs: { top: { runs: 'every day', input: 'GithubIssue', output: 'GithubIssue', endpoint: 'GET /provider/top' } } } }
+            integrations: {
+                provider: {
+                    syncs: { top: { runs: 'every day', input: 'GithubIssue', output: 'GithubIssue', endpoint: 'GET /provider/top' } },
+                    actions: { createIssue: { endpoint: '/test', input: 'string', output: 'GithubIssue' } }
+                }
+            }
         };
         const parser = new NangoYamlParserV2({ raw: v2 });
         parser.parse();
@@ -34,10 +39,31 @@ describe('parse', () => {
                         }
                     ],
                     postConnectionScripts: [],
-                    actions: []
+                    actions: [
+                        {
+                            description: '',
+                            input: 'Anonymous_provider_action_createIssue_input',
+                            endpoint: { POST: '/test' },
+                            name: 'createIssue',
+                            output: ['GithubIssue'],
+                            scopes: [],
+                            type: 'action',
+                            usedModels: ['GithubIssue', 'Anonymous_provider_action_createIssue_input']
+                        }
+                    ]
                 }
             ],
-            models: new Map([['GithubIssue', { name: 'GithubIssue', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }]]),
+            models: new Map([
+                ['GithubIssue', { name: 'GithubIssue', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }],
+                [
+                    'Anonymous_provider_action_createIssue_input',
+                    {
+                        fields: [{ array: false, name: 'input', optional: false, tsType: true, value: 'string' }],
+                        isAnon: true,
+                        name: 'Anonymous_provider_action_createIssue_input'
+                    }
+                ]
+            ]),
             yamlVersion: 'v2'
         });
     });
@@ -49,11 +75,10 @@ describe('parse', () => {
         };
         const parser = new NangoYamlParserV2({ raw: v2 });
         parser.parse();
-        expect(parser.errors).toStrictEqual([]);
-        expect(parser.warnings).toStrictEqual([
-            new ParserErrorModelIsLiteral({ model: 'foobar', path: ['provider', 'sync', 'top', '[output]'] }),
-            new ParserErrorModelIsLiteral({ model: 'boolean', path: ['provider', 'sync', 'top', '[input]'] })
+        expect(parser.errors).toStrictEqual([
+            new ParserErrorMissingId({ model: 'Anonymous_provider_sync_top_output', path: ['provider', 'syncs', 'top', '[output]'] })
         ]);
+        expect(parser.warnings).toStrictEqual([new ParserErrorModelIsLiteral({ model: 'boolean', path: ['provider', 'syncs', 'top', '[input]'] })]);
         expect(parser.parsed).toStrictEqual<NangoYamlParsed>({
             integrations: [
                 {
@@ -95,5 +120,35 @@ describe('parse', () => {
             ]),
             yamlVersion: 'v2'
         });
+    });
+
+    it('should handle endpoint with model inside (found)', () => {
+        const v2: NangoYamlV2 = {
+            models: { Found: { id: 'string' } },
+            integrations: {
+                provider: { actions: { getGithubIssue: { endpoint: 'GET /ticketing/tickets/{Found:id}' } } }
+            }
+        };
+        const parser = new NangoYamlParserV2({ raw: v2 });
+        parser.parse();
+        expect(parser.errors).toStrictEqual([]);
+        expect(parser.warnings).toStrictEqual([]);
+        expect(parser.parsed?.integrations[0]?.actions).toMatchObject([
+            {
+                endpoint: { GET: '/ticketing/tickets/{Found:id}' }
+            }
+        ]);
+    });
+    it('should handle endpoint with model inside (missing)', () => {
+        const v2: NangoYamlV2 = {
+            models: {},
+            integrations: {
+                provider: { actions: { getGithubIssue: { endpoint: 'GET /ticketing/tickets/{Missing:id}' } } }
+            }
+        };
+        const parser = new NangoYamlParserV2({ raw: v2 });
+        parser.parse();
+        expect(parser.errors).toStrictEqual([new ParserErrorModelNotFound({ model: 'Missing', path: ['provider', 'syncs', 'getGithubIssue', '[endpoint]'] })]);
+        expect(parser.warnings).toStrictEqual([]);
     });
 });

@@ -10,10 +10,14 @@ exports[`load > should parse a nango.yaml file that is version 1 as expected 1`]
           "endpoint": null,
           "input": null,
           "name": "github-write-action",
-          "output": null,
+          "output": [
+            "Anonymous_demogithubintegration_sync_githubwriteaction_output",
+          ],
           "scopes": [],
           "type": "action",
-          "usedModels": [],
+          "usedModels": [
+            "Anonymous_demogithubintegration_sync_githubwriteaction_output",
+          ],
         },
       ],
       "postConnectionScripts": [],
@@ -123,6 +127,19 @@ exports[`load > should parse a nango.yaml file that is version 1 as expected 1`]
         },
       ],
       "name": "GithubIssue",
+    },
+    "Anonymous_demogithubintegration_sync_githubwriteaction_output" => {
+      "fields": [
+        {
+          "array": false,
+          "name": "output",
+          "optional": false,
+          "tsType": true,
+          "value": "boolean",
+        },
+      ],
+      "isAnon": true,
+      "name": "Anonymous_demogithubintegration_sync_githubwriteaction_output",
     },
   },
   "yamlVersion": "v1",
@@ -243,6 +260,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "track_deletes": false,
           "type": "sync",
           "usedModels": [
+            "GithubIssue",
             "GithubIssue2",
           ],
           "webhookSubscriptions": [],
@@ -270,6 +288,8 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "track_deletes": false,
           "type": "sync",
           "usedModels": [
+            "GithubIssue",
+            "GithubIssue2",
             "GithubIssue3",
             "GithubPR",
           ],

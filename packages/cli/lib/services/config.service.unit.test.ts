@@ -14,14 +14,14 @@ describe('load', () => {
 
     it('should parse a nango.yaml file that is version 1 as expected', () => {
         const { response: parsed } = load(path.resolve(__dirname, `../../fixtures/nango-yaml/v1/valid`));
-        expect(parsed).not.toBeNull();
         expect(parsed).toMatchSnapshot();
+        expect(parsed).not.toBeNull();
     });
 
     it('should parse a nango.yaml file that is version 2 as expected', () => {
         const { response: parsed } = load(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/valid`));
-        expect(parsed).not.toBeNull();
         expect(parsed).toMatchSnapshot();
+        expect(parsed).not.toBeNull();
     });
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- missing endpoint', () => {
@@ -32,7 +32,7 @@ describe('load', () => {
         expect(parsed).toBeNull();
         expect(error).toBeDefined();
         expect(error).toStrictEqual(new NangoError('pass_through_error'));
-        expect(acc.join('')).toContain('endpoint must be a URI with an HTTP verb');
+        expect(acc.join('')).toContain('An endpoint property is required to specify how to retrieve the data from the sync');
     });
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- webhook subscriptions are not allowed in an action', () => {
@@ -130,13 +130,13 @@ integrations:
     syncs:
       foobar:
         runs: every day
-        endpoint: /test
+        endpoint: /te df /+-st
         output: boolean
 `)
         );
         expect(res).toMatchObject([
             {
-                msg: 'endpoint must be a URI (or an array of URIs) with an HTTP verb, i.e: "GET /tickets/ticket"',
+                msg: 'endpoint must be a URL (or an array of URLs) with an HTTP verb, i.e: "GET /tickets/ticket"',
                 path: '/integrations/test/syncs/foobar/endpoint'
             }
         ]);

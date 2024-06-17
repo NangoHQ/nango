@@ -30,23 +30,26 @@ export class NangoYamlParserV1 extends NangoYamlParser {
                     continue;
                 }
 
-                // TODO: models
-
                 if (syncOrAction.type === 'action') {
+                    const modelOutput = this.getModelForOutput({
+                        rawOutput: syncOrAction.returns,
+                        name: syncOrActionName,
+                        type: 'sync',
+                        integrationName
+                    });
                     actions.push({
                         type: 'action',
                         name: syncOrActionName,
                         description: syncOrAction.description || '',
                         endpoint: null, // Endpoint was never allowed in v1
-                        input: null,
-                        output: null,
+                        input: null, // Input was never allowed in v1
+                        output: modelOutput && modelOutput.length > 0 ? modelOutput.map((m) => m.name) : null,
                         scopes: [], // Scopes was never allowed in v1
                         usedModels: []
                     });
                 } else {
                     const modelOutput = this.getModelForOutput({
                         rawOutput: syncOrAction.returns,
-                        usedModels: new Set(),
                         name: syncOrActionName,
                         type: 'sync',
                         integrationName
@@ -62,7 +65,7 @@ export class NangoYamlParserV1 extends NangoYamlParser {
                         runs: syncOrAction.runs || '',
                         track_deletes: syncOrAction.track_deletes || false,
                         endpoints: [], // Endpoint was never allowed in v1
-                        input: null,
+                        input: null, // Input was never allowed in v1
                         output: modelOutput.map((m) => m.name),
                         scopes: [], // Scopes was never allowed in v1
                         auto_start: syncOrAction.auto_start === false ? false : true,
@@ -88,6 +91,8 @@ export class NangoYamlParserV1 extends NangoYamlParser {
             integrations: output,
             models: this.modelsParser.parsed
         };
+
+        this.postParsingValidation();
 
         return this.errors.length <= 0;
     }
