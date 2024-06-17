@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import type { MessagePort } from 'node:worker_threads';
 import { Worker, isMainThread } from 'node:worker_threads';
-import { stringifyError } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+import { Err, Ok, stringifyError } from '@nangohq/utils';
 import { setTimeout } from 'node:timers/promises';
 import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
@@ -92,7 +93,8 @@ export class SchedulingChild {
     }
 
     async schedule(): Promise<void> {
-        await this.db.transaction(async (trx) => {
+        const res = await this.db.transaction(async (trx): Promise<Result<string[]>> => {
+            const taskIds: string[] = [];
             // Try to acquire a lock to prevent multiple instances from scheduling at the same time
             const res = await trx.raw('SELECT pg_try_advisory_xact_lock(?) AS lock_granted', [5003001106]);
             const lockGranted = res?.rows.length > 0 ? res.rows[0].lock_granted : false;
@@ -100,35 +102,41 @@ export class SchedulingChild {
             if (lockGranted) {
                 const schedules = await dueSchedules(trx);
                 if (schedules.isErr()) {
-                    logger.error(`Failed to get due schedules: ${schedules.error}`);
-                    return;
-                }
-                const taskIds = [];
-                for (const schedule of schedules.value) {
-                    const task = await tasks.create(trx, {
-                        scheduleId: schedule.id,
-                        startsAfter: new Date(),
-                        name: `${schedule.name}:${new Date().toISOString()}`,
-                        payload: schedule.payload,
-                        groupKey: schedule.groupKey,
-                        retryCount: 0,
-                        retryMax: schedule.retryMax,
-                        createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
-                        startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
-                        heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs
-                    });
-                    if (task.isErr()) {
-                        logger.error(`Failed to create task for schedule: ${schedule.id}`);
-                    } else {
-                        taskIds.push(task.value.id);
+                    return Err(`Failed to get due schedules: ${stringifyError(schedules.error)}`);
+                } else {
+                    for (const schedule of schedules.value) {
+                        const task = await tasks.create(trx, {
+                            scheduleId: schedule.id,
+                            startsAfter: new Date(),
+                            name: `${schedule.name}:${new Date().toISOString()}`,
+                            payload: schedule.payload,
+                            groupKey: schedule.groupKey,
+                            retryCount: 0,
+                            retryMax: schedule.retryMax,
+                            createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
+                            startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
+                            heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs
+                        });
+                        if (task.isErr()) {
+                            logger.error(`Failed to create task for schedule: ${schedule.id}`);
+                        } else {
+                            taskIds.push(task.value.id);
+                        }
                     }
                 }
-                if (taskIds.length > 0) {
-                    this.parent.postMessage({ ids: taskIds }); // notifying parent that tasks have been created
-                }
             } else {
-                await setTimeout(1000); // wait for 1s before trying again
+                await setTimeout(1000); // wait for 1s to prevent retrying too quickly
             }
+            return Ok(taskIds);
         });
+        if (res.isErr()) {
+            logger.error(res.error);
+            return;
+        }
+        // notifying parent (Scheduler) that tasks have been created
+        if (res.value.length > 0) {
+            logger.info(`DEBUG: Created ${res.value.length} tasks. Posting to parent...`);
+            this.parent.postMessage({ ids: res.value });
+        }
     }
 }

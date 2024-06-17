@@ -53,12 +53,14 @@ export class Scheduler {
             this.monitor.start();
             this.scheduling = new SchedulingWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
             this.scheduling.on(async (message) => {
+                logger.info('DEBUG: SchedulingWorker message:', message);
                 const { ids } = message;
                 const fetched = await tasks.search(this.dbClient.db, { ids, limit: ids.length });
                 if (fetched.isErr()) {
                     logger.error(`Error fetching tasks created by scheduling: ${stringifyError(fetched.error)}`);
                     return;
                 }
+                logger.info(`DEBUG: Fetched tasks created by scheduling: ${fetched.value.length}.`);
                 for (const task of fetched.value) {
                     this.onCallbacks[task.state](task);
                 }
