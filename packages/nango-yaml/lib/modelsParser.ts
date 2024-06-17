@@ -137,7 +137,8 @@ export class ModelsParser {
 
             // Special key for dynamic interface `[key: string]: *`
             if (name === '__string') {
-                dynamicField = { name, value, dynamic: true, optional };
+                const acc = this.parseFields({ fields: { tmp: value }, parent })[0]!;
+                dynamicField = { ...acc, name, dynamic: true, optional };
                 continue;
             }
 

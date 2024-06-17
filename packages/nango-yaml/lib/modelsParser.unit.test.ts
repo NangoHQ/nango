@@ -17,7 +17,7 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: '__string', value: 'string', dynamic: true, optional: false }] }
+                Test: { name: 'Test', fields: [{ name: '__string', value: 'string', tsType: true, dynamic: true, optional: false, array: false }] }
             });
         });
     });
@@ -49,7 +49,7 @@ describe('parse', () => {
             parser.parseAll();
 
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
-                Test: { name: 'Test', fields: [{ name: '__string', value: 'string', dynamic: true, optional: false }] }
+                Test: { name: 'Test', fields: [{ name: '__string', value: 'string', dynamic: true, optional: false, array: false, tsType: true }] }
             });
         });
 
@@ -101,9 +101,15 @@ describe('parse', () => {
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 Test: {
                     name: 'Test',
-                    fields: [{ name: 'sub', optional: false, value: [{ name: '__string', value: 'number', dynamic: true, optional: false }] }]
+                    fields: [
+                        {
+                            name: 'sub',
+                            optional: false,
+                            value: [{ name: '__string', value: 'number', dynamic: true, optional: false, array: false, tsType: true }]
+                        }
+                    ]
                 },
-                TestBase: { name: 'TestBase', fields: [{ name: '__string', value: 'number', dynamic: true, optional: false }] }
+                TestBase: { name: 'TestBase', fields: [{ name: '__string', value: 'number', dynamic: true, optional: false, tsType: true, array: false }] }
             });
         });
 

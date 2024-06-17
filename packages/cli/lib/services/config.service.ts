@@ -29,7 +29,7 @@ export function load(fullPath: string, debug = false): ServiceResponse<NangoYaml
 
         const valid = validateAndOutput(parser.raw);
         if (!valid) {
-            return { success: false, error: new NangoError('pass_through_error'), response: null };
+            return { success: false, error: new NangoError('failed_to_parse_nango_yaml'), response: null };
         }
 
         parser.parse();

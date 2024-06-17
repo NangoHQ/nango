@@ -274,9 +274,10 @@ program
         if (!success || !parsed) {
             console.log(chalk.red(error?.message));
             process.exitCode = 1;
+            return;
         }
 
-        console.log(chalk.green(JSON.stringify(parsed, null, 2)));
+        console.log(chalk.green(JSON.stringify({ ...parsed, models: Array.from(parsed.models.values()) }, null, 2)));
     });
 
 // admin only commands
