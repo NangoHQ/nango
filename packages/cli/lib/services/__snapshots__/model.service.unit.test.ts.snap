@@ -211,7 +211,7 @@ export interface NangoProps {
     connectionId: string;
     environmentId?: number;
     environmentName?: string;
-    activityLogId?: number | undefined;
+    activityLogId?: number | string | undefined;
     providerConfigKey: string;
     provider?: string;
     lastSyncDate?: Date;
@@ -242,7 +242,7 @@ export declare class NangoAction {
     protected nango: Nango;
     private attributes;
     protected persistApi: AxiosInstance;
-    activityLogId?: number | undefined;
+    activityLogId?: number | string | undefined;
     syncId?: string;
     nangoConnectionId?: number;
     environmentId?: number;
