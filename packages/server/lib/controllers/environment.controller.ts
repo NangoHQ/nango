@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Environment } from '@nangohq/shared';
-import type { EnvironmentVariable } from '@nangohq/types';
+import type { EnvironmentVariable, ExternalWebhook } from '@nangohq/types';
 import { isCloud, baseUrl } from '@nangohq/utils';
 import {
     accountService,
@@ -14,6 +14,7 @@ import {
     getOnboardingProgress,
     userService,
     generateSlackConnectionId,
+    externalWebhookService,
     NANGO_VERSION
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
@@ -31,6 +32,7 @@ export interface GetMeta {
 export interface EnvironmentAndAccount {
     environment: Environment;
     env_variables: EnvironmentVariable[];
+    webhook_settings: ExternalWebhook | null;
     host: string;
     uuid: string;
     email: string;
@@ -109,10 +111,13 @@ class EnvironmentController {
 
             const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
 
+            const webhookSettings = await externalWebhookService.get(environment.id);
+
             res.status(200).send({
                 environmentAndAccount: {
                     environment,
                     env_variables: environmentVariables,
+                    webhook_settings: webhookSettings,
                     host: baseUrl,
                     uuid: account.uuid,
                     email: user.email,
@@ -199,70 +204,6 @@ class EnvironmentController {
             const { environment } = res.locals;
 
             await environmentService.editCallbackUrl(req.body['callback_url'], environment.id);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async updateWebhookURL(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await environmentService.editWebhookUrl(req.body['webhook_url'], environment.id);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async updateSecondaryWebhookURL(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await environmentService.editSecondaryWebhookUrl(req.body['webhook_secondary_url'], environment.id);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async updateAlwaysSendWebhook(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await environmentService.editAlwaysSendWebhook(req.body['always_send_webhook'], environment.id);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async updateSendAuthWebhook(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await environmentService.editSendAuthWebhook(req.body['send_auth_webhook'], environment.id);
             res.status(200).send();
         } catch (err) {
             next(err);

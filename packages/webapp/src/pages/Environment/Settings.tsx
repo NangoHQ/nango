@@ -12,19 +12,19 @@ import {
     useEditHmacEnabledAPI,
     useEditHmacKeyAPI,
     useEditEnvVariablesAPI,
-    useEditAlwaysSendWebhookAPI,
-    useEditSendAuthWebhookAPI,
     apiFetch
-} from '../utils/api';
-import IntegrationLogo from '../components/ui/IntegrationLogo';
-import { isCloud, isHosted, defaultCallback } from '../utils/utils';
-import DashboardLayout from '../layout/DashboardLayout';
-import { LeftNavBarItems } from '../components/LeftNavBar';
-import SecretInput from '../components/ui/input/SecretInput';
-import { useStore } from '../store';
-import Button from '../components/ui/button/Button';
-import { useEnvironment } from '../hooks/useEnvironment';
-import { connectSlack } from '../utils/slack-connection';
+} from '../../utils/api';
+import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { isCloud, isHosted, defaultCallback } from '../../utils/utils';
+import DashboardLayout from '../../layout/DashboardLayout';
+import { LeftNavBarItems } from '../../components/LeftNavBar';
+import SecretInput from '../../components/ui/input/SecretInput';
+import { useStore } from '../../store';
+import Button from '../../components/ui/button/Button';
+import { useEnvironment } from '../../hooks/useEnvironment';
+import { connectSlack } from '../../utils/slack-connection';
+import WebhookCheckboxes from './WebhookCheckboxes';
+import type { WebhookSettings as CheckboxState } from '@nangohq/types';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -54,16 +54,18 @@ export const EnvironmentSettings: React.FC = () => {
     const [hmacKey, setHmacKey] = useState<string | null>('');
     const [hmacEnabled, setHmacEnabled] = useState(false);
     const [accountUUID, setAccountUUID] = useState<string>('');
-    const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
-    const [sendAuthWebhook, setSendAuthWebhook] = useState(false);
+    const [webhookCheckboxSettings, setWebhookCheckboxSettings] = useState<CheckboxState>({
+        alwaysSendWebhook: false,
+        sendAuthWebhook: false,
+        sendRefreshFailedWebhook: false,
+        sendSyncFailedWebhook: false
+    });
     const [hmacEditMode, setHmacEditMode] = useState(false);
     const [envVariables, setEnvVariables] = useState<{ id?: number; name: string; value: string }[]>([]);
     const editCallbackUrlAPI = useEditCallbackUrlAPI(env);
     const editWebhookUrlAPI = useEditWebhookUrlAPI(env);
     const editWebhookSecondaryUrlAPI = useEditWebhookSecondaryUrlAPI(env);
     const editHmacEnabled = useEditHmacEnabledAPI(env);
-    const editAlwaysSendWebhook = useEditAlwaysSendWebhookAPI(env);
-    const editSendAuthWebhook = useEditSendAuthWebhookAPI(env);
     const editHmacKey = useEditHmacKeyAPI(env);
     const editEnvVariables = useEditEnvVariablesAPI(env);
 
@@ -82,7 +84,7 @@ export const EnvironmentSettings: React.FC = () => {
             return;
         }
 
-        const { environment, host, uuid, env_variables, slack_notifications_channel } = environmentAndAccount;
+        const { environment, host, uuid, env_variables, slack_notifications_channel, webhook_settings } = environmentAndAccount;
         setSecretKey(environment.pending_secret_key || environment.secret_key);
         setSecretKeyRotatable(environment.secret_key_rotatable !== false);
         setHasPendingSecretKey(Boolean(environment.pending_secret_key));
@@ -93,14 +95,20 @@ export const EnvironmentSettings: React.FC = () => {
 
         setCallbackUrl(environment.callback_url || defaultCallback());
 
-        setWebhookUrl(environment.webhook_url || '');
-        setWebhookUrlSecondary(environment.webhook_url_secondary || '');
-        setSendAuthWebhook(environment.send_auth_webhook);
+        if (webhook_settings) {
+            setWebhookCheckboxSettings({
+                alwaysSendWebhook: webhook_settings.on_sync_completion_always,
+                sendAuthWebhook: webhook_settings.on_auth_creation,
+                sendRefreshFailedWebhook: webhook_settings.on_auth_refresh_error,
+                sendSyncFailedWebhook: webhook_settings.on_sync_error
+            });
+            setWebhookUrl(webhook_settings.primary_url);
+            setWebhookUrlSecondary(webhook_settings.secondary_url);
+        }
         setHostUrl(host);
         setAccountUUID(uuid);
 
         setHmacEnabled(environment.hmac_enabled);
-        setAlwaysSendWebhook(environment.always_send_webhook);
         setHmacKey(environment.hmac_key || '');
 
         setSlackIsConnected(environment.slack_notifications);
@@ -174,22 +182,6 @@ export const EnvironmentSettings: React.FC = () => {
                 void mutate();
             });
         }
-    };
-
-    const handleWebookSendUpdate = async (checked: boolean) => {
-        setAlwaysSendWebhook(checked);
-        editAlwaysSendWebhook(checked).then(() => {
-            toast.success(checked ? 'Always send webhooks.' : 'Only send webhhoks on added, updated, or deleted.', { position: toast.POSITION.BOTTOM_CENTER });
-        });
-    };
-
-    const handleWebookSendAuth = async (checked: boolean) => {
-        setSendAuthWebhook(checked);
-        editSendAuthWebhook(checked).then(() => {
-            toast.success(checked ? 'Send new connection creation webhooks' : 'Do not send new connection creation webhooks', {
-                position: toast.POSITION.BOTTOM_CENTER
-            });
-        });
     };
 
     const handleHmacSave = async (e: React.SyntheticEvent) => {
@@ -770,7 +762,7 @@ export const EnvironmentSettings: React.FC = () => {
                             </div>
                         </div>
                         <div>
-                            {!environmentAndAccount?.environment.webhook_url_secondary && !webhookSecondaryEditMode ? (
+                            {!environmentAndAccount?.webhook_settings?.secondary_url && !webhookSecondaryEditMode ? (
                                 <button
                                     onClick={() => setWebhookSecondaryEditMode(true)}
                                     className="mx-8 mt-4 hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm"
@@ -844,58 +836,7 @@ export const EnvironmentSettings: React.FC = () => {
                                 </>
                             )}
                         </div>
-                        <div>
-                            <div className="mx-8 mt-8">
-                                <div className="flex items-center mb-2">
-                                    <label htmlFor="send_webhooks_for_empty" className="text-text-light-gray text-sm font-semibold">
-                                        Send Webhooks For Empty Sync Responses
-                                    </label>
-                                    <Tooltip
-                                        text={
-                                            <>
-                                                <div className="flex text-black text-sm">
-                                                    {`If checked, a webhook wil be sent on every sync run completion, even if no data has changed.`}
-                                                </div>
-                                            </>
-                                        }
-                                    >
-                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                    </Tooltip>
-                                    <input
-                                        type="checkbox"
-                                        className="flex ml-3 bg-black"
-                                        checked={alwaysSendWebhook}
-                                        onChange={(event) => handleWebookSendUpdate(event.target.checked)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="mx-8 mt-8">
-                                <div className="flex items-center mb-2">
-                                    <label htmlFor="send_webhooks_for_creation" className="text-text-light-gray text-sm font-semibold">
-                                        Send New Connection Creation Webhooks
-                                    </label>
-                                    <Tooltip
-                                        text={
-                                            <>
-                                                <div className="flex text-black text-sm">
-                                                    {`If checked, a webhook will be sent on connection creation success or failure.`}
-                                                </div>
-                                            </>
-                                        }
-                                    >
-                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                    </Tooltip>
-                                    <input
-                                        type="checkbox"
-                                        className="flex ml-3 bg-black"
-                                        checked={sendAuthWebhook}
-                                        onChange={(event) => handleWebookSendAuth(event.target.checked)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                        <WebhookCheckboxes mutate={mutate} env={env} checkboxState={webhookCheckboxSettings} setCheckboxState={setWebhookCheckboxSettings} />
                         <div>
                             <div className="mx-8 mt-8 relative">
                                 <div className="flex mb-2">

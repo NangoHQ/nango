@@ -1,4 +1,16 @@
 import type { ParamsSerializerOptions } from 'axios';
+import type { NangoSyncWebhookBodySuccess, NangoSyncWebhookBodyError, NangoAuthWebhookBodySuccess, NangoAuthWebhookBodyError } from '@nangohq/types';
+
+export type {
+    NangoSyncWebhookBodySuccess,
+    /** @deprecated use NangoSyncWebhookBodySuccess */
+    NangoSyncWebhookBodySuccess as NangoSyncWebhookBody,
+    NangoSyncWebhookBodyError,
+    NangoAuthWebhookBodySuccess,
+    /** @deprecated use NangoAuthWebhookBodySuccess */
+    NangoAuthWebhookBodySuccess as NangoAuthWebhookBody,
+    NangoAuthWebhookBodyError
+};
 
 export interface NangoProps {
     host?: string;
@@ -289,43 +301,3 @@ export interface SyncResult {
     updated: number;
     deleted: number;
 }
-
-export enum WebhookType {
-    SYNC = 'sync',
-    AUTH = 'auth',
-    FORWARD = 'forward'
-}
-
-export interface NangoSyncWebhookBody {
-    from: 'nango';
-    type: WebhookType.SYNC;
-    connectionId: string;
-    providerConfigKey: string;
-    syncName: string;
-    model: string;
-    responseResults: SyncResult;
-    syncType: SyncType;
-    queryTimeStamp: string | null;
-    modifiedAfter: string;
-}
-
-export enum AuthOperation {
-    CREATION = 'creation',
-    OVERRIDE = 'override',
-    UNKNOWN = 'unknown'
-}
-
-export interface WebhookAuthBody {
-    from: 'nango';
-    type: WebhookType.AUTH;
-    connectionId: string;
-    authMode: AuthModes;
-    providerConfigKey: string;
-    provider: string;
-    environment: string;
-    success: boolean;
-    operation: AuthOperation;
-    error?: string;
-}
-
-export type WebhooksBody = NangoSyncWebhookBody | WebhookAuthBody;

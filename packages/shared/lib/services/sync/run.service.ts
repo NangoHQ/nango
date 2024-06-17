@@ -11,6 +11,7 @@ import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '..
 import { errorNotificationService } from '../notification/error.service.js';
 import { getSyncConfig } from './config/config.service.js';
 import localFileService from '../file/local.service.js';
+import * as externalWebhookService from '../external-webhook.service.js';
 import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
 import type { SlackService } from '../notification/slack.service.js';
@@ -764,14 +765,18 @@ export default class SyncRun {
         };
 
         if (this.environment && this.sendSyncWebhook) {
+            const webhookSettings = await externalWebhookService.get(this.environment.id);
+
             void this.sendSyncWebhook({
                 connection: this.nangoConnection,
                 environment: this.environment,
+                webhookSettings,
                 syncName: this.syncName,
                 model,
                 now: syncStartDate,
+                success: true,
                 responseResults: results,
-                syncType: this.syncType === 'INITIAL' ? 'INITIAL' : 'INCREMENTAL',
+                operation: this.syncType === 'INITIAL' ? 'INITIAL' : 'INCREMENTAL',
                 activityLogId: this.activityLogId,
                 logCtx: this.logCtx
             });
@@ -893,14 +898,18 @@ export default class SyncRun {
         }
 
         if (this.environment && this.sendSyncWebhook) {
+            const webhookSettings = await externalWebhookService.get(this.environment.id);
+
             void this.sendSyncWebhook({
                 connection: this.nangoConnection,
                 environment: this.environment,
+                webhookSettings,
                 syncName: this.syncName,
                 model: models.join(','),
+                success: false,
                 error,
                 now: syncStartDate,
-                syncType: this.syncType === 'INITIAL' ? 'INITIAL' : 'INCREMENTAL',
+                operation: this.syncType === 'INITIAL' ? 'INITIAL' : 'INCREMENTAL',
                 activityLogId: this.activityLogId,
                 logCtx: this.logCtx
             });
