@@ -39,7 +39,7 @@ export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text'
 export interface InternalProxyConfiguration {
     provider: string;
     connection: Connection;
-    existingActivityLogId?: number | null;
+    existingActivityLogId?: number | string | null;
 }
 
 export interface RetryHeaderConfig {

@@ -17,7 +17,7 @@ const nangoProps: NangoProps = {
     providerConfigKey: 'github',
     connectionId: 'connection-1',
     dryRun: false,
-    activityLogId: 1,
+    activityLogId: '1',
     accountId: 1,
     environmentId: 1,
     lastSyncDate: new Date()
@@ -35,7 +35,7 @@ describe('cache', () => {
         nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
         nodeClient.prototype.setMetadata = vi.fn().mockReturnValue({});
         nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
-        vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, activityLogs: [] }));
+        vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, logs: [] }));
     });
     afterEach(() => {
         vi.clearAllMocks();
@@ -427,7 +427,7 @@ describe('Log', () => {
 
         expect(mock).toHaveBeenCalledWith({
             data: {
-                activityLogId: 1,
+                activityLogId: '1',
                 level: 'error',
                 msg: 'hello',
                 timestamp: expect.any(Number)

@@ -251,7 +251,7 @@ export interface NangoProps {
     connectionId: string;
     environmentId?: number;
     environmentName?: string;
-    activityLogId?: number | undefined;
+    activityLogId?: number | string | undefined;
     providerConfigKey: string;
     provider?: string;
     lastSyncDate?: Date;
@@ -289,7 +289,7 @@ export class NangoAction {
     protected nango: Nango;
     private attributes = {};
     protected persistApi: AxiosInstance;
-    activityLogId?: number | undefined;
+    activityLogId?: number | string | undefined;
     syncId?: string;
     nangoConnectionId?: number;
     environmentId?: number;
@@ -427,26 +427,21 @@ export class NangoAction {
 
             const proxyConfig = this.proxyConfig(config);
 
-            const { response, activityLogs: activityLogs } = await proxyService.route(proxyConfig, {
-                existingActivityLogId: this.activityLogId as number,
+            const { response, logs } = await proxyService.route(proxyConfig, {
+                existingActivityLogId: this.activityLogId as string,
                 connection,
                 provider: this.provider as string
             });
 
-            if (activityLogs) {
-                // Save buffered logs
-                for (const log of activityLogs) {
+            // We batch save, since we have buffered the createdAt it shouldn't impact order
+            await Promise.all(
+                logs.map(async (log) => {
                     if (log.level === 'debug') {
-                        continue;
+                        return;
                     }
-
-                    if (!this.dryRun) {
-                        await this.sendLogToPersist(log.content, { level: log.level, timestamp: log.timestamp });
-                    } else {
-                        logger[log.level in logger ? log.level : 'debug'](log.content);
-                    }
-                }
-            }
+                    await this.sendLogToPersist(log.message, { level: log.level, timestamp: new Date(log.createdAt).getTime() });
+                })
+            );
 
             if (response instanceof Error) {
                 throw response;
