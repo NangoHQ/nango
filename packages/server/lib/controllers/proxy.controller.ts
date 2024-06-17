@@ -118,7 +118,7 @@ class ProxyController {
 
             const { success, error, response: proxyConfig, logs } = proxyService.configure(externalConfig, internalConfig);
 
-            // We can batch save since we have buffered the createdAt (messages might be out of order in the term)
+            // We batch save, since we have buffered the createdAt it shouldn't impact order
             await Promise.all(
                 logs.map(async (log) => {
                     await logCtx!.log({ type: 'log', ...log });
@@ -333,7 +333,7 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, config, logs) }
             );
 
-            // We can batch save since we have buffered the createdAt (messages might be out of order in the term)
+            // We batch save, since we have buffered the createdAt it shouldn't impact order
             await Promise.all(
                 logs.map(async (log) => {
                     await logCtx.log({ type: 'log', ...log });
