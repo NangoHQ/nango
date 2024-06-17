@@ -6,7 +6,7 @@ import { externalWebhookService } from '@nangohq/shared';
 
 const validation = z
     .object({
-        url: z.string().url()
+        url: z.string().url().or(z.literal(''))
     })
     .strict();
 
