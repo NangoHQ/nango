@@ -430,6 +430,17 @@ clickup:
     proxy:
         base_url: https://api.clickup.com
     docs: https://docs.nango.dev/integrations/all/clickup
+cloudentity:
+    auth_mode: OAUTH2_CC
+    categories:
+        - other
+    token_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}/oauth2/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}
+    docs: https://docs.nango.dev/integrations/all/cloudentity
 close:
     categories:
         - crm
@@ -1414,8 +1425,8 @@ marketo:
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.endpointURL}
-    authorization_url: https://${connectionConfig.identityURL}/oauth/token
-    authorization_params:
+    token_url: https://${connectionConfig.identityURL}/oauth/token
+    token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
 microsoft:
@@ -1618,6 +1629,17 @@ one-note:
         - productivity
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/one-note
+ory:
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://${connectionConfig.projectID}.projects.oryapis.com
+    token_url: https://${connectionConfig.projectID}.projects.oryapis.com/oauth2/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    docs: https://docs.nango.dev/integrations/all/ory
 osu:
     categories:
         - gaming
@@ -1753,7 +1775,8 @@ personio:
         headers:
             x-personio-partner-id: ${connectionConfig.partnerId}
             x-personio-app-id: ${connectionConfig.appId}
-    authorization_url: https://api.personio.de/v1/auth
+    token_url: https://api.personio.de/v1/auth
+    body_format: json
     docs: https://docs.nango.dev/integrations/all/personio
 personio-recruiting:
     categories:
@@ -1780,9 +1803,9 @@ pingboard:
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://app.pingboard.com/api/v2
-    authorization_url: https://app.pingboard.com/oauth/token
+    token_url: https://app.pingboard.com/oauth/token
     scope_separator: ' '
-    authorization_params:
+    token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/pingboard
 pinterest:
@@ -2196,6 +2219,18 @@ spotify:
     proxy:
         base_url: https://api.spotify.com
     docs: https://docs.nango.dev/integrations/all/spotify
+spotify-oauth2-cc:
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://accounts.spotify.com/api/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.spotify.com
+    docs: https://docs.nango.dev/integrations/all/spotify
 squarespace:
     categories:
         - dev-tools
@@ -2529,6 +2564,19 @@ twitter-v2:
         grant_type: refresh_token
     default_scopes:
         - offline.access
+    proxy:
+        base_url: https://api.twitter.com
+    docs: https://docs.nango.dev/integrations/all/twitter
+twitter-oauth2-cc:
+    categories:
+        - marketing
+        - social
+    auth_mode: OAUTH2_CC
+    token_url: https://api.twitter.com/oauth2/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
     proxy:
         base_url: https://api.twitter.com
     docs: https://docs.nango.dev/integrations/all/twitter
