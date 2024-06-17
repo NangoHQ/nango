@@ -8,35 +8,14 @@ import url from 'url';
 import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
-import type {
-    ActivityLogMessage,
-    HTTP_VERB,
-    LogLevel,
-    LogAction,
-    UserProvidedProxyConfiguration,
-    InternalProxyConfiguration,
-    ApplicationConstructedProxyConfiguration
-} from '@nangohq/shared';
-import {
-    NangoError,
-    updateProvider as updateProviderActivityLog,
-    updateEndpoint as updateEndpointActivityLog,
-    createActivityLog,
-    createActivityLogMessageAndEnd,
-    createActivityLogMessage,
-    updateSuccess as updateSuccessActivityLog,
-    LogActionEnum,
-    errorManager,
-    ErrorSourceEnum,
-    proxyService,
-    connectionService,
-    configService
-} from '@nangohq/shared';
+import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration } from '@nangohq/shared';
+import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService } from '@nangohq/shared';
 import { metrics, getLogger, axiosInstance as axios } from '@nangohq/utils';
-import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
+import type { LogsBuffer } from '@nangohq/types';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -66,30 +45,10 @@ class ProxyController {
             const retryOn = req.get('Retry-On') ? (req.get('Retry-On') as string).split(',').map(Number) : null;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
 
-            const logAction: LogAction = isSync ? LogActionEnum.SYNC : LogActionEnum.PROXY;
-
             if (!isSync) {
                 metrics.increment(metrics.Types.PROXY, 1, { accountId: account.id });
             }
 
-            const log = {
-                level: 'debug' as LogLevel,
-                success: false,
-                action: logAction,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                method: req.method as HTTP_VERB,
-                connection_id: connectionId,
-                provider_config_key: providerConfigKey,
-                environment_id: environment.id
-            };
-
-            let activityLogId: number | null = null;
-
-            if (!isDryRun) {
-                activityLogId = existingActivityLogId ? Number(existingActivityLogId) : await createActivityLog(log);
-            }
             logCtx = existingActivityLogId
                 ? await logContextGetter.get({ id: String(existingActivityLogId) })
                 : await logContextGetter.create({ operation: { type: 'proxy' }, message: 'Proxy call' }, { account, environment }, { dryRun: isDryRun });
@@ -138,70 +97,41 @@ class ProxyController {
             const providerConfig = await configService.getProviderConfig(providerConfigKey, environment.id);
 
             if (!providerConfig) {
-                if (activityLogId) {
-                    await createActivityLogMessageAndEnd({
-                        level: 'error',
-                        environment_id: environment.id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: 'Provider configuration not found'
-                    });
-                    await logCtx.error('Provider configuration not found');
-                    await logCtx.failed();
-                }
+                await logCtx.error('Provider configuration not found');
+                await logCtx.failed();
 
                 throw new NangoError('unknown_provider_config');
             }
-
-            if (activityLogId) {
-                await updateProviderActivityLog(activityLogId, providerConfig.provider);
-                await logCtx.enrichOperation({
-                    integrationId: providerConfig.id!,
-                    integrationName: providerConfig.unique_key,
-                    providerName: providerConfig.provider,
-                    connectionId: connection.id!,
-                    connectionName: connection.connection_id
-                });
-            }
+            await logCtx.enrichOperation({
+                integrationId: providerConfig.id!,
+                integrationName: providerConfig.unique_key,
+                providerName: providerConfig.provider,
+                connectionId: connection.id!,
+                connectionName: connection.connection_id
+            });
 
             const internalConfig: InternalProxyConfiguration = {
-                existingActivityLogId: activityLogId,
+                existingActivityLogId: logCtx.id,
                 connection,
                 provider: providerConfig.provider
             };
 
-            const { success, error, response: proxyConfig, activityLogs } = proxyService.configure(externalConfig, internalConfig);
-            if (activityLogId) {
-                await updateEndpointActivityLog(activityLogId, externalConfig.endpoint);
-                for (const log of activityLogs) {
-                    switch (log.level) {
-                        case 'error':
-                            await createActivityLogMessageAndEnd(log);
-                            await logCtx.error(log.content);
-                            break;
-                        default:
-                            await createActivityLogMessage(log);
-                            await logCtx.info(log.content);
-                            break;
-                    }
-                }
-            }
+            const { success, error, response: proxyConfig, logs } = proxyService.configure(externalConfig, internalConfig);
+
+            // We can batch save since we have buffered the createdAt (messages might be out of order in the term)
+            await Promise.all(
+                logs.map(async (log) => {
+                    await logCtx!.log({ type: 'log', ...log });
+                })
+            );
+
             if (!success || !proxyConfig || error) {
                 errorManager.errResFromNangoErr(res, error);
                 await logCtx.failed();
                 return;
             }
 
-            await this.sendToHttpMethod({
-                res,
-                method: method as HTTP_VERB,
-                configBody: proxyConfig,
-                activityLogId,
-                environment_id: environment.id,
-                isSync,
-                isDryRun,
-                logCtx
-            });
+            await this.sendToHttpMethod({ res, method: method as HTTP_VERB, configBody: proxyConfig, logCtx });
         } catch (err) {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
@@ -230,19 +160,11 @@ class ProxyController {
         res,
         method,
         configBody,
-        activityLogId,
-        environment_id,
-        isSync,
-        isDryRun,
         logCtx
     }: {
         res: Response;
         method: HTTP_VERB;
         configBody: ApplicationConstructedProxyConfiguration;
-        activityLogId: number | null;
-        environment_id: number;
-        isSync?: boolean | undefined;
-        isDryRun?: boolean | undefined;
         logCtx: LogContext;
     }) {
         const url = proxyService.constructUrl(configBody);
@@ -257,11 +179,7 @@ class ProxyController {
             method,
             url,
             config: configBody,
-            activityLogId,
-            environment_id,
             decompress,
-            isSync,
-            isDryRun,
             data: configBody.data,
             logCtx
         });
@@ -271,40 +189,17 @@ class ProxyController {
         res,
         responseStream,
         config,
-        activityLogId,
-        environment_id,
         url,
-        isSync = false,
-        isDryRun = false,
         logCtx
     }: {
         res: Response;
         responseStream: AxiosResponse;
         config: ApplicationConstructedProxyConfiguration;
-        activityLogId: number | null;
-        environment_id: number;
         url: string;
-        isSync?: boolean | undefined;
-        isDryRun?: boolean | undefined;
         logCtx: LogContext;
     }) {
-        if (!isDryRun && activityLogId) {
-            if (!isSync) {
-                await updateSuccessActivityLog(activityLogId, true);
-            }
-            const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `${config.method.toUpperCase()} request to ${url} was successful`,
-                params: {
-                    headers: JSON.stringify(safeHeaders)
-                }
-            });
-            await logCtx.info(`${config.method.toUpperCase()} request to ${url} was successful`, { headers: JSON.stringify(safeHeaders) });
-        }
+        const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
+        await logCtx.info(`${config.method.toUpperCase()} request to ${url} was successful`, { headers: safeHeaders });
 
         const contentType = responseStream.headers['content-type'];
         const isJsonResponse = contentType && contentType.includes('application/json');
@@ -350,15 +245,7 @@ class ProxyController {
         });
     }
 
-    private async handleErrorResponse(
-        res: Response,
-        e: unknown,
-        url: string,
-        config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number | null,
-        environment_id: number,
-        logCtx: LogContext
-    ) {
+    private async handleErrorResponse(res: Response, e: unknown, url: string, config: ApplicationConstructedProxyConfiguration, logCtx: LogContext) {
         const error = e as AxiosError;
 
         if (!error.response?.data && error.toJSON) {
@@ -372,20 +259,8 @@ class ProxyController {
 
             const errorObject = { message, stack, code, status, url, method };
 
-            if (activityLogId) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `${method.toUpperCase()} request to ${url} failed`,
-                    params: errorObject
-                });
-                await logCtx.error(`${method.toUpperCase()} request to ${url} failed`, errorObject);
-                await logCtx.failed();
-            } else {
-                console.error(`Error: ${method.toUpperCase()} request to ${url} failed with the following params: ${JSON.stringify(errorObject)}`);
-            }
+            await logCtx.error(`${method.toUpperCase()} request to ${url} failed`, { error });
+            await logCtx.failed();
 
             const responseStatus = error.response?.status || 500;
             const responseHeaders = error.response?.headers || {};
@@ -413,13 +288,11 @@ class ProxyController {
         if (errorData) {
             errorData.pipe(stringify).pipe(res);
             stringify.on('data', (data) => {
-                void this.reportError(error, url, config, activityLogId, environment_id, data, logCtx);
+                void this.reportError(error, url, config, data, logCtx);
             });
         } else {
-            if (activityLogId) {
-                await logCtx.error('Unknown error');
-                await logCtx.failed();
-            }
+            await logCtx.error('Unknown error');
+            await logCtx.failed();
         }
     }
 
@@ -428,11 +301,7 @@ class ProxyController {
         method,
         url,
         config,
-        activityLogId,
-        environment_id,
         decompress,
-        isSync,
-        isDryRun,
         data,
         logCtx
     }: {
@@ -440,16 +309,12 @@ class ProxyController {
         method: HTTP_VERB;
         url: string;
         config: ApplicationConstructedProxyConfiguration;
-        activityLogId: number | null;
-        environment_id: number;
         decompress: boolean;
-        isSync?: boolean | undefined;
-        isDryRun?: boolean | undefined;
         data?: unknown;
         logCtx: LogContext;
     }) {
         try {
-            const activityLogs: ActivityLogMessage[] = [];
+            const logs: LogsBuffer[] = [];
             const headers = proxyService.constructHeaders(config);
             const requestConfig: AxiosRequestConfig = {
                 method,
@@ -465,65 +330,32 @@ class ProxyController {
                 () => {
                     return axios(requestConfig);
                 },
-                { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, activityLogId, environment_id, config, activityLogs) }
+                { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, config, logs) }
             );
+
+            // We can batch save since we have buffered the createdAt (messages might be out of order in the term)
             await Promise.all(
-                activityLogs.map(async (msg) => {
-                    await createActivityLogMessage(msg);
-                    await logCtx.log({
-                        type: 'log',
-                        level: oldLevelToNewLevel[msg.level],
-                        message: msg.content,
-                        createdAt: new Date(msg.timestamp).toISOString()
-                    });
+                logs.map(async (log) => {
+                    await logCtx.log({ type: 'log', ...log });
                 })
             );
 
-            await this.handleResponse({ res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun, logCtx });
+            await this.handleResponse({ res, responseStream, config, url, logCtx });
         } catch (error) {
-            await this.handleErrorResponse(res, error, url, config, activityLogId, environment_id, logCtx);
+            await this.handleErrorResponse(res, error, url, config, logCtx);
         }
     }
 
-    private async reportError(
-        error: AxiosError,
-        url: string,
-        config: ApplicationConstructedProxyConfiguration,
-        activityLogId: number | null,
-        environment_id: number,
-        errorMessage: string,
-        logCtx: LogContext | undefined
-    ) {
-        if (activityLogId) {
-            const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: JSON.stringify({
-                    nangoComment: `The provider responded back with a ${error.response?.status} to the url: ${url}`,
-                    providerResponse: errorMessage.toString()
-                }),
-                params: {
-                    requestHeaders: JSON.stringify(safeHeaders, null, 2),
-                    responseHeaders: JSON.stringify(error.response?.headers, null, 2)
-                }
-            });
-            await logCtx?.error('The provider responded back with an error code', {
-                code: error.response?.status,
-                url,
-                error: errorMessage,
-                requestHeaders: safeHeaders,
-                responseHeaders: error.response?.headers
-            });
-            await logCtx?.failed();
-        } else {
-            const content = `The provider responded back with a ${error.response?.status} and the message ${errorMessage} to the url: ${url}.${
-                config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-            }`;
-            console.error(content);
-        }
+    private async reportError(error: AxiosError, url: string, config: ApplicationConstructedProxyConfiguration, errorMessage: string, logCtx: LogContext) {
+        const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
+        await logCtx.error('The provider responded back with an error code', {
+            code: error.response?.status,
+            url,
+            error: errorMessage,
+            requestHeaders: safeHeaders,
+            responseHeaders: error.response?.headers
+        });
+        await logCtx.failed();
     }
 }
 

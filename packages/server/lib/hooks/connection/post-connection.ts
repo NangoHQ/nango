@@ -68,6 +68,10 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     finalExternalConfig.data = data;
                 }
                 const { response } = await proxyService.route(finalExternalConfig, internalConfig);
+
+                if (response instanceof Error) {
+                    throw response;
+                }
                 return response;
             },
             updateConnectionConfig: (connectionConfig: ConnectionConfig) => {
