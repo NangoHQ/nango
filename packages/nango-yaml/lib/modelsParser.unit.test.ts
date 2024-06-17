@@ -212,7 +212,7 @@ describe('parse', () => {
         });
 
         it('should handle union with Model, ts types and data types', () => {
-            const parser = new ModelsParser({ raw: { Test: { user: 'true | literal | GithubIssue | boolean[]' }, GithubIssue: { id: 'string' } } });
+            const parser = new ModelsParser({ raw: { Test: { user: 'true | literal | GithubIssue[] | boolean[]' }, GithubIssue: { id: 'string' } } });
             parser.parseAll();
 
             expect(parser.errors).toStrictEqual([]);
@@ -227,7 +227,7 @@ describe('parse', () => {
                             value: [
                                 { name: '0', value: true, tsType: true, array: false, optional: false },
                                 { name: '1', value: 'literal', array: false, optional: false },
-                                { name: '2', value: 'GithubIssue', model: true, optional: false },
+                                { name: '2', value: 'GithubIssue', model: true, optional: false, array: true },
                                 { name: '3', value: 'boolean', tsType: true, array: true, optional: false }
                             ],
                             union: true

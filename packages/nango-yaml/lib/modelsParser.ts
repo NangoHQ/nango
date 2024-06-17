@@ -184,7 +184,7 @@ export class ModelsParser {
             // Model name
             const isModel = this.ifModelParse({ name: valueClean, parent });
             if (isModel) {
-                parsed.push({ name, value, model: true, optional });
+                parsed.push({ name, value: valueClean, model: true, optional, array: isArray });
                 continue;
             }
 
