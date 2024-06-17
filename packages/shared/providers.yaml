@@ -1634,8 +1634,8 @@ ory:
         - other
     auth_mode: OAUTH2_CC
     proxy:
-        base_url: https://${connectionConfig.projectID}.projects.oryapis.com
-    token_url: https://${connectionConfig.projectID}.projects.oryapis.com/oauth2/token
+        base_url: https://${connectionConfig.projectSlug}.projects.oryapis.com
+    token_url: https://${connectionConfig.projectSlug}.projects.oryapis.com/oauth2/token
     scope_separator: ' '
     token_params:
         grant_type: client_credentials
