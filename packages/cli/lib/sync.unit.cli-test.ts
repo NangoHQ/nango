@@ -267,7 +267,7 @@ describe('generate function tests', () => {
         generate({ debug: false, fullPath: dir });
 
         expect(acc).toStrictEqual([
-            'demo-github-integration > sync > single-model-return > [output]',
+            'demo-github-integration > syncs > single-model-return > [output]',
             '  error Model "GithubIssue" doesn\'t have an id field. This is required to be able to uniquely identify the data record [model_missing_id]',
             '',
             'Your nango.yaml contains some errors'
