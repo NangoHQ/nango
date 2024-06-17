@@ -43,9 +43,14 @@ fs.readdirSync(rootDir).forEach((serviceDir) => {
 
                 for (const model in nangoData.models) {
                     if (nangoData.models[model].__extends) {
-                        const extendedModel = nangoData.models[model].__extends;
-                        const fullModel = nangoData.models[extendedModel];
-                        nangoData.models[model] = { ...fullModel };
+                        const extendedModel = nangoData.models[model].__extends.split(',');
+                        for (const modelToExtend of extendedModel) {
+                            const fullModel = nangoData.models[modelToExtend];
+                            nangoData.models[model] = { ...fullModel, ...nangoData.models[model] };
+                        }
+
+                        // remove extends key
+                        delete nangoData.models[model].__extends;
                     }
                 }
                 output.integrations[integrationName].models = {
