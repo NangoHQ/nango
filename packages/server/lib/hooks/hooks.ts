@@ -273,7 +273,7 @@ export const connectionTest = async (
             return Err(error);
         }
 
-        if (!response) {
+        if (!response || response instanceof Error) {
             const error = new NangoError('connection_test_failed');
             span.setTag('nango.error', response);
             return Err(error);
