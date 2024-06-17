@@ -173,7 +173,8 @@ describe('Flow service tests', () => {
             },
             actions: {
                 'create-contacts': {
-                    description: `Action to add a single record contact to an index`,
+                    description: `Action to add a single record contact to an index
+`,
                     output: 'AlgoliaContact',
                     input: 'AlgoliaCreateContactInput',
                     endpoint: 'POST /algolia/create-contacts'

@@ -121,7 +121,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
             const parsedSync: ParsedNangoSync = {
                 name: syncName,
                 type: 'sync',
-                description: sync.description || '',
+                description: (sync.description || '').trim(),
                 sync_type: sync.sync_type === 'incremental' ? 'incremental' : 'full',
                 usedModels: Array.from(modelNames),
                 runs: sync.runs,
@@ -174,7 +174,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
             const parsedAction: ParsedNangoAction = {
                 name: actionName,
                 type: 'action',
-                description: action.description || '',
+                description: (action.description || '').trim(),
                 scopes: this.getScopes(action),
                 input: modelInput?.name || null,
                 output: modelOutput && modelOutput.length > 0 ? modelOutput.map((m) => m.name) : null,

@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { buildModelsTS, fieldToTypescript, fieldsToTypescript } from './model.service.js';
 import type { NangoModel } from '@nangohq/types';
 
+function removeVersion(res: string) {
+    return res.replace(/(v[0-9.]+)/, 'vTest');
+}
 describe('buildModelTs', () => {
     it('should return empty (with sdk)', () => {
         const res = buildModelsTS({ parsed: { yamlVersion: 'v2', integrations: [], models: new Map() } });
-        expect(res).toMatchSnapshot('');
+        expect(removeVersion(res)).toMatchSnapshot('');
     });
 
     it('should output all interfaces', () => {
@@ -60,7 +63,7 @@ describe('buildModelTs', () => {
                 integrations: []
             }
         });
-        expect(res.split('\n').slice(0, 25)).toMatchSnapshot('');
+        expect(removeVersion(res.split('\n').slice(0, 25).join('\n'))).toMatchSnapshot('');
     });
 });
 

@@ -40,7 +40,7 @@ export class NangoYamlParserV1 extends NangoYamlParser {
                     actions.push({
                         type: 'action',
                         name: syncOrActionName,
-                        description: syncOrAction.description || '',
+                        description: (syncOrAction.description || '').trim(),
                         endpoint: null, // Endpoint was never allowed in v1
                         input: null, // Input was never allowed in v1
                         output: modelOutput && modelOutput.length > 0 ? modelOutput.map((m) => m.name) : null,

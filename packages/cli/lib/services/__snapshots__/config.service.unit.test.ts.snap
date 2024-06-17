@@ -212,8 +212,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
       "syncs": [
         {
           "auto_start": true,
-          "description": "Sync github issues continuously from public repos
-",
+          "description": "Sync github issues continuously from public repos",
           "endpoints": [
             {
               "GET": "/ticketing/tickets",
@@ -240,8 +239,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
         },
         {
           "auto_start": true,
-          "description": "Sync github issues continuously from public repos example two
-",
+          "description": "Sync github issues continuously from public repos example two",
           "endpoints": [
             {
               "GET": "/ticketing/tickets-two",

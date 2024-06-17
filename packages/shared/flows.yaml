@@ -179,6 +179,7 @@ integrations:
                 gid: string
                 resource_type: string
                 name: string
+                id: string
     ashby:
         syncs:
             candidates:

@@ -148,3 +148,4 @@ models:
         is_organization: boolean
     AsanaProject:
         __extends: BaseAsanaModel
+        id: string
