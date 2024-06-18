@@ -1,211 +1,161 @@
-import fs from 'fs';
-import yaml from 'js-yaml';
+import fs from 'node:fs';
+import path from 'node:path';
+import { resolve } from 'import-meta-resolve';
 import chalk from 'chalk';
-import type { NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
-import { isJsOrTsType, SyncConfigType, nangoConfigFile } from '@nangohq/shared';
-import { printDebug, getNangoRootPath } from '../utils.js';
-import { TYPES_FILE_NAME, NangoSyncTypesFileLocation } from '../constants.js';
-import configService from './config.service.js';
-import path from 'path';
+import type { NangoModel, NangoModelField, NangoYamlParsed } from '@nangohq/types';
+import type { ServiceResponse } from '@nangohq/shared';
+import { NANGO_VERSION } from '@nangohq/shared';
+import { printDebug } from '../utils.js';
+import { TYPES_FILE_NAME } from '../constants.js';
+import { load } from './config.service.js';
+import { shouldQuote } from '@nangohq/nango-yaml';
 
-class ModelService {
-    public build(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
-        const returnedModels = Object.keys(integrations).reduce<string[]>((acc, providerConfigKey) => {
-            const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
-            const syncNames = Object.keys(syncObject);
-            for (const syncName of syncNames) {
-                const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-                if (syncData.returns) {
-                    const syncReturns = Array.isArray(syncData.returns) ? syncData.returns : [syncData.returns];
-                    syncReturns.forEach((modelName) => {
-                        if (!acc.includes(modelName)) {
-                            acc.push(modelName);
-                        }
-                    });
-                }
-            }
-            return acc;
-        }, []);
+export type ModelsMap = Map<string, Record<string, any>>;
 
-        if (!models) {
-            return null;
-        }
-
-        const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
-            const fields = models[modelName] as NangoModel;
-
-            // we only care that models that are returned have an ID field
-            // if the model is not returned from a sync script then it must be a
-            // helper model that is used to build the returned models
-            const syncForModel = Object.keys(integrations).find((providerConfigKey) => {
-                const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
-                const syncNames = Object.keys(syncObject);
-                for (const syncName of syncNames) {
-                    const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-                    if (syncData.returns && syncData.type !== SyncConfigType.ACTION) {
-                        return syncData.returns.includes(modelName);
-                    }
-                }
-                return false;
-            });
-
-            if (returnedModels.includes(modelName) && !fields['id'] && syncForModel) {
-                throw new Error(`Model "${modelName}" doesn't have an id field. This is required to be able to uniquely identify the data record.`);
-            }
-
-            const interfaceName = `${modelName.charAt(0).toUpperCase()}${modelName.slice(1)}`;
-            let extendsClause = '';
-            const fieldDefinitions = Object.keys(fields)
-                .filter((fieldName: string) => {
-                    if (fieldName === '__extends') {
-                        const fieldModel = fields[fieldName] as unknown as string;
-                        const multipleExtends = fieldModel.split(',').map((e) => e.trim());
-                        extendsClause = ` extends ${multipleExtends.join(', ')}`;
-                        return false;
-                    }
-                    return true;
-                })
-                .map((fieldName: string) => {
-                    const fieldModel = fields[fieldName] as string | NangoModel;
-                    const fieldType = this.getFieldType(fieldModel, debug, modelName, models);
-                    if (fieldName === '__string') {
-                        const dynamicName = fields[fieldName] as unknown as string;
-                        return ` [key: string]: ${dynamicName};`;
-                    }
-                    return `  ${fieldName}: ${fieldType};`;
-                })
-                .join('\n');
-            const interfaceDefinition = `export interface ${interfaceName}${extendsClause} {\n${fieldDefinitions}\n}\n`;
-            return interfaceDefinition;
-        });
-
-        return interfaceDefinitions;
+/**
+ * Load nango.yaml and generate model.ts
+ */
+export function loadYamlAndGeneratedModel({ fullPath, debug = false }: { fullPath: string; debug?: boolean }): ServiceResponse<NangoYamlParsed> {
+    if (debug) {
+        printDebug(`Generating ${TYPES_FILE_NAME} file`);
     }
 
-    private getFieldType(rawField: string | NangoModel, debug = false, modelName: string, models: NangoModel): string {
-        if (typeof rawField === 'string') {
-            if (rawField.toString().endsWith(',') || rawField.toString().endsWith(';')) {
-                throw new Error(`Field "${rawField}" in the model ${modelName} ends with a comma or semicolon which is not allowed.`);
-            }
-
-            let field = rawField;
-            let hasNull = false;
-            let hasUndefined = false;
-            let tsType = '';
-            if (field.includes('null')) {
-                field = field.replace(/\s*\|\s*null\s*/g, '');
-                hasNull = true;
-            }
-
-            if (field === 'undefined') {
-                if (debug) {
-                    printDebug(`Field is defined undefined which isn't recommended.`);
-                }
-                return 'undefined';
-            }
-
-            if (field.includes('undefined')) {
-                field = field.replace(/\s*\|\s*undefined\s*/g, '');
-                hasUndefined = true;
-            }
-
-            switch (field) {
-                case 'boolean':
-                case 'bool':
-                    tsType = 'boolean';
-                    break;
-                case 'string':
-                    tsType = 'string';
-                    break;
-                case 'char':
-                    tsType = 'string';
-                    break;
-                case 'integer':
-                case 'int':
-                case 'number':
-                    tsType = 'number';
-                    break;
-                case 'date':
-                    tsType = 'Date';
-                    break;
-                default:
-                    tsType = field;
-            }
-
-            if (hasNull) {
-                tsType = `${tsType} | null`;
-            }
-
-            if (hasUndefined) {
-                tsType = `${tsType} | undefined`;
-            }
-
-            if (tsType.includes('|')) {
-                const types = tsType.split('|');
-                const hasStringLiteral = types.some((type) => !isJsOrTsType(type.trim()) && !Object.keys(models).includes(type.replace(/\[\]/g, '').trim()));
-
-                if (hasStringLiteral) {
-                    const enumValues = tsType
-                        .split('|')
-                        .map((e) => (isJsOrTsType(e.trim()) || Object.keys(models).includes(e.trim()) ? e.trim() : `'${e.trim()}'`))
-                        .join(' | ');
-                    tsType = enumValues;
-                }
-            }
-
-            return tsType;
-        } else {
-            try {
-                const nestedFields = Object.keys(rawField)
-                    .map((fieldName: string) => `  ${fieldName}: ${this.getFieldType(rawField[fieldName] as string | NangoModel, debug, modelName, models)};`)
-                    .join('\n');
-                return `{\n${nestedFields}\n}`;
-            } catch (_) {
-                // eslint-disable-next-line no-console
-                console.log(chalk.red(`Failed to parse field ${JSON.stringify(rawField)} so just returning it back as a string`));
-                return String(rawField);
-            }
+    const fp = path.resolve(fullPath, TYPES_FILE_NAME);
+    if (!fs.existsSync(fp)) {
+        if (debug) {
+            printDebug('First compilation');
+        }
+    } else {
+        if (debug) {
+            printDebug(`File already exists, replacing`);
         }
     }
 
-    public async createModelFile({ fullPath, notify = false }: { fullPath: string; notify?: boolean }) {
-        const configContents = fs.readFileSync(path.join(fullPath, nangoConfigFile), 'utf8');
-        const configData: NangoConfig = yaml.load(configContents) as NangoConfig;
-        const { models, integrations } = configData;
-        const interfaceDefinitions = modelService.build(models, integrations);
-        if (interfaceDefinitions) {
-            fs.writeFileSync(path.join(fullPath, TYPES_FILE_NAME), interfaceDefinitions.join('\n'));
-        }
-
-        if (!fs.existsSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`)) {
-            throw new Error(`Failed to load ${NangoSyncTypesFileLocation}`);
-        }
-
-        // insert NangoSync types to the bottom of the file
-        const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
-        if (!typesContent) {
-            throw new Error(`Empty ${NangoSyncTypesFileLocation}`);
-        }
-
-        fs.writeFileSync(path.join(fullPath, TYPES_FILE_NAME), typesContent, { flag: 'a' });
-
-        const { success, error, response: config } = await configService.load(fullPath);
-
-        if (!success || !config) {
-            // eslint-disable-next-line no-console
-            console.log(chalk.red(error?.message));
-            throw new Error('Failed to load config');
-        }
-
-        const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
-        fs.writeFileSync(path.join(fullPath, TYPES_FILE_NAME), flowConfig, { flag: 'a' });
-
-        if (notify) {
-            // eslint-disable-next-line no-console
-            console.log(chalk.green(`The ${nangoConfigFile} was updated. The interface file (${TYPES_FILE_NAME}) was updated to reflect the updated config`));
-        }
+    const { success, error, response: parsed } = load(fullPath, debug);
+    if (!success || !parsed) {
+        console.log(chalk.red(error?.message));
+        return { success: false, error: null, response: null };
     }
+
+    const modelTs = buildModelsTS({ parsed });
+    fs.writeFileSync(fp, modelTs);
+
+    if (debug) {
+        printDebug(`${TYPES_FILE_NAME} generated`);
+    }
+
+    return { success: true, error: null, response: parsed };
 }
 
-const modelService = new ModelService();
-export default modelService;
+/**
+ * Build models.ts
+ */
+export function buildModelsTS({ parsed }: { parsed: NangoYamlParsed }): string {
+    return `// ---------------------------
+// This file was generated by Nango (v${NANGO_VERSION})
+// It's recommended to version this file
+// https://nango.dev
+// ---------------------------
+
+// ------ Models
+${generateInterfaces({ parsed }).join('\n\n')}
+// ------ /Models
+
+// ------ SDK
+${generateSDKTypes()}
+// ------ /SDK
+
+// ------ Flows
+export const NangoFlows = ${JSON.stringify(parsed.integrations, null, 2)} as const;
+// ------ /Flows
+`;
+}
+
+export function generateInterfaces({ parsed }: { parsed: NangoYamlParsed }): string[] {
+    const interfaces: string[] = [];
+    for (const [, model] of parsed.models) {
+        interfaces.push(modelToTypescript({ model }));
+    }
+
+    return interfaces;
+}
+
+/**
+ * Transform a JSON model to its Typescript equivalent
+ */
+export function modelToTypescript({ model }: { model: NangoModel }) {
+    const output: string[] = [];
+    if (model.isAnon) {
+        output.push(`/** @deprecated It is recommended to use a Model */`);
+        output.push(`export type ${model.name} = ${fieldToTypescript({ field: model.fields[0]! })}`);
+    } else {
+        output.push(`export interface ${model.name} {`);
+        output.push(...fieldsToTypescript({ fields: model.fields }));
+        output.push(`};`);
+    }
+    return output.join('\n');
+}
+
+export function fieldsToTypescript({ fields }: { fields: NangoModelField[] }) {
+    const output: string[] = [];
+    const dynamic = fields.find((field) => field.dynamic);
+
+    // Insert dynamic key at the beginning
+    if (dynamic) {
+        if (!Array.isArray(dynamic.value)) {
+            output.push(`  [key: string]: ${fieldToTypescript({ field: dynamic })};`);
+        } else {
+            output.push(`  [key: string]: {${fieldsToTypescript({ fields: dynamic.value }).join('\n')}};`);
+        }
+    }
+
+    // Regular fields
+    for (const field of fields) {
+        if (field.dynamic) {
+            continue;
+        }
+
+        output.push(`  ${shouldQuote(field.name) ? `"${field.name}"` : field.name}${field.optional ? '?' : ''}: ${fieldToTypescript({ field: field })};`);
+    }
+
+    return output;
+}
+
+/**
+ * Transform a field definition to its typescript equivalent
+ */
+export function fieldToTypescript({ field }: { field: NangoModelField }): string | boolean | null | undefined | number {
+    if (Array.isArray(field.value)) {
+        if (field.union) {
+            return field.value.map((f) => fieldToTypescript({ field: f })).join(' | ');
+        }
+        if (field.array) {
+            return `(${field.value.map((f) => fieldToTypescript({ field: f })).join(' | ')})[]`;
+        }
+
+        return `{${fieldsToTypescript({ fields: field.value }).join('\n')}}`;
+    }
+    if (field.model || field.tsType) {
+        return `${field.value}${field.array ? '[]' : ''}`;
+    }
+    if (field.value === null) {
+        return 'null';
+    }
+    if (typeof field.value === 'string') {
+        return `'${field.value}${field.array ? '[]' : ''}'`;
+    }
+    return `${field.value}${field.array ? '[]' : ''}`;
+}
+
+/**
+ * Generate SDK types
+ */
+export function generateSDKTypes() {
+    const filePath = resolve('@nangohq/shared/dist/sdk/sync.d.ts', import.meta.url);
+    const typesContent = fs.readFileSync(filePath.replace('file://', ''), 'utf8');
+
+    return `
+${typesContent}
+
+`;
+}

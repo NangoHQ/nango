@@ -7,14 +7,14 @@ integrations:
                     Fetches a list of tickets from zendesk
                 output: ZendeskTicket
                 sync_type: full
-                endpoint: /zendesk/tickets
+                endpoint: GET /zendesk/tickets
             articles:
                 runs: every 6 hours
                 description: |
                     Fetches a list of articles in Help center from zendesk
                 output: ZendeskArticle
                 sync_type: full
-                endpoint: /zendesk/articles
+                endpoint: GET /zendesk/articles
 models:
     ZendeskArticle:
         title: string

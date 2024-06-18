@@ -34,7 +34,6 @@ import {
     getActionOrModelByEndpoint,
     getSyncsBySyncConfigId,
     updateFrequency,
-    getInterval,
     findSyncByConnections,
     setFrequency,
     getSyncAndActionConfigsBySyncNameAndConfigId,
@@ -50,6 +49,7 @@ import { isHosted } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
+import { getInterval } from '@nangohq/nango-yaml';
 
 const orchestrator = getOrchestrator();
 
@@ -956,12 +956,12 @@ class SyncController {
 
             let newFrequency: string | undefined;
             if (frequency) {
-                const { error, response } = getInterval(frequency, new Date());
-                if (error || !response) {
+                const interval = getInterval(frequency, new Date());
+                if (interval instanceof Error) {
                     res.status(400).send({ message: 'frequency must have a valid format (https://github.com/vercel/ms)' });
                     return;
                 }
-                newFrequency = response.interval;
+                newFrequency = interval.interval;
             }
 
             const envId = res.locals['environment'].id;

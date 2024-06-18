@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import yaml from 'js-yaml';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import ejs from 'ejs';
@@ -9,13 +8,12 @@ import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
-import type { NangoConfig } from '@nangohq/shared';
-import { localFileService, nangoConfigFile, SyncConfigType } from '@nangohq/shared';
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, getPkgVersion, printDebug } from './utils.js';
-import configService from './services/config.service.js';
-import modelService from './services/model.service.js';
-import { NangoSyncTypesFileLocation, TYPES_FILE_NAME, exampleSyncName } from './constants.js';
+import { loadYamlAndGeneratedModel } from './services/model.service.js';
+import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
+import { getLayoutMode } from './utils/layoutMode.js';
+import { getProviderConfigurationFromPath, nangoConfigFile } from '@nangohq/nango-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,48 +29,22 @@ export const version = (debug: boolean) => {
     console.log(chalk.green('Nango CLI version:'), version);
 };
 
-export async function generate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
+export function generate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/sync.ejs'), 'utf8');
     const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/action.ejs'), 'utf8');
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
     const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
 
-    const configContents = fs.readFileSync(`${fullPath}/${nangoConfigFile}`, 'utf8');
-    const configData: NangoConfig = yaml.load(configContents) as NangoConfig;
-    const { models, integrations } = configData;
-
-    const interfaceDefinitions = modelService.build(models, integrations, debug);
-
-    if (interfaceDefinitions) {
-        fs.writeFileSync(`${fullPath}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
-    }
-
-    if (debug) {
-        printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
-    }
-
-    // insert NangoSync types to the bottom of the file
-    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
-    fs.writeFileSync(`${fullPath}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
-
-    const { success, error, response: config } = await configService.load(fullPath, debug);
-
-    if (!success || !config) {
-        console.log(chalk.red(error?.message));
+    const res = loadYamlAndGeneratedModel({ fullPath, debug });
+    if (!res.success) {
         return;
     }
 
-    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
-    fs.writeFileSync(`${fullPath}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
-
-    if (debug) {
-        printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
-    }
-
+    const parsed = res.response!;
     const allSyncNames: Record<string, boolean> = {};
 
-    for (const standardConfig of config) {
-        const { syncs, actions, postConnectionScripts, providerConfigKey } = standardConfig;
+    for (const integration of parsed.integrations) {
+        const { syncs, actions, postConnectionScripts, providerConfigKey } = integration;
 
         if (postConnectionScripts) {
             const type = 'post-connection-script';
@@ -97,9 +69,9 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
         }
 
         for (const flow of [...syncs, ...actions]) {
-            const { name, type, returns: models, layout_mode } = flow;
-            let { input } = flow;
-            const uniqueName = layout_mode === 'root' ? name : `${providerConfigKey}-${name}`;
+            const { name, type, output, input } = flow;
+            const layoutMode = getLayoutMode({ fullPath, providerConfigKey, scriptName: name, type });
+            const uniqueName = layoutMode === 'root' ? name : `${providerConfigKey}-${name}`;
 
             if (allSyncNames[uniqueName] === undefined) {
                 // a sync and an action within the same provider cannot have the same name
@@ -109,8 +81,15 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
                 process.exit(1);
             }
 
+            if (fs.existsSync(`${fullPath}/${name}.ts`) || fs.existsSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`)) {
+                if (debug) {
+                    printDebug(`${name}.ts file already exists, so will not overwrite it.`);
+                }
+                continue;
+            }
+
             if (debug) {
-                printDebug(`Generating ${name} integration`);
+                printDebug(`Generating ${name} integration in layout mode ${layoutMode}`);
             }
 
             const flowNameCamel = name
@@ -120,62 +99,33 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
 
             let ejsTemplateContents = '';
 
-            if (name === exampleSyncName && type === SyncConfigType.SYNC) {
+            if (name === exampleSyncName && type === 'sync') {
                 ejsTemplateContents = githubExampleTemplateContents;
             } else {
-                ejsTemplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
+                ejsTemplateContents = type === 'sync' ? syncTemplateContents : actionTemplateContents;
             }
 
-            let interfaceNames: string | string[] = [];
-            let mappings: { name: string; type: string } | { name: string; type: string }[] = [];
-
-            if (typeof models === 'string') {
-                const formattedName = models;
-                interfaceNames = formattedName;
-                mappings = {
-                    name: models,
-                    type: formattedName
-                };
-            } else {
-                if (models && models.length !== 0) {
-                    interfaceNames = models;
-                    mappings = models.map((model) => ({
-                        name: model,
-                        type: model
-                    }));
-                }
-            }
-
-            if (input && Object.keys(input).length === 0) {
-                input = undefined;
-            }
-
+            const models = (output ? [...output, input] : [input]).filter(Boolean);
             const rendered = ejs.render(ejsTemplateContents, {
                 syncName: flowNameCamel,
-                interfacePath: layout_mode === 'root' ? './' : '../../',
+                interfacePath: layoutMode === 'root' ? './' : '../../',
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
-                interfaceNames,
-                mappings,
-                inputs: input?.name || input || '',
-                hasWebhook: type === SyncConfigType.SYNC && flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0
+                output: output && output.length > 0 ? output.join(' | ') : null,
+                input: input,
+                modelNames: models.join(', '),
+                hasWebhook: type === 'sync' && flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0
             });
 
             const stripped = rendered.replace(/^\s+/, '');
 
-            if (!fs.existsSync(`${fullPath}/${name}.ts`) && !fs.existsSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`)) {
-                if (layout_mode === 'root') {
-                    fs.writeFileSync(`${fullPath}/${name}.ts`, stripped);
-                } else {
-                    fs.mkdirSync(`${fullPath}/${providerConfigKey}/${type}s`, { recursive: true });
-                    fs.writeFileSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
-                }
-                if (debug) {
-                    printDebug(`Created ${name}.ts file`);
-                }
+            if (layoutMode === 'root') {
+                fs.writeFileSync(`${fullPath}/${name}.ts`, stripped);
             } else {
-                if (debug) {
-                    printDebug(`${name}.ts file already exists, so will not overwrite it.`);
-                }
+                fs.mkdirSync(`${fullPath}/${providerConfigKey}/${type}s`, { recursive: true });
+                fs.writeFileSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
+            }
+            if (debug) {
+                console.log(chalk.green(`Created ${name}.ts file`));
             }
         }
     }
@@ -186,7 +136,7 @@ export async function generate({ fullPath, debug = false }: { fullPath: string; 
  * If we're not currently in the nango-integrations directory create one
  * and create an example nango.yaml file
  */
-export async function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }) {
+export function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }) {
     const yamlData = fs.readFileSync(path.resolve(__dirname, `./templates/${nangoConfigFile}`), 'utf8');
 
     // if currently in the nango-integrations directory then don't create another one
@@ -249,20 +199,21 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
         }
     }
 
-    await generate({ debug, fullPath });
+    generate({ debug, fullPath });
 }
 
-export async function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
+export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
-    const { success, error, response: config } = await configService.load(fullPath);
-
-    if (!success || !config) {
-        console.log(chalk.red(error?.message));
+    const res = loadYamlAndGeneratedModel({ fullPath, debug });
+    if (!res.success) {
+        console.log(chalk.red(res.error?.message));
+        if (res.error?.payload) {
+            console.log(res.error.payload);
+        }
         return;
     }
 
-    const modelNames = configService.getModelNames(config);
-
+    const parsed = res.response!;
     const watchPath = ['./**/*.ts', `./${nangoConfigFile}`];
 
     if (debug) {
@@ -286,25 +237,18 @@ export async function tscWatch({ fullPath, debug = false }: { fullPath: string; 
         fs.mkdirSync(distDir);
     }
 
-    if (!fs.existsSync(path.join(fullPath, TYPES_FILE_NAME))) {
-        if (debug) {
-            printDebug(`Creating ${TYPES_FILE_NAME} file`);
-        }
-        await modelService.createModelFile({ fullPath });
-    }
-
     watcher.on('add', async (filePath: string) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, config, modelNames, debug });
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, parsed, debug });
     });
 
     watcher.on('unlink', (filePath: string) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        const providerConfiguration = localFileService.getProviderConfigurationFromPath(filePath, config);
+        const providerConfiguration = getProviderConfigurationFromPath({ filePath, parsed });
         const baseName = path.basename(filePath, '.ts');
         const fileName = providerConfiguration ? `${baseName}-${providerConfiguration.providerConfigKey}.js` : `${baseName}.js`;
         const jsFilePath = `./dist/${fileName}`;
@@ -321,7 +265,7 @@ export async function tscWatch({ fullPath, debug = false }: { fullPath: string; 
             await compileAllFiles({ fullPath, debug });
             return;
         }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, config, modelNames, debug });
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, parsed, debug });
     });
 }
 
@@ -333,7 +277,7 @@ export function configWatch({ fullPath, debug = false }: { fullPath: string; deb
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
     watcher.on('change', () => {
-        void modelService.createModelFile({ fullPath, notify: true });
+        loadYamlAndGeneratedModel({ fullPath, debug });
     });
 }
 

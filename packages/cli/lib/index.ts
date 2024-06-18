@@ -11,16 +11,16 @@ import figlet from 'figlet';
 import path from 'path';
 import * as dotenv from 'dotenv';
 
-import { nangoConfigFile } from '@nangohq/shared';
 import { init, generate, tscWatch, configWatch, dockerRun, version } from './cli.js';
 import deployService from './services/deploy.service.js';
 import { compileAllFiles } from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
 import dryrunService from './services/dryrun.service.js';
-import configService from './services/config.service.js';
 import { v1toV2Migration, directoryMigration } from './services/migration.service.js';
 import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
+import { load } from './services/config.service.js';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -89,7 +89,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts();
         const fullPath = process.cwd();
-        await init({ absolutePath: fullPath, debug });
+        init({ absolutePath: fullPath, debug });
 
         console.log(chalk.green(`Nango integrations initialized!`));
     });
@@ -99,7 +99,7 @@ program
     .description('Generate a new Nango integration')
     .action(async function (this: Command) {
         const { debug } = this.opts();
-        await generate({ fullPath: process.cwd(), debug });
+        generate({ fullPath: process.cwd(), debug });
     });
 
 program
@@ -143,7 +143,7 @@ program
             configWatch({ fullPath, debug });
         }
 
-        await tscWatch({ fullPath, debug });
+        tscWatch({ fullPath, debug });
     });
 
 program
@@ -223,8 +223,14 @@ program
     .action(async function (this: Command) {
         const { autoConfirm, debug } = this.opts();
         const fullPath = process.cwd();
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        await verificationService.filesMatchConfig({ fullPath });
+        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
+
+        const match = verificationService.filesMatchConfig({ fullPath });
+        if (!match) {
+            process.exitCode = 1;
+            return;
+        }
+
         const success = await compileAllFiles({ fullPath, debug });
         if (!success) {
             process.exitCode = 1;
@@ -263,14 +269,15 @@ program
         const { autoConfirm } = this.opts();
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm });
-        const { success, error, response: config } = await configService.load(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
+        const { success, error, response: parsed } = load(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
 
-        if (!success || !config) {
+        if (!success || !parsed) {
             console.log(chalk.red(error?.message));
             process.exitCode = 1;
+            return;
         }
 
-        console.log(chalk.green(JSON.stringify(config, null, 2)));
+        console.log(chalk.green(JSON.stringify({ ...parsed, models: Array.from(parsed.models.values()) }, null, 2)));
     });
 
 // admin only commands

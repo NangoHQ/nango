@@ -34,8 +34,8 @@
         "plugin:import/recommended"
     ],
     "rules": {
-        "no-console": 1, // Means warning
-        "prettier/prettier": 2,
+        "no-console": "warn",
+        "prettier/prettier": "error",
         "@typescript-eslint/no-inferrable-types": "off",
         // Previously warn but now errors
         "@typescript-eslint/no-non-null-assertion": "warn",

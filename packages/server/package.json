@@ -26,6 +26,7 @@
         "@nangohq/database": "file:../database",
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
+        "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/types": "file:../types",
@@ -56,7 +57,7 @@
         "redis": "4.6.13",
         "simple-oauth2": "^5.0.1",
         "uuid": "^9.0.0",
-        "ws": "^8.12.1",
+        "ws": "^8.17.1",
         "zod": "3.22.4"
     },
     "devDependencies": {

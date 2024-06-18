@@ -2,21 +2,23 @@ integrations:
     hubspot:
         syncs:
             contacts:
-                endpoint: /hubspot/contacts
+                endpoint: GET /hubspot/contacts
                 sync_type: incremental
+                runs: every day
                 output: Contact
         actions:
             create-contact:
-                endpoint: /hubspot/contact
+                endpoint: POST /hubspot/contact
     github:
         syncs:
             issues:
-                endpoint: /github/issues
+                endpoint: GET /github/issues
                 sync_type: incremental
+                runs: every day
                 output: Issue
         actions:
             create-issue:
-                endpoint: /github/issue
+                endpoint: POST /github/issue
 
 models:
     Contact:

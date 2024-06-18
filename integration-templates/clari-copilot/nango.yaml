@@ -7,7 +7,7 @@ integrations:
                 description: |
                     Fetches a list of calls from your account. For the first sync, it will go back to the past one year
                 sync_type: incremental
-                endpoint: /clari-copilot/call
+                endpoint: GET /clari-copilot/call
 models:
     ClariCopilotCall:
         id: string

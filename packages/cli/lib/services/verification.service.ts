@@ -3,8 +3,8 @@ import chalk from 'chalk';
 import promptly from 'promptly';
 import path from 'path';
 
-import { nangoConfigFile } from '@nangohq/shared';
-import configService from './config.service.js';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
+import { load } from './config.service.js';
 import { compileAllFiles, listFilesToCompile } from './compile.service.js';
 import { printDebug } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
@@ -46,7 +46,7 @@ class VerificationService {
                     printDebug(`Running init, generate, and tsc to create ${nangoConfigFile} file, generate the integration files and then compile them.`);
                 }
                 init({ absolutePath: fullPath, debug });
-                await generate({ fullPath, debug });
+                generate({ fullPath, debug });
                 await compileAllFiles({ fullPath, debug });
             } else {
                 console.log(chalk.red(`Exiting...`));
@@ -77,7 +77,7 @@ class VerificationService {
                     printDebug(`Creating the dist directory and generating the default integration files.`);
                 }
                 fs.mkdirSync(distDir);
-                await generate({ fullPath, debug });
+                generate({ fullPath, debug });
                 await compileAllFiles({ fullPath, debug });
             }
         } else {
@@ -100,19 +100,19 @@ class VerificationService {
         }
     }
 
-    public async filesMatchConfig({ fullPath }: { fullPath: string }): Promise<boolean> {
-        const { success, error, response: config } = await configService.load(fullPath);
+    public filesMatchConfig({ fullPath }: { fullPath: string }): boolean {
+        const { success, error, response: parsed } = load(fullPath);
 
-        if (!success || !config) {
+        if (!success || !parsed) {
             console.log(chalk.red(error?.message));
-            throw new Error('Failed to load config');
+            return false;
         }
 
-        const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
-        const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
+        const syncNames = parsed.integrations.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
+        const actionNames = parsed.integrations.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);
 
-        const tsFiles = listFilesToCompile({ fullPath, config });
+        const tsFiles = listFilesToCompile({ fullPath, parsed });
 
         const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
 

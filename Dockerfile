@@ -23,6 +23,7 @@ COPY packages/jobs/package.json ./packages/jobs/package.json
 COPY packages/kvstore/package.json ./packages/kvstore/package.json
 COPY packages/logs/package.json ./packages/logs/package.json
 COPY packages/node-client/package.json ./packages/node-client/package.json
+COPY packages/nango-yaml/package.json ./packages/nango-yaml/package.json
 COPY packages/orchestrator/package.json ./packages/orchestrator/package.json
 COPY packages/persist/package.json ./packages/persist/package.json
 COPY packages/records/package.json ./packages/records/package.json

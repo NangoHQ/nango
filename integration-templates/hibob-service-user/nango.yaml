@@ -7,7 +7,7 @@ integrations:
                     Fetches a list of all active employees
                 output: HibobEmployee
                 sync_type: full
-                endpoint: /hibob-service-user/hibob-employees
+                endpoint: GET /hibob-service-user/hibob-employees
 models:
     HibobEmployee:
         id: string
