@@ -576,6 +576,11 @@ export class NangoError extends Error {
                     'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/reference/limits).';
                 break;
 
+            case 'failed_to_parse_nango_yaml':
+                this.status = 400;
+                this.message = `Your nango.yaml contains some errors`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

@@ -7,35 +7,35 @@ integrations:
                     Fetches a list of service tickets from Hubspot
                 output: HubspotServiceTicket
                 sync_type: incremental
-                endpoint: /hubspot/service-tickets
+                endpoint: GET /hubspot/service-tickets
             contacts:
                 runs: every day
                 description: |
                     Fetches a list of contacts from Hubspot
                 output: HubspotContact
                 sync_type: full
-                endpoint: /hubspot/contacts
+                endpoint: GET /hubspot/contacts
             owners:
                 runs: every day
                 description: |
                     Fetches a list of owners from Hubspot
                 output: HubspotOwner
                 sync_type: full
-                endpoint: /hubspot/owner
+                endpoint: GET /hubspot/owner
             users:
                 runs: every day
                 description: |
                     Fetches a list of users from Hubspot
                 output: HubspotUser
                 sync_type: full
-                endpoint: /hubspot/user
+                endpoint: GET /hubspot/user
             knowledge-base:
                 runs: every day
                 description: |
                     Fetches a list of knowledge base from Hubspot
                 output: HubspotKnowledgeBase
                 sync_type: full
-                endpoint: /hubspot/knowledge-base
+                endpoint: GET /hubspot/knowledge-base
 models:
     HubspotServiceTicket:
         id: integer

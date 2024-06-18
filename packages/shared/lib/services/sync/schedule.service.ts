@@ -2,12 +2,13 @@ import db, { schema, dbNamespace } from '@nangohq/database';
 import type { Schedule as SyncSchedule, SyncCommand } from '../../models/Sync.js';
 import { ScheduleStatus, SyncCommandToScheduleStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
 import type { LogContext } from '@nangohq/logs';
 import { Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
+import { getInterval } from '@nangohq/nango-yaml';
+import { NangoError } from '../../utils/error.js';
 
 const TABLE = dbNamespace + 'sync_schedules';
 
@@ -100,13 +101,12 @@ export const updateSyncScheduleFrequency = async (
         return { success: true, error: null, response: false };
     }
 
-    const { success, error, response } = getInterval(interval, new Date());
-
-    if (!success || response === null) {
-        return { success: false, error, response: null };
+    const intervalParsing = getInterval(interval, new Date());
+    if (intervalParsing instanceof Error) {
+        return { success: false, error: new NangoError(intervalParsing.message), response: null };
     }
 
-    const { interval: frequency, offset } = response;
+    const { interval: frequency, offset } = intervalParsing;
 
     if (existingSchedule.frequency !== frequency) {
         await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id, deleted: false });

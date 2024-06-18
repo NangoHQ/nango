@@ -4,14 +4,13 @@ import * as tsNode from 'ts-node';
 import chalk from 'chalk';
 import path from 'path';
 import { build } from 'tsup';
-import { SyncConfigType, localFileService } from '@nangohq/shared';
-import type { StandardNangoConfig } from '@nangohq/shared';
+import { localFileService } from '@nangohq/shared';
 
-import configService from './config.service.js';
 import { getNangoRootPath, printDebug } from '../utils.js';
-import modelService from './model.service.js';
+import { loadYamlAndGeneratedModel } from './model.service.js';
 import parserService from './parser.service.js';
-import { TYPES_FILE_NAME } from '../constants.js';
+import type { NangoYamlParsed } from '@nangohq/types';
+import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto'];
 
@@ -38,13 +37,12 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    if (!fs.existsSync(path.join(fullPath, TYPES_FILE_NAME))) {
-        if (debug) {
-            printDebug(`Creating ${TYPES_FILE_NAME} file`);
-        }
+    const res = loadYamlAndGeneratedModel({ fullPath, debug });
+    if (!res.success) {
+        return false;
     }
-    await modelService.createModelFile({ fullPath });
 
+    const parsed = res.response!;
     const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
     const compiler = tsNode.create({
         skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
@@ -55,27 +53,18 @@ export async function compileAllFiles({
         printDebug(`Compiler options: ${JSON.stringify(compilerOptions, null, 2)}`);
     }
 
-    const { success: loadSuccess, error, response: config } = await configService.load(fullPath, debug);
-
-    if (!loadSuccess || !config) {
-        console.log(chalk.red(error?.message));
-        throw new Error('Error loading config');
-    }
-
     let scriptDirectory: string | undefined;
     if (scriptName && providerConfigKey && type) {
         scriptDirectory = localFileService.resolveTsFileLocation({ scriptName, providerConfigKey, type }).replace(fullPath, '');
         console.log(chalk.green(`Compiling ${scriptName}.ts in ${fullPath}${scriptDirectory}`));
     }
 
-    const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, config, debug });
+    const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, parsed, debug });
     let success = true;
-
-    const modelNames = configService.getModelNames(config);
 
     for (const file of integrationFiles) {
         try {
-            const completed = await compile({ fullPath, file, config, modelNames, compiler, debug });
+            const completed = await compile({ fullPath, file, parsed, compiler, debug });
             if (!completed) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
                     success = false;
@@ -94,16 +83,14 @@ export async function compileAllFiles({
 export async function compileSingleFile({
     fullPath,
     file,
-    config,
-    modelNames,
+    parsed,
     tsconfig,
     debug = false
 }: {
     fullPath: string;
     file: ListedFile;
     tsconfig: string;
-    config: StandardNangoConfig[];
-    modelNames: string[];
+    parsed: NangoYamlParsed;
     debug: boolean;
 }) {
     try {
@@ -115,8 +102,7 @@ export async function compileSingleFile({
         const result = await compile({
             fullPath,
             file,
-            config,
-            modelNames,
+            parsed,
             compiler,
             debug
         });
@@ -133,19 +119,19 @@ function compileImportedFile({
     fullPath,
     filePath,
     compiler,
-    type,
-    modelNames
+    parsed,
+    type
 }: {
     fullPath: string;
     filePath: string;
     compiler: tsNode.Service;
-    type: SyncConfigType | undefined;
-    modelNames: string[];
+    parsed: NangoYamlParsed;
+    type: 'sync' | 'action' | undefined;
 }): boolean {
     let finalResult = true;
     const importedFiles = parserService.getImportedFiles(filePath);
 
-    if (!parserService.callsAreUsedCorrectly(filePath, type, modelNames)) {
+    if (!parserService.callsAreUsedCorrectly(filePath, type, Array.from(parsed.models.keys()))) {
         return false;
     }
 
@@ -187,7 +173,7 @@ function compileImportedFile({
         compiler.compile(fs.readFileSync(importedFilePathWithExtension, 'utf8'), importedFilePathWithExtension);
         console.log(chalk.green(`Compiled "${importedFilePathWithExtension}" successfully`));
 
-        finalResult = compileImportedFile({ fullPath, filePath: importedFilePathWithExtension, compiler, type, modelNames });
+        finalResult = compileImportedFile({ fullPath, filePath: importedFilePathWithExtension, compiler, type, parsed });
     }
 
     return finalResult;
@@ -196,28 +182,26 @@ function compileImportedFile({
 async function compile({
     fullPath,
     file,
-    config,
-    modelNames,
+    parsed,
     compiler,
     debug = false
 }: {
     fullPath: string;
     file: ListedFile;
-    config: StandardNangoConfig[];
+    parsed: NangoYamlParsed;
     compiler: tsNode.Service;
-    modelNames: string[];
     debug: boolean;
 }): Promise<boolean> {
-    const providerConfiguration = localFileService.getProviderConfigurationFromPath(file.inputPath, config);
+    const providerConfiguration = getProviderConfigurationFromPath({ filePath: file.inputPath, parsed });
 
     if (!providerConfiguration) {
         return false;
     }
 
     const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === file.baseName);
-    const type = syncConfig?.type || SyncConfigType.SYNC;
+    const type = syncConfig?.type || 'sync';
 
-    const success = compileImportedFile({ fullPath, filePath: file.inputPath, compiler, type, modelNames });
+    const success = compileImportedFile({ fullPath, filePath: file.inputPath, compiler, type, parsed });
 
     if (!success) {
         return false;
@@ -276,13 +260,13 @@ export function listFilesToCompile({
     fullPath,
     scriptDirectory,
     scriptName,
-    config,
+    parsed,
     debug
 }: {
     fullPath: string;
     scriptDirectory?: string | undefined;
     scriptName?: string | undefined;
-    config: StandardNangoConfig[];
+    parsed: NangoYamlParsed;
     debug?: boolean;
 }): ListedFile[] {
     let files: string[] = [];
@@ -300,32 +284,30 @@ export function listFilesToCompile({
             printDebug(`No files found in the root: ${fullPath}`);
         }
 
-        if (config) {
-            config.forEach((providerConfig) => {
-                const syncPath = `${providerConfig.providerConfigKey}/syncs`;
-                const actionPath = `${providerConfig.providerConfigKey}/actions`;
-                const postConnectionPath = `${providerConfig.providerConfigKey}/post-connection-scripts`;
+        parsed.integrations.forEach((integration) => {
+            const syncPath = `${integration.providerConfigKey}/syncs`;
+            const actionPath = `${integration.providerConfigKey}/actions`;
+            const postConnectionPath = `${integration.providerConfigKey}/post-connection-scripts`;
 
-                files = [
-                    ...files,
-                    ...glob.sync(`${fullPath}/${syncPath}/*.ts`),
-                    ...glob.sync(`${fullPath}/${actionPath}/*.ts`),
-                    ...glob.sync(`${fullPath}/${postConnectionPath}/*.ts`)
-                ];
+            files = [
+                ...files,
+                ...glob.sync(`${fullPath}/${syncPath}/*.ts`),
+                ...glob.sync(`${fullPath}/${actionPath}/*.ts`),
+                ...glob.sync(`${fullPath}/${postConnectionPath}/*.ts`)
+            ];
 
-                if (debug) {
-                    if (glob.sync(`${fullPath}/${syncPath}/*.ts`).length > 0) {
-                        printDebug(`Found nested sync files in ${syncPath}`);
-                    }
-                    if (glob.sync(`${fullPath}/${actionPath}/*.ts`).length > 0) {
-                        printDebug(`Found nested action files in ${actionPath}`);
-                    }
-                    if (glob.sync(`${fullPath}/${postConnectionPath}/*.ts`).length > 0) {
-                        printDebug(`Found nested post connection script files in ${postConnectionPath}`);
-                    }
+            if (debug) {
+                if (glob.sync(`${fullPath}/${syncPath}/*.ts`).length > 0) {
+                    printDebug(`Found nested sync files in ${syncPath}`);
                 }
-            });
-        }
+                if (glob.sync(`${fullPath}/${actionPath}/*.ts`).length > 0) {
+                    printDebug(`Found nested action files in ${actionPath}`);
+                }
+                if (glob.sync(`${fullPath}/${postConnectionPath}/*.ts`).length > 0) {
+                    printDebug(`Found nested post connection script files in ${postConnectionPath}`);
+                }
+            }
+        });
     }
 
     return files.map((filePath) => {

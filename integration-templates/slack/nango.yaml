@@ -7,7 +7,7 @@ integrations:
                     Syncs information about all Users on the Slack workspace
                 output: SlackUser
                 sync_type: full
-                endpoint: /slack/users
+                endpoint: GET /slack/users
                 scopes:
                     - users:read
             channels:
@@ -21,7 +21,7 @@ integrations:
                     channels:join
                 output: SlackChannel
                 sync_type: full
-                endpoint: /slack/channels
+                endpoint: GET /slack/channels
                 scopes:
                     - channels:read
                     - channels:join
@@ -41,9 +41,9 @@ integrations:
                     - SlackMessageReaction
                 sync_type: incremental
                 endpoint:
-                    - /slack/messages
-                    - /slack/messages-reply
-                    - /slack/messages-reaction
+                    - GET /slack/messages
+                    - GET /slack/messages-reply
+                    - GET /slack/messages-reaction
                 scopes:
                     - channels:read
                     - channels:history

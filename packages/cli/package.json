@@ -17,15 +17,14 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "scripts": {
-        "postbuild": "npm run copy:types",
         "copy:files": "copyfiles -u 1 lib/templates/* dist",
-        "copy:types": "cp `node -p \"require.resolve('@nangohq/shared/dist/sdk/sync.d.ts')\"` './dist/nango-sync.d.ts'",
-        "prepublishOnly": "npm run copy:files && npm run copy:types"
+        "prepublishOnly": "npm run copy:files"
     },
     "dependencies": {
         "@babel/parser": "^7.22.5",
         "@babel/traverse": "^7.22.5",
         "@babel/types": "^7.22.5",
+        "@nangohq/nango-yaml": "^0.40.1",
         "@nangohq/shared": "^0.40.1",
         "@swc/core": "^1.5.25",
         "ajv": "^8.12.0",
@@ -41,6 +40,7 @@
         "ejs": "^3.1.10",
         "figlet": "^1.6.0",
         "glob": "^10.3.10",
+        "import-meta-resolve": "^4.1.0",
         "js-yaml": "^4.1.0",
         "memfs": "^3.5.1",
         "npm-package-arg": "^10.1.0",
@@ -68,6 +68,7 @@
         "@types/promptly": "^3.0.2",
         "babel-loader": "^9.1.2",
         "esbuild": "^0.17.19",
+        "strip-ansi": "7.1.0",
         "vitest": "^0.33.0",
         "webpack": "^5.85.1",
         "webpack-cli": "^5.1.3",

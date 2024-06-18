@@ -7,7 +7,7 @@ integrations:
                     Fetches a list of candidates from workable
                 output: WorkableCandidate
                 sync_type: incremental
-                endpoint: /workable/candidates
+                endpoint: GET /workable/candidates
                 scopes:
                     - r_candidates
             candidates-activities:
@@ -16,7 +16,7 @@ integrations:
                     Fetches a list of activity streams of the given candidate
                 output: WorkableCandidateActivity
                 sync_type: full
-                endpoint: /workable/candidates-activities
+                endpoint: GET /workable/candidates-activities
                 scopes:
                     - r_candidates
             candidates-offer:
@@ -25,7 +25,7 @@ integrations:
                     Fetches candidate's latest offer from workable
                 output: WorkableCandidateOffer
                 sync_type: full
-                endpoint: /workable/candidates-offer
+                endpoint: GET /workable/candidates-offer
                 scopes:
                     - r_candidates
             jobs:
@@ -34,7 +34,7 @@ integrations:
                     Fetches a list of jobs from workable
                 output: WorkableJob
                 sync_type: incremental
-                endpoint: /workable/jobs
+                endpoint: GET /workable/jobs
                 scopes:
                     - r_jobs
             jobs-candidates:
@@ -43,7 +43,7 @@ integrations:
                     Fetches a list of candidates for the specified job from workable
                 output: WorkableJobsCandidate
                 sync_type: full
-                endpoint: /workable/jobs-candidates
+                endpoint: GET /workable/jobs-candidates
                 scopes:
                     - r_jobs
             jobs-questions:
@@ -52,7 +52,7 @@ integrations:
                     Fetches a list of questions for the specified job from workable
                 output: WorkableJobQuestion
                 sync_type: full
-                endpoint: /workable/jobs-questions
+                endpoint: GET /workable/jobs-questions
                 scopes:
                     - r_jobs
             members:
@@ -61,7 +61,7 @@ integrations:
                     Fetches a list of account members from workable
                 output: WorkableMember
                 sync_type: full
-                endpoint: /workable/members
+                endpoint: GET /workable/members
                 scopes:
                     - r_jobs
         actions:

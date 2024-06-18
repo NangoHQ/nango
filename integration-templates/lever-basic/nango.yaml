@@ -24,7 +24,7 @@ integrations:
                     Fetches a list of all pipeline opportunities for contacts in Lever
                 output: LeverOpportunity
                 sync_type: incremental
-                endpoint: /lever/opportunities
+                endpoint: GET /lever/opportunities
                 scopes:
                     - opportunities:read:admin
             opportunities-applications:
@@ -33,7 +33,7 @@ integrations:
                     Fetches a list of all applications for a candidate in Lever
                 output: LeverOpportunityApplication
                 sync_type: full
-                endpoint: /lever/opportunities-applications
+                endpoint: GET /lever/opportunities-applications
                 scopes:
                     - applications:read:admin
             opportunities-feedbacks:
@@ -42,7 +42,7 @@ integrations:
                     Fetches a list of all feedback forms for a candidate for a specific Opportunity in lever
                 output: LeverOpportunityFeedback
                 sync_type: full
-                endpoint: /lever/opportunities-feedbacks
+                endpoint: GET /lever/opportunities-feedbacks
                 scopes:
                     - feedback:read:admin
             opportunities-interviews:
@@ -51,7 +51,7 @@ integrations:
                     Fetches a list of all interviewers for a specific Opportunity in lever
                 output: LeverOpportunityInterview
                 sync_type: full
-                endpoint: /lever/opportunities-interviews
+                endpoint: GET /lever/opportunities-interviews
                 scopes:
                     - interviews:read:admin
             opportunities-notes:
@@ -60,7 +60,7 @@ integrations:
                     Fetches a list of all notes for a specific candidate in lever
                 output: LeverOpportunityNote
                 sync_type: full
-                endpoint: /lever/opportunities-notes
+                endpoint: GET /lever/opportunities-notes
                 scopes:
                     - notes:read:admin
             opportunities-offers:
@@ -69,7 +69,7 @@ integrations:
                     Fetches a list of all offers for a specific candidate in lever.
                 output: LeverOpportunityOffer
                 sync_type: full
-                endpoint: /lever/opportunities-offers
+                endpoint: GET /lever/opportunities-offers
                 scopes:
                     - offers:write:admin
             postings:
@@ -78,7 +78,7 @@ integrations:
                     Fetches a list of all postings in Lever
                 output: LeverPosting
                 sync_type: full
-                endpoint: /lever/postings
+                endpoint: GET /lever/postings
                 scopes:
                     - postings:read:admin
             postings-apply:
@@ -87,7 +87,7 @@ integrations:
                     Fetches a list of all questions included in a posting’s application form in Lever
                 output: LeverPostingApply
                 sync_type: full
-                endpoint: /lever/postings-apply
+                endpoint: GET /lever/postings-apply
                 scopes:
                     - postings:read:admin
             stage:
@@ -96,7 +96,7 @@ integrations:
                     Fetches a list of all pipeline stages in Lever
                 output: LeverStage
                 sync_type: full
-                endpoint: /lever/stage
+                endpoint: GET /lever/stage
                 scopes:
                     - stages:read:admin
 models:

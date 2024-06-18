@@ -16,7 +16,7 @@ import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import environmentService from '../environment.service.js';
 import type { SlackService } from '../notification/slack.service.js';
 import { integrationFilesAreRemote, isCloud, getLogger, metrics, stringifyError } from '@nangohq/utils';
-import { getApiUrl, isJsOrTsType } from '../../utils/utils.js';
+import { getApiUrl } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
@@ -27,6 +27,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '../../sdk/sync.js';
 import type { UpsertSummary } from '@nangohq/records';
 import type { SendSyncParams } from '@nangohq/webhooks';
+import { isJsOrTsType } from '@nangohq/nango-yaml';
 
 const logger = getLogger('run.service');
 

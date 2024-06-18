@@ -1,0 +1,26 @@
+{
+    "name": "@nangohq/nango-yaml",
+    "version": "0.40.1",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "rimraf ./dist && tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/nango-yaml"
+    },
+    "dependencies": {
+        "ms": "3.0.0-canary.1",
+        "js-yaml": "^4.1.0"
+    },
+    "devDependencies": {
+        "@nangohq/types": "^0.40.1",
+        "vitest": "0.33.0"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

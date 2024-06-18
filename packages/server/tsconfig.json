@@ -18,6 +18,9 @@
             "path": "../shared"
         },
         {
+            "path": "../nango-yaml"
+        },
+        {
             "path": "../node-client"
         },
         {
@@ -33,5 +36,9 @@
             "path": "../orchestrator"
         }
     ],
-    "include": ["lib/**/*", "../shared/lib/express.d.ts", "../utils/lib/vitest.d.ts"]
+    "include": [
+        "lib/**/*",
+        "../shared/lib/express.d.ts",
+        "../utils/lib/vitest.d.ts"
+    ]
 }

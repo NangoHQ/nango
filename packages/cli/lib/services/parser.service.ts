@@ -4,7 +4,6 @@ import type { NodePath } from '@babel/traverse';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import parser from '@babel/parser';
-import { SyncConfigType } from '@nangohq/shared';
 
 class ParserService {
     public getImportedFiles(filePath: string): string[] {
@@ -23,7 +22,7 @@ class ParserService {
         return importedFiles;
     }
 
-    public callsAreUsedCorrectly(filePath: string, type = SyncConfigType.SYNC, modelNames: string[]): boolean {
+    public callsAreUsedCorrectly(filePath: string, type = 'sync', modelNames: string[]): boolean {
         let areAwaited = true;
         let usedCorrectly = true;
         let noReturnUsed = true;
@@ -82,7 +81,7 @@ class ParserService {
                             )
                         );
                     }
-                    if (type === SyncConfigType.ACTION) {
+                    if (type === 'action') {
                         if (disallowedActionCalls.includes(callee.property.name)) {
                             disallowedMessage(callee.property.name, lineNumber);
                             usedCorrectly = false;
@@ -174,7 +173,7 @@ class ParserService {
                 }
 
                 if (t.isFunctionDeclaration(declaration) || t.isFunctionExpression(declaration) || t.isArrowFunctionExpression(declaration)) {
-                    if (functionReturnsValue(declaration) && type === SyncConfigType.SYNC) {
+                    if (functionReturnsValue(declaration) && type === 'sync') {
                         const lineNumber = declaration.loc?.start.line || 'unknown';
                         console.log(
                             chalk.red(
