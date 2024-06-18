@@ -66,9 +66,9 @@ export abstract class NangoYamlParser {
             return;
         }
 
-        // check that every endpoint is unique across syncs and actions
-        const endpoints = new Set<string>();
         for (const integration of this.parsed.integrations) {
+            // check that every endpoint is unique across syncs and actions per integration
+            const endpoints = new Set<string>();
             // check that models are used only once per integration
             const usedModels = new Set<string>();
             const integrationName = integration.providerConfigKey;
