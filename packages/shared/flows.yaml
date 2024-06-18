@@ -174,11 +174,13 @@ integrations:
                 gid: string
                 resource_type: string
                 name: string
+                id: string
                 is_organization: boolean
             AsanaProject:
                 gid: string
                 resource_type: string
                 name: string
+                id: string
     ashby:
         syncs:
             candidates:
