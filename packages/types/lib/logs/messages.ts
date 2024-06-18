@@ -63,7 +63,7 @@ export type OperationList = OperationSync | OperationProxy | OperationAction | O
  * Full schema
  */
 export interface MessageRow {
-    id: string | null;
+    id: string;
 
     // State
     source: 'internal' | 'user';
@@ -132,7 +132,7 @@ export interface MessageRow {
  * What is required to insert a Message
  */
 export type OperationRowInsert = Merge<Partial<MessageRow>, { message: string; operation: OperationList }>;
-export type OperationRow = Merge<Required<OperationRowInsert>, { id: string; accountId: number; accountName: string }>;
+export type OperationRow = Merge<Required<OperationRowInsert>, { accountId: number; accountName: string }>;
 
 /**
  * What is required to insert a Message

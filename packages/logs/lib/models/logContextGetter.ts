@@ -53,7 +53,7 @@ export const logContextGetter = {
     /**
      * Return a Context without creating an operation
      */
-    async get({ id }: { id: string }, options?: Options): Promise<LogContext> {
+    async get({ id }: { id: OperationRow['id'] }, options?: Options): Promise<LogContext> {
         try {
             if (envs.NANGO_LOGS_ENABLED) {
                 const store = await getKVStore();
@@ -71,7 +71,7 @@ export const logContextGetter = {
         return new LogContext({ parentId: id, operation: { id: nanoid(), createdAt: new Date().toISOString() } as OperationRow }, { ...options, dryRun: true });
     },
 
-    getStateLess({ id }: { id: string }, options?: Options): LogContextStateless {
+    getStateLess({ id }: { id: OperationRow['id'] }, options?: Options): LogContextStateless {
         return new LogContextStateless({ parentId: id }, options);
     }
 };

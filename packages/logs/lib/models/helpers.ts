@@ -51,7 +51,7 @@ export function getFormattedOperation(
 export function getFormattedMessage(data: Partial<MessageRow>, { meta }: FormatMessageData = {}): MessageRow {
     const now = new Date();
     return {
-        id: data.id || data.operation ? nanoid() : null,
+        id: data.id || nanoid(), // This ID is for debugging purpose, not for insertion
 
         source: data.source || 'internal',
         level: data.level || 'info',
