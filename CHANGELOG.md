@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.2] - 2024-06-18
+
+### Added
+
+- *(integration-templates)* Add workflow and edit existing (#2337) by @khaliqgant
+- *(integrations)* Add support for checkr-partner (#2339) by @hassan254-prog
+- *(nango.yaml)* Dedicated package, stricter parsing, wider types support (#2303) by @bodinsamuel
+
+### Changed
+
+- One-off script to migrate undeleted schedules to orchestrator db (#2326) by @TBonnin
+- *(logs)* Remove beta (#2350) by @bodinsamuel
+- *(logs.v1)* Remove API, proxy (#2349) by @bodinsamuel
+
+### Fixed
+
+- *(webhooks)* [nan-1142] allow empty string for url (#2347) by @khaliqgant
+- *(yaml)* Handle extends properly (#2348) by @khaliqgant
+
 ## [v0.40.1] - 2024-06-17
 
 ### Added
@@ -1328,6 +1347,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.2]: https://github.com/NangoHQ/nango/compare/v0.40.1..v0.40.2
 [v0.40.1]: https://github.com/NangoHQ/nango/compare/v0.40.0..v0.40.1
 [v0.40.0]: https://github.com/NangoHQ/nango/compare/v0.39.33..v0.40.0
 [v0.39.33]: https://github.com/NangoHQ/nango/compare/v0.39.32..v0.39.33
