@@ -2,14 +2,14 @@ import promptly from 'promptly';
 import chalk from 'chalk';
 
 import type { NangoConnection } from '@nangohq/shared';
-import type { Metadata } from '@nangohq/types';
+import type { Metadata, ScriptFileType } from '@nangohq/types';
 import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
 import integrationService from './local-integration.service.js';
 import type { RecordsServiceInterface } from '@nangohq/shared/lib/services/sync/run.service.js';
-import { load } from './config.service.js';
+import { loadValidateParse } from './config.service.js';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -71,8 +71,8 @@ class DryRunService {
             return;
         }
 
-        const { success, error, response: parsed } = load(process.cwd(), debug);
-        if (!success || !parsed) {
+        const { success, error, response } = loadValidateParse(process.cwd(), debug);
+        if (!success || !response?.parsed) {
             console.log(chalk.red(error?.message));
             return;
         }
@@ -81,13 +81,13 @@ class DryRunService {
         let isPostConnectionScript = false;
 
         if (!providerConfigKey) {
-            providerConfigKey = parsed.integrations.find((integration) =>
+            providerConfigKey = response.parsed.integrations.find((integration) =>
                 [...integration.syncs, ...integration.actions].find((sync) => sync.name === syncName)
             )?.providerConfigKey;
 
             if (!providerConfigKey) {
                 providerConfigKey =
-                    parsed.integrations.find((integration) => {
+                    response.parsed.integrations.find((integration) => {
                         if (integration.postConnectionScripts && integration.postConnectionScripts.length > 0) {
                             return integration.postConnectionScripts.some((postConnectionScript) => postConnectionScript === syncName);
                         } else {
@@ -107,7 +107,7 @@ class DryRunService {
             }
         }
 
-        const foundConfig = parsed.integrations.find((integration) => {
+        const foundConfig = response.parsed.integrations.find((integration) => {
             const syncsArray = integration.syncs || [];
             const actionsArray = integration.actions || [];
 
@@ -165,14 +165,11 @@ class DryRunService {
             lastSyncDate = new Date(suppliedLastSyncDate);
         }
 
-        let type = 'sync';
-
+        let type: ScriptFileType = 'syncs';
         if (syncInfo?.type === SyncConfigType.ACTION) {
-            type = 'action';
-        }
-
-        if (isPostConnectionScript) {
-            type = 'post-connection-script';
+            type = 'actions';
+        } else if (isPostConnectionScript) {
+            type = 'post-connection-scripts';
         }
 
         const result = await compileAllFiles({ fullPath: process.cwd(), debug, scriptName: syncName, providerConfigKey, type });

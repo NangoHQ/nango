@@ -14,7 +14,7 @@ describe('parse', () => {
                 }
             }
         };
-        const parser = new NangoYamlParserV2({ raw: v2 });
+        const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
         parser.parse();
         expect(parser.errors).toStrictEqual([]);
         expect(parser.parsed).toStrictEqual<NangoYamlParsed>({
@@ -73,7 +73,7 @@ describe('parse', () => {
             models: {},
             integrations: { provider: { syncs: { top: { runs: 'every day', input: 'boolean', output: 'foobar', endpoint: 'GET /provider/top' } } } }
         };
-        const parser = new NangoYamlParserV2({ raw: v2 });
+        const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
         parser.parse();
         expect(parser.errors).toStrictEqual([
             new ParserErrorMissingId({ model: 'Anonymous_provider_sync_top_output', path: ['provider', 'syncs', 'top', '[output]'] })
@@ -129,7 +129,7 @@ describe('parse', () => {
                 provider: { actions: { getGithubIssue: { endpoint: 'GET /ticketing/tickets/{Found:id}' } } }
             }
         };
-        const parser = new NangoYamlParserV2({ raw: v2 });
+        const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
         parser.parse();
         expect(parser.errors).toStrictEqual([]);
         expect(parser.warnings).toStrictEqual([]);
@@ -146,7 +146,7 @@ describe('parse', () => {
                 provider: { actions: { getGithubIssue: { endpoint: 'GET /ticketing/tickets/{Missing:id}' } } }
             }
         };
-        const parser = new NangoYamlParserV2({ raw: v2 });
+        const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
         parser.parse();
         expect(parser.errors).toStrictEqual([new ParserErrorModelNotFound({ model: 'Missing', path: ['provider', 'syncs', 'getGithubIssue', '[endpoint]'] })]);
         expect(parser.warnings).toStrictEqual([]);

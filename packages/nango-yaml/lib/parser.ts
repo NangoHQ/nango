@@ -10,6 +10,7 @@ import {
 import type { ParserError } from './errors.js';
 
 export abstract class NangoYamlParser {
+    yaml: string;
     raw: NangoYaml;
     parsed: NangoYamlParsed | undefined;
     modelsParser: ModelsParser;
@@ -17,7 +18,8 @@ export abstract class NangoYamlParser {
     errors: ParserError[] = [];
     warnings: ParserError[] = [];
 
-    constructor({ raw }: { raw: NangoYaml }) {
+    constructor({ raw, yaml }: { raw: NangoYaml; yaml: string }) {
+        this.yaml = yaml;
         this.raw = raw;
         this.modelsParser = new ModelsParser({ raw: raw.models });
     }
@@ -110,6 +112,9 @@ export abstract class NangoYamlParser {
                 }
                 for (const endpointByVerb of sync.endpoints) {
                     for (const [verb, endpoint] of Object.entries(endpointByVerb)) {
+                        if (!endpoint) {
+                            continue;
+                        }
                         const str = `${verb} ${endpoint}`;
                         if (endpoints.has(str)) {
                             this.errors.push(new ParserErrorDuplicateEndpoint({ endpoint: str, path: [integrationName, 'syncs', sync.name, '[endpoints]'] }));
@@ -168,6 +173,9 @@ export abstract class NangoYamlParser {
                 }
                 if (action.endpoint) {
                     for (const [verb, endpoint] of Object.entries(action.endpoint)) {
+                        if (!endpoint) {
+                            continue;
+                        }
                         const str = `${verb} ${endpoint}`;
                         if (endpoints.has(str)) {
                             this.errors.push(

@@ -118,27 +118,6 @@ class LocalFileService {
         };
     }
 
-    public resolveTsFileLocation({ scriptName, providerConfigKey, type }: { scriptName: string; providerConfigKey: string; type: string }) {
-        const nestedPath = path.resolve(`./${providerConfigKey}/${type}s/${scriptName}.ts`);
-        if (fs.existsSync(nestedPath)) {
-            return fs.realpathSync(path.resolve(nestedPath, '../'));
-        }
-
-        return fs.realpathSync('./');
-    }
-
-    public getIntegrationTsFile(scriptName: string, providerConfigKey: string, type: string) {
-        try {
-            const realPath = this.resolveTsFileLocation({ scriptName, providerConfigKey, type });
-            const tsIntegrationFileContents = fs.readFileSync(`${realPath}/${scriptName}.ts`, 'utf8');
-
-            return tsIntegrationFileContents;
-        } catch (error) {
-            console.log(error);
-            return null;
-        }
-    }
-
     /*
      * Get Layout Mode
      * @desc determine if the layout mode is nested or root
@@ -181,21 +160,6 @@ class LocalFileService {
         }
 
         return 'nested';
-    }
-
-    public getNangoYamlFileContents(setIntegrationPath?: string | null) {
-        try {
-            const filePath = setIntegrationPath
-                ? `${setIntegrationPath}/${nangoConfigFile}`
-                : path.resolve(__dirname, `../nango-integrations/${nangoConfigFile}`);
-            const realPath = fs.realpathSync(filePath);
-            const nangoYamlFileContents = fs.readFileSync(realPath, 'utf8');
-
-            return nangoYamlFileContents;
-        } catch (error) {
-            console.log(error);
-            return null;
-        }
     }
 
     private getFullPathTsFile(integrationPath: string, scriptName: string, providerConfigKey: string, type: string): null | string {

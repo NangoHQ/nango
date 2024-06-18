@@ -5,19 +5,19 @@ import { exec } from 'child_process';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { printDebug, getNangoRootPath } from '../utils.js';
-import { load } from './config.service.js';
+import { loadValidateParse } from './config.service.js';
 
 export const v1toV2Migration = async (loadLocation: string): Promise<void> => {
     if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
         return;
     }
 
-    const { response: parsed, success } = load(loadLocation);
-    if (!success || !parsed) {
+    const { response, success } = loadValidateParse(loadLocation);
+    if (!success || !response?.parsed) {
         return;
     }
 
-    if (parsed.yamlVersion === 'v2') {
+    if (response.parsed.yamlVersion === 'v2') {
         console.log(chalk.blue(`nango.yaml is already at v2.`));
         return;
     }
@@ -76,17 +76,17 @@ async function updateModelImport(filePath: string, debug = false): Promise<void>
 }
 
 export const directoryMigration = async (loadLocation: string, debug?: boolean): Promise<void> => {
-    const { response: parsed, success } = load(loadLocation);
-    if (!success || !parsed) {
+    const { response, success } = loadValidateParse(loadLocation);
+    if (!success || !response?.parsed) {
         return;
     }
 
-    if (parsed.yamlVersion !== 'v2') {
+    if (response.parsed.yamlVersion !== 'v2') {
         console.log(chalk.red(`nango.yaml is not at v2. Nested directories are not supported in v1.`));
         return;
     }
 
-    for (const [providerConfigKey, integration] of Object.entries(parsed.integrations)) {
+    for (const [providerConfigKey, integration] of Object.entries(response.parsed.integrations)) {
         const integrationPath = `${loadLocation}/${providerConfigKey}`;
         await createDirectory(integrationPath, debug);
 

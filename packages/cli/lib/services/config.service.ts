@@ -4,9 +4,9 @@ import addErrors from 'ajv-errors';
 import chalk from 'chalk';
 
 import { getNangoRootPath, printDebug } from '../utils.js';
-import type { NangoYamlParsed } from '@nangohq/types';
 import type { ServiceResponse } from '@nangohq/shared';
 import { NangoError } from '@nangohq/shared';
+import type { NangoYamlParser } from '@nangohq/nango-yaml';
 import { determineVersion, loadNangoYaml } from '@nangohq/nango-yaml';
 
 export interface ValidationMessage {
@@ -16,7 +16,7 @@ export interface ValidationMessage {
     params?: Record<string, any> | undefined;
 }
 
-export function load(fullPath: string, debug = false): ServiceResponse<NangoYamlParsed> {
+export function loadValidateParse(fullPath: string, debug = false): ServiceResponse<NangoYamlParser> {
     if (debug) {
         printDebug(`Loading ${fullPath}`);
     }
@@ -49,7 +49,7 @@ export function load(fullPath: string, debug = false): ServiceResponse<NangoYaml
             });
         }
 
-        return { success: true, error: null, response: parser.parsed! };
+        return { success: true, error: null, response: parser };
     } catch {
         return { success: false, error: new NangoError('error_loading_nango_config'), response: null };
     }

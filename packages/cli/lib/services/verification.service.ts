@@ -4,7 +4,7 @@ import promptly from 'promptly';
 import path from 'path';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { load } from './config.service.js';
+import { loadValidateParse } from './config.service.js';
 import { compileAllFiles, listFilesToCompile } from './compile.service.js';
 import { printDebug } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
@@ -101,18 +101,18 @@ class VerificationService {
     }
 
     public filesMatchConfig({ fullPath }: { fullPath: string }): boolean {
-        const { success, error, response: parsed } = load(fullPath);
+        const { success, error, response } = loadValidateParse(fullPath);
 
-        if (!success || !parsed) {
+        if (!success || !response?.parsed) {
             console.log(chalk.red(error?.message));
             return false;
         }
 
-        const syncNames = parsed.integrations.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
-        const actionNames = parsed.integrations.map((provider) => provider.actions.map((action) => action.name)).flat();
+        const syncNames = response.parsed.integrations.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
+        const actionNames = response.parsed.integrations.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);
 
-        const tsFiles = listFilesToCompile({ fullPath, parsed });
+        const tsFiles = listFilesToCompile({ fullPath, parsed: response.parsed });
 
         const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
 
