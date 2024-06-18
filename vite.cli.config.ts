@@ -14,7 +14,6 @@ export default defineConfig({
             truncateThreshold: 10000
         },
         fileParallelism: false,
-        isolate: false,
         pool: 'forks'
     }
 });
