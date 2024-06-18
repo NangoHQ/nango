@@ -84,7 +84,13 @@ export type SyncRunConfig = {
 
     temporalContext?: Context;
 } & (
-    | { writeToDb: true; activityLogId: number; logCtx: LogContext; slackService: SlackService; sendSyncWebhook: (params: SendSyncParams) => Promise<void> }
+    | {
+          writeToDb: true;
+          activityLogId: string | number;
+          logCtx: LogContext;
+          slackService: SlackService;
+          sendSyncWebhook: (params: SendSyncParams) => Promise<void>;
+      }
     | { writeToDb: false }
 );
 
@@ -169,7 +175,7 @@ export default class SyncRun {
         this.writeToDb = config.writeToDb;
         if (config.writeToDb) {
             this.slackNotificationService = config.slackService;
-            this.activityLogId = config.activityLogId;
+            this.activityLogId = config.activityLogId as unknown as number;
             this.logCtx = config.logCtx;
             this.sendSyncWebhook = config.sendSyncWebhook;
         }
@@ -550,7 +556,7 @@ export default class SyncRun {
                         this.nangoConnection,
                         this.syncName,
                         this.syncType,
-                        this.activityLogId as number,
+                        this.activityLogId as unknown as string,
                         this.nangoConnection.environment_id,
                         this.provider as string
                     );
@@ -688,7 +694,7 @@ export default class SyncRun {
                     this.nangoConnection,
                     this.syncName,
                     this.determineExecutionType(),
-                    this.activityLogId,
+                    this.activityLogId as unknown as string,
                     this.nangoConnection.environment_id,
                     this.provider as string
                 );
@@ -778,7 +784,6 @@ export default class SyncRun {
                 success: true,
                 responseResults: results,
                 operation: this.syncType === 'INITIAL' ? 'INITIAL' : 'INCREMENTAL',
-                activityLogId: this.activityLogId,
                 logCtx: this.logCtx
             });
         }
@@ -872,7 +877,7 @@ export default class SyncRun {
                     this.nangoConnection,
                     this.syncName,
                     this.determineExecutionType(),
-                    this.activityLogId as number,
+                    this.activityLogId as unknown as string,
                     this.nangoConnection.environment_id,
                     this.provider as string
                 );
@@ -911,7 +916,6 @@ export default class SyncRun {
                 error,
                 now: syncStartDate,
                 operation: this.syncType === 'INITIAL' ? 'INITIAL' : 'INCREMENTAL',
-                activityLogId: this.activityLogId,
                 logCtx: this.logCtx
             });
         }

@@ -213,7 +213,6 @@ class AppAuthController {
                         operation: 'unknown'
                     },
                     session.provider,
-                    activityLogId,
                     logCtx
                 );
 
@@ -244,7 +243,6 @@ class AppAuthController {
                     },
                     session.provider,
                     logContextGetter,
-                    activityLogId,
                     undefined,
                     logCtx
                 );
@@ -306,7 +304,6 @@ class AppAuthController {
                     operation: 'unknown'
                 },
                 'unknown',
-                activityLogId,
                 logCtx
             );
 
