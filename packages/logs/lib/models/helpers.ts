@@ -1,5 +1,5 @@
 import { nanoid } from '@nangohq/utils';
-import type { MessageRow } from '@nangohq/types';
+import type { MessageRow, OperationRow, OperationRowInsert } from '@nangohq/types';
 import { z } from 'zod';
 import type { estypes } from '@elastic/elasticsearch';
 import { defaultOperationExpiration } from '../env.js';
@@ -16,25 +16,17 @@ export interface FormatMessageData {
     meta?: MessageRow['meta'];
 }
 
-export function getFormattedMessage(
-    data: Partial<MessageRow>,
+export function getFormattedOperation(
+    data: OperationRowInsert,
     { account, user, environment, integration, connection, syncConfig, meta }: FormatMessageData = {}
-): MessageRow {
-    const now = new Date();
+): OperationRow {
     return {
+        ...getFormattedMessage(data as unknown as MessageRow),
         id: data.id || nanoid(),
+        operation: data.operation,
 
-        source: data.source || 'internal',
-        level: data.level || 'info',
-        operation: data.operation || null,
-        type: data.type || 'log',
-        message: data.message || '',
-        title: data.title || null,
-        code: data.code || null,
-        state: data.state || 'waiting',
-
-        accountId: account?.id ?? data.accountId ?? null,
-        accountName: account?.name || data.accountName || null,
+        accountId: account?.id ?? data.accountId ?? -1,
+        accountName: account?.name || data.accountName || '',
 
         environmentId: environment?.id ?? data.environmentId ?? null,
         environmentName: environment?.name || data.environmentName || null,
@@ -50,8 +42,45 @@ export function getFormattedMessage(
         syncConfigName: syncConfig?.name || data.syncConfigName || null,
 
         jobId: data.jobId || null,
+        meta: meta || data.meta || null,
 
         userId: user?.id || data.userId || null,
+        parentId: null
+    };
+}
+export function getFormattedMessage(data: Partial<MessageRow>, { meta }: FormatMessageData = {}): MessageRow {
+    const now = new Date();
+    return {
+        id: data.id || nanoid(), // This ID is for debugging purpose, not for insertion
+
+        source: data.source || 'internal',
+        level: data.level || 'info',
+        operation: data.operation || null,
+        type: data.type || 'log',
+        message: data.message || '',
+        title: data.title || null,
+        code: data.code || null,
+        state: data.state || 'waiting',
+
+        accountId: null,
+        accountName: null,
+
+        environmentId: null,
+        environmentName: null,
+
+        integrationId: null,
+        integrationName: null,
+        providerName: null,
+
+        connectionId: null,
+        connectionName: null,
+
+        syncConfigId: null,
+        syncConfigName: null,
+
+        jobId: data.jobId || null,
+
+        userId: null,
         parentId: data.parentId || null,
 
         error: data.error || null,

@@ -34,14 +34,29 @@ export interface ListFilters {
 export const ResponseError = errors.ResponseError;
 
 /**
- * Create one message
+ * Create one operation
  */
-export async function createMessage(row: MessageRow): Promise<{ index: string }> {
-    const res = await client.create<MessageRow>({
+export async function createOperation(row: OperationRow): Promise<{ index: string }> {
+    const res = await client.create<OperationRow>({
         index: indexMessages.index,
         id: row.id,
         document: row,
-        refresh: row.operation ? true : isTest,
+        refresh: true,
+        pipeline: `daily.${indexMessages.index}`
+    });
+    return { index: res._index };
+}
+
+/**
+ * Create one message
+ * /!\ They are inserted without an ID to improve indexing time
+ * https://www.elastic.co/guide/en/elasticsearch/reference/current/tune-for-indexing-speed.html#_use_auto_generated_ids
+ */
+export async function createMessage(row: MessageRow): Promise<{ index: string }> {
+    const res = await client.index<MessageRow>({
+        index: indexMessages.index,
+        document: row,
+        refresh: isTest,
         pipeline: `daily.${indexMessages.index}`
     });
     return { index: res._index };
@@ -162,7 +177,7 @@ export async function listOperations(opts: {
 /**
  * Get a single operation
  */
-export async function getOperation(opts: { id: MessageRow['id']; indexName?: string | null }): Promise<MessageRow> {
+export async function getOperation(opts: { id: OperationRow['id']; indexName?: string | null }): Promise<OperationRow> {
     if (opts.indexName) {
         const res = await client.get<OperationRow>({ index: opts.indexName, id: opts.id });
         return res._source!;
@@ -185,7 +200,7 @@ export async function getOperation(opts: { id: MessageRow['id']; indexName?: str
 /**
  * Update a row (can be a partial update)
  */
-export async function update(opts: { id: MessageRow['id']; data: SetRequired<Partial<Omit<MessageRow, 'id'>>, 'createdAt'> }): Promise<void> {
+export async function update(opts: { id: OperationRow['id']; data: SetRequired<Partial<Omit<MessageRow, 'id'>>, 'createdAt'> }): Promise<void> {
     await client.update({
         index: getFullIndexName(indexMessages.index, opts.data.createdAt),
         id: opts.id,
@@ -202,35 +217,35 @@ export async function update(opts: { id: MessageRow['id']; data: SetRequired<Par
 /**
  * Set an operation as currently running
  */
-export async function setRunning(opts: Pick<MessageRow, 'id' | 'createdAt'>): Promise<void> {
+export async function setRunning(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
     await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'running', startedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as success
  */
-export async function setSuccess(opts: Pick<MessageRow, 'id' | 'createdAt'>): Promise<void> {
+export async function setSuccess(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
     await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'success', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as failed
  */
-export async function setFailed(opts: Pick<MessageRow, 'id' | 'createdAt'>): Promise<void> {
+export async function setFailed(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
     await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'failed', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as failed
  */
-export async function setCancelled(opts: Pick<MessageRow, 'id' | 'createdAt'>): Promise<void> {
+export async function setCancelled(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
     await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'cancelled', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as timeout
  */
-export async function setTimeouted(opts: Pick<MessageRow, 'id' | 'createdAt'>): Promise<void> {
+export async function setTimeouted(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
     await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'timeout', endedAt: new Date().toISOString() } });
 }
 
