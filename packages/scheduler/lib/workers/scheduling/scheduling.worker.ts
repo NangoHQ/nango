@@ -93,33 +93,41 @@ export class SchedulingChild {
 
     async schedule(): Promise<void> {
         await this.db.transaction(async (trx) => {
-            const schedules = await dueSchedules(trx);
-            if (schedules.isErr()) {
-                logger.error(`Failed to get due schedules: ${schedules.error}`);
-                return;
-            }
-            const taskIds = [];
-            for (const schedule of schedules.value) {
-                const task = await tasks.create(trx, {
-                    scheduleId: schedule.id,
-                    startsAfter: new Date(),
-                    name: `${schedule.name}:${new Date().toISOString()}`,
-                    payload: schedule.payload,
-                    groupKey: schedule.groupKey,
-                    retryCount: 0,
-                    retryMax: schedule.retryMax,
-                    createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
-                    startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
-                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs
-                });
-                if (task.isErr()) {
-                    logger.error(`Failed to create task for schedule: ${schedule.id}`);
-                } else {
-                    taskIds.push(task.value.id);
+            // Try to acquire a lock to prevent multiple instances from scheduling at the same time
+            const res = await trx.raw('SELECT pg_try_advisory_xact_lock(?) AS lock_granted', [5003001106]);
+            const lockGranted = res?.rows.length > 0 ? res.rows[0].lock_granted : false;
+
+            if (lockGranted) {
+                const schedules = await dueSchedules(trx);
+                if (schedules.isErr()) {
+                    logger.error(`Failed to get due schedules: ${schedules.error}`);
+                    return;
                 }
-            }
-            if (taskIds.length > 0) {
-                this.parent.postMessage({ ids: taskIds }); // notifying parent that tasks have been created
+                const taskIds = [];
+                for (const schedule of schedules.value) {
+                    const task = await tasks.create(trx, {
+                        scheduleId: schedule.id,
+                        startsAfter: new Date(),
+                        name: `${schedule.name}:${new Date().toISOString()}`,
+                        payload: schedule.payload,
+                        groupKey: schedule.groupKey,
+                        retryCount: 0,
+                        retryMax: schedule.retryMax,
+                        createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
+                        startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
+                        heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs
+                    });
+                    if (task.isErr()) {
+                        logger.error(`Failed to create task for schedule: ${schedule.id}`);
+                    } else {
+                        taskIds.push(task.value.id);
+                    }
+                }
+                if (taskIds.length > 0) {
+                    this.parent.postMessage({ ids: taskIds }); // notifying parent that tasks have been created
+                }
+            } else {
+                await setTimeout(1000); // wait for 1s before trying again
             }
         });
     }

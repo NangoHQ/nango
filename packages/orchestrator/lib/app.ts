@@ -42,6 +42,11 @@ try {
     server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
     });
+
+    // handle SIGTERM
+    process.on('SIGTERM', () => {
+        scheduler.stop();
+    });
 } catch (err) {
     logger.error(`Orchestrator API error: ${stringifyError(err)}`);
     process.exit(1);
