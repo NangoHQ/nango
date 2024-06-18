@@ -46,16 +46,11 @@ jobs:
                   for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
                     dir=$(dirname $file)
 
-                    parts=(${dir//\// })
-                    if [ ${#parts[@]} -gt 1 ]; then
-                      unset parts[-2]
-                    fi
-
-                    dir=$(IFS=/; echo "${parts[*]}")
-
+                    # just grab the first two parts of the path
+                    dir=$(echo $dir | cut -d'/' -f1,2)
                     integration=$(basename $dir)
 
-                    mkdir -p /tmp/nango-temp/nango-integrations
+                    mkdir -p /tmp/nango-temp/nango-integrations/$integration
 
                     cp $dir/nango.yaml /tmp/nango-temp/nango-integrations/
                     cp -r $dir/* /tmp/nango-temp/nango-integrations/$integration/

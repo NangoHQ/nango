@@ -19,20 +19,21 @@ jobs:
               run: |
                   cd integration-templates
                   for dir in $(ls -d */); do
-                      mkdir -p /tmp/nango-temp/nango-integrations/$dir
+                      integration=$(basename $dir)
+                      mkdir -p /tmp/nango-temp/nango-integrations/$integration
 
                       cp $dir/nango.yaml /tmp/nango-temp/nango-integrations/
-                      cp -r $dir/* /tmp/nango-temp/nango-integrations/$dir/
+                      cp -r $dir/* /tmp/nango-temp/nango-integrations/$integration/
 
                       pushd /tmp/nango-temp/nango-integrations
                       nango compile
                       popd
 
-                      cp -r /tmp/nango-temp/nango-integrations/dist ./$dir/dist
+                      cp -r /tmp/nango-temp/nango-integrations/dist ./$integration/dist
 
                       rm -rf /tmp/nango-temp
 
-                      aws s3 sync $dir s3://${{ secrets.AWS_BUCKET_NAME }}/$dir/
+                      aws s3 sync $dir s3://${{ secrets.AWS_BUCKET_NAME }}/$integration/
                   done
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
