@@ -1,3 +1,5 @@
+import type { Merge } from 'type-fest';
+
 /**
  * Level of the log and operation
  */
@@ -29,39 +31,39 @@ export type MessageState = 'waiting' | 'running' | 'success' | 'failed' | 'timeo
 /**
  * Operations
  */
-export interface MessageOpSync {
+export interface OperationSync {
     type: 'sync';
     action: 'pause' | 'unpause' | 'run' | 'request_run' | 'request_run_full' | 'cancel' | 'init';
 }
-export interface MessageOpProxy {
+export interface OperationProxy {
     type: 'proxy';
 }
-export interface MessageOpAction {
+export interface OperationAction {
     type: 'action';
 }
-export interface MessageOpAuth {
+export interface OperationAuth {
     type: 'auth';
     action: 'create_connection' | 'refresh_token' | 'post_connection';
 }
-export interface MessageOpAdmin {
+export interface OperationAdmin {
     type: 'admin';
     action: 'impersonation';
 }
-export interface MessageOpWebhook {
+export interface OperationWebhook {
     type: 'webhook';
     action: 'incoming' | 'outgoing';
 }
-export interface MessageOpDeploy {
+export interface OperationDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
 }
-export type MessageOperation = MessageOpSync | MessageOpProxy | MessageOpAction | MessageOpWebhook | MessageOpDeploy | MessageOpAuth | MessageOpAdmin;
+export type OperationList = OperationSync | OperationProxy | OperationAction | OperationWebhook | OperationDeploy | OperationAuth | OperationAdmin;
 
 /**
  * Full schema
  */
-export type MessageRow = {
-    id: string;
+export interface MessageRow {
+    id: string | null;
 
     // State
     source: 'internal' | 'user';
@@ -71,6 +73,7 @@ export type MessageRow = {
     title: string | null;
     state: MessageState;
     code: MessageCode | null;
+    operation: null;
 
     // Ids
     accountId: number | null;
@@ -123,18 +126,20 @@ export type MessageRow = {
     startedAt: string | null;
     endedAt: string | null;
     expiresAt: string | null;
-} & { operation: MessageOperation | null };
+}
 
 /**
  * What is required to insert a Message
  */
-export type OperationRequired = 'operation' | 'message';
-export type OperationRowInsert = Pick<MessageRow, OperationRequired> & Partial<Omit<MessageRow, OperationRequired>>;
-export type OperationRow = Pick<MessageRow, OperationRequired> & Omit<MessageRow, OperationRequired>;
+export type OperationRowInsert = Merge<Partial<MessageRow>, { message: string; operation: OperationList }>;
+export type OperationRow = Merge<Required<OperationRowInsert>, { id: string; accountId: number; accountName: string }>;
 
 /**
  * What is required to insert a Message
  */
-export type MessageRowInsert = Pick<MessageRow, 'type' | 'message'> & Partial<Omit<MessageRow, 'type' | 'message'>> & { id?: string | undefined };
+export type MessageRowInsert = Pick<MessageRow, 'type' | 'message'> & Partial<Omit<MessageRow, 'type' | 'message'>> & { id?: never };
 
+// Buffer logs inside proxy calls
 export type LogsBuffer = Pick<MessageRow, 'level' | 'message' | 'createdAt'> & Partial<Pick<MessageRow, 'error' | 'meta'>>;
+
+export type MessageOrOperationRow = MessageRow | OperationRow;
