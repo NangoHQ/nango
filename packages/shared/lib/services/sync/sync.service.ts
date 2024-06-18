@@ -1,18 +1,19 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '@nangohq/database';
-import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob, SyncWithSchedule, SlimSync, SlimAction } from '../../models/Sync.js';
+import type { Sync, Job as SyncJob, SyncWithSchedule } from '../../models/Sync.js';
 import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { updateScheduleStatus } from './schedule.service.js';
-import type { ActiveLogIds } from '@nangohq/types';
+import type { ActiveLogIds, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences } from '@nangohq/types';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey,
     getActionConfigByNameAndProviderConfigKey
 } from './config/config.service.js';
+import type { CreateSyncArgs } from './manager.service.js';
 import syncManager from './manager.service.js';
 import connectionService from '../connection.service.js';
 import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
@@ -581,7 +582,7 @@ export const getAndReconcileDifferences = async ({
 }): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
     const newActions: SlimAction[] = [];
-    const syncsToCreate = [];
+    const syncsToCreate: CreateSyncArgs[] = [];
 
     const existingSyncsByProviderConfig: Record<string, SlimSync[]> = {};
     const existingConnectionsByProviderConfig: Record<string, NangoConnection[]> = {};
@@ -715,7 +716,8 @@ export const getAndReconcileDifferences = async ({
                     deletedSyncs.push({
                         name: existingSync.sync_name,
                         providerConfigKey: existingSync.unique_key,
-                        connections: connections.length
+                        connections: connections.length,
+                        auto_start: false
                     });
                 } else {
                     deletedActions.push({

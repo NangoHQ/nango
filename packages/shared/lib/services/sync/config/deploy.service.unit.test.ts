@@ -1,5 +1,4 @@
 import { expect, describe, it, vi } from 'vitest';
-import type { IncomingFlowConfig } from '../../../models/Sync.js';
 import { SyncConfigType } from '../../../models/Sync.js';
 import environmentService from '../../environment.service.js';
 import * as SyncConfigService from './config.service.js';
@@ -14,6 +13,7 @@ import type { Environment } from '../../../models/Environment.js';
 import type { Account } from '../../../models/Admin.js';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
+import type { IncomingFlowConfig } from '@nangohq/types';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,

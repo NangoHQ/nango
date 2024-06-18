@@ -11,7 +11,6 @@ import type {
     NangoSyncConfig,
     NangoSyncModel,
     NangoV2Integration,
-    NangoSyncEndpoint,
     NangoIntegrationDataV2,
     LayoutMode
 } from '../models/NangoConfig.js';
@@ -20,6 +19,7 @@ import { SyncType, SyncConfigType } from '../models/Sync.js';
 import localFileService from './file/local.service.js';
 import { NangoError } from '../utils/error.js';
 import { determineVersion, getInterval, isJsOrTsType } from '@nangohq/nango-yaml';
+import type { NangoSyncEndpoint } from '@nangohq/types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

@@ -19,7 +19,8 @@ export type ResDefaultErrors =
     | ApiError<'invalid_uri_params', ValidationError[]>
     | ApiError<'feature_disabled'>
     | ApiError<'missing_auth_header'>
-    | ApiError<'generic_error_support', undefined, string>;
+    | ApiError<'generic_error_support', undefined, string>
+    | ApiError<'server_error'>;
 
 export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /**

@@ -4,7 +4,7 @@ import { getLogger } from '@nangohq/utils';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
-import type { Action, SyncConfigWithProvider, SyncType, SyncConfig, SlimSync, NangoConfigMetadata } from '../../../models/Sync.js';
+import type { Action, SyncConfigWithProvider, SyncType, SyncConfig } from '../../../models/Sync.js';
 import { SyncConfigType } from '../../../models/Sync.js';
 import { convertV2ConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
@@ -20,6 +20,7 @@ import type {
     NangoIntegrationDataV2
 } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
+import type { SlimSync } from '@nangohq/types';
 
 const logger = getLogger('Sync.Config');
 
@@ -194,7 +195,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
                 version: syncConfig.version as string,
                 pre_built: syncConfig.pre_built as boolean,
                 is_public: syncConfig.is_public as boolean,
-                metadata: syncConfig.metadata as NangoConfigMetadata,
+                metadata: syncConfig.metadata!,
                 enabled: syncConfig.enabled
             };
 

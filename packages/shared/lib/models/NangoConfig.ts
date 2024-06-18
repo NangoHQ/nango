@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
-import type { HTTP_VERB } from './Generic.js';
-import type { SyncType, SyncConfigType, NangoConfigMetadata } from './Sync.js';
+import type { NangoConfigMetadata, NangoSyncEndpoint } from '@nangohq/types';
+import type { SyncType, SyncConfigType } from './Sync.js';
 
 export interface NangoIntegrationDataV1 {
     type?: SyncConfigType;
@@ -104,10 +104,6 @@ export interface NangoSyncModel {
     description?: string;
     fields: NangoSyncModelField[];
 }
-
-export type NangoSyncEndpoint = {
-    [key in HTTP_VERB]?: string;
-};
 
 export type LayoutMode = 'root' | 'nested';
 

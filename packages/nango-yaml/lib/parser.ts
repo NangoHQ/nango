@@ -110,6 +110,10 @@ export abstract class NangoYamlParser {
                 }
                 for (const endpointByVerb of sync.endpoints) {
                     for (const [verb, endpoint] of Object.entries(endpointByVerb)) {
+                        if (!endpoint) {
+                            continue; // TS pleasing
+                        }
+
                         const str = `${verb} ${endpoint}`;
                         if (endpoints.has(str)) {
                             this.errors.push(new ParserErrorDuplicateEndpoint({ endpoint: str, path: [integrationName, 'syncs', sync.name, '[endpoints]'] }));
@@ -168,6 +172,10 @@ export abstract class NangoYamlParser {
                 }
                 if (action.endpoint) {
                     for (const [verb, endpoint] of Object.entries(action.endpoint)) {
+                        if (!endpoint) {
+                            continue; // TS pleasing
+                        }
+
                         const str = `${verb} ${endpoint}`;
                         if (endpoints.has(str)) {
                             this.errors.push(

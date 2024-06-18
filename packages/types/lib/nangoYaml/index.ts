@@ -123,5 +123,5 @@ export interface NangoModelField {
 }
 
 export type NangoSyncEndpoint = {
-    [key in HTTP_VERB]?: string;
+    [key in HTTP_VERB]?: string | undefined;
 };

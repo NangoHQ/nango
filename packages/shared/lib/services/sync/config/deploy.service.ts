@@ -16,16 +16,8 @@ import connectionService from '../../connection.service.js';
 import type { LogLevel } from '../../../models/Activity.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
-import type {
-    SyncModelSchema,
-    IncomingFlowConfig,
-    SyncConfig,
-    SyncDeploymentResult,
-    SyncConfigResult,
-    IncomingPreBuiltFlowConfig,
-    SyncEndpoint
-} from '../../../models/Sync.js';
-import type { PostConnectionScriptByProvider } from '@nangohq/types';
+import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType } from '../../../models/Sync.js';
+import type { IncomingFlowConfig, IncomingPreBuiltFlowConfig, PostConnectionScriptByProvider } from '@nangohq/types';
 import { postConnectionScriptService } from '../post-connection.service.js';
 import { SyncConfigType } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
@@ -465,7 +457,7 @@ export async function deployPreBuilt(
             environment_id: environment.id,
             deleted: false,
             track_deletes: false,
-            type,
+            type: type as SyncConfigType,
             auto_start: auto_start === false ? false : true,
             attributes,
             metadata,
@@ -813,7 +805,7 @@ async function compileDeployInfo({
         environment_id,
         nango_config_id: config.id as number,
         sync_name: syncName,
-        type,
+        type: type as SyncConfigType,
         models,
         version,
         track_deletes: track_deletes || false,
@@ -825,7 +817,7 @@ async function compileDeployInfo({
         active: true,
         model_schema: model_schema as unknown as SyncModelSchema[],
         input: flow.input || '',
-        sync_type: flow.sync_type,
+        sync_type: flow.sync_type as SyncType,
         webhook_subscriptions: flow.webhookSubscriptions || [],
         enabled: lastSyncWasEnabled && !shouldCap
     });
@@ -834,7 +826,7 @@ async function compileDeployInfo({
         ...flow,
         name: syncName,
         version
-    });
+    } as SyncDeploymentResult); // TODO: remove this as
 
     return { success: true, error: null, response: flowsWithVersions };
 }
