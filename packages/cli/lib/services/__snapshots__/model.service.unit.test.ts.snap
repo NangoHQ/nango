@@ -41,7 +41,6 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 
 // ------ SDK
 
-/// <reference types=\\"node\\" />
 import { Nango } from '@nangohq/node';
 import type { AxiosInstance } from 'axios';
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
@@ -112,15 +111,15 @@ export interface ProxyConfiguration {
     retryOn?: number[] | null;
 }
 declare enum AuthModes {
-    OAuth1 = \\"OAUTH1\\",
-    OAuth2 = \\"OAUTH2\\",
-    OAuth2CC = \\"OAUTH2_CC\\",
-    Basic = \\"BASIC\\",
-    ApiKey = \\"API_KEY\\",
-    AppStore = \\"APP_STORE\\",
-    App = \\"APP\\",
-    Custom = \\"CUSTOM\\",
-    None = \\"NONE\\"
+    OAuth1 = "OAUTH1",
+    OAuth2 = "OAUTH2",
+    OAuth2CC = "OAUTH2_CC",
+    Basic = "BASIC",
+    ApiKey = "API_KEY",
+    AppStore = "APP_STORE",
+    App = "APP",
+    Custom = "CUSTOM",
+    None = "NONE"
 }
 interface OAuth1Token {
     oAuthToken: string;
