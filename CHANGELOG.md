@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.4] - 2024-06-19
+
+### Fixed
+
+- Missing created task events (#2364) by @TBonnin
+- *(deps)* Upgrade vitest (#2357) by @bodinsamuel
+- *(nango-yaml)* Fine tune parsing (#2366) by @bodinsamuel
+
 ## [v0.40.3] - 2024-06-18
 
 ### Changed
@@ -1363,6 +1371,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.4]: https://github.com/NangoHQ/nango/compare/v0.40.3..v0.40.4
 [v0.40.3]: https://github.com/NangoHQ/nango/compare/v0.40.2..v0.40.3
 [v0.40.2]: https://github.com/NangoHQ/nango/compare/v0.40.1..v0.40.2
 [v0.40.1]: https://github.com/NangoHQ/nango/compare/v0.40.0..v0.40.1
