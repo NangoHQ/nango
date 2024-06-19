@@ -1,4 +1,5 @@
 import type { Context } from '@temporalio/activity';
+import type { JSONSchema7 } from 'json-schema';
 import { LogActionEnum } from './Activity.js';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoProps } from '../sdk/sync.js';
@@ -112,6 +113,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     sync_type?: SyncType | undefined;
     webhook_subscriptions: string[] | null;
     enabled: boolean;
+    models_json_schema?: JSONSchema7;
 }
 
 export interface SyncEndpoint extends Timestamps {
