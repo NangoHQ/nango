@@ -27,7 +27,7 @@ import type { SyncDeploymentResult, Sync, SyncType, ReportedSyncJobStatus } from
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import { SyncStatus, ScheduleStatus, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -499,7 +499,7 @@ export class SyncManagerService {
         orchestrator: Orchestrator
     ) {
         for (const flow of flows) {
-            if (flow.type === SyncConfigType.ACTION) {
+            if (flow.type === 'action') {
                 continue;
             }
 

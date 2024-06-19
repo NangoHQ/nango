@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
-import type { NangoConfigMetadata, NangoSyncEndpoint } from '@nangohq/types';
-import type { SyncType, SyncConfigType } from './Sync.js';
+import type { NangoConfigMetadata, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
+import type { SyncType } from './Sync.js';
 
 export interface NangoIntegrationDataV1 {
-    type?: SyncConfigType;
+    type?: ScriptTypeLiteral;
     runs: string;
     returns: string[];
     input?: string;
@@ -109,7 +109,7 @@ export type LayoutMode = 'root' | 'nested';
 
 export interface NangoSyncConfig {
     name: string;
-    type?: SyncConfigType;
+    type?: ScriptTypeLiteral;
     runs: string;
     auto_start?: boolean;
     attributes?: object;

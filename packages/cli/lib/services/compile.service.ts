@@ -9,7 +9,7 @@ import { localFileService } from '@nangohq/shared';
 import { getNangoRootPath, printDebug } from '../utils.js';
 import { loadYamlAndGeneratedModel } from './model.service.js';
 import parserService from './parser.service.js';
-import type { NangoYamlParsed } from '@nangohq/types';
+import type { NangoYamlParsed, ScriptTypeLiteral } from '@nangohq/types';
 import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto'];
@@ -126,7 +126,7 @@ function compileImportedFile({
     filePath: string;
     compiler: tsNode.Service;
     parsed: NangoYamlParsed;
-    type: 'sync' | 'action' | undefined;
+    type: ScriptTypeLiteral | undefined;
 }): boolean {
     let finalResult = true;
     const importedFiles = parserService.getImportedFiles(filePath);

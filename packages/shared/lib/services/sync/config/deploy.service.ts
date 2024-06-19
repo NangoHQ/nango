@@ -19,7 +19,6 @@ import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
 import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType } from '../../../models/Sync.js';
 import type { IncomingFlowConfig, IncomingPreBuiltFlowConfig, PostConnectionScriptByProvider } from '@nangohq/types';
 import { postConnectionScriptService } from '../post-connection.service.js';
-import { SyncConfigType } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { env } from '@nangohq/utils';
@@ -330,7 +329,7 @@ export async function deployPreBuilt(
         let { input } = config;
         const sync_name = config.name || config.syncName;
 
-        if (type === SyncConfigType.SYNC && !runs) {
+        if (type === 'sync' && !runs) {
             const error = new NangoError('missing_required_fields_on_deploy');
 
             return { success: false, error, response: null };
@@ -457,7 +456,7 @@ export async function deployPreBuilt(
             environment_id: environment.id,
             deleted: false,
             track_deletes: false,
-            type: type as SyncConfigType,
+            type,
             auto_start: auto_start === false ? false : true,
             attributes,
             metadata,
@@ -635,13 +634,13 @@ async function compileDeployInfo({
         runs,
         version: optionalVersion,
         model_schema,
-        type = SyncConfigType.SYNC,
+        type = 'sync',
         track_deletes,
         auto_start,
         attributes = {},
         metadata = {}
     } = flow;
-    if (type === SyncConfigType.SYNC && !runs) {
+    if (type === 'sync' && !runs) {
         const error = new NangoError('missing_required_fields_on_deploy');
         await createActivityLogMessage({
             level: 'error',
@@ -805,7 +804,7 @@ async function compileDeployInfo({
         environment_id,
         nango_config_id: config.id as number,
         sync_name: syncName,
-        type: type as SyncConfigType,
+        type,
         models,
         version,
         track_deletes: track_deletes || false,
@@ -826,7 +825,7 @@ async function compileDeployInfo({
         ...flow,
         name: syncName,
         version
-    } as SyncDeploymentResult); // TODO: remove this as
+    });
 
     return { success: true, error: null, response: flowsWithVersions };
 }

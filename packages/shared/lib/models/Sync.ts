@@ -3,7 +3,7 @@ import { LogActionEnum } from './Activity.js';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoProps } from '../sdk/sync.js';
 import type { NangoIntegrationData } from './NangoConfig.js';
-import type { NangoConfigMetadata, NangoSyncEndpoint } from '@nangohq/types';
+import type { NangoConfigMetadata, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -80,16 +80,11 @@ export interface SyncModelSchema {
     }[];
 }
 
-export enum SyncConfigType {
-    SYNC = 'sync',
-    ACTION = 'action'
-}
-
 export interface SyncConfig extends TimestampsAndDeleted {
     id?: number;
     environment_id: number;
     sync_name: string;
-    type: SyncConfigType;
+    type: ScriptTypeLiteral;
     file_location: string;
     nango_config_id: number;
     models: string[];
@@ -122,7 +117,7 @@ export interface SyncDeploymentResult {
     name: string;
     version?: string;
     providerConfigKey: string;
-    type: SyncConfigType;
+    type: ScriptTypeLiteral;
     last_deployed?: Date;
     input?: string | SyncModelSchema | undefined;
     models: string | string[];
@@ -188,7 +183,7 @@ export interface SyncConfigWithProvider {
     updated_at: string;
     provider_config_key: string;
     unique_key: string;
-    type: SyncConfigType;
+    type: ScriptTypeLiteral;
 }
 
 export interface RunScriptOptions {

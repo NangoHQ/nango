@@ -5,7 +5,6 @@ import {
     getOnboardingProgress,
     updateOnboardingProgress,
     flowService,
-    SyncConfigType,
     deployPreBuilt as deployPreBuiltSyncConfig,
     syncManager,
     getOnboardingProvider,
@@ -184,7 +183,7 @@ class OnboardingController {
                 {
                     provider: 'github',
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
-                    type: SyncConfigType.SYNC,
+                    type: 'sync',
                     name: DEMO_SYNC_NAME,
                     runs: githubDemoSync.runs,
                     auto_start: githubDemoSync.auto_start === true,
@@ -198,7 +197,7 @@ class OnboardingController {
                 {
                     provider: 'github',
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
-                    type: SyncConfigType.ACTION,
+                    type: 'action',
                     name: DEMO_ACTION_NAME,
                     is_public: true,
                     runs: 'every day',

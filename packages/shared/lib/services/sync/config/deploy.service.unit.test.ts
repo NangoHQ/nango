@@ -1,5 +1,4 @@
 import { expect, describe, it, vi } from 'vitest';
-import { SyncConfigType } from '../../../models/Sync.js';
 import environmentService from '../../environment.service.js';
 import * as SyncConfigService from './config.service.js';
 import * as SyncService from '../sync.service.js';
@@ -14,6 +13,7 @@ import type { Account } from '../../../models/Admin.js';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
 import type { IncomingFlowConfig } from '@nangohq/types';
+import type { SyncConfig } from '../../../models/Sync.js';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,
@@ -63,10 +63,10 @@ describe('Sync config create', () => {
     });
 
     it('Throws a provider not found error', async () => {
-        const syncs = [
+        const syncs: IncomingFlowConfig[] = [
             {
                 syncName: 'test-sync',
-                type: SyncConfigType.SYNC,
+                type: 'sync',
                 providerConfigKey: 'google-wrong',
                 fileBody: {
                     js: 'integrations.js',
@@ -101,10 +101,10 @@ describe('Sync config create', () => {
     });
 
     it('Throws an error at the end of the create sync process', async () => {
-        const syncs = [
+        const syncs: IncomingFlowConfig[] = [
             {
                 syncName: 'test-sync',
-                type: SyncConfigType.SYNC,
+                type: 'sync',
                 providerConfigKey: 'google',
                 fileBody: {
                     js: 'integrations.js',
@@ -137,7 +137,7 @@ describe('Sync config create', () => {
                     id: 1,
                     environment_id: 1,
                     sync_name: 'test-sync',
-                    type: SyncConfigType.SYNC,
+                    type: 'sync',
                     file_location: '/tmp/test-sync',
                     nango_config_id: 1,
                     models: ['Model_1', 'Model_2'],
@@ -150,7 +150,7 @@ describe('Sync config create', () => {
                     enabled: true,
                     webhook_subscriptions: null
                 }
-            ]);
+            ] as SyncConfig[]);
         });
 
         vi.spyOn(SyncConfigService, 'getSyncConfigByParams').mockImplementation(() => {
@@ -158,7 +158,7 @@ describe('Sync config create', () => {
                 id: 1,
                 environment_id: 1,
                 sync_name: 'test-sync',
-                type: SyncConfigType.SYNC,
+                type: 'sync',
                 file_location: '/tmp/test-sync',
                 nango_config_id: 1,
                 models: ['Model_1', 'Model_2'],
@@ -170,7 +170,7 @@ describe('Sync config create', () => {
                 version: '1',
                 enabled: true,
                 webhook_subscriptions: null
-            });
+            } as SyncConfig);
         });
 
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockImplementation(() => {
@@ -178,7 +178,7 @@ describe('Sync config create', () => {
                 id: 1,
                 environment_id: 1,
                 sync_name: 'test-sync',
-                type: SyncConfigType.SYNC,
+                type: 'sync',
                 file_location: '/tmp/test-sync',
                 nango_config_id: 1,
                 models: ['Model_1', 'Model_2'],
@@ -190,7 +190,7 @@ describe('Sync config create', () => {
                 version: '1',
                 enabled: true,
                 webhook_subscriptions: null
-            });
+            } as SyncConfig);
         });
 
         vi.spyOn(connectionService, 'shouldCapUsage').mockImplementation(() => {
