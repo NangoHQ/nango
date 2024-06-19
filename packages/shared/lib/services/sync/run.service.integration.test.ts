@@ -7,7 +7,7 @@ import * as jobService from './job.service.js';
 import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { Connection } from '../../models/Connection.js';
 import type { SendSyncParams } from '@nangohq/webhooks';
-import { LogContext, logContextGetter } from '@nangohq/logs';
+import { LogContext, envs, logContextGetter } from '@nangohq/logs';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { createEnvironmentSeed } from '../../seeders/environment.seeder.js';
@@ -53,6 +53,7 @@ const sendSyncWebhookMock = async (_params: SendSyncParams) => {
 describe('Running sync', () => {
     beforeAll(async () => {
         await initDb();
+        envs.NANGO_LOGS_ENABLED = false;
     });
 
     afterAll(async () => {
@@ -245,7 +246,6 @@ const initDb = async () => {
 
 const clearDb = async () => {
     await db.knex.raw(`DROP SCHEMA nango CASCADE`);
-    // TODO: clear records???
 };
 
 const runJob = async (

@@ -2,7 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Input } from '../../../components/ui/input/Input';
 import { useSearchMessages } from '../../../hooks/useLogs';
-import type { SearchMessages, SearchOperationsData } from '@nangohq/types';
+import type { SearchMessages, SearchMessagesData } from '@nangohq/types';
 import { formatDateToLogFormat, formatQuantity } from '../../../utils/utils';
 import { useStore } from '../../../store';
 import * as Table from '../../../components/ui/Table';
@@ -17,7 +17,7 @@ import { Tag } from '../../../components/ui/label/Tag';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import Button from '../../../components/ui/button/Button';
 
-export const columns: ColumnDef<SearchOperationsData>[] = [
+export const columns: ColumnDef<SearchMessagesData>[] = [
     {
         accessorKey: 'createdAt',
         header: 'Timestamp',
@@ -76,7 +76,7 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
     const [hasLoadedMore, setHasLoadedMore] = useState<boolean>(false);
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
     const { data, error, loading, trigger, manualFetch } = useSearchMessages(env, { limit, operationId, search });
-    const [messages, setMessages] = useState<SearchOperationsData[]>([]);
+    const [messages, setMessages] = useState<SearchMessagesData[]>([]);
 
     useDebounce(
         () => {

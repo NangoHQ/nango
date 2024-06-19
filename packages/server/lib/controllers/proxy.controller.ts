@@ -28,7 +28,7 @@ class ProxyController {
      * call on the provided method after verifying the necessary parameters are set.
      * @param {Request} req Express request object
      * @param {Response} res Express response object
-     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {NextFunction} next callback function to pass control to the next middleware function in the pipeline.
      */
     public async routeCall(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         const { environment, account } = res.locals;

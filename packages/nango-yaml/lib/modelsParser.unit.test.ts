@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { ModelsParser } from './modelsParser.js';
-import { ParserError, ParserErrorCycle, ParserErrorDataSyntax, ParserErrorExtendsNotFound, ParserErrorInvalidModelName } from './errors.js';
+import { ParserError, ParserErrorCycle, ParserErrorExtendsNotFound, ParserErrorInvalidModelName, ParserErrorTypeSyntax } from './errors.js';
 
 describe('parse', () => {
     it('should parse simple object', () => {
@@ -290,8 +290,8 @@ describe('parse', () => {
             const parser = new ModelsParser({ raw: { Test: { user: val } } });
             parser.parseAll();
 
-            expect(parser.errors).toStrictEqual([]);
-            expect(parser.warnings).toStrictEqual([new ParserErrorDataSyntax({ value: val, path: ['Test', 'user'] })]);
+            expect(parser.warnings).toStrictEqual([]);
+            expect(parser.errors).toStrictEqual([new ParserErrorTypeSyntax({ value: val, path: ['Test', 'user'] })]);
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 Test: { name: 'Test', fields: [{ name: 'user', value: val, array: false, optional: false }] }
             });

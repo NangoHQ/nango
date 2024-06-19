@@ -14,11 +14,11 @@ interface Options {
  * Context without operation (stateless)
  */
 export class LogContextStateless {
-    id: string;
+    id: OperationRow['id'];
     dryRun: boolean;
     logToConsole: boolean;
 
-    constructor(data: { parentId: string }, options: Options = { dryRun: false, logToConsole: true }) {
+    constructor(data: { parentId: OperationRow['id'] }, options: Options = { dryRun: false, logToConsole: true }) {
         this.id = data.parentId;
         this.dryRun = isCli || !envs.NANGO_LOGS_ENABLED ? true : options.dryRun || false;
         this.logToConsole = options.logToConsole ?? true;
