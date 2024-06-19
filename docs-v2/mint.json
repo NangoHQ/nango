@@ -168,12 +168,6 @@
                             "group": "Advanced",
                             "pages": [
                                 "customize/guides/advanced/handle-rate-limits",
-                                "customize/guides/advanced/support-custom-field-mappings",
-                                "customize/guides/advanced/detect-deletions",
-                                "customize/guides/advanced/paginate-api-responses",
-                                "customize/guides/advanced/use-environment-variables",
-                                "customize/guides/advanced/unify-apis-and-models",
-                                "customize/guides/advanced/handle-errors-in-scripts",
                                 "customize/guides/advanced/handle-large-datasets",
                                 "customize/guides/advanced/migrate-integration-configuration"
                             ]

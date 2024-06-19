@@ -6,7 +6,7 @@ For contributions, please [submit an issue](https://github.com/NangoHQ/nango/iss
 
 # Contributing
 
-You can run Nango locally with Docker ([step-by-step guide](https://docs.nango.dev/host/self-host/local)), contribute an API ([step-by-step guide](https://docs.nango.dev/customize/guides/contribute-an-api)) and contribute an integration template ([step-by-step guide](https://docs.nango.dev/contribute-an-integration-template)).
+You can run Nango locally with Docker ([step-by-step guide](https://docs.nango.dev/host/self-host/local)) and contribute an API ([step-by-step guide](https://docs.nango.dev/customize/guides/contribute-an-api)).
 
 ## Develop locally
 
