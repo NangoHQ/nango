@@ -36,7 +36,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         header: 'Type',
         size: 100,
         cell: ({ row }) => {
-            return <OperationTag message={row.original.message} operation={row.original.operation!} />;
+            return <OperationTag message={row.original.message} operation={row.original.operation} />;
         }
     },
     {

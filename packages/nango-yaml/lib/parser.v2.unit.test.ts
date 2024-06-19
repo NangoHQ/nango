@@ -1,7 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import { NangoYamlParserV2 } from './parser.v2.js';
 import type { NangoYamlParsed, NangoYamlV2 } from '@nangohq/types';
-import { ParserErrorMissingId, ParserErrorModelIsLiteral, ParserErrorModelNotFound } from './errors.js';
+import { ParserErrorDuplicateEndpoint, ParserErrorMissingId, ParserErrorModelIsLiteral, ParserErrorModelNotFound } from './errors.js';
 
 describe('parse', () => {
     it('should parse', () => {
@@ -121,34 +121,67 @@ describe('parse', () => {
             yamlVersion: 'v2'
         });
     });
+    describe('endpoints', () => {
+        it('should handle endpoint with model inside (found)', () => {
+            const v2: NangoYamlV2 = {
+                models: { Found: { id: 'string' } },
+                integrations: {
+                    provider: { actions: { getGithubIssue: { endpoint: 'GET /ticketing/tickets/{Found:id}' } } }
+                }
+            };
+            const parser = new NangoYamlParserV2({ raw: v2 });
+            parser.parse();
+            expect(parser.errors).toStrictEqual([]);
+            expect(parser.warnings).toStrictEqual([]);
+            expect(parser.parsed?.integrations[0]?.actions).toMatchObject([
+                {
+                    endpoint: { GET: '/ticketing/tickets/{Found:id}' }
+                }
+            ]);
+        });
 
-    it('should handle endpoint with model inside (found)', () => {
-        const v2: NangoYamlV2 = {
-            models: { Found: { id: 'string' } },
-            integrations: {
-                provider: { actions: { getGithubIssue: { endpoint: 'GET /ticketing/tickets/{Found:id}' } } }
-            }
-        };
-        const parser = new NangoYamlParserV2({ raw: v2 });
-        parser.parse();
-        expect(parser.errors).toStrictEqual([]);
-        expect(parser.warnings).toStrictEqual([]);
-        expect(parser.parsed?.integrations[0]?.actions).toMatchObject([
-            {
-                endpoint: { GET: '/ticketing/tickets/{Found:id}' }
-            }
-        ]);
-    });
-    it('should handle endpoint with model inside (missing)', () => {
-        const v2: NangoYamlV2 = {
-            models: {},
-            integrations: {
-                provider: { actions: { getGithubIssue: { endpoint: 'GET /ticketing/tickets/{Missing:id}' } } }
-            }
-        };
-        const parser = new NangoYamlParserV2({ raw: v2 });
-        parser.parse();
-        expect(parser.errors).toStrictEqual([new ParserErrorModelNotFound({ model: 'Missing', path: ['provider', 'syncs', 'getGithubIssue', '[endpoint]'] })]);
-        expect(parser.warnings).toStrictEqual([]);
+        it('should handle endpoint with model inside (missing)', () => {
+            const v2: NangoYamlV2 = {
+                models: {},
+                integrations: {
+                    provider: { actions: { getGithubIssue: { endpoint: 'GET /ticketing/tickets/{Missing:id}' } } }
+                }
+            };
+            const parser = new NangoYamlParserV2({ raw: v2 });
+            parser.parse();
+            expect(parser.errors).toStrictEqual([
+                new ParserErrorModelNotFound({ model: 'Missing', path: ['provider', 'syncs', 'getGithubIssue', '[endpoint]'] })
+            ]);
+            expect(parser.warnings).toStrictEqual([]);
+        });
+
+        it('should raise an error if endpoint is reused in an integration', () => {
+            const v2: NangoYamlV2 = {
+                models: {},
+                integrations: {
+                    provider: { actions: { getGithubIssue: { endpoint: 'GET /issue' }, getTrelloIssue: { endpoint: 'GET /issue' } } }
+                }
+            };
+            const parser = new NangoYamlParserV2({ raw: v2 });
+            parser.parse();
+            expect(parser.errors).toStrictEqual([
+                new ParserErrorDuplicateEndpoint({ endpoint: 'GET /issue', path: ['provider', 'actions', 'getTrelloIssue', '[endpoint]'] })
+            ]);
+            expect(parser.warnings).toStrictEqual([]);
+        });
+
+        it('should not raise an error if endpoint is reused across many integration', () => {
+            const v2: NangoYamlV2 = {
+                models: {},
+                integrations: {
+                    providerA: { actions: { getGithubIssue: { endpoint: 'GET /issue' } } },
+                    providerB: { actions: { getTrelloIssue: { endpoint: 'GET /issue' } } }
+                }
+            };
+            const parser = new NangoYamlParserV2({ raw: v2 });
+            parser.parse();
+            expect(parser.errors).toStrictEqual([]);
+            expect(parser.warnings).toStrictEqual([]);
+        });
     });
 });

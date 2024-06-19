@@ -5,7 +5,7 @@ import { getOperation, listOperations, listMessages, setTimeoutForAll } from './
 import { afterEach } from 'node:test';
 import { logContextGetter } from './logContextGetter.js';
 import type { OperationRowInsert } from '@nangohq/types';
-import { getFormattedMessage } from './helpers.js';
+import { getFormattedOperation } from './helpers.js';
 import { indexMessages } from '../es/schema.js';
 
 const account = { id: 1234, name: 'test' };
@@ -58,12 +58,12 @@ describe('model', () => {
 
         it('should timeout old operations', async () => {
             const ctx1 = await logContextGetter.create(
-                getFormattedMessage({ ...operationPayload, expiresAt: new Date(Date.now() - 86400 * 1000).toISOString() }),
+                getFormattedOperation({ ...operationPayload, expiresAt: new Date(Date.now() - 86400 * 1000).toISOString() }),
                 { account, environment },
                 { logToConsole: false }
             );
             const ctx2 = await logContextGetter.create(
-                getFormattedMessage({ ...operationPayload, expiresAt: new Date(Date.now() + 86400 * 1000).toISOString() }),
+                getFormattedOperation({ ...operationPayload, expiresAt: new Date(Date.now() + 86400 * 1000).toISOString() }),
                 { account, environment },
                 { logToConsole: false }
             );
