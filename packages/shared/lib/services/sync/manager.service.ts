@@ -60,7 +60,7 @@ const logger = getLogger('sync.manager');
 export class SyncManagerService {
     public async createSyncForConnection(nangoConnectionId: number, logContextGetter: LogContextGetter, orchestrator: Orchestrator): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
-        const nangoConfig = await getSyncConfig(nangoConnection);
+        const nangoConfig = await getSyncConfig({ nangoConnection });
         if (!nangoConfig) {
             logger.error(
                 'Failed to load the Nango config - will not start any syncs! If you expect to see a sync make sure you used the nango cli deploy command'

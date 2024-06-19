@@ -15,7 +15,7 @@ import { init, generate, tscWatch, configWatch, dockerRun, version } from './cli
 import deployService from './services/deploy.service.js';
 import { compileAllFiles } from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
-import dryrunService from './services/dryrun.service.js';
+import { DryRunService } from './services/dryrun.service.js';
 import { v1toV2Migration, directoryMigration } from './services/migration.service.js';
 import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
@@ -127,7 +127,8 @@ program
         const { autoConfirm, debug, e: environment, integrationId } = this.opts();
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        dryrunService.run({ ...this.opts(), sync, connectionId, optionalEnvironment: environment, optionalProviderConfigKey: integrationId }, debug);
+        const dryRun = new DryRunService({ fullPath });
+        await dryRun.run({ ...this.opts(), sync, connectionId, optionalEnvironment: environment, optionalProviderConfigKey: integrationId }, debug);
     });
 
 program

@@ -1,6 +1,6 @@
 import { expect, describe, it, vi } from 'vitest';
 import type { SyncRunConfig } from './run.service.js';
-import SyncRun from './run.service.js';
+import { SyncRunService } from './run.service.js';
 import environmentService from '../environment.service.js';
 import LocalFileService from '../file/local.service.js';
 import { SyncType } from '../../models/Sync.js';
@@ -8,6 +8,7 @@ import * as configService from './config/config.service.js';
 import type { IntegrationServiceInterface } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
 import type { Account } from '../../models/Admin.js';
+import { NangoError } from '../../utils/error.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -48,32 +49,21 @@ describe('SyncRun', () => {
             provider_config_key: 'test_key',
             environment_id: 1
         },
+        nangoConfig: { models: {}, integrations: { test_key: { test_sync: { returns: ['null'], runs: 'every day' } } } },
         syncName: 'test_sync',
         syncType: SyncType.INCREMENTAL,
         syncId: 'some-sync',
         syncJobId: 123,
         debug: true
     };
+
     it('should initialize correctly', () => {
         const config: SyncRunConfig = {
-            integrationService: integrationService as unknown as IntegrationServiceInterface,
-            recordsService,
-            writeToDb: false,
-            nangoConnection: {
-                id: 1,
-                connection_id: '1234',
-                provider_config_key: 'test_key',
-                environment_id: 1
-            },
-            syncName: 'test_sync',
-            syncType: SyncType.INCREMENTAL,
-            syncId: 'some-sync',
-            syncJobId: 123,
-            loadLocation: '/tmp',
-            debug: true
+            ...dryRunConfig,
+            loadLocation: '/tmp'
         };
 
-        const syncRun = new SyncRun(config);
+        const syncRun = new SyncRunService(config);
 
         expect(syncRun).toBeTruthy();
         expect(syncRun.writeToDb).toEqual(false);
@@ -87,8 +77,46 @@ describe('SyncRun', () => {
         expect(syncRun.debug).toEqual(true);
     });
 
+    it('should fail if missing integration', async () => {
+        const config: SyncRunConfig = {
+            ...dryRunConfig,
+            nangoConfig: { models: {}, integrations: {} },
+            loadLocation: '/tmp'
+        };
+
+        const syncRun = new SyncRunService(config);
+        const run = await syncRun.run();
+
+        expect(run).toEqual({
+            success: false,
+            response: false,
+            error: new NangoError(
+                'sync_script_failure',
+                `The connection you provided which applies to integration "test_key" does not match any integration in the nango.yaml`,
+                404
+            )
+        });
+    });
+
+    it('should fail if missing script', async () => {
+        const config: SyncRunConfig = {
+            ...dryRunConfig,
+            nangoConfig: { models: {}, integrations: { test_key: {} } },
+            loadLocation: '/tmp'
+        };
+
+        const syncRun = new SyncRunService(config);
+        const run = await syncRun.run();
+
+        expect(run).toEqual({
+            success: false,
+            response: false,
+            error: new NangoError('sync_script_failure', `No script matching "test_sync" in this integration`, 404)
+        });
+    });
+
     it('should mock the run method in dry run mode with different fail and success conditions', async () => {
-        const syncRun = new SyncRun(dryRunConfig);
+        const syncRun = new SyncRunService(dryRunConfig);
 
         vi.spyOn(environmentService, 'getAccountAndEnvironment').mockImplementation(() => {
             return Promise.resolve({

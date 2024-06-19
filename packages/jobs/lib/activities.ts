@@ -19,7 +19,7 @@ import {
     configService,
     createActivityLog,
     LogActionEnum,
-    syncRunService,
+    SyncRunService,
     environmentService,
     createActivityLogMessage,
     createActivityLogAndLogMessage,
@@ -33,7 +33,8 @@ import {
     getSyncByIdAndName,
     getLastSyncDate,
     getSyncConfigRaw,
-    featureFlags
+    featureFlags,
+    getSyncConfig
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
 import { getLogger, stringifyError, errorToObject } from '@nangohq/utils';
@@ -92,7 +93,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
 
     const context: Context = Context.current();
 
-    const syncRun = new syncRunService({
+    const syncRun = new SyncRunService({
         bigQueryClient,
         integrationService,
         recordsService,
@@ -108,7 +109,8 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         input,
         provider: providerConfig.provider,
         debug: false,
-        temporalContext: context
+        temporalContext: context,
+        nangoConfig: await getSyncConfig({ nangoConnection, syncName: actionName, isAction: true })
     });
 
     const actionResults = await syncRun.run();
@@ -333,7 +335,7 @@ export async function syncProvider({
             });
         }
 
-        const syncRun = new syncRunService({
+        const syncRun = new SyncRunService({
             bigQueryClient,
             integrationService,
             recordsService,
@@ -348,6 +350,7 @@ export async function syncProvider({
             activityLogId,
             provider: providerConfig.provider,
             temporalContext,
+            nangoConfig: await getSyncConfig({ nangoConnection, syncName }),
             debug,
             logCtx
         });
@@ -429,13 +432,14 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         context.info.workflowExecution.runId
     );
 
-    const syncRun = new syncRunService({
+    const syncRun = new SyncRunService({
         bigQueryClient,
         integrationService,
         recordsService,
         slackService,
         writeToDb: true,
         nangoConnection,
+        nangoConfig: await getSyncConfig({ nangoConnection, syncName: parentSyncName }),
         sendSyncWebhook: sendSync,
         syncJobId: syncJobId?.id as number,
         syncName: parentSyncName,
@@ -466,13 +470,14 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
 
     const context: Context = Context.current();
 
-    const syncRun = new syncRunService({
+    const syncRun = new SyncRunService({
         bigQueryClient,
         integrationService,
         recordsService,
         slackService,
         writeToDb: true,
         nangoConnection,
+        nangoConfig: await getSyncConfig({ nangoConnection, syncName: name }),
         syncName: name,
         sendSyncWebhook: sendSync,
         isAction: false,

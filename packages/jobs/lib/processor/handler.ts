@@ -16,9 +16,10 @@ import {
     featureFlags,
     getLastSyncDate,
     getSyncByIdAndName,
+    getSyncConfig,
     getSyncConfigRaw,
     LogActionEnum,
-    syncRunService,
+    SyncRunService,
     SyncStatus,
     SyncType,
     updateSyncJobStatus
@@ -145,7 +146,7 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
             });
         }
 
-        const syncRun = new syncRunService({
+        const syncRun = new SyncRunService({
             bigQueryClient,
             integrationService,
             recordsService,
@@ -155,6 +156,7 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
             syncId: task.syncId,
             syncJobId: syncJob.id,
             nangoConnection: task.connection,
+            nangoConfig: await getSyncConfig({ nangoConnection: task.connection, syncName: task.syncName }),
             syncName: task.syncName,
             syncType: syncType,
             activityLogId,
@@ -225,7 +227,7 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         return Err(`Provider config not found for connection: ${task.connection}`);
     }
 
-    const syncRun = new syncRunService({
+    const syncRun = new SyncRunService({
         bigQueryClient,
         integrationService,
         recordsService,
@@ -234,6 +236,7 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         sendSyncWebhook: sendSync,
         logCtx: await logContextGetter.get({ id: String(task.activityLogId) }),
         nangoConnection: task.connection,
+        nangoConfig: await getSyncConfig({ nangoConnection: task.connection, syncName: task.actionName, isAction: true }),
         syncName: task.actionName,
         isAction: true,
         syncType: SyncType.ACTION,
@@ -267,7 +270,7 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
 
     const syncJobId = await createSyncJob(sync.id, SyncType.WEBHOOK, SyncStatus.RUNNING, task.name, task.connection, task.id);
 
-    const syncRun = new syncRunService({
+    const syncRun = new SyncRunService({
         bigQueryClient,
         integrationService,
         recordsService,
@@ -275,6 +278,7 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
         writeToDb: true,
         sendSyncWebhook: sendSync,
         nangoConnection: task.connection,
+        nangoConfig: await getSyncConfig({ nangoConnection: task.connection, syncName: task.parentSyncName }),
         syncJobId: syncJobId?.id as number,
         syncName: task.parentSyncName,
         isAction: false,

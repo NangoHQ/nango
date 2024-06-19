@@ -1,8 +1,4 @@
-import fs from 'fs';
 import chalk from 'chalk';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import yaml from 'js-yaml';
 import type {
     NangoConfig,
     NangoConfigV1,
@@ -21,35 +17,8 @@ import localFileService from './file/local.service.js';
 import { NangoError } from '../utils/error.js';
 import { determineVersion, getInterval, isJsOrTsType } from '@nangohq/nango-yaml';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 export const nangoConfigFile = 'nango.yaml';
 export const SYNC_FILE_EXTENSION = 'js';
-
-export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig | null> {
-    let location;
-
-    if (loadLocation) {
-        location = path.resolve(`${loadLocation}/${nangoConfigFile}`);
-    } else if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
-        location = path.resolve(process.env['NANGO_INTEGRATIONS_FULL_PATH'], nangoConfigFile);
-    } else {
-        location = path.resolve(__dirname, `../nango-integrations/${nangoConfigFile}`);
-    }
-
-    try {
-        const yamlConfig = fs.readFileSync(location, 'utf8');
-
-        const configData: NangoConfig = yaml.load(yamlConfig) as NangoConfig;
-
-        return Promise.resolve(configData);
-    } catch {
-        console.log(`no nango.yaml config found at ${location}`);
-    }
-
-    return Promise.resolve(null);
-}
 
 export function loadStandardConfig(configData: NangoConfig, showMessages = false, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[] | null> {
     try {
