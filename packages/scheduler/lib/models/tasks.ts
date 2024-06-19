@@ -40,7 +40,7 @@ const TaskStateTransition = {
     }
 };
 
-interface DbTask {
+export interface DbTask {
     readonly id: string;
     readonly name: string;
     readonly payload: JsonValue;
@@ -57,8 +57,9 @@ interface DbTask {
     last_heartbeat_at: Date;
     output: JsonValue | null;
     terminated: boolean;
+    readonly schedule_id: string | null;
 }
-const DbTask = {
+export const DbTask = {
     to: (task: Task): DbTask => {
         return {
             id: task.id,
@@ -76,7 +77,8 @@ const DbTask = {
             last_state_transition_at: task.lastStateTransitionAt,
             last_heartbeat_at: task.lastHeartbeatAt,
             output: task.output,
-            terminated: task.terminated
+            terminated: task.terminated,
+            schedule_id: task.scheduleId
         };
     },
     from: (dbTask: DbTask): Task => {
@@ -96,7 +98,8 @@ const DbTask = {
             lastStateTransitionAt: dbTask.last_state_transition_at,
             lastHeartbeatAt: dbTask.last_heartbeat_at,
             output: dbTask.output,
-            terminated: dbTask.terminated
+            terminated: dbTask.terminated,
+            scheduleId: dbTask.schedule_id
         };
     }
 };
@@ -111,7 +114,8 @@ export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Resul
         lastStateTransitionAt: now,
         lastHeartbeatAt: now,
         terminated: false,
-        output: null
+        output: null,
+        scheduleId: taskProps.scheduleId
     };
     try {
         const inserted = await db.from<DbTask>(TASKS_TABLE).insert(DbTask.to(newTask)).returning('*');
@@ -132,7 +136,10 @@ export async function get(db: knex.Knex, taskId: string): Promise<Result<Task>> 
     return Ok(DbTask.from(task));
 }
 
-export async function search(db: knex.Knex, params?: { ids?: string[]; groupKey?: string; state?: TaskState; limit?: number }): Promise<Result<Task[]>> {
+export async function search(
+    db: knex.Knex,
+    params?: { ids?: string[]; groupKey?: string; states?: TaskState[]; scheduleId?: string; limit?: number }
+): Promise<Result<Task[]>> {
     const query = db.from<DbTask>(TASKS_TABLE);
     if (params?.ids) {
         query.whereIn('id', params.ids);
@@ -140,8 +147,11 @@ export async function search(db: knex.Knex, params?: { ids?: string[]; groupKey?
     if (params?.groupKey) {
         query.where('group_key', params.groupKey);
     }
-    if (params?.state) {
-        query.where('state', params.state);
+    if (params?.states) {
+        query.whereIn('state', params.states);
+    }
+    if (params?.scheduleId) {
+        query.where('schedule_id', params.scheduleId);
     }
     const limit = params?.limit || 100;
     const tasks = await query.limit(limit).orderBy('id');
@@ -285,7 +295,6 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
                     })
                     .forUpdate()
                     .skipLocked()
-                    .debug(true)
             )
             .returning('*');
         if (!tasks?.[0]) {

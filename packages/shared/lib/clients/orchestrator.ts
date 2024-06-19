@@ -1,3 +1,5 @@
+import ms from 'ms';
+import type { StringValue } from 'ms';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { Err, Ok, stringifyError, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -20,11 +22,28 @@ import type { LogLevel } from '@nangohq/types';
 import SyncClient from './sync.client.js';
 import type { Client as TemporalClient } from '@temporalio/client';
 import { LogActionEnum } from '../models/Activity.js';
-import type { ExecuteReturn, ExecuteActionProps, ExecuteWebhookProps, ExecutePostConnectionProps } from '@nangohq/nango-orchestrator';
+import type {
+    ExecuteReturn,
+    ExecuteActionProps,
+    ExecuteWebhookProps,
+    ExecutePostConnectionProps,
+    ExecuteSyncProps,
+    VoidReturn,
+    OrchestratorTask,
+    RecurringProps,
+    SchedulesReturn,
+    OrchestratorSchedule
+} from '@nangohq/nango-orchestrator';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
-import type { SyncConfig } from '../models/index.js';
+import type { NangoIntegrationData, Sync, SyncConfig } from '../models/index.js';
+import { SyncCommand } from '../models/index.js';
 import tracer from 'dd-trace';
+import { clearLastSyncDate } from '../services/sync/sync.service.js';
+import { isSyncJobRunning } from '../services/sync/job.service.js';
+import { updateSyncScheduleFrequency } from '../services/sync/schedule.service.js';
+import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
+import environmentService from '../services/environment.service.js';
 
 async function getTemporal(): Promise<TemporalClient> {
     const instance = await SyncClient.getInstance();
@@ -34,17 +53,58 @@ async function getTemporal(): Promise<TemporalClient> {
     return instance.getClient() as TemporalClient;
 }
 
+export interface RecordsServiceInterface {
+    deleteRecordsBySyncId({ syncId }: { syncId: string }): Promise<{ totalDeletedRecords: number }>;
+}
+
 export interface OrchestratorClientInterface {
+    recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
     executePostConnection(props: ExecutePostConnectionProps): Promise<ExecuteReturn>;
+    executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
+    pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
+    cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
+    searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
 }
+
+const ScheduleName = {
+    get: ({ environmentId, syncId }: { environmentId: number; syncId: string }): string => {
+        return `environment:${environmentId}:sync:${syncId}`;
+    },
+    parse: (scheduleName: string): Result<{ environmentId: number; syncId: string }> => {
+        const parts = scheduleName.split(':');
+        if (parts.length !== 4 || parts[0] !== 'environment' || isNaN(Number(parts[1])) || parts[2] !== 'sync' || !parts[3] || parts[3].length === 0) {
+            return Err(`Invalid schedule name: ${scheduleName}. expected format: environment:<environmentId>:sync:<syncId>`);
+        }
+        return Ok({ environmentId: Number(parts[1]), syncId: parts[3] });
+    }
+};
 
 export class Orchestrator {
     private client: OrchestratorClientInterface;
 
     public constructor(client: OrchestratorClientInterface) {
         this.client = client;
+    }
+
+    async searchSchedules(props: { syncId: string; environmentId: number }[]): Promise<Result<Map<string, OrchestratorSchedule>>> {
+        const scheduleNames = props.map(({ syncId, environmentId }) => ScheduleName.get({ environmentId, syncId }));
+        const schedules = await this.client.searchSchedules({ scheduleNames, limit: scheduleNames.length });
+        if (schedules.isErr()) {
+            return Err(`Failed to get schedules: ${stringifyError(schedules.error)}`);
+        }
+        const scheduleMap = schedules.value.reduce((map, schedule) => {
+            const parsed = ScheduleName.parse(schedule.name);
+            if (parsed.isOk()) {
+                map.set(parsed.value.syncId, schedule);
+            }
+            return map;
+        }, new Map<string, OrchestratorSchedule>());
+        return Ok(scheduleMap);
     }
 
     async triggerAction<T = any>({
@@ -75,7 +135,7 @@ export class Orchestrator {
                 },
                 timestamp: Date.now()
             });
-            await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input: JSON.stringify(input, null, 2) });
+            await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input });
 
             let res: Result<any, NangoError>;
 
@@ -97,7 +157,7 @@ export class Orchestrator {
                 try {
                     const groupKey: string = 'action';
                     const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:action:${actionName}:at:${new Date().toISOString()}:${uuid()}`;
-                    const parsedInput = JSON.parse(JSON.stringify(input));
+                    const parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
                     const args = {
                         actionName,
                         connection: {
@@ -114,7 +174,8 @@ export class Orchestrator {
                         groupKey,
                         args
                     });
-                    res = actionResult.mapError((e) => new NangoError('action_failure', e.payload ?? { error: e.message }));
+
+                    res = actionResult.mapError((e) => new NangoError('action_failure', { error: e.message, ...(e.payload ? { payload: e.payload } : {}) }));
                     if (res.isErr()) {
                         span.setTag('error', res.error);
                     }
@@ -156,7 +217,7 @@ export class Orchestrator {
                         // Errors received from temporal are raw objects not classes
                         const error = new NangoError(rawError['type'], rawError['payload'], rawError['status']);
                         res = Err(error);
-                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
+                        await logCtx.error(`Failed with error ${rawError['type']}`, { payload: rawError['payload'] });
                     } else {
                         res = Ok(response);
                     }
@@ -172,22 +233,7 @@ export class Orchestrator {
             }
 
             if (res.isErr()) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`
-                });
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `The action workflow ${workflowId} did not complete successfully`
-                });
-                await logCtx.error(`The action workflow ${workflowId} did not complete successfully`);
-                return res;
+                throw res.error;
             }
 
             const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
@@ -353,7 +399,7 @@ export class Orchestrator {
                 try {
                     const groupKey: string = 'webhook';
                     const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:webhook:${webhookName}:at:${new Date().toISOString()}:${uuid()}`;
-                    const parsedInput = JSON.parse(JSON.stringify(input));
+                    const parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
                     const args = {
                         webhookName,
                         parentSyncName: syncConfig.sync_name,
@@ -422,17 +468,7 @@ export class Orchestrator {
             }
 
             if (res.isErr()) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: integration.environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `The webhook workflow ${workflowId} did not complete successfully`
-                });
-                await logCtx.error('The webhook workflow did not complete successfully');
-                await logCtx.failed();
-
-                return res;
+                throw res.error;
             }
 
             await createActivityLogMessageAndEnd({
@@ -527,6 +563,7 @@ export class Orchestrator {
                         postConnectionName: name,
                         connection: {
                             id: connection.id!,
+                            connection_id: connection.connection_id,
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
@@ -578,7 +615,7 @@ export class Orchestrator {
                         // Errors received from temporal are raw objects not classes
                         const error = new NangoError(rawError['type'], rawError['payload'], rawError['status']);
                         res = Err(error);
-                        await logCtx.error(`Failed with error ${rawError['type']} ${JSON.stringify(rawError['payload'])}`);
+                        await logCtx.error(`Failed with error ${rawError['type']}`, { payload: rawError['payload'] });
                     } else {
                         res = Ok(response);
                     }
@@ -594,24 +631,7 @@ export class Orchestrator {
             }
 
             if (res.isErr()) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: connection.environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`
-                });
-                await logCtx.error(`Failed with error ${res.error.type} ${JSON.stringify(res.error.payload)}`);
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: connection.environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `The post connection script workflow ${workflowId} did not complete successfully`
-                });
-                await logCtx.error(`The post connection script workflow ${workflowId} did not complete successfully`);
-
-                return res;
+                throw res.error;
             }
 
             const content = `The post connection script workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
@@ -685,5 +705,466 @@ export class Orchestrator {
             const totalRunTime = (endTime - startTime) / 1000;
             metrics.duration(metrics.Types.POST_CONNECTION_SCRIPT_RUNTIME, totalRunTime);
         }
+    }
+
+    async updateSyncFrequency({
+        syncId,
+        interval,
+        syncName,
+        environmentId,
+        activityLogId,
+        logCtx
+    }: {
+        syncId: string;
+        interval: string;
+        syncName: string;
+        environmentId: number;
+        activityLogId?: number;
+        logCtx?: LogContext;
+    }): Promise<Result<void>> {
+        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
+        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+
+        // Orchestrator
+        const scheduleName = ScheduleName.get({ environmentId, syncId });
+
+        const cleanInterval = this.cleanInterval(interval);
+        if (isOrchestrator && cleanInterval.isErr()) {
+            errorManager.report(cleanInterval.error, {
+                source: ErrorSourceEnum.CUSTOMER,
+                operation: LogActionEnum.SYNC_CLIENT,
+                environmentId,
+                metadata: {
+                    syncName,
+                    scheduleName,
+                    interval
+                }
+            });
+            return Err(cleanInterval.error);
+        }
+        let res: Result<void> = Ok(undefined);
+        if (cleanInterval.isOk()) {
+            const frequencyMs = ms(cleanInterval.value as StringValue);
+            res = await this.client.updateSyncFrequency({ scheduleName, frequencyMs });
+        }
+
+        // Legacy
+        const { success, error } = await updateSyncScheduleFrequency(syncId, interval, syncName, environmentId, activityLogId, logCtx);
+
+        if (isOrchestrator) {
+            if (res.isErr()) {
+                errorManager.report(res.error, {
+                    source: ErrorSourceEnum.PLATFORM,
+                    operation: LogActionEnum.SYNC_CLIENT,
+                    environmentId,
+                    metadata: {
+                        syncName,
+                        scheduleName,
+                        interval
+                    }
+                });
+            } else {
+                await logCtx?.info(`Sync frequency for "${syncName}" updated to ${interval}`);
+            }
+            return res;
+        }
+        return success ? Ok(undefined) : Err(error?.message ?? 'Failed to update sync frequency');
+    }
+
+    async runSyncCommand({
+        syncId,
+        command,
+        activityLogId,
+        environmentId,
+        logCtx,
+        recordsService,
+        initiator
+    }: {
+        syncId: string;
+        command: SyncCommand;
+        activityLogId: number;
+        environmentId: number;
+        logCtx: LogContext;
+        recordsService: RecordsServiceInterface;
+        initiator: string;
+    }): Promise<Result<void>> {
+        try {
+            const cancelling = async (syncId: string): Promise<Result<void>> => {
+                const syncJob = await isSyncJobRunning(syncId);
+                if (!syncJob || !syncJob?.run_id) {
+                    return Err(`Sync job not found for syncId: ${syncId}`);
+                }
+                await this.client.cancel({ taskId: syncJob?.run_id, reason: initiator });
+                return Ok(undefined);
+            };
+            const scheduleName = ScheduleName.get({ environmentId, syncId });
+            switch (command) {
+                case SyncCommand.CANCEL:
+                    return cancelling(syncId);
+                case SyncCommand.PAUSE:
+                    return this.client.pauseSync({ scheduleName });
+                case SyncCommand.UNPAUSE:
+                    return await this.client.unpauseSync({ scheduleName });
+                case SyncCommand.RUN:
+                    return this.client.executeSync({ scheduleName });
+                case SyncCommand.RUN_FULL: {
+                    await cancelling(syncId);
+
+                    await clearLastSyncDate(syncId);
+                    const del = await recordsService.deleteRecordsBySyncId({ syncId });
+                    await createActivityLogMessage({
+                        level: 'info',
+                        environment_id: environmentId,
+                        activity_log_id: activityLogId,
+                        timestamp: Date.now(),
+                        content: `Records for the sync were deleted successfully`
+                    });
+                    await logCtx.info(`Records for the sync were deleted successfully`, del);
+
+                    return this.client.executeSync({ scheduleName });
+                }
+            }
+        } catch (err) {
+            const errorMessage = stringifyError(err, { pretty: true });
+
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                environment_id: environmentId,
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content: `The sync command: ${command} failed with error: ${errorMessage}`
+            });
+            await logCtx.error(`Sync command failed "${command}"`, { error: err, command });
+
+            return Err(err as Error);
+        }
+    }
+
+    // TODO: remove once temporal is removed
+    async runSyncCommandHelper(props: {
+        scheduleId: string;
+        syncId: string;
+        command: SyncCommand;
+        activityLogId: number;
+        environmentId: number;
+        providerConfigKey: string;
+        connectionId: string;
+        syncName: string;
+        nangoConnectionId?: number | undefined;
+        logCtx: LogContext;
+        recordsService: RecordsServiceInterface;
+        initiator: string;
+    }): Promise<Result<void>> {
+        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${props.environmentId}`, false);
+        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+
+        const runWithOrchestrator = () => {
+            return this.runSyncCommand({
+                syncId: props.syncId,
+                command: props.command,
+                activityLogId: props.activityLogId,
+                environmentId: props.environmentId,
+                logCtx: props.logCtx,
+                recordsService: props.recordsService,
+                initiator: props.initiator
+            });
+        };
+        const runLegacy = async (): Promise<Result<void>> => {
+            const syncClient = await SyncClient.getInstance();
+            if (!syncClient) {
+                return Err(new NangoError('failed_to_get_sync_client'));
+            }
+            const res = await syncClient.runSyncCommand({
+                scheduleId: props.scheduleId,
+                syncId: props.syncId,
+                command: props.command,
+                activityLogId: props.activityLogId,
+                environmentId: props.environmentId,
+                providerConfigKey: props.providerConfigKey,
+                connectionId: props.connectionId,
+                syncName: props.syncName,
+                nangoConnectionId: props.nangoConnectionId,
+                logCtx: props.logCtx,
+                recordsService: props.recordsService,
+                initiator: props.initiator
+            });
+            return res.isErr() ? Err(res.error) : Ok(undefined);
+        };
+        const isRunFullCommand = props.command === SyncCommand.RUN_FULL;
+
+        if (isRunFullCommand) {
+            // RUN_FULL command is triggering side effect (deleting records, ...)
+            // so we run only orchestrator OR legacy
+            if (isOrchestrator) {
+                return runWithOrchestrator();
+            }
+            return await runLegacy();
+        } else {
+            // if the command is NOT a run command,
+            // we run BOTH orchestrator and legacy
+            const [resOrchestrator, resLegacy] = await Promise.all([runWithOrchestrator(), runLegacy()]);
+            if (isOrchestrator) {
+                return resOrchestrator;
+            }
+            return resLegacy;
+        }
+    }
+
+    async deleteSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
+        const res = await this.client.deleteSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
+                metadata: { syncId, environmentId }
+            });
+        }
+        return res;
+    }
+
+    async scheduleSync({
+        nangoConnection,
+        sync,
+        providerConfig,
+        syncName,
+        syncData,
+        logContextGetter,
+        debug = false,
+        shouldLog
+    }: {
+        nangoConnection: NangoConnection;
+        sync: Sync;
+        providerConfig: ProviderConfig;
+        syncName: string;
+        syncData: NangoIntegrationData;
+        logContextGetter: LogContextGetter;
+        debug?: boolean;
+        shouldLog: boolean; // to remove once temporal is removed
+    }): Promise<Result<void>> {
+        let logCtx: LogContext | undefined;
+
+        try {
+            const activityLogId = await createActivityLog({
+                level: 'info' as LogLevel,
+                success: null,
+                action: LogActionEnum.SYNC_INIT,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: nangoConnection.connection_id,
+                provider_config_key: nangoConnection.provider_config_key,
+                provider: providerConfig.provider,
+                session_id: sync?.id?.toString(),
+                environment_id: nangoConnection.environment_id,
+                operation_name: syncName
+            });
+            if (!activityLogId) {
+                return Err(new NangoError('failed_to_create_activity_log'));
+            }
+
+            const syncConfig = await getSyncConfigRaw({
+                environmentId: nangoConnection.environment_id,
+                config_id: providerConfig.id!,
+                name: syncName,
+                isAction: false
+            });
+
+            const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
+
+            logCtx = await logContextGetter.create(
+                { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
+                {
+                    account,
+                    environment,
+                    integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                    connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
+                    syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name }
+                },
+                { dryRun: shouldLog }
+            );
+
+            const interval = this.cleanInterval(syncData.runs);
+
+            if (interval.isErr()) {
+                const content = `The sync was not scheduled due to an error with the sync interval "${syncData.runs}": ${interval.error.message}`;
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id: nangoConnection.environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content
+                });
+                await logCtx.error('The sync was not created or started due to an error with the sync interval', {
+                    error: interval.error,
+                    runs: syncData.runs
+                });
+                await logCtx.failed();
+
+                errorManager.report(content, {
+                    source: ErrorSourceEnum.CUSTOMER,
+                    operation: LogActionEnum.SYNC_CLIENT,
+                    environmentId: nangoConnection.environment_id,
+                    metadata: {
+                        connectionDetails: nangoConnection,
+                        providerConfig,
+                        syncName,
+                        sync,
+                        syncData
+                    }
+                });
+
+                await updateSuccessActivityLog(activityLogId, false);
+
+                return Err(interval.error);
+            }
+
+            const schedule = await this.client.recurring({
+                name: ScheduleName.get({ environmentId: nangoConnection.environment_id, syncId: sync.id }),
+                state: syncData.auto_start ? 'STARTED' : 'PAUSED',
+                frequencyMs: ms(interval.value as StringValue),
+                groupKey: 'sync',
+                retry: { max: 0 },
+                timeoutSettingsInSecs: {
+                    createdToStarted: 60 * 60, // 1 hour
+                    startedToCompleted: 60 * 60 * 24, // 1 day
+                    heartbeat: 30 * 60 // 30 minutes
+                },
+                startsAt: new Date(),
+                args: {
+                    type: 'sync',
+                    syncId: sync.id,
+                    syncName,
+                    debug,
+                    connection: {
+                        id: nangoConnection.id!,
+                        provider_config_key: nangoConnection.provider_config_key,
+                        environment_id: nangoConnection.environment_id,
+                        connection_id: nangoConnection.connection_id
+                    }
+                }
+            });
+
+            if (schedule.isErr()) {
+                throw schedule.error;
+            }
+
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                environment_id: nangoConnection.environment_id,
+                activity_log_id: activityLogId,
+                content: `Scheduled to run "${syncData.runs}"`,
+                timestamp: Date.now()
+            });
+            await logCtx.info('Scheduled successfully', { runs: syncData.runs });
+            await logCtx.success();
+            return Ok(undefined);
+        } catch (err) {
+            errorManager.report(err, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC_CLIENT,
+                environmentId: nangoConnection.environment_id,
+                metadata: {
+                    syncName,
+                    connectionDetails: JSON.stringify(nangoConnection),
+                    syncId: sync.id,
+                    providerConfig,
+                    syncData: JSON.stringify(syncData)
+                }
+            });
+            if (logCtx) {
+                await logCtx.error('Failed to init sync', { error: err });
+                await logCtx.failed();
+            }
+            return Err(`Failed to schedule sync: ${err}`);
+        }
+    }
+    // TODO: remove once temporal is removed
+    async scheduleSyncHelper(
+        nangoConnection: NangoConnection,
+        sync: Sync,
+        providerConfig: ProviderConfig,
+        syncName: string,
+        syncData: NangoIntegrationData,
+        logContextGetter: LogContextGetter,
+        debug = false
+    ): Promise<Result<void>> {
+        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
+        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${nangoConnection.environment_id}`, false);
+        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
+
+        const res = await this.scheduleSync({
+            nangoConnection,
+            sync,
+            providerConfig,
+            syncName,
+            syncData,
+            logContextGetter,
+            shouldLog: isOrchestrator,
+            debug
+        });
+
+        const syncClient = await SyncClient.getInstance();
+
+        let resTemporal: Result<void>;
+        if (syncClient) {
+            try {
+                const shouldLog = !isOrchestrator;
+                await syncClient.startContinuous(nangoConnection, sync, providerConfig, syncName, syncData, logContextGetter, shouldLog, debug);
+                resTemporal = Ok(undefined);
+            } catch (e) {
+                resTemporal = Err(`Failed to schedule sync: ${e}`);
+            }
+        } else {
+            resTemporal = Err(new NangoError('failed_to_get_sync_client'));
+        }
+
+        return isOrchestrator ? res : resTemporal;
+    }
+
+    private cleanInterval(runs: string): Result<string> {
+        if (runs === 'every half day') {
+            return Ok('12h');
+        }
+
+        if (runs === 'every half hour') {
+            return Ok('30m');
+        }
+
+        if (runs === 'every quarter hour') {
+            return Ok('15m');
+        }
+
+        if (runs === 'every hour') {
+            return Ok('1h');
+        }
+
+        if (runs === 'every day') {
+            return Ok('1d');
+        }
+
+        if (runs === 'every month') {
+            return Ok('30d');
+        }
+
+        if (runs === 'every week') {
+            return Ok('7d');
+        }
+
+        const interval = runs.replace('every ', '') as StringValue;
+
+        if (!ms(interval)) {
+            const error = new NangoError('sync_interval_invalid');
+            return Err(error);
+        }
+
+        if (ms(interval) < ms('5m')) {
+            const error = new NangoError('sync_interval_too_short');
+            return Err(error);
+        }
+
+        return Ok(interval);
     }
 }

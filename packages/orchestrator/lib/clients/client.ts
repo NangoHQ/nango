@@ -1,6 +1,10 @@
-import { route as postScheduleRoute } from '../routes/v1/postSchedule.js';
+import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
+import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
+import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
+import { route as postScheduleRunRoute } from '../routes/v1/schedules/postRun.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
-import { route as postSearchRoute } from '../routes/v1/postSearch.js';
+import { route as postTasksSearchRoute } from '../routes/v1/tasks/postSearch.js';
+import { route as postSchedulesSearchRoute } from '../routes/v1/schedules/postSearch.js';
 import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js';
 import { route as putTaskRoute } from '../routes/v1/tasks/putTaskId.js';
 import { route as postHeartbeatRoute } from '../routes/v1/tasks/taskId/postHeartbeat.js';
@@ -9,18 +13,19 @@ import { Ok, Err, routeFetch, stringifyError, getLogger } from '@nangohq/utils';
 import type { Endpoint } from '@nangohq/types';
 import type {
     ClientError,
-    SchedulingProps,
+    ImmediateProps,
     ExecuteActionProps,
     ExecuteProps,
     ExecuteReturn,
     ExecuteWebhookProps,
     ExecutePostConnectionProps,
-    TaskAction,
-    TaskWebhook,
-    TaskPostConnection,
-    OrchestratorTask
+    OrchestratorTask,
+    RecurringProps,
+    ExecuteSyncProps,
+    VoidReturn,
+    SchedulesReturn
 } from './types.js';
-import { validateTask } from './validate.js';
+import { validateTask, validateSchedule } from './validate.js';
 import type { JsonValue } from 'type-fest';
 
 const logger = getLogger('orchestrator.client');
@@ -36,10 +41,9 @@ export class OrchestratorClient {
         return routeFetch(this.baseUrl, route);
     }
 
-    public async schedule(props: SchedulingProps): Promise<Result<{ taskId: string }, ClientError>> {
-        const res = await this.routeFetch(postScheduleRoute)({
+    public async immediate(props: ImmediateProps): Promise<Result<{ taskId: string }, ClientError>> {
+        const res = await this.routeFetch(postImmediateRoute)({
             body: {
-                scheduling: 'immediate',
                 name: props.name,
                 groupKey: props.groupKey,
                 retry: props.retry,
@@ -50,11 +54,95 @@ export class OrchestratorClient {
         if ('error' in res) {
             return Err({
                 name: res.error.code,
-                message: res.error.message || `Error scheduling tasks`,
-                payload: JSON.stringify(props)
+                message: res.error.message || `Error scheduling  immediate task`,
+                payload: props
             });
         } else {
             return Ok(res);
+        }
+    }
+
+    public async recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }, ClientError>> {
+        const res = await this.routeFetch(postRecurringRoute)({
+            body: {
+                name: props.name,
+                state: props.state,
+                startsAt: props.startsAt,
+                frequencyMs: props.frequencyMs,
+                groupKey: props.groupKey,
+                retry: props.retry,
+                timeoutSettingsInSecs: props.timeoutSettingsInSecs,
+                args: props.args
+            }
+        });
+        if ('error' in res) {
+            const startsAt = props.startsAt.toISOString();
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error creating recurring schedule`,
+                payload: { ...props, startsAt }
+            });
+        } else {
+            return Ok(res);
+        }
+    }
+
+    public async pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'PAUSED' });
+    }
+
+    public async unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'STARTED' });
+    }
+
+    public async deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'DELETED' });
+    }
+
+    private async setSyncState({ scheduleName, state }: { scheduleName: string; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {
+        const res = await this.routeFetch(putRecurringRoute)({
+            body: { schedule: { name: scheduleName, state } }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error setting schedule state`,
+                payload: { scheduleName, state }
+            });
+        } else {
+            return Ok(undefined);
+        }
+    }
+
+    public async updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn> {
+        const res = await this.routeFetch(putRecurringRoute)({
+            body: { schedule: { name: scheduleName, frequencyMs } }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error updateing schedule frequency`,
+                payload: { scheduleName, frequencyMs }
+            });
+        } else {
+            return Ok(undefined);
+        }
+    }
+
+    public async executeSync(props: ExecuteSyncProps): Promise<VoidReturn> {
+        const res = await this.routeFetch(postScheduleRunRoute)({
+            body: {
+                scheduleName: props.scheduleName
+            }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error creating recurring schedule`,
+                payload: props
+            });
+        } else {
+            return Ok(undefined);
         }
     }
 
@@ -63,8 +151,8 @@ export class OrchestratorClient {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
             ...props
-        } as SchedulingProps;
-        const res = await this.schedule(scheduleProps);
+        } as ImmediateProps;
+        const res = await this.immediate(scheduleProps);
         if (res.isErr()) {
             return res;
         }
@@ -113,14 +201,14 @@ export class OrchestratorClient {
         const { args, ...rest } = props;
         const schedulingProps = {
             ...rest,
+            timeoutSettingsInSecs: {
+                createdToStarted: 30,
+                startedToCompleted: 15 * 60,
+                heartbeat: 999999 // actions don't need to heartbeat
+            },
             args: {
                 ...args,
-                type: 'action' as const,
-                timeoutSettingsInSecs: {
-                    createdToStarted: 30,
-                    startedToCompleted: 30,
-                    heartbeat: 999 // actions don't need to heartbeat
-                }
+                type: 'action' as const
             }
         };
         return this.execute(schedulingProps);
@@ -130,14 +218,14 @@ export class OrchestratorClient {
         const { args, ...rest } = props;
         const schedulingProps = {
             ...rest,
+            timeoutSettingsInSecs: {
+                createdToStarted: 30,
+                startedToCompleted: 15 * 60,
+                heartbeat: 999999 // webhooks don't need to heartbeat
+            },
             args: {
                 ...args,
-                type: 'webhook' as const,
-                timeoutSettingsInSecs: {
-                    createdToStarted: 30,
-                    startedToCompleted: 30,
-                    heartbeat: 999 // webhooks don't need to heartbeat
-                }
+                type: 'webhook' as const
             }
         };
         return this.execute(schedulingProps);
@@ -154,8 +242,7 @@ export class OrchestratorClient {
         };
         return this.execute(schedulingProps);
     }
-
-    public async search({
+    public async searchTasks({
         ids,
         groupKey,
         limit
@@ -163,13 +250,13 @@ export class OrchestratorClient {
         ids?: string[];
         groupKey?: string;
         limit?: number;
-    }): Promise<Result<(TaskWebhook | TaskAction | TaskPostConnection)[], ClientError>> {
+    }): Promise<Result<OrchestratorTask[], ClientError>> {
         const body = {
             ...(ids ? { ids } : {}),
             ...(groupKey ? { groupKey } : {}),
             ...(limit ? { limit } : {})
         };
-        const res = await this.routeFetch(postSearchRoute)({ body });
+        const res = await this.routeFetch(postTasksSearchRoute)({ body });
         if ('error' in res) {
             return Err({
                 name: res.error.code,
@@ -180,12 +267,35 @@ export class OrchestratorClient {
             const tasks = res.flatMap((task) => {
                 const validated = validateTask(task);
                 if (validated.isErr()) {
-                    logger.error(`Search: error validating task: ${JSON.stringify(validated.error.message)}`);
+                    logger.error(`Search: error validating task: ${validated.error.message}`);
                     return [];
                 }
                 return [validated.value];
             });
             return Ok(tasks);
+        }
+    }
+
+    public async searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn> {
+        const res = await this.routeFetch(postSchedulesSearchRoute)({
+            body: { names: scheduleNames, limit }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error listing schedules`,
+                payload: { scheduleNames }
+            });
+        } else {
+            const schedule = res.flatMap((schedule) => {
+                const validated = validateSchedule(schedule);
+                if (validated.isErr()) {
+                    logger.error(`search: error validating schedule: ${validated.error.message}`);
+                    return [];
+                }
+                return [validated.value];
+            });
+            return Ok(schedule);
         }
     }
 
@@ -215,7 +325,7 @@ export class OrchestratorClient {
             const dequeuedTasks = res.flatMap((task) => {
                 const validated = validateTask(task);
                 if (validated.isErr()) {
-                    logger.error(`Dequeue: error validating task: ${JSON.stringify(validated.error.message)}`);
+                    logger.error(`Dequeue: error validating task: ${validated.error.message}`);
                     return [];
                 }
                 return [validated.value];
@@ -239,13 +349,7 @@ export class OrchestratorClient {
         }
     }
 
-    public async succeed({
-        taskId,
-        output
-    }: {
-        taskId: string;
-        output: JsonValue;
-    }): Promise<Result<TaskAction | TaskWebhook | TaskPostConnection, ClientError>> {
+    public async succeed({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<OrchestratorTask, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
             body: { output, state: 'SUCCEEDED' }
@@ -265,7 +369,7 @@ export class OrchestratorClient {
         }
     }
 
-    public async failed({ taskId, error }: { taskId: string; error: Error }): Promise<Result<TaskAction | TaskWebhook | TaskPostConnection, ClientError>> {
+    public async failed({ taskId, error }: { taskId: string; error: Error }): Promise<Result<OrchestratorTask, ClientError>> {
         const output = { name: error.name, message: error.message };
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
@@ -286,7 +390,7 @@ export class OrchestratorClient {
         }
     }
 
-    public async cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<TaskAction | TaskWebhook | TaskPostConnection, ClientError>> {
+    public async cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
             body: { output: reason, state: 'CANCELLED' }

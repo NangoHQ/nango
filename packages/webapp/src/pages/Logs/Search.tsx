@@ -7,7 +7,15 @@ import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 
 import { MultiSelect } from '../../components/MultiSelect';
-import { columns, integrationsDefaultOptions, statusDefaultOptions, statusOptions, syncsDefaultOptions, typesDefaultOptions } from './constants';
+import {
+    columns,
+    connectionsDefaultOptions,
+    integrationsDefaultOptions,
+    statusDefaultOptions,
+    statusOptions,
+    syncsDefaultOptions,
+    typesDefaultOptions
+} from './constants';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
     SearchOperations,
@@ -21,9 +29,9 @@ import type {
 import Spinner from '../../components/ui/Spinner';
 // import { Input } from '../../components/ui/input/Input';
 // import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
-import { formatQuantity } from '../../utils/utils';
+import { formatQuantity, stringArrayEqual } from '../../utils/utils';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useDebounce, useIntersection, useInterval } from 'react-use';
+import { useDebounce, useIntersection, useInterval, usePreviousDistinct } from 'react-use';
 import { SearchableMultiSelect } from './components/SearchableMultiSelect';
 import { TypesSelect } from './components/TypesSelect';
 import { DatePicker } from './components/DatePicker';
@@ -31,28 +39,59 @@ import Button from '../../components/ui/button/Button';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { OperationDrawer } from './components/OperationDrawer';
 import { OperationRow } from './components/OperationRow';
+import type { DateRange } from 'react-day-picker';
+import { getPresetRange, matchPresetFromRange, slidePeriod } from '../../utils/logs';
 
 const limit = 20;
 
 export const LogsSearch: React.FC = () => {
     const env = useStore((state) => state.env);
+    const prevEnv = usePreviousDistinct(env);
     const [searchParams, setSearchParams] = useSearchParams();
 
     // --- Global state
     const [synced, setSynced] = useState(false);
+    const [operationId, setOperationId] = useState<string>();
 
     // --- Data fetch
+    const [isLive, setIsLive] = useState(true);
     const [states, setStates] = useState<SearchOperationsState[]>(statusDefaultOptions);
     const [types, setTypes] = useState<SearchOperationsType[]>(typesDefaultOptions);
     const [integrations, setIntegrations] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [connections, setConnections] = useState<SearchOperationsIntegration[]>(integrationsDefaultOptions);
     const [syncs, setSyncs] = useState<SearchOperationsSync[]>(syncsDefaultOptions);
-    const [period, setPeriod] = useState<SearchOperationsPeriod | undefined>();
+    const [period, setPeriod] = useState<DateRange>(() => getPresetRange('last24h'));
+    const [periodString, setPeriodString] = useState<SearchOperationsPeriod>();
     const cursor = useRef<SearchOperations['Body']['cursor']>();
     const [hasLoadedMore, setHasLoadedMore] = useState<boolean>(false);
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
-    const { data, error, loading, trigger, manualFetch } = useSearchOperations(env, { limit, states, types, integrations, connections, syncs, period });
+    const { data, error, loading, trigger, manualFetch } = useSearchOperations(
+        env,
+        { limit, states, types, integrations, connections, syncs, period: periodString },
+        isLive
+    );
     const [operations, setOperations] = useState<SearchOperationsData[]>([]);
+
+    useEffect(
+        function resetEnv() {
+            if (prevEnv && env && prevEnv !== env) {
+                setSynced(false);
+                setReadyToDisplay(false);
+                setOperations([]);
+                setStates(statusDefaultOptions);
+                setTypes(typesDefaultOptions);
+                setIntegrations(integrationsDefaultOptions);
+                setConnections(integrationsDefaultOptions);
+                setSyncs(syncsDefaultOptions);
+                setPeriod(getPresetRange('last24h'));
+
+                setHasLoadedMore(false);
+                cursor.current = null;
+            }
+        },
+        [env, prevEnv]
+    );
+
     useEffect(() => {
         // Data aggregation to enable infinite scroll
         // Because states are changing we need to deduplicate and update rows
@@ -73,6 +112,7 @@ export const LogsSearch: React.FC = () => {
         });
         setReadyToDisplay(true);
     }, [data?.data]);
+
     useEffect(() => {
         if (data?.pagination.cursor && !hasLoadedMore) {
             // We set the cursor only on first page (if we haven't hit a next page)
@@ -80,6 +120,7 @@ export const LogsSearch: React.FC = () => {
             cursor.current = data.pagination.cursor;
         }
     }, [hasLoadedMore, data]);
+
     useDebounce(
         () => {
             // We clear the cursor because it's a brand new search
@@ -88,7 +129,7 @@ export const LogsSearch: React.FC = () => {
             trigger();
         },
         200,
-        [limit, states, types, integrations, connections, syncs, period]
+        [limit, states, types, integrations, connections, syncs, period, prevEnv]
     );
 
     // --- Query Params
@@ -110,9 +151,9 @@ export const LogsSearch: React.FC = () => {
                 setIntegrations(tmpIntegrations.split(',') as any);
             }
 
-            const tmpConnections = searchParams.get('integrations');
+            const tmpConnections = searchParams.get('connections');
             if (tmpConnections) {
-                setIntegrations(tmpConnections.split(',') as any);
+                setConnections(tmpConnections.split(',') as any);
             }
 
             const tmpSyncs = searchParams.get('syncs');
@@ -128,7 +169,10 @@ export const LogsSearch: React.FC = () => {
             const tmpFrom = searchParams.get('from');
             const tmpTo = searchParams.get('to');
             if (tmpFrom && tmpTo) {
-                setPeriod({ from: tmpFrom, to: tmpTo });
+                const tmpLive = searchParams.get('live');
+                const isLive = tmpLive === null || tmpLive === 'true';
+                setIsLive(isLive);
+                setPeriod(isLive ? slidePeriod({ from: new Date(tmpFrom), to: new Date(tmpTo) }) : { from: new Date(tmpFrom), to: new Date(tmpTo) });
             }
 
             const tmpOperationId = searchParams.get('operationId');
@@ -142,30 +186,56 @@ export const LogsSearch: React.FC = () => {
     );
 
     useEffect(
-        function syncStateToQueryParams() {
-            // reset pagination and stored items
+        function resetSearchOnFilterChanges() {
             setOperations([]);
             setHasLoadedMore(false);
             setReadyToDisplay(false);
+        },
+        [states, integrations, period, connections, syncs, types]
+    );
+    useEffect(
+        function syncStateToQueryParams() {
+            if (!synced) {
+                return;
+            }
 
             // Sync the state back to the URL for sharing
-            const tmp = new URLSearchParams({
-                states: states as any,
-                integrations: integrations as any,
-                connections: connections as any,
-                syncs: syncs as any,
-                types: types as any
-            });
-            if (period) {
-                tmp.set('from', period.from);
-                tmp.set('to', period.to);
+            const tmp = new URLSearchParams();
+            if (states.length > 0 && !stringArrayEqual(states, statusDefaultOptions)) {
+                tmp.set('states', states as any);
+            }
+            if (integrations.length > 0 && !stringArrayEqual(integrations, integrationsDefaultOptions)) {
+                tmp.set('integrations', integrations as any);
+            }
+            if (connections.length > 0 && !stringArrayEqual(connections, connectionsDefaultOptions)) {
+                tmp.set('connections', connections as any);
+            }
+            if (syncs.length > 0 && !stringArrayEqual(syncs, syncsDefaultOptions)) {
+                tmp.set('syncs', syncs as any);
+            }
+            if (types.length > 0 && !stringArrayEqual(types, typesDefaultOptions)) {
+                tmp.set('types', types as any);
+            }
+            if (!isLive) {
+                tmp.set('live', 'false');
+            }
+            if (periodString) {
+                const matched = matchPresetFromRange({ from: new Date(periodString.from), to: new Date(periodString.to) });
+                if (matched?.name !== 'last24h') {
+                    tmp.set('from', periodString.from);
+                    tmp.set('to', periodString.to);
+                }
             }
             if (operationId) {
                 tmp.set('operationId', operationId);
             }
-            setSearchParams(tmp);
+
+            tmp.sort();
+            if (tmp.toString() !== searchParams.toString()) {
+                setSearchParams(tmp);
+            }
         },
-        [states, integrations, period, connections, syncs, types]
+        [states, integrations, periodString, connections, syncs, types, operationId, isLive, synced]
     );
 
     // --- Table Display
@@ -182,9 +252,6 @@ export const LogsSearch: React.FC = () => {
     }, [data?.pagination]);
 
     // --- Live // auto refresh
-    const isLive = useMemo(() => {
-        return !period;
-    }, [period]);
     useInterval(
         function onAutoRefresh() {
             trigger();
@@ -230,7 +297,18 @@ export const LogsSearch: React.FC = () => {
     };
 
     // Operation select
-    const [operationId, setOperationId] = useState<string>();
+    const onSelectOperation = (open: boolean, operationId: string) => {
+        setOperationId(open ? operationId : undefined);
+    };
+
+    // Period
+    const onPeriodChange = (range: DateRange, live: boolean) => {
+        setPeriod(range);
+        setIsLive(live);
+    };
+    useEffect(() => {
+        setPeriodString({ from: period.from!.toISOString(), to: period.to!.toISOString() });
+    }, [period]);
 
     if (error) {
         return (
@@ -249,7 +327,12 @@ export const LogsSearch: React.FC = () => {
                     </div>
                 ) : (
                     <Info color={'red'} classNames="text-xs" size={20}>
-                        An error occurred, refresh your page or reach out to the support.
+                        An error occurred, refresh your page or reach out to the support.{' '}
+                        {error.error.code === 'generic_error_support' && (
+                            <>
+                                (id: <span className="select-all">{error.error.payload}</span>)
+                            </>
+                        )}
                     </Info>
                 )}
             </DashboardLayout>
@@ -274,7 +357,9 @@ export const LogsSearch: React.FC = () => {
         <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth className="p-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-semibold text-white mb-4 flex gap-4 items-center">Logs {loading && <Spinner size={1} />}</h2>
-                <div className="text-white text-xs">{totalHumanReadable} logs found</div>
+                <div className="text-white text-xs">
+                    {totalHumanReadable} {data?.pagination && data.pagination.total > 1 ? 'logs' : 'log'} found
+                </div>
             </div>
             <div className="flex gap-2 justify-between">
                 <div className="w-full">{/* <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." /> */}</div>
@@ -285,10 +370,7 @@ export const LogsSearch: React.FC = () => {
                     <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} />
                     <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} />
 
-                    <DatePicker
-                        period={period}
-                        onChange={(range) => setPeriod(range ? { from: range.from!.toISOString(), to: range.to!.toISOString() } : undefined)}
-                    />
+                    <DatePicker isLive={isLive} period={period} onChange={onPeriodChange} />
                 </div>
             </div>
             <Table.Table className="my-4 table-fixed">
@@ -311,9 +393,22 @@ export const LogsSearch: React.FC = () => {
                     ))}
                 </Table.Header>
                 <Table.Body>
-                    {table.getRowModel().rows?.length ? (
-                        table.getRowModel().rows.map((row) => <OperationRow key={row.original.id} row={row} />)
-                    ) : operations.length <= 0 && !loading && readyToDisplay ? (
+                    {loading && !readyToDisplay && (
+                        <Table.Row>
+                            {table.getAllColumns().map((col, i) => {
+                                return (
+                                    <Table.Cell key={i}>
+                                        <Skeleton style={{ width: col.getSize() - 20 }} />
+                                    </Table.Cell>
+                                );
+                            })}
+                        </Table.Row>
+                    )}
+
+                    {table.getRowModel().rows?.length > 0 &&
+                        table.getRowModel().rows.map((row) => <OperationRow key={row.original.id} row={row} onSelectOperation={onSelectOperation} />)}
+
+                    {operations.length <= 0 && readyToDisplay && (
                         <Table.Row>
                             <Table.Cell colSpan={columns.length} className="h-24 text-center p-0 pt-4">
                                 <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
@@ -321,16 +416,6 @@ export const LogsSearch: React.FC = () => {
                                     <div className="text-gray-400">Note that logs older than 15 days are automatically cleared.</div>
                                 </div>
                             </Table.Cell>
-                        </Table.Row>
-                    ) : (
-                        <Table.Row>
-                            {table.getAllColumns().map((col, i) => {
-                                return (
-                                    <Table.Cell key={i}>
-                                        <Skeleton style={{ width: col.getSize() }} />
-                                    </Table.Cell>
-                                );
-                            })}
                         </Table.Row>
                     )}
                 </Table.Body>
@@ -349,7 +434,7 @@ export const LogsSearch: React.FC = () => {
                 </div>
             )}
 
-            {operationId && <OperationDrawer key={operationId} operationId={operationId} forceOpen={true} />}
+            {operationId && <OperationDrawer key={operationId} operationId={operationId} onClose={onSelectOperation} />}
         </DashboardLayout>
     );
 };

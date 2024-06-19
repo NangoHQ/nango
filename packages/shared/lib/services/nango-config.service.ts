@@ -3,8 +3,6 @@ import chalk from 'chalk';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
-import type { StringValue } from 'ms';
-import ms from 'ms';
 import type {
     NangoConfig,
     NangoConfigV1,
@@ -21,7 +19,7 @@ import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import { SyncType, SyncConfigType } from '../models/Sync.js';
 import localFileService from './file/local.service.js';
 import { NangoError } from '../utils/error.js';
-import { isJsOrTsType } from '../utils/utils.js';
+import { determineVersion, getInterval, isJsOrTsType } from '@nangohq/nango-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,16 +27,11 @@ const __dirname = dirname(__filename);
 export const nangoConfigFile = 'nango.yaml';
 export const SYNC_FILE_EXTENSION = 'js';
 
-interface IntervalResponse {
-    interval: StringValue;
-    offset: number;
-}
-
 export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig | null> {
     let location;
 
     if (loadLocation) {
-        location = `${loadLocation}/${nangoConfigFile}`;
+        location = path.resolve(`${loadLocation}/${nangoConfigFile}`);
     } else if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
         location = path.resolve(process.env['NANGO_INTEGRATIONS_FULL_PATH'], nangoConfigFile);
     } else {
@@ -58,27 +51,12 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
     return Promise.resolve(null);
 }
 
-export function determineVersion(configData: NangoConfig): 'v1' | 'v2' {
-    if (!configData.integrations || Object.keys(configData.integrations).length === 0) {
-        return 'v1';
-    }
-
-    const [firstProviderConfigKey] = Object.keys(configData.integrations) as [string];
-    const firstProviderConfig = configData.integrations[firstProviderConfigKey] as NangoV2Integration;
-
-    if ('syncs' in firstProviderConfig || 'actions' in firstProviderConfig) {
-        return 'v2';
-    } else {
-        return 'v1';
-    }
-}
-
 export function loadStandardConfig(configData: NangoConfig, showMessages = false, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[] | null> {
     try {
         if (!configData) {
             return { success: false, error: new NangoError('no_config_found'), response: null };
         }
-        const version = determineVersion(configData);
+        const version = determineVersion(configData as any);
 
         if (!configData.integrations) {
             return { success: true, error: null, response: [] };
@@ -125,7 +103,7 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
                 modelFields.push({ name: `${fieldName}.${subFieldName}`, type: subFieldType as string });
             }
         } else {
-            modelFields.push({ name: fieldName, type: fieldType as string });
+            modelFields.push({ name: fieldName, type: fieldType?.trim() as string });
         }
     }
 
@@ -476,10 +454,9 @@ function buildSyncs({
 
         const runs = sync?.runs || 'every day';
 
-        const { success, error } = getInterval(runs, new Date());
-
-        if (!success) {
-            return { success: false, error, response: null };
+        const interval = getInterval(runs, new Date());
+        if (interval instanceof Error) {
+            return { success: false, error: new NangoError(interval.message), response: null };
         }
 
         let webhookSubscriptions: string[] = [];
@@ -647,80 +624,4 @@ function buildActions({
     }
 
     return { success: true, error: null, response: builtActions };
-}
-
-export function getOffset(interval: StringValue, date: Date): number {
-    const intervalMilliseconds = ms(interval);
-
-    const nowMilliseconds = date.getMinutes() * 60 * 1000 + date.getSeconds() * 1000 + date.getMilliseconds();
-
-    const offset = nowMilliseconds % intervalMilliseconds;
-
-    if (isNaN(offset)) {
-        return 0;
-    }
-
-    return offset;
-}
-
-/**
- * Get Interval
- * @desc get the interval based on the runs property in the yaml. The offset
- * should be the amount of time that the interval should be offset by.
- * If the time is 1536 and the interval is 30m then the next time the sync should run is 1606
- * and then 1636 etc. The offset should be based on the interval and should never be
- * greater than the interval
- */
-export function getInterval(runs: string, date: Date): ServiceResponse<IntervalResponse> {
-    if (runs === 'every half day') {
-        const response: IntervalResponse = { interval: '12h', offset: getOffset('12h', date) };
-        return { success: true, error: null, response };
-    }
-
-    if (runs === 'every half hour') {
-        const response: IntervalResponse = { interval: '30m', offset: getOffset('30m', date) };
-        return { success: true, error: null, response };
-    }
-
-    if (runs === 'every quarter hour') {
-        const response: IntervalResponse = { interval: '15m', offset: getOffset('15m', date) };
-        return { success: true, error: null, response };
-    }
-
-    if (runs === 'every hour') {
-        const response: IntervalResponse = { interval: '1h', offset: getOffset('1h', date) };
-        return { success: true, error: null, response };
-    }
-
-    if (runs === 'every day') {
-        const response: IntervalResponse = { interval: '1d', offset: getOffset('1d', date) };
-        return { success: true, error: null, response };
-    }
-
-    if (runs === 'every month') {
-        const response: IntervalResponse = { interval: '30d', offset: getOffset('30d', date) };
-        return { success: true, error: null, response };
-    }
-
-    if (runs === 'every week') {
-        const response: IntervalResponse = { interval: '1w', offset: getOffset('1w', date) };
-        return { success: true, error: null, response };
-    }
-
-    const interval = runs.replace('every ', '') as StringValue;
-
-    if (!ms(interval)) {
-        const error = new NangoError('sync_interval_invalid');
-        return { success: false, error, response: null };
-    }
-
-    if (ms(interval) < ms('5m')) {
-        const error = new NangoError('sync_interval_too_short');
-        return { success: false, error, response: null };
-    }
-
-    const offset = getOffset(interval, date);
-    const response: IntervalResponse = { interval, offset };
-
-    return { success: true, error: null, response };
 }

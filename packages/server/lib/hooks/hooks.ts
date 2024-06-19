@@ -4,12 +4,14 @@ import {
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
     SpanTypes,
-    SyncClient,
     proxyService,
-    webhookService,
     getSyncConfigsWithConnections,
     analytics,
-    AnalyticsTypes
+    errorNotificationService,
+    SlackService,
+    externalWebhookService,
+    AnalyticsTypes,
+    syncManager
 } from '@nangohq/shared';
 import type {
     ApplicationConstructedProxyConfiguration,
@@ -19,18 +21,21 @@ import type {
     RecentlyCreatedConnection,
     Connection,
     ConnectionConfig,
-    Template as ProviderTemplate,
     HTTP_VERB,
     RecentlyFailedConnection
 } from '@nangohq/shared';
-
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
+import { getOrchestrator, getOrchestratorClient } from '../utils/utils.js';
+import type { Environment, IntegrationConfig, Template as ProviderTemplate } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
 import { externalPostConnection } from './connection/external-post-connection.js';
+import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 const logger = getLogger('hooks');
+const orchestrator = getOrchestrator();
 
 export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
@@ -65,33 +70,134 @@ export const connectionCreationStartCapCheck = async ({
 };
 
 export const connectionCreated = async (
-    connection: RecentlyCreatedConnection,
+    createdConnectionPayload: RecentlyCreatedConnection,
     provider: string,
     logContextGetter: LogContextGetter,
     activityLogId: number | null,
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true },
     logCtx?: LogContext
 ): Promise<void> => {
+    const { connection, environment, auth_mode } = createdConnectionPayload;
+
     if (options.initiateSync === true && !isHosted) {
-        const syncClient = await SyncClient.getInstance();
-        await syncClient?.initiate(connection.connection.id as number, logContextGetter);
+        await syncManager.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
     }
 
     if (options.runPostConnectionScript === true) {
-        await postConnection(connection, provider, logContextGetter);
-        await externalPostConnection(connection, provider, logContextGetter);
+        await postConnection(createdConnectionPayload, provider, logContextGetter);
+        await externalPostConnection(createdConnectionPayload, provider, logContextGetter);
     }
 
-    await webhookService.sendAuthUpdate(connection, provider, true, activityLogId, logCtx);
+    const webhookSettings = await externalWebhookService.get(environment.id);
+
+    void sendAuthWebhook({
+        connection,
+        environment,
+        webhookSettings,
+        auth_mode,
+        success: true,
+        operation: 'creation',
+        provider,
+        type: 'auth',
+        activityLogId,
+        logCtx
+    });
 };
 
 export const connectionCreationFailed = async (
-    connection: RecentlyFailedConnection,
+    failedConnectionPayload: RecentlyFailedConnection,
     provider: string,
     activityLogId: number | null,
-    logCtx: LogContext
+    logCtx?: LogContext
 ): Promise<void> => {
-    await webhookService.sendAuthUpdate(connection, provider, false, activityLogId, logCtx);
+    const { connection, environment, auth_mode, error } = failedConnectionPayload;
+
+    if (error) {
+        const webhookSettings = await externalWebhookService.get(environment.id);
+
+        void sendAuthWebhook({
+            connection,
+            environment,
+            webhookSettings,
+            auth_mode,
+            success: false,
+            error,
+            operation: 'creation',
+            provider,
+            type: 'auth',
+            activityLogId,
+            logCtx
+        });
+    }
+};
+
+export const connectionRefreshSuccess = async ({
+    connection,
+    environment,
+    config
+}: {
+    connection: Connection;
+    environment: Environment;
+    config: IntegrationConfig;
+}): Promise<void> => {
+    if (!connection.id) {
+        return;
+    }
+
+    await errorNotificationService.auth.clear({
+        connection_id: connection.id
+    });
+
+    const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
+
+    void slackNotificationService.removeFailingConnection(connection, connection.connection_id, 'auth', null, environment.id, config.provider);
+};
+
+export const connectionRefreshFailed = async ({
+    connection,
+    activityLogId,
+    logCtx,
+    authError,
+    environment,
+    template,
+    config
+}: {
+    connection: Connection;
+    environment: Environment;
+    template: ProviderTemplate;
+    config: IntegrationConfig;
+    authError: { type: string; description: string };
+    activityLogId: number;
+    logCtx: LogContext;
+}): Promise<void> => {
+    await errorNotificationService.auth.create({
+        type: 'auth',
+        action: 'token_refresh',
+        connection_id: connection.id!,
+        activity_log_id: activityLogId,
+        log_id: logCtx.id,
+        active: true
+    });
+
+    const webhookSettings = await externalWebhookService.get(environment.id);
+
+    void sendAuthWebhook({
+        connection,
+        environment,
+        webhookSettings,
+        auth_mode: template.auth_mode,
+        operation: 'refresh',
+        error: authError,
+        success: false,
+        provider: config.provider,
+        type: 'auth',
+        activityLogId,
+        logCtx
+    });
+
+    const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
+
+    void slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', activityLogId, environment.id, config.provider);
 };
 
 export const connectionTest = async (
@@ -167,7 +273,7 @@ export const connectionTest = async (
             return Err(error);
         }
 
-        if (!response) {
+        if (!response || response instanceof Error) {
             const error = new NangoError('connection_test_failed');
             span.setTag('nango.error', response);
             return Err(error);

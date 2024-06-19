@@ -1,4 +1,5 @@
 import * as seeders from './seeders/index.js';
+import * as externalWebhookService from './services/external-webhook.service.js';
 import configService from './services/config.service.js';
 import encryptionManager from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
@@ -14,9 +15,8 @@ import localFileService from './services/file/local.service.js';
 import hmacService from './services/hmac.service.js';
 import proxyService from './services/proxy.service.js';
 import syncRunService from './services/sync/run.service.js';
-import syncOrchestrator, { syncCommandToOperation } from './services/sync/orchestrator.service.js';
+import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
 import flowService from './services/flow.service.js';
-import webhookService from './services/notification/webhook.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import featureFlags from './utils/featureflags.js';
@@ -41,7 +41,6 @@ export * from './models/index.js';
 
 export * from './utils/utils.js';
 export * from './utils/error.js';
-export * from './utils/axios.js';
 export * from './constants.js';
 
 export * from './sdk/sync.js';
@@ -53,6 +52,7 @@ export {
     configService,
     connectionService,
     encryptionManager,
+    externalWebhookService,
     providerClientManager,
     SyncClient,
     errorManager,
@@ -66,11 +66,10 @@ export {
     remoteFileService,
     localFileService,
     syncRunService,
-    syncOrchestrator,
+    syncManager,
     hmacService,
     proxyService,
     flowService,
-    webhookService,
     errorNotificationService,
     analytics,
     AnalyticsTypes,

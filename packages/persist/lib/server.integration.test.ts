@@ -3,8 +3,8 @@ import { server } from './server.js';
 import fetch from 'node-fetch';
 import type { AuthCredentials, Connection, Sync, Job as SyncJob, Environment, Account } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
-import { createActivityLog, environmentService, connectionService, createSync, createSyncJob, SyncType, SyncStatus, accountService } from '@nangohq/shared';
-import { logContextGetter } from '@nangohq/logs';
+import { environmentService, connectionService, createSync, createSyncJob, SyncType, SyncStatus, accountService } from '@nangohq/shared';
+import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { migrate as migrateRecords } from '@nangohq/records';
 
 const mockSecretKey = 'secret-key';
@@ -15,7 +15,7 @@ describe('Persist API', () => {
     let seed: {
         account: Account;
         env: Environment;
-        activityLogId: number;
+        activityLogId: string;
         connection: Connection;
         sync: Sync;
         syncJob: SyncJob;
@@ -24,6 +24,7 @@ describe('Persist API', () => {
     beforeAll(async () => {
         await multipleMigrations();
         await migrateRecords();
+        await migrateLogsMapping();
         seed = await initDb();
         server.listen(port);
 
@@ -271,22 +272,9 @@ describe('Persist API', () => {
 const initDb = async () => {
     const env = await environmentService.createEnvironment(0, 'testEnv');
     if (!env) throw new Error('Environment not created');
-    const activityLogId = await createActivityLog({
-        environment_id: env.id,
-        level: 'info',
-        action: 'sync',
-        success: null,
-        timestamp: Date.now(),
-        start: Date.now(),
-        connection_id: null,
-        provider_config_key: null
-    });
-    if (!activityLogId) {
-        throw new Error('Activity log not created');
-    }
 
-    await logContextGetter.create(
-        { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+    const logCtx = await logContextGetter.create(
+        { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
         { account: { id: env.account_id, name: '' }, environment: { id: env.id, name: env.name } }
     );
 
@@ -306,7 +294,7 @@ const initDb = async () => {
     return {
         account: (await accountService.getAccountById(0))!,
         env,
-        activityLogId,
+        activityLogId: logCtx.id,
         connection,
         sync,
         syncJob

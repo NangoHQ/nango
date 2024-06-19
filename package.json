@@ -9,6 +9,7 @@
         "packages/kvstore",
         "packages/logs",
         "packages/node-client",
+        "packages/nango-yaml",
         "packages/records",
         "packages/server",
         "packages/runner",
@@ -20,7 +21,8 @@
         "packages/utils",
         "packages/data-ingestion",
         "packages/types",
-        "packages/database"
+        "packages/database",
+        "packages/webhooks"
     ],
     "scripts": {
         "create:migration": "cd packages/database/lib && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
@@ -29,7 +31,7 @@
         "prettier-watch": "onchange './**/*.{ts,tsx}' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts,.tsx",
         "lint:fix": "eslint . --ext .ts,.tsx --fix",
-        "ts-build": "tsc -b tsconfig.build.json && npm run -w nango postbuild",
+        "ts-build": "tsc -b tsconfig.build.json",
         "ts-build:docker": "tsc -b tsconfig.docker.json",
         "ts-clean": "npx rimraf packages/*/tsconfig.tsbuildinfo packages/*/dist",
         "docker-build": "docker build -f packages/server/Dockerfile -t nango-server:latest .",
@@ -52,13 +54,14 @@
         "build:watch": "tsc -b -w --preserveWatchOutput tsconfig.build.json",
         "dev:watch": "npm run -w nango copy:files && npm run build:watch",
         "watch:dev": "npm run dev:watch",
-        "dev:watch:apps": "concurrently --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\"",
+        "dev:watch:apps": "concurrently --names 'srv,web,job,prs,orc' --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\"",
         "watch:dev:apps": "npm run dev:watch:apps",
         "dw": "npm run dev:watch",
         "dwa": "npm run dev:watch:apps",
-        "test": "concurrently --kill-others \"npm run test:unit\" \"npm run test:integration\"",
+        "test": "concurrently --kill-others \"npm run test:unit\" \"npm run test:integration\" \"npm run test:cli\"",
         "test:unit": "vitest",
         "test:integration": "vitest --config ./vite.integration.config.ts",
+        "test:cli": "vitest --config ./vite.cli.config.ts",
         "docs": "cd ./docs-v2 && npx mintlify dev --port 3033",
         "nango": "cd ./packages/server && npm run nango",
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d"
@@ -76,19 +79,20 @@
         "eslint-plugin-react": "7.33.2",
         "eslint-plugin-react-hooks": "4.6.0",
         "git-cliff": "2.2.1",
-        "husky": "^8.0.3",
+        "husky": "8.0.3",
         "js-yaml": "4.1.0",
         "lint-staged": "15.2.2",
-        "onchange": "^7.1.0",
+        "onchange": "7.1.0",
         "prettier": "3.2.5",
+        "rimraf": "5.0.1",
         "testcontainers": "^9.12.0",
         "tsx": "^4.6.2",
-        "typescript": "^5.3.3",
+        "typescript": "5.3.3",
         "vitest": "0.33.0",
         "zx": "8.0.2"
     },
     "lint-staged": {
-        "*.{js,jsx,ts,tsx,ejs,cjs}": [
+        "*.{js,jsx,ts,tsx,cjs}": [
             "eslint --fix --quiet"
         ],
         "*.{html,css,json,yaml}": [

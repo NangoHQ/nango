@@ -54,6 +54,7 @@ jobs:
                   check_and_publish packages/shared
                   check_and_publish packages/frontend
                   check_and_publish packages/types
+                  check_and_publish packages/nango-yaml
             - id: publish_step
               name: Publish npm packages to the github registry
               env:

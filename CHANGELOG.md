@@ -2,6 +2,155 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.3] - 2024-06-18
+
+### Changed
+
+- *(deps)* Bump braces from 3.0.2 to 3.0.3 (#2304) by @dependabot[bot]
+- *(deps)* Bump ws from 8.16.0 to 8.17.1 (#2354) by @dependabot[bot]
+- Prevent concurrent scheduling (#2359) by @TBonnin
+
+### Fixed
+
+- *(orchestrator)* Update message when updating frequency (#2355) by @bodinsamuel
+- *(integration-templates)* [nan-1239] fix integration-template upload (#2356) by @khaliqgant
+- *(jobs)* Initialize tracer in processing worker threads (#2361) by @TBonnin
+- *(logs)* Insert message without an ID (#2360) by @bodinsamuel
+- *(nango-yaml)* Allow endpoint to be reused across integration (#2365) by @bodinsamuel
+
+## [v0.40.2] - 2024-06-18
+
+### Added
+
+- *(integration-templates)* Add workflow and edit existing (#2337) by @khaliqgant
+- *(integrations)* Add support for checkr-partner (#2339) by @hassan254-prog
+- *(nango.yaml)* Dedicated package, stricter parsing, wider types support (#2303) by @bodinsamuel
+
+### Changed
+
+- One-off script to migrate undeleted schedules to orchestrator db (#2326) by @TBonnin
+- *(logs)* Remove beta (#2350) by @bodinsamuel
+- *(logs.v1)* Remove API, proxy (#2349) by @bodinsamuel
+
+### Fixed
+
+- *(webhooks)* [nan-1142] allow empty string for url (#2347) by @khaliqgant
+- *(yaml)* Handle extends properly (#2348) by @khaliqgant
+
+## [v0.40.1] - 2024-06-17
+
+### Added
+
+- *(orchestrator)* Pause/unpause/delete sync (#2289) by @TBonnin
+- *(orchestrator)* Implement runSyncCommand (#2290) by @TBonnin
+- *(integrations)* Add support for fireflies (#2287) by @hassan254-prog
+- *(integrations)* Add support for microsoft power bi (#2293) by @hassan254-prog
+- *(logs)* Remove v1 UI (#2276) by @bodinsamuel
+- *(orchestrator)* Add update frequency (#2298) by @TBonnin
+- *(integrations)* Add Jira Data Center support (#2308) by @zdhickman
+- Schedule syncs via the orchestrator (#2309) by @TBonnin
+- Add contribution guidelines (#2285) by @bastienbeurier
+- *(webhooks)* [nan-1142] migrate to the external webhooks table (#2302) by @khaliqgant
+- Process syncs via the orchestrator (#2315) by @TBonnin
+- *(asana)* [nan-1187] retry after for asana (#2328) by @khaliqgant
+- *(integrations)* Add support for unanet (#2330) by @hassan254-prog
+- *(integrations)* [nan-1187] add asana templates (#2334) by @khaliqgant
+- *(docs)* [nan-1172] relative file imports documentation (#2336) by @khaliqgant
+- *(webhooks)* [nan-1142] update options on environment settings to allow more use settings (#2319) by @khaliqgant
+
+### Changed
+
+- Delete sync schedule (#2301) by @TBonnin
+- Getting sync data from orchestrator (#2316) by @TBonnin
+- Disable sync retry (#2322) by @TBonnin
+- *(logger)* Handle object, better local output (#2321) by @bodinsamuel
+- *(logs.v1)* Remove from persist (#2332) by @bodinsamuel
+
+### Fixed
+
+- *(logs)* Match preset from date range (#2294) by @bodinsamuel
+- Missing webhooks dependencies in jobs (#2299) by @TBonnin
+- Prevent concurrent scheduling of tasks (#2296) by @TBonnin
+- *(cli)* Use absolute path (#2297) by @bodinsamuel
+- *(webhooks)* [nan-1178] disable automatic opt in for webhook settings (#2306) by @khaliqgant
+- *(webhooks)* [nan-1173] fix webhooks (#2300) by @khaliqgant
+- *(deps)* Simple-oauth2 5.0.1 (#2305) by @bodinsamuel
+- *(scheduler)* Retrying when task fails can interfere with scheduling (#2310) by @TBonnin
+- *(logs)* Cosmetic fix (#2307) by @bodinsamuel
+- Incorrect import of orchestratorService (#2314) by @TBonnin
+- *(ui)* Make the connection creation date into a <time> element with a title (#2313) by @eabruzzese
+- *(scheduler)* Remove retry_count column for schedules (#2318) by @TBonnin
+- Event should be emitted when task is created by scheduling worker (#2317) by @TBonnin
+- *(logs)* Correct timeout (#2320) by @bodinsamuel
+- *(slack)* Only notify success when refreshing (#2323) by @bodinsamuel
+- *(webhooks)* [nan-1204] make queryTimestamp always present (#2324) by @khaliqgant
+- *(logs)* Missing success for syncs (#2325) by @bodinsamuel
+- *(jobs)* Wrong boolean for getSyncConfigRaw (#2327) by @bodinsamuel
+- *(slack)* Only notify success if it has refreshed (again) (#2333) by @bodinsamuel
+- Orchestrator bugs (#2331) by @TBonnin
+- Remove orchestrator event emmitter max listeners limit (#2335) by @TBonnin
+- *(integration-templates)* [nan-1187] add slash (#2340) by @khaliqgant
+- Remove schedule_id column in schedules (#2338) by @TBonnin
+- *(orchestrator)* Accept every in sync interval (#2341) by @TBonnin
+- *(webhook-settings)* [nan-1142] visual feedback while checkboxes are loading and ensure all values are boolean (#2344) by @khaliqgant
+
+## [v0.40.0] - 2024-06-10
+
+### Added
+
+- *(proxy)* Support sending requests through HTTPS_PROXY (#2243) by @mithlesh135
+- *(logs)* Timeout old operations (#2220) by @bodinsamuel
+- *(integrations)* Add support for marketo (#2234) by @hassan254-prog
+- *(processor)* Add tracing/logging to processTask function (#2250) by @TBonnin
+- *(google-mail)* Action script to send an email using google-mail integration (#2242) by @Pyloris
+- *(integrations)* Add support for highlevel white-label (#2251) by @hassan254-prog
+- Add sync type and validation for orchestrator TaskSync (#2256) by @TBonnin
+- *(integrations)* Add support for datev (#2223) by @hassan254-prog
+- *(orchestrator)* Add support for schedules (#2260) by @TBonnin
+- Expose environment name in scripts (#2268) by @TBonnin
+- *(integrations)* Add support for vimeo (#2271) by @hassan254-prog
+- *(webhooks)* [nan-1063] webhook on refresh error and slack notification (#2254) by @khaliqgant
+- *(orchestrator)* Scheduling tasks based on schedules (#2274) by @TBonnin
+- *(integrations)* Add support for instantly api key (#2265) by @jwd-dev
+- *(cli)* [nan-1106] import relative files in syncs/actions (#2273) by @khaliqgant
+- *(webhooks)* [nan 1064] webhook on sync error (#2281) by @khaliqgant
+- *(orchestrator)* Add endpoint to api/client to run a schedule (#2283) by @TBonnin
+
+### Changed
+
+- Rename orchestrator waitForCompletion param to longPolling (#2238) by @TBonnin
+- Actions and webhooks can be executed by orchestrator (#2237) by @TBonnin
+
+### Fixed
+
+- *(notificaitions)* [nan-981] Tighten up spacing + update notification display on list connections if a failure on the sync (#2247) by @khaliqgant
+- *(ui)* Use common fetch method (#2246) by @bodinsamuel
+- *(proxy)* Handle gzip response stream (#2248) by @bodinsamuel
+- *(cli)* [nan-1088] support older cli versions (#2253) by @khaliqgant
+- *(logs)* Ui feedback (#2249) by @bodinsamuel
+- *(orchestratorClient)* Race condition in dequeue (#2252) by @TBonnin
+- *(logs)* Feedback #3 (#2255) by @bodinsamuel
+- *(orchestrator)* Race condition in dequeue (#2261) by @TBonnin
+- *(proxy)* [nan-1049] if encoded at all then use pass through (#2262) by @khaliqgant
+- *(logs)* Handle buffered activities (#2257) by @bodinsamuel
+- *(integrations)* Fix mailgun logo (#2264) by @hassan254-prog
+- Actions/webhooks without input should not failed (#2267) by @TBonnin
+- *(orchestrator)* Accept bigger task output (#2270) by @TBonnin
+- Post script connection error + handle in logs (#2259) by @bodinsamuel
+- *(server)* [nan-979] Remove dupes if two or more syncs have an error for the connections list page (#2263) by @khaliqgant
+- *(logs)* Feedback #4 (#2269) by @bodinsamuel
+- *(webapp)* [nan-1086] route to the demo after verifying (#2275) by @khaliqgant
+- *(dependency)* Cleanup and upgrade some (#2272) by @bodinsamuel
+- Return error message when action fails (#2277) by @TBonnin
+- Actions/webhooks should always report failure when failing (#2278) by @TBonnin
+- *(cli)* [nan-1105] don't overwrite post connection file if it exists already (#2282) by @khaliqgant
+- *(server)* Embed router in a subpath (#2279) by @bodinsamuel
+- *(dockerfile)* Persist use unified Dockerfile (#2280) by @bodinsamuel
+- *(webapp)* [nan-1147] remove refresh option on refresh token (#2284) by @khaliqgant
+- *(logs)* Missing env, sort query params (#2288) by @bodinsamuel
+- *(docker)* Stop compiling persist, autocompile tsconfig.docker.json (#2286) by @bodinsamuel
+- *(server)* [nan-1167] fix types (#2295) by @khaliqgant
+
 ## [v0.39.33] - 2024-06-03
 
 ### Added
@@ -1214,6 +1363,10 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.3]: https://github.com/NangoHQ/nango/compare/v0.40.2..v0.40.3
+[v0.40.2]: https://github.com/NangoHQ/nango/compare/v0.40.1..v0.40.2
+[v0.40.1]: https://github.com/NangoHQ/nango/compare/v0.40.0..v0.40.1
+[v0.40.0]: https://github.com/NangoHQ/nango/compare/v0.39.33..v0.40.0
 [v0.39.33]: https://github.com/NangoHQ/nango/compare/v0.39.32..v0.39.33
 [v0.39.32]: https://github.com/NangoHQ/nango/compare/v0.39.31..v0.39.32
 [v0.39.31]: https://github.com/NangoHQ/nango/compare/v0.39.30..v0.39.31

@@ -9,6 +9,7 @@ ENV SERVER_RUN_MODE=DOCKERIZED
 WORKDIR /nango
 
 COPY packages/node-client/ packages/node-client/
+COPY packages/nango-yaml/ packages/nango-yaml/
 COPY packages/shared/ packages/shared/
 COPY packages/utils/ packages/utils/
 COPY packages/records/ packages/records/
@@ -20,6 +21,7 @@ COPY packages/database/ packages/database/
 COPY packages/runner/ packages/runner/
 COPY packages/scheduler/ packages/scheduler/
 COPY packages/orchestrator/ packages/orchestrator/
+COPY packages/webhooks/ packages/webhooks/
 COPY package*.json ./
 
 RUN npm pkg delete scripts.prepare

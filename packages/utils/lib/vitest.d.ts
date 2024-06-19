@@ -4,6 +4,7 @@ export * from 'vitest';
 interface CustomMatchers<TR = unknown> {
     toBeIsoDate: () => string;
     toBeIsoDateTimezone: () => string;
+    toBeSha256: () => string;
     toBeUUID: () => TR;
 }
 

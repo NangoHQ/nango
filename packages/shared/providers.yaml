@@ -187,6 +187,8 @@ asana:
         grant_type: refresh_token
     proxy:
         base_url: https://app.asana.com
+        retry:
+            after: 'Retry-After'
         paginate:
             type: cursor
             cursor_path_in_response: next_page.offset
@@ -407,6 +409,34 @@ calendly:
     proxy:
         base_url: https://api.calendly.com
     docs: https://docs.nango.dev/integrations/all/calendly
+checkr-partner:
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://partners.checkr.com/authorize/${connectionConfig.client_id}
+    token_url: https://api.checkr.com/oauth/tokens
+    disable_pkce: true
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        retry:
+            at: 'X-Ratelimit-Reset'
+        base_url: https://api.checkr.com
+    docs: https://docs.nango.dev/integrations/all/checkr
+checkr-partner-staging:
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://partners.checkrhq-staging.net/authorize/${connectionConfig.client_id}
+    token_url: https://api.checkr-staging.com/oauth/tokens
+    disable_pkce: true
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        retry:
+            at: 'X-Ratelimit-Reset'
+        base_url: https://api.checkr-staging.com
+    docs: https://docs.nango.dev/integrations/all/checkr
 chorus:
     auth_mode: BASIC
     proxy:
@@ -466,6 +496,30 @@ contentstack:
     authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
     token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
     docs: https://docs.nango.dev/integrations/all/contentstack
+#Untested configuration. Please reach out if you have a test account that we can use to test it.
+datev:
+    categories:
+        - legal
+        - payroll
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://login.datev.de/openid/authorize
+    token_url: https://api.datev.de/token
+    token_request_auth_method: basic
+    scope_seprator: ' '
+    default_scopes:
+        - openid
+    authorization_params:
+        response_type: code id_token
+        response_mode: query
+        nonce: AnotherRandomStringDatev
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.datev.de
+    docs: https://docs.nango.dev/integrations/all/datev
 deel:
     categories:
         - hr
@@ -725,6 +779,17 @@ figma:
     proxy:
         base_url: https://api.figma.com
     docs: https://docs.nango.dev/integrations/all/figma
+fireflies:
+    categories:
+        - analytics
+        - communication
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fireflies.ai
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/fireflies
 fitbit:
     categories:
         - sports
@@ -1081,6 +1146,22 @@ highlevel:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
     token_url: https://services.leadconnectorhq.com/oauth/token
+    scope_separator: ' '
+    proxy:
+        base_url: https://services.leadconnectorhq.com
+    disable_pkce: true
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/highlevel
+highlevel-white-label:
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://marketplace.leadconnectorhq.com/oauth/chooselocation
+    token_url: https://services.leadconnectorhq.com/oauth/token
+    scope_separator: ' '
     proxy:
         base_url: https://services.leadconnectorhq.com
     disable_pkce: true
@@ -1121,6 +1202,14 @@ insightly:
             method: GET
             endpoint: /v3.1/Contacts
     docs: https://docs.nango.dev/integrations/all/insightly
+instantly:
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.instantly.ai/api
+    docs: https://docs.nango.dev/integrations/all/instantly
 instagram:
     categories:
         - marketing
@@ -1176,6 +1265,18 @@ jira:
     post_connection_script: jira-post-connection
     webhook_routing_script: jira-webhook-routing
     docs: https://docs.nango.dev/integrations/all/jira
+jira-data-center:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.endpointURL}/rest/oauth2/latest/authorize
+    authorization_params:
+        grant_type: authorization_code
+    token_url: https://${connectionConfig.endpointURL}/rest/oauth2/latest/token
+    connection_configuration:
+        - endpointURL
+    docs: https://docs.nango.dev/integrations/all/jira-data-center
 helpscout-docs:
     auth_mode: BASIC
     proxy:
@@ -1338,6 +1439,7 @@ mailchimp:
     authorization_params:
         response_type: code
     docs: https://docs.nango.dev/integrations/all/mailchimp
+#Untested configuration. Please reach out if you have a test account that we can use to test it.
 marketo:
     auth_mode: OAUTH2_CC
     proxy:
@@ -1409,6 +1511,13 @@ microsoft-entra-id:
         - other
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/microsoft-entra-id
+microsoft-power-bi:
+    categories:
+        - productivity
+    alias: microsoft
+    proxy:
+        base_url: https://api.powerbi.com
+    docs: https://docs.nango.dev/integrations/all/microsoft-power-bi
 mixpanel:
     categories:
         - analytics
@@ -1702,6 +1811,7 @@ pingboard:
     proxy:
         base_url: https://app.pingboard.com/api/v2
     authorization_url: https://app.pingboard.com/oauth/token
+    scope_separator: ' '
     authorization_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/pingboard
@@ -2501,9 +2611,49 @@ uber:
     proxy:
         base_url: https://api.uber.com
     docs: https://docs.nango.dev/integrations/all/uber
+unanet:
+    categories:
+        - crm
+        - erp
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        headers:
+            x-compass-firm-id: ${connectionConfig.firmId}
+            x-compass-api-key: ${connectionConfig.apiKey}
+        base_url: https://compass.cosential.com
+        verification:
+            method: GET
+            endpoint: /api/projects
+    docs: https://docs.nango.dev/integrations/all/unanet
 unauthenticated:
     auth_mode: NONE
     docs: https://docs.nango.dev/integrations/overview
+vimeo:
+    categories:
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://api.vimeo.com/oauth/authorize
+    token_url: https://api.vimeo.com/oauth/access_token
+    token_request_auth_method: basic
+    scope_seprator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.vimeo.com
+    docs: https://docs.nango.dev/integrations/all/vimeo
+vimeo-basic:
+    categories:
+        - video
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.vimeo.com
+        verification:
+            method: GET
+            endpoint: /
+    docs: https://docs.nango.dev/integrations/all/vimeo
 wakatime:
     categories:
         - analytics

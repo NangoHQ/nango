@@ -3,6 +3,7 @@ import { Nango, getUserAgent } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
+import type { AxiosInstance } from 'axios';
 import axios from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node';
@@ -249,7 +250,8 @@ export interface NangoProps {
     accountId?: number;
     connectionId: string;
     environmentId?: number;
-    activityLogId?: number | undefined;
+    environmentName?: string;
+    activityLogId?: number | string | undefined;
     providerConfigKey: string;
     provider?: string;
     lastSyncDate?: Date;
@@ -265,20 +267,33 @@ export interface NangoProps {
     dryRunService?: DryRunServiceInterface;
 }
 
-interface EnvironmentVariable {
+export interface EnvironmentVariable {
     name: string;
     value: string;
 }
 
 const MEMOIZED_CONNECTION_TTL = 60000;
 
+export const defaultPersistApi = axios.create({
+    baseURL: getPersistAPIUrl(),
+    httpsAgent: new https.Agent({ keepAlive: true }),
+    headers: {
+        'User-Agent': getUserAgent('sdk')
+    },
+    validateStatus: (_status) => {
+        return true;
+    }
+});
+
 export class NangoAction {
     protected nango: Nango;
     private attributes = {};
-    activityLogId?: number | undefined;
+    protected persistApi: AxiosInstance;
+    activityLogId?: number | string | undefined;
     syncId?: string;
     nangoConnectionId?: number;
     environmentId?: number;
+    environmentName?: string;
     syncJobId?: number;
     dryRun?: boolean;
     abortSignal?: AbortSignal;
@@ -296,9 +311,10 @@ export class NangoAction {
     >();
     private memoizedIntegration: IntegrationWithCreds | undefined;
 
-    constructor(config: NangoProps) {
+    constructor(config: NangoProps, { persistApi }: { persistApi: AxiosInstance } = { persistApi: defaultPersistApi }) {
         this.connectionId = config.connectionId;
         this.providerConfigKey = config.providerConfigKey;
+        this.persistApi = persistApi;
 
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
@@ -332,6 +348,10 @@ export class NangoAction {
 
         if (config.environmentId) {
             this.environmentId = config.environmentId;
+        }
+
+        if (config.environmentName) {
+            this.environmentName = config.environmentName;
         }
 
         if (config.provider) {
@@ -407,31 +427,21 @@ export class NangoAction {
 
             const proxyConfig = this.proxyConfig(config);
 
-            const { response, activityLogs: activityLogs } = await proxyService.route(proxyConfig, {
-                existingActivityLogId: this.activityLogId as number,
+            const { response, logs } = await proxyService.route(proxyConfig, {
+                existingActivityLogId: this.activityLogId as string,
                 connection,
                 provider: this.provider as string
             });
 
-            if (activityLogs) {
-                for (const log of activityLogs) {
-                    if (log.level === 'debug') continue;
-                    await this.log(log.content, { level: log.level });
-                    switch (log.level) {
-                        case 'error':
-                            logger.error(log.content);
-                            break;
-                        case 'warn':
-                            logger.warn(log.content);
-                            break;
-                        case 'info':
-                            logger.info(log.content);
-                            break;
-                        default:
-                            logger.debug(log.content);
+            // We batch save, since we have buffered the createdAt it shouldn't impact order
+            await Promise.all(
+                logs.map(async (log) => {
+                    if (log.level === 'debug') {
+                        return;
                     }
-                }
-            }
+                    await this.sendLogToPersist(log.message, { level: log.level, timestamp: new Date(log.createdAt).getTime() });
+                })
+            );
 
             if (response instanceof Error) {
                 throw response;
@@ -565,7 +575,9 @@ export class NangoAction {
      * http = green
      * silly = light green
      */
-    public async log(...args: any[]): Promise<void> {
+    public async log(message: any, options?: { level?: LogLevel } | { [key: string]: any; level?: never }): Promise<void>;
+    public async log(message: string, ...args: [any, { level?: LogLevel }]): Promise<void>;
+    public async log(...args: [...any]): Promise<void> {
         this.exitSyncIfAborted();
         if (args.length === 0) {
             return;
@@ -590,25 +602,7 @@ export class NangoAction {
             return;
         }
 
-        const response = await persistApi({
-            method: 'POST',
-            url: `/environment/${this.environmentId}/log`,
-            headers: {
-                Authorization: `Bearer ${this.nango.secretKey}`
-            },
-            data: {
-                activityLogId: this.activityLogId,
-                level: userDefinedLevel?.level ?? 'info',
-                msg: content
-            }
-        });
-
-        if (response.status > 299) {
-            logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
-            throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
-        }
-
-        return;
+        await this.sendLogToPersist(content, { level: userDefinedLevel?.level ?? 'info', timestamp: Date.now() });
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
@@ -695,6 +689,27 @@ export class NangoAction {
             return this.nango.triggerSync(providerConfigKey, [syncName], connectionId, fullResync);
         }
     }
+
+    private async sendLogToPersist(content: string, options: { level: LogLevel; timestamp: number }) {
+        const response = await this.persistApi({
+            method: 'POST',
+            url: `/environment/${this.environmentId}/log`,
+            headers: {
+                Authorization: `Bearer ${this.nango.secretKey}`
+            },
+            data: {
+                activityLogId: this.activityLogId,
+                level: options.level ?? 'info',
+                timestamp: options.timestamp,
+                msg: content
+            }
+        });
+
+        if (response.status > 299) {
+            logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
+            throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
+        }
+    }
 }
 
 export class NangoSync extends NangoAction {
@@ -763,7 +778,7 @@ export class NangoSync extends NangoAction {
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            const response = await persistApi({
+            const response = await this.persistApi({
                 method: 'POST',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
                 headers: {
@@ -814,7 +829,7 @@ export class NangoSync extends NangoAction {
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            const response = await persistApi({
+            const response = await this.persistApi({
                 method: 'DELETE',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
                 headers: {
@@ -865,7 +880,7 @@ export class NangoSync extends NangoAction {
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            const response = await persistApi({
+            const response = await this.persistApi({
                 method: 'PUT',
                 url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
                 headers: {
@@ -899,17 +914,6 @@ export class NangoSync extends NangoAction {
         return super.getMetadata<T>();
     }
 }
-
-const persistApi = axios.create({
-    baseURL: getPersistAPIUrl(),
-    httpsAgent: new https.Agent({ keepAlive: true }),
-    headers: {
-        'User-Agent': getUserAgent('sdk')
-    },
-    validateStatus: (_status) => {
-        return true;
-    }
-});
 
 const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
     'batchDelete',

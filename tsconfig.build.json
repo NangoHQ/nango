@@ -26,6 +26,9 @@
             "path": "packages/node-client"
         },
         {
+            "path": "packages/nango-yaml"
+        },
+        {
             "path": "packages/persist"
         },
         {
@@ -48,6 +51,9 @@
         },
         {
             "path": "packages/webapp"
+        },
+        {
+            "path": "packages/webhooks"
         },
         {
             "path": "packages/data-ingestion"

@@ -41,11 +41,14 @@ server.post(
         params: z.object({
             environmentId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber
         }),
-        body: z.object({
-            activityLogId: z.number(),
-            level: z.enum(logLevelValues),
-            msg: z.string()
-        })
+        body: z
+            .object({
+                activityLogId: z.union([z.number(), z.string()]),
+                level: z.enum(logLevelValues),
+                msg: z.string(),
+                timestamp: z.number().optional() // Optional until fully deployed
+            })
+            .strict()
     }),
     persistController.saveActivityLog.bind(persistController)
 );
@@ -62,7 +65,7 @@ const validateRecordsRequest = validateRequest({
         records: z.array(z.object({ id: z.union([z.string().max(255).min(1), z.number()]) })).nonempty(),
         providerConfigKey: z.string(),
         connectionId: z.string(),
-        activityLogId: z.number()
+        activityLogId: z.union([z.number(), z.string()])
     })
 });
 const recordPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';

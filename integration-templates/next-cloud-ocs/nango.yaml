@@ -7,7 +7,7 @@ integrations:
                     Fetches a list of all users' details from NextCloud account
                 output: 'NextCloudUser'
                 sync_type: full
-                endpoint: /next-cloud-ocs/next-cloud-users
+                endpoint: GET /next-cloud-ocs/next-cloud-users
 models:
     NextCloudUser:
         enabled: boolean

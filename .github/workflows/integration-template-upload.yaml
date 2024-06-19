@@ -39,14 +39,18 @@ jobs:
               if: steps.changed-files-specific.outputs.any_changed == 'true'
               run: |
                   wd=$(pwd)
+
+                  echo "Changed files:"
+                  echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
+
                   for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
                     dir=$(dirname $file)
 
-                    dir=${dir//\/syncs/}
-                    dir=${dir//\/actions/}
+                    # just grab the first two parts of the path
+                    dir=$(echo $dir | cut -d'/' -f1,2)
                     integration=$(basename $dir)
 
-                    mkdir -p /tmp/nango-temp/nango-integrations
+                    mkdir -p /tmp/nango-temp/nango-integrations/$integration
 
                     cp $dir/nango.yaml /tmp/nango-temp/nango-integrations/
                     cp -r $dir/* /tmp/nango-temp/nango-integrations/$integration/

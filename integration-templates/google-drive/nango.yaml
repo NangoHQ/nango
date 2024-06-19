@@ -19,7 +19,7 @@ integrations:
                 input: DocumentMetadata
                 output: Document
                 sync_type: full
-                endpoint: /google-drive/documents
+                endpoint: GET /google-drive/documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
             fetch-pdf:

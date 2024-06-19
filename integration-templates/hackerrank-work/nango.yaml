@@ -7,28 +7,28 @@ integrations:
                     Fetches a list of interviews from hackerrank work
                 output: HackerRankWorkInterview
                 sync_type: incremental
-                endpoint: /hackerrank-work/interviews
+                endpoint: GET /hackerrank-work/interviews
             teams:
                 runs: every 6 hours
                 description: |
                     Fetches a list of teams from hackerrank work
                 output: HackerRankWorkTeam
                 sync_type: incremental
-                endpoint: /hackerrank-work/teams
+                endpoint: GET /hackerrank-work/teams
             tests:
                 runs: every 6 hours
                 description: |
                     Fetches a list of tests from hackerrank work
                 output: HackerRankWorkTest
                 sync_type: incremental
-                endpoint: /hackerrank-work/tests
+                endpoint: GET /hackerrank-work/tests
             users:
                 runs: every 6 hours
                 description: |
                     Fetches a list of users from hackerrank work
                 output: HackerRankWorkUser
                 sync_type: incremental
-                endpoint: /hackerrank-work/users
+                endpoint: GET /hackerrank-work/users
         actions:
             create-test:
                 description: |

@@ -5,10 +5,10 @@ import { OrchestratorClient } from './client.js';
 import { OrchestratorProcessor } from './processor.js';
 import getPort from 'get-port';
 import { EventsHandler } from '../events.js';
-import { Ok, Err } from '@nangohq/utils';
+import { Ok, Err, nanoid } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
-import type { OrchestratorTask, TaskAction, TaskWebhook, TaskPostConnection } from './types.js';
+import type { OrchestratorTask } from './types.js';
 import { tracer } from 'dd-trace';
 
 const dbClient = getTestDbClient();
@@ -41,31 +41,31 @@ describe('OrchestratorProcessor', async () => {
     });
 
     it('should process tasks and mark them as successful if processing succeed', async () => {
-        const groupKey = rndStr();
+        const groupKey = nanoid();
         const mockProcess = vi.fn(async (): Promise<Result<JsonValue>> => Ok({ foo: 'bar' }));
         const n = 10;
         await processN(mockProcess, groupKey, n);
 
         expect(mockProcess).toHaveBeenCalledTimes(n);
-        const tasks = await scheduler.search({ groupKey });
+        const tasks = await scheduler.searchTasks({ groupKey });
         for (const task of tasks.unwrap()) {
             expect(task.state).toBe('SUCCEEDED');
         }
     });
     it('should process tasks and mark them as failed if processing failed', async () => {
-        const groupKey = rndStr();
+        const groupKey = nanoid();
         const mockProcess = vi.fn(async (): Promise<Result<JsonValue>> => Err('Failed'));
         const n = 10;
         await processN(mockProcess, groupKey, n);
 
         expect(mockProcess).toHaveBeenCalledTimes(n);
-        const tasks = await scheduler.search({ groupKey });
+        const tasks = await scheduler.searchTasks({ groupKey });
         for (const task of tasks.unwrap()) {
             expect(task.state).toBe('FAILED');
         }
     });
     it('should cancel terminated tasks', async () => {
-        const groupKey = rndStr();
+        const groupKey = nanoid();
         const mockAbort = vi.fn((_taskId: string) => {});
         const mockProcess = vi.fn(async (task: OrchestratorTask): Promise<Result<JsonValue>> => {
             let aborted = false;
@@ -82,7 +82,7 @@ describe('OrchestratorProcessor', async () => {
 
         // Cancel all tasks after 100 ms
         const cancellingTimeout = setTimeout(async () => {
-            const tasks = await scheduler.search({ groupKey });
+            const tasks = await scheduler.searchTasks({ groupKey });
             for (const task of tasks.unwrap()) {
                 await scheduler.cancel({ taskId: task.id, reason: { message: 'Cancelling task' } });
             }
@@ -91,7 +91,7 @@ describe('OrchestratorProcessor', async () => {
         await processN(mockProcess, groupKey, n);
 
         expect(mockProcess).toHaveBeenCalledTimes(n);
-        const tasks = await scheduler.search({ groupKey, state: 'CANCELLED' });
+        const tasks = await scheduler.searchTasks({ groupKey, state: 'CANCELLED' });
         for (const task of tasks.unwrap()) {
             expect(mockAbort).toHaveBeenCalledWith(task.id);
         }
@@ -99,47 +99,40 @@ describe('OrchestratorProcessor', async () => {
     });
 });
 
-async function processN(handler: (task: TaskAction | TaskWebhook | TaskPostConnection) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
+async function processN(handler: (task: OrchestratorTask) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
     const processor = new OrchestratorProcessor({
         handler,
         opts: { orchestratorClient, groupKey, maxConcurrency: n, checkForTerminatedInterval: 100 }
     });
     processor.start({ tracer });
     for (let i = 0; i < n; i++) {
-        await scheduleTask({ groupKey });
+        await immediateTask({ groupKey });
     }
     // Wait so the processor can process all tasks
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return processor;
 }
 
-async function scheduleTask({ groupKey }: { groupKey: string }) {
-    return scheduler.schedule({
-        scheduling: 'immediate',
-        taskProps: {
-            groupKey,
-            name: 'Task',
-            retryMax: 0,
-            retryCount: 0,
-            createdToStartedTimeoutSecs: 30,
-            startedToCompletedTimeoutSecs: 30,
-            heartbeatTimeoutSecs: 30,
-            payload: {
-                type: 'action',
-                activityLogId: 1234,
-                actionName: 'Task',
-                connection: {
-                    id: 1234,
-                    connection_id: 'C',
-                    provider_config_key: 'P',
-                    environment_id: 5678
-                },
-                input: { foo: 'bar' }
-            }
+async function immediateTask({ groupKey }: { groupKey: string }) {
+    return scheduler.immediate({
+        groupKey,
+        name: nanoid(),
+        retryMax: 0,
+        retryCount: 0,
+        createdToStartedTimeoutSecs: 30,
+        startedToCompletedTimeoutSecs: 30,
+        heartbeatTimeoutSecs: 30,
+        payload: {
+            type: 'action',
+            activityLogId: 1234,
+            actionName: 'Task',
+            connection: {
+                id: 1234,
+                connection_id: 'C',
+                provider_config_key: 'P',
+                environment_id: 5678
+            },
+            input: { foo: 'bar' }
         }
     });
-}
-
-function rndStr() {
-    return Math.random().toString(36).substring(7);
 }

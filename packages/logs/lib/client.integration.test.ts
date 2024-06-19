@@ -38,7 +38,7 @@ describe('client', () => {
     });
 
     it('should insert an operation', async () => {
-        const spy = vi.spyOn(model, 'createMessage');
+        const spy = vi.spyOn(model, 'createOperation');
         const ctx = await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spy).toHaveBeenCalled();
@@ -88,7 +88,8 @@ describe('client', () => {
 
     it('should respect dryRun=true', async () => {
         const spyMsg = vi.spyOn(model, 'createMessage');
-        const spyLog = vi.spyOn(logger, 'info');
+        const spyLogInfo = vi.spyOn(logger, 'info');
+        const spyLogError = vi.spyOn(logger, 'error');
 
         // Create operation
         expect(spyMsg).not.toHaveBeenCalled();
@@ -96,12 +97,13 @@ describe('client', () => {
 
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spyMsg).not.toHaveBeenCalled();
-        expect(spyLog).toHaveBeenCalled();
+        expect(spyLogInfo).toHaveBeenCalled();
 
         // Insert msg
         await ctx.error('test');
         expect(spyMsg).not.toHaveBeenCalled();
-        expect(spyLog).toHaveBeenCalledTimes(2);
+        expect(spyLogInfo).toHaveBeenCalledTimes(1);
+        expect(spyLogError).toHaveBeenCalledTimes(1);
     });
 
     it('should respect logToConsole=false', async () => {

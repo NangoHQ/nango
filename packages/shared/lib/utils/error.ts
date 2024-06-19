@@ -254,7 +254,7 @@ export class NangoError extends Error {
                 this.status = 400;
                 this.message = `Failed to perform the action. Please try again.`;
                 if (this.payload) {
-                    this.message += ` Please make sure this value exists in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
+                    this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
                 }
                 break;
 
@@ -574,6 +574,11 @@ export class NangoError extends Error {
                 // TODO docs link
                 this.message =
                     'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/reference/limits).';
+                break;
+
+            case 'failed_to_parse_nango_yaml':
+                this.status = 400;
+                this.message = `Your nango.yaml contains some errors`;
                 break;
 
             default:

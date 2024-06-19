@@ -48,6 +48,7 @@ export default async function fetchData(nango: NangoSync) {
 
 function mapEmail(email: any): ZohoMailEmail {
     return {
+        id: email.messageId,
         summary: email.summary,
         sentDateInGMT: email.sentDateInGMT,
         calendarType: email.calendarType,

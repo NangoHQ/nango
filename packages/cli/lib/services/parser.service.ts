@@ -4,17 +4,33 @@ import type { NodePath } from '@babel/traverse';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import parser from '@babel/parser';
-import { SyncConfigType } from '@nangohq/shared';
 
 class ParserService {
-    public callsAreUsedCorrectly(filePath: string, type = SyncConfigType.SYNC, modelNames: string[]): boolean {
+    public getImportedFiles(filePath: string): string[] {
         const code = fs.readFileSync(filePath, 'utf-8');
+        const ast = parser.parse(code, { sourceType: 'module', plugins: ['typescript'] });
+        const importedFiles: string[] = [];
+        const traverseFn = (traverse as any).default || traverse;
+
+        traverseFn(ast, {
+            ImportDeclaration(path: NodePath<t.ImportDeclaration>) {
+                const importPath = path.node.source.value;
+                importedFiles.push(importPath);
+            }
+        });
+
+        return importedFiles;
+    }
+
+    public callsAreUsedCorrectly(filePath: string, type = 'sync', modelNames: string[]): boolean {
         let areAwaited = true;
         let usedCorrectly = true;
         let noReturnUsed = true;
         let retryOnUsedCorrectly = true;
 
+        const code = fs.readFileSync(filePath, 'utf-8');
         const ast = parser.parse(code, { sourceType: 'module', plugins: ['typescript'] });
+        const traverseFn = (traverse as any).default || traverse;
 
         const awaitMessage = (call: string, lineNumber: number) =>
             console.log(chalk.red(`nango.${call}() calls must be awaited in "${filePath}:${lineNumber}". Not awaiting can lead to unexpected results.`));
@@ -50,7 +66,6 @@ class ParserService {
         };
 
         const callsReferencingModelsToCheck = ['batchSave', 'batchDelete'];
-        const traverseFn = (traverse as any).default || traverse;
 
         traverseFn(ast, {
             CallExpression(path: NodePath<t.CallExpression>) {
@@ -66,7 +81,7 @@ class ParserService {
                             )
                         );
                     }
-                    if (type === SyncConfigType.ACTION) {
+                    if (type === 'action') {
                         if (disallowedActionCalls.includes(callee.property.name)) {
                             disallowedMessage(callee.property.name, lineNumber);
                             usedCorrectly = false;
@@ -158,7 +173,7 @@ class ParserService {
                 }
 
                 if (t.isFunctionDeclaration(declaration) || t.isFunctionExpression(declaration) || t.isArrowFunctionExpression(declaration)) {
-                    if (functionReturnsValue(declaration) && type === SyncConfigType.SYNC) {
+                    if (functionReturnsValue(declaration) && type === 'sync') {
                         const lineNumber = declaration.loc?.start.line || 'unknown';
                         console.log(
                             chalk.red(

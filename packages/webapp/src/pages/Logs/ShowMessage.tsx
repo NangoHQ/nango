@@ -39,7 +39,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
             </div>
             <div>
                 <h4 className="font-semibold text-sm mb-2">Message</h4>
-                <div className="text-gray-400 text-sm bg-pure-black py-2">
+                <div className="text-gray-400 text-sm bg-pure-black py-2 max-h-36 overflow-y-scroll">
                     <Prism
                         language="json"
                         className="transparent-code"
@@ -53,11 +53,11 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                     </Prism>
                 </div>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-hidden">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
 
                 {message.meta || message.error ? (
-                    <div className="text-gray-400 text-sm bg-pure-black py-2">
+                    <div className="text-gray-400 text-sm bg-pure-black py-2 h-full overflow-y-scroll">
                         <Prism
                             language="json"
                             className="transparent-code"

@@ -1,65 +1,51 @@
-import type { AsanaTask, NangoSync } from '../../models';
+import type { NangoSync, BaseAsanaModel, AsanaTask, Task } from '../../models';
+import { toUser } from '../mappers/to-user.js';
+import { toTask } from '../mappers/to-task.js';
 
-export default async function fetchData(nango: NangoSync) {
-    // Get the user's workspaces & projects
-    // For testing we just get the first project of the first workspace
-    const workspaces = await paginate(nango, '/api/1.0/workspaces');
-    const workspace = workspaces[0];
+export default async function fetchData(nango: NangoSync): Promise<void> {
+    const lastSyncDate = nango.lastSyncDate;
 
-    const projects = await paginate(nango, '/api/1.0/projects', { workspace: workspace.gid });
-    const project = projects[0];
+    for await (const workspaces of nango.paginate<BaseAsanaModel>({ endpoint: '/api/1.0/workspaces', params: { limit: 100 }, retries: 10 })) {
+        for (const workspace of workspaces) {
+            for await (const projects of nango.paginate<BaseAsanaModel>({
+                endpoint: '/api/1.0/projects',
+                params: { workspace: workspace.gid, limit: 100 },
+                retries: 10
+            })) {
+                for (const project of projects) {
+                    const params: Record<string, string> = {
+                        project: project.gid,
+                        limit: '100',
+                        opt_fields: [
+                            'name',
+                            'resource_type',
+                            'completed',
+                            'due_on',
+                            'permalink_url',
+                            'name',
+                            'notes',
+                            'created_at',
+                            'modified_at',
+                            'assignee.name',
+                            'assignee.email',
+                            'assignee.photo'
+                        ].join(',')
+                    };
 
-    // Get all tasks for the project
-    const filters = {
-        project: project.gid,
-        opt_fields: 'name,completed,created_at,modified_at'
-    };
-    const tasks = await paginate(nango, '/api/1.0/tasks', filters);
-    let mappedTasks: AsanaTask[] = [];
-    for (const task of tasks) {
-        mappedTasks.push({
-            id: task.gid,
-            project_id: project.gid,
-            name: task.name,
-            completed: task.completed,
-            created_at: task.created_at,
-            modified_at: task.modified_at
-        });
-
-        if (mappedTasks.length > 49) {
-            await nango.batchSave(mappedTasks, 'AsanaTask');
-            mappedTasks = [];
-        }
-    }
-    await nango.batchSave(mappedTasks, 'AsanaTask');
-}
-
-async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record<string, string | string[]>) {
-    const MAX_PAGE = 100;
-    let results: any[] = [];
-    let page = null;
-    const callParams = queryParams || {};
-    while (true) {
-        if (page) {
-            callParams['offset'] = `${page}`;
-        }
-
-        const resp = await nango.get({
-            endpoint: endpoint,
-            params: {
-                limit: `${MAX_PAGE}`,
-                ...callParams
+                    if (lastSyncDate) {
+                        params['modified_since'] = lastSyncDate.toISOString();
+                    }
+                    for await (const tasks of nango.paginate<AsanaTask>({ endpoint: '/api/1.0/tasks', params, retries: 10 })) {
+                        const normalizedTasks = tasks.map((task) => {
+                            return {
+                                ...toTask(task),
+                                assignee: task.assignee ? toUser(task.assignee) : null
+                            };
+                        });
+                        await nango.batchSave<Task>(normalizedTasks, 'Task');
+                    }
+                }
             }
-        });
-
-        results = results.concat(resp.data.data);
-
-        if (resp.data.next_page) {
-            page = resp.data.next_page.offset;
-        } else {
-            break;
         }
     }
-
-    return results;
 }

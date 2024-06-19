@@ -1,9 +1,9 @@
 import { expect, describe, it } from 'vitest';
 import proxyService from './proxy.service.js';
 import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, OAuth2Credentials } from '../models/index.js';
-import { AuthModes } from '../models/index.js';
 import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import type { LogsBuffer } from '@nangohq/types';
 
 describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct a header using an api key with multiple headers', () => {
@@ -15,7 +15,7 @@ describe('Proxy service Construct Header Tests', () => {
             token: { apiKey: 'sweet-secret-token' },
             method: 'GET' as HTTP_VERB,
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 authorization_url: 'https://api.nangostarter.com',
                 token_url: 'https://api.nangostarter.com',
                 proxy: {
@@ -44,7 +44,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct headers for Basic auth', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.Basic
+                auth_mode: 'BASIC'
             },
             token: {
                 username: 'testuser',
@@ -62,7 +62,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct headers for Basic auth with no password', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.Basic
+                auth_mode: 'BASIC'
             },
             token: {
                 username: 'testuser'
@@ -79,7 +79,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct headers for Basic auth + any custom headers', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.Basic,
+                auth_mode: 'BASIC',
                 proxy: {
                     headers: {
                         'X-Test': 'test'
@@ -103,7 +103,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct headers with an Authorization override', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.Basic
+                auth_mode: 'BASIC'
             },
             token: {
                 username: 'testuser',
@@ -160,7 +160,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly merge provided headers', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     headers: {
                         'My-Token': '${apiKey}'
@@ -186,7 +186,7 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should construct headers for an api key', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     headers: {
                         'X-Api-Key': '${apiKey}',
@@ -283,7 +283,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
                     query: {
@@ -306,7 +306,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.key property', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
                     query: {
@@ -328,7 +328,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property with existing query params', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
                     query: {
@@ -350,7 +350,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('Should insert a proxy query and a headers', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.ApiKey,
+                auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
                     query: {
@@ -384,7 +384,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('Should handle Proxy base URL interpolation with connection configuration param', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.OAuth2,
+                auth_mode: 'OAUTH2',
                 proxy: {
                     base_url: 'https://www.zohoapis.${connectionConfig.extension}'
                 }
@@ -404,7 +404,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('Should handle Proxy base URL interpolation with connection metadata param', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.OAuth2,
+                auth_mode: 'OAUTH2',
                 proxy: {
                     base_url: '${metadata.instance_url}'
                 }
@@ -479,7 +479,7 @@ describe('Proxy service Construct URL Tests', () => {
             } as AxiosResponse
         } as AxiosError;
         const before = Date.now();
-        await proxyService.retryHandler(1, 1, mockAxiosError, 'after', 'x-rateLimit-reset-after');
+        await proxyService.retryHandler(mockAxiosError, 'after', 'x-rateLimit-reset-after');
         const after = Date.now();
         const diff = after - before;
         expect(diff).toBeGreaterThanOrEqual(1000);
@@ -500,7 +500,7 @@ describe('Proxy service Construct URL Tests', () => {
             } as AxiosResponse
         } as AxiosError;
         const before = Date.now();
-        await proxyService.retryHandler(1, 1, mockAxiosError, 'at', 'x-rateLimit-reset');
+        await proxyService.retryHandler(mockAxiosError, 'at', 'x-rateLimit-reset');
         const after = Date.now();
         const diff = after - before;
         expect(diff).toBeGreaterThan(1000);
@@ -525,20 +525,21 @@ describe('Proxy service configure', () => {
                 credentials: {} as OAuth2Credentials,
                 connection_config: {}
             },
-            existingActivityLogId: 1
+            existingActivityLogId: '1'
         };
-        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        const { success, error, response, logs } = proxyService.configure(externalConfig, internalConfig);
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toContain('missing_endpoint');
-        expect(activityLogs.length).toBe(1);
-        expect(activityLogs[0]).toMatchObject({
-            environment_id: 1,
-            activity_log_id: 1,
-            level: 'error'
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toStrictEqual<LogsBuffer>({
+            level: 'error',
+            createdAt: expect.any(String),
+            message: 'Proxy: a API URL endpoint is missing.'
         });
     });
+
     it('Should fail if no connectionId', () => {
         const externalConfig: UserProvidedProxyConfiguration = {
             method: 'GET',
@@ -555,20 +556,22 @@ describe('Proxy service configure', () => {
                 credentials: {} as OAuth2Credentials,
                 connection_config: {}
             },
-            existingActivityLogId: 1
+            existingActivityLogId: '1'
         };
-        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        const { success, error, response, logs } = proxyService.configure(externalConfig, internalConfig);
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toContain("Missing param 'connection_id'.");
-        expect(activityLogs.length).toBe(1);
-        expect(activityLogs[0]).toMatchObject({
-            environment_id: 1,
-            activity_log_id: 1,
-            level: 'error'
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toStrictEqual<LogsBuffer>({
+            level: 'error',
+            createdAt: expect.any(String),
+            message:
+                "The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified."
         });
     });
+
     it('Should fail if no providerConfigKey', () => {
         const externalConfig: UserProvidedProxyConfiguration = {
             method: 'GET',
@@ -585,20 +588,22 @@ describe('Proxy service configure', () => {
                 credentials: {} as OAuth2Credentials,
                 connection_config: {}
             },
-            existingActivityLogId: 1
+            existingActivityLogId: '1'
         };
-        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        const { success, error, response, logs } = proxyService.configure(externalConfig, internalConfig);
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toContain('missing_provider_config_key');
-        expect(activityLogs.length).toBe(1);
-        expect(activityLogs[0]).toMatchObject({
-            environment_id: 1,
-            activity_log_id: 1,
-            level: 'error'
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toStrictEqual<LogsBuffer>({
+            level: 'error',
+            createdAt: expect.any(String),
+            message:
+                "The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified."
         });
     });
+
     it('Should fail if unknown provider', () => {
         const externalConfig: UserProvidedProxyConfiguration = {
             method: 'GET',
@@ -615,20 +620,22 @@ describe('Proxy service configure', () => {
                 credentials: {} as OAuth2Credentials,
                 connection_config: {}
             },
-            existingActivityLogId: 1
+            existingActivityLogId: '1'
         };
-        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        const { success, error, response, logs } = proxyService.configure(externalConfig, internalConfig);
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toContain('proxy is either not supported');
-        expect(activityLogs.length).toBe(3);
-        expect(activityLogs[2]).toMatchObject({
-            environment_id: 1,
-            activity_log_id: 1,
-            level: 'error'
+        expect(logs.length).toBe(3);
+        expect(logs[2]).toStrictEqual<LogsBuffer>({
+            level: 'error',
+            createdAt: expect.any(String),
+            message:
+                'The proxy is either not supported for the provider unknown or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).'
         });
     });
+
     it('Should succeed', () => {
         const externalConfig: UserProvidedProxyConfiguration = {
             method: 'GET',
@@ -652,9 +659,9 @@ describe('Proxy service configure', () => {
                 credentials: {} as OAuth2Credentials,
                 connection_config: {}
             },
-            existingActivityLogId: 1
+            existingActivityLogId: '1'
         };
-        const { success, error, response, activityLogs } = proxyService.configure(externalConfig, internalConfig);
+        const { success, error, response, logs } = proxyService.configure(externalConfig, internalConfig);
         expect(success).toBe(true);
         expect(response).toMatchObject({
             endpoint: '/api/test',
@@ -689,6 +696,6 @@ describe('Proxy service configure', () => {
             responseType: 'blob'
         });
         expect(error).toBeNull();
-        expect(activityLogs.length).toBe(4);
+        expect(logs.length).toBe(4);
     });
 });

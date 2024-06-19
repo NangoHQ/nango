@@ -9,7 +9,7 @@ import { createConfigSeeds } from '../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import type { Environment } from '../models/Environment.js';
 
-describe('Connection service integration tests', async () => {
+describe('Connection service integration tests', () => {
     let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
@@ -41,7 +41,7 @@ describe('Connection service integration tests', async () => {
                 environmentId: environment.id,
                 providerConfigKey: String(establishedConnection?.provider_config_key),
                 provider: 'hubspot',
-                activityLogId: 1,
+                activityLogId: '1',
                 secretKey: '****',
                 nangoConnectionId: nangoConnectionId as number,
                 syncId: 'aaa-bbb-ccc',

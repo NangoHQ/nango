@@ -180,7 +180,7 @@ class IntegrationService implements IntegrationServiceInterface {
                         content: error.message,
                         timestamp: Date.now()
                     });
-                    await logCtx?.error(`Failed`, { error });
+                    await logCtx?.error(error.message, { error });
                 }
                 return { success, error, response };
             } finally {

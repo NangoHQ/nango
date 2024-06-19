@@ -1,4 +1,4 @@
-import { migrateMapping } from '@nangohq/logs';
+import { migrateLogsMapping } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 import { multipleMigrations } from '@nangohq/database';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -8,7 +8,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 describe('GET /logs', () => {
     beforeAll(async () => {
         await multipleMigrations();
-        await migrateMapping();
+        await migrateLogsMapping();
 
         api = await runServer();
     });

@@ -2,7 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Input } from '../../../components/ui/input/Input';
 import { useSearchMessages } from '../../../hooks/useLogs';
-import type { SearchMessages, SearchOperationsData } from '@nangohq/types';
+import type { SearchMessages, SearchMessagesData } from '@nangohq/types';
 import { formatDateToLogFormat, formatQuantity } from '../../../utils/utils';
 import { useStore } from '../../../store';
 import * as Table from '../../../components/ui/Table';
@@ -17,11 +17,11 @@ import { Tag } from '../../../components/ui/label/Tag';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import Button from '../../../components/ui/button/Button';
 
-export const columns: ColumnDef<SearchOperationsData>[] = [
+export const columns: ColumnDef<SearchMessagesData>[] = [
     {
         accessorKey: 'createdAt',
         header: 'Timestamp',
-        size: 170,
+        size: 180,
         cell: ({ row }) => {
             return <div className="font-code text-s">{formatDateToLogFormat(row.original.createdAt)}</div>;
         }
@@ -76,7 +76,7 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
     const [hasLoadedMore, setHasLoadedMore] = useState<boolean>(false);
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
     const { data, error, loading, trigger, manualFetch } = useSearchMessages(env, { limit, operationId, search });
-    const [messages, setMessages] = useState<SearchOperationsData[]>([]);
+    const [messages, setMessages] = useState<SearchMessagesData[]>([]);
 
     useDebounce(
         () => {
@@ -202,7 +202,9 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
         <div className="flex-grow-0 overflow-hidden flex flex-col">
             <div className="flex justify-between items-center">
                 <h4 className="font-semibold text-sm flex items-center gap-2">Logs {loading && <Spinner size={1} />}</h4>
-                <div className="text-white text-xs">{totalHumanReadable} logs found</div>
+                <div className="text-white text-xs">
+                    {totalHumanReadable} {data?.pagination && data.pagination.total > 1 ? 'logs' : 'log'} found
+                </div>
             </div>
             <header className="mt-4">
                 <Input

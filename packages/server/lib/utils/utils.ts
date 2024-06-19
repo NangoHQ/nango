@@ -1,7 +1,8 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import type { Request } from 'express';
-import type { User, Template as ProviderTemplate } from '@nangohq/shared';
+import type { User } from '@nangohq/shared';
+import type { Template as ProviderTemplate } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';

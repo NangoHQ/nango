@@ -7,7 +7,7 @@ integrations:
           Fetches a list of emails from gmail
         output: GmailEmail
         sync_type: incremental
-        endpoint: /google-mail/emails
+        endpoint: GET /google-mail/emails
     actions:
       send-email:
         scopes: send

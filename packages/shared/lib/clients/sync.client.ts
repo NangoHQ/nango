@@ -5,7 +5,7 @@ import type { StringValue } from 'ms';
 import ms from 'ms';
 import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
+import type { NangoIntegrationData } from '../models/NangoConfig.js';
 import type { Sync, SyncWithSchedule } from '../models/Sync.js';
 import { SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Sync.js';
 import type { LogLevel } from '../models/Activity.js';
@@ -18,21 +18,17 @@ import {
     updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
 import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
-import { getInterval } from '../services/nango-config.service.js';
-import { getSyncConfig, getSyncConfigRaw } from '../services/sync/config/config.service.js';
+import { getInterval } from '@nangohq/nango-yaml';
+import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
-import connectionService from '../services/connection.service.js';
-import configService from '../services/config.service.js';
-import { createSync, clearLastSyncDate } from '../services/sync/sync.service.js';
+import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { isTest, isProd, getLogger, Ok, Err, stringifyError } from '@nangohq/utils';
+import { isTest, isProd, Ok, Err, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { InitialSyncArgs } from '../models/worker.js';
 import environmentService from '../services/environment.service.js';
-
-const logger = getLogger('Sync.Client');
 
 const generateWorkflowId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
 const generateScheduleId = (sync: Pick<Sync, 'id'>, syncName: string, connectionId: string) =>
@@ -104,49 +100,6 @@ class SyncClient {
 
     getClient = (): Client | null => this.client;
 
-    async initiate(nangoConnectionId: number, logContextGetter: LogContextGetter): Promise<void> {
-        const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
-        const nangoConfig = await getSyncConfig(nangoConnection);
-        if (!nangoConfig) {
-            logger.error(
-                'Failed to load the Nango config - will not start any syncs! If you expect to see a sync make sure you used the nango cli deploy command'
-            );
-            return;
-        }
-        const { integrations }: NangoConfig = nangoConfig;
-        const providerConfigKey = nangoConnection?.provider_config_key;
-
-        if (!integrations[providerConfigKey]) {
-            logger.info(`No syncs registered for provider ${providerConfigKey} - will not start any syncs!`);
-            return;
-        }
-
-        if (!this.client) {
-            logger.info('Failed to get a Temporal client - will not start any syncs!');
-            return;
-        }
-
-        const providerConfig: ProviderConfig = (await configService.getProviderConfig(
-            nangoConnection?.provider_config_key,
-            nangoConnection?.environment_id
-        )) as ProviderConfig;
-
-        const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
-        const syncNames = Object.keys(syncObject);
-        for (const syncName of syncNames) {
-            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-
-            if (!syncData.enabled) {
-                continue;
-            }
-            const sync = await createSync(nangoConnectionId, syncName);
-
-            if (sync) {
-                await this.startContinuous(nangoConnection, sync, providerConfig, syncName, syncData, logContextGetter);
-            }
-        }
-    }
-
     /**
      * Start Continuous
      * @desc get the connection information and the provider information
@@ -160,6 +113,7 @@ class SyncClient {
         syncName: string,
         syncData: NangoIntegrationData,
         logContextGetter: LogContextGetter,
+        shouldLog: boolean,
         debug = false
     ): Promise<void> {
         let logCtx: LogContext | undefined;
@@ -200,13 +154,13 @@ class SyncClient {
                     integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                     connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
                     syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name }
-                }
+                },
+                { dryRun: shouldLog }
             );
 
-            const { success, error, response } = getInterval(syncData.runs, new Date());
-
-            if (!success || response === null) {
-                const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${error?.message}`;
+            const intervalParsing = getInterval(syncData.runs, new Date());
+            if (intervalParsing instanceof Error) {
+                const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${intervalParsing.message}`;
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id: nangoConnection.environment_id,
@@ -214,7 +168,10 @@ class SyncClient {
                     timestamp: Date.now(),
                     content
                 });
-                await logCtx.error('The sync was not created or started due to an error with the sync interval', { error, runs: syncData.runs });
+                await logCtx.error('The sync was not created or started due to an error with the sync interval', {
+                    error: intervalParsing,
+                    runs: syncData.runs
+                });
                 await logCtx.failed();
 
                 errorManager.report(content, {
@@ -257,7 +214,7 @@ class SyncClient {
                 await createSyncJob(sync.id, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
             }
 
-            const { interval, offset } = response;
+            const { interval, offset } = intervalParsing;
             const scheduleId = generateScheduleId(sync, syncName, nangoConnection.connection_id);
 
             const scheduleHandle = await this.client?.schedule.create({
@@ -438,9 +395,9 @@ class SyncClient {
                         const schedule = await getScheduleById(scheduleId);
                         if (schedule) {
                             const { frequency } = schedule;
-                            const { success, response } = getInterval(frequency, new Date());
-                            if (success && response) {
-                                const { offset } = response;
+                            const interval = getInterval(frequency, new Date());
+                            if (!(interval instanceof Error)) {
+                                const { offset } = interval;
                                 await this.updateSyncSchedule(scheduleId, frequency, offset, environmentId);
                                 await updateOffset(scheduleId, offset);
                             }

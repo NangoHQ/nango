@@ -24,8 +24,12 @@ const path = '/v1/tasks/:taskId';
 const method = 'PUT';
 
 const validate = validateRequest<PutTask>({
-    parseBody: (data) => z.object({ output: jsonSchema, state: z.enum(['SUCCEEDED', 'FAILED']) }).parse(data),
-    parseParams: (data) => z.object({ taskId: z.string().uuid() }).parse(data)
+    parseBody: (data) =>
+        z
+            .object({ output: jsonSchema, state: z.enum(['SUCCEEDED', 'FAILED']) })
+            .strict()
+            .parse(data),
+    parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {

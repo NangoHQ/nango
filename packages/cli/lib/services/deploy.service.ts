@@ -2,18 +2,18 @@ import chalk from 'chalk';
 import promptly from 'promptly';
 import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
-import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
-import type { PostConnectionScriptByProvider } from '@nangohq/types';
-import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
-import configService from './config.service.js';
+import type { SyncDeploymentResult, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
+import type { NangoYamlParsed, PostConnectionScriptByProvider } from '@nangohq/types';
+import { localFileService, stagingHost, cloudHost } from '@nangohq/shared';
 import { compileAllFiles } from './compile.service.js';
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
 import type { DeployOptions } from '../types.js';
+import { load } from './config.service.js';
 
 class DeployService {
-    public async admin(environmentName: string, debug = false): Promise<void> {
-        await verificationService.necessaryFilesExist(false);
+    public async admin({ fullPath, environmentName, debug = false }: { fullPath: string; environmentName: string; debug?: boolean }): Promise<void> {
+        await verificationService.necessaryFilesExist({ fullPath, autoConfirm: false });
 
         await parseSecretKey(environmentName, debug);
 
@@ -36,21 +36,21 @@ class DeployService {
             printDebug(`Environment is set to ${environmentName}`);
         }
 
-        const successfulCompile = await compileAllFiles({ debug });
+        const successfulCompile = await compileAllFiles({ fullPath, debug });
 
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exit(1);
         }
 
-        const { success, error, response: config } = await configService.load('', debug);
+        const { success, error, response: parsed } = load(fullPath, debug);
 
-        if (!success || !config) {
+        if (!success || !parsed) {
             console.log(chalk.red(error?.message));
             return;
         }
 
-        const flowData = this.package(config, debug);
+        const flowData = this.package(parsed, debug);
 
         if (!flowData) {
             return;
@@ -69,7 +69,7 @@ class DeployService {
 
         try {
             await http
-                .post(url, { targetAccountUUID, targetEnvironment: environmentName, config: flowData, nangoYamlBody }, { headers: enrichHeaders() })
+                .post(url, { targetAccountUUID, targetEnvironment: environmentName, parsed: flowData, nangoYamlBody }, { headers: enrichHeaders() })
                 .then(() => {
                     console.log(chalk.green(`Successfully deployed the syncs/actions to the users account.`));
                 })
@@ -83,9 +83,9 @@ class DeployService {
         }
     }
 
-    public async prep(options: DeployOptions, environment: string, debug = false) {
+    public async prep({ fullPath, options, environment, debug = false }: { fullPath: string; options: DeployOptions; environment: string; debug?: boolean }) {
         const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm } = options;
-        await verificationService.necessaryFilesExist(autoConfirm);
+        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, checkDist: false });
 
         await parseSecretKey(environment, debug);
 
@@ -108,23 +108,23 @@ class DeployService {
             printDebug(`Environment is set to ${environment}`);
         }
 
+        const { success, error, response: parsed } = load(fullPath, debug);
+
+        if (!success || !parsed) {
+            console.log(chalk.red(error?.message));
+            return;
+        }
+
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
-        const successfulCompile = await compileAllFiles({ debug });
+        const successfulCompile = await compileAllFiles({ fullPath, debug });
 
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exit(1);
         }
 
-        const { success, error, response: config } = await configService.load('', debug);
-
-        if (!success || !config) {
-            console.log(chalk.red(error?.message));
-            return;
-        }
-
-        const postData = this.package(config, debug, version, optionalSyncName, optionalActionName);
+        const postData = this.package(parsed, debug, version, optionalSyncName, optionalActionName);
 
         if (!postData) {
             return;
@@ -223,7 +223,7 @@ class DeployService {
     }
 
     public package(
-        config: StandardNangoConfig[],
+        parsed: NangoYamlParsed,
         debug: boolean,
         version = '',
         optionalSyncName = '',
@@ -232,9 +232,8 @@ class DeployService {
         const postData: IncomingFlowConfig[] = [];
         const postConnectionScriptsByProvider: PostConnectionScriptByProvider[] = [];
 
-        for (const integration of config) {
+        for (const integration of parsed.integrations) {
             const { providerConfigKey, postConnectionScripts } = integration;
-            let { syncs, actions } = integration;
 
             if (postConnectionScripts && postConnectionScripts.length > 0) {
                 postConnectionScriptsByProvider.push({
@@ -251,96 +250,101 @@ class DeployService {
                 });
             }
 
-            let flows = [...syncs, ...actions];
-
-            if (optionalSyncName) {
-                syncs = syncs.filter((sync) => sync.name === optionalSyncName);
-                flows = syncs;
-            }
-
-            if (optionalActionName) {
-                actions = actions.filter((action) => action.name === optionalActionName);
-                flows = actions;
-            }
-
-            if (optionalSyncName && optionalActionName) {
-                flows = [...syncs, ...actions];
-            }
-
-            for (const flow of flows) {
-                const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = flow;
+            for (const sync of integration.syncs) {
+                if (optionalSyncName && optionalSyncName !== sync.name) {
+                    continue;
+                }
 
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
-                    syncName,
+                    sync.name,
                     providerConfigKey,
                     './'
                 );
 
+                if (!integrationFileResult) {
+                    console.log(chalk.red(`No integration file found for ${sync.name} at ${integrationFilePath}. Skipping...`));
+                    continue;
+                }
+                if (debug) {
+                    printDebug(`Integration file found for ${sync.name} at ${integrationFilePath}`);
+                }
+
                 const metadata = {} as NangoConfigMetadata;
-
-                if (flow.description) {
-                    metadata['description'] = flow.description;
+                if (sync.description) {
+                    metadata['description'] = sync.description;
+                }
+                if (sync.scopes) {
+                    metadata['scopes'] = sync.scopes;
                 }
 
-                if (flow.scopes) {
-                    metadata['scopes'] = flow.scopes;
+                const body: IncomingFlowConfig = {
+                    syncName: sync.name,
+                    providerConfigKey,
+                    models: sync.output || [],
+                    version: version,
+                    runs: sync.runs,
+                    track_deletes: sync.track_deletes,
+                    auto_start: sync.auto_start,
+                    attributes: {},
+                    metadata: metadata,
+                    input: sync.input || undefined,
+                    // sync_type: sync.sync_type as SyncType,
+                    type: sync.type as any,
+                    fileBody: {
+                        js: localFileService.getIntegrationFile(sync.name, providerConfigKey, './') as string,
+                        ts: localFileService.getIntegrationTsFile(sync.name, providerConfigKey, sync.type) as string
+                    },
+                    model_schema: JSON.stringify(sync.usedModels.map((name) => parsed.models.get(name))),
+                    endpoints: sync.endpoints,
+                    webhookSubscriptions: sync.webhookSubscriptions
+                };
+
+                postData.push(body);
+            }
+
+            for (const action of integration.actions) {
+                if (optionalActionName && optionalActionName !== action.name) {
+                    continue;
                 }
+
+                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
+                    action.name,
+                    providerConfigKey,
+                    './'
+                );
 
                 if (!integrationFileResult) {
-                    console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
+                    console.log(chalk.red(`No integration file found for ${action.name} at ${integrationFilePath}. Skipping...`));
                     continue;
                 }
-
-                if (type !== SyncConfigType.SYNC && type !== SyncConfigType.ACTION) {
-                    console.log(
-                        chalk.red(
-                            `The sync ${syncName} has an invalid type "${type}". The type must be either ${SyncConfigType.SYNC} or${SyncConfigType.ACTION}. Skipping...`
-                        )
-                    );
-                }
-                if (type === SyncConfigType.SYNC && !runs) {
-                    console.log(chalk.red(`The sync ${syncName} is missing the "runs" property. Skipping...`));
-                    continue;
-                }
-
-                if (runs && type === SyncConfigType.SYNC) {
-                    const { success, error } = getInterval(runs, new Date());
-
-                    if (!success) {
-                        console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${error?.message}`));
-
-                        return null;
-                    }
-                }
-
                 if (debug) {
-                    printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
+                    printDebug(`Integration file found for ${action.name} at ${integrationFilePath}`);
                 }
 
-                if (flow.input?.fields) {
-                    model_schema.push(flow.input);
+                const metadata = {} as NangoConfigMetadata;
+                if (action.description) {
+                    metadata['description'] = action.description;
+                }
+                if (action.scopes) {
+                    metadata['scopes'] = action.scopes;
                 }
 
-                const body = {
-                    syncName,
+                const body: IncomingFlowConfig = {
+                    syncName: action.name,
                     providerConfigKey,
-                    models: Array.isArray(models) ? models : [models],
+                    models: action.output || [],
                     version: version,
-                    runs,
-                    track_deletes: flow.track_deletes || false,
-                    auto_start: flow.auto_start === false ? false : true,
-                    attributes: flow.attributes || {},
-                    metadata: metadata || {},
-                    input: flow.input?.name || '',
-                    sync_type: flow.sync_type as SyncType,
-                    type,
+                    runs: '',
+                    metadata: metadata,
+                    input: action.input || undefined,
+                    // sync_type: sync.sync_type as SyncType,
+                    type: action.type as any,
                     fileBody: {
-                        js: localFileService.getIntegrationFile(syncName, providerConfigKey, './') as string,
-                        ts: localFileService.getIntegrationTsFile(syncName, providerConfigKey, type) as string
+                        js: localFileService.getIntegrationFile(action.name, providerConfigKey, './') as string,
+                        ts: localFileService.getIntegrationTsFile(action.name, providerConfigKey, action.type) as string
                     },
-                    model_schema: JSON.stringify(model_schema),
-                    endpoints: flow.endpoints,
-                    webhookSubscriptions: flow.webhookSubscriptions || []
+                    model_schema: JSON.stringify(action.usedModels.map((name) => parsed.models.get(name))),
+                    endpoints: action.endpoint ? [action.endpoint] : []
                 };
 
                 postData.push(body);

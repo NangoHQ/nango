@@ -1,8 +1,7 @@
-import { schema, dbNamespace } from '@nangohq/database';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import type { SlackNotification } from '../../models/SlackNotification.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { SyncType, SyncConfigType } from '../../models/Sync.js';
 import environmentService from '../environment.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -10,7 +9,6 @@ import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, cr
 import { basePublicUrl, getLogger } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
-import SyncClient from '../../clients/sync.client.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { OrchestratorClientInterface } from '../../clients/orchestrator.js';
 import { Orchestrator } from '../../clients/orchestrator.js';
@@ -139,12 +137,6 @@ export class SlackService {
             return;
         }
 
-        const syncClient = await SyncClient.getInstance();
-
-        if (!syncClient) {
-            return;
-        }
-
         const account = await environmentService.getAccountFromEnvironment(environment_id);
         if (!account) {
             throw new Error('failed_to_get_account');
@@ -210,26 +202,19 @@ export class SlackService {
      *      3) Send a duplicate notification to the Nango Admins
      *      4) Add an activity log entry for the notification to the admin account
      */
-    async reportFailure(
-        nangoConnection: NangoConnection,
-        syncName: string,
-        syncType: SyncType,
-        originalActivityLogId: number,
-        environment_id: number,
-        provider: string
-    ) {
+    async reportFailure(nangoConnection: NangoConnection, name: string, type: string, originalActivityLogId: number, environment_id: number, provider: string) {
         const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
 
         if (!slackNotificationsEnabled) {
             return;
         }
 
-        if (syncName === this.actionName) {
+        if (name === this.actionName) {
             return;
         }
 
         const envName = (await environmentService.getEnvironmentName(nangoConnection.environment_id))!;
-        const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, syncName, syncType);
+        const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, name, type);
 
         const account = await environmentService.getAccountFromEnvironment(environment_id);
         if (!account) {
@@ -291,12 +276,11 @@ export class SlackService {
         }
 
         const count = slackNotificationStatus.connectionCount;
-        const connection = count === 1 ? 'connection' : 'connections';
-        const flowType = syncType === SyncType.ACTION ? SyncConfigType.ACTION : SyncConfigType.SYNC;
+        const connectionWord = count === 1 ? 'connection' : 'connections';
+        const flowType = type;
         const date = new Date();
-        const dateString = date.toISOString().split('T')[0];
         const payload: NotificationPayload = {
-            content: `*${syncName}* (${flowType.toLowerCase()}) is failing for ${count} ${connection} in *${envName}*. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}&script=${syncName}&date=${dateString}|logs>.`,
+            content: this.getMessage({ type, count, connectionWord, flowType, name, envName, originalActivityLogId, date, resolved: false }),
             status: 'open',
             providerConfigKey: nangoConnection.provider_config_key,
             provider
@@ -306,60 +290,59 @@ export class SlackService {
             payload.ts = slackNotificationStatus.slack_timestamp;
         }
 
-        const syncClient = await SyncClient.getInstance();
+        try {
+            const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
+                connection: slackConnection as NangoConnection,
+                actionName: this.actionName,
+                input: payload,
+                activityLogId: activityLogId as number,
+                environment_id,
+                logCtx
+            });
 
-        if (!syncClient) {
-            return;
-        }
+            if (actionResponse.isOk() && actionResponse.value.ts) {
+                await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse.value.ts);
+            }
 
-        const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
-            connection: slackConnection as NangoConnection,
-            actionName: this.actionName,
-            input: payload,
-            activityLogId: activityLogId as number,
-            environment_id,
-            logCtx
-        });
-
-        if (actionResponse.isOk() && actionResponse.value.ts) {
-            await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse.value.ts);
-        }
-
-        await this.sendDuplicateNotificationToNangoAdmins(
-            payload,
-            originalActivityLogId,
-            environment_id,
-            logCtx,
-            slackNotificationStatus.id,
-            slackNotificationStatus.admin_slack_timestamp
-        );
-
-        const content = actionResponse.isOk()
-            ? `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
-            : `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
-
-        await createActivityLogMessage({
-            level: actionResponse.isOk() ? 'info' : 'error',
-            activity_log_id: activityLogId as number,
-            environment_id: slackConnection?.environment_id,
-            timestamp: Date.now(),
-            content,
-            params: payload as unknown as Record<string, unknown>
-        });
-
-        await updateSuccessActivityLog(activityLogId as number, actionResponse.isOk());
-
-        if (actionResponse.isOk()) {
-            await logCtx.info(
-                `The action ${this.actionName} was successfully triggered for the ${flowType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
-                { payload }
+            await this.sendDuplicateNotificationToNangoAdmins(
+                payload,
+                originalActivityLogId,
+                environment_id,
+                logCtx,
+                slackNotificationStatus.id,
+                slackNotificationStatus.admin_slack_timestamp
             );
-            await logCtx.success();
-        } else {
-            await logCtx.error(
-                `The action ${this.actionName} failed to trigger for the ${flowType} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
-                { error: actionResponse.error, payload }
-            );
+
+            const content = actionResponse.isOk()
+                ? `The action ${this.actionName} was successfully triggered for the ${flowType} ${name} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
+                : `The action ${this.actionName} failed to trigger for the ${flowType} ${name} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
+
+            await createActivityLogMessage({
+                level: actionResponse.isOk() ? 'info' : 'error',
+                activity_log_id: activityLogId as number,
+                environment_id: slackConnection?.environment_id,
+                timestamp: Date.now(),
+                content,
+                params: payload as unknown as Record<string, unknown>
+            });
+
+            await updateSuccessActivityLog(activityLogId as number, actionResponse.isOk());
+
+            if (actionResponse.isOk()) {
+                await logCtx.info(
+                    `The action ${this.actionName} was successfully triggered for the ${flowType} ${name} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
+                    { payload }
+                );
+                await logCtx.success();
+            } else {
+                await logCtx.error(
+                    `The action ${this.actionName} failed to trigger for the ${flowType} ${name} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
+                    { error: actionResponse.error, payload }
+                );
+                await logCtx.failed();
+            }
+        } catch (error) {
+            await logCtx.error('Failed to trigger slack notification', { error });
             await logCtx.failed();
         }
     }
@@ -377,8 +360,8 @@ export class SlackService {
     async reportResolution(
         nangoConnection: NangoConnection,
         syncName: string,
-        syncType: SyncConfigType,
-        originalActivityLogId: number,
+        type: string,
+        originalActivityLogId: number | null,
         environment_id: number,
         provider: string,
         slack_timestamp: string,
@@ -394,11 +377,31 @@ export class SlackService {
         let payloadContent = '';
 
         if (connectionCount === 0) {
-            payloadContent = `[Resolved] *${syncName}* (${syncType.toLowerCase()}) failed. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}|logs>.`;
+            payloadContent = this.getMessage({
+                type,
+                count: connectionCount,
+                connectionWord: 'connections',
+                flowType: type,
+                name: syncName,
+                envName,
+                originalActivityLogId,
+                date: new Date(),
+                resolved: true
+            });
         } else {
             const count = connectionCount;
             const connection = count === 1 ? 'connection' : 'connections';
-            payloadContent = `*${syncName}* (${syncType.toLowerCase()}) is failing for ${count} ${connection} in *${envName}*. Read <${basePublicUrl}/${envName}/activity?activity_log_id=${originalActivityLogId}|logs>.`;
+            payloadContent = this.getMessage({
+                type,
+                count,
+                connectionWord: connection,
+                flowType: type,
+                name: syncName,
+                envName,
+                originalActivityLogId,
+                date: new Date(),
+                resolved: false
+            });
         }
 
         const payload: NotificationPayload = {
@@ -408,12 +411,6 @@ export class SlackService {
             provider,
             ts: slack_timestamp
         };
-
-        const syncClient = await SyncClient.getInstance();
-
-        if (!syncClient) {
-            return;
-        }
 
         const account = await environmentService.getAccountFromEnvironment(environment_id);
         if (!account) {
@@ -457,36 +454,41 @@ export class SlackService {
             }
         );
 
-        const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
-            connection: slackConnection as NangoConnection,
-            actionName: this.actionName,
-            input: payload,
-            activityLogId: activityLogId as number,
-            environment_id,
-            logCtx
-        });
+        try {
+            const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
+                connection: slackConnection as NangoConnection,
+                actionName: this.actionName,
+                input: payload,
+                activityLogId: activityLogId as number,
+                environment_id,
+                logCtx
+            });
 
-        await this.sendDuplicateNotificationToNangoAdmins(payload, activityLogId as number, environment_id, logCtx, undefined, admin_slack_timestamp);
+            await this.sendDuplicateNotificationToNangoAdmins(payload, activityLogId as number, environment_id, logCtx, undefined, admin_slack_timestamp);
 
-        const content = actionResponse.isOk()
-            ? `The action ${this.actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
-            : `The action ${this.actionName} failed to trigger for the ${syncType} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
+            const content = actionResponse.isOk()
+                ? `The action ${this.actionName} was successfully triggered for the ${type} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
+                : `The action ${this.actionName} failed to trigger for the ${type} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
 
-        await createActivityLogMessage({
-            level: actionResponse.isOk() ? 'info' : 'error',
-            activity_log_id: activityLogId as number,
-            environment_id: slackConnection?.environment_id,
-            timestamp: Date.now(),
-            content,
-            params: payload as unknown as Record<string, unknown>
-        });
+            await createActivityLogMessage({
+                level: actionResponse.isOk() ? 'info' : 'error',
+                activity_log_id: activityLogId as number,
+                environment_id: slackConnection?.environment_id,
+                timestamp: Date.now(),
+                content,
+                params: payload as unknown as Record<string, unknown>
+            });
 
-        await updateSuccessActivityLog(activityLogId as number, actionResponse.isOk());
-        if (actionResponse.isOk()) {
-            await logCtx.info(content, payload);
-            await logCtx.success();
-        } else {
-            await logCtx.error(content, { error: actionResponse.error });
+            await updateSuccessActivityLog(activityLogId as number, actionResponse.isOk());
+            if (actionResponse.isOk()) {
+                await logCtx.info(content, payload);
+                await logCtx.success();
+            } else {
+                await logCtx.error(content, { error: actionResponse.error });
+                await logCtx.failed();
+            }
+        } catch (error) {
+            await logCtx.error('Failed to trigger slack notification', { error });
             await logCtx.failed();
         }
     }
@@ -522,14 +524,14 @@ export class SlackService {
      * @desc create a new notification for the given name and environment id
      * and return the id of the created notification.
      */
-    async createNotification(nangoConnection: NangoConnection, name: string, type: SyncType): Promise<Pick<SlackNotification, 'id'> | null> {
+    async createNotification(nangoConnection: NangoConnection, name: string, type: string): Promise<Pick<SlackNotification, 'id'> | null> {
         const result = await schema()
             .from<SlackNotification>(TABLE)
             .insert({
                 open: true,
                 environment_id: nangoConnection.environment_id,
                 name,
-                type: type === SyncType.ACTION ? SyncConfigType.ACTION : SyncConfigType.SYNC,
+                type,
                 connection_list: [nangoConnection.id as number]
             })
             .returning('id');
@@ -546,9 +548,10 @@ export class SlackService {
      * @desc check if there is an open notification for the given name and environment id
      * and if so add the connection id to the connection list.
      */
-    async addFailingConnection(nangoConnection: NangoConnection, name: string, type: SyncType): Promise<ServiceResponse<NotificationResponse>> {
+    async addFailingConnection(nangoConnection: NangoConnection, name: string, type: string): Promise<ServiceResponse<NotificationResponse>> {
         const isOpen = await this.hasOpenNotification(nangoConnection, name);
 
+        logger.info(`Notifying ${nangoConnection.id} type:${type} name:${name}`);
         if (!isOpen) {
             const created = await this.createNotification(nangoConnection, name, type);
 
@@ -608,11 +611,12 @@ export class SlackService {
      * and if so remove the connection id from the connection list and report
      * resolution to the slack channel.
      */
+
     async removeFailingConnection(
         nangoConnection: NangoConnection,
         name: string,
-        type: SyncType,
-        originalActivityLogId: number,
+        type: string,
+        originalActivityLogId: number | null,
         environment_id: number,
         provider: string
     ): Promise<void> {
@@ -631,14 +635,15 @@ export class SlackService {
         const { id, connection_list, slack_timestamp, admin_slack_timestamp } = isOpen;
 
         const index = connection_list.indexOf(nangoConnection.id as number);
-
         if (index === -1) {
             return;
         }
 
+        logger.info(`Resolving ${nangoConnection.id} type:${type} name:${name}`);
+
         connection_list.splice(index, 1);
 
-        await schema()
+        await db.knex
             .from<SlackNotification>(TABLE)
             .where({ id: id as number })
             .update({
@@ -653,7 +658,7 @@ export class SlackService {
         await this.reportResolution(
             nangoConnection,
             name,
-            type === SyncType.ACTION ? SyncConfigType.ACTION : SyncConfigType.SYNC,
+            type,
             originalActivityLogId,
             environment_id,
             provider,
@@ -674,5 +679,82 @@ export class SlackService {
                 open: false,
                 updated_at: new Date()
             });
+    }
+
+    private getLogUrl({
+        envName,
+        originalActivityLogId,
+        name,
+        date,
+        type
+    }: {
+        envName: string;
+        originalActivityLogId: number | null;
+        name: string;
+        date: Date;
+        type: string;
+    }) {
+        const usp = new URLSearchParams();
+
+        if (originalActivityLogId) {
+            usp.set('operationId', String(originalActivityLogId));
+        }
+
+        const from = new Date(date);
+        from.setHours(0, 0);
+        const to = new Date(date);
+        to.setHours(23, 59);
+        usp.set('from', from.toISOString());
+        usp.set('to', to.toISOString());
+
+        if (type === 'auth') {
+            usp.set('connections', name);
+        } else {
+            usp.set('syncs', name);
+        }
+
+        return `${basePublicUrl}/${envName}/logs?${usp.toString()}`;
+    }
+
+    private getMessage({
+        type,
+        count,
+        connectionWord,
+        flowType,
+        name,
+        envName,
+        originalActivityLogId,
+        date,
+        resolved
+    }: {
+        type: string;
+        count: number;
+        connectionWord: string;
+        flowType: string;
+        name: string;
+        envName: string;
+        originalActivityLogId: number | null;
+        date: Date;
+        resolved: boolean;
+    }): string {
+        switch (type) {
+            case 'sync':
+            case 'action': {
+                if (resolved) {
+                    return `[Resolved] *${name}* (${flowType.toLowerCase()}) in *${envName}* failed. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
+                } else {
+                    return `*${name}* (${flowType.toLowerCase()}) is failing for ${count} ${connectionWord} in *${envName}*. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
+                }
+            }
+            case 'auth': {
+                if (resolved) {
+                    return `[Resolved] connection *${name}* in *${envName}* refresh failed.`;
+                } else {
+                    return `Could not refresh token of connection *${name}* in *${envName}*. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
+                }
+            }
+        }
+
+        return '';
     }
 }

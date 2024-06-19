@@ -40,3 +40,14 @@ export interface Environment extends Timestamps {
 
     webhook_receive_url?: string;
 }
+
+export interface ExternalWebhook extends Timestamps {
+    id: number;
+    environment_id: number;
+    primary_url: string;
+    secondary_url: string;
+    on_sync_completion_always: boolean;
+    on_auth_creation: boolean;
+    on_auth_refresh_error: boolean;
+    on_sync_error: boolean;
+}

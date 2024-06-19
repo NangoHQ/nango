@@ -28,6 +28,7 @@ const validate = validateRequest<PostDequeue>({
                 limit: z.coerce.number().positive(),
                 longPolling: z.coerce.boolean()
             })
+            .strict()
             .parse(data)
 });
 
@@ -45,7 +46,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (req: EndpointRequest<PostDequeue>, res: EndpointResponse<PostDequeue>) => {
         const { groupKey, limit, longPolling: longPolling } = req.body;
         const longPollingTimeoutMs = 60_000;
-        const eventId = `task:started:${groupKey}`;
+        const eventId = `task:created:${groupKey}`;
         const cleanupAndRespond = (respond: (res: EndpointResponse<PostDequeue>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
@@ -58,12 +59,14 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             }
         };
         const onTaskStarted = async (_t: Task) => {
-            const getTasks = await scheduler.dequeue({ groupKey, limit });
-            if (getTasks.isErr()) {
-                cleanupAndRespond((res) => res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } }));
-            } else {
-                cleanupAndRespond((res) => res.status(200).json(getTasks.value));
-            }
+            cleanupAndRespond(async (res) => {
+                const getTasks = await scheduler.dequeue({ groupKey, limit });
+                if (getTasks.isErr()) {
+                    res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } });
+                } else {
+                    res.status(200).json(getTasks.value);
+                }
+            });
         };
         const timeout = setTimeout(() => {
             cleanupAndRespond((res) => res.status(200).send([]));

@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
-import type { SearchOperationsData } from '@nangohq/types';
+import type { SearchMessagesData } from '@nangohq/types';
 
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '../../../components/ui/Drawer';
 import * as Table from '../../../components/ui/Table';
@@ -9,7 +9,7 @@ import { ArrowLeftIcon } from '@radix-ui/react-icons';
 import { cn } from '../../../utils/utils';
 
 const drawerWidth = '834px';
-export const MessageRow: React.FC<{ row: Row<SearchOperationsData> }> = ({ row }) => {
+export const MessageRow: React.FC<{ row: Row<SearchMessagesData> }> = ({ row }) => {
     return (
         <Drawer direction="right" snapPoints={[drawerWidth]} handleOnly={true} noBodyStyles={true} nested>
             <DrawerTrigger asChild type={null as unknown as 'button'}>

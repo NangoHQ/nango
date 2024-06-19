@@ -20,7 +20,7 @@ export async function externalPostConnection(
 
     const postConnectionScripts = await postConnectionScriptService.getByConfig(config_id);
 
-    if (!postConnectionScripts) {
+    if (!postConnectionScripts || postConnectionScripts.length === 0) {
         return;
     }
 
@@ -41,7 +41,7 @@ export async function externalPostConnection(
     const activityLogId = await createActivityLog(log);
 
     const logCtx = await logContextGetter.create(
-        { id: String(activityLogId), operation: { type: 'post-connection-script' }, message: 'Start action' },
+        { id: String(activityLogId), operation: { type: 'auth', action: 'post_connection' }, message: 'Start external post connection script' },
         {
             account,
             environment,
@@ -50,15 +50,25 @@ export async function externalPostConnection(
         }
     );
 
+    let failed = false;
     for (const postConnectionScript of postConnectionScripts) {
         const { name, file_location: fileLocation } = postConnectionScript;
 
-        await getOrchestrator().triggerPostConnectionScript({
+        const res = await getOrchestrator().triggerPostConnectionScript({
             connection: createdConnection.connection,
             name,
             fileLocation,
             activityLogId: activityLogId as number,
             logCtx
         });
+        if (res.isErr()) {
+            failed = true;
+        }
+    }
+
+    if (failed) {
+        await logCtx.failed();
+    } else {
+        await logCtx.success();
     }
 }
