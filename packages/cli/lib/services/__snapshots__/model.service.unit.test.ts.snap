@@ -374,6 +374,17 @@ export interface Base {
   literalNull: null[];
   obj: {  nested: string;};
   optional?: string;
+  arrayLiteral: any[];
+  objectLiteral: object;
+  any: any;
+  float: number;
+  bigint: bigint;
+  int: number;
+  date: Date;
+  char: string;
+  undefined: undefined;
+  true: true;
+  false: false;
   id: string;
   name: string;
 };
