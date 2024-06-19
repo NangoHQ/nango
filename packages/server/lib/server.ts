@@ -7,7 +7,7 @@ import { WebSocketServer } from 'ws';
 import http from 'node:http';
 import db from '@nangohq/database';
 import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getServerPort, getWebsocketsPath } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, requestLoggerMiddleware } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
 import { migrate as migrateRecords } from '@nangohq/records';
@@ -21,6 +21,13 @@ const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
 
 const app = express();
+
+// Log all requests
+if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
+    app.use(requestLoggerMiddleware({ logger }));
+}
+
+// Load all routes
 app.use('/', router);
 
 const server = http.createServer(app);
