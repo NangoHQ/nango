@@ -68,9 +68,9 @@ export abstract class NangoYamlParser {
             return;
         }
 
-        // check that every endpoint is unique across syncs and actions
-        const endpoints = new Set<string>();
         for (const integration of this.parsed.integrations) {
+            // check that every endpoint is unique across syncs and actions per integration
+            const endpoints = new Set<string>();
             // check that models are used only once per integration
             const usedModels = new Set<string>();
             const integrationName = integration.providerConfigKey;
@@ -90,7 +90,7 @@ export abstract class NangoYamlParser {
                             this.errors.push(new ParserErrorMissingId({ model: output, path: [integrationName, 'syncs', sync.name, '[output]'] }));
                             continue;
                         }
-                        if (output.startsWith('Anonymous')) {
+                        if (output.startsWith('Anonymous') && !model.fields[0]?.union) {
                             this.warnings.push(
                                 new ParserErrorModelIsLiteral({ model: model.fields[0]!.value as any, path: [integrationName, 'syncs', sync.name, '[output]'] })
                             );
@@ -99,14 +99,13 @@ export abstract class NangoYamlParser {
                     }
                 }
                 if (sync.input) {
-                    if (usedModels.has(sync.input)) {
-                        this.warnings.push(new ParserErrorDuplicateModel({ model: sync.input, path: [integrationName, 'syncs', sync.name, '[input]'] }));
-                    }
                     if (sync.input.startsWith('Anonymous')) {
                         const model = this.modelsParser.get(sync.input)!;
-                        this.warnings.push(
-                            new ParserErrorModelIsLiteral({ model: model.fields[0]!.value as any, path: [integrationName, 'syncs', sync.name, '[input]'] })
-                        );
+                        if (!model.fields[0]?.union) {
+                            this.warnings.push(
+                                new ParserErrorModelIsLiteral({ model: model.fields[0]!.value as any, path: [integrationName, 'syncs', sync.name, '[input]'] })
+                            );
+                        }
                     }
                     usedModels.add(sync.input);
                 }
@@ -149,7 +148,7 @@ export abstract class NangoYamlParser {
                         usedModels.add(output);
 
                         const model = this.modelsParser.get(output)!;
-                        if (output.startsWith('Anonymous')) {
+                        if (output.startsWith('Anonymous') && !model.fields[0]?.union) {
                             this.warnings.push(
                                 new ParserErrorModelIsLiteral({
                                     model: model.fields[0]!.value as any,
@@ -160,14 +159,16 @@ export abstract class NangoYamlParser {
                     }
                 }
                 if (action.input) {
-                    if (usedModels.has(action.input)) {
-                        this.warnings.push(new ParserErrorDuplicateModel({ model: action.input, path: [integrationName, 'actions', action.name, '[input]'] }));
-                    }
                     if (action.input.startsWith('Anonymous')) {
                         const model = this.modelsParser.get(action.input)!;
-                        this.warnings.push(
-                            new ParserErrorModelIsLiteral({ model: model.fields[0]!.value as any, path: [integrationName, 'actions', action.name, '[input]'] })
-                        );
+                        if (!model.fields[0]?.union) {
+                            this.warnings.push(
+                                new ParserErrorModelIsLiteral({
+                                    model: model.fields[0]!.value as any,
+                                    path: [integrationName, 'actions', action.name, '[input]']
+                                })
+                            );
+                        }
                     }
                     usedModels.add(action.input);
                 }

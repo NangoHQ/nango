@@ -5,6 +5,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadValidateParse, validateYaml } from './config.service';
 import { NangoError } from '@nangohq/shared';
 
+function cleanLog(log: any) {
+    return typeof log === 'string' ? stripAnsi(log) : log;
+}
 describe('load', () => {
     // Not the best but until we have a logger it will work
     const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
@@ -26,7 +29,7 @@ describe('load', () => {
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- missing endpoint', () => {
         const acc: string[] = [];
-        consoleMock.mockImplementation((m) => acc.push(stripAnsi(m)));
+        consoleMock.mockImplementation((m) => acc.push(cleanLog(m)));
 
         const { response, error } = loadValidateParse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.1`));
         expect(response!.parsed).toBeNull();

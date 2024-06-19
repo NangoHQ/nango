@@ -3,6 +3,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildModelsTS, fieldToTypescript, fieldsToTypescript, getExportToJSON } from './model.service.js';
 import type { NangoModel } from '@nangohq/types';
+import { loadValidateParse } from './config.service.js';
 
 function removeVersion(res: string) {
     return res.replace(/(v[0-9.]+)/, 'vTest');
@@ -66,6 +67,12 @@ describe('buildModelTs', () => {
             }
         });
         expect(removeVersion(res.split('\n').slice(0, 25).join('\n'))).toMatchSnapshot('');
+    });
+
+    it('should support all advanced syntax', () => {
+        const { response } = loadValidateParse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/advanced-syntax`));
+        const res = buildModelsTS({ parsed: response!.parsed! });
+        expect(removeVersion(res.split('\n').slice(0, 37).join('\n'))).toMatchSnapshot();
     });
 });
 

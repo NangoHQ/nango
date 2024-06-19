@@ -38,7 +38,7 @@ describe('client', () => {
     });
 
     it('should insert an operation', async () => {
-        const spy = vi.spyOn(model, 'createMessage');
+        const spy = vi.spyOn(model, 'createOperation');
         const ctx = await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spy).toHaveBeenCalled();
