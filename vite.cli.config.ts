@@ -10,9 +10,10 @@ export default defineConfig({
         env: {
             NANGO_ENCRYPTION_KEY: 'RzV4ZGo5RlFKMm0wYWlXdDhxTFhwb3ZrUG5KNGg3TmU='
         },
-        threads: false,
         chaiConfig: {
             truncateThreshold: 10000
-        }
+        },
+        fileParallelism: false,
+        pool: 'forks'
     }
 });
