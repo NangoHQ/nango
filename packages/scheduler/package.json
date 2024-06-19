@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "@nangohq/utils": "file:../utils",
+        "dd-trace": "5.2.0",
         "knex": "3.1.0",
         "uuidv7": "0.6.3"
     },

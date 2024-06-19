@@ -2,6 +2,7 @@ import { isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { SchedulingChild } from './scheduling.worker.js';
 import { DatabaseClient } from '../../db/client.js';
 import { logger } from '../../utils/logger.js';
+import '../../tracer.js';
 
 if (!isMainThread && parentPort) {
     const { url, schema } = workerData;
