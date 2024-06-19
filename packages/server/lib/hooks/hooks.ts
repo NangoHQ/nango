@@ -73,7 +73,6 @@ export const connectionCreated = async (
     createdConnectionPayload: RecentlyCreatedConnection,
     provider: string,
     logContextGetter: LogContextGetter,
-    activityLogId: number | null,
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true },
     logCtx?: LogContext
 ): Promise<void> => {
@@ -99,17 +98,11 @@ export const connectionCreated = async (
         operation: 'creation',
         provider,
         type: 'auth',
-        activityLogId,
         logCtx
     });
 };
 
-export const connectionCreationFailed = async (
-    failedConnectionPayload: RecentlyFailedConnection,
-    provider: string,
-    activityLogId: number | null,
-    logCtx?: LogContext
-): Promise<void> => {
+export const connectionCreationFailed = async (failedConnectionPayload: RecentlyFailedConnection, provider: string, logCtx?: LogContext): Promise<void> => {
     const { connection, environment, auth_mode, error } = failedConnectionPayload;
 
     if (error) {
@@ -125,7 +118,6 @@ export const connectionCreationFailed = async (
             operation: 'creation',
             provider,
             type: 'auth',
-            activityLogId,
             logCtx
         });
     }
@@ -155,7 +147,6 @@ export const connectionRefreshSuccess = async ({
 
 export const connectionRefreshFailed = async ({
     connection,
-    activityLogId,
     logCtx,
     authError,
     environment,
@@ -167,14 +158,13 @@ export const connectionRefreshFailed = async ({
     template: ProviderTemplate;
     config: IntegrationConfig;
     authError: { type: string; description: string };
-    activityLogId: number;
     logCtx: LogContext;
 }): Promise<void> => {
     await errorNotificationService.auth.create({
         type: 'auth',
         action: 'token_refresh',
         connection_id: connection.id!,
-        activity_log_id: activityLogId,
+        activity_log_id: -1,
         log_id: logCtx.id,
         active: true
     });
@@ -191,13 +181,12 @@ export const connectionRefreshFailed = async ({
         success: false,
         provider: config.provider,
         type: 'auth',
-        activityLogId,
         logCtx
     });
 
     const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
 
-    void slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', activityLogId, environment.id, config.provider);
+    void slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
 };
 
 export const connectionTest = async (

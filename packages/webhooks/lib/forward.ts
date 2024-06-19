@@ -59,7 +59,6 @@ export const forwardWebhook = async ({
             webhooks,
             body: payload,
             webhookType: 'forward',
-            activityLogId: null,
             environment,
             logCtx
         });
@@ -78,7 +77,6 @@ export const forwardWebhook = async ({
                 connectionId
             },
             webhookType: 'forward',
-            activityLogId: null,
             environment,
             logCtx,
             incomingHeaders: webhookOriginalHeaders

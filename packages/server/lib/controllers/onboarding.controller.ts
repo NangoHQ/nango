@@ -453,7 +453,6 @@ class OnboardingController {
                 connection,
                 actionName: DEMO_ACTION_NAME,
                 input: { title: req.body.title },
-                activityLogId,
                 environment_id: environment.id,
                 logCtx
             });

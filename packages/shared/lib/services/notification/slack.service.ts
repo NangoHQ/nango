@@ -125,7 +125,6 @@ export class SlackService {
      */
     private async sendDuplicateNotificationToNangoAdmins(
         payload: NotificationPayload,
-        activityLogId: number,
         environment_id: number,
         logCtx: LogContext, // TODO: we should not reuse this ctx
         id?: number,
@@ -152,7 +151,6 @@ export class SlackService {
             connection: nangoAdminConnection,
             actionName: this.actionName,
             input: payload,
-            activityLogId,
             environment_id: nangoAdminConnection?.environment_id,
             logCtx
         });
@@ -202,7 +200,7 @@ export class SlackService {
      *      3) Send a duplicate notification to the Nango Admins
      *      4) Add an activity log entry for the notification to the admin account
      */
-    async reportFailure(nangoConnection: NangoConnection, name: string, type: string, originalActivityLogId: number, environment_id: number, provider: string) {
+    async reportFailure(nangoConnection: NangoConnection, name: string, type: string, originalActivityLogId: string, environment_id: number, provider: string) {
         const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
 
         if (!slackNotificationsEnabled) {
@@ -262,13 +260,6 @@ export class SlackService {
         );
 
         if (!success || !slackNotificationStatus) {
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                content: `Failed looking up the slack notification using the slack notification service. The error was: ${error}`,
-                timestamp: Date.now()
-            });
             await logCtx.error('Failed looking up the slack notification using the slack notification service', { error });
             await logCtx.failed();
 
@@ -295,7 +286,6 @@ export class SlackService {
                 connection: slackConnection as NangoConnection,
                 actionName: this.actionName,
                 input: payload,
-                activityLogId: activityLogId as number,
                 environment_id,
                 logCtx
             });
@@ -306,7 +296,6 @@ export class SlackService {
 
             await this.sendDuplicateNotificationToNangoAdmins(
                 payload,
-                originalActivityLogId,
                 environment_id,
                 logCtx,
                 slackNotificationStatus.id,
@@ -361,7 +350,7 @@ export class SlackService {
         nangoConnection: NangoConnection,
         syncName: string,
         type: string,
-        originalActivityLogId: number | null,
+        originalActivityLogId: string | null,
         environment_id: number,
         provider: string,
         slack_timestamp: string,
@@ -429,23 +418,8 @@ export class SlackService {
             return;
         }
 
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action: LogActionEnum.ACTION,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: slackConnection?.connection_id,
-            provider_config_key: slackConnection?.provider_config_key,
-            provider: this.integrationKey,
-            environment_id: slackConnection?.environment_id,
-            operation_name: this.actionName
-        };
-
-        const activityLogId = await createActivityLog(log);
         const logCtx = await this.logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+            { operation: { type: 'action' }, message: 'Start action' },
             {
                 account,
                 environment: { id: environment_id, name: envName },
@@ -459,27 +433,16 @@ export class SlackService {
                 connection: slackConnection as NangoConnection,
                 actionName: this.actionName,
                 input: payload,
-                activityLogId: activityLogId as number,
                 environment_id,
                 logCtx
             });
 
-            await this.sendDuplicateNotificationToNangoAdmins(payload, activityLogId as number, environment_id, logCtx, undefined, admin_slack_timestamp);
+            await this.sendDuplicateNotificationToNangoAdmins(payload, environment_id, logCtx, undefined, admin_slack_timestamp);
 
             const content = actionResponse.isOk()
                 ? `The action ${this.actionName} was successfully triggered for the ${type} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
                 : `The action ${this.actionName} failed to trigger for the ${type} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
 
-            await createActivityLogMessage({
-                level: actionResponse.isOk() ? 'info' : 'error',
-                activity_log_id: activityLogId as number,
-                environment_id: slackConnection?.environment_id,
-                timestamp: Date.now(),
-                content,
-                params: payload as unknown as Record<string, unknown>
-            });
-
-            await updateSuccessActivityLog(activityLogId as number, actionResponse.isOk());
             if (actionResponse.isOk()) {
                 await logCtx.info(content, payload);
                 await logCtx.success();
@@ -616,7 +579,7 @@ export class SlackService {
         nangoConnection: NangoConnection,
         name: string,
         type: string,
-        originalActivityLogId: number | null,
+        originalActivityLogId: string | null,
         environment_id: number,
         provider: string
     ): Promise<void> {
@@ -689,7 +652,7 @@ export class SlackService {
         type
     }: {
         envName: string;
-        originalActivityLogId: number | null;
+        originalActivityLogId: string | null;
         name: string;
         date: Date;
         type: string;
@@ -733,7 +696,7 @@ export class SlackService {
         flowType: string;
         name: string;
         envName: string;
-        originalActivityLogId: number | null;
+        originalActivityLogId: string | null;
         date: Date;
         resolved: boolean;
     }): string {

@@ -473,7 +473,6 @@ class SyncController {
                 connection,
                 actionName: action_name,
                 input,
-                activityLogId,
                 environment_id: environmentId,
                 logCtx
             });
