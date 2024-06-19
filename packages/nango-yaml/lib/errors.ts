@@ -114,7 +114,7 @@ export class ParserErrorTypeSyntax extends ParserError {
     constructor(options: { value: string; path: string[] }) {
         super({
             code: 'type_syntax_error',
-            message: `Type "${options.value}" contains some unsupported typescript syntax, please use Yaml compatible syntax.`,
+            message: `Type "${options.value}" contains some unsupported typescript syntax, please use allowed syntax. Documentation: https://docs.nango.dev/reference/integration-configuration#model-types`,
             path: options.path
         });
     }
