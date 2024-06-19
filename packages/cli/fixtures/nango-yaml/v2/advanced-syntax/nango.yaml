@@ -1,0 +1,30 @@
+integrations:
+    unauthenticated:
+        actions:
+            get-issue:
+                endpoint: GET /ticketing/tickets/{Ref:id}
+                output: Base
+            input-output-union:
+                endpoint: GET /ticketing/1
+                input: true | hello | Ref
+                output: string | null[]
+models:
+    Ref:
+        id: string
+    Ref2:
+        name: string
+    Base:
+        unions: string | null | Ref | true[] | Ref2[]
+        arrUnion:
+            - Ref
+            - true
+        literal: hello
+        num: 1
+        literalNull: null[]
+        obj:
+            nested: string
+        optional?: string
+        __extends: Ref,Ref2
+
+    Record:
+        __string: any
