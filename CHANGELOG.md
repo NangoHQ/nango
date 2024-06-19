@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.3] - 2024-06-18
+
+### Changed
+
+- *(deps)* Bump braces from 3.0.2 to 3.0.3 (#2304) by @dependabot[bot]
+- *(deps)* Bump ws from 8.16.0 to 8.17.1 (#2354) by @dependabot[bot]
+- Prevent concurrent scheduling (#2359) by @TBonnin
+
+### Fixed
+
+- *(orchestrator)* Update message when updating frequency (#2355) by @bodinsamuel
+- *(integration-templates)* [nan-1239] fix integration-template upload (#2356) by @khaliqgant
+- *(jobs)* Initialize tracer in processing worker threads (#2361) by @TBonnin
+- *(logs)* Insert message without an ID (#2360) by @bodinsamuel
+- *(nango-yaml)* Allow endpoint to be reused across integration (#2365) by @bodinsamuel
+
 ## [v0.40.2] - 2024-06-18
 
 ### Added
@@ -1347,6 +1363,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.3]: https://github.com/NangoHQ/nango/compare/v0.40.2..v0.40.3
 [v0.40.2]: https://github.com/NangoHQ/nango/compare/v0.40.1..v0.40.2
 [v0.40.1]: https://github.com/NangoHQ/nango/compare/v0.40.0..v0.40.1
 [v0.40.0]: https://github.com/NangoHQ/nango/compare/v0.39.33..v0.40.0
