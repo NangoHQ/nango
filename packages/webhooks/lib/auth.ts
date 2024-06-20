@@ -23,7 +23,6 @@ export const sendAuth = async ({
     operation,
     provider,
     type,
-    activityLogId,
     logCtx
 }: {
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
@@ -35,7 +34,6 @@ export const sendAuth = async ({
     operation: AuthOperationType;
     provider: string;
     type: WebhookTypes;
-    activityLogId: number | null;
     logCtx?: LogContext | undefined;
 } & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> => {
     if (!webhookSettings) {
@@ -82,7 +80,6 @@ export const sendAuth = async ({
         webhooks,
         body: success ? successBody : errorBody,
         webhookType: type,
-        activityLogId,
         environment,
         logCtx
     });

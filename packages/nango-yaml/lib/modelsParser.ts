@@ -1,6 +1,6 @@
 import type { NangoModel, NangoModelField, NangoYamlModel, NangoYamlModelFields } from '@nangohq/types';
 import { getNativeDataType, getPotentialTypeAlias, isDisallowedType, shouldQuote } from './helpers.js';
-import { ParserError, ParserErrorCycle, ParserErrorDataSyntax, ParserErrorExtendsNotFound, ParserErrorInvalidModelName } from './errors.js';
+import { ParserError, ParserErrorCycle, ParserErrorExtendsNotFound, ParserErrorInvalidModelName, ParserErrorTypeSyntax } from './errors.js';
 
 export class ModelsParser {
     parsed = new Map<string, NangoModel>();
@@ -103,6 +103,13 @@ export class ModelsParser {
                 continue;
             }
 
+            // Special key for dynamic interface `[key: string]: *`
+            if (name === '__string') {
+                const acc = this.parseFields({ fields: { tmp: value }, parent })[0]!;
+                dynamicField = { ...acc, name, dynamic: true, optional };
+                continue;
+            }
+
             // Array of unknown
             if (Array.isArray(value)) {
                 const acc = this.parseFields({ fields: value as unknown as NangoYamlModelFields, parent });
@@ -135,24 +142,18 @@ export class ModelsParser {
                 continue;
             }
 
-            // Special key for dynamic interface `[key: string]: *`
-            if (name === '__string') {
-                const acc = this.parseFields({ fields: { tmp: value }, parent })[0]!;
-                dynamicField = { ...acc, name, dynamic: true, optional };
-                continue;
-            }
-
             // Union type will be split and feed back to the parser
             if (value.includes('|')) {
                 // union
                 const types = value.split('|').map((v) => v.trim());
-                const acc = this.parseFields({ fields: types as unknown as NangoYamlModelFields, parent });
+                const acc = this.parseFields({ fields: { tmp: types } as unknown as NangoYamlModelFields, parent });
+
                 if (!acc) {
                     this.errors.push(new ParserError({ code: 'failed_to_parse_union', message: `Failed to parse union in "${parent}"`, path: [parent, name] }));
                     continue;
                 }
 
-                parsed.push({ name, value: acc, union: true, optional });
+                parsed.push({ name, value: acc[0]!.value, union: true, optional });
                 continue;
             }
 
@@ -176,7 +177,7 @@ export class ModelsParser {
             }
 
             if (isDisallowedType(valueClean)) {
-                this.warnings.push(new ParserErrorDataSyntax({ value: valueClean, path: [parent, name] }));
+                this.errors.push(new ParserErrorTypeSyntax({ value: valueClean, path: [parent, name] }));
                 parsed.push({ name, value: valueClean, array: isArray, optional });
                 continue;
             }

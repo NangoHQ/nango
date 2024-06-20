@@ -84,7 +84,8 @@ Sign up for free and try the interactive demo:
 
 Our mission is to enable all SaaS to seamlessly integrate together. By being open source, every engineer can contribute improvements to the platform for everyone:
 - [Contribute an API](/customize/guides/contribute-an-api)
-- [Contribute integration templates](/customize/guides/contribute-an-integration-template)
+- [Create a custom integration](/customize/guides/create-a-custom-integration)
+- [Extend an integration template](/customize/guides/extend-an-integration-template)
 
 # 📚 Learn more
 

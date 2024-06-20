@@ -141,7 +141,8 @@ export const typesAliases: Record<string, string> = {
     date: 'Date',
     object: 'object',
     any: 'any',
-    array: 'any[]'
+    array: 'any[]',
+    undefined: 'undefined'
 };
 
 export function getPotentialTypeAlias(value: string): string | undefined {

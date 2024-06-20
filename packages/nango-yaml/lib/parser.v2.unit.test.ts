@@ -121,6 +121,61 @@ describe('parse', () => {
             yamlVersion: 'v2'
         });
     });
+
+    it('should handle input / output as union', () => {
+        const v2: NangoYamlV2 = {
+            models: {},
+            integrations: {
+                provider: { actions: { top: { input: 'string | undefined', output: 'null | true[]', endpoint: 'GET /provider/top' } } }
+            }
+        };
+        const parser = new NangoYamlParserV2({ raw: v2 });
+        parser.parse();
+        expect(parser.errors).toStrictEqual([]);
+        expect(parser.warnings).toStrictEqual([]);
+        expect(parser.parsed).toMatchObject({
+            models: new Map([
+                [
+                    'Anonymous_provider_action_top_output',
+                    {
+                        name: 'Anonymous_provider_action_top_output',
+                        fields: [
+                            {
+                                name: 'output',
+                                optional: false,
+                                union: true,
+                                value: [
+                                    { array: false, name: '0', optional: false, tsType: true, value: null },
+                                    { array: true, name: '1', optional: false, tsType: true, value: true }
+                                ]
+                            }
+                        ],
+                        isAnon: true
+                    }
+                ],
+                [
+                    'Anonymous_provider_action_top_input',
+                    {
+                        name: 'Anonymous_provider_action_top_input',
+                        fields: [
+                            {
+                                name: 'input',
+                                optional: false,
+                                union: true,
+                                value: [
+                                    { array: false, name: '0', optional: false, tsType: true, value: 'string' },
+                                    { array: false, name: '1', optional: false, tsType: true, value: 'undefined' }
+                                ]
+                            }
+                        ],
+                        isAnon: true
+                    }
+                ]
+            ]),
+            yamlVersion: 'v2'
+        });
+    });
+
     describe('endpoints', () => {
         it('should handle endpoint with model inside (found)', () => {
             const v2: NangoYamlV2 = {

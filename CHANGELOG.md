@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.5] - 2024-06-20
+
+### Added
+
+- *(integrations)* [nan-1247] add checkr post connection script (#2370) by @khaliqgant
+
+### Changed
+
+- *(nango-yaml)* Exhaustive list of supported syntax (#2367) by @bodinsamuel
+- Remove empty docs pages and fix broken links (#2372) by @bastienbeurier
+- *(scheduler)* Create tasks in parallel (#2373) by @TBonnin
+
+### Fixed
+
+- *(auth)* [nan-1249] update number to refresh and update last fetched even if failed (#2368) by @khaliqgant
+- *(logs.v1)* Remove auth, action, hooks (#2363) by @bodinsamuel
+- *(server)* Log request and add route to tracing (#2371) by @bodinsamuel
+- *(nango-yaml)* Support __string advanced syntax (#2377) by @bodinsamuel
+
+## [v0.40.4] - 2024-06-19
+
+### Fixed
+
+- Missing created task events (#2364) by @TBonnin
+- *(deps)* Upgrade vitest (#2357) by @bodinsamuel
+- *(nango-yaml)* Fine tune parsing (#2366) by @bodinsamuel
+
 ## [v0.40.3] - 2024-06-18
 
 ### Changed
@@ -1363,6 +1390,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.5]: https://github.com/NangoHQ/nango/compare/v0.40.4..v0.40.5
+[v0.40.4]: https://github.com/NangoHQ/nango/compare/v0.40.3..v0.40.4
 [v0.40.3]: https://github.com/NangoHQ/nango/compare/v0.40.2..v0.40.3
 [v0.40.2]: https://github.com/NangoHQ/nango/compare/v0.40.1..v0.40.2
 [v0.40.1]: https://github.com/NangoHQ/nango/compare/v0.40.0..v0.40.1

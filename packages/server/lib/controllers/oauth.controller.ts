@@ -558,7 +558,6 @@ class OAuthController {
                     },
                     config.provider,
                     logContextGetter,
-                    activityLogId,
                     undefined,
                     logCtx
                 );
@@ -588,7 +587,6 @@ class OAuthController {
                     operation: 'unknown'
                 },
                 'unknown',
-                activityLogId,
                 logCtx
             );
             if (logCtx) {
@@ -1220,7 +1218,6 @@ class OAuthController {
                     operation: 'unknown'
                 },
                 session.provider,
-                activityLogId,
                 logCtx
             );
 
@@ -1386,7 +1383,6 @@ class OAuthController {
                         operation: 'unknown'
                     },
                     session.provider,
-                    activityLogId,
                     logCtx
                 );
 
@@ -1510,7 +1506,6 @@ class OAuthController {
                     },
                     session.provider,
                     logContextGetter,
-                    activityLogId,
                     { initiateSync, runPostConnectionScript },
                     logCtx
                 );
@@ -1529,7 +1524,6 @@ class OAuthController {
                         },
                         config.provider,
                         logContextGetter,
-                        activityLogId,
                         { initiateSync: true, runPostConnectionScript: false },
                         logCtx
                     );
@@ -1603,7 +1597,6 @@ class OAuthController {
                     operation: 'unknown'
                 },
                 session.provider,
-                activityLogId,
                 logCtx
             );
 
@@ -1653,7 +1646,6 @@ class OAuthController {
                     operation: 'unknown'
                 },
                 session.provider,
-                activityLogId,
                 logCtx
             );
 
@@ -1717,7 +1709,6 @@ class OAuthController {
                         },
                         session.provider,
                         logContextGetter,
-                        activityLogId,
                         { initiateSync, runPostConnectionScript },
                         logCtx
                     );
@@ -1772,7 +1763,6 @@ class OAuthController {
                         operation: 'unknown'
                     },
                     session.provider,
-                    activityLogId,
                     logCtx
                 );
 

@@ -1,5 +1,6 @@
-export { default as githubappoauthPostConnection } from './github-app-oauth-post-connection.js';
-export { default as hubspotPostConnection } from './hubspot-post-connection.js';
-export { default as jiraPostConnection } from './jira-post-connection.js';
-export { default as linearPostConnection } from './linear-post-connection.js';
-export { default as salesforcePostConnection } from './salesforce-post-connection.js';
+export { default as githubappoauthpostconnection } from './github-app-oauth-post-connection.js';
+export { default as hubspotpostconnection } from './hubspot-post-connection.js';
+export { default as jirapostconnection } from './jira-post-connection.js';
+export { default as linearpostconnection } from './linear-post-connection.js';
+export { default as salesforcepostconnection } from './salesforce-post-connection.js';
+export { default as checkrpostconnection } from './checkr-post-connection.js';

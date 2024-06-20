@@ -703,6 +703,10 @@ class ConnectionService {
                 // TODO: this leak credentials to the logs
                 const errorWithPayload = new NangoError(error!.type, connection);
 
+                // there was an attempt to refresh the token so clear it from the queue
+                // of connections to refresh if it failed
+                await this.updateLastFetched(connection.id);
+
                 return Err(errorWithPayload);
             } else if (response.refreshed) {
                 await onRefreshSuccess({

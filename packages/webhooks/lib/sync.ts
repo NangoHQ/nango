@@ -27,7 +27,6 @@ export const sendSync = async ({
     success,
     operation,
     error,
-    activityLogId,
     logCtx
 }: {
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
@@ -40,7 +39,6 @@ export const sendSync = async ({
     error?: ErrorPayload;
     responseResults?: SyncResult;
     success: boolean;
-    activityLogId: number | null;
     logCtx?: LogContext | undefined;
 } & ({ success: true; responseResults: SyncResult } | { success: false; error: ErrorPayload })): Promise<void> => {
     if (!webhookSettings) {
@@ -110,7 +108,6 @@ export const sendSync = async ({
         webhooks,
         body: success ? successBody : errorBody,
         webhookType: 'sync',
-        activityLogId,
         endingMessage: success ? endingMessage : '',
         environment,
         logCtx

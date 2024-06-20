@@ -111,30 +111,18 @@ export class Orchestrator {
         connection,
         actionName,
         input,
-        activityLogId,
         environment_id,
         logCtx
     }: {
         connection: NangoConnection;
         actionName: string;
         input: object;
-        activityLogId: number;
         environment_id: number;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const startTime = Date.now();
         const workflowId = `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connection.connection_id}.${uuid()}`;
         try {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id,
-                activity_log_id: activityLogId,
-                content: `Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
-                params: {
-                    input: JSON.stringify(input, null, 2)
-                },
-                timestamp: Date.now()
-            });
             await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input });
 
             let res: Result<any, NangoError>;
@@ -166,7 +154,7 @@ export class Orchestrator {
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
-                        activityLogId,
+                        activityLogId: logCtx.id,
                         input: parsedInput
                     };
                     const actionResult = await this.client.executeAction({
@@ -207,7 +195,7 @@ export class Orchestrator {
                                     environment_id: connection.environment_id
                                 },
                                 input,
-                                activityLogId
+                                activityLogId: logCtx.id
                             }
                         ]
                     });
@@ -238,14 +226,6 @@ export class Orchestrator {
 
             const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
-            await updateSuccessActivityLog(activityLogId, true);
             await logCtx.info(content);
 
             await telemetry.log(
@@ -268,13 +248,6 @@ export class Orchestrator {
 
             const content = `The action workflow ${workflowId} failed with error: ${err}`;
 
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
             await logCtx.error(content);
 
             errorManager.report(err, {
