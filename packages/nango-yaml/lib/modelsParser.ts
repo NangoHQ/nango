@@ -103,6 +103,13 @@ export class ModelsParser {
                 continue;
             }
 
+            // Special key for dynamic interface `[key: string]: *`
+            if (name === '__string') {
+                const acc = this.parseFields({ fields: { tmp: value }, parent })[0]!;
+                dynamicField = { ...acc, name, dynamic: true, optional };
+                continue;
+            }
+
             // Array of unknown
             if (Array.isArray(value)) {
                 const acc = this.parseFields({ fields: value as unknown as NangoYamlModelFields, parent });
@@ -132,13 +139,6 @@ export class ModelsParser {
                 }
 
                 parsed.push({ name, value: acc, optional });
-                continue;
-            }
-
-            // Special key for dynamic interface `[key: string]: *`
-            if (name === '__string') {
-                const acc = this.parseFields({ fields: { tmp: value }, parent })[0]!;
-                dynamicField = { ...acc, name, dynamic: true, optional };
                 continue;
             }
 
