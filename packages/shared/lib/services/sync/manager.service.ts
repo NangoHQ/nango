@@ -131,7 +131,7 @@ export class SyncManagerService {
                 }
 
                 const createdSync = await createSync(connection.id as number, syncName);
-                orchestrator.scheduleSyncHelper(
+                await orchestrator.scheduleSyncHelper(
                     connection,
                     createdSync as Sync,
                     syncConfig as ProviderConfig,
