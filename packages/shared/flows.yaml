@@ -405,7 +405,33 @@ integrations:
                 homePhone: string
             BamboohrCreateEmployeeResponse:
                 status: string
-    check-partner:
+    checkr-partner:
+        actions:
+            background-check-services:
+                endpoint: GET /background-check/service-list
+                output: CheckrServicesResponse
+                description: Fetch the possible services that Checkr offers for a background check
+            background-check-parameters:
+                endpoint: GET /background-check/service-parameters
+                input: BackgroundCheckParametersInput
+                output: BackgroundCheckParameterResponse
+                description: Fetch the parameters required to trigger a background check
+            trigger-background-check:
+                endpoint: POST /background-check/trigger
+                input: TriggerBackgroundCheckInput
+                output: TriggeredBackgroundCheck
+                description: Trigger a background check
+            create-candidate:
+                endpoint: POST /candidates
+                output: Candidate
+                input: CreateCandidate
+        syncs:
+            background-checks:
+                endpoint: GET /background-checks
+                output: BackgroundCheck
+                runs: every hour
+                sync_type: incremental
+                description: Fetch all the background checks
         models:
             Timestamps:
                 created_at: string
