@@ -51,7 +51,6 @@ describe('Webhooks: auth notification tests', () => {
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation',
-            activityLogId: 1,
             logCtx
         });
         expect(spy).not.toHaveBeenCalled();
@@ -77,7 +76,6 @@ describe('Webhooks: auth notification tests', () => {
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation',
-            activityLogId: 1,
             logCtx
         });
         expect(spy).toHaveBeenCalledTimes(1);
@@ -104,7 +102,6 @@ describe('Webhooks: auth notification tests', () => {
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation',
-            activityLogId: 1,
             logCtx
         });
         expect(spy).toHaveBeenCalledTimes(1);
@@ -129,7 +126,6 @@ describe('Webhooks: auth notification tests', () => {
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation',
-            activityLogId: 1,
             logCtx
         });
         expect(spy).toHaveBeenCalledTimes(2);
@@ -159,7 +155,6 @@ describe('Webhooks: auth notification tests', () => {
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation',
-            activityLogId: 1,
             logCtx
         });
         expect(spy).toHaveBeenCalledTimes(1);
@@ -180,7 +175,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: false
             },
             provider: 'hubspot',
-            activityLogId: 1,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation',
@@ -207,7 +201,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: true
             },
             provider: 'hubspot',
-            activityLogId: 1,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh',
@@ -233,7 +226,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: true
             },
             provider: 'hubspot',
-            activityLogId: 1,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh',
@@ -258,7 +250,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: false
             },
             provider: 'hubspot',
-            activityLogId: 1,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh',
@@ -284,7 +275,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: true
             },
             provider: 'hubspot',
-            activityLogId: 1,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh',

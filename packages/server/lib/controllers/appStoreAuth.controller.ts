@@ -183,7 +183,6 @@ class AppStoreAuthController {
                         operation: 'unknown'
                     },
                     config.provider,
-                    activityLogId,
                     logCtx
                 );
 
@@ -225,7 +224,6 @@ class AppStoreAuthController {
                     },
                     config.provider,
                     logContextGetter,
-                    activityLogId,
                     undefined,
                     logCtx
                 );
@@ -255,7 +253,6 @@ class AppStoreAuthController {
                     operation: 'unknown'
                 },
                 'unknown',
-                activityLogId,
                 logCtx
             );
             if (logCtx) {

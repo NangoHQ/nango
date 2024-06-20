@@ -104,8 +104,8 @@ export class SchedulingChild {
                 if (schedules.isErr()) {
                     return Err(`Failed to get due schedules: ${stringifyError(schedules.error)}`);
                 } else {
-                    for (const schedule of schedules.value) {
-                        const task = await tasks.create(trx, {
+                    const createTasks = schedules.value.map((schedule) =>
+                        tasks.create(trx, {
                             scheduleId: schedule.id,
                             startsAfter: new Date(),
                             name: `${schedule.name}:${new Date().toISOString()}`,
@@ -116,11 +116,16 @@ export class SchedulingChild {
                             createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
                             startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
                             heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs
-                        });
-                        if (task.isErr()) {
-                            logger.error(`Failed to create task for schedule: ${schedule.id}`);
+                        })
+                    );
+                    const res = await Promise.allSettled(createTasks);
+                    for (const taskRes of res) {
+                        if (taskRes.status === 'rejected') {
+                            logger.error(`Failed to schedule task: ${taskRes.reason}`);
+                        } else if (taskRes.value.isErr()) {
+                            logger.error(`Failed to schedule task: ${stringifyError(taskRes.value.error)}`);
                         } else {
-                            taskIds.push(task.value.id);
+                            taskIds.push(taskRes.value.value.id);
                         }
                     }
                 }
