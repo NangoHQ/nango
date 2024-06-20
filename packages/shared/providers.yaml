@@ -422,6 +422,7 @@ checkr-partner:
         retry:
             at: 'X-Ratelimit-Reset'
         base_url: https://api.checkr.com
+    post_connection_script: checkr-post-connection
     docs: https://docs.nango.dev/integrations/all/checkr
 checkr-partner-staging:
     categories:
@@ -436,6 +437,7 @@ checkr-partner-staging:
         retry:
             at: 'X-Ratelimit-Reset'
         base_url: https://api.checkr-staging.com
+    post_connection_script: checkr-post-connection
     docs: https://docs.nango.dev/integrations/all/checkr
 chorus:
     auth_mode: BASIC
