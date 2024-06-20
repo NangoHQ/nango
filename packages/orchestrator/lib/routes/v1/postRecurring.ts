@@ -69,7 +69,8 @@ const handler = (scheduler: Scheduler) => {
             retryMax: req.body.retry.max,
             createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
             startedToCompletedTimeoutSecs: req.body.timeoutSettingsInSecs.startedToCompleted,
-            heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat
+            heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat,
+            lastScheduledTaskId: null
         });
         if (schedule.isErr()) {
             return res.status(500).json({ error: { code: 'recurring_failed', message: schedule.error.message } });
