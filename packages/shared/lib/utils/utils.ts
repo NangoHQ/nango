@@ -148,7 +148,7 @@ export async function getOauthCallbackUrl(environmentId?: number) {
     return globalCallbackUrl;
 }
 
-export async function getAppCallbackUrl(_environmentId?: number) {
+export function getAppCallbackUrl(_environmentId?: number) {
     const globalAppCallbackUrl = getGlobalAppCallbackUrl();
 
     // TODO add this to settings and make it configurable

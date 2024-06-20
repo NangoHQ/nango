@@ -28,6 +28,6 @@ export class RemoteRunner implements Runner {
     }
 
     static async getOrStart(runnerId: string): Promise<RemoteRunner> {
-        return new RemoteRunner(runnerId, process.env['RUNNER_SERVICE_URL'] || 'http://nango-runner');
+        return Promise.resolve(new RemoteRunner(runnerId, process.env['RUNNER_SERVICE_URL'] || 'http://nango-runner'));
     }
 }

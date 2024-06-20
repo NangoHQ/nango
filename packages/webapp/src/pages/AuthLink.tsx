@@ -8,7 +8,7 @@ export default function AuthLink() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const searchParams = useSearchParams()[0];
 
-    const handleCreate = async (e: React.SyntheticEvent) => {
+    const handleCreate = (e: React.SyntheticEvent) => {
         e.preventDefault();
         setServerErrorMessage('');
 

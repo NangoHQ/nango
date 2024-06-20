@@ -10,7 +10,7 @@ const logger = getLogger('Server');
 const cronName = '[refreshTokens]';
 
 export function refreshTokens(): void {
-    cron.schedule('*/10 * * * *', async () => {
+    cron.schedule('*/10 * * * *', () => {
         (async () => {
             const start = Date.now();
             try {

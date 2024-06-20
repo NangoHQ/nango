@@ -17,7 +17,7 @@ import {
 import { exec } from './autoIdleDemo.js';
 import { nanoid, Ok } from '@nangohq/utils';
 
-describe('Auto Idle Demo', async () => {
+describe('Auto Idle Demo', () => {
     let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();

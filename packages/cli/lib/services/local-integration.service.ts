@@ -8,7 +8,7 @@ import { Buffer } from 'buffer';
 
 class IntegrationService implements IntegrationServiceInterface {
     async cancelScript() {
-        return;
+        return Promise.resolve();
     }
 
     async runScript({ syncName, nangoProps, isInvokedImmediately, isWebhook, optionalLoadLocation, input }: RunScriptOptions): Promise<RunnerOutput> {
