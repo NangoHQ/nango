@@ -39,3 +39,13 @@ models:
 
     Record:
         __string: any
+
+    RecordUnion:
+        __string: any | string | boolean
+    RecordArrayUnion:
+        __string:
+            - any
+            - string
+    RecordObject:
+        __string:
+            str: string
