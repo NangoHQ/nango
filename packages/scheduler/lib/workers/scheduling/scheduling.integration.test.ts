@@ -108,7 +108,8 @@ async function addSchedule(db: knex.Knex, params?: { state?: ScheduleState; star
         heartbeat_timeout_secs: 1,
         created_at: new Date(),
         updated_at: new Date(),
-        deleted_at: params?.state === 'DELETED' ? new Date() : null
+        deleted_at: params?.state === 'DELETED' ? new Date() : null,
+        last_scheduled_task_id: null
     };
     const res = await db.from<DbSchedule>(SCHEDULES_TABLE).insert(schedule).returning('*');
     const inserted = res[0];
@@ -150,6 +151,9 @@ async function addTask(
     const inserted = res[0];
     if (!inserted) {
         throw new Error('Failed to insert task');
+    }
+    if (params?.scheduleId) {
+        await db.from<DbSchedule>(SCHEDULES_TABLE).where('id', params.scheduleId).update({ last_scheduled_task_id: inserted.id });
     }
     return DbTask.from(inserted);
 }

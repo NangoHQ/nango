@@ -46,6 +46,7 @@ export interface DbSchedule {
     readonly created_at: Date;
     updated_at: Date;
     deleted_at: Date | null;
+    last_scheduled_task_id: string | null;
 }
 
 // knex uses https://github.com/bendrucker/postgres-interval
@@ -84,7 +85,8 @@ export const DbSchedule = {
         heartbeat_timeout_secs: schedule.heartbeatTimeoutSecs,
         created_at: schedule.createdAt,
         updated_at: schedule.updatedAt,
-        deleted_at: schedule.deletedAt
+        deleted_at: schedule.deletedAt,
+        last_scheduled_task_id: schedule.lastScheduledTaskId
     }),
     from: (dbSchedule: DbSchedule): Schedule => ({
         id: dbSchedule.id,
@@ -100,7 +102,8 @@ export const DbSchedule = {
         heartbeatTimeoutSecs: dbSchedule.heartbeat_timeout_secs,
         createdAt: dbSchedule.created_at,
         updatedAt: dbSchedule.updated_at,
-        deletedAt: dbSchedule.deleted_at
+        deletedAt: dbSchedule.deleted_at,
+        lastScheduledTaskId: dbSchedule.last_scheduled_task_id
     })
 };
 
@@ -115,7 +118,8 @@ export async function create(db: knex.Knex, props: ScheduleProps): Promise<Resul
         frequencyMs: props.frequencyMs,
         createdAt: now,
         updatedAt: now,
-        deletedAt: null
+        deletedAt: null,
+        lastScheduledTaskId: null
     };
     try {
         const inserted = await db.from<DbSchedule>(SCHEDULES_TABLE).insert(DbSchedule.to(newSchedule)).returning('*');
@@ -166,11 +170,15 @@ export async function transitionState(db: knex.Knex, scheduleId: string, to: Sch
     }
 }
 
-export async function update(db: knex.Knex, props: Partial<Pick<ScheduleProps, 'frequencyMs' | 'payload'>> & { id: string }): Promise<Result<Schedule>> {
+export async function update(
+    db: knex.Knex,
+    props: Partial<Pick<ScheduleProps, 'frequencyMs' | 'payload' | 'lastScheduledTaskId'>> & { id: string }
+): Promise<Result<Schedule>> {
     try {
         const newValues = {
             ...(props.frequencyMs ? { frequency: `${props.frequencyMs} milliseconds` } : {}),
             ...(props.payload ? { payload: props.payload } : {}),
+            ...(props.lastScheduledTaskId ? { last_scheduled_task_id: props.lastScheduledTaskId } : {}),
             updated_at: new Date()
         };
         const updated = await db.from<DbSchedule>(SCHEDULES_TABLE).where('id', props.id).update(newValues).returning('*');

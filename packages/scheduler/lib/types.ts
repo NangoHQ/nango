@@ -48,4 +48,5 @@ export interface Schedule {
     readonly createdAt: Date;
     readonly updatedAt: Date;
     readonly deletedAt: Date | null;
+    readonly lastScheduledTaskId: string | null;
 }
