@@ -405,6 +405,126 @@ integrations:
                 homePhone: string
             BamboohrCreateEmployeeResponse:
                 status: string
+    check-partner:
+        models:
+            Timestamps:
+                created_at: string
+                updated_at: string
+            UtilityAnyType:
+                __string: any
+            Location:
+                country: string
+                state?: string
+            Candidate:
+                id: string
+                object: string
+                uri: string
+                first_name: string
+                middle_name: string | null
+                last_name: string
+                mother_maiden_name: string
+                email: string
+                phone: number
+                zipcode: number
+                dob: string
+                ssn: string
+                driver_license_number: string
+                driver_license_state: string
+                previous_driver_license_number: string
+                previous_driver_license_state: string
+                copy_requested: boolean
+                custom_id: string
+                report_ids: string[]
+                geo_ids: string[]
+                adjudication: string
+                metadata: UtilityAnyType
+            CreateCandidate:
+                first_name: string
+                middle_name?: string
+                last_name: string
+                email: string
+                phone: string
+                zipcode: string
+                dob: string
+                ssn: string
+                driver_license_number: string
+                driver_license_state: string
+                work_locations: Location[]
+            BackgroundCheck:
+                id: string
+                status: string
+                service_key: string
+                url: string
+                candidate_id: string
+                created_at: string
+                expires_at?: string | undefined
+            CheckrTriggeredBackgroundCheck:
+                created_at: string
+                updated_at: string
+                id: string
+                object: string
+                uri: string
+                invitation_url: string
+                status: string
+                completed_at: string | null
+                deleted_at: string | null
+                package: string
+                candidate_id: string
+                report_id: string | null
+                archived: boolean
+                expires_at?: string
+                archived_info:
+                    time: string
+                    user:
+                        email: string
+                        id: string
+            BackgroundCheckParametersInput:
+                service_key: string
+            TriggeredBackgroundCheck:
+                created_at: string
+                updated_at: string
+                applicationId: any
+                url: string
+                status: string
+                completed_at: string | null
+                candidate_id: string
+                service_key: string
+                deleted_at: string | null
+            TriggerBackgroundCheckInput:
+                service_key: string
+                candidate_id: string
+                node?: string
+                country: string
+                state?: string
+                tags?: string[]
+            BackgroundCheckParameterResponse:
+                parameters: BackgroundCheckParameters[]
+            BackgroundCheckParameters:
+                key: string
+                type: string
+                title: string
+                description: string
+                required: boolean
+            CheckrServicesResponse:
+                services: CheckrService[]
+            CheckrScreening:
+                type: string
+                subtype: string | null
+            CheckrService:
+                id: string
+                price: number
+                drug_screening_price: number | null
+                enabled_examples: string[]
+                requires_observed_drug_test: boolean
+                object: string
+                apply_url: string
+                created_at: string
+                deleted_at: string | null
+                name: string
+                screenings: CheckrScreening[]
+                slug: string
+                uri: string
+                node?: string
     checkr-partner-staging:
         syncs:
             account:
