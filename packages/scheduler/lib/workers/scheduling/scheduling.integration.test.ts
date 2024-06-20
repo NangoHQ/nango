@@ -152,5 +152,8 @@ async function addTask(
     if (!inserted) {
         throw new Error('Failed to insert task');
     }
+    if (params?.scheduleId) {
+        await db.from<DbSchedule>(SCHEDULES_TABLE).where('id', params.scheduleId).update({ last_scheduled_task_id: inserted.id });
+    }
     return DbTask.from(inserted);
 }
