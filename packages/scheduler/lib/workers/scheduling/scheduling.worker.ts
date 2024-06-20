@@ -143,7 +143,7 @@ export class SchedulingChild {
                                 } else {
                                     const task = taskRes.value.value;
                                     if (task.scheduleId) {
-                                        schedules.update(trx, { id: task.scheduleId, lastScheduledTaskId: task.id });
+                                        await schedules.update(trx, { id: task.scheduleId, lastScheduledTaskId: task.id });
                                     }
                                     taskIds.push(task.id);
                                 }
