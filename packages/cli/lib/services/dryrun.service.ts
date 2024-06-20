@@ -229,22 +229,24 @@ export class DryRunService {
             dryRunService: new DryRunService({ environment, returnOutput: true, fullPath: this.fullPath }),
             writeToDb: false,
             nangoConnection,
+            syncConfig: {
+                sync_name: syncName,
+                file_location: '',
+                models: [],
+                track_deletes: false,
+                type: (syncInfo?.type as SyncConfigType) || SyncConfigType.SYNC
+            },
             provider,
             input: normalizedInput as object,
             isAction: syncInfo?.type === SyncConfigType.ACTION,
             isPostConnectionScript,
             syncId: 'abc',
             syncJobId: -1,
-            syncName,
             syncType: SyncType.INITIAL,
             loadLocation: './',
             debug,
             logMessages,
-            stubbedMetadata,
-            nangoConfig: {
-                integrations: { [providerConfigKey]: { [syncName]: { returns: syncInfo?.output || [], runs: '' } } },
-                models: {}
-            }
+            stubbedMetadata
         });
 
         try {

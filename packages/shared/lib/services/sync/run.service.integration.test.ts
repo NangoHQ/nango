@@ -2,7 +2,7 @@ import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import type { SyncRunConfig } from './run.service.js';
 import { SyncRunService } from './run.service.js';
-import { SyncStatus, SyncType } from '../../models/Sync.js';
+import { SyncConfigType, SyncStatus, SyncType } from '../../models/Sync.js';
 import * as jobService from './job.service.js';
 import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { Connection } from '../../models/Connection.js';
@@ -230,8 +230,17 @@ const runJob = async (
         slackService,
         writeToDb: true,
         nangoConnection: connection,
-        nangoConfig: { models: {}, integrations: {} },
-        syncName: sync.name,
+        syncConfig: {
+            id: 0,
+            sync_name: sync.name,
+            file_location: '',
+            models: [model],
+            track_deletes: trackDeletes,
+            type: SyncConfigType.SYNC,
+            attributes: {},
+            is_public: false,
+            version: '0'
+        },
         sendSyncWebhook: sendSyncWebhookMock,
         syncType: SyncType.INITIAL,
         syncId: sync.id,
@@ -267,7 +276,7 @@ const runJob = async (
     };
     await jobService.updateSyncJobResult(syncJob.id, updatedResults, model);
     // finish the sync
-    await syncRun.finishFlow([model], new Date(), `v1`, 10, trackDeletes);
+    await syncRun.finishFlow(new Date(), 10);
 
     const syncJobResult = await jobService.getLatestSyncJob(sync.id);
     return {

@@ -16,7 +16,6 @@ import {
     featureFlags,
     getLastSyncDate,
     getSyncByIdAndName,
-    getSyncConfig,
     getSyncConfigRaw,
     LogActionEnum,
     SyncRunService,
@@ -156,8 +155,7 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
             syncId: task.syncId,
             syncJobId: syncJob.id,
             nangoConnection: task.connection,
-            nangoConfig: await getSyncConfig({ nangoConnection: task.connection, syncName: task.syncName }),
-            syncName: task.syncName,
+            syncConfig,
             syncType: syncType,
             activityLogId,
             provider: providerConfig.provider,
@@ -227,6 +225,16 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         return Err(`Provider config not found for connection: ${task.connection}`);
     }
 
+    const syncConfig = await getSyncConfigRaw({
+        environmentId: providerConfig.environment_id,
+        config_id: providerConfig.id!,
+        name: task.actionName,
+        isAction: true
+    });
+    if (!syncConfig) {
+        return Err(`Action config not found: ${JSON.stringify(task)}`);
+    }
+
     const syncRun = new SyncRunService({
         bigQueryClient,
         integrationService,
@@ -236,8 +244,7 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         sendSyncWebhook: sendSync,
         logCtx: await logContextGetter.get({ id: String(task.activityLogId) }),
         nangoConnection: task.connection,
-        nangoConfig: await getSyncConfig({ nangoConnection: task.connection, syncName: task.actionName, isAction: true }),
-        syncName: task.actionName,
+        syncConfig,
         isAction: true,
         syncType: SyncType.ACTION,
         activityLogId: task.activityLogId,
@@ -268,6 +275,16 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
         return Err(`Sync not found for connection: ${task.connection}`);
     }
 
+    const syncConfig = await getSyncConfigRaw({
+        environmentId: providerConfig.environment_id,
+        config_id: providerConfig.id!,
+        name: task.parentSyncName,
+        isAction: false
+    });
+    if (!syncConfig) {
+        return Err(`Action config not found: ${JSON.stringify(task)}`);
+    }
+
     const syncJobId = await createSyncJob(sync.id, SyncType.WEBHOOK, SyncStatus.RUNNING, task.name, task.connection, task.id);
 
     const syncRun = new SyncRunService({
@@ -278,9 +295,8 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
         writeToDb: true,
         sendSyncWebhook: sendSync,
         nangoConnection: task.connection,
-        nangoConfig: await getSyncConfig({ nangoConnection: task.connection, syncName: task.parentSyncName }),
+        syncConfig,
         syncJobId: syncJobId?.id as number,
-        syncName: task.parentSyncName,
         isAction: false,
         syncType: SyncType.WEBHOOK,
         syncId: sync?.id,
@@ -297,7 +313,7 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
     }
     const res = jsonSchema.safeParse(response);
     if (!res.success) {
-        return Err(`Invalid webhook response format: ${response}. TaskId: ${task.id}`);
+        return Err(`Invalid webhook response format: ${JSON.stringify(response)}. TaskId: ${task.id}`);
     }
     return Ok(res.data);
 }

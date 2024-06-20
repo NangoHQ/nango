@@ -13,6 +13,7 @@ import type {
     SyncConfig
 } from '@nangohq/shared';
 import {
+    SyncConfigType,
     createSyncJob,
     SyncStatus,
     SyncType,
@@ -33,8 +34,7 @@ import {
     getSyncByIdAndName,
     getLastSyncDate,
     getSyncConfigRaw,
-    featureFlags,
-    getSyncConfig
+    featureFlags
 } from '@nangohq/shared';
 import { records as recordsService } from '@nangohq/records';
 import { getLogger, stringifyError, errorToObject } from '@nangohq/utils';
@@ -90,6 +90,12 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         nangoConnection?.provider_config_key,
         nangoConnection?.environment_id
     )) as ProviderConfig;
+    const syncConfig = (await getSyncConfigRaw({
+        environmentId: providerConfig.environment_id,
+        config_id: providerConfig.id!,
+        name: actionName,
+        isAction: true
+    }))!;
 
     const context: Context = Context.current();
 
@@ -102,15 +108,14 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         logCtx: await logContextGetter.get({ id: String(activityLogId) }),
         sendSyncWebhook: sendSync,
         nangoConnection,
-        syncName: actionName,
+        syncConfig,
         isAction: true,
         syncType: SyncType.ACTION,
         activityLogId,
         input,
         provider: providerConfig.provider,
         debug: false,
-        temporalContext: context,
-        nangoConfig: await getSyncConfig({ nangoConnection, syncName: actionName, isAction: true })
+        temporalContext: context
     });
 
     const actionResults = await syncRun.run();
@@ -345,12 +350,11 @@ export async function syncProvider({
             syncId,
             syncJobId,
             nangoConnection,
-            syncName,
+            syncConfig,
             syncType,
             activityLogId,
             provider: providerConfig.provider,
             temporalContext,
-            nangoConfig: await getSyncConfig({ nangoConnection, syncName }),
             debug,
             logCtx
         });
@@ -420,6 +424,12 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     )) as ProviderConfig;
 
     const sync = await getSyncByIdAndName(nangoConnection.id as number, parentSyncName);
+    const syncConfig = (await getSyncConfigRaw({
+        environmentId: providerConfig.environment_id,
+        config_id: providerConfig.id!,
+        name: parentSyncName,
+        isAction: false
+    }))!;
 
     const context: Context = Context.current();
 
@@ -439,10 +449,9 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         slackService,
         writeToDb: true,
         nangoConnection,
-        nangoConfig: await getSyncConfig({ nangoConnection, syncName: parentSyncName }),
+        syncConfig,
         sendSyncWebhook: sendSync,
         syncJobId: syncJobId?.id as number,
-        syncName: parentSyncName,
         isAction: false,
         syncType: SyncType.WEBHOOK,
         syncId: sync?.id as string,
@@ -477,8 +486,14 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
         slackService,
         writeToDb: true,
         nangoConnection,
-        nangoConfig: await getSyncConfig({ nangoConnection, syncName: name }),
-        syncName: name,
+        syncConfig: {
+            sync_name: name,
+            file_location,
+            models: [],
+            track_deletes: false,
+            type: SyncConfigType.SYNC,
+            version: '0' // TODO: pass the correct version
+        },
         sendSyncWebhook: sendSync,
         isAction: false,
         isPostConnectionScript: true,
@@ -487,7 +502,6 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
         activityLogId,
         logCtx: await logContextGetter.get({ id: String(activityLogId) }),
         provider: providerConfig.provider,
-        fileLocation: file_location,
         debug: false,
         temporalContext: context
     });
