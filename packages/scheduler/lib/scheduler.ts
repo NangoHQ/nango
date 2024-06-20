@@ -383,12 +383,16 @@ export class Scheduler {
      */
     public async setScheduleFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<Result<Schedule>> {
         return this.dbClient.db.transaction(async (trx) => {
-            const schedule = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
+            const schedule = await schedules.search(trx, { names: [scheduleName], limit: 1 });
             if (schedule.isErr()) {
                 return Err(schedule.error);
             }
             if (!schedule.value[0]) {
                 return Err(`Schedule '${scheduleName}' not found`);
+            }
+            // No-op if the schedule is already in the desired frequency
+            if (schedule.value[0].frequencyMs === frequencyMs) {
+                return Ok(schedule.value[0]);
             }
             const res = await schedules.update(trx, { id: schedule.value[0].id, frequencyMs });
             if (res.isErr()) {
