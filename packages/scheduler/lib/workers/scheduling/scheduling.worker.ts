@@ -101,49 +101,54 @@ export class SchedulingChild {
             try {
                 // Try to acquire a lock to prevent multiple instances from scheduling at the same time
                 const lockSpan = tracer.startSpan('scheduler.scheduling.acquire_lock', { childOf: span });
-                const res = await trx.raw('SELECT pg_try_advisory_xact_lock(?) AS lock_granted', [5003001106]);
+                const res = await tracer.scope().activate(lockSpan, async () => {
+                    return trx.raw('SELECT pg_try_advisory_xact_lock(?) AS lock_granted', [5003001106]);
+                });
                 const lockGranted = res?.rows.length > 0 ? res.rows[0].lock_granted : false;
                 lockSpan.finish();
 
                 if (lockGranted) {
                     const dueSchedulesSpan = tracer.startSpan('scheduler.scheduling.due_schedules', { childOf: span });
-                    const schedules = await dueSchedules(trx);
+                    const schedules = await tracer.scope().activate(dueSchedulesSpan, async () => {
+                        return dueSchedules(trx);
+                    });
                     dueSchedulesSpan.finish();
 
                     if (schedules.isErr()) {
                         return Err(`Failed to get due schedules: ${stringifyError(schedules.error)}`);
                     } else {
                         const tasksCreationSpan = tracer.startSpan('scheduler.scheduling.tasks_creation', { childOf: span });
-                        const createTasks = schedules.value.map((schedule) =>
-                            tasks.create(trx, {
-                                scheduleId: schedule.id,
-                                startsAfter: new Date(),
-                                name: `${schedule.name}:${new Date().toISOString()}`,
-                                payload: schedule.payload,
-                                groupKey: schedule.groupKey,
-                                retryCount: 0,
-                                retryMax: schedule.retryMax,
-                                createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
-                                startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
-                                heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs
-                            })
-                        );
-                        const res = await Promise.allSettled(createTasks);
-                        for (const taskRes of res) {
-                            if (taskRes.status === 'rejected') {
-                                logger.error(`Failed to schedule task: ${taskRes.reason}`);
-                            } else if (taskRes.value.isErr()) {
-                                logger.error(`Failed to schedule task: ${stringifyError(taskRes.value.error)}`);
-                            } else {
-                                taskIds.push(taskRes.value.value.id);
+                        await tracer.scope().activate(tasksCreationSpan, async () => {
+                            const createTasks = schedules.value.map((schedule) =>
+                                tasks.create(trx, {
+                                    scheduleId: schedule.id,
+                                    startsAfter: new Date(),
+                                    name: `${schedule.name}:${new Date().toISOString()}`,
+                                    payload: schedule.payload,
+                                    groupKey: schedule.groupKey,
+                                    retryCount: 0,
+                                    retryMax: schedule.retryMax,
+                                    createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
+                                    startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
+                                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs
+                                })
+                            );
+                            const res = await Promise.allSettled(createTasks);
+                            for (const taskRes of res) {
+                                if (taskRes.status === 'rejected') {
+                                    logger.error(`Failed to schedule task: ${taskRes.reason}`);
+                                } else if (taskRes.value.isErr()) {
+                                    logger.error(`Failed to schedule task: ${stringifyError(taskRes.value.error)}`);
+                                } else {
+                                    taskIds.push(taskRes.value.value.id);
+                                }
                             }
-                        }
+                        });
                         tasksCreationSpan.finish();
                     }
                 } else {
                     await setTimeout(1000); // wait for 1s to prevent retrying too quickly
                 }
-
                 return Ok(taskIds);
             } catch (error) {
                 span.setTag('error', error);
