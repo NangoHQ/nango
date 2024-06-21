@@ -405,6 +405,159 @@ integrations:
                 homePhone: string
             BamboohrCreateEmployeeResponse:
                 status: string
+    calendly:
+        syncs:
+            events:
+                sync_type: incremental
+                runs: every hour
+                endpoint: GET /events
+                output: Event
+                description: Retrieve all events per a user
+            event-types:
+                sync_type: incremental
+                runs: every hour
+                endpoint: GET /event/types
+                output: EventType
+                description: Retrieve all event types per a user
+            event-invitees:
+                sync_type: incremental
+                runs: every hour
+                endpoint: GET /event/invitees
+                output: EventInvitee
+                description: For all events (active and canceled) retrieve the event invitees
+        models:
+            Event:
+                id: string
+                uri: string
+                name: string | null
+                meeting_notes_plain: string | null
+                meeting_notes_html: string | null
+                status: active | canceled
+                start_time: string
+                end_time: string
+                event_type: string
+                location: EventLocation
+                invitees_counter: InviteesCounter
+                created_at: string
+                updated_at: string
+                event_memberships: EventMembership[]
+                event_guests: EventGuest[]
+                calendar_event: CalendarEvent | null
+                cancellation?: EventCancellation
+            CalendarEvent:
+                kind: string
+                external_id: string
+            EventCancellation:
+                canceled_by: string
+                reason: string | null
+                canceler_type: string
+                created_at: string
+            EventMembership:
+                user: string
+                user_email: string | null
+                user_name: string
+            EventGuest:
+                email: string
+                created_at: string
+                updated_at: string
+            InviteesCounter:
+                total: number
+                active: number
+                limit: number
+            EventLocation:
+                type: string
+                location?: string
+                join_url?: string
+                status: string | null
+                additional_info: string
+            EventTypeLocation:
+                kind: string
+                phone_number: number
+                additional_info: string
+            EventQuestion:
+                name: string
+                type: string
+                position: number
+                enabled: boolean
+                required: boolean
+                answer_choices: string[]
+                include_other: boolean
+            EventProfile:
+                type: string
+                name: string
+                owner: string
+            EventType:
+                id: string
+                uri: string
+                name: string | null
+                active: boolean
+                booking_method: string
+                slug: string | null
+                scheduling_url: string
+                duration: number
+                kind: string
+                pooling_type: string | null
+                type: string
+                color: string
+                created_at: string
+                updated_at: string
+                internal_note: string | null
+                description_plain: string
+                description_html: string
+                profile: Profile | null
+                secret: boolean
+                deleted_at: string | null
+                admin_managed: boolean
+                locations: EventTypeLocation[] | null
+                custom_questions: EventQuestion[]
+                position: number
+            QuestionAndAnswer:
+                answer: string
+                position: string
+                question: string
+            Tracking:
+                utm_campaign: string | null
+                utm_source: string | null
+                utm_medium: string | null
+                utm_content: string | null
+                utm_term: string | null
+                salesforce_uuid: string | null
+            Payment:
+                external_id: string
+                provider: string
+                amount: number
+                currency: string
+                terms: string
+                successful: boolean
+            Reconfirmation:
+                created_at: string
+                confirmed_at: string
+            EventInvitee:
+                id: string
+                cancel_url: string
+                created_at: string
+                email: string
+                event: string
+                name: string
+                first_name: string | null
+                last_name: string | null
+                new_invitee: string | null
+                old_invitee: string | null
+                questions_and_answers: QuestionAndAnswer[]
+                reschedule_url: string
+                rescheduled: boolean
+                status: string
+                text_reminder_number: string | null
+                timezone: string
+                tracking: Tracking
+                updated_at: string
+                uri: string
+                routing_form_submission: string | null
+                payment: Payment | null
+                no_show: string | null
+                reconfirmation: Reconfirmation | null
+                scheduling_method: string | null
+                invitee_scheduled_by: string | null
     checkr-partner:
         actions:
             background-check-services:
