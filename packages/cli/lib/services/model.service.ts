@@ -17,7 +17,7 @@ export type ModelsMap = Map<string, Record<string, any>>;
 /**
  * Load nango.yaml and generate model.ts
  */
-export function loadYamlAndGenerateModel({ fullPath, debug = false }: { fullPath: string; debug?: boolean }): ServiceResponse<NangoYamlParsed> {
+export function loadYamlAndGenerate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }): ServiceResponse<NangoYamlParsed> {
     if (debug) {
         printDebug(`Generating ${TYPES_FILE_NAME} file`);
     }

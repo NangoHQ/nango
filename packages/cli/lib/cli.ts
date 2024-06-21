@@ -9,7 +9,7 @@ import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, getPkgVersion, printDebug } from './utils.js';
-import { loadYamlAndGenerateModel } from './services/model.service.js';
+import { loadYamlAndGenerate } from './services/model.service.js';
 import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
 import { getLayoutMode } from './utils/layoutMode.js';
@@ -35,7 +35,7 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
     const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
 
-    const res = loadYamlAndGenerateModel({ fullPath, debug });
+    const res = loadYamlAndGenerate({ fullPath, debug });
     if (!res.success) {
         return;
     }
@@ -204,7 +204,7 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
 
 export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
-    const res = loadYamlAndGenerateModel({ fullPath, debug });
+    const res = loadYamlAndGenerate({ fullPath, debug });
     if (!res.success) {
         console.log(chalk.red(res.error?.message));
         if (res.error?.payload) {
@@ -277,7 +277,7 @@ export function configWatch({ fullPath, debug = false }: { fullPath: string; deb
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
     watcher.on('change', () => {
-        loadYamlAndGenerateModel({ fullPath, debug });
+        loadYamlAndGenerate({ fullPath, debug });
     });
 }
 

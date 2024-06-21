@@ -6,9 +6,9 @@ import path from 'path';
 import { build } from 'tsup';
 
 import { getNangoRootPath, printDebug } from '../utils.js';
-import { loadYamlAndGenerateModel } from './model.service.js';
+import { loadYamlAndGenerate } from './model.service.js';
 import parserService from './parser.service.js';
-import type { NangoYamlParsed, ScriptTypeLiteral } from '@nangohq/types';
+import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangohq/types';
 import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto'];
@@ -36,7 +36,7 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    const res = loadYamlAndGenerateModel({ fullPath, debug });
+    const res = loadYamlAndGenerate({ fullPath, debug });
     if (!res.success) {
         return false;
     }

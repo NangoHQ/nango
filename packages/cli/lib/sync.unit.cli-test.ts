@@ -33,6 +33,9 @@ describe('generate function tests', () => {
         expect(fs.existsSync(`${dir}/demo-github-integration/syncs/${exampleSyncName}.ts`)).toBe(true);
         expect(fs.existsSync(`${dir}/.env`)).toBe(true);
         expect(fs.existsSync(`${dir}/nango.yaml`)).toBe(true);
+        expect(fs.existsSync(`${dir}/models.ts`)).toBe(true);
+        expect(fs.readFileSync(`${dir}/.nango/schema.ts`).toString()).toMatchSnapshot();
+        expect(fs.readFileSync(`${dir}/.nango/schema.json`).toString()).toMatchSnapshot();
     });
 
     it('should not overwrite existing integration files', async () => {

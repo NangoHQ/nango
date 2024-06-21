@@ -69,6 +69,7 @@
         "@types/promptly": "^3.0.2",
         "babel-loader": "^9.1.2",
         "esbuild": "^0.17.19",
+        "json-schema": "0.4.0",
         "strip-ansi": "7.1.0",
         "vitest": "1.6.0",
         "webpack": "^5.85.1",
