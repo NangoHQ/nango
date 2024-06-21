@@ -500,15 +500,7 @@ class SyncClient {
         }
     }
 
-    async updateSyncSchedule(
-        schedule_id: string,
-        interval: string,
-        offset: number,
-        environmentId: number,
-        syncName?: string,
-        activityLogId?: number,
-        logCtx?: LogContext
-    ) {
+    async updateSyncSchedule(schedule_id: string, interval: string, offset: number, environmentId: number, syncName?: string, logCtx?: LogContext) {
         function updateFunction(scheduleDescription: ScheduleDescription) {
             scheduleDescription.spec = {
                 intervals: [
@@ -526,14 +518,7 @@ class SyncClient {
 
             await scheduleHandle?.update(updateFunction);
 
-            if (activityLogId && syncName) {
-                await createActivityLogMessage({
-                    level: 'info',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    content: `Updated sync "${syncName}" schedule "${schedule_id}" with interval ${interval} and offset ${offset}.`,
-                    timestamp: Date.now()
-                });
+            if (logCtx && syncName) {
                 await logCtx?.info(`Updated sync "${syncName}" schedule "${schedule_id}" with interval ${interval} and offset ${offset}`);
             }
         } catch (e) {

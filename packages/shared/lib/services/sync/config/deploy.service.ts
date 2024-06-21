@@ -356,7 +356,6 @@ export async function deployPreBuilt(
                         interval,
                         syncName: sync_name,
                         environmentId: environment.id,
-                        activityLogId: activityLogId as number,
                         logCtx
                     });
                     if (res.isErr()) {
@@ -710,7 +709,6 @@ async function compileDeployInfo({
                     interval,
                     syncName,
                     environmentId: environment_id,
-                    activityLogId: activityLogId,
                     logCtx
                 });
                 if (res.isErr()) {

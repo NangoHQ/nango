@@ -491,25 +491,16 @@ export class Orchestrator {
         connection,
         name,
         fileLocation,
-        activityLogId,
         logCtx
     }: {
         connection: NangoConnection;
         name: string;
         fileLocation: string;
-        activityLogId: number;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const startTime = Date.now();
         const workflowId = `${SYNC_TASK_QUEUE}.POST_CONNECTION_SCRIPT:${name}.${connection.connection_id}.${uuid()}`;
         try {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: connection.environment_id,
-                activity_log_id: activityLogId,
-                content: `Starting post connection script workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
-                timestamp: Date.now()
-            });
             await logCtx.info(`Starting post connection script workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`);
 
             let res: Result<any, NangoError>;
@@ -540,7 +531,7 @@ export class Orchestrator {
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
-                        activityLogId,
+                        activityLogId: logCtx.id,
                         fileLocation
                     };
                     const result = await this.client.executePostConnection({
@@ -578,7 +569,7 @@ export class Orchestrator {
                                     environment_id: connection.environment_id
                                 },
                                 fileLocation,
-                                activityLogId
+                                activityLogId: logCtx.id
                             }
                         ]
                     });
@@ -609,14 +600,6 @@ export class Orchestrator {
 
             const content = `The post connection script workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: connection.environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
-            await updateSuccessActivityLog(activityLogId, true);
             await logCtx.info(content);
 
             await telemetry.log(
@@ -639,13 +622,6 @@ export class Orchestrator {
 
             const content = `The post-connection-script workflow ${workflowId} failed with error: ${err}`;
 
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id: connection.environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
             await logCtx.error(content);
 
             errorManager.report(err, {
@@ -685,14 +661,12 @@ export class Orchestrator {
         interval,
         syncName,
         environmentId,
-        activityLogId,
         logCtx
     }: {
         syncId: string;
         interval: string;
         syncName: string;
         environmentId: number;
-        activityLogId?: number;
         logCtx?: LogContext;
     }): Promise<Result<void>> {
         const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
@@ -723,7 +697,7 @@ export class Orchestrator {
         }
 
         // Legacy
-        const { success, error } = await updateSyncScheduleFrequency(syncId, interval, syncName, environmentId, activityLogId, logCtx);
+        const { success, error } = await updateSyncScheduleFrequency(syncId, interval, syncName, environmentId, logCtx);
 
         if (isOrchestrator) {
             if (res.isErr()) {
