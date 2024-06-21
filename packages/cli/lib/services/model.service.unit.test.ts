@@ -4,10 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { buildModelsTS, fieldToTypescript, fieldsToTypescript, getExportToJSON } from './model.service.js';
 import type { NangoModel } from '@nangohq/types';
 import { loadValidateParse } from './config.service.js';
+import { removeVersion } from '../tests/helpers.js';
 
-function removeVersion(res: string) {
-    return res.replace(/(v[0-9.]+)/, 'vTest');
-}
 describe('buildModelTs', () => {
     it('should return empty (with sdk)', () => {
         const res = buildModelsTS({ parsed: { yamlVersion: 'v2', integrations: [], models: new Map() } });
@@ -181,7 +179,7 @@ describe('generate exports', () => {
             fs.writeFileSync(pathTS, `export interface Test { id: string; name: number[]; }`);
 
             const res = getExportToJSON({ pathTS });
-            expect(res).toMatchSnapshot();
+            expect(removeVersion(JSON.stringify(res, null, 2))).toMatchSnapshot();
         });
     });
 });

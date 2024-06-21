@@ -32,8 +32,7 @@ describe('load', () => {
         consoleMock.mockImplementation((m) => acc.push(cleanLog(m)));
 
         const { response, error } = loadValidateParse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.1`));
-        expect(response!.parsed).toBeNull();
-        expect(error).toBeDefined();
+        expect(response).toBeNull();
         expect(error).toStrictEqual(new NangoError('failed_to_parse_nango_yaml'));
         expect(acc.join('')).toContain('An endpoint property is required to specify how to retrieve the data from the sync');
     });
@@ -43,8 +42,7 @@ describe('load', () => {
         consoleMock.mockImplementation((m) => acc.push(stripAnsi(m)));
 
         const { response, error } = loadValidateParse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.2`));
-        expect(response!.parsed).toBeNull();
-        expect(response!.parsed).toBeDefined();
+        expect(response).toBeNull();
         expect(error).toStrictEqual(new NangoError('failed_to_parse_nango_yaml'));
         expect(acc.join('')).toContain('additionalProperty: webhook-subscription');
     });

@@ -8,7 +8,7 @@ import { exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
 import { getNangoRootPath } from './utils.js';
 import parserService from './services/parser.service.js';
-import { copyDirectoryAndContents } from './tests/helpers.js';
+import { copyDirectoryAndContents, removeVersion } from './tests/helpers.js';
 import { loadValidateParse } from './services/config.service.js';
 
 function getTestDirectory(name: string) {
@@ -34,8 +34,8 @@ describe('generate function tests', () => {
         expect(fs.existsSync(`${dir}/.env`)).toBe(true);
         expect(fs.existsSync(`${dir}/nango.yaml`)).toBe(true);
         expect(fs.existsSync(`${dir}/models.ts`)).toBe(true);
-        expect(fs.readFileSync(`${dir}/.nango/schema.ts`).toString()).toMatchSnapshot();
-        expect(fs.readFileSync(`${dir}/.nango/schema.json`).toString()).toMatchSnapshot();
+        expect(removeVersion(fs.readFileSync(`${dir}/.nango/schema.ts`).toString())).toMatchSnapshot();
+        expect(removeVersion(fs.readFileSync(`${dir}/.nango/schema.json`).toString())).toMatchSnapshot();
     });
 
     it('should not overwrite existing integration files', async () => {
