@@ -533,7 +533,6 @@ class ConnectionService {
                 '_nango_connections.metadata',
                 db.knex.raw(`
                   (SELECT json_build_object(
-                      'activity_log_id', activity_log_id,
                       'log_id', log_id
                     )
                     FROM ${ACTIVE_LOG_TABLE}

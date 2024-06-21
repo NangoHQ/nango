@@ -234,7 +234,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                         onClick={() => setActiveTab(Tabs.Syncs)}
                     >
                         Syncs
-                        {syncs && syncs.find((sync) => typeof sync.active_logs?.activity_log_id === 'number') && (
+                        {syncs && syncs.some((sync) => sync.active_logs?.log_id) && (
                             <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>
                         )}
                     </li>
@@ -268,7 +268,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                             <Link
                                 to={getLogsUrl({
                                     env,
-                                    operationId: connectionResponse.errorLog.activity_log_id,
+                                    operationId: connectionResponse.errorLog.log_id,
                                     connections: connectionResponse.connection.connection_id,
                                     day: connectionResponse.errorLog?.created_at
                                 })}
@@ -281,26 +281,23 @@ We could not retrieve and/or refresh your access token due to the following erro
                 </div>
             )}
 
-            {activeTab === Tabs.Syncs && syncs && syncs.find((sync) => typeof sync.active_logs?.activity_log_id === 'number') && (
+            {activeTab === Tabs.Syncs && syncs && syncs.some((sync) => sync.active_logs?.log_id) && (
                 <div className="flex my-4">
                     <Info showIcon={false} size={14} padding="py-1 px-1" color="red">
                         <div className="flex items-center text-sm">
                             <ErrorCircle />
                             <span className="ml-2">
                                 Last sync execution failed for the following sync
-                                {syncs.filter((sync) => typeof sync.active_logs?.activity_log_id === 'number').length > 1 ? 's' : ''}:{' '}
+                                {syncs.filter((sync) => sync.active_logs?.log_id).length > 1 ? 's' : ''}:{' '}
                                 {syncs
-                                    .filter((sync) => typeof sync.active_logs?.activity_log_id === 'number')
+                                    .filter((sync) => sync.active_logs?.log_id)
                                     .map((sync, index) => (
                                         <Fragment key={sync.name}>
                                             {sync.name} (
-                                            <Link
-                                                className="underline"
-                                                to={getLogsUrl({ env, operationId: sync.active_logs?.activity_log_id, syncs: sync.name })}
-                                            >
+                                            <Link className="underline" to={getLogsUrl({ env, operationId: sync.active_logs?.log_id, syncs: sync.name })}>
                                                 logs
                                             </Link>
-                                            ){index < syncs.filter((sync) => typeof sync.active_logs?.activity_log_id === 'number').length - 1 && ', '}
+                                            ){index < syncs.filter((sync) => sync.active_logs?.log_id).length - 1 && ', '}
                                         </Fragment>
                                     ))}
                                 .
