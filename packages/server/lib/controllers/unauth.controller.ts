@@ -168,7 +168,6 @@ class UnAuthController {
                     },
                     config.provider,
                     logContextGetter,
-                    activityLogId,
                     undefined,
                     logCtx
                 );
@@ -199,7 +198,6 @@ class UnAuthController {
                     operation: 'unknown'
                 },
                 'unknown',
-                activityLogId,
                 logCtx
             );
             if (logCtx) {

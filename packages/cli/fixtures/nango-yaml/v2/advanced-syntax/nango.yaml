@@ -24,7 +24,28 @@ models:
         obj:
             nested: string
         optional?: string
+        arrayLiteral: array
+        objectLiteral: object
+        any: any
+        float: float
+        bigint: bigint
+        int: int
+        date: Date
+        char: char
+        undefined: undefined
+        true: true
+        false: false
         __extends: Ref,Ref2
 
     Record:
         __string: any
+
+    RecordUnion:
+        __string: any | string | boolean
+    RecordArrayUnion:
+        __string:
+            - any
+            - string
+    RecordObject:
+        __string:
+            str: string

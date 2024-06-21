@@ -49,7 +49,6 @@ describe('Webhooks: sync notification tests', () => {
             success: true,
             operation: 'INCREMENTAL',
             now: new Date(),
-            activityLogId: 1,
             logCtx
         });
         expect(spy).not.toHaveBeenCalled();
@@ -67,7 +66,6 @@ describe('Webhooks: sync notification tests', () => {
             success: true,
             operation: 'INCREMENTAL',
             now: new Date(),
-            activityLogId: 1,
             logCtx,
             webhookSettings: {
                 ...webhookSettings,
@@ -92,7 +90,6 @@ describe('Webhooks: sync notification tests', () => {
             operation: 'INCREMENTAL',
             success: true,
             now: new Date(),
-            activityLogId: 1,
             logCtx,
             webhookSettings: {
                 ...webhookSettings,
@@ -116,7 +113,6 @@ describe('Webhooks: sync notification tests', () => {
             operation: 'INCREMENTAL',
             success: true,
             now: new Date(),
-            activityLogId: 1,
             logCtx,
             webhookSettings: {
                 ...webhookSettings,
@@ -140,7 +136,6 @@ describe('Webhooks: sync notification tests', () => {
             operation: 'INCREMENTAL',
             success: true,
             now: new Date(),
-            activityLogId: 1,
             logCtx,
             webhookSettings: {
                 ...webhookSettings,
@@ -163,7 +158,6 @@ describe('Webhooks: sync notification tests', () => {
             responseResults,
             operation: 'INCREMENTAL',
             now: new Date(),
-            activityLogId: 1,
             logCtx,
             success: true,
             webhookSettings: {
@@ -188,7 +182,6 @@ describe('Webhooks: sync notification tests', () => {
             operation: 'INCREMENTAL',
             now: new Date(),
             success: true,
-            activityLogId: 1,
             logCtx,
             webhookSettings: {
                 ...webhookSettings,
@@ -217,7 +210,6 @@ describe('Webhooks: sync notification tests', () => {
             operation: 'INCREMENTAL',
             now,
             success: true,
-            activityLogId: 1,
             logCtx,
             webhookSettings: webhookSettings,
             environment: {
@@ -281,7 +273,6 @@ describe('Webhooks: sync notification tests', () => {
             error,
             operation: 'INCREMENTAL',
             now: new Date(),
-            activityLogId: 1,
             logCtx,
             webhookSettings: {
                 ...webhookSettings,
@@ -309,7 +300,6 @@ describe('Webhooks: sync notification tests', () => {
             error,
             operation: 'INCREMENTAL',
             now: new Date(),
-            activityLogId: 1,
             logCtx,
             webhookSettings: {
                 ...webhookSettings,

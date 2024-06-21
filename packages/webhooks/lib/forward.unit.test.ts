@@ -50,7 +50,6 @@ describe('Webhooks: forward notification tests', () => {
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation',
-            activityLogId: 1,
             logCtx
         });
         expect(spy).not.toHaveBeenCalled();
@@ -75,7 +74,6 @@ describe('Webhooks: forward notification tests', () => {
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation',
-            activityLogId: 1,
             logCtx
         });
         expect(spy).toHaveBeenCalledTimes(1);
@@ -101,7 +99,6 @@ describe('Webhooks: forward notification tests', () => {
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation',
-            activityLogId: 1,
             logCtx
         });
         expect(spy).toHaveBeenCalledTimes(1);
@@ -123,7 +120,6 @@ describe('Webhooks: forward notification tests', () => {
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation',
-            activityLogId: 1,
             logCtx
         });
         expect(spy).toHaveBeenCalledTimes(2);
