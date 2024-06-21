@@ -16,18 +16,9 @@ import connectionService from '../../connection.service.js';
 import type { LogLevel } from '../../../models/Activity.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
-import type {
-    SyncModelSchema,
-    IncomingFlowConfig,
-    SyncConfig,
-    SyncDeploymentResult,
-    SyncConfigResult,
-    IncomingPreBuiltFlowConfig,
-    SyncEndpoint
-} from '../../../models/Sync.js';
-import type { PostConnectionScriptByProvider } from '@nangohq/types';
+import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType } from '../../../models/Sync.js';
+import type { IncomingFlowConfig, IncomingPreBuiltFlowConfig, PostConnectionScriptByProvider } from '@nangohq/types';
 import { postConnectionScriptService } from '../post-connection.service.js';
-import { SyncConfigType } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { env } from '@nangohq/utils';
@@ -338,7 +329,7 @@ export async function deployPreBuilt(
         let { input } = config;
         const sync_name = config.name || config.syncName;
 
-        if (type === SyncConfigType.SYNC && !runs) {
+        if (type === 'sync' && !runs) {
             const error = new NangoError('missing_required_fields_on_deploy');
 
             return { success: false, error, response: null };
@@ -643,13 +634,13 @@ async function compileDeployInfo({
         runs,
         version: optionalVersion,
         model_schema,
-        type = SyncConfigType.SYNC,
+        type = 'sync',
         track_deletes,
         auto_start,
         attributes = {},
         metadata = {}
     } = flow;
-    if (type === SyncConfigType.SYNC && !runs) {
+    if (type === 'sync' && !runs) {
         const error = new NangoError('missing_required_fields_on_deploy');
         await createActivityLogMessage({
             level: 'error',
@@ -825,7 +816,7 @@ async function compileDeployInfo({
         active: true,
         model_schema: model_schema as unknown as SyncModelSchema[],
         input: flow.input || '',
-        sync_type: flow.sync_type,
+        sync_type: flow.sync_type as SyncType,
         webhook_subscriptions: flow.webhookSubscriptions || [],
         enabled: lastSyncWasEnabled && !shouldCap
     });

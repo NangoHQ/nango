@@ -23,11 +23,11 @@ import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
-import type { SyncDeploymentResult, IncomingFlowConfig, Sync, SyncType, ReportedSyncJobStatus } from '../../models/Sync.js';
+import type { SyncDeploymentResult, Sync, SyncType, ReportedSyncJobStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { SyncStatus, ScheduleStatus, SyncConfigType, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import { SyncStatus, ScheduleStatus, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -37,6 +37,7 @@ import type { Environment } from '../../models/Environment.js';
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
 import { featureFlags } from '../../index.js';
+import type { IncomingFlowConfig } from '@nangohq/types';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -47,7 +48,7 @@ export const syncCommandToOperation = {
     CANCEL: 'cancel'
 } as const;
 
-interface CreateSyncArgs {
+export interface CreateSyncArgs {
     connections: Connection[];
     providerConfigKey: string;
     environmentId: number;
@@ -136,7 +137,7 @@ export class SyncManagerService {
                     createdSync as Sync,
                     syncConfig as ProviderConfig,
                     syncName,
-                    { ...sync, returns: sync.models, input: '' },
+                    { ...sync, returns: sync.models, input: '' } as NangoIntegrationData,
                     logContextGetter,
                     debug
                 );
@@ -496,7 +497,7 @@ export class SyncManagerService {
         orchestrator: Orchestrator
     ) {
         for (const flow of flows) {
-            if (flow.type === SyncConfigType.ACTION) {
+            if (flow.type === 'action') {
                 continue;
             }
 

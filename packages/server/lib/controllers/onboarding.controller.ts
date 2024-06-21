@@ -5,7 +5,6 @@ import {
     getOnboardingProgress,
     updateOnboardingProgress,
     flowService,
-    SyncConfigType,
     deployPreBuilt as deployPreBuiltSyncConfig,
     syncManager,
     getOnboardingProvider,
@@ -28,12 +27,11 @@ import {
     AnalyticsTypes,
     getSyncConfigRaw
 } from '@nangohq/shared';
-import type { IncomingPreBuiltFlowConfig } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
-import type { GetOnboardingStatus } from '@nangohq/types';
+import type { GetOnboardingStatus, IncomingPreBuiltFlowConfig } from '@nangohq/types';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
 
@@ -185,7 +183,7 @@ class OnboardingController {
                 {
                     provider: 'github',
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
-                    type: SyncConfigType.SYNC,
+                    type: 'sync',
                     name: DEMO_SYNC_NAME,
                     runs: githubDemoSync.runs,
                     auto_start: githubDemoSync.auto_start === true,
@@ -199,7 +197,7 @@ class OnboardingController {
                 {
                     provider: 'github',
                     providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
-                    type: SyncConfigType.ACTION,
+                    type: 'action',
                     name: DEMO_ACTION_NAME,
                     is_public: true,
                     runs: 'every day',

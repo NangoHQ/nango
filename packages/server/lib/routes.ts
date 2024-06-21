@@ -51,6 +51,8 @@ import { setMetadata } from './controllers/connection/setMetadata.js';
 import { updateMetadata } from './controllers/connection/updateMetadata.js';
 import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
+import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
+import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 
 export const router = express.Router();
 
@@ -118,8 +120,8 @@ router.route('/connection/metadata').post(apiAuth, setMetadata);
 router.route('/connection/metadata').patch(apiAuth, updateMetadata);
 router.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 router.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
-router.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
-router.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
+router.route('/sync/deploy').post(apiAuth, postDeploy);
+router.route('/sync/deploy/confirmation').post(apiAuth, postDeployConfirmation);
 router.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
 router.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
 router.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));

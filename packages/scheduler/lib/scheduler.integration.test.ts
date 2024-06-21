@@ -168,7 +168,8 @@ async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler
         retryCount: 0,
         createdToStartedTimeoutSecs: 3600,
         startedToCompletedTimeoutSecs: 3600,
-        heartbeatTimeoutSecs: 600
+        heartbeatTimeoutSecs: 600,
+        lastScheduledTaskId: null
     };
     return (await scheduler.recurring(recurringProps)).unwrap();
 }

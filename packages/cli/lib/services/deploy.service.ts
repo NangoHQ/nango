@@ -2,9 +2,17 @@ import chalk from 'chalk';
 import promptly from 'promptly';
 import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
-import type { SyncDeploymentResult, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
-import type { NangoYamlParsed, PostConnectionScriptByProvider } from '@nangohq/types';
+import type { SyncDeploymentResult } from '@nangohq/shared';
+import type {
+    IncomingFlowConfig,
+    NangoConfigMetadata,
+    NangoYamlParsed,
+    PostConnectionScriptByProvider,
+    PostDeploy,
+    PostDeployConfirmation
+} from '@nangohq/types';
 import { localFileService, stagingHost, cloudHost } from '@nangohq/shared';
+
 import { compileAllFiles } from './compile.service.js';
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
@@ -133,16 +141,20 @@ class DeployService {
         const { flowConfigs, postConnectionScriptsByProvider } = postData;
 
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
-        const nangoYamlBody = localFileService.getNangoYamlFileContents('./');
+        const nangoYamlBody = localFileService.getNangoYamlFileContents('./')!;
+        const bodyDeploy: PostDeploy['Body'] = { flowConfigs, postConnectionScriptsByProvider, reconcile: false, debug, nangoYamlBody, singleDeployMode };
 
         if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
             const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
             try {
-                const response = await http.post(
-                    confirmationUrl,
-                    { flowConfigs, postConnectionScriptsByProvider, reconcile: false, debug, singleDeployMode },
-                    { headers: enrichHeaders() }
-                );
+                const bodyConfirmation: PostDeployConfirmation['Body'] = {
+                    flowConfigs,
+                    postConnectionScriptsByProvider,
+                    reconcile: false,
+                    debug,
+                    singleDeployMode
+                };
+                const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });
                 console.log(JSON.stringify(response.data, null, 2));
                 const { newSyncs, deletedSyncs } = response.data;
 
@@ -163,46 +175,35 @@ class DeployService {
                 }
 
                 const confirmation = await promptly.confirm('Do you want to continue y/n?');
-                if (confirmation) {
-                    await this.run(url, { flowConfigs, postConnectionScriptsByProvider, nangoYamlBody, reconcile: true, debug, singleDeployMode });
-                } else {
+                if (!confirmation) {
                     console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                     process.exit(0);
                 }
             } catch (err: any) {
-                if (err?.response?.data?.error) {
-                    console.log(chalk.red(err.response.data.error));
-                    process.exit(1);
-                }
-                let errorMessage;
+                console.log(chalk.red(`Error deploying the syncs/actions with the following error`));
+
+                let errorObject = err;
                 if (err instanceof AxiosError) {
-                    const errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.config?.method };
-                    errorMessage = JSON.stringify(errorObject, null, 2);
-                } else {
-                    errorMessage = JSON.stringify(err, null, 2);
+                    if (err.response?.data?.error) {
+                        errorObject = err.response.data.error;
+                    } else {
+                        errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.config?.method };
+                    }
                 }
-                console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
+
+                console.log(chalk.red(JSON.stringify(errorObject, null, 2)));
                 process.exit(1);
             }
         } else {
             if (debug) {
                 printDebug(`Auto confirm is set so deploy will start without confirmation`);
             }
-            await this.run(url, { flowConfigs, postConnectionScriptsByProvider, nangoYamlBody, reconcile: true, debug, singleDeployMode });
         }
+
+        await this.deploy(url, bodyDeploy);
     }
 
-    public async run(
-        url: string,
-        body: {
-            flowConfigs: IncomingFlowConfig[];
-            postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
-            nangoYamlBody: string | null;
-            reconcile: boolean;
-            debug: boolean;
-            singleDeployMode?: boolean;
-        }
-    ) {
+    public async deploy(url: string, body: PostDeploy['Body']) {
         await http
             .post(url, body, { headers: enrichHeaders() })
             .then((response: AxiosResponse<SyncDeploymentResult[]>) => {
@@ -211,13 +212,13 @@ class DeployService {
                     console.log(chalk.green(`Successfully removed the syncs/actions.`));
                 } else {
                     const nameAndVersions = results.map((result) => `${result.sync_name || result.name}@v${result.version}`);
-                    console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
+                    console.log(chalk.green(`Successfully deployed the scripts: ${nameAndVersions.join(', ')}!`));
                 }
             })
             .catch((err: unknown) => {
                 const errorMessage =
                     err instanceof AxiosError ? JSON.stringify(err.response?.data, null, 2) : JSON.stringify(err, ['message', 'name', 'stack'], 2);
-                console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
+                console.log(chalk.red(`Error deploying the scripts with the following error: ${errorMessage}`));
                 process.exit(1);
             });
     }
@@ -269,7 +270,7 @@ class DeployService {
                     printDebug(`Integration file found for ${sync.name} at ${integrationFilePath}`);
                 }
 
-                const metadata = {} as NangoConfigMetadata;
+                const metadata: NangoConfigMetadata = {};
                 if (sync.description) {
                     metadata['description'] = sync.description;
                 }
