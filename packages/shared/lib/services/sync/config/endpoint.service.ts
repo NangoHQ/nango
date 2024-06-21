@@ -1,7 +1,6 @@
 import { schema, dbNamespace } from '@nangohq/database';
 import configService from '../../config.service.js';
 import type { SyncConfig } from '../../../models/Sync.js';
-import { SyncConfigType } from '../../../models/Sync.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { HTTP_VERB } from '../../../models/Generic.js';
 
@@ -36,7 +35,7 @@ export async function getActionOrModelByEndpoint(nangoConnection: NangoConnectio
     if (!result) {
         return {};
     }
-    if (result['type'] == SyncConfigType.ACTION) {
+    if (result['type'] == 'action') {
         return { action: result['sync_name'] };
     } else {
         return { model: result['model'] };

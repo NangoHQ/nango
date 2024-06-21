@@ -3,7 +3,8 @@ import type { JSONSchema7 } from 'json-schema';
 import { LogActionEnum } from './Activity.js';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoProps } from '../sdk/sync.js';
-import type { NangoIntegrationData, NangoSyncEndpoint } from './NangoConfig.js';
+import type { NangoIntegrationData } from './NangoConfig.js';
+import type { NangoConfigMetadata, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -80,21 +81,11 @@ export interface SyncModelSchema {
     }[];
 }
 
-export enum SyncConfigType {
-    SYNC = 'sync',
-    ACTION = 'action'
-}
-
-export interface NangoConfigMetadata {
-    scopes?: string[];
-    description?: string;
-}
-
 export interface SyncConfig extends TimestampsAndDeleted {
     id?: number;
     environment_id: number;
     sync_name: string;
-    type: SyncConfigType;
+    type: ScriptTypeLiteral;
     file_location: string;
     nango_config_id: number;
     models: string[];
@@ -124,27 +115,11 @@ export interface SyncEndpoint extends Timestamps {
     model?: string;
 }
 
-export interface SlimSync {
-    id?: number;
-    name: string;
-    auto_start?: boolean;
-    sync_id?: string | null;
-    providerConfigKey?: string;
-    connections?: number;
-    enabled?: boolean;
-}
-
-export interface SlimAction {
-    id?: number;
-    providerConfigKey?: string;
-    name: string;
-}
-
 export interface SyncDeploymentResult {
     name: string;
     version?: string;
     providerConfigKey: string;
-    type: SyncConfigType;
+    type: ScriptTypeLiteral;
     last_deployed?: Date;
     input?: string | SyncModelSchema | undefined;
     models: string | string[];
@@ -158,53 +133,6 @@ export interface SyncDeploymentResult {
 export interface SyncConfigResult {
     result: SyncDeploymentResult[];
     activityLogId: number | null;
-}
-
-export interface SyncAndActionDifferences {
-    newSyncs: SlimSync[];
-    deletedSyncs: SlimSync[];
-    newActions: SlimAction[];
-    deletedActions: SlimAction[];
-}
-
-interface InternalIncomingPreBuiltFlowConfig {
-    type: SyncConfigType;
-    models: string[];
-    runs: string;
-    auto_start?: boolean;
-    attributes?: object;
-    metadata?: NangoConfigMetadata;
-    model_schema: string;
-    input?: string | SyncModelSchema | undefined;
-    endpoints?: NangoSyncEndpoint[];
-}
-
-export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlowConfig {
-    provider: string;
-    is_public: boolean;
-    public_route?: string;
-    name: string;
-    syncName?: string; // legacy
-    nango_config_id?: number;
-
-    providerConfigKey?: string;
-    fileBody?: {
-        js: string;
-        ts: string;
-    };
-}
-
-export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
-    syncName: string;
-    providerConfigKey: string;
-    fileBody?: {
-        js: string;
-        ts: string;
-    };
-    version?: string;
-    track_deletes?: boolean;
-    sync_type?: SyncType;
-    webhookSubscriptions?: string[];
 }
 
 export enum ScheduleStatus {
@@ -257,7 +185,7 @@ export interface SyncConfigWithProvider {
     updated_at: string;
     provider_config_key: string;
     unique_key: string;
-    type: SyncConfigType;
+    type: ScriptTypeLiteral;
 }
 
 export interface RunScriptOptions {
