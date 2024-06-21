@@ -62,7 +62,7 @@ const createAccountIfNotInvited = async (name: string, state?: string): Promise<
 };
 
 class AuthController {
-    async logout(req: Request, res: Response<any, never>, next: NextFunction) {
+    logout(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             req.session.destroy((err) => {
                 if (err) {
@@ -105,7 +105,7 @@ class AuthController {
         }
     }
 
-    async resetPassword(req: Request, res: Response<any, never>, next: NextFunction) {
+    resetPassword(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const { password, token } = req.body;
 
@@ -142,7 +142,7 @@ class AuthController {
         }
     }
 
-    async sendResetPasswordEmail(user: User, token: string) {
+    sendResetPasswordEmail(user: User, token: string) {
         try {
             const emailClient = EmailClient.getInstance();
             emailClient

@@ -17,7 +17,7 @@ const enum MessageType {
 
 export type WebSocketClientId = string;
 
-class Redis {
+export class Redis {
     // Two redis clients are needed because the same client cannot be used for both publishing and subscribing
     // more at https://redis.io/commands/subscribe/
     private url: string;
@@ -52,7 +52,7 @@ class Redis {
     }
 
     public async subscribe(channel: string, onMessage: (message: string, channel: string) => void) {
-        await this.sub.subscribe(channel, async (message, channel) => {
+        await this.sub.subscribe(channel, (message, channel) => {
             onMessage(message, channel);
         });
     }

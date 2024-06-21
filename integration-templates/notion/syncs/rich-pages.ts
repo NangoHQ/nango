@@ -180,7 +180,7 @@ const blockToMarkdown = async (nango: NangoSync, block: any) => {
                 image_title = matches ? matches[0] : image_title;
             }
 
-            return await image(image_title, link);
+            return image(image_title, link);
         }
         case 'divider': {
             return divider();
@@ -534,7 +534,7 @@ const todo = (text: string, checked: boolean) => {
     return checked ? `- [x] ${text}` : `- [ ] ${text}`;
 };
 
-const image = async (alt: string, href: string): Promise<string> => {
+const image = (alt: string, href: string): string => {
     if (href.startsWith('data:')) {
         const base64 = href.split(',').pop();
         return `![${alt}](data:image/png;base64,${base64})`;

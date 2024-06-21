@@ -11,12 +11,12 @@ import type { Account } from '../../models/Admin.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
-        return {
+        return Promise.resolve({
             success: true
-        };
+        });
     }
     async cancelScript() {
-        return;
+        return Promise.resolve();
     }
 }
 

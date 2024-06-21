@@ -18,7 +18,14 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
-import type { Metadata, ActiveLogIds, Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2, AuthModeType } from '@nangohq/types';
+import type {
+    Metadata,
+    ActiveLogIds,
+    Template as ProviderTemplate,
+    TemplateOAuth2 as ProviderTemplateOAuth2,
+    AuthModeType,
+    MaybePromise
+} from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
@@ -213,7 +220,7 @@ class ConnectionService {
         environmentId: number,
         accountId: number,
         parsedRawCredentials: ImportedCredentials,
-        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
     ) {
         const { connection_config, metadata } = parsedRawCredentials as Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>;
 
@@ -242,7 +249,7 @@ class ConnectionService {
         environmentId: number,
         accountId: number,
         credentials: BasicApiCredentials | ApiKeyCredentials,
-        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
     ) {
         const [importedConnection] = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
@@ -952,7 +959,7 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         activityLogId: number,
         logCtx: LogContext,
-        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
     ): Promise<void> {
         const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
 
