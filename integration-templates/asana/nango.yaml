@@ -143,6 +143,8 @@ models:
         parent: string | undefined
         tags: string[] | undefined
         workspace: string | undefined
+        title: string | undefined
+        description: string | undefined
     AsanaWorkspace:
         __extends: BaseAsanaModel
         id: string
