@@ -41,7 +41,6 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
             tmp = tmp.filter((sel) => sel !== 'all');
         }
         if (max) {
-            console.log(tmp.length, max);
             setMaxed(tmp.length >= max);
         }
         onChange(tmp.length <= 0 ? ['all'] : tmp);
