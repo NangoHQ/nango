@@ -152,7 +152,8 @@ export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedul
             heartbeatTimeoutSecs: z.number().int(),
             createdAt: z.coerce.date(),
             updatedAt: z.coerce.date(),
-            deletedAt: z.coerce.date().nullable()
+            deletedAt: z.coerce.date().nullable(),
+            lastScheduledTaskId: z.string().uuid().nullable()
         })
         .strict();
     const getNextDueDate = (startsAt: Date, frequencyMs: number) => {

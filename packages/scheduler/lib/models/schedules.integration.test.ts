@@ -3,6 +3,7 @@ import * as schedules from './schedules.js';
 import { getTestDbClient } from '../db/helpers.test.js';
 import type { Schedule } from '../types.js';
 import type knex from 'knex';
+import { uuidv7 } from 'uuidv7';
 
 describe('Schedules', () => {
     const dbClient = getTestDbClient();
@@ -25,7 +26,8 @@ describe('Schedules', () => {
             frequencyMs: 300_000,
             createdAt: expect.toBeIsoDateTimezone(),
             updatedAt: expect.toBeIsoDateTimezone(),
-            deletedAt: null
+            deletedAt: null,
+            lastScheduledTaskId: null
         });
     });
     it('should be successfully retrieved', async () => {
@@ -60,7 +62,7 @@ describe('Schedules', () => {
     });
     it('should be successfully updated', async () => {
         const schedule = await createSchedule(db);
-        const updated = (await schedules.update(db, { id: schedule.id, frequencyMs: 600_000, payload: { i: 2 } })).unwrap();
+        const updated = (await schedules.update(db, { id: schedule.id, frequencyMs: 600_000, payload: { i: 2 }, lastScheduledTaskId: uuidv7() })).unwrap();
         expect(updated.frequencyMs).toBe(600_000);
         expect(updated.payload).toMatchObject({ i: 2 });
         expect(updated.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
@@ -90,7 +92,8 @@ async function createSchedule(db: knex.Knex): Promise<Schedule> {
             retryMax: 1,
             createdToStartedTimeoutSecs: 1,
             startedToCompletedTimeoutSecs: 1,
-            heartbeatTimeoutSecs: 1
+            heartbeatTimeoutSecs: 1,
+            lastScheduledTaskId: null
         })
     ).unwrap();
 }

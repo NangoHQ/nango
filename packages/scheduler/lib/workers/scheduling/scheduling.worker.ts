@@ -8,6 +8,7 @@ import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
 import { dueSchedules } from './scheduling.js';
 import * as tasks from '../../models/tasks.js';
+import * as schedules from '../../models/schedules.js';
 import tracer from 'dd-trace';
 
 interface CreatedTasksMessage {
@@ -109,17 +110,17 @@ export class SchedulingChild {
 
                 if (lockGranted) {
                     const dueSchedulesSpan = tracer.startSpan('scheduler.scheduling.due_schedules', { childOf: span });
-                    const schedules = await tracer.scope().activate(dueSchedulesSpan, async () => {
+                    const getDueSchedules = await tracer.scope().activate(dueSchedulesSpan, async () => {
                         return dueSchedules(trx);
                     });
                     dueSchedulesSpan.finish();
 
-                    if (schedules.isErr()) {
-                        return Err(`Failed to get due schedules: ${stringifyError(schedules.error)}`);
+                    if (getDueSchedules.isErr()) {
+                        return Err(`Failed to get due schedules: ${stringifyError(getDueSchedules.error)}`);
                     } else {
                         const tasksCreationSpan = tracer.startSpan('scheduler.scheduling.tasks_creation', { childOf: span });
                         await tracer.scope().activate(tasksCreationSpan, async () => {
-                            const createTasks = schedules.value.map((schedule) =>
+                            const createTasks = getDueSchedules.value.map((schedule) =>
                                 tasks.create(trx, {
                                     scheduleId: schedule.id,
                                     startsAfter: new Date(),
@@ -140,7 +141,11 @@ export class SchedulingChild {
                                 } else if (taskRes.value.isErr()) {
                                     logger.error(`Failed to schedule task: ${stringifyError(taskRes.value.error)}`);
                                 } else {
-                                    taskIds.push(taskRes.value.value.id);
+                                    const task = taskRes.value.value;
+                                    if (task.scheduleId) {
+                                        await schedules.update(trx, { id: task.scheduleId, lastScheduledTaskId: task.id });
+                                    }
+                                    taskIds.push(task.id);
                                 }
                             }
                         });
