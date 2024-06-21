@@ -72,7 +72,14 @@ describe('buildModelTs', () => {
     it('should support all advanced syntax', () => {
         const { response } = loadValidateParse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/advanced-syntax`));
         const res = buildModelsTS({ parsed: response!.parsed! });
-        expect(removeVersion(res.split('\n').slice(0, 37).join('\n'))).toMatchSnapshot();
+        const acc = [];
+        for (const line of res.split('\n')) {
+            if (line === '// ------ SDK') {
+                break;
+            }
+            acc.push(line);
+        }
+        expect(removeVersion(acc.join('\n'))).toMatchSnapshot();
     });
 });
 

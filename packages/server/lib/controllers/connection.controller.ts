@@ -404,8 +404,7 @@ class ConnectionController {
                             operation: res.operation
                         },
                         provider,
-                        logContextGetter,
-                        null
+                        logContextGetter
                     );
                 };
 
@@ -452,8 +451,7 @@ class ConnectionController {
                             operation: res.operation
                         },
                         provider,
-                        logContextGetter,
-                        null
+                        logContextGetter
                     );
                 };
 
@@ -494,8 +492,7 @@ class ConnectionController {
                             operation: res.operation
                         },
                         provider,
-                        logContextGetter,
-                        null
+                        logContextGetter
                     );
                 };
                 const [imported] = await connectionService.importApiAuthConnection(
@@ -534,8 +531,7 @@ class ConnectionController {
                             operation: res.operation
                         },
                         provider,
-                        logContextGetter,
-                        null
+                        logContextGetter
                     );
                 };
 
@@ -620,8 +616,7 @@ class ConnectionController {
                         operation: updatedConnection.operation || 'unknown'
                     },
                     provider,
-                    logContextGetter,
-                    null
+                    logContextGetter
                 );
             }
 

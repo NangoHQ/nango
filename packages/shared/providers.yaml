@@ -408,6 +408,11 @@ calendly:
         response_type: code
     proxy:
         base_url: https://api.calendly.com
+        paginate:
+            type: link
+            link_path_in_response_body: pagination.next_page
+    token_response_metadata:
+        - owner
     docs: https://docs.nango.dev/integrations/all/calendly
 checkr-partner:
     categories:
@@ -422,6 +427,7 @@ checkr-partner:
         retry:
             at: 'X-Ratelimit-Reset'
         base_url: https://api.checkr.com
+    post_connection_script: checkr-post-connection
     docs: https://docs.nango.dev/integrations/all/checkr
 checkr-partner-staging:
     categories:
@@ -436,6 +442,7 @@ checkr-partner-staging:
         retry:
             at: 'X-Ratelimit-Reset'
         base_url: https://api.checkr-staging.com
+    post_connection_script: checkr-post-connection
     docs: https://docs.nango.dev/integrations/all/checkr
 chorus:
     auth_mode: BASIC

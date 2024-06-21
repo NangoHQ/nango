@@ -8,7 +8,8 @@ import type {
     NangoYamlV2IntegrationAction,
     NangoYamlV2IntegrationSync,
     ParsedNangoAction,
-    ParsedNangoSync
+    ParsedNangoSync,
+    ScriptTypeLiteral
 } from '@nangohq/types';
 import { NangoYamlParser } from './parser.js';
 import { ParserErrorEndpointsMismatch, ParserErrorInvalidRuns } from './errors.js';
@@ -196,7 +197,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
     }: {
         rawInput: string | undefined;
         name: string;
-        type: 'sync' | 'action';
+        type: ScriptTypeLiteral;
         integrationName: string;
     }): NangoModel | null {
         if (!rawInput) {

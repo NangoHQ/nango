@@ -42,7 +42,7 @@ export async function exec(): Promise<void> {
             logger.info(`${cronName} could not acquire lock, skipping`);
             return;
         }
-        const staleConnections = await connectionService.getOldConnections({ days: 1, limit: 500 });
+        const staleConnections = await connectionService.getOldConnections({ days: 1, limit: 1000 });
 
         logger.info(`${cronName} found ${staleConnections.length} stale connections`);
 

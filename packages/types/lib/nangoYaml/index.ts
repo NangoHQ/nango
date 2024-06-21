@@ -1,6 +1,7 @@
 export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type SyncTypeLiteral = 'incremental' | 'full';
 export type ScriptFileType = 'actions' | 'syncs' | 'post-connection-scripts';
+export type ScriptTypeLiteral = 'action' | 'sync';
 
 // --------------
 // YAML V1
@@ -10,7 +11,7 @@ export interface NangoYamlV1 {
     models: NangoYamlModel;
 }
 export interface NangoYamlV1Integration {
-    type?: 'action' | 'sync';
+    type?: ScriptTypeLiteral;
     returns?: string | string[];
     description?: string;
     runs?: string;
@@ -124,5 +125,5 @@ export interface NangoModelField {
 }
 
 export type NangoSyncEndpoint = {
-    [key in HTTP_VERB]?: string;
+    [key in HTTP_VERB]?: string | undefined;
 };

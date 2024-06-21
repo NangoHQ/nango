@@ -51,7 +51,8 @@ export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFun
                 return;
             }
 
-            res.status(500).send({ error: { code: 'server_error' } });
+            logger.error('Failed to compute rate limit', { error: rateLimiterRes });
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to compute rate limit' } });
         });
 };
 
@@ -69,7 +70,7 @@ function getPointsToConsume(req: Request): number {
 
     if (paths.some((path) => req.path.startsWith(path))) {
         // limiting to 6 requests per period to avoid brute force attacks
-        return rateLimiter.points / 6;
+        return Math.floor(rateLimiter.points / 6);
     }
     return 1;
 }

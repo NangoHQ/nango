@@ -1,4 +1,4 @@
-import type { NangoModel, NangoYaml, NangoYamlParsed } from '@nangohq/types';
+import type { NangoModel, NangoYaml, NangoYamlParsed, ScriptTypeLiteral } from '@nangohq/types';
 import { ModelsParser } from './modelsParser.js';
 import {
     ParserErrorDuplicateEndpoint,
@@ -34,7 +34,7 @@ export abstract class NangoYamlParser {
     }: {
         rawOutput: string | string[] | undefined;
         name: string;
-        type: 'sync' | 'action';
+        type: ScriptTypeLiteral;
         integrationName: string;
     }): NangoModel[] | null {
         if (!rawOutput) {
@@ -112,8 +112,9 @@ export abstract class NangoYamlParser {
                 for (const endpointByVerb of sync.endpoints) {
                     for (const [verb, endpoint] of Object.entries(endpointByVerb)) {
                         if (!endpoint) {
-                            continue;
+                            continue; // TS pleasing
                         }
+
                         const str = `${verb} ${endpoint}`;
                         if (endpoints.has(str)) {
                             this.errors.push(new ParserErrorDuplicateEndpoint({ endpoint: str, path: [integrationName, 'syncs', sync.name, '[endpoints]'] }));
@@ -175,8 +176,9 @@ export abstract class NangoYamlParser {
                 if (action.endpoint) {
                     for (const [verb, endpoint] of Object.entries(action.endpoint)) {
                         if (!endpoint) {
-                            continue;
+                            continue; // TS pleasing
                         }
+
                         const str = `${verb} ${endpoint}`;
                         if (endpoints.has(str)) {
                             this.errors.push(

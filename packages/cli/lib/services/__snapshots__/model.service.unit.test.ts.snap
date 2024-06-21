@@ -374,6 +374,17 @@ export interface Base {
   literalNull: null[];
   obj: {  nested: string;};
   optional?: string;
+  arrayLiteral: any[];
+  objectLiteral: object;
+  any: any;
+  float: number;
+  bigint: bigint;
+  int: number;
+  date: Date;
+  char: string;
+  undefined: undefined;
+  true: true;
+  false: false;
   id: string;
   name: string;
 };
@@ -382,12 +393,25 @@ export interface Record {
   [key: string]: any;
 };
 
+export interface RecordUnion {
+  [key: string]: any | string | boolean;
+};
+
+export interface RecordArrayUnion {
+  [key: string]: (any | string)[];
+};
+
+export interface RecordObject {
+  [key: string]: {  str: string;};
+};
+
 /** @deprecated It is recommended to use a Model */
 export type Anonymous_unauthenticated_action_inputoutputunion_output = string | null[]
 
 /** @deprecated It is recommended to use a Model */
 export type Anonymous_unauthenticated_action_inputoutputunion_input = true | 'hello' | Ref
-// ------ /Models"
+// ------ /Models
+"
 `;
 
 exports[`generate exports > json > should export to JSON 1`] = `

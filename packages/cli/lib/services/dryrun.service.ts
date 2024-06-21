@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 import type { NangoConnection } from '@nangohq/shared';
 import type { Metadata, ScriptFileType } from '@nangohq/types';
-import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
+import { SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
@@ -166,7 +166,7 @@ class DryRunService {
         }
 
         let type: ScriptFileType = 'syncs';
-        if (syncInfo?.type === SyncConfigType.ACTION) {
+        if (syncInfo?.type === 'action') {
             type = 'actions';
         } else if (isPostConnectionScript) {
             type = 'post-connection-scripts';
@@ -225,7 +225,7 @@ class DryRunService {
             nangoConnection,
             provider,
             input: normalizedInput as object,
-            isAction: syncInfo?.type === SyncConfigType.ACTION,
+            isAction: syncInfo?.type === 'action',
             isPostConnectionScript,
             syncId: 'abc',
             syncJobId: -1,

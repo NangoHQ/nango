@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { LogLevel } from '@nangohq/shared';
 import { isCloud } from '@nangohq/utils';
-import { accountService, userService, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
+import { accountService, userService } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
@@ -134,27 +133,8 @@ class AccountController {
                 return;
             }
 
-            const log = {
-                level: 'info' as LogLevel,
-                success: true,
-                action: LogActionEnum.ACCOUNT,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: 'n/a',
-                provider: null,
-                provider_config_key: '',
-                environment_id: environment.id
-            };
-
-            const activityLogId = await createActivityLogAndLogMessage(log, {
-                level: 'info',
-                environment_id: environment.id,
-                timestamp: Date.now(),
-                content: `A Nango admin logged into another account for the following reason: "${login_reason}"`
-            });
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'admin', action: 'impersonation' }, message: 'Admin logged into another account' },
+                { operation: { type: 'admin', action: 'impersonation' }, message: 'Admin logged into another account' },
                 {
                     account,
                     environment,

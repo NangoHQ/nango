@@ -1,10 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { LogLevel, NangoConnection, HTTP_VERB, Connection, IncomingFlowConfig } from '@nangohq/shared';
-import type { PostConnectionScriptByProvider } from '@nangohq/types';
+import type { LogLevel, NangoConnection, HTTP_VERB, Connection } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import {
-    deploy as deployScriptConfig,
     connectionService,
     getSyncs,
     verifyOwnership,
@@ -16,7 +14,6 @@ import {
     updateSuccess as updateSuccessActivityLog,
     createActivityLogMessageAndEnd,
     createActivityLog,
-    getAndReconcileDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
     getProviderConfigBySyncAndAccount,
     SyncCommand,
@@ -24,7 +21,6 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
-    ErrorSourceEnum,
     LogActionEnum,
     NangoError,
     configService,
@@ -54,123 +50,6 @@ import { getInterval } from '@nangohq/nango-yaml';
 const orchestrator = getOrchestrator();
 
 class SyncController {
-    public async deploySync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            let debug: boolean;
-            let singleDeployMode: boolean | undefined;
-            let flowConfigs: IncomingFlowConfig[];
-            let postConnectionScriptsByProvider: PostConnectionScriptByProvider[] | undefined = [];
-            let reconcile: boolean;
-
-            if (req.body.syncs) {
-                ({
-                    syncs: flowConfigs,
-                    reconcile,
-                    debug,
-                    singleDeployMode
-                } = req.body as { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean });
-            } else {
-                ({ flowConfigs, postConnectionScriptsByProvider, reconcile, debug, singleDeployMode } = req.body as {
-                    flowConfigs: IncomingFlowConfig[];
-                    postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
-                    reconcile: boolean;
-                    debug: boolean;
-                    singleDeployMode?: boolean;
-                });
-            }
-
-            const { environment, account } = res.locals;
-            let reconcileSuccess = true;
-
-            const {
-                success,
-                error,
-                response: syncConfigDeployResult
-            } = await deployScriptConfig({
-                environment,
-                account,
-                flows: flowConfigs,
-                nangoYamlBody: req.body.nangoYamlBody || '',
-                postConnectionScriptsByProvider,
-                debug,
-                logContextGetter,
-                orchestrator
-            });
-
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            if (reconcile) {
-                const logCtx = await logContextGetter.get({ id: String(syncConfigDeployResult?.activityLogId) });
-                const success = await getAndReconcileDifferences({
-                    environmentId: environment.id,
-                    flows: flowConfigs,
-                    performAction: reconcile,
-                    activityLogId: syncConfigDeployResult?.activityLogId as number,
-                    debug,
-                    singleDeployMode,
-                    logCtx,
-                    logContextGetter,
-                    orchestrator
-                });
-                if (!success) {
-                    reconcileSuccess = false;
-                }
-            }
-
-            if (!reconcileSuccess) {
-                res.status(500).send({ message: 'There was an error deploying syncs, please check the activity tab and report this issue to support' });
-
-                return;
-            }
-
-            void analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environment.id);
-
-            res.send(syncConfigDeployResult?.result);
-        } catch (e) {
-            const environmentId = res.locals['environment'].id;
-
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                environmentId,
-                operation: LogActionEnum.SYNC_DEPLOY
-            });
-
-            next(e);
-        }
-    }
-
-    public async confirmation(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            let debug: boolean, singleDeployMode: boolean | undefined, flowConfigs: IncomingFlowConfig[];
-            if (req.body.syncs) {
-                ({ syncs: flowConfigs, debug, singleDeployMode } = req.body as { syncs: IncomingFlowConfig[]; debug: boolean; singleDeployMode?: boolean });
-            } else {
-                ({ flowConfigs, debug, singleDeployMode } = req.body as { flowConfigs: IncomingFlowConfig[]; debug: boolean; singleDeployMode?: boolean });
-            }
-
-            const environmentId = res.locals['environment'].id;
-
-            const result = await getAndReconcileDifferences({
-                environmentId,
-                flows: flowConfigs,
-                performAction: false,
-                activityLogId: null,
-                debug,
-                singleDeployMode,
-                logContextGetter,
-                orchestrator
-            });
-
-            res.send(result);
-        } catch (e) {
-            next(e);
-        }
-    }
-
     public async getAllRecords(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { model, delta, modified_after, modifiedAfter, limit, filter, cursor, next_cursor } = req.query;
@@ -473,7 +352,6 @@ class SyncController {
                 connection,
                 actionName: action_name,
                 input,
-                activityLogId,
                 environment_id: environmentId,
                 logCtx
             });

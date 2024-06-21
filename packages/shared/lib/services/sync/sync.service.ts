@@ -1,18 +1,19 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '@nangohq/database';
-import type { IncomingFlowConfig, SyncAndActionDifferences, Sync, Job as SyncJob, SyncWithSchedule, SlimSync, SlimAction } from '../../models/Sync.js';
-import { SyncConfigType, SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
+import type { Sync, Job as SyncJob, SyncWithSchedule } from '../../models/Sync.js';
+import { SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { updateScheduleStatus } from './schedule.service.js';
-import type { ActiveLogIds } from '@nangohq/types';
+import type { ActiveLogIds, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences } from '@nangohq/types';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey,
     getActionConfigByNameAndProviderConfigKey
 } from './config/config.service.js';
+import type { CreateSyncArgs } from './manager.service.js';
 import syncManager from './manager.service.js';
 import connectionService from '../connection.service.js';
 import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
@@ -581,14 +582,14 @@ export const getAndReconcileDifferences = async ({
 }): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
     const newActions: SlimAction[] = [];
-    const syncsToCreate = [];
+    const syncsToCreate: CreateSyncArgs[] = [];
 
     const existingSyncsByProviderConfig: Record<string, SlimSync[]> = {};
     const existingConnectionsByProviderConfig: Record<string, NangoConnection[]> = {};
 
     for (const flow of flows) {
         const { syncName: flowName, providerConfigKey, type } = flow;
-        if (type === SyncConfigType.ACTION) {
+        if (type === 'action') {
             const actionExists = await getActionConfigByNameAndProviderConfigKey(environmentId, flowName, providerConfigKey);
             if (!actionExists) {
                 newActions.push({
@@ -711,11 +712,12 @@ export const getAndReconcileDifferences = async ({
 
             if (!exists) {
                 const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
-                if (existingSync.type === SyncConfigType.SYNC) {
+                if (existingSync.type === 'sync') {
                     deletedSyncs.push({
                         name: existingSync.sync_name,
                         providerConfigKey: existingSync.unique_key,
-                        connections: connections.length
+                        connections: connections.length,
+                        auto_start: false
                     });
                 } else {
                     deletedActions.push({
@@ -737,7 +739,7 @@ export const getAndReconcileDifferences = async ({
                     }
                     await syncManager.deleteConfig(existingSync.id, environmentId);
 
-                    if (existingSync.type === SyncConfigType.SYNC) {
+                    if (existingSync.type === 'sync') {
                         for (const connection of connections) {
                             const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
                             if (syncId) {
@@ -748,7 +750,7 @@ export const getAndReconcileDifferences = async ({
 
                     if (activityLogId) {
                         const connectionDescription =
-                            existingSync.type === SyncConfigType.SYNC ? ` with ${connections.length} connection${connections.length > 1 ? 's' : ''}.` : '.';
+                            existingSync.type === 'sync' ? ` with ${connections.length} connection${connections.length > 1 ? 's' : ''}.` : '.';
                         const content = `Successfully deleted ${existingSync.type} ${existingSync.sync_name} for ${existingSync.unique_key}${connectionDescription}`;
 
                         await createActivityLogMessage({

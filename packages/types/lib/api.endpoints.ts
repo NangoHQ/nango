@@ -2,8 +2,18 @@ import type { EndpointMethod } from './api';
 import type { GetOperation, SearchFilters, SearchMessages, SearchOperations } from './logs/api';
 import type { GetOnboardingStatus } from './onboarding/api';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata';
+import type { PostDeploy, PostDeployConfirmation } from './deploy/api';
 
-export type APIEndpoints = SearchOperations | GetOperation | SearchMessages | SearchFilters | GetOnboardingStatus | SetMetadata | UpdateMetadata;
+export type APIEndpoints =
+    | SearchOperations
+    | GetOperation
+    | SearchMessages
+    | SearchFilters
+    | GetOnboardingStatus
+    | SetMetadata
+    | UpdateMetadata
+    | PostDeploy
+    | PostDeployConfirmation;
 
 /**
  * Automatically narrow endpoints type with Method + Path

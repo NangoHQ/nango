@@ -107,11 +107,7 @@ export function fieldsToTypescript({ fields }: { fields: NangoModelField[] }) {
 
     // Insert dynamic key at the beginning
     if (dynamic) {
-        if (!Array.isArray(dynamic.value)) {
-            output.push(`  [key: string]: ${fieldToTypescript({ field: dynamic })};`);
-        } else {
-            output.push(`  [key: string]: {${fieldsToTypescript({ fields: dynamic.value }).join('\n')}};`);
-        }
+        output.push(`  [key: string]: ${fieldToTypescript({ field: dynamic })};`);
     }
 
     // Regular fields

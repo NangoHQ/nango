@@ -25,20 +25,13 @@ export const NON_FORWARDABLE_HEADERS = [
     'server'
 ];
 
-export const retry = async (
-    activityLogId: number | null,
-    logCtx?: LogContext | null | undefined,
-    error?: AxiosError,
-    attemptNumber?: number
-): Promise<boolean> => {
+export const retry = async (logCtx?: LogContext | null | undefined, error?: AxiosError, attemptNumber?: number): Promise<boolean> => {
     if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
         const content = `Webhook response received an ${
             error?.response?.status || error?.code
         } error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
 
-        if (activityLogId) {
-            await logCtx?.error(content);
-        }
+        await logCtx?.error(content);
 
         return true;
     }
@@ -115,7 +108,6 @@ export const deliver = async ({
     webhooks,
     body,
     webhookType,
-    activityLogId,
     logCtx,
     environment,
     endingMessage = '',
@@ -124,7 +116,6 @@ export const deliver = async ({
     webhooks: { url: string; type: string }[];
     body: unknown;
     webhookType: WebhookTypes;
-    activityLogId: number | null;
     environment: Environment;
     logCtx?: LogContext | undefined;
     endingMessage?: string;
@@ -145,7 +136,7 @@ export const deliver = async ({
                 () => {
                     return axios.post(url, body, { headers });
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: retry.bind(this, activityLogId, logCtx) }
+                { numOfAttempts: RETRY_ATTEMPTS, retry: retry.bind(this, logCtx) }
             );
 
             if (logCtx) {
@@ -163,11 +154,7 @@ export const deliver = async ({
                 }
             }
         } catch (err) {
-            if (activityLogId) {
-                await logCtx?.error(`${webhookType} webhook failed to send to the ${type} to ${url}`, {
-                    error: err
-                });
-            }
+            await logCtx?.error(`${webhookType} webhook failed to send to the ${type} to ${url}`, { error: err });
 
             success = false;
         }
