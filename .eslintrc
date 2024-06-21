@@ -14,9 +14,7 @@
         "node": true
     },
     "plugins": [
-        "@typescript-eslint",
-        "react",
-        "react-hooks"
+        "@typescript-eslint"
     ],
     "extends": [
         "eslint:recommended",
@@ -25,10 +23,7 @@
         "plugin:@typescript-eslint/strict",
         "plugin:@typescript-eslint/strict-type-checked",
         "plugin:@typescript-eslint/stylistic",
-        "plugin:react/recommended",
-        "plugin:react/jsx-runtime",
         "plugin:prettier/recommended",
-        "plugin:react-hooks/recommended",
         "plugin:import/errors",
         "plugin:import/warnings",
         "plugin:import/recommended"
@@ -37,11 +32,11 @@
         "no-console": "warn",
         "prettier/prettier": "error",
         "@typescript-eslint/no-inferrable-types": "off",
+        "@typescript-eslint/require-await": "error",
         // Previously warn but now errors
         "@typescript-eslint/no-non-null-assertion": "warn",
         "@typescript-eslint/no-explicit-any": "warn",
         // To reenable as error progressively
-        "@typescript-eslint/require-await": "warn",
         "@typescript-eslint/no-floating-promises": "warn",
         "@typescript-eslint/no-unsafe-assignment": "warn",
         "@typescript-eslint/no-unsafe-member-access": "warn",
@@ -65,7 +60,6 @@
         "@typescript-eslint/consistent-type-exports": "error",
         "@typescript-eslint/no-unnecessary-condition": "off", // Our types are not good enough right now
         "@typescript-eslint/only-throw-error": "warn",
-        "react/prop-types": "off",
         "@typescript-eslint/no-unused-vars": [
             "error",
             {
@@ -161,6 +155,15 @@
             "files": [
                 "packages/webapp/**/*.tsx"
             ],
+            "plugins": [
+                "react",
+                "react-hooks"
+            ],
+            "extends": [
+                "plugin:react-hooks/recommended",
+                "plugin:react/recommended",
+                "plugin:react/jsx-runtime",
+            ],
             "env": {
                 "browser": true,
                 "es6": true,
@@ -177,6 +180,7 @@
             },
             "rules": {
                 "no-console": "off",
+                "react/prop-types": "off",
                 "@typescript-eslint/no-misused-promises": [
                     "warn",
                     {

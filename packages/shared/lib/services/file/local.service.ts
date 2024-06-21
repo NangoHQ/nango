@@ -205,7 +205,7 @@ class LocalFileService {
 
         const archive = archiver('zip');
 
-        archive.on('error', async (err) => {
+        archive.on('error', (err) => {
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,

@@ -86,7 +86,7 @@ program
 program
     .command('init')
     .description('Initialize a new Nango project')
-    .action(async function (this: Command) {
+    .action(function (this: Command) {
         const { debug } = this.opts();
         const fullPath = process.cwd();
         init({ absolutePath: fullPath, debug });
@@ -97,7 +97,7 @@ program
 program
     .command('generate')
     .description('Generate a new Nango integration')
-    .action(async function (this: Command) {
+    .action(function (this: Command) {
         const { debug } = this.opts();
         generate({ fullPath: process.cwd(), debug });
     });
@@ -155,19 +155,17 @@ program
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .action(async function (this: Command, environment: string) {
-        const options = this.opts();
-        (async (options: DeployOptions) => {
-            const { debug } = options;
-            const fullPath = process.cwd();
-            await deployService.prep({ fullPath, options: { ...options, env: 'production' as ENV }, environment, debug });
-        })(options as DeployOptions);
+        const options: DeployOptions = this.opts();
+        const { debug } = options;
+        const fullPath = process.cwd();
+        await deployService.prep({ fullPath, options: { ...options, env: 'production' as ENV }, environment, debug });
     });
 
 program
     .command('migrate-config')
     .description('Migrate the nango.yaml from v1 (deprecated) to v2')
-    .action(async function (this: Command) {
-        await v1toV2Migration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+    .action(function (this: Command) {
+        v1toV2Migration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
     });
 
 program
@@ -188,11 +186,9 @@ program
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .action(async function (this: Command, environment: string) {
-        const options = this.opts();
-        (async (options: DeployOptions) => {
-            const fullPath = process.cwd();
-            await deployService.prep({ fullPath, options: { ...options, env: 'local' }, environment, debug: options.debug });
-        })(options as DeployOptions);
+        const options: DeployOptions = this.opts();
+        const fullPath = process.cwd();
+        await deployService.prep({ fullPath, options: { ...options, env: 'local' }, environment, debug: options.debug });
     });
 
 program
@@ -210,11 +206,9 @@ program
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .action(async function (this: Command, environment: string) {
-        const options = this.opts();
-        (async (options: DeployOptions) => {
-            const fullPath = process.cwd();
-            await deployService.prep({ fullPath, options: { ...options, env: 'staging' }, environment, debug: options.debug });
-        })(options as DeployOptions);
+        const options: DeployOptions = this.opts();
+        const fullPath = process.cwd();
+        await deployService.prep({ fullPath, options: { ...options, env: 'staging' }, environment, debug: options.debug });
     });
 
 program

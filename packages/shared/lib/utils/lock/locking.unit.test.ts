@@ -7,12 +7,12 @@ describe('Locking', () => {
     let locking: Locking;
     const KEY = 'key';
 
-    beforeAll(async () => {
+    beforeAll(() => {
         store = new InMemoryKVStore();
         locking = new Locking(store);
     });
 
-    beforeEach(async () => {
+    beforeEach(() => {
         store.delete(KEY);
     });
 
@@ -31,7 +31,7 @@ describe('Locking', () => {
         await expect(locking.acquire(KEY, 1000)).rejects.toThrowError('Failed to acquire lock for key: key');
     });
 
-    it('should aquire an expired lock', async () => {
+    it('should acquire an expired lock', async () => {
         await locking.acquire(KEY, 200);
         await new Promise((resolve) => setTimeout(resolve, 500));
         await locking.acquire(KEY, 200);

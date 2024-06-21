@@ -108,7 +108,7 @@ export default function IntegrationCreate() {
         }
     }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, environmentAndAccount, setPublicKey, providerConfigKey]);
 
-    const handleCreate = async (e: React.SyntheticEvent) => {
+    const handleCreate = (e: React.SyntheticEvent) => {
         e.preventDefault();
         setServerErrorMessage('');
 

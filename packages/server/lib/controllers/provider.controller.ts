@@ -7,7 +7,7 @@ class ProviderController {
      * Webapp
      */
 
-    async listProviders(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    listProviders(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             let templates = configService.templates ?? {};
             const query = req.query['query'] as string | undefined;
@@ -28,7 +28,7 @@ class ProviderController {
         }
     }
 
-    async getProvider(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    getProvider(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const providerKey = req.params['provider'] as string;
 

@@ -27,7 +27,7 @@ describe('generate function tests', () => {
         consoleMock.mockReset();
     });
 
-    it('should init the expected files in the nango-integrations directory', async () => {
+    it('should init the expected files in the nango-integrations directory', () => {
         const dir = getTestDirectory('init');
         init({ absolutePath: path.resolve(dir, '..'), debug: false });
         expect(fs.existsSync(`${dir}/demo-github-integration/syncs/${exampleSyncName}.ts`)).toBe(true);
