@@ -72,7 +72,7 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
     const lastSyncDate = await getLastSyncDate(task.syncId);
     const providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
     if (providerConfig === null) {
-        return Err(`Provider config not found for connection: ${task.connection}. TaskId: ${task.id}`);
+        return Err(`Provider config not found for connection: ${task.connection.connection_id}. TaskId: ${task.id}`);
     }
     const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
     const syncJob = await createSyncJob(task.syncId, syncType, SyncStatus.RUNNING, task.name, task.connection, task.id);
@@ -96,7 +96,7 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
         };
         const activityLogId = await createActivityLog(log);
         if (activityLogId === null) {
-            return Err(`Failed to create activity log: ${JSON.stringify(task)}`);
+            return Err(`Failed to create activity log. TaskId: ${task.id}`);
         }
 
         const syncConfig = await getSyncConfigRaw({
@@ -107,12 +107,12 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
         });
 
         if (!syncConfig) {
-            return Err(`Sync config not found: ${JSON.stringify(task)}`);
+            return Err(`Sync config not found. TaskId: ${task.id}`);
         }
 
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
-            return Err(`Account and environment not found: ${JSON.stringify(task)}}`);
+            return Err(`Account and environment not found. TaskId: ${task.id}`);
         }
         const { account, environment } = accountAndEnv;
 
@@ -165,11 +165,11 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
 
         const { success, error, response } = await syncRun.run();
         if (!success) {
-            return Err(`Sync failed with error ${error}: ${JSON.stringify(task)}`);
+            return Err(`Sync failed with error ${error}. TaskId: ${task.id}`);
         }
         const res = jsonSchema.safeParse(response);
         if (!res.success) {
-            return Err(`Invalid sync response format: ${response}: ${JSON.stringify(task)}`);
+            return Err(`Invalid sync response format: ${response}. TaskId: ${task.id}`);
         }
         await updateSyncJobStatus(syncJob.id, SyncStatus.SUCCESS);
         return Ok(res.data);
@@ -222,7 +222,7 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
 async function action(task: TaskAction): Promise<Result<JsonValue>> {
     const providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
     if (providerConfig === null) {
-        return Err(`Provider config not found for connection: ${task.connection}`);
+        return Err(`Provider config not found for connection: ${task.connection.connection_id}`);
     }
 
     const syncConfig = await getSyncConfigRaw({
@@ -232,7 +232,7 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         isAction: true
     });
     if (!syncConfig) {
-        return Err(`Action config not found: ${JSON.stringify(task)}`);
+        return Err(`Action config not found: ${task.id}`);
     }
 
     const syncRun = new SyncRunService({
@@ -267,12 +267,12 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
 async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
     const providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
     if (providerConfig === null) {
-        return Err(`Provider config not found for connection: ${task.connection}`);
+        return Err(`Provider config not found for connection: ${task.connection.connection_id}`);
     }
 
     const sync = await getSyncByIdAndName(task.connection.id, task.parentSyncName);
     if (!sync) {
-        return Err(`Sync not found for connection: ${task.connection}`);
+        return Err(`Sync not found for connection: ${task.connection.connection_id}`);
     }
 
     const syncConfig = await getSyncConfigRaw({
@@ -282,7 +282,7 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
         isAction: false
     });
     if (!syncConfig) {
-        return Err(`Action config not found: ${JSON.stringify(task)}`);
+        return Err(`Action config not found. TaskId: ${task.id}`);
     }
 
     const syncJobId = await createSyncJob(sync.id, SyncType.WEBHOOK, SyncStatus.RUNNING, task.name, task.connection, task.id);
@@ -319,5 +319,5 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
 }
 
 async function postConnection(task: TaskPostConnection): Promise<Result<JsonValue>> {
-    return Promise.resolve(Err(`Not implemented: ${JSON.stringify({ taskId: task.id })}`));
+    return Promise.resolve(Err(`Not implemented: TaskId: ${task.id}`));
 }
