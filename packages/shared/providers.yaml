@@ -2717,6 +2717,22 @@ wildix-pbx:
     docs: https://docs.nango.dev/integrations/all/wildix-pbx
     proxy:
         base_url: https://${connectionConfig.subdomain}.wildixin.com
+wordpress:
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: OAUTH2
+    authorization_url: https://public-api.wordpress.com/oauth2/authorize
+    token_url: https://public-api.wordpress.com/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://public-api.wordpress.com/rest/v1
+    docs: https://docs.nango.dev/integrations/all/wordpress
 woocommerce:
     categories:
         - e-commerce
