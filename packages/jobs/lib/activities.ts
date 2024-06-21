@@ -13,7 +13,6 @@ import type {
     SyncConfig
 } from '@nangohq/shared';
 import {
-    SyncConfigType,
     createSyncJob,
     SyncStatus,
     SyncType,
@@ -491,7 +490,7 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
             file_location,
             models: [],
             track_deletes: false,
-            type: SyncConfigType.SYNC,
+            type: 'sync',
             version: '0' // TODO: pass the correct version
         },
         sendSyncWebhook: sendSync,

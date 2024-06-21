@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { IncomingPreBuiltFlowConfig, FlowDownloadBody } from '@nangohq/shared';
+import type { FlowDownloadBody } from '@nangohq/shared';
 import {
     flowService,
     accountService,
@@ -20,6 +20,7 @@ import {
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
+import type { IncomingPreBuiltFlowConfig } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 

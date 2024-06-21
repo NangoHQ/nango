@@ -11,13 +11,12 @@ import {
     ScheduleStatus,
     SyncClient,
     DEMO_GITHUB_CONFIG_KEY,
-    DEMO_SYNC_NAME,
-    SyncConfigType
+    DEMO_SYNC_NAME
 } from '@nangohq/shared';
 import { exec } from './autoIdleDemo.js';
 import { nanoid, Ok } from '@nangohq/utils';
 
-describe('Auto Idle Demo', async () => {
+describe('Auto Idle Demo', () => {
     let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
@@ -55,7 +54,7 @@ describe('Auto Idle Demo', async () => {
                 environment_id: env.id,
                 deleted: false,
                 track_deletes: false,
-                type: SyncConfigType.SYNC,
+                type: 'sync',
                 auto_start: false,
                 attributes: {},
                 metadata: {},

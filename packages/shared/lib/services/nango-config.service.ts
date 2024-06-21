@@ -7,15 +7,15 @@ import type {
     NangoSyncConfig,
     NangoSyncModel,
     NangoV2Integration,
-    NangoSyncEndpoint,
     NangoIntegrationDataV2,
     LayoutMode
 } from '../models/NangoConfig.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
-import { SyncType, SyncConfigType } from '../models/Sync.js';
+import { SyncType } from '../models/Sync.js';
 import localFileService from './file/local.service.js';
 import { NangoError } from '../utils/error.js';
 import { determineVersion, getInterval, isJsOrTsType } from '@nangohq/nango-yaml';
+import type { NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
 
 export const nangoConfigFile = 'nango.yaml';
 export const SYNC_FILE_EXTENSION = 'js';
@@ -115,7 +115,7 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 name: syncName,
                 runs: sync.runs || '',
                 track_deletes: sync.track_deletes || false,
-                type: sync.type || SyncConfigType.SYNC,
+                type: sync.type || 'sync',
                 auto_start: sync.auto_start === false ? false : true,
                 attributes: sync.attributes || {},
                 returns: sync.returns,
@@ -127,7 +127,7 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 layout_mode
             };
 
-            if (sync.type === SyncConfigType.ACTION) {
+            if (sync.type === 'action') {
                 actions.push(flowObject);
             } else {
                 syncs.push(flowObject);
@@ -296,7 +296,7 @@ function formModelOutput({
     allModelNames: string[];
     config: NangoConfigV2;
     name: string;
-    type: 'sync' | 'action';
+    type: ScriptTypeLiteral;
 }): ServiceResponse<NangoSyncModel[]> {
     const models: NangoSyncModel[] = [];
     if (integrationData.output) {
@@ -443,7 +443,7 @@ function buildSyncs({
         const enabled = isEnabled(sync, is_public, pre_built);
         const syncObject: NangoSyncConfig = {
             name: syncName,
-            type: SyncConfigType.SYNC,
+            type: 'sync',
             models: models || [],
             sync_type: sync.sync_type?.toUpperCase() === SyncType.INCREMENTAL ? SyncType.INCREMENTAL : SyncType.FULL,
             runs,
@@ -567,7 +567,7 @@ function buildActions({
 
         const actionObject: NangoSyncConfig = {
             name: actionName,
-            type: SyncConfigType.ACTION,
+            type: 'action',
             models: models || [],
             runs: '',
             is_public,

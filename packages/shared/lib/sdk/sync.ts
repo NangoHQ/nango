@@ -674,7 +674,7 @@ export class NangoAction {
     }
 
     public async triggerAction<T = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<T> {
-        return this.nango.triggerAction(providerConfigKey, connectionId, actionName, input) as T;
+        return (await this.nango.triggerAction(providerConfigKey, connectionId, actionName, input)) as T;
     }
 
     public async triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string> {

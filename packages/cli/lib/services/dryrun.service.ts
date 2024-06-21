@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 import type { NangoConnection } from '@nangohq/shared';
 import type { Metadata } from '@nangohq/types';
-import { SyncConfigType, SyncType, SyncRunService, cloudHost, stagingHost } from '@nangohq/shared';
+import { SyncType, SyncRunService, cloudHost, stagingHost } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
@@ -170,7 +170,7 @@ export class DryRunService {
 
         let type = 'sync';
 
-        if (syncInfo?.type === SyncConfigType.ACTION) {
+        if (syncInfo?.type === 'action') {
             type = 'action';
         }
 
@@ -234,11 +234,11 @@ export class DryRunService {
                 file_location: '',
                 models: [],
                 track_deletes: false,
-                type: (syncInfo?.type as SyncConfigType) || SyncConfigType.SYNC
+                type: syncInfo?.type || 'sync'
             },
             provider,
             input: normalizedInput as object,
-            isAction: syncInfo?.type === SyncConfigType.ACTION,
+            isAction: syncInfo?.type === 'action',
             isPostConnectionScript,
             syncId: 'abc',
             syncJobId: -1,

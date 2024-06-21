@@ -139,7 +139,7 @@ class RemoteFileService {
                         reject(new Error('Response body is undefined or not a Readable stream'));
                     }
                 })
-                .catch(async (err: unknown) => {
+                .catch((err: unknown) => {
                     errorManager.report(err, {
                         source: ErrorSourceEnum.PLATFORM,
                         environmentId,
@@ -256,7 +256,7 @@ class RemoteFileService {
     ) {
         const archive = archiver('zip');
 
-        archive.on('error', async (err) => {
+        archive.on('error', (err) => {
             const metadata: Record<string, string | number> = {
                 integrationName,
                 accountId

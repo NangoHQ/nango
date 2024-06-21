@@ -1,3 +1,4 @@
+import '../../tracer.js';
 import { isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { SchedulingChild } from './scheduling.worker.js';
 import { DatabaseClient } from '../../db/client.js';

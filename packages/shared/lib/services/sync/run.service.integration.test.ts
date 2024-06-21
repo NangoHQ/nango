@@ -2,7 +2,7 @@ import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import type { SyncRunConfig } from './run.service.js';
 import { SyncRunService } from './run.service.js';
-import { SyncConfigType, SyncStatus, SyncType } from '../../models/Sync.js';
+import { SyncStatus, SyncType } from '../../models/Sync.js';
 import * as jobService from './job.service.js';
 import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
 import type { Connection } from '../../models/Connection.js';
@@ -20,12 +20,12 @@ import { SlackService } from '../notification/slack.service.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
-        return {
+        return Promise.resolve({
             success: true
-        };
+        });
     }
     async cancelScript() {
-        return;
+        return Promise.resolve();
     }
 }
 
@@ -236,7 +236,7 @@ const runJob = async (
             file_location: '',
             models: [model],
             track_deletes: trackDeletes,
-            type: SyncConfigType.SYNC,
+            type: 'sync',
             attributes: {},
             is_public: false,
             version: '0'

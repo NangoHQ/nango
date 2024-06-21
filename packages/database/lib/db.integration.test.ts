@@ -1,7 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import { multipleMigrations } from './index.js';
 
-describe('Migration test', async () => {
+describe('Migration test', () => {
     it('Should run migrations successfully', async () => {
         await multipleMigrations();
 

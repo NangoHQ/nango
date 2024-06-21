@@ -4,8 +4,7 @@ import { getLogger } from '@nangohq/utils';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
-import type { Action, SyncConfigWithProvider, SyncType, SyncConfig, SlimSync, NangoConfigMetadata } from '../../../models/Sync.js';
-import { SyncConfigType } from '../../../models/Sync.js';
+import type { Action, SyncConfigWithProvider, SyncType, SyncConfig } from '../../../models/Sync.js';
 import { convertV2ConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
@@ -19,6 +18,7 @@ import type {
     NangoIntegrationDataV2
 } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
+import type { SlimSync } from '@nangohq/types';
 
 const logger = getLogger('Sync.Config');
 
@@ -87,7 +87,7 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
             enabled: syncConfig.enabled
         } as NangoIntegrationDataV2;
 
-        if (syncConfig.type === SyncConfigType.SYNC) {
+        if (syncConfig.type === 'sync') {
             if (!nangoConfig['integrations'][uniqueKey]!['syncs']) {
                 nangoConfig['integrations'][uniqueKey]!['syncs'] = {} as Record<string, NangoIntegrationDataV2>;
             }
@@ -201,7 +201,7 @@ export async function getSyncConfig({
                 version: syncConfig.version as string,
                 pre_built: syncConfig.pre_built as boolean,
                 is_public: syncConfig.is_public as boolean,
-                metadata: syncConfig.metadata as NangoConfigMetadata,
+                metadata: syncConfig.metadata!,
                 enabled: syncConfig.enabled
             };
 
@@ -287,7 +287,7 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
             nango_config_id,
             active: true,
             enabled: true,
-            type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
+            type: isAction ? 'action' : 'sync',
             deleted: false
         });
 
@@ -364,7 +364,7 @@ export async function getActionConfigByNameAndProviderConfigKey(environment_id: 
             sync_name: name,
             deleted: false,
             active: true,
-            type: SyncConfigType.ACTION
+            type: 'action'
         })
         .first();
 
@@ -387,7 +387,7 @@ export async function getActionsByProviderConfigKey(environment_id: number, uniq
         nango_config_id,
         deleted: false,
         active: true,
-        type: SyncConfigType.ACTION
+        type: 'action'
     });
 
     if (result) {
@@ -409,7 +409,7 @@ export async function getUniqueSyncsByProviderConfig(environment_id: number, uni
         nango_config_id,
         deleted: false,
         active: true,
-        type: SyncConfigType.SYNC
+        type: 'sync'
     });
 
     if (result) {
@@ -480,7 +480,7 @@ export async function getSyncConfigByParams(
                 nango_config_id: config.id as number,
                 active: true,
                 enabled: true,
-                type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
+                type: isAction ? 'action' : 'sync',
                 deleted: false
             })
             .orderBy('created_at', 'desc')
@@ -949,7 +949,7 @@ export async function getSyncConfigRaw(opts: { environmentId: number; config_id:
             nango_config_id: opts.config_id,
             active: true,
             enabled: true,
-            type: opts.isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
+            type: opts.isAction ? 'action' : 'sync',
             deleted: false
         })
         .from<SyncConfig>(TABLE)

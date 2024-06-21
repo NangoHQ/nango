@@ -7,7 +7,7 @@ import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { printDebug, getNangoRootPath } from '../utils.js';
 import { load } from './config.service.js';
 
-export const v1toV2Migration = async (loadLocation: string): Promise<void> => {
+export const v1toV2Migration = (loadLocation: string): void => {
     if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
         return;
     }

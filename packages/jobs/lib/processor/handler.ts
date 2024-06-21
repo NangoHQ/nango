@@ -319,5 +319,5 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
 }
 
 async function postConnection(task: TaskPostConnection): Promise<Result<JsonValue>> {
-    return Err(`Not implemented: ${JSON.stringify({ taskId: task.id })}`);
+    return Promise.resolve(Err(`Not implemented: ${JSON.stringify({ taskId: task.id })}`));
 }

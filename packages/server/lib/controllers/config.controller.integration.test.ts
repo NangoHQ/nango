@@ -19,7 +19,7 @@ const locals: Required<RequestLocals> = {
  * UPDATE: ✅
  * DELETE: ✅
  */
-describe('Should verify the config controller HTTP API calls', async () => {
+describe('Should verify the config controller HTTP API calls', () => {
     beforeAll(async () => {
         await multipleMigrations();
 

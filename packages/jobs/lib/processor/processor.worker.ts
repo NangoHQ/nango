@@ -62,10 +62,10 @@ export class ProcessorChild {
         }
         this.opts = workerData;
         this.parent = parent;
-        this.parent.on('message', async (msg: 'start' | 'stop') => {
+        this.parent.on('message', (msg: 'start' | 'stop') => {
             switch (msg) {
                 case 'start':
-                    await this.start();
+                    this.start();
                     break;
                 case 'stop':
                     this.stop();
@@ -83,7 +83,7 @@ export class ProcessorChild {
         });
     }
 
-    async start(): Promise<void> {
+    start(): void {
         logger.info(`Starting Processor: ${JSON.stringify(this.opts)}`);
         this.processor.start({ tracer });
     }

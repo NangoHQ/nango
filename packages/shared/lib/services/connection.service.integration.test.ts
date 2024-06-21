@@ -8,7 +8,7 @@ import { createConnectionSeeds } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import type { Environment } from '../models/Environment.js';
 
-describe('Connection service integration tests', async () => {
+describe('Connection service integration tests', () => {
     let env: Environment;
     beforeAll(async () => {
         await multipleMigrations();
@@ -16,7 +16,7 @@ describe('Connection service integration tests', async () => {
         await createConfigSeeds(env);
     });
 
-    describe('Metadata simple operations', async () => {
+    describe('Metadata simple operations', () => {
         it('Should replace existing metadata, overwriting anything existing', async () => {
             const connections = await createConnectionSeeds(env);
 

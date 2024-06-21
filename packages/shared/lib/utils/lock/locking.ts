@@ -8,19 +8,22 @@ export class Locking {
         this.store = store;
     }
 
-    public async tryAcquire(key: string, ttlInMs: number, acquisitionTimeoutMs: number): Promise<void> {
+    public async tryAcquire(key: string, ttlInMs: number, acquisitionTimeoutMs: number): Promise<{ tries: number }> {
         if (ttlInMs <= 0) {
             throw new Error(`lock's TTL must be greater than 0`);
         }
         if (acquisitionTimeoutMs <= 0) {
             throw new Error(`acquisitionTimeoutMs must be greater than 0`);
         }
+
         const start = Date.now();
+        let tries = 0;
         while (Date.now() - start < acquisitionTimeoutMs) {
             try {
                 await this.acquire(key, ttlInMs);
-                return;
+                return { tries };
             } catch {
+                tries += 1;
                 await new Promise((resolve) => setTimeout(resolve, 50));
             }
         }

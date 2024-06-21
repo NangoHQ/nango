@@ -65,7 +65,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
         setVisible(false);
     };
 
-    const deleteButtonClicked = async () => {
+    const deleteButtonClicked = () => {
         setModalTitle('Delete integration?');
         setModalTitleColor('text-pink-600');
         setModalContent('Are you sure you want to delete this integration?');

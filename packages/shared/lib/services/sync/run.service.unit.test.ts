@@ -2,7 +2,7 @@ import { expect, describe, it, vi } from 'vitest';
 import type { SyncRunConfig } from './run.service.js';
 import { SyncRunService } from './run.service.js';
 import environmentService from '../environment.service.js';
-import { SyncConfigType, SyncType } from '../../models/Sync.js';
+import { SyncType } from '../../models/Sync.js';
 import type { IntegrationServiceInterface, SyncConfig } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
 import type { Account } from '../../models/Admin.js';
@@ -10,12 +10,12 @@ import { NangoError } from '../../utils/error.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
-        return {
+        return Promise.resolve({
             success: true
-        };
+        });
     }
     async cancelScript() {
-        return;
+        return Promise.resolve();
     }
 }
 
@@ -53,7 +53,7 @@ describe('SyncRun', () => {
             file_location: '',
             models: [],
             track_deletes: false,
-            type: SyncConfigType.SYNC,
+            type: 'sync',
             attributes: {},
             is_public: false,
             version: '0'

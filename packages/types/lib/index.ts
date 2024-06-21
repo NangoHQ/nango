@@ -17,7 +17,6 @@ export type * from './connection/db.js';
 export type * from './proxy/api.js';
 
 export type * from './environment/db.js';
-export type * from './scripts/post-connection/api.js';
 export type * from './scripts/post-connection/db.js';
 export type * from './scripts/syncs/api.js';
 export type * from './notification/active-logs/db.js';
@@ -26,10 +25,13 @@ export type * from './integration/db.js';
 export type * from './integration/template.js';
 export type * from './auth/api.js';
 export type * from './auth/db.js';
+export type * from './deploy/api.js';
+export type * from './deploy/incomingFlow.js';
 
 export type * from './nangoYaml/index.js';
 
-export type * from './utils.js';
 export type * from './environment/db.js';
 export type * from './environment/api/webhook.js';
 export type * from './webhooks/api.js';
+
+export type * from './utils.js';

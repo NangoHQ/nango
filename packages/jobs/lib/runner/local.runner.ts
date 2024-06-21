@@ -71,7 +71,7 @@ export class LocalRunner implements Runner {
                 });
             }
 
-            return new LocalRunner(runnerId, `http://localhost:${port}`, childProcess);
+            return Promise.resolve(new LocalRunner(runnerId, `http://localhost:${port}`, childProcess));
         } catch (err) {
             throw new Error(`Unable to get runner ${runnerId}: ${err}`);
         }
