@@ -6,7 +6,7 @@ export default async function runAction(nango: NangoAction, input: GmailEmailInp
 
         if (input.headers)
             Object.entries(input.headers).forEach(([key, value]) => {
-                headerString += `${key}: ${value}\n`
+                headerString += `${key}: ${value}\n`;
             });
 
         const email = `From: ${input.from}\nTo: ${input.to}\n${headerString}Subject: ${input.subject}\n\n${input.body}`;
