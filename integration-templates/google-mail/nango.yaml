@@ -35,7 +35,7 @@ models:
 
     EmailHeader:
         headerName: string
-        headerValue: string 
+        headerValue: string
 
     GmailEmailSentOutput:
         id: string
