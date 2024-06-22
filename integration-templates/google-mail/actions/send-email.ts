@@ -2,8 +2,14 @@ import type { NangoAction, GmailEmailSentOutput, GmailEmailInput } from '../../m
 
 export default async function runAction(nango: NangoAction, input: GmailEmailInput): Promise<GmailEmailSentOutput> {
     try {
-        // generate a base64 representation of input
-        const email = `From: ${input.from}\nTo: ${input.to}\nSubject: ${input.subject}\n\n${input.body}`;
+        let headerString = '';
+
+        if (input.headers)
+            Object.entries(input.headers).forEach(([key, value]) => {
+                headerString += `${key}: ${value}\n`
+            });
+
+        const email = `From: ${input.from}\nTo: ${input.to}\n${headerString}Subject: ${input.subject}\n\n${input.body}`;
 
         const base64EncodedEmail = Buffer.from(email).toString('base64');
 
