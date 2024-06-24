@@ -36,6 +36,10 @@ export function toTriggerCheckrBackgroundCheck(bgCheck: TriggerBackgroundCheckIn
         if (bgCheck.state) {
             work_locations.state = bgCheck.state;
         }
+
+        if (bgCheck.city) {
+            work_locations.city = bgCheck.city;
+        }
         backgroundCheck.work_locations = [work_locations];
     }
 
