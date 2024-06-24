@@ -7,7 +7,6 @@ import type { LogLevel } from '@nangohq/shared';
 import {
     configService,
     createActivityLog,
-    createActivityLogAndLogMessage,
     createSyncJob,
     environmentService,
     errorManager,
@@ -167,28 +166,8 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
         return Ok(res.data);
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action: lastSyncDate ? LogActionEnum.FULL_SYNC : LogActionEnum.SYNC,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: task.connection.connection_id,
-            provider_config_key: task.connection.provider_config_key,
-            provider: providerConfig.provider,
-            session_id: syncJob.id.toString(),
-            environment_id: task.connection.environment_id,
-            operation_name: task.syncName
-        };
         const content = `The ${syncType} sync failed to run: ${prettyError}`;
 
-        await createActivityLogAndLogMessage(log, {
-            level: 'error',
-            environment_id: task.connection.environment_id,
-            timestamp: Date.now(),
-            content
-        });
         if (logCtx) {
             await logCtx.error(content, { error: err });
             await logCtx.failed();

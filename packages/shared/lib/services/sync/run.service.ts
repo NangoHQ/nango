@@ -5,7 +5,6 @@ import type { Metadata, ErrorPayload } from '@nangohq/types';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface, SyncConfig } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import * as externalWebhookService from '../external-webhook.service.js';
@@ -393,15 +392,6 @@ export class SyncRunService {
             if (this.isAction) {
                 const content = `${syncName} action was run successfully and results are being sent synchronously.`;
 
-                await updateSuccessActivityLog(this.activityLogId as number, true);
-
-                await createActivityLogMessageAndEnd({
-                    level: 'info',
-                    environment_id: this.nangoConnection.environment_id,
-                    activity_log_id: this.activityLogId as number,
-                    timestamp: Date.now(),
-                    content
-                });
                 await this.logCtx?.info(content);
 
                 await this.slackNotificationService?.removeFailingConnection(
@@ -421,15 +411,6 @@ export class SyncRunService {
             if (this.isPostConnectionScript) {
                 const content = `The post connection script "${syncName}" has been run successfully.`;
 
-                await updateSuccessActivityLog(this.activityLogId as number, true);
-
-                await createActivityLogMessageAndEnd({
-                    level: 'info',
-                    environment_id: this.nangoConnection.environment_id,
-                    activity_log_id: this.activityLogId as number,
-                    timestamp: Date.now(),
-                    content
-                });
                 await this.logCtx?.info(content);
                 await this.logCtx?.success();
 
@@ -530,7 +511,6 @@ export class SyncRunService {
 
         if (index === numberOfModels - 1) {
             await updateSyncJobStatus(this.syncJobId, SyncStatus.SUCCESS);
-            await updateSuccessActivityLog(this.activityLogId as unknown as number, true);
 
             // set the last sync date to when the sync started in case
             // the sync is long running to make sure we wouldn't miss
@@ -636,13 +616,6 @@ export class SyncRunService {
         }
 
         if (index === numberOfModels - 1) {
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: this.nangoConnection.environment_id,
-                activity_log_id: this.activityLogId as unknown as number,
-                timestamp: Date.now(),
-                content
-            });
             await this.logCtx?.info(content);
         } else {
             await this.logCtx?.info(content);
@@ -760,16 +733,8 @@ export class SyncRunService {
             });
         }
 
-        await updateSuccessActivityLog(this.activityLogId as unknown as number, false);
         await updateSyncJobStatus(this.syncJobId, SyncStatus.STOPPED);
 
-        await createActivityLogMessageAndEnd({
-            level: 'error',
-            environment_id: this.nangoConnection.environment_id,
-            activity_log_id: this.activityLogId as unknown as number,
-            timestamp: Date.now(),
-            content
-        });
         await this.logCtx?.error(content);
         if (isCancel) {
             await this.logCtx?.cancel();

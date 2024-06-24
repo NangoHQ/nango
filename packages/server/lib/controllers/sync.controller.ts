@@ -11,8 +11,6 @@ import {
     getSyncsByProviderConfigKey,
     SyncClient,
     updateScheduleStatus,
-    updateSuccess as updateSuccessActivityLog,
-    createActivityLogMessageAndEnd,
     createActivityLog,
     getSyncConfigsWithConnectionsByEnvironmentId,
     getProviderConfigBySyncAndAccount,
@@ -640,17 +638,9 @@ class SyncController {
             }
 
             if (command !== SyncCommand.RUN) {
-                await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id, logCtx);
+                await updateScheduleStatus(schedule_id, command, logCtx);
             }
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Sync was updated with command: "${action}" for sync: ${sync_id}`
-            });
-            await updateSuccessActivityLog(activityLogId as number, true);
             await logCtx.info(`Sync command run successfully "${action}"`, { action, syncId: sync_id });
             await logCtx.success();
 
