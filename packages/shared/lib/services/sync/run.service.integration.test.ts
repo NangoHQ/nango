@@ -1,7 +1,7 @@
 import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import type { SyncRunConfig } from './run.service.js';
-import SyncRun from './run.service.js';
+import { SyncRunService } from './run.service.js';
 import { SyncStatus, SyncType } from '../../models/Sync.js';
 import * as jobService from './job.service.js';
 import type { IntegrationServiceInterface, Sync, Job as SyncJob, SyncResult } from '../../models/Sync.js';
@@ -200,45 +200,6 @@ describe('Running sync', () => {
     });
 });
 
-describe('SyncRun', () => {
-    it('should initialize correctly', () => {
-        const config: SyncRunConfig = {
-            integrationService: integrationService as unknown as IntegrationServiceInterface,
-            recordsService,
-            slackService,
-            writeToDb: true,
-            nangoConnection: {
-                id: 1,
-                connection_id: '1234',
-                provider_config_key: 'test_key',
-                environment_id: 1
-            },
-            syncName: 'test_sync',
-            sendSyncWebhook: sendSyncWebhookMock,
-            syncType: SyncType.INCREMENTAL,
-            syncId: 'some-sync',
-            syncJobId: 123,
-            activityLogId: 123,
-            logCtx: new LogContext({ parentId: String(123), operation: {} as any }),
-            loadLocation: '/tmp',
-            debug: true
-        };
-
-        const syncRun = new SyncRun(config);
-
-        expect(syncRun).toBeTruthy();
-        expect(syncRun.writeToDb).toEqual(true);
-        expect(syncRun.nangoConnection.connection_id).toEqual('1234');
-        expect(syncRun.syncName).toEqual('test_sync');
-        expect(syncRun.syncType).toEqual(SyncType.INCREMENTAL);
-        expect(syncRun.syncId).toEqual('some-sync');
-        expect(syncRun.syncJobId).toEqual(123);
-        expect(syncRun.activityLogId).toEqual(123);
-        expect(syncRun.loadLocation).toEqual('/tmp');
-        expect(syncRun.debug).toEqual(true);
-    });
-});
-
 const initDb = async () => {
     await multipleMigrations();
     await migrateRecords();
@@ -269,7 +230,17 @@ const runJob = async (
         slackService,
         writeToDb: true,
         nangoConnection: connection,
-        syncName: sync.name,
+        syncConfig: {
+            id: 0,
+            sync_name: sync.name,
+            file_location: '',
+            models: [model],
+            track_deletes: trackDeletes,
+            type: 'sync',
+            attributes: {},
+            is_public: false,
+            version: '0'
+        },
         sendSyncWebhook: sendSyncWebhookMock,
         syncType: SyncType.INITIAL,
         syncId: sync.id,
@@ -277,7 +248,7 @@ const runJob = async (
         activityLogId,
         logCtx: new LogContext({ parentId: String(activityLogId), operation: {} as any })
     };
-    const syncRun = new SyncRun(config);
+    const syncRun = new SyncRunService(config);
 
     // format and upsert records
     const formatting = recordsFormatter.formatRecords({
@@ -305,7 +276,7 @@ const runJob = async (
     };
     await jobService.updateSyncJobResult(syncJob.id, updatedResults, model);
     // finish the sync
-    await syncRun.finishFlow([model], new Date(), `v1`, 10, trackDeletes);
+    await syncRun.finishFlow(new Date(), 10);
 
     const syncJobResult = await jobService.getLatestSyncJob(sync.id);
     return {

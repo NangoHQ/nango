@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 import type { NangoConnection } from '@nangohq/shared';
 import type { Metadata, ScriptFileType } from '@nangohq/types';
-import { SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
+import { SyncType, cloudHost, stagingHost, SyncRunService } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
@@ -22,18 +22,21 @@ interface RunArgs extends GlobalOptions {
     optionalProviderConfigKey?: string;
 }
 
-class DryRunService {
+export class DryRunService {
+    fullPath: string;
     environment?: string;
     returnOutput?: boolean;
 
-    constructor(environment?: string, returnOutput = false) {
+    constructor({ environment, returnOutput = false, fullPath }: { environment?: string; returnOutput?: boolean; fullPath: string }) {
+        this.fullPath = fullPath;
         if (environment) {
             this.environment = environment;
         }
 
         this.returnOutput = returnOutput;
     }
-    public async run(options: RunArgs, debug = false): Promise<string | void> {
+
+    public async run(options: RunArgs, debug = false): Promise<string | undefined> {
         let syncName = '';
         let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata;
 
@@ -217,19 +220,25 @@ class DryRunService {
             }
         };
 
-        const syncRun = new syncRunService({
+        const syncRun = new SyncRunService({
             integrationService,
             recordsService,
-            dryRunService: new DryRunService(environment, true),
+            dryRunService: new DryRunService({ environment, returnOutput: true, fullPath: this.fullPath }),
             writeToDb: false,
             nangoConnection,
+            syncConfig: {
+                sync_name: syncName,
+                file_location: '',
+                models: [],
+                track_deletes: false,
+                type: syncInfo?.type || 'sync'
+            },
             provider,
             input: normalizedInput as object,
             isAction: syncInfo?.type === 'action',
             isPostConnectionScript,
             syncId: 'abc',
             syncJobId: -1,
-            syncName,
             syncType: SyncType.INITIAL,
             loadLocation: './',
             debug,
@@ -291,6 +300,3 @@ class DryRunService {
         }
     }
 }
-
-const dryRunService = new DryRunService();
-export default dryRunService;

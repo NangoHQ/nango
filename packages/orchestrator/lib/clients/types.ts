@@ -51,6 +51,7 @@ interface PostConnectionArgs {
         provider_config_key: string;
         environment_id: number;
     };
+    version: string;
     fileLocation: string;
     activityLogId: string | number;
 }
@@ -153,6 +154,7 @@ export function TaskPostConnection(props: TaskCommonFields & PostConnectionArgs)
         name: props.name,
         attempt: props.attempt,
         postConnectionName: props.postConnectionName,
+        version: props.version,
         connection: props.connection,
         fileLocation: props.fileLocation,
         activityLogId: props.activityLogId,
