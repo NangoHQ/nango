@@ -318,6 +318,7 @@
                 "integrations/all/attio",
                 "integrations/all/auth0",
                 "integrations/all/aws",
+                "integrations/all/autodesk",
                 "integrations/all/bamboohr",
                 "integrations/all/battlenet",
                 "integrations/all/blandai",
