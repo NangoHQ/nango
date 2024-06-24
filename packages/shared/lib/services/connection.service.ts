@@ -18,7 +18,14 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
-import type { Metadata, ActiveLogIds, Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2, AuthModeType } from '@nangohq/types';
+import type {
+    Metadata,
+    ActiveLogIds,
+    Template as ProviderTemplate,
+    TemplateOAuth2 as ProviderTemplateOAuth2,
+    AuthModeType,
+    MaybePromise
+} from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
@@ -34,7 +41,7 @@ import type {
     BasicApiCredentials,
     ConnectionUpsertResponse
 } from '../models/Auth.js';
-import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
+import { interpolateStringFromObject, interpolateString, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
 import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
@@ -213,7 +220,7 @@ class ConnectionService {
         environmentId: number,
         accountId: number,
         parsedRawCredentials: ImportedCredentials,
-        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
     ) {
         const { connection_config, metadata } = parsedRawCredentials as Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>;
 
@@ -242,7 +249,7 @@ class ConnectionService {
         environmentId: number,
         accountId: number,
         credentials: BasicApiCredentials | ApiKeyCredentials,
-        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
     ) {
         const [importedConnection] = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
@@ -526,7 +533,6 @@ class ConnectionService {
                 '_nango_connections.metadata',
                 db.knex.raw(`
                   (SELECT json_build_object(
-                      'activity_log_id', activity_log_id,
                       'log_id', log_id
                     )
                     FROM ${ACTIVE_LOG_TABLE}
@@ -640,7 +646,7 @@ class ConnectionService {
 
         if (connection?.credentials?.type === 'OAUTH2' || connection?.credentials?.type === 'APP' || connection?.credentials?.type === 'OAUTH2_CC') {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
-                connection,
+                oldConnection: connection,
                 providerConfig: config,
                 template: template as ProviderTemplateOAuth2,
                 environment_id: environment.id,
@@ -774,7 +780,7 @@ class ConnectionService {
             }
 
             case 'OAUTH2_CC': {
-                if (!rawCreds['token']) {
+                if (!rawCreds['access_token'] && !rawCreds['data']['token']) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
 
@@ -788,7 +794,7 @@ class ConnectionService {
 
                 const oauth2Creds: OAuth2ClientCredentials = {
                     type: 'OAUTH2_CC',
-                    token: rawCreds['token'],
+                    token: rawCreds['access_token'] || rawCreds['data']['token'],
                     client_id: '',
                     client_secret: '',
                     expires_at: expiresAt,
@@ -804,23 +810,23 @@ class ConnectionService {
     }
 
     private async refreshCredentialsIfNeeded({
-        connection,
+        oldConnection,
         providerConfig,
         template,
         environment_id,
         instantRefresh = false
     }: {
-        connection: Connection;
+        oldConnection: Connection;
         providerConfig: ProviderConfig;
         template: ProviderTemplateOAuth2;
         environment_id: number;
         instantRefresh?: boolean;
     }): Promise<ServiceResponse<{ refreshed: boolean; credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials }>> {
-        const connectionId = connection.connection_id;
-        const credentials = connection.credentials as OAuth2Credentials;
-        const providerConfigKey = connection.provider_config_key;
+        const connectionId = oldConnection.connection_id;
+        const credentials = oldConnection.credentials as OAuth2Credentials;
+        const providerConfigKey = oldConnection.provider_config_key;
 
-        const shouldRefresh = await this.shouldRefreshCredentials(connection, credentials, providerConfig, template, instantRefresh);
+        const shouldRefresh = await this.shouldRefreshCredentials(oldConnection, credentials, providerConfig, template, instantRefresh);
 
         if (shouldRefresh) {
             await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_START, 'Token refresh is being started', LogActionEnum.AUTH, {
@@ -829,7 +835,7 @@ class ConnectionService {
                 providerConfigKey,
                 provider: providerConfig.provider
             });
-            // We must ensure that only one refresh is running at a time accross all instances.
+            // We must ensure that only one refresh is running at a time across all instances.
             // Using a simple redis entry as a lock with a TTL to ensure it is always released.
             // NOTES:
             // - This is not a distributed lock and will not work in a multi-redis environment.
@@ -838,10 +844,22 @@ class ConnectionService {
             const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
             try {
                 const ttlInMs = 10000;
-                const acquitistionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
-                await this.locking.tryAcquire(lockKey, ttlInMs, acquitistionTimeoutMs);
+                const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
+                const { tries } = await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
 
-                const { success, error, response: newCredentials } = await this.getNewCredentials(connection, providerConfig, template);
+                let freshConnection = oldConnection;
+                if (tries > 0) {
+                    // In this case, an other refresh was running so we want to be sure we have a brand new refresh_token
+                    // Ultimately, this can also mean this refresh is now useless and we could return, but since we are not sure we proceed again
+                    const res = await this.getConnection(connectionId, providerConfig.unique_key, oldConnection.environment_id);
+                    if (res.error || !res.response) {
+                        const error = new NangoError('unknown_connection');
+                        return { success: false, error, response: null };
+                    }
+                    freshConnection = res.response;
+                }
+
+                const { success, error, response: newCredentials } = await this.getNewCredentials(freshConnection, providerConfig, template);
                 if (!success || !newCredentials) {
                     await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${error?.message}`, LogActionEnum.AUTH, {
                         environmentId: String(environment_id),
@@ -853,8 +871,9 @@ class ConnectionService {
 
                     return { success, error, response: null };
                 }
-                connection.credentials = newCredentials;
-                await this.updateConnection(connection);
+
+                freshConnection.credentials = newCredentials;
+                await this.updateConnection(freshConnection);
 
                 await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
@@ -864,12 +883,12 @@ class ConnectionService {
                 });
 
                 return { success: true, error: null, response: { refreshed: shouldRefresh, credentials: newCredentials } };
-            } catch (e: any) {
-                const errorMessage = e.message || 'Unknown error';
+            } catch (err: any) {
+                const errorMessage = err.message || 'Unknown error';
                 const errorDetails = {
                     message: errorMessage,
-                    name: e.name || 'Error',
-                    stack: e.stack || 'No stack trace'
+                    name: err.name || 'Error',
+                    stack: err.stack || 'No stack trace'
                 };
 
                 const errorString = JSON.stringify(errorDetails);
@@ -886,7 +905,7 @@ class ConnectionService {
 
                 return { success: false, error, response: null };
             } finally {
-                this.locking.release(lockKey);
+                await this.locking.release(lockKey);
             }
         }
 
@@ -952,7 +971,7 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         activityLogId: number,
         logCtx: LogContext,
-        connectionCreatedHook: (res: ConnectionUpsertResponse) => Promise<void>
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
     ): Promise<void> {
         const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
 
@@ -1031,37 +1050,56 @@ class ConnectionService {
     }
 
     public async getOauthClientCredentials(
-        template: ProviderTemplate,
+        template: ProviderTemplateOAuth2,
         client_id: string,
-        client_secret: string
+        client_secret: string,
+        connectionConfig: Record<string, string>
     ): Promise<ServiceResponse<OAuth2ClientCredentials>> {
-        const url = template.authorization_url;
-        let authorizationParams = '';
+        const strippedTokenUrl = typeof template.token_url === 'string' ? template.token_url.replace(/connectionConfig\./g, '') : '';
+        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
 
-        if (template.authorization_params && Object.keys(template.authorization_params).length > 0) {
-            authorizationParams = new URLSearchParams(template.authorization_params).toString();
+        let tokenParams = template.token_params && Object.keys(template.token_params).length > 0 ? new URLSearchParams(template.token_params).toString() : '';
+
+        if (connectionConfig['oauth_scopes']) {
+            const scope = connectionConfig['oauth_scopes'].split(',').join(template.scope_separator || ' ');
+            tokenParams += (tokenParams ? '&' : '') + `scope=${encodeURIComponent(scope)}`;
         }
-        try {
-            const params = new URLSearchParams();
+
+        const headers: Record<string, string> = {};
+        const params = new URLSearchParams();
+
+        const bodyFormat = template.body_format || 'form';
+        headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
+
+        if (template.token_request_auth_method === 'basic') {
+            headers['Authorization'] = 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64');
+        } else {
             params.append('client_id', client_id);
             params.append('client_secret', client_secret);
+        }
 
-            if (authorizationParams) {
-                const authorizationParamsEntries = new URLSearchParams(authorizationParams).entries();
-                for (const [key, value] of authorizationParamsEntries) {
-                    params.append(key, value);
-                }
+        if (tokenParams) {
+            const tokenParamsEntries = new URLSearchParams(tokenParams).entries();
+            for (const [key, value] of tokenParamsEntries) {
+                params.append(key, value);
             }
-            const fullUrl = `${url}?${params}`;
-            const response = await axios.post(fullUrl);
+        }
+        try {
+            const requestOptions = { headers };
+
+            const response = await axios.post(
+                url.toString(),
+                bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
+                requestOptions
+            );
 
             const { data } = response;
 
-            if (!data || !data.success) {
+            if (response.status !== 200) {
                 return { success: false, error: new NangoError('invalid_client_credentials'), response: null };
             }
 
-            const parsedCreds = this.parseRawCredentials(data.data, 'OAUTH2_CC') as OAuth2ClientCredentials;
+            const parsedCreds = this.parseRawCredentials(data, 'OAUTH2_CC') as OAuth2ClientCredentials;
 
             parsedCreds.client_id = client_id;
             parsedCreds.client_secret = client_secret;
@@ -1183,7 +1221,11 @@ class ConnectionService {
             return { success: true, error: null, response: parsedCreds };
         } else if (template.auth_mode === 'OAUTH2_CC') {
             const { client_id, client_secret } = connection.credentials as OAuth2ClientCredentials;
-            const { success, error, response: credentials } = await this.getOauthClientCredentials(template, client_id, client_secret);
+            const {
+                success,
+                error,
+                response: credentials
+            } = await this.getOauthClientCredentials(template as ProviderTemplateOAuth2, client_id, client_secret, connection.connection_config);
 
             if (!success || !credentials) {
                 return { success, error, response: null };

@@ -27,7 +27,7 @@ const scheduler = new Scheduler({
 const port = await getPort();
 const orchestratorClient = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
 
-describe('OrchestratorProcessor', async () => {
+describe('OrchestratorProcessor', () => {
     const server = getServer(scheduler, eventsHandler);
 
     beforeAll(async () => {
@@ -42,7 +42,7 @@ describe('OrchestratorProcessor', async () => {
 
     it('should process tasks and mark them as successful if processing succeed', async () => {
         const groupKey = nanoid();
-        const mockProcess = vi.fn(async (): Promise<Result<JsonValue>> => Ok({ foo: 'bar' }));
+        const mockProcess = vi.fn(async (): Promise<Result<JsonValue>> => Promise.resolve(Ok({ foo: 'bar' })));
         const n = 10;
         await processN(mockProcess, groupKey, n);
 
@@ -54,7 +54,7 @@ describe('OrchestratorProcessor', async () => {
     });
     it('should process tasks and mark them as failed if processing failed', async () => {
         const groupKey = nanoid();
-        const mockProcess = vi.fn(async (): Promise<Result<JsonValue>> => Err('Failed'));
+        const mockProcess = vi.fn(async (): Promise<Result<JsonValue>> => Promise.resolve(Err('Failed')));
         const n = 10;
         await processN(mockProcess, groupKey, n);
 

@@ -221,16 +221,11 @@ export const getSyncs = async (
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
             `${SYNC_CONFIG_TABLE}.models`,
-            `${ACTIVE_LOG_TABLE}.activity_log_id as error_activity_log_id`,
             `${ACTIVE_LOG_TABLE}.log_id as error_log_id`,
             db.knex.raw(`
-                CASE
-                    WHEN COUNT(${ACTIVE_LOG_TABLE}.activity_log_id) = 0 THEN NULL
-                    ELSE json_build_object(
-                        'activity_log_id', ${ACTIVE_LOG_TABLE}.activity_log_id,
-                        'log_id', ${ACTIVE_LOG_TABLE}.log_id
-                    )
-                END as active_logs
+                json_build_object(
+                    'log_id', ${ACTIVE_LOG_TABLE}.log_id
+                ) as active_logs
             `),
             db.knex.raw(
                 `(
@@ -280,7 +275,6 @@ export const getSyncs = async (
         .groupBy(
             `${TABLE}.id`,
             `${SYNC_SCHEDULE_TABLE}.frequency`,
-            `${ACTIVE_LOG_TABLE}.activity_log_id`,
             `${ACTIVE_LOG_TABLE}.log_id`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status`,

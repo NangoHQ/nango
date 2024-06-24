@@ -209,7 +209,7 @@ class ConnectionController {
         }
     }
 
-    async listProviders(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    listProviders(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const providers = Object.entries(configService.getTemplates())
                 .map((providerProperties: [string, ProviderTemplate]) => {
@@ -394,7 +394,7 @@ class ConnectionController {
                     }
                 }
 
-                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                const connCreatedHook = (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -441,7 +441,7 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
-                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                const connCreatedHook = (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -482,7 +482,7 @@ class ConnectionController {
                     password
                 };
 
-                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                const connCreatedHook = (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -521,7 +521,7 @@ class ConnectionController {
                     apiKey
                 };
 
-                const connCreatedHook = async (res: ConnectionUpsertResponse) => {
+                const connCreatedHook = (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
                         {
                             connection: res.connection,

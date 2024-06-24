@@ -172,7 +172,7 @@ export const EnvironmentSettings: React.FC = () => {
         setCallbackEditMode(true);
     };
 
-    const handleHmacEnabled = async (checked: boolean) => {
+    const handleHmacEnabled = (checked: boolean) => {
         if (!hmacKey && checked) {
             toast.error('Cannot enable HMAC without an HMAC key.', { position: toast.POSITION.BOTTOM_CENTER });
         } else {
@@ -255,11 +255,11 @@ export const EnvironmentSettings: React.FC = () => {
         }
     };
 
-    const handleActivatePublicKey = async () => {
+    const handleActivatePublicKey = () => {
         setVisible(true);
     };
 
-    const handleActivateSecretKey = async () => {
+    const handleActivateSecretKey = () => {
         setSecretVisible(true);
     };
 

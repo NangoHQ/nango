@@ -143,7 +143,7 @@ class ConfigController {
         }
     }
 
-    async listProvidersFromYaml(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    listProvidersFromYaml(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const providers = Object.entries(configService.getTemplates())
                 .map((providerProperties: [string, ProviderTemplate]) => {

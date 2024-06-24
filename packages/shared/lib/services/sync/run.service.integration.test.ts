@@ -20,12 +20,12 @@ import { SlackService } from '../notification/slack.service.js';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
-        return {
+        return Promise.resolve({
             success: true
-        };
+        });
     }
     async cancelScript() {
-        return;
+        return Promise.resolve();
     }
 }
 

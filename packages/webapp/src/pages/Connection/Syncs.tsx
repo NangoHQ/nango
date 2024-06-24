@@ -419,7 +419,7 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                                             <Link
                                                                 to={getLogsUrl({
                                                                     env,
-                                                                    operationId: sync.latest_sync?.activity_log_id || sync.active_logs?.activity_log_id,
+                                                                    operationId: sync.latest_sync?.activity_log_id,
                                                                     connections: connection?.connection_id,
                                                                     syncs: sync.name,
                                                                     day: new Date(sync.latest_sync?.updated_at)

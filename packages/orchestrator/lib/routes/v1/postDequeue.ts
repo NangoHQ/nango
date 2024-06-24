@@ -58,7 +58,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
                 respond(res);
             }
         };
-        const onTaskStarted = async (_t: Task) => {
+        const onTaskStarted = (_t: Task) => {
             cleanupAndRespond(async (res) => {
                 const getTasks = await scheduler.dequeue({ groupKey, limit });
                 if (getTasks.isErr()) {

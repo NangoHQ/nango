@@ -7,12 +7,12 @@ import db from '@nangohq/database';
 
 const DB_TABLE = '_nango_active_logs';
 
-type ErrorNotification = Required<Pick<ActiveLog, 'type' | 'action' | 'connection_id' | 'activity_log_id' | 'log_id' | 'active'>>;
+type ErrorNotification = Required<Pick<ActiveLog, 'type' | 'action' | 'connection_id' | 'log_id' | 'active'>>;
 type SyncErrorNotification = ErrorNotification & Required<Pick<ActiveLog, 'sync_id'>>;
 
 export const errorNotificationService = {
     auth: {
-        create: async ({ type, action, connection_id, activity_log_id, log_id, active }: ErrorNotification): Promise<Result<ActiveLog>> => {
+        create: async ({ type, action, connection_id, log_id, active }: ErrorNotification): Promise<Result<ActiveLog>> => {
             return await db.knex.transaction(async (trx) => {
                 await errorNotificationService.auth.clear({ connection_id, trx });
                 const created = await trx
@@ -21,7 +21,6 @@ export const errorNotificationService = {
                         type,
                         action,
                         connection_id,
-                        activity_log_id,
                         log_id,
                         active
                     })
@@ -42,7 +41,7 @@ export const errorNotificationService = {
         }
     },
     sync: {
-        create: async ({ type, action, sync_id, connection_id, activity_log_id, log_id, active }: SyncErrorNotification): Promise<Result<ActiveLog>> => {
+        create: async ({ type, action, sync_id, connection_id, log_id, active }: SyncErrorNotification): Promise<Result<ActiveLog>> => {
             return await db.knex.transaction(async (trx) => {
                 await errorNotificationService.sync.clear({ sync_id, connection_id, trx });
                 const created = await trx
@@ -52,7 +51,6 @@ export const errorNotificationService = {
                         action,
                         sync_id,
                         connection_id,
-                        activity_log_id,
                         log_id,
                         active
                     })
