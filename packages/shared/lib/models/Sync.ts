@@ -5,6 +5,7 @@ import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoProps } from '../sdk/sync.js';
 import type { NangoIntegrationData } from './NangoConfig.js';
 import type { NangoConfigMetadata, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
+import type { LogContext } from '@nangohq/logs';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -132,7 +133,7 @@ export interface SyncDeploymentResult {
 
 export interface SyncConfigResult {
     result: SyncDeploymentResult[];
-    activityLogId: number | null;
+    logCtx: LogContext;
 }
 
 export enum ScheduleStatus {
