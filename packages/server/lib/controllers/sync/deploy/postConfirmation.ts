@@ -88,7 +88,6 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         environmentId,
         flows: body.flowConfigs,
         performAction: false,
-        activityLogId: null,
         debug: body.debug,
         singleDeployMode: body.singleDeployMode,
         logContextGetter,

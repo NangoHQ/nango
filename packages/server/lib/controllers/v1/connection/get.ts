@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 import type { Connection, GetConnection, IntegrationConfig } from '@nangohq/types';
-import { connectionService, LogActionEnum, createActivityLogAndLogMessage, configService, errorNotificationService } from '@nangohq/shared';
+import { connectionService, LogActionEnum, configService, errorNotificationService } from '@nangohq/shared';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { LogLevel } from '@nangohq/shared';
@@ -143,21 +143,12 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         return;
     }
 
-    const template = configService.getTemplate(config.provider);
-
     if (instantRefresh) {
         log.provider = config.provider;
         log.success = true;
 
-        const activityLogId = await createActivityLogAndLogMessage(log, {
-            level: 'info',
-            environment_id: environment.id,
-            auth_mode: template.auth_mode,
-            content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
-            timestamp: Date.now()
-        });
         const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
+            { operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
             {
                 account,
                 environment,

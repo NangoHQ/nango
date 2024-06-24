@@ -35,9 +35,9 @@ const validation = z
             .max(20)
             .optional()
             .default(['all']),
-        integrations: z.array(z.string()).max(10).optional().default(['all']),
-        connections: z.array(z.string()).max(10).optional().default(['all']),
-        syncs: z.array(z.string()).max(10).optional().default(['all']),
+        integrations: z.array(z.string()).max(20).optional().default(['all']),
+        connections: z.array(z.string()).max(20).optional().default(['all']),
+        syncs: z.array(z.string()).max(20).optional().default(['all']),
         period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional(),
         cursor: z.string().or(z.null()).optional()
     })
