@@ -1611,6 +1611,12 @@ netsuite:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/netsuite
+netsuite-tba:
+    alias: netsuite
+    auth_mode: TBA
+    authorization_url: https://${connectionConfig.accountId}.restlets.api.netsuite.com/request/requesttoken
+    token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+    docs: https://docs.nango.dev/integrations/all/netsuite
 next-cloud-ocs:
     auth_mode: BASIC
     proxy:

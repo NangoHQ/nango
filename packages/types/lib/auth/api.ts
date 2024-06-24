@@ -10,6 +10,7 @@ export interface AuthModes {
     Custom: 'CUSTOM';
     App: 'APP';
     None: 'NONE';
+    TBA: 'TBA';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
