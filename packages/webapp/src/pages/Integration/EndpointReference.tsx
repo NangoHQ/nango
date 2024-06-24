@@ -11,6 +11,7 @@ import { nodeSnippet, nodeActionSnippet, curlSnippet } from '../../utils/languag
 import { parseInput, generateResponseModel } from '../../utils/utils';
 import { Tabs, SubTabs } from './Show';
 import { useStore } from '../../store';
+import { modelToTypescript } from '../../utils/scripts';
 
 enum Language {
     Node = 0,
@@ -43,27 +44,36 @@ export default function EndpointReference(props: EndpointReferenceProps) {
     const baseUrl = useStore((state) => state.baseUrl);
 
     useEffect(() => {
-        if (activeFlow) {
-            const model = activeFlow.models.length > 0 ? activeFlow.models : activeFlow.returns[0];
-            setSyncSnippet(
-                activeFlow.type === 'sync'
-                    ? nodeSnippet(model, environment.secret_key, connectionId, integration.unique_key)
-                    : nodeActionSnippet(activeFlow.name, environment.secret_key, connectionId, integration.unique_key, parseInput(activeFlow))
-            );
+        if (!activeFlow) {
+            return;
+        }
+        const model = activeFlow.models.length > 0 ? activeFlow.models : activeFlow.returns[0];
+        setSyncSnippet(
+            activeFlow.type === 'sync'
+                ? nodeSnippet(model, environment.secret_key, connectionId, integration.unique_key)
+                : nodeActionSnippet(activeFlow.name, environment.secret_key, connectionId, integration.unique_key, parseInput(activeFlow))
+        );
 
-            const activeEndpointIndex = activeFlow.endpoints.findIndex((endpoint) => endpoint === activeEndpoint);
-            const jsonModel = generateResponseModel(
-                activeFlow.models,
-                Array.isArray(activeFlow.returns) ? activeFlow.returns[activeEndpointIndex] : activeFlow.returns,
-                activeFlow.type === 'sync'
+        const activeEndpointIndex = activeFlow.endpoints.findIndex((endpoint) => endpoint === activeEndpoint);
+
+        // New model definition
+        if (activeFlow.last_deployed && new Date(activeFlow.last_deployed).getTime() > new Date('2024-06-22').getTime()) {
+            setJsonResponseSnippet(
+                modelToTypescript(activeFlow.models as any, Array.isArray(activeFlow.returns) ? activeFlow.returns[activeEndpointIndex] : activeFlow.returns)
             );
-            if (activeFlow.type === 'sync') {
-                setJsonResponseSnippet(
-                    JSON.stringify({ records: [{ ...jsonModel }], next_cursor: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz...' }, null, 2)
-                );
-            } else {
-                setJsonResponseSnippet(JSON.stringify(jsonModel, null, 2));
-            }
+            return;
+        }
+
+        // Old or template
+        const jsonModel = generateResponseModel(
+            activeFlow.models,
+            Array.isArray(activeFlow.returns) ? activeFlow.returns[activeEndpointIndex] : activeFlow.returns,
+            activeFlow.type === 'sync'
+        );
+        if (activeFlow.type === 'sync') {
+            setJsonResponseSnippet(JSON.stringify({ records: [{ ...jsonModel }], next_cursor: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz...' }, null, 2));
+        } else {
+            setJsonResponseSnippet(JSON.stringify(jsonModel, null, 2));
         }
     }, [activeFlow, environment, integration.unique_key, activeEndpoint]);
 
