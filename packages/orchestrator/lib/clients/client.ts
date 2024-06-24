@@ -287,7 +287,7 @@ export class OrchestratorClient {
                 payload: { scheduleNames }
             });
         } else {
-            const schedule = res.flatMap((schedule) => {
+            const schedules = res.flatMap((schedule) => {
                 const validated = validateSchedule(schedule);
                 if (validated.isErr()) {
                     logger.error(`search: error validating schedule: ${validated.error.message}`);
@@ -295,7 +295,7 @@ export class OrchestratorClient {
                 }
                 return [validated.value];
             });
-            return Ok(schedule);
+            return Ok(schedules);
         }
     }
 

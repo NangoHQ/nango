@@ -9,8 +9,6 @@ import {
     isSyncValid,
     getSyncNamesByConnectionId,
     getSyncsByProviderConfigKey,
-    SyncClient,
-    updateScheduleStatus,
     getSyncConfigsWithConnectionsByEnvironmentId,
     getProviderConfigBySyncAndAccount,
     SyncCommand,
@@ -311,17 +309,10 @@ class SyncController {
                 }
             );
 
-            const syncClient = await SyncClient.getInstance();
-
-            if (!syncClient) {
-                throw new NangoError('failed_to_get_sync_client');
-            }
-
             const actionResponse = await getOrchestrator().triggerAction({
                 connection,
                 actionName: action_name,
                 input,
-                environment_id: environmentId,
                 logCtx
             });
 
@@ -571,15 +562,10 @@ class SyncController {
                 return;
             }
 
-            const result = await orchestrator.runSyncCommandHelper({
-                scheduleId: schedule_id,
+            const result = await orchestrator.runSyncCommand({
                 syncId: sync_id,
                 command,
                 environmentId: environment.id,
-                providerConfigKey: connection?.provider_config_key,
-                connectionId: connection?.connection_id,
-                syncName: sync_name,
-                nangoConnectionId: connection?.id,
                 logCtx,
                 recordsService,
                 initiator: 'UI'
@@ -589,10 +575,6 @@ class SyncController {
                 errorManager.handleGenericError(result.error, req, res, tracer);
                 await logCtx.failed();
                 return;
-            }
-
-            if (command !== SyncCommand.RUN) {
-                await updateScheduleStatus(schedule_id, command, logCtx);
             }
 
             await logCtx.info(`Sync command run successfully "${command}"`, { command, syncId: sync_id });

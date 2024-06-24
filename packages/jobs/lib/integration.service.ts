@@ -1,16 +1,12 @@
-import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
-import { integrationFilesAreRemote, isCloud, isProd, getLogger, stringifyError } from '@nangohq/utils';
+import { integrationFilesAreRemote, isCloud, isProd, stringifyError } from '@nangohq/utils';
 import { localFileService, remoteFileService, NangoError, formatScriptError } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from 'dd-trace';
 import { logContextGetter } from '@nangohq/logs';
 
-const logger = getLogger('integration.service');
-
 interface ScriptObject {
-    context: Context | null;
     runner: Runner;
     activityLogId: number | undefined;
     cancelled?: boolean;
@@ -21,7 +17,6 @@ class IntegrationService implements IntegrationServiceInterface {
 
     constructor() {
         this.runningScripts = new Map();
-        this.sendHeartbeat();
     }
 
     async cancelScript(syncId: string): Promise<void> {
@@ -58,8 +53,7 @@ class IntegrationService implements IntegrationServiceInterface {
         isInvokedImmediately,
         isWebhook,
         optionalLoadLocation,
-        input,
-        temporalContext
+        input
     }: RunScriptOptions): Promise<ServiceResponse> {
         const span = tracer
             .startSpan('runScript')
@@ -99,11 +93,7 @@ class IntegrationService implements IntegrationServiceInterface {
             // fallback to default runner if account runner isn't ready yet
             const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
 
-            if (temporalContext) {
-                this.runningScripts.set(syncId, { context: temporalContext, runner, activityLogId });
-            } else {
-                this.runningScripts.set(syncId, { context: null, runner, activityLogId });
-            }
+            this.runningScripts.set(syncId, { runner, activityLogId });
 
             const runSpan = tracer.startSpan('runner.run', { childOf: span }).setTag('runnerId', runner.id);
             try {
@@ -179,23 +169,6 @@ class IntegrationService implements IntegrationServiceInterface {
             this.runningScripts.delete(syncId);
             span.finish();
         }
-    }
-
-    private sendHeartbeat() {
-        setInterval(() => {
-            this.runningScripts.forEach((script, syncId) => {
-                const { context } = script;
-                if (context) {
-                    try {
-                        context.heartbeat();
-                    } catch (error) {
-                        logger.error(`Error sending heartbeat for syncId: ${syncId}`, error);
-                    }
-                } else {
-                    logger.error(`Error sending heartbeat for syncId ${syncId}: context not found`);
-                }
-            });
-        }, 300000);
     }
 }
 

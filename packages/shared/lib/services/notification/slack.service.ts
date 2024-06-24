@@ -148,7 +148,6 @@ export class SlackService {
             connection: nangoAdminConnection,
             actionName: this.actionName,
             input: payload,
-            environment_id: nangoAdminConnection?.environment_id,
             logCtx
         });
 
@@ -275,7 +274,6 @@ export class SlackService {
                 connection: slackConnection as NangoConnection,
                 actionName: this.actionName,
                 input: payload,
-                environment_id,
                 logCtx
             });
 
@@ -407,7 +405,6 @@ export class SlackService {
                 connection: slackConnection as NangoConnection,
                 actionName: this.actionName,
                 input: payload,
-                environment_id,
                 logCtx
             });
 

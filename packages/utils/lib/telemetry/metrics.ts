@@ -35,10 +35,6 @@ export enum Types {
     REFRESH_TOKENS_FAILED = 'nango.server.cron.refreshTokens.failed',
     REFRESH_TOKENS_SUCCESS = 'nango.server.cron.refreshTokens.success',
     RUNNER_SDK = 'nango.runner.sdk',
-    RECONCILE_TEMPORAL_SCHEDULES = 'nango.jobs.cron.reconcileTemporalSchedules',
-    RECONCILE_TEMPORAL_SCHEDULES_FAILED = 'nango.jobs.cron.reconcileTemporalSchedules.failed',
-    RECONCILE_TEMPORAL_SCHEDULES_SUCCESS = 'nango.jobs.cron.reconcileTemporalSchedules.success',
-
     SYNC_EXECUTION = 'nango.jobs.syncExecution',
     SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
     SYNC_SUCCESS = 'nango.orch.sync.success',

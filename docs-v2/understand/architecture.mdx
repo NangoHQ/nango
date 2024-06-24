@@ -16,13 +16,13 @@ The API layer, developed with Node.js, serves as the front door to Nango, handli
 
 This component stores configuration data for users, integrations, connections, and integration scripts. It uses Postgres.
 
-**Temporal**
-
-Temporal manages the scheduling of syncs and acts as a queue for integration script execution jobs. It's responsible for orchestrating the timing and execution of data synchronization tasks, ensuring that sync scripts run according to their schedules without loss or delay.
-
 **Orchestrator Service**
 
-The Orchestrator Service dispatches jobs to runner services. It acts as the central manager that allocates integration script execution tasks to available runners, balancing load and ensuring efficient processing of integration logic.
+The Orchestrator service manages the scheduling of script executions. It’s responsible for orchestrating the timing and execution of data synchronization tasks, ensuring that sync scripts run according to their schedules without loss or delay.
+
+Jobs Service
+
+The Jobs Service dispatches jobs to runner services. It acts as the central manager that allocates integration script execution tasks to available runners, balancing load and ensuring efficient processing of integration logic.
 
 **Runner Services**
 
