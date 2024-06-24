@@ -61,15 +61,6 @@ airtable:
     proxy:
         base_url: https://api.airtable.com
     docs: https://docs.nango.dev/integrations/all/airtable
-blandai:
-    categories:
-        - support
-    auth_mode: API_KEY
-    proxy:
-        base_url: https://api.bland.ai
-        headers:
-            Authorization: ${apiKey}
-    docs: https://docs.nango.dev/integrations/all/blandai
 algolia:
     categories:
         - search
@@ -107,22 +98,6 @@ anrok:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/anrok
-aws:
-    categories:
-        - dev-tools
-        - e-commerce
-    auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/authorize
-    token_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
-    token_params:
-        grant_type: authorization_code
-    auth:
-        response_type: code
-    refresh_params:
-        grant_type: refresh_token
-    default_scopes:
-        - openid
-    docs: https://docs.nango.dev/integrations/all/aws
 amplitude:
     categories:
         - analytics
@@ -130,33 +105,6 @@ amplitude:
     proxy:
         base_url: https://amplitude.com
     docs: https://docs.nango.dev/integrations/all/amplitude
-peopledatalabs:
-    categories:
-        - analytics
-    auth_mode: API_KEY
-    proxy:
-        base_url: https://api.peopledatalabs.com
-        query:
-            api_key: ${apiKey}
-    docs: https://docs.nango.dev/integrations/all/peopledatalabs
-exa:
-    categories:
-        - analytics
-    auth_mode: API_KEY
-    proxy:
-        base_url: https://api.exa.ai
-        headers:
-            x-api-key: ${apiKey}
-    docs: https://docs.nango.dev/integrations/all/exa
-jotform:
-    categories:
-        - surveys
-    auth_mode: API_KEY
-    proxy:
-        base_url: https://api.jotform.com
-        headers:
-            APIKEY: ${apiKey}
-    docs: https://docs.nango.dev/integrations/all/jotform
 apollo:
     categories:
         - marketing
@@ -252,6 +200,22 @@ auth0:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/auth0
+aws:
+    categories:
+        - dev-tools
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/authorize
+    token_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
+    token_params:
+        grant_type: authorization_code
+    auth:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - openid
+    docs: https://docs.nango.dev/integrations/all/aws
 bamboohr:
     categories:
         - hr
@@ -321,6 +285,15 @@ blackbaud:
     proxy:
         base_url: https://api.sky.blackbaud.com
     docs: https://docs.nango.dev/integrations/all/blackbaud
+blandai:
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.bland.ai
+        headers:
+            Authorization: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/blandai
 boldsign:
     categories:
         - legal
@@ -721,6 +694,15 @@ eventbrite:
     proxy:
         base_url: https://www.eventbriteapi.com
     docs: https://docs.nango.dev/integrations/all/eventbrite
+exa:
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.exa.ai
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/exa
 exact-online:
     categories:
         - accounting
@@ -1295,6 +1277,15 @@ jira-data-center:
     connection_configuration:
         - endpointURL
     docs: https://docs.nango.dev/integrations/all/jira-data-center
+jotform:
+    categories:
+        - surveys
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.jotform.com
+        headers:
+            APIKEY: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/jotform
 helpscout-docs:
     auth_mode: BASIC
     proxy:
@@ -1803,6 +1794,15 @@ pennylane:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/pennylane
+peopledatalabs:
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.peopledatalabs.com
+        query:
+            api_key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/peopledatalabs
 personio:
     categories:
         - hr
