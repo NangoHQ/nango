@@ -1,4 +1,4 @@
-import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig } from './config/config.service.js';
+import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { getLatestSyncJob } from './job.service.js';
@@ -378,7 +378,7 @@ export class SyncManagerService {
                     continue;
                 }
 
-                const reportedStatus = await this.syncStatus(sync, environmentId, includeJobStatus, orchestrator);
+                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator });
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -393,7 +393,7 @@ export class SyncManagerService {
             }
 
             for (const sync of syncs) {
-                const reportedStatus = await this.syncStatus(sync, environmentId, includeJobStatus, orchestrator);
+                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator });
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -483,13 +483,30 @@ export class SyncManagerService {
         }
     }
 
-    private async syncStatus(sync: Sync, environmentId: number, includeJobStatus: boolean, orchestrator: Orchestrator): Promise<ReportedSyncJobStatus> {
+    private async syncStatus({
+        sync,
+        environmentId,
+        providerConfigKey,
+        includeJobStatus,
+        orchestrator
+    }: {
+        sync: Sync;
+        environmentId: number;
+        providerConfigKey: string;
+        includeJobStatus: boolean;
+        orchestrator: Orchestrator;
+    }): Promise<ReportedSyncJobStatus> {
         const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
         const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
         const isOrchestrator = isGloballyEnabled || isEnvEnabled;
         if (isOrchestrator) {
             const latestJob = await getLatestSyncJob(sync.id);
             const schedules = await orchestrator.searchSchedules([{ syncId: sync.id, environmentId }]);
+            let frequency = sync.frequency;
+            if (!frequency) {
+                const syncConfig = await getSyncConfigByParams(environmentId, sync.name, providerConfigKey);
+                frequency = syncConfig?.runs || '';
+            }
             if (schedules.isErr()) {
                 throw new Error(`Failed to get schedule for sync ${sync.id} in environment ${environmentId}: ${stringifyError(schedules.error)}`);
             }
@@ -504,7 +521,7 @@ export class SyncManagerService {
                 nextScheduledSyncAt: schedule.nextDueDate,
                 name: sync.name,
                 status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule.state),
-                frequency: sync.frequency,
+                frequency,
                 latestResult: latestJob?.result,
                 latestExecutionStatus: latestJob?.status,
                 ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})
