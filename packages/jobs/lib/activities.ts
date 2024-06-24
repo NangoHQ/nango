@@ -19,7 +19,7 @@ import {
     configService,
     createActivityLog,
     LogActionEnum,
-    syncRunService,
+    SyncRunService,
     environmentService,
     createActivityLogMessage,
     createActivityLogAndLogMessage,
@@ -89,10 +89,16 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         nangoConnection?.provider_config_key,
         nangoConnection?.environment_id
     )) as ProviderConfig;
+    const syncConfig = (await getSyncConfigRaw({
+        environmentId: providerConfig.environment_id,
+        config_id: providerConfig.id!,
+        name: actionName,
+        isAction: true
+    }))!;
 
     const context: Context = Context.current();
 
-    const syncRun = new syncRunService({
+    const syncRun = new SyncRunService({
         bigQueryClient,
         integrationService,
         recordsService,
@@ -101,7 +107,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         logCtx: await logContextGetter.get({ id: String(activityLogId) }),
         sendSyncWebhook: sendSync,
         nangoConnection,
-        syncName: actionName,
+        syncConfig,
         isAction: true,
         syncType: SyncType.ACTION,
         activityLogId,
@@ -333,7 +339,7 @@ export async function syncProvider({
             });
         }
 
-        const syncRun = new syncRunService({
+        const syncRun = new SyncRunService({
             bigQueryClient,
             integrationService,
             recordsService,
@@ -343,7 +349,7 @@ export async function syncProvider({
             syncId,
             syncJobId,
             nangoConnection,
-            syncName,
+            syncConfig,
             syncType,
             activityLogId,
             provider: providerConfig.provider,
@@ -417,6 +423,12 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
     )) as ProviderConfig;
 
     const sync = await getSyncByIdAndName(nangoConnection.id as number, parentSyncName);
+    const syncConfig = (await getSyncConfigRaw({
+        environmentId: providerConfig.environment_id,
+        config_id: providerConfig.id!,
+        name: parentSyncName,
+        isAction: false
+    }))!;
 
     const context: Context = Context.current();
 
@@ -429,16 +441,16 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         context.info.workflowExecution.runId
     );
 
-    const syncRun = new syncRunService({
+    const syncRun = new SyncRunService({
         bigQueryClient,
         integrationService,
         recordsService,
         slackService,
         writeToDb: true,
         nangoConnection,
+        syncConfig,
         sendSyncWebhook: sendSync,
         syncJobId: syncJobId?.id as number,
-        syncName: parentSyncName,
         isAction: false,
         syncType: SyncType.WEBHOOK,
         syncId: sync?.id as string,
@@ -457,7 +469,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
 }
 
 export async function runPostConnectionScript(args: PostConnectionScriptArgs): Promise<ServiceResponse> {
-    const { name, nangoConnection, activityLogId, file_location } = args;
+    const { name, nangoConnection, activityLogId, file_location, version } = args;
 
     const providerConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key,
@@ -466,14 +478,21 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
 
     const context: Context = Context.current();
 
-    const syncRun = new syncRunService({
+    const syncRun = new SyncRunService({
         bigQueryClient,
         integrationService,
         recordsService,
         slackService,
         writeToDb: true,
         nangoConnection,
-        syncName: name,
+        syncConfig: {
+            sync_name: name,
+            file_location,
+            models: [],
+            track_deletes: false,
+            type: 'sync',
+            version: version || '0'
+        },
         sendSyncWebhook: sendSync,
         isAction: false,
         isPostConnectionScript: true,
@@ -482,7 +501,6 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
         activityLogId,
         logCtx: await logContextGetter.get({ id: String(activityLogId) }),
         provider: providerConfig.provider,
-        fileLocation: file_location,
         debug: false,
         temporalContext: context
     });

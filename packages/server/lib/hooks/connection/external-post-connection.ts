@@ -36,10 +36,11 @@ export async function externalPostConnection(
 
     let failed = false;
     for (const postConnectionScript of postConnectionScripts) {
-        const { name, file_location: fileLocation } = postConnectionScript;
+        const { name, file_location: fileLocation, version } = postConnectionScript;
 
         const res = await getOrchestrator().triggerPostConnectionScript({
             connection: createdConnection.connection,
+            version,
             name,
             fileLocation,
             logCtx

@@ -190,11 +190,12 @@ export interface SyncConfigWithProvider {
 }
 
 export interface RunScriptOptions {
+    syncConfig?: SyncConfig;
     syncName: string;
     syncId: string;
     activityLogId: number | undefined;
     nangoProps: NangoProps;
-    integrationData: NangoIntegrationData;
+    integrationData: Pick<NangoIntegrationData, 'fileLocation'>;
     environmentId: number;
     writeToDb: boolean;
     isInvokedImmediately: boolean;
