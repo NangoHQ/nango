@@ -41,7 +41,7 @@ import type {
     BasicApiCredentials,
     ConnectionUpsertResponse
 } from '../models/Auth.js';
-import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
+import { interpolateStringFromObject, interpolateString, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
 import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
@@ -533,7 +533,6 @@ class ConnectionService {
                 '_nango_connections.metadata',
                 db.knex.raw(`
                   (SELECT json_build_object(
-                      'activity_log_id', activity_log_id,
                       'log_id', log_id
                     )
                     FROM ${ACTIVE_LOG_TABLE}
@@ -781,7 +780,7 @@ class ConnectionService {
             }
 
             case 'OAUTH2_CC': {
-                if (!rawCreds['token']) {
+                if (!rawCreds['access_token'] && !rawCreds['data']['token']) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
 
@@ -795,7 +794,7 @@ class ConnectionService {
 
                 const oauth2Creds: OAuth2ClientCredentials = {
                     type: 'OAUTH2_CC',
-                    token: rawCreds['token'],
+                    token: rawCreds['access_token'] || rawCreds['data']['token'],
                     client_id: '',
                     client_secret: '',
                     expires_at: expiresAt,
@@ -1051,37 +1050,56 @@ class ConnectionService {
     }
 
     public async getOauthClientCredentials(
-        template: ProviderTemplate,
+        template: ProviderTemplateOAuth2,
         client_id: string,
-        client_secret: string
+        client_secret: string,
+        connectionConfig: Record<string, string>
     ): Promise<ServiceResponse<OAuth2ClientCredentials>> {
-        const url = template.authorization_url;
-        let authorizationParams = '';
+        const strippedTokenUrl = typeof template.token_url === 'string' ? template.token_url.replace(/connectionConfig\./g, '') : '';
+        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
 
-        if (template.authorization_params && Object.keys(template.authorization_params).length > 0) {
-            authorizationParams = new URLSearchParams(template.authorization_params).toString();
+        let tokenParams = template.token_params && Object.keys(template.token_params).length > 0 ? new URLSearchParams(template.token_params).toString() : '';
+
+        if (connectionConfig['oauth_scopes']) {
+            const scope = connectionConfig['oauth_scopes'].split(',').join(template.scope_separator || ' ');
+            tokenParams += (tokenParams ? '&' : '') + `scope=${encodeURIComponent(scope)}`;
         }
-        try {
-            const params = new URLSearchParams();
+
+        const headers: Record<string, string> = {};
+        const params = new URLSearchParams();
+
+        const bodyFormat = template.body_format || 'form';
+        headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
+
+        if (template.token_request_auth_method === 'basic') {
+            headers['Authorization'] = 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64');
+        } else {
             params.append('client_id', client_id);
             params.append('client_secret', client_secret);
+        }
 
-            if (authorizationParams) {
-                const authorizationParamsEntries = new URLSearchParams(authorizationParams).entries();
-                for (const [key, value] of authorizationParamsEntries) {
-                    params.append(key, value);
-                }
+        if (tokenParams) {
+            const tokenParamsEntries = new URLSearchParams(tokenParams).entries();
+            for (const [key, value] of tokenParamsEntries) {
+                params.append(key, value);
             }
-            const fullUrl = `${url}?${params}`;
-            const response = await axios.post(fullUrl);
+        }
+        try {
+            const requestOptions = { headers };
+
+            const response = await axios.post(
+                url.toString(),
+                bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
+                requestOptions
+            );
 
             const { data } = response;
 
-            if (!data || !data.success) {
+            if (response.status !== 200) {
                 return { success: false, error: new NangoError('invalid_client_credentials'), response: null };
             }
 
-            const parsedCreds = this.parseRawCredentials(data.data, 'OAUTH2_CC') as OAuth2ClientCredentials;
+            const parsedCreds = this.parseRawCredentials(data, 'OAUTH2_CC') as OAuth2ClientCredentials;
 
             parsedCreds.client_id = client_id;
             parsedCreds.client_secret = client_secret;
@@ -1203,7 +1221,11 @@ class ConnectionService {
             return { success: true, error: null, response: parsedCreds };
         } else if (template.auth_mode === 'OAUTH2_CC') {
             const { client_id, client_secret } = connection.credentials as OAuth2ClientCredentials;
-            const { success, error, response: credentials } = await this.getOauthClientCredentials(template, client_id, client_secret);
+            const {
+                success,
+                error,
+                response: credentials
+            } = await this.getOauthClientCredentials(template as ProviderTemplateOAuth2, client_id, client_secret, connection.connection_config);
 
             if (!success || !credentials) {
                 return { success, error, response: null };

@@ -4,7 +4,6 @@ import type { Sync, Job as SyncJob, SyncWithSchedule } from '../../models/Sync.j
 import { SyncStatus, SyncCommand, ScheduleStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
-import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { updateScheduleStatus } from './schedule.service.js';
 import type { ActiveLogIds, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences } from '@nangohq/types';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
@@ -222,16 +221,11 @@ export const getSyncs = async (
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
             `${SYNC_CONFIG_TABLE}.models`,
-            `${ACTIVE_LOG_TABLE}.activity_log_id as error_activity_log_id`,
             `${ACTIVE_LOG_TABLE}.log_id as error_log_id`,
             db.knex.raw(`
-                CASE
-                    WHEN COUNT(${ACTIVE_LOG_TABLE}.activity_log_id) = 0 THEN NULL
-                    ELSE json_build_object(
-                        'activity_log_id', ${ACTIVE_LOG_TABLE}.activity_log_id,
-                        'log_id', ${ACTIVE_LOG_TABLE}.log_id
-                    )
-                END as active_logs
+                json_build_object(
+                    'log_id', ${ACTIVE_LOG_TABLE}.log_id
+                ) as active_logs
             `),
             db.knex.raw(
                 `(
@@ -281,7 +275,6 @@ export const getSyncs = async (
         .groupBy(
             `${TABLE}.id`,
             `${SYNC_SCHEDULE_TABLE}.frequency`,
-            `${ACTIVE_LOG_TABLE}.activity_log_id`,
             `${ACTIVE_LOG_TABLE}.log_id`,
             `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status`,
@@ -563,7 +556,6 @@ export const getAndReconcileDifferences = async ({
     environmentId,
     flows,
     performAction,
-    activityLogId,
     debug = false,
     singleDeployMode = false,
     logCtx,
@@ -573,7 +565,6 @@ export const getAndReconcileDifferences = async ({
     environmentId: number;
     flows: IncomingFlowConfig[];
     performAction: boolean;
-    activityLogId: number | null;
     debug?: boolean | undefined;
     singleDeployMode?: boolean | undefined;
     logCtx?: LogContext;
@@ -639,14 +630,7 @@ export const getAndReconcileDifferences = async ({
                 auto_start: flow.auto_start === false ? false : true
             });
             if (performAction) {
-                if (debug && activityLogId) {
-                    await createActivityLogMessage({
-                        level: 'debug',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`
-                    });
+                if (debug) {
                     await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
                 }
                 syncsToCreate.push({ connections, syncName: flowName, sync: flow, providerConfigKey, environmentId });
@@ -660,14 +644,7 @@ export const getAndReconcileDifferences = async ({
             });
 
             if (missingConnections.length > 0) {
-                if (debug && activityLogId) {
-                    await createActivityLogMessage({
-                        level: 'debug',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`
-                    });
+                if (debug) {
                     await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`);
                 }
                 syncsToCreate.push({ connections: missingConnections, syncName: flowName, sync: flow, providerConfigKey, environmentId });
@@ -676,25 +653,15 @@ export const getAndReconcileDifferences = async ({
     }
 
     if (syncsToCreate.length > 0) {
-        if (debug && activityLogId) {
+        if (debug) {
             const syncNames = syncsToCreate.map((sync) => sync.syncName);
-            await createActivityLogMessage({
-                level: 'debug',
-                environment_id: environmentId,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`
-            });
             await logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames)}`);
         }
         // this is taken out of the loop to ensure it awaits all the calls properly
-        const result = await syncManager.createSyncs(syncsToCreate, logContextGetter, orchestrator, debug, activityLogId!, logCtx);
+        const result = await syncManager.createSyncs(syncsToCreate, logContextGetter, orchestrator, debug, logCtx);
 
         if (!result) {
-            if (activityLogId) {
-                await updateSuccessActivityLog(activityLogId, false);
-                await logCtx?.failed();
-            }
+            await logCtx?.failed();
             return null;
         }
     }
@@ -727,14 +694,7 @@ export const getAndReconcileDifferences = async ({
                 }
 
                 if (performAction) {
-                    if (debug && activityLogId) {
-                        await createActivityLogMessage({
-                            level: 'debug',
-                            environment_id: environmentId,
-                            activity_log_id: activityLogId,
-                            timestamp: Date.now(),
-                            content: `Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`
-                        });
+                    if (debug) {
                         await logCtx?.debug(`Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`);
                     }
                     await syncManager.deleteConfig(existingSync.id, environmentId);
@@ -748,33 +708,19 @@ export const getAndReconcileDifferences = async ({
                         }
                     }
 
-                    if (activityLogId) {
+                    if (logCtx) {
                         const connectionDescription =
                             existingSync.type === 'sync' ? ` with ${connections.length} connection${connections.length > 1 ? 's' : ''}.` : '.';
                         const content = `Successfully deleted ${existingSync.type} ${existingSync.sync_name} for ${existingSync.unique_key}${connectionDescription}`;
 
-                        await createActivityLogMessage({
-                            level: 'debug',
-                            environment_id: environmentId,
-                            activity_log_id: activityLogId,
-                            timestamp: Date.now(),
-                            content
-                        });
-                        await logCtx?.debug(content);
+                        await logCtx?.info(content);
                     }
                 }
             }
         }
     }
 
-    if (debug && activityLogId) {
-        await createActivityLogMessageAndEnd({
-            level: 'debug',
-            environment_id: environmentId,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: 'Sync deploy diff in debug mode process complete successfully.'
-        });
+    if (debug) {
         await logCtx?.debug('Sync deploy diff in debug mode process complete successfully.');
     }
 

@@ -830,7 +830,6 @@ export class SyncRunService {
                 type: 'sync',
                 sync_id: this.syncId,
                 connection_id: this.nangoConnection.id,
-                activity_log_id: this.activityLogId as unknown as number,
                 log_id: this.logCtx?.id,
                 active: true
             });

@@ -3,7 +3,7 @@ title: Twitter
 sidebarTitle: Twitter
 ---
 
-API configurations: [`twitter`](https://nango.dev/providers.yaml) for OAuth1, [`twitter-v2`](https://nango.dev/providers.yaml) for OAuth2
+API configurations: [`twitter`](https://nango.dev/providers.yaml) for OAuth1, [`twitter-v2`](https://nango.dev/providers.yaml) for OAuth2, [`twitter-oauth2-cc`](https://nango.dev/providers.yaml) for client_credentials flow
 
 ## Features
 
@@ -28,5 +28,6 @@ API configurations: [`twitter`](https://nango.dev/providers.yaml) for OAuth1, [`
 
 -   The OAuth1 and OAuth2 APIs give access to different data. Both are supported by Nango.
 -   For the OAuth 2 API: To get your `client_id` and `client_secret` you need to generate a "user authentication" within your app in the Twitter development portal.
+-   Twitter also offers a client credentials token that authorizes as app instead of a user. This is listed under `twitter-oauth2-cc`. For more details check [twitter client credentials flow](https://developer.x.com/en/docs/authentication/oauth-2-0/application-only)
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/twitter.mdx)</Note>
