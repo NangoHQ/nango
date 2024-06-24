@@ -47,7 +47,7 @@ export default async function runAction(nango: NangoAction, input: Opportunity):
         ActiveInd: Number(input.active || true)
     };
 
-    const response = await nango.post<Opportunity>({
+    const response = await nango.post({
         endpoint: '/api/opportunities',
         data: [opportunity]
     });
