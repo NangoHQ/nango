@@ -164,7 +164,6 @@ export const connectionRefreshFailed = async ({
         type: 'auth',
         action: 'token_refresh',
         connection_id: connection.id!,
-        activity_log_id: -1,
         log_id: logCtx.id,
         active: true
     });
