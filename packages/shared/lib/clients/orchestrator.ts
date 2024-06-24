@@ -726,15 +726,21 @@ export class Orchestrator {
             };
 
             const scheduleName = ScheduleName.get({ environmentId, syncId });
+            let res: Result<void>;
             switch (command) {
                 case SyncCommand.CANCEL:
-                    return cancelling(syncId);
+                    res = await cancelling(syncId);
+                    break;
                 case SyncCommand.PAUSE:
-                    return this.client.pauseSync({ scheduleName });
+                    res = await this.client.pauseSync({ scheduleName });
+                    break;
+
                 case SyncCommand.UNPAUSE:
-                    return await this.client.unpauseSync({ scheduleName });
+                    res = await this.client.unpauseSync({ scheduleName });
+                    break;
                 case SyncCommand.RUN:
-                    return this.client.executeSync({ scheduleName });
+                    res = await this.client.executeSync({ scheduleName });
+                    break;
                 case SyncCommand.RUN_FULL: {
                     await cancelling(syncId);
 
@@ -742,11 +748,16 @@ export class Orchestrator {
                     const del = await recordsService.deleteRecordsBySyncId({ syncId });
                     await logCtx.info(`Records for the sync were deleted successfully`, del);
 
-                    return this.client.executeSync({ scheduleName });
+                    res = await this.client.executeSync({ scheduleName });
+                    break;
                 }
             }
+            if (res.isErr()) {
+                await logCtx.error(`Sync command '${command}' failed`, { error: res.error, command });
+            }
+            return res;
         } catch (err) {
-            await logCtx.error(`Sync command failed "${command}"`, { error: err, command });
+            await logCtx.error(`Sync command '${command}' failed`, { error: err, command });
 
             return Err(err as Error);
         }
