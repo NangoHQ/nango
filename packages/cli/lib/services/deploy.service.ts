@@ -20,7 +20,7 @@ import { compileAllFiles, resolveTsFileLocation } from './compile.service.js';
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
 import type { DeployOptions } from '../types.js';
-import { loadValidateParse } from './config.service.js';
+import { parse } from './config.service.js';
 
 class DeployService {
     public async admin({ fullPath, environmentName, debug = false }: { fullPath: string; environmentName: string; debug?: boolean }): Promise<void> {
@@ -54,7 +54,7 @@ class DeployService {
             process.exit(1);
         }
 
-        const { success, error, response } = loadValidateParse(fullPath, debug);
+        const { success, error, response } = parse(fullPath, debug);
 
         if (!success || !response!.parsed) {
             console.log(chalk.red(error?.message));
@@ -121,7 +121,7 @@ class DeployService {
             printDebug(`Environment is set to ${environment}`);
         }
 
-        const { success, error, response } = loadValidateParse(fullPath, debug);
+        const { success, error, response } = parse(fullPath, debug);
 
         if (!success || !response?.parsed) {
             console.log(chalk.red(error?.message));

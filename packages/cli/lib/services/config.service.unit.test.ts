@@ -2,7 +2,7 @@ import path from 'node:path';
 import yaml from 'js-yaml';
 import stripAnsi from 'strip-ansi';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { loadValidateParse, validateYaml } from './config.service';
+import { parse, validateYaml } from './config.service';
 import { NangoError } from '@nangohq/shared';
 
 function cleanLog(log: any) {
@@ -16,13 +16,13 @@ describe('load', () => {
     });
 
     it('should parse a nango.yaml file that is version 1 as expected', () => {
-        const { response } = loadValidateParse(path.resolve(__dirname, `../../fixtures/nango-yaml/v1/valid`));
+        const { response } = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v1/valid`));
         expect(response!.parsed).toMatchSnapshot();
         expect(response!.parsed).not.toBeNull();
     });
 
     it('should parse a nango.yaml file that is version 2 as expected', () => {
-        const { response } = loadValidateParse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/valid`));
+        const { response } = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/valid`));
         expect(response!.parsed).toMatchSnapshot();
         expect(response!.parsed).not.toBeNull();
     });
@@ -31,7 +31,7 @@ describe('load', () => {
         const acc: string[] = [];
         consoleMock.mockImplementation((m) => acc.push(cleanLog(m)));
 
-        const { response, error } = loadValidateParse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.1`));
+        const { response, error } = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.1`));
         expect(response).toBeNull();
         expect(error).toStrictEqual(new NangoError('failed_to_parse_nango_yaml'));
         expect(acc.join('')).toContain('An endpoint property is required to specify how to retrieve the data from the sync');
@@ -41,7 +41,7 @@ describe('load', () => {
         const acc: string[] = [];
         consoleMock.mockImplementation((m) => acc.push(stripAnsi(m)));
 
-        const { response, error } = loadValidateParse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.2`));
+        const { response, error } = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.2`));
         expect(response).toBeNull();
         expect(error).toStrictEqual(new NangoError('failed_to_parse_nango_yaml'));
         expect(acc.join('')).toContain('additionalProperty: webhook-subscription');

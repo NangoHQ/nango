@@ -9,7 +9,7 @@ import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '
 import { compileAllFiles } from './compile.service.js';
 import integrationService from './local-integration.service.js';
 import type { RecordsServiceInterface } from '@nangohq/shared/lib/services/sync/run.service.js';
-import { loadValidateParse } from './config.service.js';
+import { parse } from './config.service.js';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -74,7 +74,7 @@ export class DryRunService {
             return;
         }
 
-        const { success, error, response } = loadValidateParse(process.cwd(), debug);
+        const { success, error, response } = parse(process.cwd(), debug);
         if (!success || !response?.parsed) {
             console.log(chalk.red(error?.message));
             return;

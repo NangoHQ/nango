@@ -9,7 +9,7 @@ import { compileAllFiles, compileSingleFile, getFileToCompile } from './services
 import { getNangoRootPath } from './utils.js';
 import parserService from './services/parser.service.js';
 import { copyDirectoryAndContents, removeVersion } from './tests/helpers.js';
-import { loadValidateParse } from './services/config.service.js';
+import { parse } from './services/config.service.js';
 
 function getTestDirectory(name: string) {
     const dir = `/tmp/${name}/nango-integrations/`;
@@ -497,7 +497,7 @@ describe('generate function tests', () => {
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/nango.yaml`, `${dir}/nango.yaml`);
         const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
-        const { response } = loadValidateParse(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        const { response } = parse(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
         expect(response?.parsed).not.toBeNull();
 
         const result = await compileSingleFile({
@@ -519,7 +519,7 @@ describe('generate function tests', () => {
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/nango.yaml`, `${dir}/nango.yaml`);
         const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
-        const { response } = loadValidateParse(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        const { response } = parse(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
         expect(response).not.toBeNull();
 
         const result = await compileSingleFile({
@@ -542,7 +542,7 @@ describe('generate function tests', () => {
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/${name}/github/actions/welcomer.ts`, `${dir}/welcomer.ts`);
         const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
-        const { response } = loadValidateParse(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
+        const { response } = parse(path.resolve(`${fixturesPath}/nango-yaml/v2/${name}`));
         expect(response).not.toBeNull();
 
         const result = await compileSingleFile({

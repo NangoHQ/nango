@@ -9,7 +9,7 @@ import type { ServiceResponse } from '@nangohq/shared';
 import { NANGO_VERSION } from '@nangohq/shared';
 import { printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
-import { loadValidateParse } from './config.service.js';
+import { parse } from './config.service.js';
 import { shouldQuote } from '@nangohq/nango-yaml';
 
 export type ModelsMap = Map<string, Record<string, any>>;
@@ -33,7 +33,7 @@ export function loadYamlAndGenerate({ fullPath, debug = false }: { fullPath: str
         }
     }
 
-    const { success, error, response } = loadValidateParse(fullPath, debug);
+    const { success, error, response } = parse(fullPath, debug);
     if (!success || !response?.parsed) {
         console.log(chalk.red(error?.message));
         return { success: false, error: null, response: null };

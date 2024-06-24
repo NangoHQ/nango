@@ -16,7 +16,7 @@ export interface ValidationMessage {
     params?: Record<string, any> | undefined;
 }
 
-export function loadValidateParse(fullPath: string, debug = false): ServiceResponse<NangoYamlParser> {
+export function parse(fullPath: string, debug = false): ServiceResponse<NangoYamlParser> {
     if (debug) {
         printDebug(`Loading ${fullPath}`);
     }

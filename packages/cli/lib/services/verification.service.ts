@@ -4,7 +4,7 @@ import promptly from 'promptly';
 import path from 'path';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { loadValidateParse } from './config.service.js';
+import { parse } from './config.service.js';
 import { compileAllFiles, listFilesToCompile } from './compile.service.js';
 import { printDebug } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
@@ -101,7 +101,7 @@ class VerificationService {
     }
 
     public filesMatchConfig({ fullPath }: { fullPath: string }): boolean {
-        const { success, error, response } = loadValidateParse(fullPath);
+        const { success, error, response } = parse(fullPath);
 
         if (!success || !response?.parsed) {
             console.log(chalk.red(error?.message));

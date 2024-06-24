@@ -5,14 +5,14 @@ import { exec } from 'child_process';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { printDebug, getNangoRootPath } from '../utils.js';
-import { loadValidateParse } from './config.service.js';
+import { parse } from './config.service.js';
 
 export const v1toV2Migration = (loadLocation: string): void => {
     if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
         return;
     }
 
-    const { response, success } = loadValidateParse(loadLocation);
+    const { response, success } = parse(loadLocation);
     if (!success || !response?.parsed) {
         return;
     }
@@ -76,7 +76,7 @@ async function updateModelImport(filePath: string, debug = false): Promise<void>
 }
 
 export const directoryMigration = async (loadLocation: string, debug?: boolean): Promise<void> => {
-    const { response, success } = loadValidateParse(loadLocation);
+    const { response, success } = parse(loadLocation);
     if (!success || !response?.parsed) {
         return;
     }

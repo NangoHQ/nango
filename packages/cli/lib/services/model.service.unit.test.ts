@@ -3,7 +3,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildModelsTS, fieldToTypescript, fieldsToTypescript, getExportToJSON } from './model.service.js';
 import type { NangoModel } from '@nangohq/types';
-import { loadValidateParse } from './config.service.js';
+import { parse } from './config.service.js';
 import { removeVersion } from '../tests/helpers.js';
 
 describe('buildModelTs', () => {
@@ -68,7 +68,7 @@ describe('buildModelTs', () => {
     });
 
     it('should support all advanced syntax', () => {
-        const { response } = loadValidateParse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/advanced-syntax`));
+        const { response } = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/advanced-syntax`));
         const res = buildModelsTS({ parsed: response!.parsed! });
         const acc = [];
         for (const line of res.split('\n')) {
