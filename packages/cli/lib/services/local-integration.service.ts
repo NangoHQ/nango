@@ -17,7 +17,7 @@ class IntegrationService implements IntegrationServiceInterface {
             const script: string | null = localFileService.getIntegrationFile(syncName, nangoProps.providerConfigKey, optionalLoadLocation);
 
             if (!script) {
-                const content = `Unable to find integration file for ${syncName}`;
+                const content = `Unable to find script file for "${syncName}"`;
 
                 return { success: false, error: new NangoError(content, 500), response: null };
             }

@@ -366,9 +366,9 @@ export const LogsSearch: React.FC = () => {
                 <div className="flex gap-2">
                     <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={statusDefaultOptions} onChange={setStates} all />
                     <TypesSelect selected={types} onChange={setTypes} />
-                    <SearchableMultiSelect label="Integration" selected={integrations} category={'integration'} onChange={setIntegrations} />
-                    <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} />
-                    <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} />
+                    <SearchableMultiSelect label="Integration" selected={integrations} category={'integration'} onChange={setIntegrations} max={20} />
+                    <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} max={20} />
+                    <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} max={20} />
 
                     <DatePicker isLive={isLive} period={period} onChange={onPeriodChange} />
                 </div>

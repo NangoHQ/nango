@@ -57,12 +57,11 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
     }
 
     if (body.reconcile) {
-        const logCtx = await logContextGetter.get({ id: String(syncConfigDeployResult.activityLogId) });
+        const logCtx = syncConfigDeployResult.logCtx;
         const success = await getAndReconcileDifferences({
             environmentId: environment.id,
             flows: body.flowConfigs,
             performAction: body.reconcile,
-            activityLogId: syncConfigDeployResult.activityLogId as number,
             debug: body.debug,
             singleDeployMode: body.singleDeployMode,
             logCtx,

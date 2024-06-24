@@ -34,6 +34,7 @@ export interface WebhookArgs {
 
 export interface PostConnectionScriptArgs {
     name: string;
+    version: string;
     nangoConnection: NangoConnection;
     file_location: string;
     activityLogId: number;

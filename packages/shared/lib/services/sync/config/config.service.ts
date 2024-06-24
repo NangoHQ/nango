@@ -12,7 +12,6 @@ import type {
     NangoModelV1,
     NangoSyncModelField,
     NangoSyncModel,
-    NangoConfig,
     NangoConfigV1,
     NangoV2Integration,
     StandardNangoConfig,
@@ -146,7 +145,15 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
     return configWithModels;
 };
 
-export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, isAction?: boolean): Promise<NangoConfig | null> {
+export async function getSyncConfig({
+    nangoConnection,
+    syncName,
+    isAction = false
+}: {
+    nangoConnection: NangoConnection;
+    syncName?: string;
+    isAction?: boolean;
+}): Promise<NangoConfigV1 | null> {
     let syncConfigs;
 
     if (!syncName) {

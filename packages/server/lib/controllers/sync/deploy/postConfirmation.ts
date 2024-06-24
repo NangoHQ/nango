@@ -20,7 +20,7 @@ export const flowConfigs = z.array(
             metadata: z
                 .object({
                     scopes: z.array(z.string().max(255)).optional(),
-                    description: z.string().max(500).optional()
+                    description: z.string().max(2000).optional()
                 })
                 .strict()
                 .optional(),
@@ -88,7 +88,6 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         environmentId,
         flows: body.flowConfigs,
         performAction: false,
-        activityLogId: null,
         debug: body.debug,
         singleDeployMode: body.singleDeployMode,
         logContextGetter,

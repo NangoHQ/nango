@@ -9,18 +9,21 @@ import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
 import { useDebounce } from 'react-use';
 import { cn } from '../../../utils/utils';
+import Info from '../../../components/ui/Info';
 
 export interface SearchableMultiSelectArgs<T> {
     label: string;
     category: T;
     selected: string[];
+    max?: number;
     onChange: (selected: T[]) => void;
 }
 
-export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ label, category, selected, onChange }) => {
+export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ label, category, selected, max, onChange }) => {
     const env = useStore((state) => state.env);
 
     const [open, setOpen] = useState(false);
+    const [maxed, setMaxed] = useState(() => (max ? selected.length >= max : false));
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
     const { data, loading, trigger } = useSearchFilters(open, env, { category, search: debouncedSearch });
@@ -29,6 +32,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
     const select = (val: string, checked: boolean) => {
         if (val === 'all') {
             onChange(['all']);
+            setMaxed(false);
             return;
         }
 
@@ -36,12 +40,16 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
         if (tmp.length > 1) {
             tmp = tmp.filter((sel) => sel !== 'all');
         }
+        if (max) {
+            setMaxed(tmp.length >= max);
+        }
         onChange(tmp.length <= 0 ? ['all'] : tmp);
     };
 
     const reset = (e: any) => {
         e.preventDefault();
         onChange(['all']);
+        setMaxed(false);
     };
 
     const options = useMemo(() => {
@@ -102,6 +110,11 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                     />
                     <CommandList>
                         <CommandEmpty>No framework found.</CommandEmpty>
+                        {maxed && (
+                            <Info color={'orange'} classNames="text-xs mx-2.5 mt-2" size={20} padding="py-1 px-2">
+                                Can&apos;t select more filters
+                            </Info>
+                        )}
                         <CommandGroup>
                             {options.map((option) => {
                                 const checked = selected.some((sel) => option.value === sel);
@@ -113,6 +126,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                                             select(option.value, !checked);
                                         }}
                                         className="group"
+                                        disabled={!checked && maxed && option.value !== 'all'}
                                     >
                                         <CommandCheck checked={checked} />
                                         <div className="overflow-hidden">

@@ -12,12 +12,7 @@ import {
     getSyncNamesByConnectionId,
     softDeleteSync
 } from './sync.service.js';
-import {
-    createActivityLogMessageAndEnd,
-    createActivityLog,
-    createActivityLogMessage,
-    updateSuccess as updateSuccessActivityLog
-} from '../activity/activity.service.js';
+import { createActivityLogMessageAndEnd, createActivityLog, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
@@ -61,7 +56,7 @@ const logger = getLogger('sync.manager');
 export class SyncManagerService {
     public async createSyncForConnection(nangoConnectionId: number, logContextGetter: LogContextGetter, orchestrator: Orchestrator): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
-        const nangoConfig = await getSyncConfig(nangoConnection);
+        const nangoConfig = await getSyncConfig({ nangoConnection });
         if (!nangoConfig) {
             logger.error(
                 'Failed to load the Nango config - will not start any syncs! If you expect to see a sync make sure you used the nango cli deploy command'
@@ -109,19 +104,11 @@ export class SyncManagerService {
         logContextGetter: LogContextGetter,
         orchestrator: Orchestrator,
         debug = false,
-        activityLogId?: number,
         logCtx?: LogContext
     ): Promise<boolean> {
         try {
             const syncConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
-            if (debug && activityLogId) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
-                });
+            if (debug) {
                 await logCtx?.debug(`Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
             for (const connection of connections) {
@@ -142,27 +129,12 @@ export class SyncManagerService {
                     debug
                 );
             }
-            if (debug && activityLogId) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
-                });
+            if (debug) {
                 await logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
 
             return true;
         } catch (e) {
-            const prettyError = stringifyError(e, { pretty: true });
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environmentId,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Error starting syncs for ${syncName} with ${connections.length} connections: ${prettyError}`
-            });
             await logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: e });
 
             return false;
@@ -174,7 +146,6 @@ export class SyncManagerService {
         logContextGetter: LogContextGetter,
         orchestrator: Orchestrator,
         debug = false,
-        activityLogId?: number,
         logCtx?: LogContext
     ): Promise<boolean> {
         let success = true;
@@ -189,7 +160,6 @@ export class SyncManagerService {
                 logContextGetter,
                 orchestrator,
                 debug,
-                activityLogId,
                 logCtx
             );
             if (!result) {

@@ -14,7 +14,7 @@ import remoteFileService from './services/file/remote.service.js';
 import localFileService from './services/file/local.service.js';
 import hmacService from './services/hmac.service.js';
 import proxyService from './services/proxy.service.js';
-import syncRunService from './services/sync/run.service.js';
+import { SyncRunService } from './services/sync/run.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
 import flowService from './services/flow.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
@@ -65,7 +65,7 @@ export {
     userService,
     remoteFileService,
     localFileService,
-    syncRunService,
+    SyncRunService,
     syncManager,
     hmacService,
     proxyService,

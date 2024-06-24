@@ -42,6 +42,7 @@ export const webhookArgsSchema = z.object({
 export const postConnectionArgsSchema = z.object({
     type: z.literal('post-connection-script'),
     postConnectionName: z.string().min(1),
+    version: z.string().min(1),
     fileLocation: z.string().min(1),
     activityLogId: z.union([z.number(), z.string()]),
     ...commonSchemaArgsFields
@@ -127,6 +128,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 name: postConnection.data.name,
                 attempt: postConnection.data.retryCount + 1,
                 postConnectionName: postConnection.data.payload.postConnectionName,
+                version: postConnection.data.payload.version,
                 connection: postConnection.data.payload.connection,
                 fileLocation: postConnection.data.payload.fileLocation,
                 activityLogId: postConnection.data.payload.activityLogId
