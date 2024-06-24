@@ -108,7 +108,6 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             integration,
             template,
             connectionConfig as ConnectionConfig,
-            activityLogId,
             logCtx,
             connCreatedHook
         );

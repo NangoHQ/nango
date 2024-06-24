@@ -33,7 +33,6 @@ import {
     findSyncByConnections,
     setFrequency,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    createActivityLogMessage,
     trackFetch,
     syncCommandToOperation,
     getSyncConfigRaw
@@ -612,13 +611,6 @@ class SyncController {
             );
 
             if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    activity_log_id: activityLogId!,
-                    environment_id: environment.id,
-                    timestamp: Date.now(),
-                    content: `Unauthorized access to run the command: "${action}" for sync: ${sync_id}`
-                });
                 await logCtx.error('Unauthorized access to run the command');
                 await logCtx.failed();
 

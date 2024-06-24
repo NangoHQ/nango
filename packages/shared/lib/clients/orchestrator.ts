@@ -7,12 +7,7 @@ import { NangoError } from '../utils/error.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
-import {
-    createActivityLog,
-    createActivityLogMessage,
-    createActivityLogMessageAndEnd,
-    updateSuccess as updateSuccessActivityLog
-} from '../services/activity/activity.service.js';
+import { createActivityLog, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../services/activity/activity.service.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
 import { v4 as uuid } from 'uuid';
 import featureFlags from '../utils/featureflags.js';
@@ -336,16 +331,6 @@ export class Orchestrator {
         const workflowId = `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${syncConfig.sync_name}:${webhookName}.${connection.connection_id}.${Date.now()}`;
 
         try {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: integration.environment_id,
-                activity_log_id: activityLogId as number,
-                content: `Starting webhook workflow ${workflowId} in the task queue: ${WEBHOOK_TASK_QUEUE}`,
-                params: {
-                    input: JSON.stringify(input, null, 2)
-                },
-                timestamp: Date.now()
-            });
             await logCtx.info('Starting webhook workflow', { workflowId, input });
 
             const { credentials, credentials_iv, credentials_tag, deleted, deleted_at, ...nangoConnectionWithoutCredentials } =
@@ -764,13 +749,6 @@ export class Orchestrator {
 
                     await clearLastSyncDate(syncId);
                     const del = await recordsService.deleteRecordsBySyncId({ syncId });
-                    await createActivityLogMessage({
-                        level: 'info',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `Records for the sync were deleted successfully`
-                    });
                     await logCtx.info(`Records for the sync were deleted successfully`, del);
 
                     return this.client.executeSync({ scheduleName });

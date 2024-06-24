@@ -3,11 +3,7 @@ import type { Knex } from '@nangohq/database';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Account, Environment } from '../models/index.js';
-import {
-    createActivityLogMessageAndEnd,
-    updateSuccess as updateSuccessActivityLog,
-    createActivityLogAndLogMessage
-} from '../services/activity/activity.service.js';
+import { createActivityLogAndLogMessage } from '../services/activity/activity.service.js';
 import type { ActivityLogMessage, ActivityLog, LogLevel } from '../models/Activity.js';
 import { LogActionEnum } from '../models/Activity.js';
 import providerClient from '../clients/provider.client.js';
@@ -969,7 +965,6 @@ class ConnectionService {
         integration: ProviderConfig,
         template: ProviderTemplate,
         connectionConfig: ConnectionConfig,
-        activityLogId: number,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
     ): Promise<void> {
@@ -996,16 +991,7 @@ class ConnectionService {
             void connectionCreatedHook(updatedConnection);
         }
 
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            environment_id: integration.environment_id,
-            activity_log_id: Number(activityLogId),
-            content: 'App connection was approved and credentials were saved',
-            timestamp: Date.now()
-        });
         await logCtx.info('App connection was approved and credentials were saved');
-
-        await updateSuccessActivityLog(Number(activityLogId), true);
     }
 
     public async getAppCredentials(

@@ -11,12 +11,7 @@ import { SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Syn
 import type { LogLevel } from '../models/Activity.js';
 import { LogActionEnum } from '../models/Activity.js';
 import { SYNC_TASK_QUEUE } from '../constants.js';
-import {
-    createActivityLog,
-    createActivityLogMessage,
-    createActivityLogMessageAndEnd,
-    updateSuccess as updateSuccessActivityLog
-} from '../services/activity/activity.service.js';
+import { createActivityLog, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../services/activity/activity.service.js';
 import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '@nangohq/nango-yaml';
 import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
@@ -196,13 +191,6 @@ class SyncClient {
 
             if (syncData.auto_start !== false) {
                 if (debug) {
-                    await createActivityLogMessage({
-                        level: 'debug',
-                        environment_id: nangoConnection.environment_id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `Creating sync job ${jobId} for sync ${sync.id}`
-                    });
                     await logCtx.debug('Creating sync job', { jobId, syncId: sync.id });
                 }
 
@@ -415,13 +403,6 @@ class SyncClient {
 
                         await clearLastSyncDate(syncId);
                         const del = await recordsService.deleteRecordsBySyncId({ syncId });
-                        await createActivityLogMessage({
-                            level: 'info',
-                            environment_id: environmentId,
-                            activity_log_id: activityLogId,
-                            timestamp: Date.now(),
-                            content: `Records for the sync were deleted successfully`
-                        });
                         await logCtx.info(`Records for the sync were deleted successfully`, del);
                         const nangoConnection: NangoConnection = {
                             id: nangoConnectionId as number,

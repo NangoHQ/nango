@@ -5,7 +5,7 @@ import type { Metadata, ErrorPayload } from '@nangohq/types';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface, SyncConfig } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
+import { createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import * as externalWebhookService from '../external-webhook.service.js';
@@ -314,13 +314,6 @@ export class SyncRunService {
         if (this.debug) {
             const content = `Last sync date is ${lastSyncDate}`;
             if (this.writeToDb) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id: this.nangoConnection.environment_id,
-                    activity_log_id: this.activityLogId as number,
-                    timestamp: Date.now(),
-                    content
-                });
                 await this.logCtx?.debug(content);
             } else {
                 logger.info(content);
@@ -652,13 +645,6 @@ export class SyncRunService {
             });
             await this.logCtx?.info(content);
         } else {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: this.nangoConnection.environment_id,
-                activity_log_id: this.activityLogId as unknown as number,
-                timestamp: Date.now(),
-                content
-            });
             await this.logCtx?.info(content);
         }
 
