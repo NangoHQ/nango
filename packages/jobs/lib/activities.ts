@@ -469,7 +469,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
 }
 
 export async function runPostConnectionScript(args: PostConnectionScriptArgs): Promise<ServiceResponse> {
-    const { name, nangoConnection, activityLogId, file_location } = args;
+    const { name, nangoConnection, activityLogId, file_location, version } = args;
 
     const providerConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key,
@@ -491,7 +491,7 @@ export async function runPostConnectionScript(args: PostConnectionScriptArgs): P
             models: [],
             track_deletes: false,
             type: 'sync',
-            version: '0' // TODO: pass the correct version
+            version: version || '0'
         },
         sendSyncWebhook: sendSync,
         isAction: false,

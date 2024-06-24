@@ -489,12 +489,14 @@ export class Orchestrator {
 
     async triggerPostConnectionScript<T = any>({
         connection,
+        version,
         name,
         fileLocation,
         activityLogId,
         logCtx
     }: {
         connection: NangoConnection;
+        version: string;
         name: string;
         fileLocation: string;
         activityLogId: number;
@@ -540,6 +542,7 @@ export class Orchestrator {
                             provider_config_key: connection.provider_config_key,
                             environment_id: connection.environment_id
                         },
+                        version,
                         activityLogId,
                         fileLocation
                     };
@@ -577,6 +580,7 @@ export class Orchestrator {
                                     provider_config_key: connection.provider_config_key,
                                     environment_id: connection.environment_id
                                 },
+                                version,
                                 fileLocation,
                                 activityLogId
                             }
