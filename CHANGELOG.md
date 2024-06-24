@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.6] - 2024-06-24
+
+### Added
+
+- *(scheduler)* Add tracing (#2374) by @TBonnin
+- Add last_scheduled_task_id column to schedules (#2382) by @TBonnin
+- *(integration-templates)* [nan-1188] add calendly syncs (#2379) by @khaliqgant
+- *(db)* Add models_json_schema to sync_configs (#2369) by @bodinsamuel
+- *(integration-templates)* [nan-1192] add checkr syncs and actions (#2378) by @khaliqgant
+- *(integration-templates)* Add fields to asana update-task (#2384) by @hassan254-prog
+- *(oauth2_cc)* Add necessary parameters when creating connection (#2345) by @hassan254-prog
+- *(integrations)* Add support for various oauth2_cc providers (#2346) by @hassan254-prog
+
+### Changed
+
+- Use last_scheduled_task_id for dueSchedules query (#2383) by @TBonnin
+
+### Fixed
+
+- Don't update schedule if frequency is alread set to the same value (#2380) by @TBonnin
+- Missing await by @TBonnin
+- *(integrations)* [nan-1188] add pagination (#2385) by @khaliqgant
+- *(server)* Deploy+confirmation split and check (#2358) by @bodinsamuel
+- *(eslint)* Enable @typescript-eslint/require-await (#2381) by @bodinsamuel
+- *(connection)* Refresh credentials should re-fetch connection before proceeding (#2387) by @bodinsamuel
+- *(activeLogs)* Drop v1 activity_log_id (#2390) by @bodinsamuel
+- *(sdk)* Simplify message on validation error (#2389) by @bodinsamuel
+- *(logs)* Handle maximum filters gracefully (#2388) by @bodinsamuel
+- *(logs.v1)* Remove unauth, deploy, post script, GET connection (#2386) by @bodinsamuel
+- *(deploy)* Increase description limit (#2397) by @bodinsamuel
+- *(run)* Use SyncConfig instead of NangoConfig (#2375) by @bodinsamuel
+
 ## [v0.40.5] - 2024-06-20
 
 ### Added
@@ -1390,6 +1422,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.6]: https://github.com/NangoHQ/nango/compare/v0.40.5..v0.40.6
 [v0.40.5]: https://github.com/NangoHQ/nango/compare/v0.40.4..v0.40.5
 [v0.40.4]: https://github.com/NangoHQ/nango/compare/v0.40.3..v0.40.4
 [v0.40.3]: https://github.com/NangoHQ/nango/compare/v0.40.2..v0.40.3
