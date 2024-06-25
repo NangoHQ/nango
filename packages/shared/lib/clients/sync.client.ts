@@ -11,12 +11,7 @@ import { SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Syn
 import type { LogLevel } from '../models/Activity.js';
 import { LogActionEnum } from '../models/Activity.js';
 import { SYNC_TASK_QUEUE } from '../constants.js';
-import {
-    createActivityLog,
-    createActivityLogMessage,
-    createActivityLogMessageAndEnd,
-    updateSuccess as updateSuccessActivityLog
-} from '../services/activity/activity.service.js';
+import { createActivityLog } from '../services/activity/activity.service.js';
 import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '@nangohq/nango-yaml';
 import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
@@ -25,7 +20,7 @@ import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { isTest, isProd, Ok, Err, stringifyError } from '@nangohq/utils';
+import { isTest, isProd, Ok, Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { InitialSyncArgs } from '../models/worker.js';
 import environmentService from '../services/environment.service.js';
@@ -161,13 +156,6 @@ class SyncClient {
             const intervalParsing = getInterval(syncData.runs, new Date());
             if (intervalParsing instanceof Error) {
                 const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${intervalParsing.message}`;
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: nangoConnection.environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
                 await logCtx.error('The sync was not created or started due to an error with the sync interval', {
                     error: intervalParsing,
                     runs: syncData.runs
@@ -187,8 +175,6 @@ class SyncClient {
                     }
                 });
 
-                await updateSuccessActivityLog(activityLogId, false);
-
                 return;
             }
 
@@ -196,13 +182,6 @@ class SyncClient {
 
             if (syncData.auto_start !== false) {
                 if (debug) {
-                    await createActivityLogMessage({
-                        level: 'debug',
-                        environment_id: nangoConnection.environment_id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `Creating sync job ${jobId} for sync ${sync.id}`
-                    });
                     await logCtx.debug('Creating sync job', { jobId, syncId: sync.id });
                 }
 
@@ -255,17 +234,9 @@ class SyncClient {
             await createSyncSchedule(sync.id, interval, offset, syncData.auto_start === false ? ScheduleStatus.PAUSED : ScheduleStatus.RUNNING, scheduleId);
 
             if (scheduleHandle) {
-                await createActivityLogMessageAndEnd({
-                    level: 'info',
-                    environment_id: nangoConnection.environment_id,
-                    activity_log_id: activityLogId,
-                    content: `Scheduled to run "${syncData.runs}"`,
-                    timestamp: Date.now()
-                });
                 await logCtx.info('Scheduled successfully', { runs: syncData.runs });
             }
 
-            await updateSuccessActivityLog(activityLogId, true);
             await logCtx.success();
         } catch (err) {
             errorManager.report(err, {
@@ -347,7 +318,6 @@ class SyncClient {
         scheduleId,
         syncId,
         command,
-        activityLogId,
         environmentId,
         providerConfigKey,
         connectionId,
@@ -360,7 +330,6 @@ class SyncClient {
         scheduleId: string;
         syncId: string;
         command: SyncCommand;
-        activityLogId: number;
         environmentId: number;
         providerConfigKey: string;
         connectionId: string;
@@ -415,13 +384,6 @@ class SyncClient {
 
                         await clearLastSyncDate(syncId);
                         const del = await recordsService.deleteRecordsBySyncId({ syncId });
-                        await createActivityLogMessage({
-                            level: 'info',
-                            environment_id: environmentId,
-                            activity_log_id: activityLogId,
-                            timestamp: Date.now(),
-                            content: `Records for the sync were deleted successfully`
-                        });
                         await logCtx.info(`Records for the sync were deleted successfully`, del);
                         const nangoConnection: NangoConnection = {
                             id: nangoConnectionId as number,
@@ -437,15 +399,6 @@ class SyncClient {
 
             return Ok(true);
         } catch (err) {
-            const errorMessage = stringifyError(err, { pretty: true });
-
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id: environmentId,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `The sync command: ${command} failed with error: ${errorMessage}`
-            });
             await logCtx.error(`Sync command failed "${command}"`, { error: err, command });
 
             return Err(err as Error);

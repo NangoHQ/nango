@@ -5,12 +5,9 @@ import {
     errorManager,
     analytics,
     AnalyticsTypes,
-    createActivityLogMessage,
-    updateSuccess as updateSuccessActivityLog,
     configService,
     connectionService,
     LogActionEnum,
-    createActivityLogMessageAndEnd,
     telemetry,
     LogTypes
 } from '@nangohq/shared';
@@ -61,7 +58,6 @@ class AppAuthController {
         void analytics.track(AnalyticsTypes.PRE_APP_AUTH, account.id);
 
         const { providerConfigKey, connectionId, webSocketClientId: wsClientId } = session;
-        const activityLogId = Number(session.activityLogId);
         const logCtx = await logContextGetter.get({ id: session.activityLogId });
 
         try {
@@ -80,17 +76,8 @@ class AppAuthController {
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
             if (config == null) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId,
-                    content: `Error during API Key auth: config not found`,
-                    timestamp: Date.now()
-                });
                 await logCtx.error('Error during API Key auth: config not found');
                 await logCtx.failed();
-
-                await updateSuccessActivityLog(activityLogId, false);
 
                 errorManager.errRes(res, 'unknown_provider_config');
 
@@ -103,40 +90,20 @@ class AppAuthController {
             const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['APP'] as string);
 
             if (template.auth_mode !== 'APP') {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Provider ${config.provider} does not support app creation`
-                });
                 await logCtx.error('Provider does not support app creation', { provider: config.provider });
                 await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
-                await updateSuccessActivityLog(activityLogId, false);
-
                 return;
             }
 
             if (action === 'request') {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId,
-                    content: 'App types do not support the request flow. Please use the github-app-oauth provider for the request flow.',
-                    timestamp: Date.now(),
-                    auth_mode: 'APP',
-                    url: req.originalUrl
-                });
                 await logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', {
                     provider: config.provider,
                     url: req.originalUrl
                 });
                 await logCtx.failed();
-
-                await updateSuccessActivityLog(activityLogId, false);
 
                 errorManager.errRes(res, 'wrong_auth_mode');
 
@@ -150,18 +117,6 @@ class AppAuthController {
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
                 const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId,
-                    content: error.message,
-                    timestamp: Date.now(),
-                    auth_mode: template.auth_mode,
-                    url: req.originalUrl,
-                    params: {
-                        ...connectionConfig
-                    }
-                });
                 await logCtx.error(error.message, { connectionConfig, url: req.originalUrl });
                 await logCtx.failed();
 
@@ -177,13 +132,6 @@ class AppAuthController {
             const { success, error, response: credentials } = await connectionService.getAppCredentials(template, config, connectionConfig);
 
             if (!success || !credentials) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: environment.id,
-                    activity_log_id: activityLogId,
-                    content: `Error during app token retrieval call: ${error?.message}`,
-                    timestamp: Date.now()
-                });
                 await logCtx.error('Error during app token retrieval call', { error });
                 await logCtx.failed();
 
@@ -219,8 +167,6 @@ class AppAuthController {
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
             }
 
-            await updateSuccessActivityLog(activityLogId, true);
-
             const [updatedConnection] = await connectionService.upsertConnection(
                 connectionId,
                 providerConfigKey,
@@ -248,13 +194,6 @@ class AppAuthController {
                 );
             }
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: environment.id,
-                activity_log_id: activityLogId,
-                content: 'App connection was successful and credentials were saved',
-                timestamp: Date.now()
-            });
             await logCtx.info('App connection was successful and credentials were saved');
             await logCtx.success();
 
@@ -273,15 +212,6 @@ class AppAuthController {
             const error = WSErrBuilder.UnknownError();
             const content = error.message + '\n' + prettyError;
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id: environment.id,
-                activity_log_id: activityLogId,
-                content,
-                timestamp: Date.now(),
-                auth_mode: 'APP',
-                url: req.originalUrl
-            });
             await logCtx.error(error.message, { error: err, url: req.originalUrl });
             await logCtx.failed();
 
