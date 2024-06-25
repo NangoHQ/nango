@@ -1,5 +1,6 @@
 export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type SyncTypeLiteral = 'incremental' | 'full';
+export type ScriptFileType = 'actions' | 'syncs' | 'post-connection-scripts';
 export type ScriptTypeLiteral = 'action' | 'sync';
 
 // --------------

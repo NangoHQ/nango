@@ -14,7 +14,7 @@ describe('parse', () => {
                 }
             }
         };
-        const parser = new NangoYamlParserV1({ raw: v1 });
+        const parser = new NangoYamlParserV1({ raw: v1, yaml: '' });
         parser.parse();
         expect(parser.errors).toStrictEqual([]);
         expect(parser.parsed).toStrictEqual<NangoYamlParsed>({
@@ -63,7 +63,7 @@ describe('parse', () => {
             models: {},
             integrations: { provider: { hello: { type: 'sync', runs: 'every day', returns: 'test' } } }
         };
-        const parser = new NangoYamlParserV1({ raw: v1 });
+        const parser = new NangoYamlParserV1({ raw: v1, yaml: '' });
         parser.parse();
         expect(parser.errors).toStrictEqual([
             new ParserErrorMissingId({ model: 'Anonymous_provider_sync_hello_output', path: ['provider', 'syncs', 'hello', '[output]'] })

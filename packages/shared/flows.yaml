@@ -1347,8 +1347,12 @@ integrations:
             GmailEmailInput:
                 from: string
                 to: string
+                headers: object | undefined
                 subject: string
                 body: string
+            EmailHeader:
+                headerName: string
+                headerValue: string
             GmailEmailSentOutput:
                 id: string
                 threadId: string

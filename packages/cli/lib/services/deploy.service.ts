@@ -1,23 +1,26 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import chalk from 'chalk';
 import promptly from 'promptly';
 import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
 import type { SyncDeploymentResult } from '@nangohq/shared';
 import type {
-    IncomingFlowConfig,
-    NangoConfigMetadata,
     NangoYamlParsed,
     PostConnectionScriptByProvider,
+    ScriptFileType,
+    IncomingFlowConfig,
+    NangoConfigMetadata,
     PostDeploy,
     PostDeployConfirmation
 } from '@nangohq/types';
-import { localFileService, stagingHost, cloudHost } from '@nangohq/shared';
+import { stagingHost, cloudHost } from '@nangohq/shared';
+import { compileAllFiles, resolveTsFileLocation } from './compile.service.js';
 
-import { compileAllFiles } from './compile.service.js';
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
 import type { DeployOptions } from '../types.js';
-import { load } from './config.service.js';
+import { parse } from './config.service.js';
 
 class DeployService {
     public async admin({ fullPath, environmentName, debug = false }: { fullPath: string; environmentName: string; debug?: boolean }): Promise<void> {
@@ -51,14 +54,14 @@ class DeployService {
             process.exit(1);
         }
 
-        const { success, error, response: parsed } = load(fullPath, debug);
+        const { success, error, response } = parse(fullPath, debug);
 
-        if (!success || !parsed) {
+        if (!success || !response!.parsed) {
             console.log(chalk.red(error?.message));
             return;
         }
 
-        const flowData = this.package(parsed, debug);
+        const flowData = this.package({ parsed: response!.parsed, fullPath, debug });
 
         if (!flowData) {
             return;
@@ -73,11 +76,13 @@ class DeployService {
 
         const url = process.env['NANGO_HOSTPORT'] + `/admin/flow/deploy/pre-built`;
 
-        const nangoYamlBody = localFileService.getNangoYamlFileContents('./');
-
         try {
             await http
-                .post(url, { targetAccountUUID, targetEnvironment: environmentName, parsed: flowData, nangoYamlBody }, { headers: enrichHeaders() })
+                .post(
+                    url,
+                    { targetAccountUUID, targetEnvironment: environmentName, parsed: flowData, nangoYamlBody: response!.yaml },
+                    { headers: enrichHeaders() }
+                )
                 .then(() => {
                     console.log(chalk.green(`Successfully deployed the syncs/actions to the users account.`));
                 })
@@ -116,9 +121,9 @@ class DeployService {
             printDebug(`Environment is set to ${environment}`);
         }
 
-        const { success, error, response: parsed } = load(fullPath, debug);
+        const { success, error, response } = parse(fullPath, debug);
 
-        if (!success || !parsed) {
+        if (!success || !response?.parsed) {
             console.log(chalk.red(error?.message));
             return;
         }
@@ -126,22 +131,20 @@ class DeployService {
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
         const successfulCompile = await compileAllFiles({ fullPath, debug });
-
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exit(1);
         }
 
-        const postData = this.package(parsed, debug, version, optionalSyncName, optionalActionName);
-
+        const postData = this.package({ parsed: response.parsed, fullPath, debug, version, optionalSyncName, optionalActionName });
         if (!postData) {
             return;
         }
 
         const { flowConfigs, postConnectionScriptsByProvider } = postData;
+        const nangoYamlBody = response.yaml;
 
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
-        const nangoYamlBody = localFileService.getNangoYamlFileContents('./')!;
         const bodyDeploy: PostDeploy['Body'] = { flowConfigs, postConnectionScriptsByProvider, reconcile: false, debug, nangoYamlBody, singleDeployMode };
 
         if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
@@ -155,7 +158,10 @@ class DeployService {
                     singleDeployMode
                 };
                 const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });
+
+                // Show response in term
                 console.log(JSON.stringify(response.data, null, 2));
+
                 const { newSyncs, deletedSyncs } = response.data;
 
                 for (const sync of newSyncs) {
@@ -223,13 +229,21 @@ class DeployService {
             });
     }
 
-    public package(
-        parsed: NangoYamlParsed,
-        debug: boolean,
+    public package({
+        parsed,
+        fullPath,
+        debug,
         version = '',
-        optionalSyncName = '',
-        optionalActionName = ''
-    ): { flowConfigs: IncomingFlowConfig[]; postConnectionScriptsByProvider: PostConnectionScriptByProvider[] } | null {
+        optionalSyncName,
+        optionalActionName
+    }: {
+        parsed: NangoYamlParsed;
+        fullPath: string;
+        debug: boolean;
+        version?: string | undefined;
+        optionalSyncName?: string | undefined;
+        optionalActionName?: string | undefined;
+    }): { flowConfigs: IncomingFlowConfig[]; postConnectionScriptsByProvider: PostConnectionScriptByProvider[]; jsonSchema: string } | null {
         const postData: IncomingFlowConfig[] = [];
         const postConnectionScriptsByProvider: PostConnectionScriptByProvider[] = [];
 
@@ -237,37 +251,21 @@ class DeployService {
             const { providerConfigKey, postConnectionScripts } = integration;
 
             if (postConnectionScripts && postConnectionScripts.length > 0) {
-                postConnectionScriptsByProvider.push({
-                    providerConfigKey,
-                    scripts: postConnectionScripts.map((name) => {
-                        return {
-                            name,
-                            fileBody: {
-                                js: localFileService.getIntegrationFile(name, providerConfigKey, './') as string,
-                                ts: localFileService.getIntegrationTsFile(name, providerConfigKey, 'post-connection-script') as string
-                            }
-                        };
-                    })
-                });
+                const scripts: PostConnectionScriptByProvider['scripts'] = [];
+                for (const postConnectionScript of postConnectionScripts) {
+                    const files = loadScriptFiles({ scriptName: postConnectionScript, providerConfigKey, fullPath, type: 'post-connection-scripts' });
+                    if (!files) {
+                        return null;
+                    }
+
+                    scripts.push({ name: postConnectionScript, fileBody: files });
+                }
+                postConnectionScriptsByProvider.push({ providerConfigKey, scripts });
             }
 
             for (const sync of integration.syncs) {
                 if (optionalSyncName && optionalSyncName !== sync.name) {
                     continue;
-                }
-
-                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
-                    sync.name,
-                    providerConfigKey,
-                    './'
-                );
-
-                if (!integrationFileResult) {
-                    console.log(chalk.red(`No integration file found for ${sync.name} at ${integrationFilePath}. Skipping...`));
-                    continue;
-                }
-                if (debug) {
-                    printDebug(`Integration file found for ${sync.name} at ${integrationFilePath}`);
                 }
 
                 const metadata: NangoConfigMetadata = {};
@@ -276,6 +274,15 @@ class DeployService {
                 }
                 if (sync.scopes) {
                     metadata['scopes'] = sync.scopes;
+                }
+
+                const files = loadScriptFiles({ scriptName: sync.name, providerConfigKey, fullPath, type: 'syncs' });
+                if (!files) {
+                    console.log(chalk.red(`No script files found for "${sync.name}"`));
+                    return null;
+                }
+                if (debug) {
+                    printDebug(`Scripts files found for ${sync.name}`);
                 }
 
                 const body: IncomingFlowConfig = {
@@ -291,10 +298,7 @@ class DeployService {
                     input: sync.input || undefined,
                     // sync_type: sync.sync_type as SyncType,
                     type: sync.type as any,
-                    fileBody: {
-                        js: localFileService.getIntegrationFile(sync.name, providerConfigKey, './') as string,
-                        ts: localFileService.getIntegrationTsFile(sync.name, providerConfigKey, sync.type) as string
-                    },
+                    fileBody: files,
                     model_schema: JSON.stringify(sync.usedModels.map((name) => parsed.models.get(name))),
                     endpoints: sync.endpoints,
                     webhookSubscriptions: sync.webhookSubscriptions
@@ -308,26 +312,21 @@ class DeployService {
                     continue;
                 }
 
-                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
-                    action.name,
-                    providerConfigKey,
-                    './'
-                );
-
-                if (!integrationFileResult) {
-                    console.log(chalk.red(`No integration file found for ${action.name} at ${integrationFilePath}. Skipping...`));
-                    continue;
-                }
-                if (debug) {
-                    printDebug(`Integration file found for ${action.name} at ${integrationFilePath}`);
-                }
-
                 const metadata = {} as NangoConfigMetadata;
                 if (action.description) {
                     metadata['description'] = action.description;
                 }
                 if (action.scopes) {
                     metadata['scopes'] = action.scopes;
+                }
+
+                const files = loadScriptFiles({ scriptName: action.name, providerConfigKey, fullPath, type: 'actions' });
+                if (!files) {
+                    console.log(chalk.red(`No script files found for "${action.name}"`));
+                    return null;
+                }
+                if (debug) {
+                    printDebug(`Scripts files found for "${action.name}"`);
                 }
 
                 const body: IncomingFlowConfig = {
@@ -340,10 +339,7 @@ class DeployService {
                     input: action.input || undefined,
                     // sync_type: sync.sync_type as SyncType,
                     type: action.type as any,
-                    fileBody: {
-                        js: localFileService.getIntegrationFile(action.name, providerConfigKey, './') as string,
-                        ts: localFileService.getIntegrationTsFile(action.name, providerConfigKey, action.type) as string
-                    },
+                    fileBody: files,
                     model_schema: JSON.stringify(action.usedModels.map((name) => parsed.models.get(name))),
                     endpoints: action.endpoint ? [action.endpoint] : []
                 };
@@ -364,7 +360,88 @@ class DeployService {
             }
         }
 
-        return { flowConfigs: postData, postConnectionScriptsByProvider };
+        const jsonSchema = loadSchemaJson({ fullPath });
+        if (!jsonSchema) {
+            return null;
+        }
+
+        return { flowConfigs: postData, postConnectionScriptsByProvider, jsonSchema: jsonSchema };
+    }
+}
+
+function loadScriptFiles({
+    fullPath,
+    scriptName,
+    providerConfigKey,
+    type
+}: {
+    fullPath: string;
+    scriptName: string;
+    providerConfigKey: string;
+    type: ScriptFileType;
+}): { js: string; ts: string } | null {
+    const js = loadScriptJsFile({ fullPath, scriptName, providerConfigKey });
+    if (!js) {
+        return null;
+    }
+    const ts = loadScriptTsFile({ fullPath, scriptName, providerConfigKey, type });
+    if (!ts) {
+        return null;
+    }
+
+    return { js, ts };
+}
+
+function loadScriptJsFile({ scriptName, providerConfigKey, fullPath }: { scriptName: string; providerConfigKey: string; fullPath: string }): string | null {
+    const filePath = path.join(fullPath, 'dist', `${scriptName}.js`);
+    const fileNameWithProviderConfigKey = filePath.replace(`.js`, `-${providerConfigKey}.js`);
+
+    try {
+        let realPath;
+        if (fs.existsSync(fileNameWithProviderConfigKey)) {
+            realPath = fs.realpathSync(fileNameWithProviderConfigKey);
+        } else {
+            realPath = fs.realpathSync(filePath);
+        }
+        const content = fs.readFileSync(realPath, 'utf8');
+
+        return content;
+    } catch (error) {
+        console.error(chalk.red(`Error loading file ${filePath}`), error);
+        return null;
+    }
+}
+
+function loadScriptTsFile({
+    fullPath,
+    scriptName,
+    providerConfigKey,
+    type
+}: {
+    fullPath: string;
+    scriptName: string;
+    providerConfigKey: string;
+    type: ScriptFileType;
+}): string | null {
+    const dir = resolveTsFileLocation({ fullPath, scriptName, providerConfigKey, type });
+    const filePath = path.join(dir, `${scriptName}.ts`);
+    try {
+        const tsIntegrationFileContents = fs.readFileSync(filePath, 'utf8');
+
+        return tsIntegrationFileContents;
+    } catch (error) {
+        console.error(chalk.red(`Error loading file ${filePath}`), error);
+        return null;
+    }
+}
+
+function loadSchemaJson({ fullPath }: { fullPath: string }): string | null {
+    const filePath = path.join(fullPath, '.nango', 'schema.json');
+    try {
+        return fs.readFileSync(filePath).toString();
+    } catch (error) {
+        console.error(chalk.red(`Error loading ${filePath}`), error);
+        return null;
     }
 }
 

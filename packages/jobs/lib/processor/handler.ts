@@ -7,7 +7,6 @@ import type { Job, LogLevel } from '@nangohq/shared';
 import {
     configService,
     createActivityLog,
-    createActivityLogMessage,
     createSyncJob,
     environmentService,
     errorManager,
@@ -58,7 +57,7 @@ export async function handler(task: OrchestratorTask): Promise<Result<JsonValue>
 async function abort(task: OrchestratorTask): Promise<Result<void>> {
     try {
         if (task.isSync()) {
-            await integrationService.cancelScript(task.syncId, task.connection.environment_id);
+            await integrationService.cancelScript(task.syncId);
             return Ok(undefined);
         }
         return Err(`Failed to cancel. Task type not supported`);
@@ -140,13 +139,6 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
         );
 
         if (task.debug) {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: task.connection.environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `Starting sync ${syncType} for ${task.syncName} with syncId ${task.syncId} and syncJobId ${syncJob.id} with execution id ${task.id} and attempt ${task.attempt}`
-            });
             await logCtx.info('Starting sync', {
                 syncType: syncType,
                 syncName: task.syncName,
