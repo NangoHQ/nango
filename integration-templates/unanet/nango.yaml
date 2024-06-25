@@ -1,0 +1,96 @@
+integrations:
+    unanet:
+        actions:
+            create-lead:
+                endpoint: POST /lead
+                description: Create a lead with information about the opportunity and company
+                input: Lead
+            update-lead:
+                endpoint: PUT /lead
+                description: Update a lead
+            get-schema:
+                endpoint: GET /schema
+                input: Entity
+                description: Get the schema of any entity
+                output: Schema[]
+            get-company:
+                endpoint: GET /company
+                input: Entity
+                output: Company | null
+                description: Retrieve information about a company
+            create-company:
+                endpoint: POST /company
+                input: Entity
+                output: Company
+                description: Create a company in the system
+            create-opportunity:
+                endpoint: POST /opportunity
+                input: Opportunity
+                description: Create an opportunity in the system
+            list-stages:
+                endpoint: GET /stages
+                description: List all the stages that exist in the system
+                output: Stage
+
+models:
+    Timestamps:
+        createdAt?: string
+        updatedAt?: string
+    Entity:
+        name: string
+    Location:
+        city: string
+        country: string
+    Stage:
+        id: number
+        name: string
+        status: string
+    Company:
+        name: string
+        externalId: string
+        shortName: string
+        description: string
+        id?: string
+    Opportunity:
+        name: string
+        description: string
+        id?: string
+        externalId: string
+        companyName: string
+        stage: string
+        active: boolean
+    Activity:
+        createdAt: string
+        id: string
+        message: string
+    Lead:
+        __extends: Timestamps
+        id: string
+        description: string
+        comments?: Comment[]
+        activities?: Activity[]
+        opportunity?: Opportunity
+        name: string
+        stage?: Stage
+    Schema:
+        PropertyName: string
+        Group: string | null
+        Label: string
+        Description: string | null
+        Enabled: boolean
+        ReadOnly: boolean
+        Required: boolean
+        DefaultValue: string | null
+        DataType: number
+        MaxLength: number | null
+        UnicodeSupported: boolean
+        Searchable: boolean
+        ArrayType: string | null
+        IsPrimaryKey: boolean
+        IsExternalId: boolean
+        ObjectEndpoint: string | null
+        IsHidden: boolean
+        IsIncludedInResponse: boolean
+        SchemaEndpoint: string | null
+        SortOrder: number
+        CustomSort: boolean

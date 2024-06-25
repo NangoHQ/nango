@@ -61,6 +61,25 @@ airtable:
     proxy:
         base_url: https://api.airtable.com
     docs: https://docs.nango.dev/integrations/all/airtable
+autodesk:
+    categories:
+        - design
+    auth_mode: OAUTH2
+    authorization_url: https://developer.api.autodesk.com/authentication/v2/authorize
+    token_url: https://developer.api.autodesk.com/authentication/v2/token
+    scope_separator: ' '
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://developer.api.autodesk.com
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/autodesk
 blandai:
     categories:
         - support
@@ -2772,6 +2791,22 @@ wildix-pbx:
     docs: https://docs.nango.dev/integrations/all/wildix-pbx
     proxy:
         base_url: https://${connectionConfig.subdomain}.wildixin.com
+wordpress:
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: OAUTH2
+    authorization_url: https://public-api.wordpress.com/oauth2/authorize
+    token_url: https://public-api.wordpress.com/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://public-api.wordpress.com/rest/v1
+    docs: https://docs.nango.dev/integrations/all/wordpress
 woocommerce:
     categories:
         - e-commerce

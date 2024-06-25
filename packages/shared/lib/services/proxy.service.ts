@@ -436,6 +436,7 @@ class ProxyService {
                         case 'OAUTH2':
                             tokenPair = { accessToken: config.token };
                             break;
+                        case 'BASIC':
                         case 'API_KEY':
                         case 'OAUTH2_CC':
                             if (value.includes('connectionConfig')) {
