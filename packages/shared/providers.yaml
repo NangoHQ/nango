@@ -387,6 +387,40 @@ calendly:
     token_response_metadata:
         - owner
     docs: https://docs.nango.dev/integrations/all/calendly
+certn:
+    categories:
+        - legal
+    auth_mode: API_KEY
+    proxy:
+        alias: certn
+        base_url: https://api.certn.co
+        headers:
+            Authorization: Bearer ${apiKey}
+        paginate:
+            type: offset
+            offset_name_in_request: page
+            limit_name_in_request: limit
+        verification:
+            method: GET
+            endpoint: /api/v2/teams
+    docs: https://docs.nango.dev/integrations/all/certn
+certn-partner:
+    categories:
+        - legal
+    auth_mode: OAUTH_CC
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://api.certn.co
+        paginate:
+            type: offset
+            offset_name_in_request: page
+            response_path: data
+            limit_name_in_request: limit
+        verification:
+            method: GET
+            endpoint: /api/v2/teams
+    docs: https://docs.nango.dev/integrations/all/certn
 checkr-partner:
     categories:
         - legal
