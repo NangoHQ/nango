@@ -158,6 +158,10 @@ class DeployService {
                     singleDeployMode
                 };
                 const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });
+
+                // Show response in term
+                console.log(JSON.stringify(response.data, null, 2));
+
                 const { newSyncs, deletedSyncs } = response.data;
 
                 for (const sync of newSyncs) {
