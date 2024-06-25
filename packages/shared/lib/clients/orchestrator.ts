@@ -164,12 +164,10 @@ export class Orchestrator {
                         span.setTag('error', res.error);
                     }
                 } catch (e: unknown) {
-                    const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
-                    const error = new NangoError('action_failure', { error: errorMsg });
+                    const error = new NangoError('action_failure', { error: e, input });
                     span.setTag('error', e);
 
-                    metrics.increment(metrics.Types.ACTION_FAILURE);
-                    return Err(error);
+                    throw error;
                 } finally {
                     span.finish();
                 }
