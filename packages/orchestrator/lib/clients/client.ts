@@ -121,7 +121,7 @@ export class OrchestratorClient {
         if ('error' in res) {
             return Err({
                 name: res.error.code,
-                message: res.error.message || `Error updateing schedule frequency`,
+                message: res.error.message || `Error updating schedule frequency`,
                 payload: { scheduleName, frequencyMs }
             });
         } else {

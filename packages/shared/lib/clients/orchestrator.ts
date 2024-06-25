@@ -132,6 +132,7 @@ export class Orchestrator {
                 'connection.provider_config_key': connection.provider_config_key,
                 'connection.environment_id': connection.environment_id
             };
+
             if (isGloballyEnabled || isEnvEnabled) {
                 const span = tracer.startSpan('execute.action', {
                     tags: spanTags,
@@ -163,10 +164,10 @@ export class Orchestrator {
                         span.setTag('error', res.error);
                     }
                 } catch (e: unknown) {
-                    const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
-                    const error = new NangoError('action_failure', { error: errorMsg });
+                    const error = new NangoError('action_failure', { error: e, input });
                     span.setTag('error', e);
-                    return Err(error);
+
+                    throw error;
                 } finally {
                     span.finish();
                 }
@@ -236,6 +237,7 @@ export class Orchestrator {
                 `actionName:${actionName}`
             );
 
+            metrics.increment(metrics.Types.ACTION_SUCCESS);
             return res;
         } catch (err) {
             const errorMessage = stringifyError(err, { pretty: true });
@@ -270,6 +272,7 @@ export class Orchestrator {
                 `actionName:${actionName}`
             );
 
+            metrics.increment(metrics.Types.ACTION_FAILURE);
             return Err(error);
         } finally {
             const endTime = Date.now();
@@ -383,6 +386,7 @@ export class Orchestrator {
                     const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
                     const error = new NangoError('action_failure', { error: errorMsg });
                     span.setTag('error', e);
+                    metrics.increment(metrics.Types.WEBHOOK_FAILURE);
                     return Err(error);
                 } finally {
                     span.finish();
@@ -432,6 +436,7 @@ export class Orchestrator {
             await logCtx.info('The webhook workflow was successfully run');
             await logCtx.success();
 
+            metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
             return res;
         } catch (e) {
             const errorMessage = stringifyError(e, { pretty: true });
@@ -452,6 +457,7 @@ export class Orchestrator {
                 }
             });
 
+            metrics.increment(metrics.Types.WEBHOOK_FAILURE);
             return Err(error);
         }
     }
@@ -588,6 +594,7 @@ export class Orchestrator {
                 `postConnectionScript:${name}`
             );
 
+            metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_SUCCESS);
             return res;
         } catch (err) {
             const errorMessage = stringifyError(err, { pretty: true });
@@ -621,6 +628,7 @@ export class Orchestrator {
                 `postConnectionScript:${name}`
             );
 
+            metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_FAILURE);
             return Err(error);
         } finally {
             const endTime = Date.now();
@@ -716,6 +724,7 @@ export class Orchestrator {
                 await this.client.cancel({ taskId: syncJob?.run_id, reason: initiator });
                 return Ok(undefined);
             };
+
             const scheduleName = ScheduleName.get({ environmentId, syncId });
             switch (command) {
                 case SyncCommand.CANCEL:

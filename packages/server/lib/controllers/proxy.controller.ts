@@ -89,6 +89,7 @@ class ProxyController {
             if (credentialResponse.isErr()) {
                 await logCtx.error('Failed to get connection credentials', { error: credentialResponse.error });
                 await logCtx.failed();
+                metrics.increment(metrics.Types.PROXY_FAILURE);
                 throw new Error(`Failed to get connection credentials: '${credentialResponse.error.message}'`);
             }
 
@@ -99,6 +100,7 @@ class ProxyController {
             if (!providerConfig) {
                 await logCtx.error('Provider configuration not found');
                 await logCtx.failed();
+                metrics.increment(metrics.Types.PROXY_FAILURE);
 
                 throw new NangoError('unknown_provider_config');
             }
@@ -128,6 +130,7 @@ class ProxyController {
             if (!success || !proxyConfig || error) {
                 errorManager.errResFromNangoErr(res, error);
                 await logCtx.failed();
+                metrics.increment(metrics.Types.PROXY_FAILURE);
                 return;
             }
 
@@ -149,6 +152,7 @@ class ProxyController {
                 await logCtx.error('uncaught error', { error: err });
                 await logCtx.failed();
             }
+            metrics.increment(metrics.Types.PROXY_FAILURE);
             next(err);
         }
     }
@@ -212,6 +216,7 @@ class ProxyController {
             passThroughStream.pipe(res);
             res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
 
+            metrics.increment(metrics.Types.PROXY_SUCCESS);
             await logCtx.success();
             return;
         }
@@ -226,6 +231,7 @@ class ProxyController {
             if (!isJsonResponse) {
                 res.send(responseData);
                 await logCtx.success();
+                metrics.increment(metrics.Types.PROXY_SUCCESS);
                 return;
             }
 
@@ -233,6 +239,7 @@ class ProxyController {
                 const parsedResponse = JSON.parse(responseData);
 
                 res.json(parsedResponse);
+                metrics.increment(metrics.Types.PROXY_SUCCESS);
                 await logCtx.success();
             } catch (error) {
                 logger.error(error);
@@ -241,6 +248,7 @@ class ProxyController {
 
                 await logCtx.error('Failed to parse JSON response', { error });
                 await logCtx.failed();
+                metrics.increment(metrics.Types.PROXY_FAILURE);
             }
         });
     }
@@ -343,6 +351,7 @@ class ProxyController {
             await this.handleResponse({ res, responseStream, config, url, logCtx });
         } catch (error) {
             await this.handleErrorResponse(res, error, url, config, logCtx);
+            metrics.increment(metrics.Types.PROXY_FAILURE);
         }
     }
 
