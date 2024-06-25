@@ -2886,9 +2886,11 @@ integrations:
                 endpoint: POST /lead
                 description: Create a lead with information about the opportunity and company
                 input: Lead
+                output: Lead
             update-lead:
                 endpoint: PUT /lead
                 description: Update a lead
+                output: Lead
             get-schema:
                 endpoint: GET /schema
                 input: Entity
@@ -2907,6 +2909,7 @@ integrations:
             create-opportunity:
                 endpoint: POST /opportunity
                 input: Opportunity
+                output: Opportunity
                 description: Create an opportunity in the system
             list-stages:
                 endpoint: GET /stages
