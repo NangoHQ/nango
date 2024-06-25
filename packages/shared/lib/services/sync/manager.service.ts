@@ -505,7 +505,7 @@ export class SyncManagerService {
             let frequency = sync.frequency;
             if (!frequency) {
                 const syncConfig = await getSyncConfigByParams(environmentId, sync.name, providerConfigKey);
-                frequency = syncConfig?.runs || '';
+                frequency = syncConfig?.runs || null;
             }
             if (schedules.isErr()) {
                 throw new Error(`Failed to get schedule for sync ${sync.id} in environment ${environmentId}: ${stringifyError(schedules.error)}`);
