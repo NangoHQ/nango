@@ -25,20 +25,4 @@ describe('Activity service integration tests', () => {
         const logId = await ActivityService.createActivityLog(log);
         expect(logId).not.toBeNull();
     });
-
-    it('Should update provider for a given activity log ID', async () => {
-        const result = await db.knex.select('*').from('_nango_environments');
-        const log: ActivityLog = {
-            environment_id: result[0].id
-        } as ActivityLog;
-        const createdLog = await ActivityService.createActivityLog(log);
-        const provider = 'newProvider';
-        await ActivityService.updateProvider(createdLog as number, provider);
-
-        const updatedLog = await db.knex
-            .from<ActivityLog>('_nango_activity_logs')
-            .where({ id: createdLog as number })
-            .first();
-        expect(updatedLog.provider).toEqual(provider);
-    });
 });

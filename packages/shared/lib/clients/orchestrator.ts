@@ -7,12 +7,7 @@ import { NangoError } from '../utils/error.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type { RunnerOutput } from '../models/Runner.js';
 import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
-import {
-    createActivityLog,
-    createActivityLogMessage,
-    createActivityLogMessageAndEnd,
-    updateSuccess as updateSuccessActivityLog
-} from '../services/activity/activity.service.js';
+import { createActivityLog } from '../services/activity/activity.service.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
 import { v4 as uuid } from 'uuid';
 import featureFlags from '../utils/featureflags.js';
@@ -137,6 +132,7 @@ export class Orchestrator {
                 'connection.provider_config_key': connection.provider_config_key,
                 'connection.environment_id': connection.environment_id
             };
+
             if (isGloballyEnabled || isEnvEnabled) {
                 const span = tracer.startSpan('execute.action', {
                     tags: spanTags,
@@ -168,10 +164,10 @@ export class Orchestrator {
                         span.setTag('error', res.error);
                     }
                 } catch (e: unknown) {
-                    const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
-                    const error = new NangoError('action_failure', { error: errorMsg });
+                    const error = new NangoError('action_failure', { error: e, input });
                     span.setTag('error', e);
-                    return Err(error);
+
+                    throw error;
                 } finally {
                     span.finish();
                 }
@@ -241,6 +237,7 @@ export class Orchestrator {
                 `actionName:${actionName}`
             );
 
+            metrics.increment(metrics.Types.ACTION_SUCCESS);
             return res;
         } catch (err) {
             const errorMessage = stringifyError(err, { pretty: true });
@@ -275,6 +272,7 @@ export class Orchestrator {
                 `actionName:${actionName}`
             );
 
+            metrics.increment(metrics.Types.ACTION_FAILURE);
             return Err(error);
         } finally {
             const endTime = Date.now();
@@ -336,16 +334,6 @@ export class Orchestrator {
         const workflowId = `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${syncConfig.sync_name}:${webhookName}.${connection.connection_id}.${Date.now()}`;
 
         try {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id: integration.environment_id,
-                activity_log_id: activityLogId as number,
-                content: `Starting webhook workflow ${workflowId} in the task queue: ${WEBHOOK_TASK_QUEUE}`,
-                params: {
-                    input: JSON.stringify(input, null, 2)
-                },
-                timestamp: Date.now()
-            });
             await logCtx.info('Starting webhook workflow', { workflowId, input });
 
             const { credentials, credentials_iv, credentials_tag, deleted, deleted_at, ...nangoConnectionWithoutCredentials } =
@@ -398,6 +386,7 @@ export class Orchestrator {
                     const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
                     const error = new NangoError('action_failure', { error: errorMsg });
                     span.setTag('error', e);
+                    metrics.increment(metrics.Types.WEBHOOK_FAILURE);
                     return Err(error);
                 } finally {
                     span.finish();
@@ -444,30 +433,15 @@ export class Orchestrator {
                 throw res.error;
             }
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: integration.environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The webhook workflow ${workflowId} was successfully run.`
-            });
             await logCtx.info('The webhook workflow was successfully run');
             await logCtx.success();
 
-            await updateSuccessActivityLog(activityLogId as number, true);
-
+            metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
             return res;
         } catch (e) {
             const errorMessage = stringifyError(e, { pretty: true });
             const error = new NangoError('webhook_script_failure', { errorMessage });
 
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id: integration.environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The webhook workflow ${workflowId} failed with error: ${errorMessage}`
-            });
             await logCtx.error('The webhook workflow failed', { error: e });
             await logCtx.failed();
 
@@ -483,6 +457,7 @@ export class Orchestrator {
                 }
             });
 
+            metrics.increment(metrics.Types.WEBHOOK_FAILURE);
             return Err(error);
         }
     }
@@ -619,6 +594,7 @@ export class Orchestrator {
                 `postConnectionScript:${name}`
             );
 
+            metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_SUCCESS);
             return res;
         } catch (err) {
             const errorMessage = stringifyError(err, { pretty: true });
@@ -652,6 +628,7 @@ export class Orchestrator {
                 `postConnectionScript:${name}`
             );
 
+            metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_FAILURE);
             return Err(error);
         } finally {
             const endTime = Date.now();
@@ -726,7 +703,6 @@ export class Orchestrator {
     async runSyncCommand({
         syncId,
         command,
-        activityLogId,
         environmentId,
         logCtx,
         recordsService,
@@ -734,7 +710,6 @@ export class Orchestrator {
     }: {
         syncId: string;
         command: SyncCommand;
-        activityLogId: number;
         environmentId: number;
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
@@ -749,6 +724,7 @@ export class Orchestrator {
                 await this.client.cancel({ taskId: syncJob?.run_id, reason: initiator });
                 return Ok(undefined);
             };
+
             const scheduleName = ScheduleName.get({ environmentId, syncId });
             switch (command) {
                 case SyncCommand.CANCEL:
@@ -764,28 +740,12 @@ export class Orchestrator {
 
                     await clearLastSyncDate(syncId);
                     const del = await recordsService.deleteRecordsBySyncId({ syncId });
-                    await createActivityLogMessage({
-                        level: 'info',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content: `Records for the sync were deleted successfully`
-                    });
                     await logCtx.info(`Records for the sync were deleted successfully`, del);
 
                     return this.client.executeSync({ scheduleName });
                 }
             }
         } catch (err) {
-            const errorMessage = stringifyError(err, { pretty: true });
-
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id: environmentId,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `The sync command: ${command} failed with error: ${errorMessage}`
-            });
             await logCtx.error(`Sync command failed "${command}"`, { error: err, command });
 
             return Err(err as Error);
@@ -815,7 +775,6 @@ export class Orchestrator {
             return this.runSyncCommand({
                 syncId: props.syncId,
                 command: props.command,
-                activityLogId: props.activityLogId,
                 environmentId: props.environmentId,
                 logCtx: props.logCtx,
                 recordsService: props.recordsService,
@@ -831,7 +790,6 @@ export class Orchestrator {
                 scheduleId: props.scheduleId,
                 syncId: props.syncId,
                 command: props.command,
-                activityLogId: props.activityLogId,
                 environmentId: props.environmentId,
                 providerConfigKey: props.providerConfigKey,
                 connectionId: props.connectionId,
@@ -941,13 +899,6 @@ export class Orchestrator {
 
             if (interval.isErr()) {
                 const content = `The sync was not scheduled due to an error with the sync interval "${syncData.runs}": ${interval.error.message}`;
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id: nangoConnection.environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
                 await logCtx.error('The sync was not created or started due to an error with the sync interval', {
                     error: interval.error,
                     runs: syncData.runs
@@ -966,8 +917,6 @@ export class Orchestrator {
                         syncData
                     }
                 });
-
-                await updateSuccessActivityLog(activityLogId, false);
 
                 return Err(interval.error);
             }
@@ -1002,13 +951,6 @@ export class Orchestrator {
                 throw schedule.error;
             }
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id: nangoConnection.environment_id,
-                activity_log_id: activityLogId,
-                content: `Scheduled to run "${syncData.runs}"`,
-                timestamp: Date.now()
-            });
             await logCtx.info('Scheduled successfully', { runs: syncData.runs });
             await logCtx.success();
             return Ok(undefined);

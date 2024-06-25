@@ -4,12 +4,11 @@ import * as tsNode from 'ts-node';
 import chalk from 'chalk';
 import path from 'path';
 import { build } from 'tsup';
-import { localFileService } from '@nangohq/shared';
 
 import { getNangoRootPath, printDebug } from '../utils.js';
-import { loadYamlAndGeneratedModel } from './model.service.js';
+import { loadYamlAndGenerate } from './model.service.js';
 import parserService from './parser.service.js';
-import type { NangoYamlParsed, ScriptTypeLiteral } from '@nangohq/types';
+import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangohq/types';
 import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto'];
@@ -25,7 +24,7 @@ export async function compileAllFiles({
     fullPath: string;
     scriptName?: string;
     providerConfigKey?: string;
-    type?: string;
+    type?: ScriptFileType;
 }): Promise<boolean> {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
@@ -37,7 +36,7 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    const res = loadYamlAndGeneratedModel({ fullPath, debug });
+    const res = loadYamlAndGenerate({ fullPath, debug });
     if (!res.success) {
         return false;
     }
@@ -55,7 +54,7 @@ export async function compileAllFiles({
 
     let scriptDirectory: string | undefined;
     if (scriptName && providerConfigKey && type) {
-        scriptDirectory = localFileService.resolveTsFileLocation({ scriptName, providerConfigKey, type }).replace(fullPath, '');
+        scriptDirectory = resolveTsFileLocation({ fullPath, scriptName, providerConfigKey, type }).replace(fullPath, '');
         console.log(chalk.green(`Compiling ${scriptName}.ts in ${fullPath}${scriptDirectory}`));
     }
 
@@ -254,6 +253,25 @@ export function getFileToCompile({ fullPath, filePath }: { fullPath: string; fil
         outputPath: path.join(fullPath, '/dist/', `${baseName}.js`),
         baseName
     };
+}
+
+export function resolveTsFileLocation({
+    fullPath,
+    scriptName,
+    providerConfigKey,
+    type
+}: {
+    fullPath: string;
+    scriptName: string;
+    providerConfigKey: string;
+    type: ScriptFileType;
+}) {
+    const nestedPath = path.resolve(fullPath, providerConfigKey, type, `${scriptName}.ts`);
+    if (fs.existsSync(nestedPath)) {
+        return fs.realpathSync(path.resolve(nestedPath, '../'));
+    }
+
+    return fs.realpathSync(path.join(fullPath, './'));
 }
 
 export function listFilesToCompile({

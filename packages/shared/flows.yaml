@@ -67,7 +67,7 @@ integrations:
                 description: Update a task and be able to assign the task to a specific user
                 input: AsanaUpdateTask
                 endpoint: PATCH /ticketing/task
-                output: AsanaTask
+                output: Task
             delete-task:
                 input: Id
                 endpoint: DELETE /ticketing/task
@@ -170,8 +170,7 @@ integrations:
                 parent: string | undefined
                 tags: string[] | undefined
                 workspace: string | undefined
-                title: string | undefined
-                description: string | undefined
+                name: string | undefined
             AsanaWorkspace:
                 gid: string
                 resource_type: string
@@ -1348,8 +1347,12 @@ integrations:
             GmailEmailInput:
                 from: string
                 to: string
+                headers: object | undefined
                 subject: string
                 body: string
+            EmailHeader:
+                headerName: string
+                headerValue: string
             GmailEmailSentOutput:
                 id: string
                 threadId: string
@@ -2883,9 +2886,11 @@ integrations:
                 endpoint: POST /lead
                 description: Create a lead with information about the opportunity and company
                 input: Lead
+                output: Lead
             update-lead:
                 endpoint: PUT /lead
                 description: Update a lead
+                output: Lead
             get-schema:
                 endpoint: GET /schema
                 input: Entity
@@ -2904,6 +2909,7 @@ integrations:
             create-opportunity:
                 endpoint: POST /opportunity
                 input: Opportunity
+                output: Opportunity
                 description: Create an opportunity in the system
             list-stages:
                 endpoint: GET /stages

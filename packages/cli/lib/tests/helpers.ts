@@ -17,3 +17,7 @@ export const copyDirectoryAndContents = async (source: string, destination: stri
         }
     }
 };
+
+export function removeVersion(res: string) {
+    return res.replace(/(v[0-9.]+)/, 'vTest');
+}
