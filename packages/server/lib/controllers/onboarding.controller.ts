@@ -21,8 +21,6 @@ import {
     SyncClient,
     NangoError,
     DEMO_ACTION_NAME,
-    createActivityLog,
-    LogActionEnum,
     analytics,
     AnalyticsTypes,
     getSyncConfigRaw
@@ -402,24 +400,6 @@ class OnboardingController {
                 return;
             }
 
-            const activityLogId = await createActivityLog({
-                level: 'info',
-                success: false,
-                action: LogActionEnum.ACTION,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: connection.connection_id,
-                provider: 'github',
-                provider_config_key: connection.provider_config_key,
-                environment_id: environment.id,
-                operation_name: DEMO_ACTION_NAME
-            });
-
-            if (!activityLogId) {
-                throw new NangoError('failed_to_create_activity_log');
-            }
-
             const syncConfig = await getSyncConfigRaw({
                 environmentId: environment.id,
                 config_id: connection.config_id!,
@@ -432,12 +412,7 @@ class OnboardingController {
             }
 
             logCtx = await logContextGetter.create(
-                {
-                    id: String(activityLogId),
-                    operation: { type: 'action' },
-                    message: 'Start action',
-                    expiresAt: defaultOperationExpiration.action()
-                },
+                { operation: { type: 'action' }, message: 'Start action', expiresAt: defaultOperationExpiration.action() },
                 {
                     account,
                     environment,

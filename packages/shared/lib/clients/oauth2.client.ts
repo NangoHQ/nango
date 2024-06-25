@@ -4,7 +4,7 @@ import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2
 import { AuthorizationCode } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
 import type { ServiceResponse } from '../models/Generic.js';
-import { LogActionEnum } from '../models/Activity.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import { interpolateString } from '../utils/utils.js';
 import Boom from '@hapi/boom';
 import { NangoError } from '../utils/error.js';

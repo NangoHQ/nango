@@ -2,7 +2,6 @@ import { Context, CancelledFailure } from '@temporalio/activity';
 import { TimeoutFailure, TerminatedFailure } from '@temporalio/client';
 import type {
     Config as ProviderConfig,
-    LogLevel,
     ServiceResponse,
     NangoConnection,
     ContinuousSyncArgs,
@@ -17,7 +16,6 @@ import {
     SyncStatus,
     SyncType,
     configService,
-    createActivityLog,
     LogActionEnum,
     SyncRunService,
     environmentService,
@@ -271,25 +269,9 @@ export async function syncProvider({
     let logCtx: LogContext | undefined;
 
     try {
-        const log = {
-            level: 'info' as LogLevel,
-            success: null,
-            action,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: nangoConnection.connection_id,
-            provider_config_key: nangoConnection.provider_config_key,
-            provider: providerConfig.provider,
-            session_id: syncJobId ? syncJobId?.toString() : '',
-            environment_id: nangoConnection.environment_id,
-            operation_name: syncName
-        };
-        const activityLogId = (await createActivityLog(log)) as number;
-
         const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
         logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             {
                 account,
                 environment,
@@ -322,7 +304,7 @@ export async function syncProvider({
             nangoConnection,
             syncConfig,
             syncType,
-            activityLogId,
+            activityLogId: logCtx.id,
             provider: providerConfig.provider,
             temporalContext,
             debug,

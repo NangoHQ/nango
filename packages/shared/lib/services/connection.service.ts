@@ -3,7 +3,7 @@ import type { Knex } from '@nangohq/database';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Account, Environment } from '../models/index.js';
-import { LogActionEnum } from '../models/Activity.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
 import syncManager from './sync/manager.service.js';
@@ -597,7 +597,6 @@ class ConnectionService {
         onRefreshSuccess: (args: { connection: Connection; environment: Environment; config: ProviderConfig }) => Promise<void>;
         onRefreshFailed: (args: {
             connection: Connection;
-            activityLogId: string | number;
             logCtx: LogContext;
             authError: { type: string; description: string };
             environment: Environment;
@@ -664,7 +663,6 @@ class ConnectionService {
                 if (logCtx) {
                     await onRefreshFailed({
                         connection,
-                        activityLogId: logCtx.id,
                         logCtx,
                         authError: {
                             type: error!.type,
