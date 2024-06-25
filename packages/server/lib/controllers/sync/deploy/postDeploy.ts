@@ -13,7 +13,7 @@ const validation = z
     .object({
         flowConfigs: flowConfigs,
         postConnectionScriptsByProvider: postConnectionScriptsByProvider,
-        jsonSchema: jsonSchema,
+        jsonSchema: jsonSchema.optional(),
         nangoYamlBody: z.string(),
         reconcile: z.boolean(),
         debug: z.boolean(),

@@ -91,7 +91,7 @@ const validation = z
     .object({
         flowConfigs,
         postConnectionScriptsByProvider,
-        jsonSchema,
+        jsonSchema: jsonSchema.optional(),
         reconcile: z.boolean(),
         debug: z.boolean(),
         singleDeployMode: z.boolean().optional().default(false)
