@@ -19,7 +19,7 @@ import { DryRunService } from './services/dryrun.service.js';
 import { v1toV2Migration, directoryMigration } from './services/migration.service.js';
 import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
-import { load } from './services/config.service.js';
+import { parse } from './services/config.service.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 class NangoCommand extends Command {
@@ -264,15 +264,15 @@ program
         const { autoConfirm } = this.opts();
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm });
-        const { success, error, response: parsed } = load(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
+        const { success, error, response } = parse(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
 
-        if (!success || !parsed) {
+        if (!success || !response?.parsed) {
             console.log(chalk.red(error?.message));
             process.exitCode = 1;
             return;
         }
 
-        console.log(chalk.green(JSON.stringify({ ...parsed, models: Array.from(parsed.models.values()) }, null, 2)));
+        console.log(chalk.green(JSON.stringify({ ...response.parsed, models: Array.from(response.parsed.models.values()) }, null, 2)));
     });
 
 // admin only commands

@@ -12,7 +12,7 @@ import {
     getSyncNamesByConnectionId,
     softDeleteSync
 } from './sync.service.js';
-import { createActivityLogMessageAndEnd, createActivityLog, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
+import { createActivityLog } from '../activity/activity.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
@@ -299,7 +299,7 @@ export class SyncManagerService {
                 });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environment.id, logCtx);
+                    await updateScheduleStatus(schedule.schedule_id, command, logCtx);
                 }
             }
         } else {
@@ -340,20 +340,10 @@ export class SyncManagerService {
                     initiator
                 });
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environment.id, logCtx);
+                    await updateScheduleStatus(schedule.schedule_id, command, logCtx);
                 }
             }
         }
-
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            environment_id: environment.id,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
-        });
-
-        await updateSuccessActivityLog(activityLogId, true);
 
         await logCtx.info('Sync was successfully updated', { action, syncNames });
         await logCtx.success();
@@ -531,7 +521,7 @@ export class SyncManagerService {
         const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
         if (syncSchedule) {
             if (syncSchedule?.schedule?.state?.paused && schedule?.status === ScheduleStatus.RUNNING) {
-                await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE, null, environmentId);
+                await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE);
                 if (status !== SyncStatus.RUNNING) {
                     status = SyncStatus.PAUSED;
                 }
@@ -548,7 +538,7 @@ export class SyncManagerService {
                     `syncId:${sync.id}`
                 );
             } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
-                await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
+                await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE);
                 status = SyncStatus.STOPPED;
                 await telemetry.log(
                     LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED,

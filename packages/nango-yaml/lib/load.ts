@@ -16,14 +16,14 @@ import { nangoConfigFile } from './constant.js';
 export function loadNangoYaml({ fullPath }: { fullPath: string }): NangoYamlParser {
     const location = path.resolve(`${fullPath}/${nangoConfigFile}`);
     try {
-        const yamlConfig = fs.readFileSync(location, 'utf8');
-        const raw = yaml.load(yamlConfig) as NangoYaml;
+        const content = fs.readFileSync(location, 'utf8');
+        const raw = yaml.load(content) as NangoYaml;
         const version = determineVersion(raw);
 
         if (version === 'v1') {
-            return new NangoYamlParserV1({ raw });
+            return new NangoYamlParserV1({ raw, yaml: content });
         } else {
-            return new NangoYamlParserV2({ raw });
+            return new NangoYamlParserV2({ raw, yaml: content });
         }
     } catch {
         throw new Error(`no nango.yaml config found at ${location}`);
