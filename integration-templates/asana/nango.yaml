@@ -46,7 +46,7 @@ integrations:
                 description: Update a task and be able to assign the task to a specific user
                 input: AsanaUpdateTask
                 endpoint: PATCH /ticketing/task
-                output: AsanaTask
+                output: Task
             delete-task:
                 input: Id
                 endpoint: DELETE /ticketing/task
@@ -143,8 +143,7 @@ models:
         parent: string | undefined
         tags: string[] | undefined
         workspace: string | undefined
-        title: string | undefined
-        description: string | undefined
+        name: string | undefined
     AsanaWorkspace:
         __extends: BaseAsanaModel
         id: string
