@@ -2,7 +2,10 @@ import tracer from 'dd-trace';
 
 export enum Types {
     ACTION_EXECUTION = 'nango.jobs.actionExecution',
+    ACTION_SUCCESS = 'nango.orch.action.success',
+    ACTION_FAILURE = 'nango.orch.action.failure',
     ACTION_TRACK_RUNTIME = 'action_track_runtime',
+
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
     AUTH_PUBLIC_KEY = 'nango.auth.publicKey',
     AUTH_SESSION = 'nango.auth.session',
@@ -20,19 +23,32 @@ export enum Types {
     LOGS_LOG = 'nango.logs.log',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
+
     POST_CONNECTION_SCRIPT_RUNTIME = 'nango.jobs.postConnectionScriptRuntime',
+    POST_CONNECTION_SCRIPT_SUCCESS = 'nango.orch.postConnectionScript.success',
+    POST_CONNECTION_SCRIPT_FAILURE = 'nango.orch.postConnectionScript.failure',
+
     PROXY = 'nango.server.proxyCall',
+    PROXY_SUCCESS = 'nango.server.proxy.success',
+    PROXY_FAILURE = 'nango.server.proxy.failure',
+
     REFRESH_TOKENS = 'nango.server.cron.refreshTokens',
     REFRESH_TOKENS_FAILED = 'nango.server.cron.refreshTokens.failed',
     REFRESH_TOKENS_SUCCESS = 'nango.server.cron.refreshTokens.success',
     RUNNER_SDK = 'nango.runner.sdk',
-    RENCONCILE_TEMPORAL_SCHEDULES = 'nango.jobs.cron.reconcileTemporalSchedules',
-    RENCONCILE_TEMPORAL_SCHEDULES_FAILED = 'nango.jobs.cron.reconcileTemporalSchedules.failed',
-    RENCONCILE_TEMPORAL_SCHEDULES_SUCCESS = 'nango.jobs.cron.reconcileTemporalSchedules.success',
+    RECONCILE_TEMPORAL_SCHEDULES = 'nango.jobs.cron.reconcileTemporalSchedules',
+    RECONCILE_TEMPORAL_SCHEDULES_FAILED = 'nango.jobs.cron.reconcileTemporalSchedules.failed',
+    RECONCILE_TEMPORAL_SCHEDULES_SUCCESS = 'nango.jobs.cron.reconcileTemporalSchedules.success',
+
     SYNC_EXECUTION = 'nango.jobs.syncExecution',
     SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
+    SYNC_SUCCESS = 'nango.orch.sync.success',
+    SYNC_FAILURE = 'nango.orch.sync.failure',
+
     WEBHOOK_EXECUTION = 'nango.jobs.webhookExecution',
-    WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime'
+    WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
+    WEBHOOK_SUCCESS = 'nango.orch.webhook.success',
+    WEBHOOK_FAILURE = 'nango.orch.webhook.failure'
 }
 
 export function increment(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
