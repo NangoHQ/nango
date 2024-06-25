@@ -13,11 +13,23 @@ describe('package', () => {
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/nested-integrations/github`, `${dir}/github`);
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/nested-integrations/nango.yaml`, `${dir}/nango.yaml`);
 
-        const success = await compileAllFiles({ fullPath: dir, debug: true });
+        const success = await compileAllFiles({ fullPath: dir, debug: false });
         expect(success).toBe(true);
+
         const { response } = parse(dir);
         const res = deployService.package({ parsed: response!.parsed!, debug: false, fullPath: dir });
         expect(removeVersion(JSON.stringify(res!.jsonSchema, null, 2))).toMatchSnapshot();
-        expect(res?.flowConfigs).toMatchSnapshot();
+        expect(
+            res?.flowConfigs.map((flow) => {
+                return {
+                    ...flow,
+                    fileBody: {
+                        ts: flow.fileBody.ts,
+                        // Remove tsup comments
+                        js: flow.fileBody.js.replaceAll(/\/\/.*/g, '')
+                    }
+                };
+            })
+        ).toMatchSnapshot();
     });
 });

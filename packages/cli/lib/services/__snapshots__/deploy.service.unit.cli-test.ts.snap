@@ -63,7 +63,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../../../private/tmp/deploy-nested/nango-integrations/hubspot/syncs/contacts.ts
+
 var contacts_exports = {};
 __export(contacts_exports, {
   default: () => fetchData
@@ -123,7 +123,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../../../private/tmp/deploy-nested/nango-integrations/hubspot/actions/create-contact.ts
+
 var create_contact_exports = {};
 __export(create_contact_exports, {
   default: () => runAction
@@ -180,7 +180,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../../../private/tmp/deploy-nested/nango-integrations/github/syncs/issues.ts
+
 var issues_exports = {};
 __export(issues_exports, {
   default: () => fetchData
@@ -240,7 +240,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../../../private/tmp/deploy-nested/nango-integrations/github/actions/create-issue.ts
+
 var create_issue_exports = {};
 __export(create_issue_exports, {
   default: () => runAction
