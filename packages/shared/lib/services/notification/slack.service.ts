@@ -3,9 +3,6 @@ import type { SlackNotification } from '../../models/SlackNotification.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import environmentService from '../environment.service.js';
-import type { LogLevel } from '../../models/Activity.js';
-import { LogActionEnum } from '../../models/Activity.js';
-import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLog } from '../activity/activity.service.js';
 import { basePublicUrl, getLogger } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
@@ -234,23 +231,8 @@ export class SlackService {
             return;
         }
 
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action: LogActionEnum.ACTION,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: slackConnection?.connection_id,
-            provider_config_key: slackConnection?.provider_config_key,
-            provider: this.integrationKey,
-            environment_id: slackConnection?.environment_id,
-            operation_name: this.actionName
-        };
-
-        const activityLogId = await createActivityLog(log);
         const logCtx = await this.logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'action' }, message: 'Start action' },
+            { operation: { type: 'action' }, message: 'Start action' },
             {
                 account,
                 environment: { id: environment_id, name: envName },
@@ -301,21 +283,6 @@ export class SlackService {
                 slackNotificationStatus.id,
                 slackNotificationStatus.admin_slack_timestamp
             );
-
-            const content = actionResponse.isOk()
-                ? `The action ${this.actionName} was successfully triggered for the ${flowType} ${name} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
-                : `The action ${this.actionName} failed to trigger for the ${flowType} ${name} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
-
-            await createActivityLogMessage({
-                level: actionResponse.isOk() ? 'info' : 'error',
-                activity_log_id: activityLogId as number,
-                environment_id: slackConnection?.environment_id,
-                timestamp: Date.now(),
-                content,
-                params: payload as unknown as Record<string, unknown>
-            });
-
-            await updateSuccessActivityLog(activityLogId as number, actionResponse.isOk());
 
             if (actionResponse.isOk()) {
                 await logCtx.info(

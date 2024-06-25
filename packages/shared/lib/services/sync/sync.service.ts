@@ -317,7 +317,7 @@ export const getSyncs = async (
                         ...sync,
                         schedule_status: SyncStatus.PAUSED
                     };
-                    await updateScheduleStatus(schedule_id, SyncCommand.PAUSE, null, nangoConnection.environment_id);
+                    await updateScheduleStatus(schedule_id, SyncCommand.PAUSE);
                     await telemetry.log(
                         LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING,
                         'UI: Schedule is marked as paused in temporal but not in the database. The schedule has been updated in the database to be paused.',
@@ -339,7 +339,7 @@ export const getSyncs = async (
                         ...sync,
                         schedule_status: SyncStatus.RUNNING
                     };
-                    await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE, null, nangoConnection.environment_id);
+                    await updateScheduleStatus(schedule_id, SyncCommand.UNPAUSE);
                     await telemetry.log(
                         LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED,
                         'UI: Schedule is marked as running in temporal but not in the database. The schedule has been updated in the database to be running.',

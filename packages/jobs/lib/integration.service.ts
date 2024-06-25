@@ -1,7 +1,7 @@
 import type { Context } from '@temporalio/activity';
 import type { IntegrationServiceInterface, RunScriptOptions, ServiceResponse } from '@nangohq/shared';
 import { integrationFilesAreRemote, isCloud, isProd, getLogger, stringifyError } from '@nangohq/utils';
-import { createActivityLogMessage, localFileService, remoteFileService, NangoError, formatScriptError } from '@nangohq/shared';
+import { localFileService, remoteFileService, NangoError, formatScriptError } from '@nangohq/shared';
 import type { Runner } from './runner/runner.js';
 import { getOrStartRunner, getRunnerId } from './runner/runner.js';
 import tracer from 'dd-trace';
@@ -24,7 +24,7 @@ class IntegrationService implements IntegrationServiceInterface {
         this.sendHeartbeat();
     }
 
-    async cancelScript(syncId: string, environmentId: number): Promise<void> {
+    async cancelScript(syncId: string): Promise<void> {
         const scriptObject = this.runningScripts.get(syncId);
 
         if (!scriptObject) {
@@ -40,14 +40,7 @@ class IntegrationService implements IntegrationServiceInterface {
         if (res.isOk()) {
             this.runningScripts.set(syncId, { ...scriptObject, cancelled: true });
         } else {
-            if (activityLogId && environmentId) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    content: `Failed to cancel script`,
-                    timestamp: Date.now()
-                });
+            if (activityLogId) {
                 const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
                 await logCtx.error('Failed to cancel script');
             }
@@ -87,14 +80,7 @@ class IntegrationService implements IntegrationServiceInterface {
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;
 
-                if (activityLogId && writeToDb) {
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId,
-                        content,
-                        timestamp: Date.now()
-                    });
+                if (writeToDb) {
                     await logCtx?.error(content);
                 }
 
@@ -172,14 +158,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 }
                 const { success, error, response } = formatScriptError(err, errorType, syncName);
 
-                if (activityLogId && writeToDb) {
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId,
-                        content: error.message,
-                        timestamp: Date.now()
-                    });
+                if (writeToDb) {
                     await logCtx?.error(error.message, { error });
                 }
                 return { success, error, response };
@@ -191,14 +170,7 @@ class IntegrationService implements IntegrationServiceInterface {
             const errorMessage = stringifyError(err, { pretty: true });
             const content = `There was an error running integration '${syncName}': ${errorMessage}`;
 
-            if (activityLogId && writeToDb) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id: environmentId,
-                    activity_log_id: activityLogId,
-                    content,
-                    timestamp: Date.now()
-                });
+            if (writeToDb) {
                 await logCtx?.error(content, { error: err });
             }
 
