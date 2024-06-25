@@ -439,11 +439,6 @@ export class SyncRunService {
             const errorType = this.determineErrorType();
 
             return { success: false, error: new NangoError(errorType, errorMessage), response: result };
-        } finally {
-            if (!this.isInvokedImmediately) {
-                const totalRunTime = (Date.now() - startTime) / 1000;
-                metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, totalRunTime);
-            }
         }
     }
 

@@ -81,7 +81,7 @@ const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: 
                     return (
                         flow.name === publicFlow.name ||
                         flowEndpointPaths.some((endpoint) => publicEndpointPaths.includes(endpoint)) ||
-                        flowModelNames.some((model) => publicModelNames.includes(model))
+                        (flow.type === 'sync' && flowModelNames.some((model) => publicModelNames.includes(model)))
                     );
                 })
         );
