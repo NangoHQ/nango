@@ -111,17 +111,17 @@ export type LayoutMode = 'root' | 'nested';
 export interface NangoModel {
     name: string;
     fields: NangoModelField[];
-    isAnon?: boolean;
+    isAnon?: boolean | undefined;
 }
 export interface NangoModelField {
     name: string;
-    value: string | number | boolean | null | undefined | NangoModelField[];
-    dynamic?: boolean;
-    tsType?: boolean;
-    model?: boolean;
-    array?: boolean;
-    union?: boolean;
-    optional?: boolean;
+    value: string | number | boolean | null | NangoModelField[];
+    dynamic?: boolean | undefined;
+    tsType?: boolean | undefined;
+    model?: boolean | undefined;
+    array?: boolean | undefined;
+    union?: boolean | undefined;
+    optional?: boolean | undefined;
 }
 
 export type NangoSyncEndpoint = {

@@ -1,3 +1,5 @@
+import type { JSONSchema7 } from 'json-schema';
+
 import type { Endpoint } from '../api.js';
 import type { IncomingFlowConfig, PostConnectionScriptByProvider } from './incomingFlow.js';
 
@@ -24,6 +26,7 @@ export type PostDeploy = Endpoint<{
         reconcile: boolean;
         debug: boolean;
         singleDeployMode?: boolean;
+        jsonSchema: JSONSchema7;
     };
     Success: any[]; // TODO: move SyncDeploymentResult here
 }>;

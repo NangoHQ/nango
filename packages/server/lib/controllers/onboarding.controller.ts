@@ -209,7 +209,7 @@ class OnboardingController {
                 }
             ];
 
-            const deploy = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter, orchestrator);
+            const deploy = await deployPreBuiltSyncConfig({ environment, account, configs: config, nangoYamlBody: '', logContextGetter, orchestrator });
             if (!deploy.success || deploy.response === null) {
                 void analytics.track(AnalyticsTypes.DEMO_2_ERR, account.id, { user_id: user.id });
                 errorManager.errResFromNangoErr(res, deploy.error);

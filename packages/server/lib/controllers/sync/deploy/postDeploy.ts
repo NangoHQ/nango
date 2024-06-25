@@ -5,7 +5,7 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { AnalyticsTypes, analytics, deploy, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
-import { flowConfigs, postConnectionScriptsByProvider } from './postConfirmation.js';
+import { flowConfigs, jsonSchema, postConnectionScriptsByProvider } from './postConfirmation.js';
 
 const orchestrator = getOrchestrator();
 
@@ -13,6 +13,7 @@ const validation = z
     .object({
         flowConfigs: flowConfigs,
         postConnectionScriptsByProvider: postConnectionScriptsByProvider,
+        jsonSchema: jsonSchema,
         nangoYamlBody: z.string(),
         reconcile: z.boolean(),
         debug: z.boolean(),
