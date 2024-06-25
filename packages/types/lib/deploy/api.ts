@@ -12,6 +12,7 @@ export type PostDeployConfirmation = Endpoint<{
         reconcile: boolean;
         debug: boolean;
         singleDeployMode?: boolean;
+        jsonSchema: JSONSchema7;
     };
     Success: SyncAndActionDifferences;
 }>;
