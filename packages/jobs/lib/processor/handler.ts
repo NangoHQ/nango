@@ -1,3 +1,4 @@
+import tracer from 'dd-trace';
 import type { OrchestratorTask, TaskWebhook, TaskAction, TaskPostConnection, TaskSync } from '@nangohq/nango-orchestrator';
 import { jsonSchema } from '@nangohq/nango-orchestrator';
 import type { JsonValue } from 'type-fest';
@@ -33,23 +34,36 @@ export async function handler(task: OrchestratorTask): Promise<Result<JsonValue>
         abort(task);
     };
     if (task.isSync()) {
-        const start = Date.now();
-        const res = await sync(task);
-        if (res.isErr()) {
-            metrics.increment(metrics.Types.SYNC_FAILURE);
-        } else {
-            metrics.increment(metrics.Types.SYNC_SUCCESS);
-            metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - start);
-        }
+        const span = tracer.startSpan('jobs.handler.sync');
+        return await tracer.scope().activate(span, async () => {
+            const start = Date.now();
+            const res = await sync(task);
+            if (res.isErr()) {
+                metrics.increment(metrics.Types.SYNC_FAILURE);
+            } else {
+                metrics.increment(metrics.Types.SYNC_SUCCESS);
+                metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - start);
+            }
+            return res;
+        });
     }
     if (task.isAction()) {
-        return action(task);
+        const span = tracer.startSpan('jobs.handler.action');
+        return await tracer.scope().activate(span, async () => {
+            return action(task);
+        });
     }
     if (task.isWebhook()) {
-        return webhook(task);
+        const span = tracer.startSpan('jobs.handler.webhook');
+        return await tracer.scope().activate(span, async () => {
+            return webhook(task);
+        });
     }
     if (task.isPostConnection()) {
-        return postConnection(task);
+        const span = tracer.startSpan('jobs.handler.postConnection');
+        return await tracer.scope().activate(span, async () => {
+            return postConnection(task);
+        });
     }
     return Err(`Unreachable`);
 }
