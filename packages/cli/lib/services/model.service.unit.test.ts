@@ -1,12 +1,11 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildModelsTS, fieldToTypescript, fieldsToTypescript } from './model.service.js';
+import { buildModelsTS, fieldToTypescript, fieldsToTypescript, getExportToJSON } from './model.service.js';
 import type { NangoModel } from '@nangohq/types';
-import { load } from './config.service.js';
+import { parse } from './config.service.js';
+import { removeVersion } from '../tests/helpers.js';
 
-function removeVersion(res: string) {
-    return res.replace(/(v[0-9.]+)/, 'vTest');
-}
 describe('buildModelTs', () => {
     it('should return empty (with sdk)', () => {
         const res = buildModelsTS({ parsed: { yamlVersion: 'v2', integrations: [], models: new Map() } });
@@ -69,8 +68,8 @@ describe('buildModelTs', () => {
     });
 
     it('should support all advanced syntax', () => {
-        const { response: parsed } = load(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/advanced-syntax`));
-        const res = buildModelsTS({ parsed: parsed! });
+        const { response } = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/advanced-syntax`));
+        const res = buildModelsTS({ parsed: response!.parsed! });
         const acc = [];
         for (const line of res.split('\n')) {
             if (line === '// ------ SDK') {
@@ -167,5 +166,20 @@ describe('fieldToTypescript', () => {
                 }
             })
         ).toStrictEqual('User[] | string');
+    });
+});
+
+describe('generate exports', () => {
+    describe('json', () => {
+        it('should export to JSON', () => {
+            const folderTS = `/tmp/cli-exports-json`;
+            fs.rmSync(folderTS, { recursive: true, force: true });
+            fs.mkdirSync(folderTS, { recursive: true });
+            const pathTS = path.join(`/tmp/cli-exports-json`, 'schema.ts');
+            fs.writeFileSync(pathTS, `export interface Test { id: string; name: number[]; }`);
+
+            const res = getExportToJSON({ pathTS });
+            expect(removeVersion(JSON.stringify(res, null, 2))).toMatchSnapshot();
+        });
     });
 });
