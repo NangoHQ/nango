@@ -44,25 +44,32 @@ export async function handler(task: OrchestratorTask): Promise<Result<JsonValue>
                 metrics.increment(metrics.Types.SYNC_SUCCESS);
                 metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - start);
             }
+            span.finish();
             return res;
         });
     }
     if (task.isAction()) {
         const span = tracer.startSpan('jobs.handler.action');
         return await tracer.scope().activate(span, async () => {
-            return action(task);
+            const res = await action(task);
+            span.finish();
+            return res;
         });
     }
     if (task.isWebhook()) {
         const span = tracer.startSpan('jobs.handler.webhook');
         return await tracer.scope().activate(span, async () => {
-            return webhook(task);
+            const res = webhook(task);
+            span.finish();
+            return res;
         });
     }
     if (task.isPostConnection()) {
         const span = tracer.startSpan('jobs.handler.postConnection');
         return await tracer.scope().activate(span, async () => {
-            return postConnection(task);
+            const res = postConnection(task);
+            span.finish();
+            return res;
         });
     }
     return Err(`Unreachable`);
