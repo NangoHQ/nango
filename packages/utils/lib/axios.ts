@@ -1,5 +1,6 @@
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import type { AxiosRequestConfig } from 'axios';
 import axios from 'axios';
 import http from 'node:http';
 import type { Agent as HttpAgent } from 'node:http';
@@ -19,8 +20,13 @@ if (hasHttpsProxy) {
     httpsAgent = new HttpsProxyAgent(hasHttpsProxy);
 }
 
-export const axiosInstance = axios.create({
-    proxy: false,
+const config: AxiosRequestConfig = {
     httpAgent: httpAgent,
     httpsAgent: httpsAgent
-});
+};
+
+if (hasHttpProxy || hasHttpsProxy) {
+    config.proxy = false;
+}
+
+export const axiosInstance = axios.create(config);
