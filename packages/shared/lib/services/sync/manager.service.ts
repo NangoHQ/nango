@@ -1,4 +1,4 @@
-import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig } from './config/config.service.js';
+import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { getLatestSyncJob } from './job.service.js';
@@ -12,20 +12,18 @@ import {
     getSyncNamesByConnectionId,
     softDeleteSync
 } from './sync.service.js';
-import { createActivityLog } from '../activity/activity.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
-import type { LogLevel } from '../../models/Activity.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import type { SyncDeploymentResult, Sync, SyncType, ReportedSyncJobStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { SyncStatus, ScheduleStatus, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import { SyncStatus, ScheduleStatus, SyncCommand } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
-import { LogActionEnum } from '../../models/Activity.js';
+import { LogActionEnum } from '../../models/Telemetry.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
 import type { Environment } from '../../models/Environment.js';
@@ -234,29 +232,11 @@ export class SyncManagerService {
         connectionId?: string;
         initiator: string;
     }): Promise<ServiceResponse<boolean>> {
-        const action = CommandToActivityLog[command];
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id);
         const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
 
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: connectionId || '',
-            provider: provider!.provider,
-            provider_config_key: providerConfigKey,
-            environment_id: environment.id
-        };
-        const activityLogId = await createActivityLog(log);
-        if (!activityLogId) {
-            return { success: false, error: new NangoError('failed_to_create_activity_log'), response: false };
-        }
-
         const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
+            { operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
             { account, environment, integration: { id: provider!.id!, name: provider!.unique_key, provider: provider!.provider } }
         );
 
@@ -287,7 +267,6 @@ export class SyncManagerService {
                     scheduleId: schedule.schedule_id,
                     syncId: sync?.id,
                     command,
-                    activityLogId,
                     environmentId: environment.id,
                     providerConfigKey,
                     connectionId,
@@ -329,7 +308,6 @@ export class SyncManagerService {
                     scheduleId: schedule.schedule_id,
                     syncId: sync.id,
                     command,
-                    activityLogId,
                     environmentId: environment.id,
                     providerConfigKey,
                     connectionId: connection.connection_id,
@@ -345,7 +323,7 @@ export class SyncManagerService {
             }
         }
 
-        await logCtx.info('Sync was successfully updated', { action, syncNames });
+        await logCtx.info('Sync was successfully updated', { command, syncNames });
         await logCtx.success();
 
         return { success: true, error: null, response: true };
@@ -378,7 +356,7 @@ export class SyncManagerService {
                     continue;
                 }
 
-                const reportedStatus = await this.syncStatus(sync, environmentId, includeJobStatus, orchestrator);
+                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator });
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -393,7 +371,7 @@ export class SyncManagerService {
             }
 
             for (const sync of syncs) {
-                const reportedStatus = await this.syncStatus(sync, environmentId, includeJobStatus, orchestrator);
+                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator });
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -483,13 +461,30 @@ export class SyncManagerService {
         }
     }
 
-    private async syncStatus(sync: Sync, environmentId: number, includeJobStatus: boolean, orchestrator: Orchestrator): Promise<ReportedSyncJobStatus> {
+    private async syncStatus({
+        sync,
+        environmentId,
+        providerConfigKey,
+        includeJobStatus,
+        orchestrator
+    }: {
+        sync: Sync;
+        environmentId: number;
+        providerConfigKey: string;
+        includeJobStatus: boolean;
+        orchestrator: Orchestrator;
+    }): Promise<ReportedSyncJobStatus> {
         const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
         const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
         const isOrchestrator = isGloballyEnabled || isEnvEnabled;
         if (isOrchestrator) {
             const latestJob = await getLatestSyncJob(sync.id);
             const schedules = await orchestrator.searchSchedules([{ syncId: sync.id, environmentId }]);
+            let frequency = sync.frequency;
+            if (!frequency) {
+                const syncConfig = await getSyncConfigByParams(environmentId, sync.name, providerConfigKey);
+                frequency = syncConfig?.runs || null;
+            }
             if (schedules.isErr()) {
                 throw new Error(`Failed to get schedule for sync ${sync.id} in environment ${environmentId}: ${stringifyError(schedules.error)}`);
             }
@@ -504,7 +499,7 @@ export class SyncManagerService {
                 nextScheduledSyncAt: schedule.nextDueDate,
                 name: sync.name,
                 status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule.state),
-                frequency: sync.frequency,
+                frequency,
                 latestResult: latestJob?.result,
                 latestExecutionStatus: latestJob?.status,
                 ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})

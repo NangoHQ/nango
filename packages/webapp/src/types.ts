@@ -51,7 +51,6 @@ export interface SyncResponse {
         updated_at: string;
         type: 'INITIAL' | 'INCREMENTAL';
         status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
-        activity_log_id: number | null;
         result: SyncResult;
         job_id: string;
         sync_config_id: number;

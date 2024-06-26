@@ -1,6 +1,6 @@
 import db, { schema, dbNamespace } from '@nangohq/database';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
-import { LogActionEnum } from '../../models/Activity.js';
+import { LogActionEnum } from '../../models/Telemetry.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Job as SyncJob, SyncResultByModel } from '../../models/Sync.js';
 import { SyncStatus, SyncType } from '../../models/Sync.js';

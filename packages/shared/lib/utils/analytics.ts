@@ -7,7 +7,7 @@ import accountService from '../services/account.service.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import type { Account, User } from '../models/Admin.js';
-import { LogActionEnum } from '../models/Activity.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import { NANGO_VERSION } from '../version.js';
 
 export enum AnalyticsTypes {

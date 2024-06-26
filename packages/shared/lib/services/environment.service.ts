@@ -4,7 +4,7 @@ import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '@nangohq/types';
 import type { Account } from '../models/Admin.js';
-import { LogActionEnum } from '../models/Activity.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import accountService from './account.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isCloud } from '@nangohq/utils';
