@@ -1,14 +1,19 @@
+import axios from 'axios';
+import querystring from 'querystring';
+import * as uuid from 'uuid';
 import { z } from 'zod';
+import * as crypto from 'node:crypto';
+import type { OAuthSession } from '@nangohq/shared';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP } from '@nangohq/utils';
+import { analytics, configService, AnalyticsTypes, getConnectionConfig, getOauthCallbackUrl, interpolateStringFromObject } from '@nangohq/shared';
+import oAuthSessionService from '../../services/oauth-session.service.js';
+import { missesInterpolationParam } from '../../utils/utils.js';
+import * as WSErrBuilder from '../../utils/web-socket-error.js';
 import type { TbaAuthorization } from '@nangohq/types';
-
-const bodyValidation = z
-    .object({
-        token_id: z.string().nonempty(),
-        token_secret: z.string().nonempty()
-    })
-    .strict();
+import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
+import { hmacCheck } from '../../utils/hmac.js';
+import { percentEncode, collectParameters } from '../../helpers/tba.js';
 
 const queryStringValidation = z
     .object({
@@ -16,8 +21,11 @@ const queryStringValidation = z
         params: z.record(z.any()).optional(),
         authorization_params: z.record(z.any()).optional(),
         user_scope: z.string().optional(),
+        ws_client_id: z.string().optional(),
         public_key: z.string().uuid(),
-        hmac: z.string().optional()
+        hmac: z.string().optional(),
+        token_id: z.string().nonempty(),
+        token_secret: z.string().nonempty()
     })
     .strict();
 
@@ -28,14 +36,6 @@ const paramValidation = z
     .strict();
 
 export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) => {
-    const val = bodyValidation.safeParse(req.body);
-    if (!val.success) {
-        res.status(400).send({
-            error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }
-        });
-        return;
-    }
-
     const queryStringVal = queryStringValidation.safeParse(req.query);
 
     if (!queryStringVal.success) {
@@ -53,17 +53,182 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
         return;
     }
 
-    const { environment } = res.locals;
+    const { account, environment } = res.locals;
 
-    const body: Required<TbaAuthorization['Body']> = val.data;
-
-    const { token_id: tokenId, token_secret: tokenSecret } = body;
-    const { connection_id: connectionId, params } = queryStringVal.data;
+    const { token_id: tokenId, token_secret: tokenSecret, connection_id: connectionId, params, ws_client_id: wsClientId } = queryStringVal.data;
     const { providerConfigKey } = paramVal.data;
 
-    console.log(environment, tokenId, tokenSecret, params);
+    const logCtx = await logContextGetter.create(
+        {
+            operation: { type: 'auth', action: 'create_connection' },
+            message: 'Create connection via TBA',
+            expiresAt: defaultOperationExpiration.auth()
+        },
+        { account, environment }
+    );
+    void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await hmacCheck({
+        environment,
+        logCtx,
+        providerConfigKey,
+        connectionId,
+        hmac: queryStringVal.data.hmac,
+        res
+    });
 
-    res.status(201).send({ connectionId, providerConfigKey });
+    const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+
+    if (config == null) {
+        await logCtx.error('Unknown provider config');
+        await logCtx.failed();
+
+        res.status(404).send({
+            error: { code: 'unknown_provider_config' }
+        });
+
+        return;
+    }
+
+    const template = configService.getTemplate(config.provider);
+
+    if (template.auth_mode !== 'TBA') {
+        await logCtx.error('Provider does not support TBA auth', { provider: config.provider });
+        await logCtx.failed();
+
+        res.status(400).send({
+            error: { code: 'invalid_auth_mode' }
+        });
+
+        return;
+    }
+
+    await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
+
+    const connectionConfig = params ? getConnectionConfig(params) : {};
+    const tokenUrl: string = template.token_url as string;
+
+    if (!tokenUrl) {
+        await logCtx.error('Missing token URL in provider config', { provider: config.provider });
+        await logCtx.failed();
+
+        res.status(400).send({
+            error: { code: 'missing_token_url' }
+        });
+    }
+
+    if (missesInterpolationParam(tokenUrl, connectionConfig)) {
+        const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
+        await logCtx.error(error.message, { connectionConfig });
+        await logCtx.failed();
+
+        res.status(400).send({
+            error: { code: 'missing_connection_config_param', message: error.message }
+        });
+        return;
+    }
+
+    const tokenRequestUrl = interpolateStringFromObject(tokenUrl, {
+        connectionConfig
+    });
+
+    const callbackUrl = await getOauthCallbackUrl(environment.id);
+
+    const nonce = crypto.randomBytes(24).toString('hex');
+    const timestamp = Math.floor(Date.now() / 1000);
+    const signatureMethod = 'HMAC-SHA256';
+
+    const oauthParams = {
+        oauth_consumer_key: config.oauth_client_id,
+        oauth_nonce: nonce,
+        oauth_signature_method: signatureMethod,
+        oauth_timestamp: timestamp.toString(),
+        oauth_callback: callbackUrl
+    };
+
+    const concatenatedParams = collectParameters(oauthParams);
+
+    const baseString = `POST&${percentEncode(tokenRequestUrl)}&${percentEncode(concatenatedParams)}`;
+
+    const emptyTokenSecret = '';
+    const hash = crypto
+        .createHmac('sha256', `${percentEncode(config.oauth_client_secret)}&${percentEncode(emptyTokenSecret)}`)
+        .update(baseString)
+        .digest('base64');
+
+    const authHeader =
+        `OAuth oauth_consumer_key="${percentEncode(config.oauth_client_id)}",` +
+        `oauth_nonce="${nonce}",` +
+        `oauth_timestamp="${timestamp}",` +
+        `oauth_signature_method="${signatureMethod}",` +
+        `oauth_callback="${percentEncode(callbackUrl)}",` +
+        `oauth_signature="${percentEncode(hash)}"`;
+
+    const headers = {
+        Authorization: authHeader
+    };
+
+    const response = await axios.post(tokenRequestUrl, null, { headers });
+
+    const { data } = response;
+
+    if (!data) {
+        await logCtx.error('No data returned from token request');
+        await logCtx.failed();
+
+        res.status(400).send({
+            error: { code: 'no_data_returned_from_token_request' }
+        });
+
+        return;
+    }
+
+    const parsedData = querystring.parse(data);
+    const { oauth_token, oauth_token_secret } = parsedData;
+
+    const authorizeTokenUrl = template.authorization_url as string;
+
+    const fullAuthorizeTokenUrl = interpolateStringFromObject(authorizeTokenUrl, {
+        connectionConfig
+    });
+
+    const session: OAuthSession = {
+        providerConfigKey: providerConfigKey,
+        provider: config.provider,
+        connectionId: connectionId,
+        callbackUrl: callbackUrl,
+        authMode: template.auth_mode,
+        codeVerifier: crypto.randomBytes(24).toString('hex'),
+        id: uuid.v1(),
+        connectionConfig: {
+            ...connectionConfig,
+            oauth_token: oauth_token as string,
+            oauth_token_secret: oauth_token_secret as string,
+            consumer_key: config.oauth_client_id,
+            token_id: tokenId,
+            token_secret: tokenSecret
+        },
+        environmentId: environment.id,
+        webSocketClientId: wsClientId,
+        activityLogId: logCtx.id
+    };
+
+    await oAuthSessionService.create(session);
+
+    const redirectUrl = new URL(fullAuthorizeTokenUrl);
+    redirectUrl.searchParams.append('oauth_token', oauth_token as string);
+    redirectUrl.searchParams.append('state', session.id.replace(/-/g, ''));
+
+    await logCtx.info('Redirecting', {
+        authorizationUri: redirectUrl.toString(),
+        providerConfigKey,
+        connectionId,
+        params: {
+            oauth_token: oauth_token as string,
+            state: session.id.replace(/-/g, '')
+        },
+        connectionConfig
+    });
+
+    res.redirect(redirectUrl.toString());
 });

@@ -123,7 +123,8 @@ export interface CredentialsRefresh<T = unknown> {
 
 export interface TbaCredentials {
     type: AuthModes['TBA'];
-    access_token: string;
+    token: string;
+    secret: string;
 }
 
 export type UnauthCredentials = Record<string, never>;

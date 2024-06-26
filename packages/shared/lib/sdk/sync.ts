@@ -184,7 +184,8 @@ interface OAuth1Credentials extends CredentialsCommon {
 
 interface TbaCredentials {
     type: AuthModes.TBA;
-    access_token: string;
+    token: string;
+    secret: string;
 }
 
 type UnauthCredentials = Record<string, never>;

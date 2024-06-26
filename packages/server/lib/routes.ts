@@ -98,7 +98,7 @@ router.route('/oauth2/auth/:providerConfigKey').post(apiPublicAuth, oauthControl
 router.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
 router.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
 router.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
-router.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, tbaAuthorization);
+router.route('/auth/tba/:providerConfigKey').get(apiPublicAuth, tbaAuthorization);
 router.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
 
 // API Admin routes
