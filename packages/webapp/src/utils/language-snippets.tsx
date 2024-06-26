@@ -1,10 +1,21 @@
+import type { NangoModel } from '@nangohq/types';
 import type { NangoSyncEndpoint, NangoSyncModel, HTTP_VERB } from '../types';
 import { isProd } from './utils';
+import { legacyModelToObject, modelToString } from './scripts';
 
 const maskedKey = '<secret-key-from-environment-settings>';
 
-export const nodeSnippet = (models: string | NangoSyncModel[] | undefined, secretKey: string, connectionId: string, providerConfigKey: string) => {
-    const model = Array.isArray(models) ? models[0]?.name : models;
+export function nodeSyncSnippet({
+    modelName,
+    secretKey,
+    connectionId,
+    providerConfigKey
+}: {
+    modelName: string;
+    secretKey: string;
+    connectionId: string;
+    providerConfigKey: string;
+}) {
     const secretKeyDisplay = isProd() ? maskedKey : secretKey;
 
     return `import { Nango } from '@nangohq/node';
@@ -13,36 +24,25 @@ const nango = new Nango({ secretKey: '${secretKeyDisplay}' });
 const records = await nango.listRecords({
     providerConfigKey: '${providerConfigKey}',
     connectionId: '${connectionId}',
-    model: '${model}'
+    model: '${modelName}'
 });
 `;
-};
+}
 
-export const nodeActionSnippet = (
-    actionName: string,
-    secretKey: string,
-    connectionId: string,
-    providerConfigKey: string,
-    input?: Record<string, any> | string,
-    safeInput?: boolean
-) => {
-    let formattedInput = '';
-    if (!safeInput) {
-        if (typeof input === 'string') {
-            formattedInput = `'<${input}>'`;
-        } else if (input && typeof input === 'object') {
-            formattedInput = `{
-${JSON.stringify(input, null, 2)
-    .split('\n')
-    .slice(1)
-    .join('\n')
-    .replace(/^/gm, '    ')
-    .replace(/: "([^"]*)"/g, ': "<$1>"')}`;
-        }
-    } else {
-        formattedInput = `{
-${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}`;
-    }
+export function nodeActionSnippet({
+    actionName,
+    secretKey,
+    connectionId,
+    providerConfigKey,
+    input
+}: {
+    actionName: string;
+    secretKey: string;
+    connectionId: string;
+    providerConfigKey: string;
+    input?: NangoModel | NangoSyncModel;
+}) {
+    const formattedInput = input ? modelToString(input) : '';
 
     const secretKeyDisplay = isProd() ? maskedKey : secretKey;
 
@@ -53,20 +53,20 @@ const response = await nango.triggerAction(
     '${providerConfigKey}',
     '${connectionId}',
     '${actionName}',
-    ${formattedInput}
+${formattedInput}
 );
 `;
-};
+}
 
-export const curlSnippet = (
+export function curlSnippet(
     baseUrl: string,
     endpoint: string | NangoSyncEndpoint | NangoSyncEndpoint[],
     secretKey: string,
     connectionId: string,
     providerConfigKey: string,
-    input?: Record<string, any> | string,
+    input?: NangoModel | NangoSyncModel,
     method = 'GET'
-) => {
+) {
     let curlMethod: HTTP_VERB = method as HTTP_VERB;
     const secretKeyDisplay = isProd() ? maskedKey : secretKey;
     if (typeof endpoint !== 'string') {
@@ -74,18 +74,7 @@ export const curlSnippet = (
         endpoint = (Array.isArray(endpoint) ? endpoint[0][curlMethod] : endpoint[curlMethod]) as string;
     }
 
-    let formattedInput = '';
-    if (typeof input === 'string' && input !== 'undefined') {
-        formattedInput = input;
-    } else if (input && typeof input === 'object') {
-        formattedInput = `{
-${JSON.stringify(input, null, 2)
-    .split('\n')
-    .slice(1)
-    .join('\n')
-    .replace(/^/gm, '    ')
-    .replace(/: "([^"]*)"/g, ': "<$1>"')}`;
-    }
+    const formattedInput = input ? modelToString(input) : '';
 
     return `
     curl --request ${curlMethod} \\
@@ -96,7 +85,7 @@ ${JSON.stringify(input, null, 2)
     --header 'Provider-Config-Key: ${providerConfigKey}' ${formattedInput ? '\\' : ''}
     ${formattedInput ? `--data '${formattedInput}'` : ''}
         `;
-};
+}
 
 export const autoStartSnippet = (secretKey: string, provider: string, sync: string) => {
     const secretKeyDisplay = isProd() ? maskedKey : secretKey;
@@ -108,7 +97,7 @@ await nango.startSync('${provider}', ['${sync}'], '<CONNECTION-ID>');
 `;
 };
 
-export const setMetadaSnippet = (secretKey: string, provider: string, input: Record<string, any>) => {
+export const setMetadataSnippet = (secretKey: string, provider: string, input?: NangoSyncModel) => {
     return `import Nango from '@nangohq/node';
 
 const nango = new Nango({ secretKey: '${secretKey}' });
@@ -116,7 +105,7 @@ const nango = new Nango({ secretKey: '${secretKey}' });
 await nango.setMetadata(
     '${provider}',
     '<CONNECTION-ID>',
-    ${input ? `{\n${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}` : ''}
+    ${input ? `{\n${JSON.stringify(legacyModelToObject(input), null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}` : ''}
 );
 `;
 };

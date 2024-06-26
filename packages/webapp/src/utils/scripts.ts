@@ -1,14 +1,25 @@
 import type { NangoModel, NangoModelField } from '@nangohq/types';
+import type { NangoSyncModel } from '../types';
 
-export function modelToTypescript(models: NangoModel[], modelName: string) {
-    const model = models.find((m) => m.name === modelName)!;
+export function isNewModel(model: NangoSyncModel | NangoModel): model is NangoModel {
+    return 'fields' in model && model.fields.length > 0 && 'value' in model.fields[0];
+}
+
+export function getSyncResponse(model: NangoSyncModel | NangoModel) {
+    let record = '';
+    if (isNewModel(model)) {
+        record = fieldsToTypescript({ fields: model.fields }).join('\n    ');
+    } else {
+        const tmp = JSON.stringify(legacyModelToObject(model), null, 2).slice(2);
+        record = tmp.substring(0, tmp.length - 2);
+    }
     return `{
   "records": [
     {
-    ${fieldsToTypescript({ fields: model.fields }).join('\n    ')}
+    ${record}
       "_nango_metadata": {
         "deleted_at": "<date | null>",
-        "last_action": "ADDED|UPDATED|DELETED",
+        "last_action": "ADDED | UPDATED | DELETED",
         "first_seen_at": "<date>",
         "cursor": "<string>",
         "last_modified_at": "<date>"
@@ -17,6 +28,24 @@ export function modelToTypescript(models: NangoModel[], modelName: string) {
   ],
   "next_cursor": "MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz..."
 }`;
+}
+
+export function legacyModelToObject(model: NangoSyncModel) {
+    const obj: Record<string, any> = {};
+    for (const field of model.fields) {
+        obj[field.name] = field.type;
+    }
+    return obj;
+}
+
+export function modelToString(model: NangoSyncModel | NangoModel) {
+    if (isNewModel(model)) {
+        return `    {
+${fieldsToTypescript({ fields: model.fields }).join('\n').replace(/^/gm, '    ')}
+    }`;
+    } else {
+        return JSON.stringify(legacyModelToObject(model), null, 2).split('\n').join('\n').replace(/^/gm, '    ');
+    }
 }
 
 /**

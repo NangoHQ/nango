@@ -2,7 +2,7 @@ import { clsx } from 'clsx';
 import type { ClassValue } from 'clsx';
 import { format } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
-import type { Flow, SyncResult, NangoSyncModel } from '../types';
+import type { SyncResult } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
@@ -198,64 +198,6 @@ export function getRunTime(created_at: string, updated_at: string): string {
     }
 
     return runtime.trim() || '-';
-}
-
-export function createExampleForType(type: string): any {
-    if (typeof type !== 'string') {
-        return {};
-    }
-
-    return `<${type}>`;
-}
-
-export function generateExampleValueForProperty(model: NangoSyncModel): Record<string, boolean | string | number> {
-    if (!Array.isArray(model?.fields)) {
-        return createExampleForType(model?.name);
-    }
-    const example = {} as Record<string, boolean | string | number>;
-    for (const field of model.fields) {
-        example[field.name] = createExampleForType(field.type);
-    }
-    return example;
-}
-
-export const parseInput = (flow: Flow) => {
-    let input;
-
-    if (flow?.input && Object.keys(flow?.input).length > 0 && !flow.input.fields) {
-        input = flow.input.name;
-    } else if (flow?.input && Object.keys(flow?.input).length > 0) {
-        const rawInput = {} as Record<string, boolean | string | number>;
-        for (const field of flow.input.fields) {
-            rawInput[field.name] = field.type;
-        }
-        input = rawInput;
-    } else {
-        input = undefined;
-    }
-
-    return input;
-};
-
-export function generateResponseModel(models: NangoSyncModel[], output: string | undefined, isSync: boolean): Record<string, any> {
-    if (!output) {
-        return {};
-    }
-    const model = models.find((model) => model.name === output);
-    const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
-    if (!isSync) {
-        return model?.name?.includes('[]') ? [jsonResponse] : jsonResponse;
-    }
-    const metadata = {
-        _nango_metadata: {
-            deleted_at: '<date| null>',
-            last_action: 'ADDED|UPDATED|DELETED',
-            first_seen_at: '<date>',
-            cursor: '<string>',
-            last_modified_at: '<date>'
-        }
-    };
-    return { ...jsonResponse, ...metadata };
 }
 
 export function cn(...inputs: ClassValue[]) {
