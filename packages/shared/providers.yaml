@@ -1302,6 +1302,19 @@ jira:
     post_connection_script: jira-post-connection
     webhook_routing_script: jira-webhook-routing
     docs: https://docs.nango.dev/integrations/all/jira
+jira-basic:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: BASIC
+    proxy:
+        retry:
+            after: 'Retry-After'
+        base_url: https://${connectionConfig.subdomain}.atlassian.net
+        verification:
+            method: GET
+            endpoint: /rest/api/3/events
+    docs: https://docs.nango.dev/integrations/all/jira
 jira-data-center:
     categories:
         - productivity
