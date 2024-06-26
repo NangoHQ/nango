@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
-import { LogActionEnum } from '../models/Activity.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import environmentService from './environment.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 

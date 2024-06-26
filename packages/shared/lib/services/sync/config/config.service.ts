@@ -3,7 +3,7 @@ import db, { schema, dbNamespace } from '@nangohq/database';
 import { getLogger } from '@nangohq/utils';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
-import { LogActionEnum } from '../../../models/Activity.js';
+import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { Action, SyncConfigWithProvider, SyncType, SyncConfig } from '../../../models/Sync.js';
 import { convertV2ConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';

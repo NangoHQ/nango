@@ -5,7 +5,7 @@ import environmentService from '../../environment.service.js';
 import accountService from '../../account.service.js';
 import { getSyncsByProviderConfigAndSyncName } from '../sync.service.js';
 import connectionService from '../../connection.service.js';
-import { LogActionEnum } from '../../../models/Activity.js';
+import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
 import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType } from '../../../models/Sync.js';
 import type { IncomingFlowConfig, IncomingPreBuiltFlowConfig, PostConnectionScriptByProvider } from '@nangohq/types';

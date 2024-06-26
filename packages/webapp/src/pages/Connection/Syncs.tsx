@@ -122,16 +122,14 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
     };
 
     const RenderBubble = ({ sync, children }: { sync: SyncResponse; children: ReactNode }) => {
-        const hasActivityLogId = sync.latest_sync?.activity_log_id !== null;
         const linkPath = getLogsUrl({
             env,
-            operationId: sync.latest_sync?.activity_log_id,
             connections: connection?.connection_id,
             syncs: sync.name,
             day: new Date(sync.latest_sync?.updated_at)
         });
 
-        return hasActivityLogId ? <Link to={linkPath}>{children}</Link> : <div>{children}</div>;
+        return <Link to={linkPath}>{children}</Link>;
     };
 
     if (!loaded || !syncLoaded || syncs === null) return <Loading spaceRatio={2.5} className="top-24" />;
@@ -242,42 +240,30 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                     <div className="flex items-center w-28">
                                         {sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
                                             <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.latest_sync.models)}</pre>} type="dark">
-                                                {sync.latest_sync?.activity_log_id !== null ? (
-                                                    <Link
-                                                        to={getLogsUrl({
-                                                            env,
-                                                            operationId: sync.latest_sync?.activity_log_id,
-                                                            connections: connection?.connection_id,
-                                                            syncs: sync.name,
-                                                            day: new Date(sync.latest_sync?.updated_at)
-                                                        })}
-                                                        className="block w-32 ml-1"
-                                                    >
-                                                        {formatDateToUSFormat(sync.latest_sync?.updated_at)}
-                                                    </Link>
-                                                ) : (
-                                                    <span className="">{formatDateToUSFormat(sync.latest_sync?.updated_at)}</span>
-                                                )}
+                                                <Link
+                                                    to={getLogsUrl({
+                                                        env,
+                                                        connections: connection?.connection_id,
+                                                        syncs: sync.name,
+                                                        day: new Date(sync.latest_sync?.updated_at)
+                                                    })}
+                                                    className="block w-32 ml-1"
+                                                >
+                                                    {formatDateToUSFormat(sync.latest_sync?.updated_at)}
+                                                </Link>
                                             </Tooltip>
                                         ) : (
-                                            <>
-                                                {sync.latest_sync?.activity_log_id ? (
-                                                    <Link
-                                                        to={getLogsUrl({
-                                                            env,
-                                                            operationId: sync.latest_sync?.activity_log_id,
-                                                            connections: connection?.connection_id,
-                                                            syncs: sync.name,
-                                                            day: new Date(sync.latest_sync?.updated_at)
-                                                        })}
-                                                        className=""
-                                                    >
-                                                        {formatDateToUSFormat(sync.latest_sync?.updated_at)}
-                                                    </Link>
-                                                ) : (
-                                                    <span className="">{formatDateToUSFormat(sync.latest_sync?.updated_at)}</span>
-                                                )}
-                                            </>
+                                            <Link
+                                                to={getLogsUrl({
+                                                    env,
+                                                    connections: connection?.connection_id,
+                                                    syncs: sync.name,
+                                                    day: new Date(sync.latest_sync?.updated_at)
+                                                })}
+                                                className=""
+                                            >
+                                                {formatDateToUSFormat(sync.latest_sync?.updated_at)}
+                                            </Link>
                                         )}
                                     </div>
                                     <div className="flex items-center w-28">
@@ -419,7 +405,6 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                                             <Link
                                                                 to={getLogsUrl({
                                                                     env,
-                                                                    operationId: sync.latest_sync?.activity_log_id,
                                                                     connections: connection?.connection_id,
                                                                     syncs: sync.name,
                                                                     day: new Date(sync.latest_sync?.updated_at)
