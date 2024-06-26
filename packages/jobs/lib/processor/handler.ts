@@ -1,8 +1,10 @@
+import tracer from 'dd-trace';
 import type { OrchestratorTask, TaskWebhook, TaskAction, TaskPostConnection, TaskSync } from '@nangohq/nango-orchestrator';
 import { jsonSchema } from '@nangohq/nango-orchestrator';
 import type { JsonValue } from 'type-fest';
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
+import type { Job } from '@nangohq/shared';
 import {
     configService,
     createSyncJob,
@@ -30,16 +32,43 @@ export async function handler(task: OrchestratorTask): Promise<Result<JsonValue>
         abort(task);
     };
     if (task.isSync()) {
-        return sync(task);
+        const span = tracer.startSpan('jobs.handler.sync');
+        return await tracer.scope().activate(span, async () => {
+            const start = Date.now();
+            const res = await sync(task);
+            if (res.isErr()) {
+                metrics.increment(metrics.Types.SYNC_FAILURE);
+            } else {
+                metrics.increment(metrics.Types.SYNC_SUCCESS);
+                metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - start);
+            }
+            span.finish();
+            return res;
+        });
     }
     if (task.isAction()) {
-        return action(task);
+        const span = tracer.startSpan('jobs.handler.action');
+        return await tracer.scope().activate(span, async () => {
+            const res = await action(task);
+            span.finish();
+            return res;
+        });
     }
     if (task.isWebhook()) {
-        return webhook(task);
+        const span = tracer.startSpan('jobs.handler.webhook');
+        return await tracer.scope().activate(span, async () => {
+            const res = webhook(task);
+            span.finish();
+            return res;
+        });
     }
     if (task.isPostConnection()) {
-        return postConnection(task);
+        const span = tracer.startSpan('jobs.handler.postConnection');
+        return await tracer.scope().activate(span, async () => {
+            const res = postConnection(task);
+            span.finish();
+            return res;
+        });
     }
     return Err(`Unreachable`);
 }
@@ -63,19 +92,24 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
     if (!isOrchestrator) {
         return Ok({ dryrun: true });
     }
-    let logCtx: LogContext | undefined;
-    const lastSyncDate = await getLastSyncDate(task.syncId);
-    const providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
-    if (providerConfig === null) {
-        return Err(`Provider config not found for connection: ${task.connection.connection_id}. TaskId: ${task.id}`);
-    }
-    const syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
-    const syncJob = await createSyncJob(task.syncId, syncType, SyncStatus.RUNNING, task.name, task.connection, task.id);
-    if (!syncJob) {
-        return Err(`Failed to create sync job for sync: ${task.syncId}. TaskId: ${task.id}`);
-    }
 
+    let logCtx: LogContext | undefined;
+    let syncJob: Pick<Job, 'id'> | null = null;
+    let lastSyncDate: Date | null = null;
+    let syncType: SyncType | null = null;
     try {
+        lastSyncDate = await getLastSyncDate(task.syncId);
+        const providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
+        if (providerConfig === null) {
+            return Err(`Provider config not found for connection: ${task.connection}. TaskId: ${task.id}`);
+        }
+
+        syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
+        syncJob = await createSyncJob(task.syncId, syncType, SyncStatus.RUNNING, task.name, task.connection, task.id);
+        if (!syncJob) {
+            return Err(`Failed to create sync job for sync: ${task.syncId}. TaskId: ${task.id}`);
+        }
+
         const syncConfig = await getSyncConfigRaw({
             environmentId: providerConfig.environment_id,
             config_id: providerConfig.id!,
@@ -145,8 +179,7 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
         return Ok(res.data);
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
-        const content = `The ${syncType} sync failed to run: ${prettyError}`;
-
+        const content = `The ${syncType || ''} sync failed to run: ${prettyError}`;
         if (logCtx) {
             await logCtx.error(content, { error: err });
             await logCtx.failed();
@@ -155,7 +188,7 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
         errorManager.report(content, {
             environmentId: task.connection.environment_id,
             source: ErrorSourceEnum.PLATFORM,
-            operation: syncType,
+            operation: syncType || '',
             metadata: {
                 connectionId: task.connection.connection_id,
                 providerConfigKey: task.connection.provider_config_key,
@@ -164,7 +197,10 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
             }
         });
 
-        await updateSyncJobStatus(syncJob.id, SyncStatus.ERROR);
+        if (syncJob) {
+            await updateSyncJobStatus(syncJob.id, SyncStatus.ERROR);
+        }
+
         return Err(`Failed sync run: ${prettyError}. TaskId: ${task.id}`);
     }
 }
