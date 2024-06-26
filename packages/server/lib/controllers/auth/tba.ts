@@ -24,7 +24,13 @@ const queryStringValidation = z
         public_key: z.string().uuid(),
         hmac: z.string().optional(),
         token_id: z.string().nonempty(),
-        token_secret: z.string().nonempty()
+        token_secret: z.string().nonempty(),
+        credentials: z
+            .object({
+                oauth_client_id_override: z.string().optional(),
+                oauth_client_secret_override: z.string().optional()
+            })
+            .optional()
     })
     .strict();
 
@@ -54,7 +60,7 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
 
     const { account, environment } = res.locals;
 
-    const { token_id: tokenId, token_secret: tokenSecret, connection_id: connectionId, params, ws_client_id: wsClientId } = queryStringVal.data;
+    const { token_id: tokenId, token_secret: tokenSecret, connection_id: connectionId, params, ws_client_id: wsClientId, credentials } = queryStringVal.data;
     const { providerConfigKey } = paramVal.data;
 
     const logCtx = await logContextGetter.create(
@@ -135,8 +141,11 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
 
     const { nonce, timestamp } = getTbaMetaParams();
 
+    const oauth_consumer_key = credentials?.oauth_client_id_override || config.oauth_client_id;
+    const oauth_client_secret = credentials?.oauth_client_secret_override || config.oauth_client_secret;
+
     const oauthParams = {
-        oauth_consumer_key: config.oauth_client_id,
+        oauth_consumer_key,
         oauth_nonce: nonce,
         oauth_signature_method: SIGNATURE_METHOD,
         oauth_timestamp: timestamp,
@@ -153,12 +162,12 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
 
     const hash = generateSignature({
         baseString,
-        clientSecret: config.oauth_client_secret,
+        clientSecret: oauth_client_secret,
         tokenSecret: emptyTokenSecret
     });
 
     const authHeader =
-        `OAuth oauth_consumer_key="${percentEncode(config.oauth_client_id)}",` +
+        `OAuth oauth_consumer_key="${percentEncode(oauth_consumer_key)}",` +
         `oauth_nonce="${nonce}",` +
         `oauth_timestamp="${timestamp}",` +
         `oauth_signature_method="${SIGNATURE_METHOD}",` +
@@ -205,7 +214,7 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
             ...connectionConfig,
             oauth_token: oauth_token as string,
             oauth_token_secret: oauth_token_secret as string,
-            consumer_key: config.oauth_client_id,
+            consumer_key: oauth_consumer_key,
             token_id: tokenId,
             token_secret: tokenSecret
         },

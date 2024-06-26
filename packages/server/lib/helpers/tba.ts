@@ -31,8 +31,10 @@ export async function makeAccessTokenRequest({
 
     const { nonce, timestamp } = getTbaMetaParams();
 
+    const oauth_consumer_key = connectionConfig['consumer_key'] || config.oauth_client_id;
+
     const oauthParams = {
-        oauth_consumer_key: config.oauth_client_id,
+        oauth_consumer_key,
         oauth_nonce: nonce,
         oauth_signature_method: SIGNATURE_METHOD,
         oauth_timestamp: timestamp.toString(),
@@ -50,12 +52,12 @@ export async function makeAccessTokenRequest({
 
     const hash = generateSignature({
         baseString,
-        clientSecret: config.oauth_client_secret,
+        clientSecret: connectionConfig['oauth_token_secret'] || config.oauth_client_secret,
         tokenSecret: oauth_token_secret as string
     });
 
     const authHeader =
-        `OAuth oauth_consumer_key="${percentEncode(config.oauth_client_id)}",` +
+        `OAuth oauth_consumer_key="${percentEncode(oauth_consumer_key)}",` +
         `oauth_token="${oauth_token}",` +
         `oauth_verifier="${oauth_verifier}",` +
         `oauth_nonce="${nonce}",` +
