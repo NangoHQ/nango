@@ -62,7 +62,7 @@ class Telemetry {
         eventId: string,
         message: string,
         operation: string,
-        context: Record<string, string> & { level?: 'info' | 'error' | 'warn' } = {},
+        context: Record<string, string> & { level?: 'info' | 'error' | 'warn'; environmentId: string },
         additionalTags = ''
     ) {
         const additionalProperties = {
