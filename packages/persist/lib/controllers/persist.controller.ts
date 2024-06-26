@@ -31,7 +31,7 @@ type RecordRequest = Request<
 const MAX_LOG_CHAR = 10000;
 
 class PersistController {
-    public async saveActivityLog(
+    public async saveLog(
         req: Request<{ environmentId: number }, void, { activityLogId: number | string; level: LegacyLogLevel; msg: string; timestamp?: number }, void>,
         res: Response,
         next: NextFunction

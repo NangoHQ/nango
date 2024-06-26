@@ -14,7 +14,6 @@ export enum Types {
     DB_POOL_USED = 'nango.db.pool.used',
     DB_POOL_WAITING = 'nango.db.pool.waiting',
     GET_CONNECTION = 'nango.server.getConnection',
-    JOBS_CLEAN_ACTIVITY_LOGS = 'nango.jobs.cron.cleanActivityLogs',
     JOBS_DELETE_SYNCS_DATA = 'nango.jobs.cron.deleteSyncsData',
     JOBS_DELETE_SYNCS_DATA_DELETES = 'nango.jobs.cron.deleteSyncsData.deletes',
     JOBS_DELETE_SYNCS_DATA_JOBS = 'nango.jobs.cron.deleteSyncsData.jobs',

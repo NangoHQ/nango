@@ -38,16 +38,16 @@ APIs like Stripe & GitHub Apps have custom authorization. Configurations vary an
 # Test the authorization
 
 <Tip>
-Your can test the authorization flow directly in the Nango UI, using your own external account credentials. 
+Your can test the authorization flow directly in the Nango UI, using your own external account credentials.
 
-In production, the authorization flow will be triggered from your app, promping each of your customers' to enter their external account credentials (cf. next section). 
+In production, the authorization flow will be triggered from your app, promping each of your customers' to enter their external account credentials (cf. next section).
 </Tip>
 
 On the Nango integration page, click `Connect` to test the authorization. After authorizing API access for one of the modes described below, a [connection](/understand/concepts/connections) should be successfully created in the _Connections_ tab.
 
 **For OAuth**
 
-Input your external account credentials in the popup dialog to test the authorization. 
+Input your external account credentials in the popup dialog to test the authorization.
 
 **For API Key & Basic**
 
@@ -55,15 +55,15 @@ Input the API key (or username/password for Basic) to test the authorization.
 
 **For Custom Authorization**
 
-The authorization flow will vary based on the API, but you will most likely have to log in to your external account via a popup dialog. 
+The authorization flow will vary based on the API, but you will most likely have to log in to your external account via a popup dialog.
 
 # Authorize users from your app
 
 ### Integrate the frontend SDK
 
-Once you have tested that the authorization flow works for your own external account, you can trigger authorization flows for your customers from your app with the Nango SDK. 
+Once you have tested that the authorization flow works for your own external account, you can trigger authorization flows for your customers from your app with the Nango SDK.
 
-Get your `Public Key` from the _Environment Settings_ tab. 
+Get your `Public Key` from the _Environment Settings_ tab.
 
 In your frontend, initiate Nango ([reference](/reference/sdks/frontend#instantiate-the-frontend-sdk)):
 
@@ -148,7 +148,7 @@ Before using Nango in production, we advise [securing the frontend SDK](/integra
 
 ### Listen for webhooks
 
-Your backend is notified by Nango when an authorization attempt is completed, successful or not. 
+Your backend is notified by Nango when an authorization attempt is completed, successful or not.
 
 To set this up:
 1. go to the _Environment Settings_ tab
@@ -156,10 +156,10 @@ To set this up:
 3. listen for webhooks in your backend at the specified route
 4. enable the "Send New Connection Creation Webhooks" checkbox
 
-Nango webhooks are post requests with the following JSON body: 
+Nango webhooks are post requests with the following JSON body:
 ```json
 {
-    "type": "auth", 
+    "type": "auth",
     "connectionId": "<CONNECTION-ID>",
     "authMode": "OAUTH1|OAUTH2|OAUTH2_CC|BASIC|API_KEY|APP_STORE|CUSTOM|APP|NONE",
     "providerConfigKey": "<INTEGRATION-ID>",
@@ -181,7 +181,7 @@ Before using Nango in production, we advise [verifying webhook signatures](/inte
 
 Some APIs require connection-specific configuration (e.g. Zendesk, Shopify).
 
-For example, Zendesk has the following authorization URL, where the subdomain is specific to a user's Zendesk account: 
+For example, Zendesk has the following authorization URL, where the subdomain is specific to a user's Zendesk account:
 
 `https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new`
 
@@ -205,7 +205,7 @@ This _connection configuration_ is stored in the connection. You can retrieve it
 
 # Troubleshoot authorization errors
 
-If an authorization request fails, you can analyze the relevant log in the _Activity_ tab of the Nango UI.
+If an authorization request fails, you can analyze the relevant log in the _Logs_ tab of the Nango UI.
 
 # Use a custom callback URL
 
