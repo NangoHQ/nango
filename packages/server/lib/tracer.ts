@@ -9,4 +9,6 @@ tracer.use('pg', {
 tracer.use('elasticsearch', {
     service: 'nango-elasticsearch'
 });
-tracer.use('express');
+tracer.use('express', {
+    blocklist: ['/health']
+});
