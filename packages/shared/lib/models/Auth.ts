@@ -27,13 +27,13 @@ export interface OAuthSession {
     connectionConfig: Record<string, string>;
     environmentId: number;
     webSocketClientId: string | undefined;
+    activityLogId: string;
 
     // Needed for OAuth 2.0 PKCE
     codeVerifier: string;
 
     // Needed for oAuth 1.0a
     requestTokenSecret?: string;
-    activityLogId: string;
 }
 
 export interface OAuth1RequestTokenResult {

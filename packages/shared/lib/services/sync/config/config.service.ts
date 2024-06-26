@@ -2,9 +2,9 @@ import semver from 'semver';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
-import { LogActionEnum } from '../../../models/Activity.js';
 import { SyncType } from '../../../models/Sync.js';
 import type { Action, SyncConfigWithProvider, SyncConfig } from '../../../models/Sync.js';
+import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { NangoConfigV1, StandardNangoConfig, NangoSyncConfig } from '../../../models/NangoConfig.js';
@@ -17,7 +17,6 @@ type ExtendedSyncConfig = SyncConfig & { provider: string; unique_key: string; e
 
 function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): StandardNangoConfig[] {
     const tmp: Record<string, StandardNangoConfig> = {};
-    const dedup = new Set<string>(); // we receive mul
 
     for (const syncConfig of syncConfigs) {
         if (!tmp[syncConfig.provider]) {
@@ -25,10 +24,6 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
         }
 
         const integration = tmp[syncConfig.provider]!;
-        if (dedup.has(`${syncConfig.provider}-${syncConfig.sync_name}`)) {
-            continue;
-        }
-        dedup.add(`${syncConfig.provider}-${syncConfig.sync_name}`);
 
         const input = syncConfig.input ? syncConfig.model_schema.find((m) => m.name === syncConfig.input) : undefined;
         const flowObject: NangoSyncConfig = {

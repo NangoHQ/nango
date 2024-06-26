@@ -1,6 +1,5 @@
 import type { Context } from '@temporalio/activity';
 import type { JSONSchema7 } from 'json-schema';
-import { LogActionEnum } from './Activity.js';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoProps } from '../sdk/sync.js';
 import type { NangoIntegrationData } from './NangoConfig.js';
@@ -161,14 +160,6 @@ export enum SyncCommand {
     RUN_FULL = 'RUN_FULL',
     CANCEL = 'CANCEL'
 }
-
-export const CommandToActivityLog = {
-    PAUSE: LogActionEnum.PAUSE_SYNC,
-    UNPAUSE: LogActionEnum.RESTART_SYNC,
-    RUN: LogActionEnum.TRIGGER_SYNC,
-    RUN_FULL: LogActionEnum.TRIGGER_FULL_SYNC,
-    CANCEL: LogActionEnum.CANCEL_SYNC
-};
 
 export const SyncCommandToScheduleStatus = {
     PAUSE: ScheduleStatus.PAUSED,
