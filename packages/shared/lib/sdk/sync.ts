@@ -128,7 +128,8 @@ enum AuthModes {
     AppStore = 'APP_STORE',
     App = 'APP',
     Custom = 'CUSTOM',
-    None = 'NONE'
+    None = 'NONE',
+    TBA = 'TBA'
 }
 
 interface OAuth1Token {
@@ -181,6 +182,14 @@ interface OAuth1Credentials extends CredentialsCommon {
     oauth_token_secret: string;
 }
 
+interface TbaCredentials {
+    type: AuthModes.TBA;
+    token: string;
+    secret: string;
+    oauth_client_id: string;
+    oauth_client_secret: string;
+}
+
 type UnauthCredentials = Record<string, never>;
 
 type AuthCredentials =
@@ -190,7 +199,8 @@ type AuthCredentials =
     | ApiKeyCredentials
     | AppCredentials
     | AppStoreCredentials
-    | UnauthCredentials;
+    | UnauthCredentials
+    | TbaCredentials;
 
 type Metadata = Record<string, unknown>;
 
@@ -486,7 +496,7 @@ export class NangoAction {
         });
     }
 
-    public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials> {
+    public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | TbaCredentials> {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
