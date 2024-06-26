@@ -3,13 +3,13 @@ title: Jira
 sidebarTitle: Jira
 ---
 
-API configuration: [`jira`](https://nango.dev/providers.yaml)
+API configuration: [`jira`](https://nango.dev/providers.yaml), [`jira-basic`](https://nango.dev/providers.yaml)
 
 ## Features
 
 | Features | Status |
 | - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
+| [Auth (OAuth + Basic)](/integrate/guides/authorize-an-api) | ✅ |
 | [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
 | [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
 | [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
@@ -24,6 +24,8 @@ API configuration: [`jira`](https://nango.dev/providers.yaml)
 -   [List of OAuth scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#classic-scopes)
 -   [API v3 docs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/#about)
 -   [OAuth app list (developer console)](https://developer.atlassian.com/console/myapps/)
+-   [API rate limits](https://developer.atlassian.com/cloud/jira/platform/rate-limiting/)
+-   [Basic Auth-related docs](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
@@ -44,5 +46,7 @@ You can then construct your URL as follows: `https://api.atlassian.com/ex/jira/$
 
 -   When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public, find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps).
 -   Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+-   Nango also supports `BASIC` auth for REST APIs in Jira. To use this feature, provide your `email` as the username and your `api_token` as the password. To generate an `api_token`, please refer to the [Manage Atlassian API Tokens](https://developer.atlassian.com/cloud/jira/platform/rate-limiting/) section
+-   You will also need to supply your `subdomain`. When logged into your Atlassian account or Jira instance, look at the URL in your web browser. The `subdomain` part before `.atlassian.net` is your Jira subdomain.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira.mdx)</Note>
