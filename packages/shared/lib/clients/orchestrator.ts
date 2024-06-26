@@ -229,7 +229,8 @@ export class Orchestrator {
                 {
                     workflowId,
                     input: JSON.stringify(input, null, 2),
-                    connection: JSON.stringify(connection),
+                    environmentId: String(connection.environment_id),
+                    connectionId: connection.connection_id,
                     actionName
                 },
                 `actionName:${actionName}`
@@ -263,7 +264,8 @@ export class Orchestrator {
                 {
                     workflowId,
                     input: JSON.stringify(input, null, 2),
-                    connection: JSON.stringify(connection),
+                    environmentId: String(connection.environment_id),
+                    connectionId: connection.connection_id,
                     actionName,
                     level: 'error'
                 },
@@ -569,8 +571,8 @@ export class Orchestrator {
                 LogActionEnum.POST_CONNECTION_SCRIPT,
                 {
                     workflowId,
-                    input: '',
-                    connection: JSON.stringify(connection),
+                    environmentId: String(connection.environment_id),
+                    connectionId: connection.connection_id,
                     name
                 },
                 `postConnectionScript:${name}`
@@ -602,8 +604,8 @@ export class Orchestrator {
                 LogActionEnum.POST_CONNECTION_SCRIPT,
                 {
                     workflowId,
-                    input: '',
-                    connection: JSON.stringify(connection),
+                    environmentId: String(connection.environment_id),
+                    connectionId: connection.connection_id,
                     name,
                     level: 'error'
                 },

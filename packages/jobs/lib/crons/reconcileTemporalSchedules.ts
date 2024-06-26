@@ -74,6 +74,7 @@ export async function exec(): Promise<void> {
                                 'CRON: Schedule is marked as paused in temporal but not in the database. The schedule has been unpaused in temporal',
                                 LogActionEnum.SYNC,
                                 {
+                                    environmentId: '',
                                     sync_id,
                                     schedule_id,
                                     level: 'warn',
