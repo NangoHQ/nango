@@ -186,6 +186,8 @@ interface TbaCredentials {
     type: AuthModes.TBA;
     token: string;
     secret: string;
+    oauth_client_id: string;
+    oauth_client_secret: string;
 }
 
 type UnauthCredentials = Record<string, never>;

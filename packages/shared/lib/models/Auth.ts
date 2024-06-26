@@ -116,6 +116,8 @@ export interface TbaCredentials {
     type: 'TBA';
     token: string;
     secret: string;
+    oauth_client_id: string;
+    oauth_client_secret: string;
 }
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;

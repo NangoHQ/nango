@@ -33,7 +33,7 @@ describe('Proxy service Construct Header Tests', () => {
             }
         };
 
-        const headers = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+        const headers = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
 
         expect(headers).toEqual({
             'My-Token': 'sweet-secret-token',
@@ -52,7 +52,7 @@ describe('Proxy service Construct Header Tests', () => {
             }
         };
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64')
@@ -69,7 +69,7 @@ describe('Proxy service Construct Header Tests', () => {
             }
         };
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Basic ' + Buffer.from('testuser:').toString('base64')
@@ -92,7 +92,7 @@ describe('Proxy service Construct Header Tests', () => {
             }
         };
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64'),
@@ -114,7 +114,7 @@ describe('Proxy service Construct Header Tests', () => {
             }
         };
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Bearer testtoken'
@@ -129,7 +129,7 @@ describe('Proxy service Construct Header Tests', () => {
             token: 'testtoken'
         };
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Bearer testtoken'
@@ -149,7 +149,7 @@ describe('Proxy service Construct Header Tests', () => {
             token: 'some-oauth-access-token'
         };
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Bearer some-oauth-access-token',
@@ -174,7 +174,7 @@ describe('Proxy service Construct Header Tests', () => {
             }
         };
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             'My-Token': 'some-abc-token',
@@ -202,7 +202,7 @@ describe('Proxy service Construct Header Tests', () => {
             }
         };
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             'X-Api-Key': 'api-key-value',
@@ -372,7 +372,11 @@ describe('Proxy service Construct URL Tests', () => {
 
         expect(url).toBe('https://override.com/api/test?foo=bar&api_key=sweet-secret-token');
 
-        const headers = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration);
+        const headers = proxyService.constructHeaders(
+            config as unknown as ApplicationConstructedProxyConfiguration,
+            'GET',
+            'https://override.com/api/test?foo=bar&api_key=sweet-secret-token'
+        );
 
         expect(headers).toEqual({
             'x-custom-header': 'custom value',

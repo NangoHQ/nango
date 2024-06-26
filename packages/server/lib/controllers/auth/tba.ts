@@ -5,7 +5,7 @@ import { z } from 'zod';
 import * as crypto from 'node:crypto';
 import type { OAuthSession } from '@nangohq/shared';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { zodErrorToHTTP, generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode } from '@nangohq/utils';
 import { analytics, configService, AnalyticsTypes, getConnectionConfig, getOauthCallbackUrl, interpolateStringFromObject } from '@nangohq/shared';
 import oAuthSessionService from '../../services/oauth-session.service.js';
 import { missesInterpolationParam } from '../../utils/utils.js';
@@ -13,7 +13,6 @@ import * as WSErrBuilder from '../../utils/web-socket-error.js';
 import type { TbaAuthorization } from '@nangohq/types';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
-import { percentEncode, collectParameters } from '../../helpers/tba.js';
 
 const queryStringValidation = z
     .object({
@@ -134,33 +133,35 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
 
     const callbackUrl = await getOauthCallbackUrl(environment.id);
 
-    const nonce = crypto.randomBytes(24).toString('hex');
-    const timestamp = Math.floor(Date.now() / 1000);
-    const signatureMethod = 'HMAC-SHA256';
+    const { nonce, timestamp } = getTbaMetaParams();
 
     const oauthParams = {
         oauth_consumer_key: config.oauth_client_id,
         oauth_nonce: nonce,
-        oauth_signature_method: signatureMethod,
-        oauth_timestamp: timestamp.toString(),
+        oauth_signature_method: SIGNATURE_METHOD,
+        oauth_timestamp: timestamp,
         oauth_callback: callbackUrl
     };
 
-    const concatenatedParams = collectParameters(oauthParams);
-
-    const baseString = `POST&${percentEncode(tokenRequestUrl)}&${percentEncode(concatenatedParams)}`;
+    const baseString = generateBaseString({
+        method: 'POST',
+        url: tokenRequestUrl,
+        params: oauthParams
+    });
 
     const emptyTokenSecret = '';
-    const hash = crypto
-        .createHmac('sha256', `${percentEncode(config.oauth_client_secret)}&${percentEncode(emptyTokenSecret)}`)
-        .update(baseString)
-        .digest('base64');
+
+    const hash = generateSignature({
+        baseString,
+        clientSecret: config.oauth_client_secret,
+        tokenSecret: emptyTokenSecret
+    });
 
     const authHeader =
         `OAuth oauth_consumer_key="${percentEncode(config.oauth_client_id)}",` +
         `oauth_nonce="${nonce}",` +
         `oauth_timestamp="${timestamp}",` +
-        `oauth_signature_method="${signatureMethod}",` +
+        `oauth_signature_method="${SIGNATURE_METHOD}",` +
         `oauth_callback="${percentEncode(callbackUrl)}",` +
         `oauth_signature="${percentEncode(hash)}"`;
 

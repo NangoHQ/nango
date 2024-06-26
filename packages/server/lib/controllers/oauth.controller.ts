@@ -1218,8 +1218,14 @@ class OAuthController {
             connectionId,
             providerConfigKey,
             session.provider,
-            { type: 'TBA', token, secret } as unknown as AuthCredentials,
-            { ...session.connectionConfig },
+            {
+                type: 'TBA',
+                token,
+                secret,
+                oauth_client_id: config.oauth_client_id,
+                oauth_client_secret: config.oauth_client_secret
+            } as unknown as AuthCredentials,
+            { ...session.connectionConfig, oauth_verifier },
             environment.id,
             account.id
         );

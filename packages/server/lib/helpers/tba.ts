@@ -1,32 +1,8 @@
 import axios from 'axios';
 import type { OAuthSession } from '@nangohq/shared';
-import querystring from 'querystring';
-import * as crypto from 'node:crypto';
 import type { Template as ProviderTemplate, IntegrationConfig as ProviderConfig } from '@nangohq/types';
 import { interpolateStringFromObject } from '@nangohq/shared';
-
-export function percentEncode(str: string) {
-    return encodeURIComponent(str)
-        .replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
-        .replace(/%20/g, '%20');
-}
-
-export function collectParameters(allParams: Record<string, string>): string {
-    const encodedParams: [string, string][] = [];
-
-    for (const [key, value] of Object.entries(allParams)) {
-        encodedParams.push([percentEncode(key), percentEncode(value)]);
-    }
-
-    encodedParams.sort((a, b) => {
-        if (a[0] === b[0]) {
-            return a[1] < b[1] ? -1 : 1;
-        }
-        return a[0] < b[0] ? -1 : 1;
-    });
-
-    return encodedParams.map((pair) => pair.join('=')).join('&');
-}
+import { generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode } from '@nangohq/utils';
 
 export async function makeAccessTokenRequest({
     template,
@@ -53,29 +29,30 @@ export async function makeAccessTokenRequest({
         connectionConfig
     });
 
-    const nonce = crypto.randomBytes(24).toString('hex');
-    const timestamp = Math.floor(Date.now() / 1000);
-    const signatureMethod = 'HMAC-SHA256';
+    const { nonce, timestamp } = getTbaMetaParams();
 
     const oauthParams = {
         oauth_consumer_key: config.oauth_client_id,
         oauth_nonce: nonce,
-        oauth_signature_method: signatureMethod,
+        oauth_signature_method: SIGNATURE_METHOD,
         oauth_timestamp: timestamp.toString(),
         oauth_token,
         oauth_verifier
     };
 
-    const concatenatedParams = collectParameters(oauthParams);
-
     const oauth_token_secret = connectionConfig['oauth_token_secret'];
 
-    const baseString = `POST&${percentEncode(fullAccessTokenEndpoint)}&${percentEncode(concatenatedParams)}`;
+    const baseString = generateBaseString({
+        method: 'POST',
+        url: fullAccessTokenEndpoint,
+        params: oauthParams
+    });
 
-    const hash = crypto
-        .createHmac('sha256', `${percentEncode(config.oauth_client_secret)}&${percentEncode(oauth_token_secret as string)}`)
-        .update(baseString)
-        .digest('base64');
+    const hash = generateSignature({
+        baseString,
+        clientSecret: config.oauth_client_secret,
+        tokenSecret: oauth_token_secret as string
+    });
 
     const authHeader =
         `OAuth oauth_consumer_key="${percentEncode(config.oauth_client_id)}",` +
@@ -83,7 +60,7 @@ export async function makeAccessTokenRequest({
         `oauth_verifier="${oauth_verifier}",` +
         `oauth_nonce="${nonce}",` +
         `oauth_timestamp="${timestamp}",` +
-        `oauth_signature_method="${signatureMethod}",` +
+        `oauth_signature_method="${SIGNATURE_METHOD}",` +
         `oauth_signature="${percentEncode(hash)}"`;
 
     const headers = {
@@ -92,9 +69,10 @@ export async function makeAccessTokenRequest({
 
     const response = await axios.post(fullAccessTokenEndpoint, null, { headers });
 
-    const parsedData = querystring.parse(response.data);
+    const parsedData = new URLSearchParams(response.data);
 
-    const { oauth_token: finalOAuthToken, oauth_token_secret: finalOAuthTokenSecret } = parsedData;
-
-    return { token: String(finalOAuthToken), secret: String(finalOAuthTokenSecret) };
+    return {
+        token: parsedData.get('oauth_token') as string,
+        secret: parsedData.get('oauth_token_secret')?.replace(/\r?\n|\r/g, '') as string
+    };
 }
