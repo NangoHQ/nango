@@ -1214,6 +1214,11 @@ class OAuthController {
 
         const channel = session.webSocketClientId;
 
+        const { connectionConfig } = session;
+
+        const oauth_consumer_key = connectionConfig['consumer_key'] || config.oauth_client_id;
+        const oauth_token_secret = connectionConfig['oauth_client_secret'] || config.oauth_client_secret;
+
         const [updatedConnection] = await connectionService.upsertConnection(
             connectionId,
             providerConfigKey,
@@ -1222,8 +1227,8 @@ class OAuthController {
                 type: 'TBA',
                 token,
                 secret,
-                oauth_client_id: config.oauth_client_id,
-                oauth_client_secret: config.oauth_client_secret
+                oauth_client_id: oauth_consumer_key,
+                oauth_client_secret: oauth_token_secret
             } as unknown as AuthCredentials,
             { ...session.connectionConfig, oauth_verifier },
             environment.id,

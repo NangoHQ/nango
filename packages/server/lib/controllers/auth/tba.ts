@@ -215,6 +215,8 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
             oauth_token: oauth_token as string,
             oauth_token_secret: oauth_token_secret as string,
             consumer_key: oauth_consumer_key,
+            oauth_client_id: oauth_consumer_key,
+            oauth_client_secret: oauth_client_secret,
             token_id: tokenId,
             token_secret: tokenSecret
         },

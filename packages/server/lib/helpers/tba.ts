@@ -52,7 +52,7 @@ export async function makeAccessTokenRequest({
 
     const hash = generateSignature({
         baseString,
-        clientSecret: connectionConfig['oauth_token_secret'] || config.oauth_client_secret,
+        clientSecret: config.oauth_client_secret,
         tokenSecret: oauth_token_secret as string
     });
 
