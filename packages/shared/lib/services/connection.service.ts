@@ -3,12 +3,6 @@ import type { Knex } from '@nangohq/database';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Account, Environment } from '../models/index.js';
-import {
-    createActivityLogMessageAndEnd,
-    updateSuccess as updateSuccessActivityLog,
-    createActivityLogAndLogMessage
-} from '../services/activity/activity.service.js';
-import type { ActivityLogMessage, ActivityLog, LogLevel } from '../models/Activity.js';
 import { LogActionEnum } from '../models/Activity.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
@@ -603,7 +597,7 @@ class ConnectionService {
         onRefreshSuccess: (args: { connection: Connection; environment: Environment; config: ProviderConfig }) => Promise<void>;
         onRefreshFailed: (args: {
             connection: Connection;
-            activityLogId: number;
+            activityLogId: string | number;
             logCtx: LogContext;
             authError: { type: string; description: string };
             environment: Environment;
@@ -654,32 +648,8 @@ class ConnectionService {
             });
 
             if ((!success && error) || !response) {
-                const log: ActivityLog = {
-                    level: 'error' as LogLevel,
-                    success: false,
-                    action: LogActionEnum.AUTH,
-                    start: Date.now(),
-                    end: Date.now(),
-                    timestamp: Date.now(),
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    provider: config.provider,
-                    session_id: '',
-                    environment_id: environment.id,
-                    operation_name: 'Auth'
-                };
-
-                const logMessage: ActivityLogMessage = {
-                    environment_id: environment.id,
-                    level: 'error',
-                    content: error?.message || 'Failed to refresh credentials',
-                    timestamp: Date.now()
-                };
-
-                const activityLogId = await createActivityLogAndLogMessage(log, logMessage);
-
                 const logCtx = await logContextGetter.create(
-                    { id: String(activityLogId), operation: { type: 'auth', action: 'refresh_token' }, message: 'Token refresh error' },
+                    { operation: { type: 'auth', action: 'refresh_token' }, message: 'Token refresh error' },
                     {
                         account,
                         environment,
@@ -691,10 +661,10 @@ class ConnectionService {
                 await logCtx.error('Failed to refresh credentials', error);
                 await logCtx.failed();
 
-                if (activityLogId) {
+                if (logCtx) {
                     await onRefreshFailed({
                         connection,
-                        activityLogId,
+                        activityLogId: logCtx.id,
                         logCtx,
                         authError: {
                             type: error!.type,
@@ -969,7 +939,6 @@ class ConnectionService {
         integration: ProviderConfig,
         template: ProviderTemplate,
         connectionConfig: ConnectionConfig,
-        activityLogId: number,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
     ): Promise<void> {
@@ -996,16 +965,7 @@ class ConnectionService {
             void connectionCreatedHook(updatedConnection);
         }
 
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            environment_id: integration.environment_id,
-            activity_log_id: Number(activityLogId),
-            content: 'App connection was approved and credentials were saved',
-            timestamp: Date.now()
-        });
         await logCtx.info('App connection was approved and credentials were saved');
-
-        await updateSuccessActivityLog(Number(activityLogId), true);
     }
 
     public async getAppCredentials(

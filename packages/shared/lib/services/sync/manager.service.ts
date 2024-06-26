@@ -1,4 +1,4 @@
-import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig } from './config/config.service.js';
+import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { getLatestSyncJob } from './job.service.js';
@@ -12,7 +12,7 @@ import {
     getSyncNamesByConnectionId,
     softDeleteSync
 } from './sync.service.js';
-import { createActivityLogMessageAndEnd, createActivityLog, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
+import { createActivityLog } from '../activity/activity.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
@@ -299,7 +299,7 @@ export class SyncManagerService {
                 });
                 // if they're triggering a sync that shouldn't change the schedule status
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environment.id, logCtx);
+                    await updateScheduleStatus(schedule.schedule_id, command, logCtx);
                 }
             }
         } else {
@@ -340,20 +340,10 @@ export class SyncManagerService {
                     initiator
                 });
                 if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, activityLogId, environment.id, logCtx);
+                    await updateScheduleStatus(schedule.schedule_id, command, logCtx);
                 }
             }
         }
-
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            environment_id: environment.id,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
-        });
-
-        await updateSuccessActivityLog(activityLogId, true);
 
         await logCtx.info('Sync was successfully updated', { action, syncNames });
         await logCtx.success();
@@ -388,7 +378,7 @@ export class SyncManagerService {
                     continue;
                 }
 
-                const reportedStatus = await this.syncStatus(sync, environmentId, includeJobStatus, orchestrator);
+                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator });
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -403,7 +393,7 @@ export class SyncManagerService {
             }
 
             for (const sync of syncs) {
-                const reportedStatus = await this.syncStatus(sync, environmentId, includeJobStatus, orchestrator);
+                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator });
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -493,13 +483,30 @@ export class SyncManagerService {
         }
     }
 
-    private async syncStatus(sync: Sync, environmentId: number, includeJobStatus: boolean, orchestrator: Orchestrator): Promise<ReportedSyncJobStatus> {
+    private async syncStatus({
+        sync,
+        environmentId,
+        providerConfigKey,
+        includeJobStatus,
+        orchestrator
+    }: {
+        sync: Sync;
+        environmentId: number;
+        providerConfigKey: string;
+        includeJobStatus: boolean;
+        orchestrator: Orchestrator;
+    }): Promise<ReportedSyncJobStatus> {
         const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
         const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
         const isOrchestrator = isGloballyEnabled || isEnvEnabled;
         if (isOrchestrator) {
             const latestJob = await getLatestSyncJob(sync.id);
             const schedules = await orchestrator.searchSchedules([{ syncId: sync.id, environmentId }]);
+            let frequency = sync.frequency;
+            if (!frequency) {
+                const syncConfig = await getSyncConfigByParams(environmentId, sync.name, providerConfigKey);
+                frequency = syncConfig?.runs || null;
+            }
             if (schedules.isErr()) {
                 throw new Error(`Failed to get schedule for sync ${sync.id} in environment ${environmentId}: ${stringifyError(schedules.error)}`);
             }
@@ -514,7 +521,7 @@ export class SyncManagerService {
                 nextScheduledSyncAt: schedule.nextDueDate,
                 name: sync.name,
                 status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule.state),
-                frequency: sync.frequency,
+                frequency,
                 latestResult: latestJob?.result,
                 latestExecutionStatus: latestJob?.status,
                 ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})
@@ -531,7 +538,7 @@ export class SyncManagerService {
         const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
         if (syncSchedule) {
             if (syncSchedule?.schedule?.state?.paused && schedule?.status === ScheduleStatus.RUNNING) {
-                await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE, null, environmentId);
+                await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE);
                 if (status !== SyncStatus.RUNNING) {
                     status = SyncStatus.PAUSED;
                 }
@@ -548,7 +555,7 @@ export class SyncManagerService {
                     `syncId:${sync.id}`
                 );
             } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
-                await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE, null, environmentId);
+                await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE);
                 status = SyncStatus.STOPPED;
                 await telemetry.log(
                     LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED,

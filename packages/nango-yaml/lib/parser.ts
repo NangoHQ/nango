@@ -10,6 +10,7 @@ import {
 import type { ParserError } from './errors.js';
 
 export abstract class NangoYamlParser {
+    yaml: string;
     raw: NangoYaml;
     parsed: NangoYamlParsed | undefined;
     modelsParser: ModelsParser;
@@ -17,7 +18,8 @@ export abstract class NangoYamlParser {
     errors: ParserError[] = [];
     warnings: ParserError[] = [];
 
-    constructor({ raw }: { raw: NangoYaml }) {
+    constructor({ raw, yaml }: { raw: NangoYaml; yaml: string }) {
+        this.yaml = yaml;
         this.raw = raw;
         this.modelsParser = new ModelsParser({ raw: raw.models });
     }

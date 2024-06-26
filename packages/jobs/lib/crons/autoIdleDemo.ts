@@ -4,9 +4,7 @@ import {
     ErrorSourceEnum,
     SyncCommand,
     createActivityLog,
-    createActivityLogMessageAndEnd,
     errorManager,
-    updateSuccess as updateSuccessActivityLog,
     updateScheduleStatus,
     findPausableDemoSyncs,
     SpanTypes,
@@ -94,20 +92,11 @@ export async function exec(): Promise<void> {
             continue;
         }
 
-        const resDb = await updateScheduleStatus(sync.schedule_id, SyncCommand.PAUSE, activityLogId, sync.environment_id, logCtx);
+        const resDb = await updateScheduleStatus(sync.schedule_id, SyncCommand.PAUSE, logCtx);
         if (resDb.isErr()) {
             await logCtx.failed();
             continue;
         }
-
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            environment_id: sync.environment_id,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `Demo sync was automatically paused after being idle for a day`
-        });
-        await updateSuccessActivityLog(activityLogId, true);
 
         await logCtx.info('Demo sync was automatically paused after being idle for a day');
         await logCtx.success();
