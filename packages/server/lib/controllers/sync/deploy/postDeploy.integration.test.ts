@@ -47,7 +47,6 @@ describe(`POST ${endpoint}`, () => {
                 errors: [
                     { code: 'invalid_type', message: 'Required', path: ['flowConfigs'] },
                     { code: 'invalid_type', message: 'Required', path: ['postConnectionScriptsByProvider'] },
-                    { code: 'invalid_type', message: 'Required', path: ['jsonSchema'] },
                     { code: 'invalid_type', message: 'Required', path: ['nangoYamlBody'] },
                     { code: 'invalid_type', message: 'Required', path: ['reconcile'] },
                     { code: 'invalid_type', message: 'Expected boolean, received string', path: ['debug'] }
