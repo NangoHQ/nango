@@ -240,6 +240,15 @@ export default class Nango {
             return { params: oauth2CCCredentials } as unknown as ConnectionConfig;
         }
 
+        if ('token_id' in credentials && 'token_secret' in credentials) {
+            const tbaCredentials: TBACredentials = {
+                token_id: credentials.token_id as string,
+                token_secret: credentials.token_secret as string
+            };
+
+            return { params: tbaCredentials } as unknown as ConnectionConfig;
+        }
+
         return { params };
     }
 
@@ -346,6 +355,28 @@ export default class Nango {
             return res.json();
         }
 
+        console.log(credentials);
+        if ('token_id' in credentials && 'token_secret' in credentials) {
+            const tbaCredentials = credentials as unknown as TBACredentials;
+
+            const url = this.hostBaseUrl + `/auth/tba/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(tbaCredentials)
+            });
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+                throw new AuthError(errorResponse.error, errorResponse.type);
+            }
+
+            return res.json();
+        }
+
         return Promise.reject(new Error('Something went wrong with the authorization'));
     }
 
@@ -409,7 +440,7 @@ interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
-    credentials?: OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials;
+    credentials?: OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials | TBACredentials;
 }
 
 interface OAuthCredentialsOverride {
@@ -431,6 +462,11 @@ interface AppStoreCredentials {
     issuerId: string;
     privateKey: string;
     scope?: string[];
+}
+
+interface TBACredentials {
+    token_id: string;
+    token_secret: string;
 }
 
 interface OAuth2ClientCredentials {

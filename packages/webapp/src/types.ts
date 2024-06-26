@@ -80,7 +80,8 @@ export enum AuthModes {
     AppStore = 'APP_STORE',
     App = 'APP',
     Custom = 'CUSTOM',
-    None = 'NONE'
+    None = 'NONE',
+    TBA = 'TBA'
 }
 
 export interface Connection {

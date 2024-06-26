@@ -112,6 +112,11 @@ export interface CredentialsRefresh {
 
 export type UnauthCredentials = Record<string, never>;
 
+export interface TbaCredentials {
+    type: 'TBA';
+    access_token: string;
+}
+
 export type RefreshTokenResponse = AuthorizationTokenResponse;
 
 export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {

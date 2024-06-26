@@ -121,6 +121,11 @@ export interface CredentialsRefresh<T = unknown> {
     promise: Promise<T>;
 }
 
+export interface TbaCredentials {
+    type: AuthModes['TBA'];
+    access_token: string;
+}
+
 export type UnauthCredentials = Record<string, never>;
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;
