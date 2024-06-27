@@ -1498,6 +1498,21 @@ marketo:
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
+medallia:
+    categories:
+        - crm
+        - support
+        - surveys
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.reportingInstance}/oauth/${connectionConfig.tenantName}/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        retry:
+            after: 'X-RateLimit-Reset'
+        base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
+    docs: https://docs.nango.dev/integrations/all/medallia
 microsoft:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
