@@ -48,6 +48,8 @@ export default function IntegrationCreate() {
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
     const [oAuthClientId, setOAuthClientId] = useState('');
+    const [tokenId, setTokenId] = useState('');
+    const [tokenSecret, setTokenSecret] = useState('');
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
@@ -176,6 +178,13 @@ export default function IntegrationCreate() {
                     oauth_scopes: oauthccSelectedScopes.join(',')
                 };
             }
+        }
+
+        if (authMode === 'TBA') {
+            credentials = {
+                token_id: tokenId,
+                token_secret: tokenSecret
+            };
         }
 
         nango[authMode === 'NONE' ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
@@ -358,6 +367,15 @@ export default function IntegrationCreate() {
     }
   `;
         }
+        let tbaCredentialsString = '';
+        if (integration?.authMode === 'TBA') {
+            tbaCredentialsString = `
+    credentials: {
+        token_id: '${tokenId}',
+        token_secret: '${tokenSecret}'
+    }
+  `;
+        }
 
         let oauth2ClientCredentialsString = '';
 
@@ -386,6 +404,7 @@ export default function IntegrationCreate() {
     }
   `;
             }
+
             if (authMode === 'OAUTH2_CC' && oauthccSelectedScopes.length > 0) {
                 connectionConfigParamsStr = connectionConfigParamsStr ? `${connectionConfigParamsStr.slice(0, -2)}, ` : 'params: { ';
                 connectionConfigParamsStr += `oauth_scopes: '${oauthccSelectedScopes.join(',')}' }`;
@@ -400,7 +419,8 @@ export default function IntegrationCreate() {
             !apiAuthString &&
             !appStoreAuthString &&
             !oauthCredentialsString &&
-            !oauth2ClientCredentialsString
+            !oauth2ClientCredentialsString &&
+            !tbaCredentialsString
                 ? ''
                 : ', { ' +
                   [
@@ -411,7 +431,8 @@ export default function IntegrationCreate() {
                       apiAuthString,
                       appStoreAuthString,
                       oauthCredentialsString,
-                      oauth2ClientCredentialsString
+                      oauth2ClientCredentialsString,
+                      tbaCredentialsString
                   ]
                       .filter(Boolean)
                       .join(', ') +
@@ -612,6 +633,39 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             addToScopesSet={oauthAddToScopesSet}
                                             removeFromSelectedSet={oauthRemoveFromSelectedSet}
                                             minLength={1}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {integration?.authMode === 'TBA' && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                            Token ID
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="token_id"
+                                            name="token_id"
+                                            placeholder="Token ID"
+                                            optionalvalue={tokenId}
+                                            setoptionalvalue={setTokenId}
+                                        />
+                                    </div>
+                                    <div className="mt-4">
+                                        <label htmlFor="token_secret" className="text-text-light-gray block text-sm font-semibold">
+                                            Token Secret
+                                        </label>
+                                        <SecretInput
+                                            copy={true}
+                                            id="token_secret"
+                                            name="token_secret"
+                                            placeholder="Token secret"
+                                            optionalvalue={tokenSecret}
+                                            setoptionalvalue={setTokenSecret}
                                         />
                                     </div>
                                 </div>

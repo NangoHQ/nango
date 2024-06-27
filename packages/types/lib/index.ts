@@ -25,6 +25,7 @@ export type * from './integration/db.js';
 export type * from './integration/template.js';
 export type * from './auth/api.js';
 export type * from './auth/db.js';
+export type * from './auth/http.api.js';
 export type * from './deploy/api.js';
 export type * from './deploy/incomingFlow.js';
 
