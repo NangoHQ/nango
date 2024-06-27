@@ -33,6 +33,7 @@ export interface Template {
         };
     };
     authorization_url?: string;
+    access_token_url?: string;
     authorization_params?: Record<string, string>;
     scope_separator?: string;
     default_scopes?: string[];
