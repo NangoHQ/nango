@@ -141,6 +141,7 @@ describe(`POST ${endpoint}`, () => {
                 providerConfigKey: 'unauthenticated',
                 syncs: [
                     {
+                        id: expect.any(Number),
                         attributes: {},
                         auto_start: false,
                         description: 'a',
@@ -169,7 +170,7 @@ describe(`POST ${endpoint}`, () => {
                         pre_built: false,
                         runs: 'every day',
                         name: 'test',
-                        sync_type: 'FULL',
+                        sync_type: 'full',
                         track_deletes: false,
                         type: 'sync',
                         version: '1',
