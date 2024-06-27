@@ -576,10 +576,15 @@ export class NangoError extends Error {
                 this.message = `Your nango.yaml contains some errors`;
                 break;
 
+            case 'deploy_missing_json_schema_model':
+                this.status = 400;
+                this.message = String(this.payload);
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
-                this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occured`;
+                this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occurred`;
         }
     }
 
