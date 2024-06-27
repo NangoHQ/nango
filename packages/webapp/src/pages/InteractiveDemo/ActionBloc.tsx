@@ -11,6 +11,7 @@ import { curlSnippet, nodeActionSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
 import { useMeta } from '../../hooks/useMeta';
 import { apiFetch } from '../../utils/api';
+import type { NangoModel } from '@nangohq/types';
 
 export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; connectionId: string; secretKey: string; onProgress: () => void }> = ({
     step,
@@ -31,10 +32,17 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
     const baseUrl = useStore((state) => state.baseUrl);
 
     const snippet = useMemo(() => {
+        const model: NangoModel = { name: 'CreateIssue', fields: [{ name: 'title', value: title }] };
         if (language === Language.Node) {
-            return nodeActionSnippet(actionName, secretKey, connectionId, providerConfigKey, { title }, true);
+            return nodeActionSnippet({
+                actionName,
+                secretKey,
+                connectionId,
+                providerConfigKey,
+                input: model
+            });
         } else {
-            return curlSnippet(baseUrl, endpointAction, secretKey, connectionId, providerConfigKey, `{ title: ${JSON.stringify(title)} }`, 'POST');
+            return curlSnippet(baseUrl, endpointAction, secretKey, connectionId, providerConfigKey, model, 'POST');
         }
     }, [title, providerConfigKey, connectionId, secretKey, language, baseUrl]);
 
@@ -100,7 +108,7 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
             )}
             <div className="border bg-zinc-900 border-zinc-900 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
-                    <div className="space-x-4">
+                    <div className="flex gap-4">
                         <Tab
                             variant={language === Language.Node ? 'black' : 'zombie'}
                             className={cn('cursor-default', language !== Language.Node && 'cursor-pointer bg-zinc-900 pointer-events-auto')}

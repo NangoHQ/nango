@@ -1,8 +1,8 @@
 import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
-import { axiosInstance as axios, getLogger } from '@nangohq/utils';
+import { axiosInstance as axios, getLogger, generateBaseString, getTbaMetaParams, percentEncode, SIGNATURE_METHOD, generateSignature } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-import type { ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
+import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
@@ -321,7 +321,7 @@ class ProxyService {
         options.url = this.constructUrl(configBody);
         options.method = method;
 
-        const headers = this.constructHeaders(configBody);
+        const headers = this.constructHeaders(configBody, method, options.url);
         options.headers = { ...options.headers, ...headers };
 
         return this.request(configBody, options);
@@ -402,7 +402,8 @@ class ProxyService {
      * Construct Headers
      * @param {ApplicationConstructedProxyConfiguration} config
      */
-    public constructHeaders(config: ApplicationConstructedProxyConfiguration) {
+    public constructHeaders(config: ApplicationConstructedProxyConfiguration, method: HTTP_VERB, url: string): Record<string, string> {
+        console.log(config);
         let headers = {};
 
         switch (config.template.auth_mode) {
@@ -455,6 +456,52 @@ class ProxyService {
                 },
                 { ...headers }
             );
+        }
+
+        if (config.template.auth_mode === 'TBA') {
+            const { nonce, timestamp } = getTbaMetaParams();
+
+            const consumerKey = config.connection.connection_config['consumer_key'];
+            const credentials = config.connection.credentials as TbaCredentials;
+
+            const realm = config.connection.connection_config['accountId'];
+
+            const oauthParams = {
+                oauth_consumer_key: consumerKey,
+                oauth_nonce: nonce,
+                oauth_signature_method: SIGNATURE_METHOD,
+                oauth_timestamp: timestamp,
+                oauth_token: credentials.token,
+                oauth_version: '1.0'
+            };
+
+            const baseString = generateBaseString({
+                method,
+                url,
+                params: oauthParams
+            });
+
+            const clientSecret = credentials.oauth_client_secret;
+
+            const hash = generateSignature({
+                baseString,
+                clientSecret,
+                tokenSecret: credentials.secret
+            });
+
+            const authHeader =
+                `OAuth realm="${percentEncode(realm)}", ` +
+                `oauth_consumer_key="${percentEncode(consumerKey)}", ` +
+                `oauth_token="${percentEncode(credentials.token)}", ` +
+                `oauth_signature_method="${percentEncode(SIGNATURE_METHOD)}", ` +
+                `oauth_timestamp="${percentEncode(timestamp)}", ` +
+                `oauth_nonce="${percentEncode(nonce)}", ` +
+                `oauth_signature="${percentEncode(hash)}"`;
+
+            headers = {
+                ...headers,
+                Authorization: authHeader
+            };
         }
 
         if (config.headers) {

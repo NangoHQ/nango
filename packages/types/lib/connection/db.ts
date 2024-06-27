@@ -7,6 +7,7 @@ import type {
     AppStoreCredentials,
     UnauthCredentials,
     CustomCredentials,
+    TbaCredentials,
     AuthModeType,
     AuthOperationType
 } from '../auth/api.js';
@@ -35,7 +36,15 @@ export interface StoredConnection extends BaseConnection {
 }
 
 export interface Connection extends BaseConnection {
-    credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials;
+    credentials:
+        | AuthCredentials
+        | ApiKeyCredentials
+        | BasicApiCredentials
+        | AppCredentials
+        | AppStoreCredentials
+        | UnauthCredentials
+        | CustomCredentials
+        | TbaCredentials;
 }
 
 export type RecentlyCreatedConnection = Pick<StoredConnection, 'id' | 'connection_id' | 'provider_config_key'> & {

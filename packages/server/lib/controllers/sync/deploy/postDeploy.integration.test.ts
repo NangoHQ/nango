@@ -1,7 +1,7 @@
 import { multipleMigrations } from '@nangohq/database';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
-import { getAllSyncsAndActions, seeders } from '@nangohq/shared';
+import { getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
 import { envs } from '@nangohq/logs';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -131,7 +131,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toBe(200);
 
         // Check that everything was inserted in DB
-        const syncConfigs = await getAllSyncsAndActions(env.id);
+        const syncConfigs = await getSyncConfigsAsStandardConfig(env.id);
         expect(syncConfigs).toHaveLength(1);
         expect(syncConfigs).toStrictEqual([
             {

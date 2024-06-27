@@ -649,7 +649,7 @@ async function compileDeployInfo({
                 runs,
                 active: true,
                 model_schema: model_schema as unknown as SyncModelSchema[],
-                input: flow.input || undefined,
+                input: typeof flow.input === 'string' ? flow.input : flow.input ? flow.input.name : undefined,
                 sync_type: flow.sync_type as SyncType,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
                 enabled: lastSyncWasEnabled && !shouldCap

@@ -273,7 +273,10 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     <span className="text-white">{integration?.auth_mode}</span>
                 </div>
             </div>
-            {(integration?.auth_mode === AuthModes.OAuth1 || integration?.auth_mode === AuthModes.OAuth2 || integration?.auth_mode === AuthModes.Custom) && (
+            {(integration?.auth_mode === AuthModes.OAuth1 ||
+                integration?.auth_mode === AuthModes.OAuth2 ||
+                integration?.auth_mode === AuthModes.Custom ||
+                integration?.auth_mode === AuthModes.TBA) && (
                 <div className="flex">
                     <div className="flex flex-col">
                         <div className="flex items-center mb-1">
@@ -479,7 +482,10 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     </div>
                 </>
             )}
-            {(integration?.auth_mode === AuthModes.OAuth1 || integration?.auth_mode === AuthModes.OAuth2 || integration?.auth_mode === AuthModes.Custom) && (
+            {(integration?.auth_mode === AuthModes.OAuth1 ||
+                integration?.auth_mode === AuthModes.OAuth2 ||
+                integration?.auth_mode === AuthModes.Custom ||
+                integration?.auth_mode === AuthModes.TBA) && (
                 <>
                     <div className="flex flex-col">
                         <div className="flex items-center mb-1">
@@ -520,7 +526,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             />
                         </div>
                     </div>
-                    {integration?.auth_mode !== AuthModes.Custom && (
+                    {integration?.auth_mode !== AuthModes.Custom && integration?.auth_mode !== AuthModes.TBA && (
                         <div className="flex flex-col">
                             <div className="flex items-center mb-1">
                                 <span className="text-gray-400 text-xs">Scopes</span>

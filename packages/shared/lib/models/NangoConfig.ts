@@ -6,7 +6,7 @@ export interface NangoIntegrationDataV1 {
     type?: ScriptTypeLiteral;
     runs: string;
     returns: string[];
-    input?: string;
+    input?: string | undefined;
     track_deletes?: boolean;
     auto_start?: boolean;
     attributes?: object;
@@ -127,7 +127,7 @@ export interface NangoSyncConfig {
     id?: number;
 
     // v2 additions
-    input?: NangoSyncModel;
+    input?: NangoSyncModel | undefined;
     sync_type?: SyncType;
     nango_yaml_version?: string;
     webhookSubscriptions?: string[];

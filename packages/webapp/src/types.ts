@@ -1,4 +1,4 @@
-import type { ActiveLogIds } from '@nangohq/types';
+import type { ActiveLogIds, NangoModel } from '@nangohq/types';
 
 export type SyncResult = Record<string, Result>;
 
@@ -79,7 +79,8 @@ export enum AuthModes {
     AppStore = 'APP_STORE',
     App = 'APP',
     Custom = 'CUSTOM',
-    None = 'NONE'
+    None = 'NONE',
+    TBA = 'TBA'
 }
 
 export interface Connection {
@@ -199,7 +200,7 @@ export interface Flow {
     track_deletes: boolean;
     auto_start?: boolean;
     endpoint?: string;
-    models: NangoSyncModel[];
+    models: NangoSyncModel[] | NangoModel[];
     nango_yaml_version: 'v1' | 'v2';
     webhookSubscriptions: string[];
 }
