@@ -426,7 +426,7 @@ certn:
 certn-partner:
     categories:
         - legal
-    auth_mode: OAUTH_CC
+    auth_mode: OAUTH2_CC
     proxy:
         headers:
             Authorization: Bearer ${apiKey}
