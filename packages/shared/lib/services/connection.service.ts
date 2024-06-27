@@ -149,7 +149,7 @@ class ConnectionService {
                 .update(encryptedConnection)
                 .returning('*');
 
-            void analytics.track(AnalyticsTypes.API_CONNECTION_UPDATED, account.id, { provider: config.provider });
+            void analytics.track(AnalyticsTypes.TBA_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
             return [{ connection: connection[0]!, operation: 'override' }];
         }
@@ -167,7 +167,7 @@ class ConnectionService {
             )
             .returning('*');
 
-        void analytics.track(AnalyticsTypes.API_CONNECTION_INSERTED, account.id, { provider: config.provider });
+        void analytics.track(AnalyticsTypes.TBA_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
         return [{ connection: connection[0]!, operation: 'creation' }];
     }
