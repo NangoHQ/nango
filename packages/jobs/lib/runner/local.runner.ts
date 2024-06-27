@@ -3,7 +3,7 @@ import { RunnerType } from './runner.js';
 import type { ChildProcess } from 'child_process';
 import { execSync, spawn } from 'child_process';
 import { getRunnerClient } from '@nangohq/nango-runner';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, stringifyError } from '@nangohq/utils';
 
 const logger = getLogger('Jobs');
 
@@ -61,19 +61,19 @@ export class LocalRunner implements Runner {
 
             if (childProcess.stdout) {
                 childProcess.stdout.on('data', (data) => {
-                    logger.info(`[Runner] ${data.toString()} `);
+                    logger.info(`[Runner] ${data.toString().slice(0, -1)} `);
                 });
             }
 
             if (childProcess.stderr) {
                 childProcess.stderr.on('data', (data) => {
-                    logger.info(`[Runner][ERROR] ${data.toString()} `);
+                    logger.info(`[Runner][ERROR] ${data.toString().slice(0, -1)} `);
                 });
             }
 
             return Promise.resolve(new LocalRunner(runnerId, `http://localhost:${port}`, childProcess));
         } catch (err) {
-            throw new Error(`Unable to get runner ${runnerId}: ${err}`);
+            throw new Error(`Unable to get runner ${runnerId}: ${stringifyError(err)}`);
         }
     }
 }
