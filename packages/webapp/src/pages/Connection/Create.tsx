@@ -687,6 +687,39 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </div>
                             )}
 
+                            {integration?.authMode === 'TBA' && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                            Token ID
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="token_id"
+                                            name="token_id"
+                                            placeholder="Token ID"
+                                            optionalvalue={tokenId}
+                                            setoptionalvalue={setTokenId}
+                                        />
+                                    </div>
+                                    <div className="mt-4">
+                                        <label htmlFor="token_secret" className="text-text-light-gray block text-sm font-semibold">
+                                            Token Secret
+                                        </label>
+                                        <SecretInput
+                                            copy={true}
+                                            id="token_secret"
+                                            name="token_secret"
+                                            placeholder="Token secret"
+                                            optionalvalue={tokenSecret}
+                                            setoptionalvalue={setTokenSecret}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                             {integration?.connectionConfigParams?.map((paramName: string) => (
                                 <div key={paramName}>
                                     <div className="flex mt-6">

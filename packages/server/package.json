@@ -80,6 +80,7 @@
         "get-port": "7.1.0",
         "nodemon": "^3.0.1",
         "typescript": "5.3.3",
+        "type-fest": "4.14.0",
         "vitest": "1.6.0"
     }
 }

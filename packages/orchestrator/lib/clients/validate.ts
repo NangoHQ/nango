@@ -176,7 +176,7 @@ export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedul
             name: validation.data.name,
             state: validation.data.state,
             frequencyMs: validation.data.frequencyMs,
-            nextDueDate: getNextDueDate(validation.data.startsAt, validation.data.frequencyMs)
+            nextDueDate: validation.data.state == 'STARTED' ? getNextDueDate(validation.data.startsAt, validation.data.frequencyMs) : null
         };
         return Ok(schedule);
     }

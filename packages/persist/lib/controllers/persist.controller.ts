@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { LogLevel } from '@nangohq/shared';
 import { records as recordsService, format as recordsFormatter } from '@nangohq/records';
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
 import { errorManager, ErrorSourceEnum, LogActionEnum, updateSyncJobResult, getSyncConfigByJobId } from '@nangohq/shared';
@@ -9,6 +8,7 @@ import { logContextGetter, oldLevelToNewLevel } from '@nangohq/logs';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
+type LegacyLogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 type persistType = 'save' | 'delete' | 'update';
 type RecordRequest = Request<
     {
@@ -31,8 +31,8 @@ type RecordRequest = Request<
 const MAX_LOG_CHAR = 10000;
 
 class PersistController {
-    public async saveActivityLog(
-        req: Request<{ environmentId: number }, void, { activityLogId: number | string; level: LogLevel; msg: string; timestamp?: number }, void>,
+    public async saveLog(
+        req: Request<{ environmentId: number }, void, { activityLogId: number | string; level: LegacyLogLevel; msg: string; timestamp?: number }, void>,
         res: Response,
         next: NextFunction
     ) {

@@ -16,10 +16,12 @@ import type { IntegrationConfig, Flow, Connection } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
 import ActionModal from '../../components/ui/ActionModal';
 import Info from '../../components/ui/Info';
-import { parseInput, generateResponseModel, formatDateToShortUSFormat } from '../../utils/utils';
+import { formatDateToShortUSFormat } from '../../utils/utils';
 import EnableDisableSync from './components/EnableDisableSync';
-import { autoStartSnippet, setMetadaSnippet } from '../../utils/language-snippets';
+import { autoStartSnippet, setMetadataSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
+import { getSyncResponse } from '../../utils/scripts';
+import type { NangoModel } from '@nangohq/types';
 
 interface FlowPageProps {
     environment: EnvironmentAndAccount['environment'];
@@ -405,7 +407,7 @@ export default function FlowPage(props: FlowPageProps) {
                                                         </span>
                                                     </div>
                                                     {showMetadataCode && (
-                                                        <div className="border-opacity-50 rounded-md text-white text-sm py-2 mt-3">
+                                                        <div className="border-opacity-50 rounded-md text-white text-sm py-2 mt-3 bg-zinc-900">
                                                             <div className="flex justify-between items-center px-4 py-2 border-b border-border-blue-400">
                                                                 <div className="space-x-4">
                                                                     <Button type="button" variant="black" className="pointer-events-none">
@@ -414,19 +416,11 @@ export default function FlowPage(props: FlowPageProps) {
                                                                 </div>
                                                                 <CopyButton
                                                                     dark
-                                                                    text={setMetadaSnippet(
-                                                                        environment.secret_key,
-                                                                        integration.unique_key,
-                                                                        parseInput(flow) as Record<string, any>
-                                                                    )}
+                                                                    text={setMetadataSnippet(environment.secret_key, integration.unique_key, flow.input)}
                                                                 />
                                                             </div>
                                                             <Prism noCopy language="typescript" className="p-1 transparent-code" colorScheme="dark">
-                                                                {setMetadaSnippet(
-                                                                    environment.secret_key,
-                                                                    integration.unique_key,
-                                                                    parseInput(flow) as Record<string, any>
-                                                                )}
+                                                                {setMetadataSnippet(environment.secret_key, integration.unique_key, flow.input)}
                                                             </Prism>
                                                         </div>
                                                     )}
@@ -468,7 +462,7 @@ export default function FlowPage(props: FlowPageProps) {
                                                         </span>
                                                     </div>
                                                     {showAutoStartCode && (
-                                                        <div className="border border-blue-400 border-opacity-50 rounded-md text-white text-sm py-2 mt-3">
+                                                        <div className="border border-blue-400 border-opacity-50 rounded-md text-white text-sm py-2 mt-3 bg-zinc-900">
                                                             <div className="flex justify-between items-center px-4 py-4 border-b border-border-blue-400">
                                                                 <div className="space-x-4">
                                                                     <Button type="button" variant="black" className="pointer-events-none">
@@ -494,43 +488,29 @@ export default function FlowPage(props: FlowPageProps) {
                         )}
                     </>
                 )}
-                {flow?.type === 'sync' && (
-                    <>
-                        {flow?.returns && (
-                            <div className="flex">
-                                <div className="flex flex-col w-full">
-                                    <span className="text-gray-400 text-xs uppercase mb-2">Output Models</span>
-                                    {((Array.isArray(flow?.returns as string[]) ? flow?.returns : [flow?.returns]) as string[]).map(
-                                        (model: string, index: number) => (
-                                            <div key={index}>
-                                                <span className="text-white">{model}</span>
-                                                <div className="border border-border-gray rounded-md text-white text-sm mt-3">
-                                                    <div className="flex justify-between items-center px-4 py-3 border-b border-border-gray">
-                                                        <div className="flex items-center space-x-4">
-                                                            <Button type="button" variant="active" className="pointer-events-none">
-                                                                JSON
-                                                            </Button>
-                                                        </div>
-                                                        <CopyButton dark text={JSON.stringify([generateResponseModel(flow.models, model, true)], null, 2)} />
-                                                    </div>
-                                                    <Prism noCopy language="json" className="p-3 transparent-code" colorScheme="dark">
-                                                        {JSON.stringify(
-                                                            {
-                                                                records: [generateResponseModel(flow.models, model, true)],
-                                                                next_cursor: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz...'
-                                                            },
-                                                            null,
-                                                            2
-                                                        )}
-                                                    </Prism>
-                                                </div>
+                {flow?.type === 'sync' && flow.returns && (
+                    <div className="flex">
+                        <div className="flex flex-col w-full">
+                            <span className="text-gray-400 text-xs uppercase mb-2">Output Models</span>
+                            {(Array.isArray(flow.returns) ? flow.returns : [flow.returns]).map((model: string, index: number) => (
+                                <div key={index}>
+                                    <span className="text-white">{model}</span>
+                                    <div className="border border-border-gray rounded-md text-white text-sm mt-3">
+                                        <div className="flex justify-between items-center px-4 py-3 border-b border-border-gray">
+                                            <div className="flex items-center space-x-4">
+                                                <Button type="button" variant="active" className="pointer-events-none">
+                                                    JSON
+                                                </Button>
                                             </div>
-                                        )
-                                    )}
+                                        </div>
+                                        <Prism noCopy language="json" className="p-3 transparent-code" colorScheme="dark">
+                                            {getSyncResponse((flow.models as unknown as NangoModel[]).find((m) => m.name === model)!)}
+                                        </Prism>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </>
+                            ))}
+                        </div>
+                    </div>
                 )}
             </div>
         </>

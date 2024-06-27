@@ -41,26 +41,10 @@ describe(`POST ${endpoint}`, () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    {
-                        code: 'invalid_type',
-                        message: 'Required',
-                        path: ['flowConfigs']
-                    },
-                    {
-                        code: 'invalid_type',
-                        message: 'Required',
-                        path: ['postConnectionScriptsByProvider']
-                    },
-                    {
-                        code: 'invalid_type',
-                        message: 'Required',
-                        path: ['reconcile']
-                    },
-                    {
-                        code: 'invalid_type',
-                        message: 'Expected boolean, received string',
-                        path: ['debug']
-                    }
+                    { code: 'invalid_type', message: 'Required', path: ['flowConfigs'] },
+                    { code: 'invalid_type', message: 'Required', path: ['postConnectionScriptsByProvider'] },
+                    { code: 'invalid_type', message: 'Required', path: ['reconcile'] },
+                    { code: 'invalid_type', message: 'Expected boolean, received string', path: ['debug'] }
                 ]
             }
         });
@@ -77,7 +61,8 @@ describe(`POST ${endpoint}`, () => {
                 flowConfigs: [],
                 postConnectionScriptsByProvider: [],
                 reconcile: false,
-                singleDeployMode: false
+                singleDeployMode: false,
+                jsonSchema: { $comment: '', $schema: 'http://json-schema.org/draft-07/schema#', definitions: {} }
             }
         });
 

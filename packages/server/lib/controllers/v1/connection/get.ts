@@ -2,10 +2,9 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 import type { Connection, GetConnection, IntegrationConfig } from '@nangohq/types';
-import { connectionService, LogActionEnum, configService, errorNotificationService } from '@nangohq/shared';
+import { connectionService, configService, errorNotificationService } from '@nangohq/shared';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
-import type { LogLevel } from '@nangohq/shared';
 
 const queryStringValidation = z
     .object({
@@ -53,21 +52,6 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     const { provider_config_key: providerConfigKey, force_refresh } = queryParams;
     const instantRefresh = force_refresh === 'true';
     const { connectionId } = params;
-
-    const action = LogActionEnum.TOKEN;
-
-    const log = {
-        level: 'info' as LogLevel,
-        success: false,
-        action,
-        start: Date.now(),
-        end: Date.now(),
-        timestamp: Date.now(),
-        connection_id: connectionId,
-        provider: '',
-        provider_config_key: providerConfigKey,
-        environment_id: environment.id
-    };
 
     const credentialResponse = await connectionService.getConnectionCredentials({
         account,
@@ -144,9 +128,6 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     }
 
     if (instantRefresh) {
-        log.provider = config.provider;
-        log.success = true;
-
         const logCtx = await logContextGetter.create(
             { operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
             {

@@ -130,7 +130,11 @@ export default class Nango {
             return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
         }
 
-        const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
+        let url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
+
+        if (options && 'credentials' in options && 'token_id' in options.credentials && 'token_secret' in options.credentials) {
+            url = this.hostBaseUrl + `/auth/tba/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
+        }
 
         try {
             new URL(url);
@@ -427,6 +431,14 @@ export default class Nango {
                 }
                 if ('oauth_client_secret_override' in credentials) {
                     query.push(`credentials[oauth_client_secret_override]=${encodeURIComponent(credentials.oauth_client_secret_override)}`);
+                }
+
+                if ('token_id' in credentials) {
+                    query.push(`token_id=${encodeURIComponent(credentials.token_id)}`);
+                }
+
+                if ('token_secret' in credentials) {
+                    query.push(`token_secret=${encodeURIComponent(credentials.token_secret)}`);
                 }
             }
 

@@ -209,7 +209,14 @@ export class SlackService {
         }
 
         const envName = (await environmentService.getEnvironmentName(nangoConnection.environment_id))!;
+
         const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, name, type);
+
+        // this must mean we don't want to trigger the slack notification
+        // b/c it is auth and we don't increment the connection count
+        if (success && !slackNotificationStatus) {
+            return;
+        }
 
         const account = await environmentService.getAccountFromEnvironment(environment_id);
         if (!account) {
@@ -431,7 +438,8 @@ export class SlackService {
      */
     async hasOpenNotification(
         nangoConnection: NangoConnection,
-        name: string
+        name: string,
+        type: string
     ): Promise<Pick<SlackNotification, 'id' | 'connection_list' | 'slack_timestamp' | 'admin_slack_timestamp'> | null> {
         const hasOpenNotification = await schema()
             .select('id', 'connection_list', 'slack_timestamp', 'admin_slack_timestamp')
@@ -439,7 +447,8 @@ export class SlackService {
             .where({
                 open: true,
                 environment_id: nangoConnection.environment_id,
-                name
+                name,
+                type
             });
 
         if (!hasOpenNotification || !hasOpenNotification.length) {
@@ -479,9 +488,18 @@ export class SlackService {
      * and if so add the connection id to the connection list.
      */
     async addFailingConnection(nangoConnection: NangoConnection, name: string, type: string): Promise<ServiceResponse<NotificationResponse>> {
-        const isOpen = await this.hasOpenNotification(nangoConnection, name);
+        const isOpen = await this.hasOpenNotification(nangoConnection, name, type);
+
+        if (isOpen && type === 'auth') {
+            return {
+                success: true,
+                error: null,
+                response: null
+            };
+        }
 
         logger.info(`Notifying ${nangoConnection.id} type:${type} name:${name}`);
+
         if (!isOpen) {
             const created = await this.createNotification(nangoConnection, name, type);
 
@@ -556,7 +574,7 @@ export class SlackService {
             return;
         }
 
-        const isOpen = await this.hasOpenNotification(nangoConnection, name);
+        const isOpen = await this.hasOpenNotification(nangoConnection, name, type);
 
         if (!isOpen) {
             return;

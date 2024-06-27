@@ -3,7 +3,6 @@ import { Temporal } from './temporal.js';
 import { Processor } from './processor/processor.js';
 import { server } from './server.js';
 import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
-import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { reconcileTemporalSchedules } from './crons/reconcileTemporalSchedules.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
@@ -31,7 +30,6 @@ try {
 
     // Register recurring tasks
     cronAutoIdleDemo();
-    deleteOldActivityLogs();
     deleteSyncsData();
     reconcileTemporalSchedules();
     timeoutLogsOperations();

@@ -1,3 +1,4 @@
+import tracer from 'dd-trace';
 import type { Request, Response, NextFunction, Express } from 'express';
 import type { Endpoint } from '@nangohq/types';
 
@@ -15,8 +16,12 @@ export interface RouteHandler<E extends Endpoint<any>> extends Route<E> {
 }
 
 export const createRoute = <E extends Endpoint<any>>(server: Express, rh: RouteHandler<E>): void => {
-    const safeHandler = (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) =>
+    const safeHandler = (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction): void => {
+        const active = tracer.scope().active();
+        active?.setTag('http.route', req.route?.path || req.originalUrl);
         Promise.resolve(rh.handler(req, res, next)).catch((error: unknown) => next(error));
+    };
+
     if (rh.method === 'GET') {
         server.get(rh.path, rh.validate, safeHandler);
     } else if (rh.method === 'POST') {

@@ -12,20 +12,18 @@ import {
     getSyncNamesByConnectionId,
     softDeleteSync
 } from './sync.service.js';
-import { createActivityLog } from '../activity/activity.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
-import type { LogLevel } from '../../models/Activity.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import type { SyncDeploymentResult, Sync, SyncType, ReportedSyncJobStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { SyncStatus, ScheduleStatus, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import { SyncStatus, ScheduleStatus, SyncCommand } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { RecordsServiceInterface } from '../../clients/sync.client.js';
-import { LogActionEnum } from '../../models/Activity.js';
+import { LogActionEnum } from '../../models/Telemetry.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
 import type { Environment } from '../../models/Environment.js';
@@ -234,29 +232,11 @@ export class SyncManagerService {
         connectionId?: string;
         initiator: string;
     }): Promise<ServiceResponse<boolean>> {
-        const action = CommandToActivityLog[command];
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id);
         const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
 
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: connectionId || '',
-            provider: provider!.provider,
-            provider_config_key: providerConfigKey,
-            environment_id: environment.id
-        };
-        const activityLogId = await createActivityLog(log);
-        if (!activityLogId) {
-            return { success: false, error: new NangoError('failed_to_create_activity_log'), response: false };
-        }
-
         const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
+            { operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
             { account, environment, integration: { id: provider!.id!, name: provider!.unique_key, provider: provider!.provider } }
         );
 
@@ -287,7 +267,6 @@ export class SyncManagerService {
                     scheduleId: schedule.schedule_id,
                     syncId: sync?.id,
                     command,
-                    activityLogId,
                     environmentId: environment.id,
                     providerConfigKey,
                     connectionId,
@@ -329,7 +308,6 @@ export class SyncManagerService {
                     scheduleId: schedule.schedule_id,
                     syncId: sync.id,
                     command,
-                    activityLogId,
                     environmentId: environment.id,
                     providerConfigKey,
                     connectionId: connection.connection_id,
@@ -345,7 +323,7 @@ export class SyncManagerService {
             }
         }
 
-        await logCtx.info('Sync was successfully updated', { action, syncNames });
+        await logCtx.info('Sync was successfully updated', { command, syncNames });
         await logCtx.success();
 
         return { success: true, error: null, response: true };

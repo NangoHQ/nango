@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.7] - 2024-06-27
+
+### Added
+
+- *(integration-templates)* [nan 1235] unanet integration (#2399) by @khaliqgant
+- *(google-mail)* Support adding headers to send-email action (#2391) by @Pyloris
+- *(integration-templates)* Fix asana update fields (#2392) by @hassan254-prog
+- *(integrations)* Add support for autodesk (#2393) by @hassan254-prog
+- *(integrations)* Add support for wordpress (#2394) by @hassan254-prog
+- *(cli)* Exports json schema (#2362) by @bodinsamuel
+- *(integration-templates)* Add outputs (#2405) by @khaliqgant
+- *(metrics)* Add sync, action, webhook, post script, proxy (#2398) by @bodinsamuel
+- *(jira-basic)* Add support for jira-basic (#2410) by @hassan254-prog
+- *(logs.v1)* Drop data (#2414) by @bodinsamuel
+- *(tba-integration)* [nan-1259] support netsuite tba authorization (#2415) by @khaliqgant
+- *(integrations)* Add support for medallia (#2411) by @hassan254-prog
+
+### Fixed
+
+- *(logs.v1)* Remove auth, slack, activities, etc. (#2400) by @bodinsamuel
+- *(tracing)* Missing call to finish() (#2408) by @bodinsamuel
+- *(integrations)* Better check for competing model names (#2409) by @khaliqgant
+- /sync/status should return sync frequency (#2402) by @TBonnin
+- *(orchestrator)* Update schedule last task when running sync manually and add runSyncCommand error loggging (#2401) by @TBonnin
+- *(logs.v1)* Remove remaining (#2407) by @bodinsamuel
+- *(telemetry)* Missing envId (#2412) by @bodinsamuel
+- *(axios)* Disable axios proxy when passing agent (#2396) by @mithlesh135
+- *(syncConfigs)* Handle new model_schema + display in the UI (#2404) by @bodinsamuel
+- *(deploy)* Pass jsonSchema (#2406) by @bodinsamuel
+- *(deploy)* Reconcile flag was turned off (#2419) by @bodinsamuel
+
 ## [v0.40.6] - 2024-06-24
 
 ### Added
@@ -1422,6 +1453,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.7]: https://github.com/NangoHQ/nango/compare/v0.40.6..v0.40.7
 [v0.40.6]: https://github.com/NangoHQ/nango/compare/v0.40.5..v0.40.6
 [v0.40.5]: https://github.com/NangoHQ/nango/compare/v0.40.4..v0.40.5
 [v0.40.4]: https://github.com/NangoHQ/nango/compare/v0.40.3..v0.40.4

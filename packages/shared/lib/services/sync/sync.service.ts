@@ -17,7 +17,7 @@ import syncManager from './manager.service.js';
 import connectionService from '../connection.service.js';
 import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { LogActionEnum } from '../../models/Activity.js';
+import { LogActionEnum } from '../../models/Telemetry.js';
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import { featureFlags } from '../../index.js';
 import { stringifyError } from '@nangohq/utils';
@@ -26,7 +26,6 @@ const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
-const ACTIVITY_LOG_TABLE = dbNamespace + 'activity_logs';
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 
 /**
@@ -238,12 +237,10 @@ export const getSyncs = async (
                         'status', ${SYNC_JOB_TABLE}.status,
                         'sync_config_id', ${SYNC_JOB_TABLE}.sync_config_id,
                         'version', ${SYNC_CONFIG_TABLE}.version,
-                        'models', ${SYNC_CONFIG_TABLE}.models,
-                        'activity_log_id', ${ACTIVITY_LOG_TABLE}.id
+                        'models', ${SYNC_CONFIG_TABLE}.models
                     )
                     FROM ${SYNC_JOB_TABLE}
                     JOIN ${SYNC_CONFIG_TABLE} ON ${SYNC_CONFIG_TABLE}.id = ${SYNC_JOB_TABLE}.sync_config_id AND ${SYNC_CONFIG_TABLE}.deleted = false
-                    LEFT JOIN ${ACTIVITY_LOG_TABLE} ON ${ACTIVITY_LOG_TABLE}.session_id = ${SYNC_JOB_TABLE}.id::text
                     WHERE ${SYNC_JOB_TABLE}.sync_id = ${TABLE}.id
                         AND ${SYNC_JOB_TABLE}.deleted = false
                     ORDER BY ${SYNC_JOB_TABLE}.updated_at DESC
@@ -301,7 +298,7 @@ export const getSyncs = async (
                 return {
                     ...sync,
                     status: syncManager.classifySyncStatus(sync?.latest_sync?.status, schedule.state),
-                    futureActionTimes: schedule.state === 'PAUSED' ? [] : [schedule.nextDueDate.getTime() / 1000]
+                    futureActionTimes: schedule.nextDueDate ? [schedule.nextDueDate.getTime() / 1000] : []
                 };
             }
             return sync;
