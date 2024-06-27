@@ -10,7 +10,7 @@ import {
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
 import { makeAccessTokenRequest } from '../helpers/tba.js';
-import type { AuthCredentials, Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
+import type { TbaCredentials, Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
 import type {
     Config as ProviderConfig,
     OAuthSession,
@@ -1181,6 +1181,7 @@ class OAuthController {
         logCtx: LogContext
     ) {
         const { oauth_token, oauth_verifier } = req.query;
+        const channel = session.webSocketClientId;
 
         if (!oauth_token || !oauth_verifier) {
             await logCtx.error('Missing oauth_token or oauth_verifier in callback. The user might have denied the request');
@@ -1196,68 +1197,119 @@ class OAuthController {
             connectionId
         });
 
-        const tokenResponse = await makeAccessTokenRequest({
-            template,
-            config,
-            oauth_token: String(oauth_token),
-            oauth_verifier: String(oauth_verifier),
-            session
-        });
+        try {
+            const tokenResponse = await makeAccessTokenRequest({
+                template,
+                config,
+                oauth_token: String(oauth_token),
+                oauth_verifier: String(oauth_verifier),
+                session,
+                logCtx
+            });
 
-        if (!tokenResponse) {
-            await logCtx.error('Failed to get access token');
-            await logCtx.failed();
-            return res.status(500).send('Failed to get access token');
-        }
+            if (!tokenResponse) {
+                await logCtx.error('Failed to get access token');
+                await logCtx.failed();
 
-        const { token, secret } = tokenResponse;
+                return res.status(400).send('Failed to get access token');
+            }
 
-        const channel = session.webSocketClientId;
+            const { token, secret } = tokenResponse;
 
-        const { connectionConfig } = session;
+            const channel = session.webSocketClientId;
 
-        const oauth_consumer_key = connectionConfig['consumer_key'] || config.oauth_client_id;
-        const oauth_token_secret = connectionConfig['oauth_client_secret'] || config.oauth_client_secret;
+            const { connectionConfig } = session;
 
-        const [updatedConnection] = await connectionService.upsertConnection(
-            connectionId,
-            providerConfigKey,
-            session.provider,
-            {
+            const oauth_client_id = connectionConfig['oauth_client_id'] || config.oauth_client_id;
+            const oauth_client_secret = connectionConfig['oauth_client_secret'] || config.oauth_client_secret;
+
+            const credentials: TbaCredentials = {
                 type: 'TBA',
                 token,
                 secret,
-                oauth_client_id: oauth_consumer_key,
-                oauth_client_secret: oauth_token_secret
-            } as unknown as AuthCredentials,
-            { ...session.connectionConfig, oauth_verifier },
-            environment.id,
-            account.id
-        );
+                oauth_client_id,
+                oauth_client_secret,
+                config_override: {
+                    client_id: connectionConfig['oauth_client_id_override'] || '',
+                    client_secret: connectionConfig['oauth_client_secret_override'] || ''
+                }
+            };
 
-        if (updatedConnection) {
-            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-            // don't initiate a sync if custom because this is the first step of the oauth flow
-            const initiateSync = true;
-            const runPostConnectionScript = true;
-            void connectionCreatedHook(
+            const [updatedConnection] = await connectionService.upsertConnection(
+                connectionId,
+                providerConfigKey,
+                session.provider,
+                credentials,
+                { ...session.connectionConfig, oauth_verifier },
+                environment.id,
+                account.id
+            );
+
+            if (updatedConnection) {
+                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+                const initiateSync = true;
+                const runPostConnectionScript = true;
+                void connectionCreatedHook(
+                    {
+                        connection: updatedConnection.connection,
+                        environment,
+                        account,
+                        auth_mode: template.auth_mode,
+                        operation: updatedConnection.operation
+                    },
+                    session.provider,
+                    logContextGetter,
+                    { initiateSync, runPostConnectionScript },
+                    logCtx
+                );
+            }
+
+            await logCtx.success();
+
+            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
+        } catch (err: any) {
+            errorManager.report(err, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
+                environmentId: session.environmentId,
+                metadata: {
+                    providerConfigKey: session.providerConfigKey,
+                    connectionId: session.connectionId
+                }
+            });
+            const prettyError = stringifyError(err, { pretty: true });
+
+            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'TBA token request failed', LogActionEnum.AUTH, {
+                environmentId: String(environment.id),
+                providerConfigKey: String(providerConfigKey),
+                provider: String(config.provider),
+                connectionId: String(connectionId),
+                authMode: String(template.auth_mode),
+                level: 'error'
+            });
+
+            const error = WSErrBuilder.UnknownError();
+            await logCtx.error(error.message);
+            await logCtx.failed();
+
+            void connectionCreationFailedHook(
                 {
-                    connection: updatedConnection.connection,
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
                     auth_mode: template.auth_mode,
-                    operation: updatedConnection.operation
+                    error: {
+                        type: 'unknown',
+                        description: error.message + '\n' + prettyError
+                    },
+                    operation: 'unknown'
                 },
                 session.provider,
-                logContextGetter,
-                { initiateSync, runPostConnectionScript },
                 logCtx
             );
+
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
-
-        await logCtx.success();
-
-        return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
     }
 
     private async oauth1Callback(

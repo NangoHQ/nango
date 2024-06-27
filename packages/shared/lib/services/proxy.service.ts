@@ -403,7 +403,6 @@ class ProxyService {
      * @param {ApplicationConstructedProxyConfiguration} config
      */
     public constructHeaders(config: ApplicationConstructedProxyConfiguration, method: HTTP_VERB, url: string): Record<string, string> {
-        console.log(config);
         let headers = {};
 
         switch (config.template.auth_mode) {
@@ -461,7 +460,7 @@ class ProxyService {
         if (config.template.auth_mode === 'TBA') {
             const { nonce, timestamp } = getTbaMetaParams();
 
-            const consumerKey = config.connection.connection_config['consumer_key'];
+            const consumerKey = config.connection.connection_config['oauth_client_id'];
             const credentials = config.connection.credentials as TbaCredentials;
 
             const realm = config.connection.connection_config['accountId'];
@@ -481,8 +480,12 @@ class ProxyService {
                 params: oauthParams
             });
 
+            console.log({ baseString });
+
             const clientSecret = credentials.oauth_client_secret;
 
+            console.log({ clientSecret });
+            console.log({ tokenSecret: credentials.secret });
             const hash = generateSignature({
                 baseString,
                 clientSecret,
@@ -492,11 +495,14 @@ class ProxyService {
             const authHeader =
                 `OAuth realm="${percentEncode(realm)}", ` +
                 `oauth_consumer_key="${percentEncode(consumerKey)}", ` +
-                `oauth_token="${percentEncode(credentials.token)}", ` +
-                `oauth_signature_method="${percentEncode(SIGNATURE_METHOD)}", ` +
-                `oauth_timestamp="${percentEncode(timestamp)}", ` +
-                `oauth_nonce="${percentEncode(nonce)}", ` +
+                `oauth_token="${credentials.token}", ` +
+                `oauth_nonce="${nonce}", ` +
+                `oauth_timestamp="${timestamp}", ` +
+                `oauth_signature_method="${SIGNATURE_METHOD}", ` +
+                `oauth_version="1.0", ` +
                 `oauth_signature="${percentEncode(hash)}"`;
+
+            console.log({ authHeader });
 
             headers = {
                 ...headers,

@@ -1,21 +1,24 @@
 import axios from 'axios';
+import type { LogContext } from '@nangohq/logs';
 import type { OAuthSession } from '@nangohq/shared';
 import type { Template as ProviderTemplate, IntegrationConfig as ProviderConfig } from '@nangohq/types';
 import { interpolateStringFromObject } from '@nangohq/shared';
-import { generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode } from '@nangohq/utils';
+import { parseTokenAndSecret, generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode } from '@nangohq/utils';
 
 export async function makeAccessTokenRequest({
     template,
     config,
     oauth_token,
     oauth_verifier,
-    session
+    session,
+    logCtx
 }: {
     template: ProviderTemplate;
     config: ProviderConfig;
     oauth_token: string;
     oauth_verifier: string;
     session: OAuthSession;
+    logCtx: LogContext;
 }): Promise<{ token: string; secret: string } | null> {
     const accessTokenEndpoint = template.access_token_url;
 
@@ -31,10 +34,11 @@ export async function makeAccessTokenRequest({
 
     const { nonce, timestamp } = getTbaMetaParams();
 
-    const oauth_consumer_key = connectionConfig['consumer_key'] || config.oauth_client_id;
+    const oauth_client_id = connectionConfig['oauth_client_id'] || config.oauth_client_id;
+    const oauth_client_secret = connectionConfig['oauth_client_secret'] || config.oauth_client_secret;
 
     const oauthParams = {
-        oauth_consumer_key,
+        oauth_consumer_key: oauth_client_id,
         oauth_nonce: nonce,
         oauth_signature_method: SIGNATURE_METHOD,
         oauth_timestamp: timestamp.toString(),
@@ -42,7 +46,7 @@ export async function makeAccessTokenRequest({
         oauth_verifier
     };
 
-    const oauth_token_secret = connectionConfig['oauth_token_secret'];
+    const unauthorized_oauth_token_secret = connectionConfig['unauthorized_oauth_token_secret'];
 
     const baseString = generateBaseString({
         method: 'POST',
@@ -52,12 +56,12 @@ export async function makeAccessTokenRequest({
 
     const hash = generateSignature({
         baseString,
-        clientSecret: config.oauth_client_secret,
-        tokenSecret: oauth_token_secret as string
+        clientSecret: oauth_client_secret,
+        tokenSecret: unauthorized_oauth_token_secret as string
     });
 
     const authHeader =
-        `OAuth oauth_consumer_key="${percentEncode(oauth_consumer_key)}",` +
+        `OAuth oauth_consumer_key="${percentEncode(oauth_client_id)}",` +
         `oauth_token="${oauth_token}",` +
         `oauth_verifier="${oauth_verifier}",` +
         `oauth_nonce="${nonce}",` +
@@ -69,12 +73,18 @@ export async function makeAccessTokenRequest({
         Authorization: authHeader
     };
 
+    await logCtx.debug('Third part of the three part flow to obtain an access token', {
+        fullAccessTokenEndpoint,
+        oauthParams,
+        authHeader
+    });
+
     const response = await axios.post(fullAccessTokenEndpoint, null, { headers });
 
-    const parsedData = new URLSearchParams(response.data);
+    const { token, secret } = parseTokenAndSecret(response.data);
 
     return {
-        token: parsedData.get('oauth_token') as string,
-        secret: parsedData.get('oauth_token_secret')?.replace(/\r?\n|\r/g, '') as string
+        token,
+        secret
     };
 }

@@ -118,6 +118,11 @@ export interface TbaCredentials {
     secret: string;
     oauth_client_id: string;
     oauth_client_secret: string;
+
+    config_override?: {
+        client_id?: string;
+        client_secret?: string;
+    };
 }
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;

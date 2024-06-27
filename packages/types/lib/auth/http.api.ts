@@ -22,6 +22,7 @@ export type TbaAuthorization = Endpoint<{
         | ApiError<'invalid_auth_mode'>
         | ApiError<'missing_token_url'>
         | ApiError<'no_data_returned_from_token_request'>
+        | ApiError<'callback_not_confirmed'>
         | ApiError<'missing_connection_config_param'>;
     Success: never;
 }>;

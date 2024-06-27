@@ -1,11 +1,10 @@
 import axios from 'axios';
-import querystring from 'querystring';
 import * as uuid from 'uuid';
 import { z } from 'zod';
 import * as crypto from 'node:crypto';
 import type { OAuthSession } from '@nangohq/shared';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP, generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode } from '@nangohq/utils';
+import { parseTokenAndSecret, zodErrorToHTTP, generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode } from '@nangohq/utils';
 import { analytics, configService, AnalyticsTypes, getConnectionConfig, getOauthCallbackUrl, interpolateStringFromObject } from '@nangohq/shared';
 import oAuthSessionService from '../../services/oauth-session.service.js';
 import { missesInterpolationParam } from '../../utils/utils.js';
@@ -144,6 +143,15 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
     const oauth_consumer_key = credentials?.oauth_client_id_override || config.oauth_client_id;
     const oauth_client_secret = credentials?.oauth_client_secret_override || config.oauth_client_secret;
 
+    if (credentials && (credentials.oauth_client_id_override || credentials.oauth_client_secret_override)) {
+        const obfuscatedClientSecret = credentials?.oauth_client_secret_override ? credentials?.oauth_client_secret_override.slice(0, 4) + '***' : '';
+
+        await logCtx.info('Credentials override', {
+            oauth_client_id: oauth_consumer_key,
+            oauth_client_secret: obfuscatedClientSecret
+        });
+    }
+
     const oauthParams = {
         oauth_consumer_key,
         oauth_nonce: nonce,
@@ -178,6 +186,14 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
         Authorization: authHeader
     };
 
+    await logCtx.debug('First part of the three part flow to obtain an unauthorized request token', {
+        tokenRequestUrl,
+        oauthParams,
+        baseString,
+        hash,
+        authHeader
+    });
+
     const response = await axios.post(tokenRequestUrl, null, { headers });
 
     const { data } = response;
@@ -193,8 +209,23 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
         return;
     }
 
-    const parsedData = querystring.parse(data);
-    const { oauth_token, oauth_token_secret } = parsedData;
+    const { parsedData, token: unauthorized_oauth_token, secret: unauthorized_oauth_token_secret } = parseTokenAndSecret(data);
+
+    if (!parsedData.get('oauth_callback_confirmed')) {
+        await logCtx.error('Callback not confirmed');
+        await logCtx.failed();
+
+        res.status(400).send({
+            error: { code: 'callback_not_confirmed' }
+        });
+
+        return;
+    }
+
+    await logCtx.debug('Received the unauthorized request token successfully', {
+        unauthorized_oauth_token,
+        unauthorized_oauth_token_secret: unauthorized_oauth_token_secret.slice(0, 4) + '***'
+    });
 
     const authorizeTokenUrl = template.authorization_url as string;
 
@@ -212,11 +243,12 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
         id: uuid.v1(),
         connectionConfig: {
             ...connectionConfig,
-            oauth_token: oauth_token as string,
-            oauth_token_secret: oauth_token_secret as string,
-            consumer_key: oauth_consumer_key,
+            unauthorized_oauth_token,
+            unauthorized_oauth_token_secret,
             oauth_client_id: oauth_consumer_key,
             oauth_client_secret: oauth_client_secret,
+            oauth_client_id_override: credentials?.oauth_client_id_override || '',
+            oauth_client_secret_override: credentials?.oauth_client_secret_override || '',
             token_id: tokenId,
             token_secret: tokenSecret
         },
@@ -228,15 +260,15 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
     await oAuthSessionService.create(session);
 
     const redirectUrl = new URL(fullAuthorizeTokenUrl);
-    redirectUrl.searchParams.append('oauth_token', oauth_token as string);
+    redirectUrl.searchParams.append('oauth_token', unauthorized_oauth_token);
     redirectUrl.searchParams.append('state', session.id.replace(/-/g, ''));
 
-    await logCtx.info('Redirecting', {
+    await logCtx.info('Second part of the three part flow redirecting to login', {
         authorizationUri: redirectUrl.toString(),
         providerConfigKey,
         connectionId,
         params: {
-            oauth_token: oauth_token as string,
+            oauth_token: unauthorized_oauth_token,
             state: session.id.replace(/-/g, '')
         },
         connectionConfig
