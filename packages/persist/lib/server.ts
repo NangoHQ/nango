@@ -2,7 +2,7 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { validateRequest } from 'zod-express';
 import { z } from 'zod';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, requestLoggerMiddleware } from '@nangohq/utils';
 import persistController from './controllers/persist.controller.js';
 import { authMiddleware } from './middleware/auth.middleware.js';
 
@@ -12,20 +12,10 @@ const maxSizeJsonRecords = '100mb';
 
 export const server = express();
 
-server.use((req: Request, res: Response, next: NextFunction) => {
-    const originalSend = res.send;
-    res.send = function (body: any) {
-        if (res.statusCode >= 400) {
-            logger.info(`[Error] ${req.method} ${req.path} ${res.statusCode} '${JSON.stringify(body)}'`);
-        }
-        originalSend.call(this, body) as any;
-        return this;
-    };
-    next();
-    if (res.statusCode < 400) {
-        logger.info(`${req.method} ${req.path} ${res.statusCode}`);
-    }
-});
+// Log all requests
+if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
+    server.use(requestLoggerMiddleware({ logger }));
+}
 
 server.use('/environment/:environmentId/*', authMiddleware);
 

@@ -11,7 +11,7 @@ import { routeHandler as putTaskHandler } from './routes/v1/tasks/putTaskId.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as getOutputHandler } from './routes/v1/tasks/taskId/getOutput.js';
 import { routeHandler as postHeartbeatHandler } from './routes/v1/tasks/taskId/postHeartbeat.js';
-import { getLogger, createRoute } from '@nangohq/utils';
+import { getLogger, createRoute, requestLoggerMiddleware } from '@nangohq/utils';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError } from '@nangohq/types';
 import type EventEmitter from 'node:events';
@@ -23,21 +23,10 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
 
     server.use(express.json({ limit: '10mb' }));
 
-    // Logging middleware
-    server.use((req: Request, res: Response, next: NextFunction) => {
-        const originalSend = res.send;
-        res.send = function (body: any) {
-            if (res.statusCode >= 400) {
-                logger.error(`${req.method} ${req.path} ${res.statusCode} -> ${JSON.stringify(body)}`);
-            }
-            originalSend.call(this, body) as any;
-            return this;
-        };
-        next();
-        if (res.statusCode < 400) {
-            logger.info(`${req.method} ${req.path} -> ${res.statusCode}`);
-        }
-    });
+    // Log all requests
+    if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
+        server.use(requestLoggerMiddleware({ logger }));
+    }
 
     //TODO: add auth middleware
 
@@ -53,8 +42,8 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
     createRoute(server, postHeartbeatHandler(scheduler));
     createRoute(server, postDequeueHandler(scheduler, eventEmmiter));
 
-    server.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
-        res.status(500).json({ error: `Internal server error: '${err}'` });
+    server.use((err: unknown, _req: Request, res: Response<ApiError<'server_error', any>>, next: NextFunction) => {
+        res.status(500).json({ error: { code: 'server_error', errors: err } });
         next();
     });
 

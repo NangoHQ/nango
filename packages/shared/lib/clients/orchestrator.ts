@@ -371,7 +371,7 @@ export class Orchestrator {
                     const error = new NangoError('action_failure', { error: errorMsg });
                     span.setTag('error', e);
                     metrics.increment(metrics.Types.WEBHOOK_FAILURE);
-                    return Err(error);
+                    throw error;
                 } finally {
                     span.finish();
                 }
@@ -477,7 +477,7 @@ export class Orchestrator {
                 'connection.environment_id': connection.environment_id
             };
             if (isGloballyEnabled || isEnvEnabled) {
-                const span = tracer.startSpan('execute.action', {
+                const span = tracer.startSpan('execute.postConnectionScript', {
                     tags: spanTags,
                     ...(activeSpan ? { childOf: activeSpan } : {})
                 });
