@@ -1762,8 +1762,8 @@ oura:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://cloud.ouraring.com
-    docs: https://cloud.ouraring.com/v2/docs
+        base_url: https://api.ouraring.com
+    docs: https://docs.nango.dev/integrations/all/oura
 outlook:
     categories:
         - communication

@@ -421,6 +421,7 @@
                 "integrations/all/ory",
                 "integrations/all/osu",
                 "integrations/all/outlook",
+                "integrations/all/oura",
                 "integrations/all/outreach",
                 "integrations/all/pagerduty",
                 "integrations/all/pandadoc",
