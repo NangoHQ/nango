@@ -1633,9 +1633,6 @@ netsuite:
 netsuite-tba:
     alias: netsuite
     auth_mode: TBA
-    authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/secure/authorizetoken.nl
-    token_url: https://${connectionConfig.accountId}.restlets.api.netsuite.com/rest/requesttoken
-    access_token_url: https://${connectionConfig.accountId}.restlets.api.netsuite.com/rest/accesstoken
     docs: https://docs.nango.dev/integrations/all/netsuite
 next-cloud-ocs:
     auth_mode: BASIC

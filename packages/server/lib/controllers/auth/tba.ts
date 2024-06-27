@@ -1,17 +1,21 @@
-import axios from 'axios';
-import * as uuid from 'uuid';
 import { z } from 'zod';
-import * as crypto from 'node:crypto';
-import type { OAuthSession } from '@nangohq/shared';
+import tracer from 'dd-trace';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { parseTokenAndSecret, zodErrorToHTTP, generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode } from '@nangohq/utils';
-import { analytics, configService, AnalyticsTypes, getConnectionConfig, getOauthCallbackUrl, interpolateStringFromObject } from '@nangohq/shared';
-import oAuthSessionService from '../../services/oauth-session.service.js';
-import { missesInterpolationParam } from '../../utils/utils.js';
-import * as WSErrBuilder from '../../utils/web-socket-error.js';
-import type { TbaAuthorization } from '@nangohq/types';
+import { zodErrorToHTTP } from '@nangohq/utils';
+import { analytics, configService, AnalyticsTypes, getConnectionConfig, connectionService } from '@nangohq/shared';
+import type { TbaAuthorization, TbaCredentials } from '@nangohq/types';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
+import { connectionCreated as connectionCreatedHook, connectionTest as connectionTestHook } from '../../hooks/hooks.js';
+
+const bodyValidation = z
+    .object({
+        token_id: z.string().nonempty(),
+        token_secret: z.string().nonempty(),
+        oauth_client_id_override: z.string().optional(),
+        oauth_client_secret_override: z.string().optional()
+    })
+    .strict();
 
 const queryStringValidation = z
     .object({
@@ -19,17 +23,8 @@ const queryStringValidation = z
         params: z.record(z.any()).optional(),
         authorization_params: z.record(z.any()).optional(),
         user_scope: z.string().optional(),
-        ws_client_id: z.string().optional(),
         public_key: z.string().uuid(),
-        hmac: z.string().optional(),
-        token_id: z.string().nonempty(),
-        token_secret: z.string().nonempty(),
-        credentials: z
-            .object({
-                oauth_client_id_override: z.string().optional(),
-                oauth_client_secret_override: z.string().optional()
-            })
-            .optional()
+        hmac: z.string().optional()
     })
     .strict();
 
@@ -40,6 +35,14 @@ const paramValidation = z
     .strict();
 
 export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) => {
+    const val = bodyValidation.safeParse(req.body);
+    if (!val.success) {
+        res.status(400).send({
+            error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }
+        });
+        return;
+    }
+
     const queryStringVal = queryStringValidation.safeParse(req.query);
 
     if (!queryStringVal.success) {
@@ -59,7 +62,11 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
 
     const { account, environment } = res.locals;
 
-    const { token_id: tokenId, token_secret: tokenSecret, connection_id: connectionId, params, ws_client_id: wsClientId, credentials } = queryStringVal.data;
+    const body = val.data;
+
+    const { token_id: tokenId, token_secret: tokenSecret, oauth_client_id_override, oauth_client_secret_override } = body;
+
+    const { connection_id: connectionId, params } = queryStringVal.data;
     const { providerConfigKey } = paramVal.data;
 
     const logCtx = await logContextGetter.create(
@@ -110,169 +117,86 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
     await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
     const connectionConfig = params ? getConnectionConfig(params) : {};
-    const tokenUrl: string = template.token_url as string;
 
-    if (!tokenUrl) {
-        await logCtx.error('Missing token URL in provider config', { provider: config.provider });
-        await logCtx.failed();
+    const tbaCredentials: TbaCredentials = {
+        type: 'TBA',
+        token_id: tokenId,
+        token_secret: tokenSecret,
+        config_override: {}
+    };
 
-        res.status(400).send({
-            error: { code: 'missing_token_url' }
-        });
-    }
-
-    if (missesInterpolationParam(tokenUrl, connectionConfig)) {
-        const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
-        await logCtx.error(error.message, { connectionConfig });
-        await logCtx.failed();
-
-        res.status(400).send({
-            error: { code: 'missing_connection_config_param', message: error.message }
-        });
-        return;
-    }
-
-    const tokenRequestUrl = interpolateStringFromObject(tokenUrl, {
-        connectionConfig
-    });
-
-    const callbackUrl = await getOauthCallbackUrl(environment.id);
-
-    const { nonce, timestamp } = getTbaMetaParams();
-
-    const oauth_consumer_key = credentials?.oauth_client_id_override || config.oauth_client_id;
-    const oauth_client_secret = credentials?.oauth_client_secret_override || config.oauth_client_secret;
-
-    if (credentials && (credentials.oauth_client_id_override || credentials.oauth_client_secret_override)) {
-        const obfuscatedClientSecret = credentials?.oauth_client_secret_override ? credentials?.oauth_client_secret_override.slice(0, 4) + '***' : '';
+    if (oauth_client_id_override || oauth_client_secret_override) {
+        const obfuscatedClientSecret = oauth_client_secret_override ? oauth_client_secret_override.slice(0, 4) + '***' : '';
 
         await logCtx.info('Credentials override', {
-            oauth_client_id: oauth_consumer_key,
+            oauth_client_id: oauth_client_id_override || '',
             oauth_client_secret: obfuscatedClientSecret
         });
+
+        if (oauth_client_id_override) {
+            tbaCredentials.config_override['client_id'] = oauth_client_id_override;
+        }
+
+        if (oauth_client_secret_override) {
+            tbaCredentials.config_override['client_secret'] = oauth_client_secret_override;
+        }
     }
 
-    const oauthParams = {
-        oauth_consumer_key,
-        oauth_nonce: nonce,
-        oauth_signature_method: SIGNATURE_METHOD,
-        oauth_timestamp: timestamp,
-        oauth_callback: callbackUrl
-    };
+    const connectionResponse = await connectionTestHook(
+        config.provider,
+        template,
+        tbaCredentials,
+        connectionId,
+        providerConfigKey,
+        environment.id,
+        connectionConfig,
+        tracer
+    );
 
-    const baseString = generateBaseString({
-        method: 'POST',
-        url: tokenRequestUrl,
-        params: oauthParams
-    });
-
-    const emptyTokenSecret = '';
-
-    const hash = generateSignature({
-        baseString,
-        clientSecret: oauth_client_secret,
-        tokenSecret: emptyTokenSecret
-    });
-
-    const authHeader =
-        `OAuth oauth_consumer_key="${percentEncode(oauth_consumer_key)}",` +
-        `oauth_nonce="${nonce}",` +
-        `oauth_timestamp="${timestamp}",` +
-        `oauth_signature_method="${SIGNATURE_METHOD}",` +
-        `oauth_callback="${percentEncode(callbackUrl)}",` +
-        `oauth_signature="${percentEncode(hash)}"`;
-
-    const headers = {
-        Authorization: authHeader
-    };
-
-    await logCtx.debug('First part of the three part flow to obtain an unauthorized request token', {
-        tokenRequestUrl,
-        oauthParams,
-        baseString,
-        hash,
-        authHeader
-    });
-
-    const response = await axios.post(tokenRequestUrl, null, { headers });
-
-    const { data } = response;
-
-    if (!data) {
-        await logCtx.error('No data returned from token request');
+    if (connectionResponse.isErr()) {
+        await logCtx.error('Provided credentials are invalid', { provider: config.provider });
         await logCtx.failed();
 
-        res.status(400).send({
-            error: { code: 'no_data_returned_from_token_request' }
+        res.send({
+            error: { code: 'invalid_credentials', message: 'The provided credentials did not succeed in a test API call' }
         });
 
         return;
     }
 
-    const { parsedData, token: unauthorized_oauth_token, secret: unauthorized_oauth_token_secret } = parseTokenAndSecret(data);
+    await logCtx.info('Tba connection creation was successful');
+    await logCtx.success();
 
-    if (!parsedData.get('oauth_callback_confirmed')) {
-        await logCtx.error('Callback not confirmed');
-        await logCtx.failed();
-
-        res.status(400).send({
-            error: { code: 'callback_not_confirmed' }
-        });
-
-        return;
-    }
-
-    await logCtx.debug('Received the unauthorized request token successfully', {
-        unauthorized_oauth_token,
-        unauthorized_oauth_token_secret: unauthorized_oauth_token_secret.slice(0, 4) + '***'
-    });
-
-    const authorizeTokenUrl = template.authorization_url as string;
-
-    const fullAuthorizeTokenUrl = interpolateStringFromObject(authorizeTokenUrl, {
-        connectionConfig
-    });
-
-    const session: OAuthSession = {
-        providerConfigKey: providerConfigKey,
-        provider: config.provider,
-        connectionId: connectionId,
-        callbackUrl: callbackUrl,
-        authMode: template.auth_mode,
-        codeVerifier: crypto.randomBytes(24).toString('hex'),
-        id: uuid.v1(),
+    const [updatedConnection] = await connectionService.upsertTbaConnection({
+        connectionId,
+        providerConfigKey,
+        credentials: tbaCredentials,
         connectionConfig: {
             ...connectionConfig,
-            unauthorized_oauth_token,
-            unauthorized_oauth_token_secret,
-            oauth_client_id: oauth_consumer_key,
-            oauth_client_secret: oauth_client_secret,
-            oauth_client_id_override: credentials?.oauth_client_id_override || '',
-            oauth_client_secret_override: credentials?.oauth_client_secret_override || '',
-            token_id: tokenId,
-            token_secret: tokenSecret
+            oauth_client_id: config.oauth_client_id,
+            oauth_client_secret: config.oauth_client_secret
         },
-        environmentId: environment.id,
-        webSocketClientId: wsClientId,
-        activityLogId: logCtx.id
-    };
-
-    await oAuthSessionService.create(session);
-
-    const redirectUrl = new URL(fullAuthorizeTokenUrl);
-    redirectUrl.searchParams.append('oauth_token', unauthorized_oauth_token);
-    redirectUrl.searchParams.append('state', session.id.replace(/-/g, ''));
-
-    await logCtx.info('Second part of the three part flow redirecting to login', {
-        authorizationUri: redirectUrl.toString(),
-        providerConfigKey,
-        connectionId,
-        params: {
-            oauth_token: unauthorized_oauth_token,
-            state: session.id.replace(/-/g, '')
-        },
-        connectionConfig
+        config,
+        environment,
+        account
     });
 
-    res.redirect(redirectUrl.toString());
+    if (updatedConnection) {
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+        void connectionCreatedHook(
+            {
+                connection: updatedConnection.connection,
+                environment,
+                account,
+                auth_mode: 'NONE',
+                operation: updatedConnection.operation
+            },
+            config.provider,
+            logContextGetter,
+            undefined,
+            logCtx
+        );
+    }
+
+    res.status(200).send({ providerConfigKey, connectionId });
 });

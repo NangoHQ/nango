@@ -123,12 +123,10 @@ export interface CredentialsRefresh<T = unknown> {
 
 export interface TbaCredentials {
     type: AuthModes['TBA'];
-    token: string;
-    secret: string;
-    oauth_client_id: string;
-    oauth_client_secret: string;
+    token_id: string;
+    token_secret: string;
 
-    config_override?: {
+    config_override: {
         client_id?: string;
         client_secret?: string;
     };

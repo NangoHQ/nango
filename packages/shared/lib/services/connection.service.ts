@@ -18,6 +18,7 @@ import type {
     Template as ProviderTemplate,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     AuthModeType,
+    TbaCredentials,
     MaybePromise
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
@@ -109,6 +110,64 @@ class ConnectionService {
             .returning('*');
 
         void analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
+
+        return [{ connection: connection[0]!, operation: 'creation' }];
+    }
+
+    public async upsertTbaConnection({
+        connectionId,
+        providerConfigKey,
+        credentials,
+        connectionConfig,
+        config,
+        environment,
+        account
+    }: {
+        connectionId: string;
+        providerConfigKey: string;
+        credentials: TbaCredentials;
+        connectionConfig: ConnectionConfig;
+        config: ProviderConfig;
+        environment: Environment;
+        account: Account;
+    }): Promise<ConnectionUpsertResponse[]> {
+        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
+
+        if (storedConnection) {
+            const encryptedConnection = encryptionManager.encryptConnection({
+                connection_id: connectionId,
+                config_id: config.id as number,
+                provider_config_key: providerConfigKey,
+                credentials,
+                connection_config: connectionConfig,
+                environment_id: environment.id
+            });
+            encryptedConnection.updated_at = new Date();
+            const connection = await db.knex
+                .from<StoredConnection>(`_nango_connections`)
+                .where({ id: storedConnection.id, deleted: false })
+                .update(encryptedConnection)
+                .returning('*');
+
+            void analytics.track(AnalyticsTypes.API_CONNECTION_UPDATED, account.id, { provider: config.provider });
+
+            return [{ connection: connection[0]!, operation: 'override' }];
+        }
+        const connection = await db.knex
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(
+                encryptionManager.encryptConnection({
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    config_id: config.id as number,
+                    credentials,
+                    connection_config: connectionConfig,
+                    environment_id: environment.id
+                })
+            )
+            .returning('*');
+
+        void analytics.track(AnalyticsTypes.API_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
         return [{ connection: connection[0]!, operation: 'creation' }];
     }

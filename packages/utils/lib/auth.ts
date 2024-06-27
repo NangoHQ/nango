@@ -47,13 +47,3 @@ export function generateBaseString({ method, url, params }: { method: string; ur
 
     return `${method}&${percentEncode(url)}&${percentEncode(concatenatedParams)}`;
 }
-
-export function parseTokenAndSecret(data: string): { parsedData: URLSearchParams; token: string; secret: string } {
-    const parsedData = new URLSearchParams(data);
-
-    return {
-        parsedData,
-        token: (parsedData.get('oauth_token') || '').replace(/\r?\n|\r/g, ''),
-        secret: (parsedData.get('oauth_token_secret') || '').replace(/\r?\n|\r/g, '')
-    };
-}
