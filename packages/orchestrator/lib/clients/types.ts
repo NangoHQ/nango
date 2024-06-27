@@ -69,7 +69,7 @@ export interface OrchestratorSchedule {
     name: string;
     frequencyMs: number;
     state: ScheduleState;
-    nextDueDate: Date;
+    nextDueDate: Date | null;
 }
 
 export type OrchestratorTask = TaskSync | TaskAction | TaskWebhook | TaskPostConnection;
