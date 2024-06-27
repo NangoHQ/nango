@@ -403,7 +403,6 @@ class ProxyService {
      * @param {ApplicationConstructedProxyConfiguration} config
      */
     public constructHeaders(config: ApplicationConstructedProxyConfiguration, method: HTTP_VERB, url: string): Record<string, string> {
-        console.log(config);
         let headers = {};
 
         switch (config.template.auth_mode) {

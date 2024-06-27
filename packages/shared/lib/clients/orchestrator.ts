@@ -231,6 +231,7 @@ export class Orchestrator {
                     input: JSON.stringify(input, null, 2),
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
+                    providerConfigKey: connection.provider_config_key,
                     actionName
                 },
                 `actionName:${actionName}`
@@ -266,6 +267,7 @@ export class Orchestrator {
                     input: JSON.stringify(input, null, 2),
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
+                    providerConfigKey: connection.provider_config_key,
                     actionName,
                     level: 'error'
                 },
@@ -573,6 +575,7 @@ export class Orchestrator {
                     workflowId,
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
+                    providerConfigKey: connection.provider_config_key,
                     name
                 },
                 `postConnectionScript:${name}`
@@ -606,6 +609,7 @@ export class Orchestrator {
                     workflowId,
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
+                    providerConfigKey: connection.provider_config_key,
                     name,
                     level: 'error'
                 },

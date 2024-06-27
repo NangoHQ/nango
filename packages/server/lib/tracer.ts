@@ -10,5 +10,8 @@ tracer.use('elasticsearch', {
     service: 'nango-elasticsearch'
 });
 tracer.use('express', {
-    blocklist: ['/health']
+    enabled: false
+});
+tracer.use('http', {
+    blocklist: ['/health', '/favicon.ico', '/logo-dark.svg', '/logo-text.svg', /^\/static\//, /^\/images\//, '/manifest.json']
 });
