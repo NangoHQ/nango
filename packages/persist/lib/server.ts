@@ -39,7 +39,7 @@ server.post(
             })
             .strict()
     }),
-    persistController.saveActivityLog.bind(persistController)
+    persistController.saveLog.bind(persistController)
 );
 
 const validateRecordsRequest = validateRequest({

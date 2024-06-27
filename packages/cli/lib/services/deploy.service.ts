@@ -21,6 +21,7 @@ import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
 import type { DeployOptions } from '../types.js';
 import { parse } from './config.service.js';
+import type { JSONSchema7 } from 'json-schema';
 
 class DeployService {
     public async admin({ fullPath, environmentName, debug = false }: { fullPath: string; environmentName: string; debug?: boolean }): Promise<void> {
@@ -92,7 +93,7 @@ class DeployService {
                     process.exit(1);
                 });
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     }
 
@@ -141,22 +142,15 @@ class DeployService {
             return;
         }
 
-        const { flowConfigs, postConnectionScriptsByProvider } = postData;
         const nangoYamlBody = response.yaml;
 
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
-        const bodyDeploy: PostDeploy['Body'] = { flowConfigs, postConnectionScriptsByProvider, reconcile: false, debug, nangoYamlBody, singleDeployMode };
+        const bodyDeploy: PostDeploy['Body'] = { ...postData, reconcile: true, debug, nangoYamlBody, singleDeployMode };
 
         if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
             const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
             try {
-                const bodyConfirmation: PostDeployConfirmation['Body'] = {
-                    flowConfigs,
-                    postConnectionScriptsByProvider,
-                    reconcile: false,
-                    debug,
-                    singleDeployMode
-                };
+                const bodyConfirmation: PostDeployConfirmation['Body'] = { ...postData, reconcile: false, debug, singleDeployMode };
                 const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });
 
                 // Show response in term
@@ -243,7 +237,7 @@ class DeployService {
         version?: string | undefined;
         optionalSyncName?: string | undefined;
         optionalActionName?: string | undefined;
-    }): { flowConfigs: IncomingFlowConfig[]; postConnectionScriptsByProvider: PostConnectionScriptByProvider[]; jsonSchema: string } | null {
+    }): { flowConfigs: IncomingFlowConfig[]; postConnectionScriptsByProvider: PostConnectionScriptByProvider[]; jsonSchema: JSONSchema7 } | null {
         const postData: IncomingFlowConfig[] = [];
         const postConnectionScriptsByProvider: PostConnectionScriptByProvider[] = [];
 
@@ -296,8 +290,8 @@ class DeployService {
                     attributes: {},
                     metadata: metadata,
                     input: sync.input || undefined,
-                    // sync_type: sync.sync_type as SyncType,
-                    type: sync.type as any,
+                    sync_type: sync.sync_type,
+                    type: sync.type,
                     fileBody: files,
                     model_schema: JSON.stringify(sync.usedModels.map((name) => parsed.models.get(name))),
                     endpoints: sync.endpoints,
@@ -337,10 +331,9 @@ class DeployService {
                     runs: '',
                     metadata: metadata,
                     input: action.input || undefined,
-                    // sync_type: sync.sync_type as SyncType,
-                    type: action.type as any,
+                    type: action.type,
                     fileBody: files,
-                    model_schema: JSON.stringify(action.usedModels.map((name) => parsed.models.get(name))),
+                    model_schema: action.usedModels.map((name) => parsed.models.get(name)!),
                     endpoints: action.endpoint ? [action.endpoint] : []
                 };
 
@@ -365,7 +358,7 @@ class DeployService {
             return null;
         }
 
-        return { flowConfigs: postData, postConnectionScriptsByProvider, jsonSchema: jsonSchema };
+        return { flowConfigs: postData, postConnectionScriptsByProvider, jsonSchema };
     }
 }
 
@@ -407,7 +400,7 @@ function loadScriptJsFile({ scriptName, providerConfigKey, fullPath }: { scriptN
 
         return content;
     } catch (error) {
-        console.error(chalk.red(`Error loading file ${filePath}`), error);
+        console.error(chalk.red(`Error loading file ${filePath}`), error instanceof Error ? error.message : error);
         return null;
     }
 }
@@ -435,10 +428,10 @@ function loadScriptTsFile({
     }
 }
 
-function loadSchemaJson({ fullPath }: { fullPath: string }): string | null {
+function loadSchemaJson({ fullPath }: { fullPath: string }): JSONSchema7 | null {
     const filePath = path.join(fullPath, '.nango', 'schema.json');
     try {
-        return fs.readFileSync(filePath).toString();
+        return JSON.parse(fs.readFileSync(filePath).toString()) as JSONSchema7;
     } catch (error) {
         console.error(chalk.red(`Error loading ${filePath}`), error);
         return null;

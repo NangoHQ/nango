@@ -3,7 +3,7 @@ import type { JSONSchema7 } from 'json-schema';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoProps } from '../sdk/sync.js';
 import type { NangoIntegrationData } from './NangoConfig.js';
-import type { NangoConfigMetadata, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
+import type { NangoConfigMetadata, NangoModel, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 
 export enum SyncStatus {
@@ -89,7 +89,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     file_location: string;
     nango_config_id: number;
     models: string[];
-    model_schema: SyncModelSchema[];
+    model_schema: SyncModelSchema[] | NangoModel[];
     active: boolean;
     runs: string;
     track_deletes: boolean;
@@ -100,7 +100,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     pre_built?: boolean | null;
     is_public?: boolean | null;
     endpoints?: NangoSyncEndpoint[];
-    input?: string | SyncModelSchema | undefined;
+    input?: string | undefined;
     sync_type?: SyncType | undefined;
     webhook_subscriptions: string[] | null;
     enabled: boolean;
@@ -125,8 +125,9 @@ export interface SyncDeploymentResult {
     models: string | string[];
     id?: number | undefined;
 
-    // legacy
+    /** @deprecated legacy **/
     sync_name?: string;
+    /** @deprecated legacy **/
     syncName?: string;
 }
 

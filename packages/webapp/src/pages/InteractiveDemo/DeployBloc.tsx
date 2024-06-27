@@ -94,7 +94,7 @@ models:
         >
             <div className="border bg-zinc-900 border-zinc-900 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
-                    <div className="space-x-4">
+                    <div className="flex gap-4">
                         <Tab
                             variant={'zombie'}
                             className={cn('cursor-default', file !== 'github-issues-demo.ts' && 'cursor-pointer bg-zinc-900 pointer-events-auto')}
