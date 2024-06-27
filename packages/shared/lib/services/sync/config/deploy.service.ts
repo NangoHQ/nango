@@ -50,7 +50,7 @@ export async function deploy({
 
     const providers = flows.map((flow) => flow.providerConfigKey);
 
-    const idsToMarkAsInvactive: number[] = [];
+    const idsToMarkAsInactive: number[] = [];
 
     let flowsWithVersions: FlowWithVersion[] = flows.map((flow) => {
         const { fileBody: _fileBody, model_schema, ...rest } = flow;
@@ -73,7 +73,7 @@ export async function deploy({
         const { success, error, response } = await compileDeployInfo({
             flow,
             flowsWithVersions,
-            idsToMarkAsInvactive,
+            idsToMarkAsInactive,
             insertData,
             flowReturnData,
             env,
@@ -134,8 +134,8 @@ export async function deploy({
             await postConnectionScriptService.update({ environment, account, postConnectionScriptsByProvider });
         }
 
-        if (idsToMarkAsInvactive.length > 0) {
-            await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);
+        if (idsToMarkAsInactive.length > 0) {
+            await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInactive);
         }
 
         await logCtx.info(`Successfully deployed ${flowsWithVersions.length} script${flowsWithVersions.length > 1 ? 's' : ''}`, {
@@ -494,7 +494,7 @@ export async function deployPreBuilt(
 async function compileDeployInfo({
     flow,
     flowsWithVersions,
-    idsToMarkAsInvactive,
+    idsToMarkAsInactive,
     insertData,
     flowReturnData,
     env,
@@ -506,7 +506,7 @@ async function compileDeployInfo({
 }: {
     flow: IncomingFlowConfig;
     flowsWithVersions: FlowWithVersion[];
-    idsToMarkAsInvactive: number[];
+    idsToMarkAsInactive: number[];
     insertData: SyncConfig[];
     flowReturnData: SyncConfigResult['result'];
     env: string;
@@ -625,7 +625,7 @@ async function compileDeployInfo({
 
     if (oldConfigs.length > 0) {
         const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
-        idsToMarkAsInvactive.push(...ids);
+        idsToMarkAsInactive.push(...ids);
         const lastConfig = oldConfigs[oldConfigs.length - 1];
         if (lastConfig) {
             lastSyncWasEnabled = lastConfig.enabled;
@@ -660,7 +660,7 @@ async function compileDeployInfo({
         runs,
         active: true,
         model_schema: model_schema as unknown as SyncModelSchema[],
-        input: flow.input || '',
+        input: (flow.input as string) || '',
         sync_type: flow.sync_type as SyncType,
         webhook_subscriptions: flow.webhookSubscriptions || [],
         enabled: lastSyncWasEnabled && !shouldCap
