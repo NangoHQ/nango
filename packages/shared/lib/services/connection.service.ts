@@ -164,6 +164,7 @@ class ConnectionService {
                     provider_config_key: providerConfigKey,
                     config_id: config.id as number,
                     credentials,
+                    metadata,
                     connection_config: connectionConfig,
                     environment_id: environment.id
                 })

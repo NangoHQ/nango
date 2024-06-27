@@ -8,7 +8,7 @@ import type {
     ConnectionUpsertResponse
 } from '@nangohq/shared';
 import db from '@nangohq/database';
-import type { Template as ProviderTemplate } from '@nangohq/types';
+import type { TbaCredentials, Template as ProviderTemplate } from '@nangohq/types';
 import { configService, connectionService, errorManager, analytics, AnalyticsTypes, NangoError, accountService, SlackService } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
@@ -593,6 +593,58 @@ class ConnectionController {
                 if (imported) {
                     updatedConnection = imported;
                     runHook = true;
+                }
+            } else if (template.auth_mode === 'TBA') {
+                const { token_id, token_secret, metadata, connection_config } = req.body;
+
+                const tbaCredentials: TbaCredentials = {
+                    type: template.auth_mode,
+                    token_id,
+                    token_secret,
+                    config_override: {}
+                };
+
+                if (req.body['oauth_client_id_override']) {
+                    tbaCredentials.config_override['client_id'] = req.body['oauth_client_id_override'];
+                }
+
+                if (req.body['oauth_client_secret_override']) {
+                    tbaCredentials.config_override['client_secret'] = req.body['oauth_client_secret_override'];
+                }
+
+                const config = await configService.getProviderConfig(provider_config_key, environment.id);
+
+                if (!config) {
+                    errorManager.errRes(res, 'unknown_provider_config');
+                    return;
+                }
+
+                if (!connection_config['accountId']) {
+                    res.status(400).send({
+                        error: { code: 'missing_account_id', message: 'Missing accountId in connection_config. This is required to create a TBA connection.' }
+                    });
+
+                    return;
+                }
+
+                const [imported] = await connectionService.upsertTbaConnection({
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
+                    credentials: tbaCredentials,
+                    connectionConfig: {
+                        ...connection_config,
+                        oauth_client_id: config.oauth_client_id,
+                        oauth_client_secret: config.oauth_client_secret
+                    },
+                    metadata,
+                    config,
+                    environment,
+                    account
+                });
+
+                if (imported) {
+                    runHook = true;
+                    updatedConnection = imported;
                 }
             } else if (template.auth_mode === 'NONE') {
                 const [imported] = await connectionService.upsertUnauthConnection(connection_id, provider_config_key, provider, environment.id, account.id);
