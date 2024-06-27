@@ -27,6 +27,7 @@ export default function ConnectionList() {
 
     const [connections, setConnections] = useState<Connection[] | null>(null);
     const [filteredConnections, setFilteredConnections] = useState<Connection[]>([]);
+    const [setNumberofErroredConnections, setNumberOfErroredConnections] = useState<number>(0);
     const [selectedIntegration, setSelectedIntegration] = useState<string[]>(defaultFilter);
     const [connectionSearch, setConnectionSearch] = useState<string>('');
     const [states, setStates] = useState<string[]>(defaultFilter);
@@ -35,6 +36,7 @@ export default function ConnectionList() {
         if (data) {
             setConnections(data.connections);
             setFilteredConnections(data.connections);
+            setNumberOfErroredConnections(data.connections.filter((connection) => connection.active_logs).length);
         }
     }, [data]);
 
@@ -59,6 +61,7 @@ export default function ConnectionList() {
             }
 
             setFilteredConnections(filtered || []);
+            setNumberOfErroredConnections((filtered || []).filter((connection) => connection.active_logs).length);
         }
     }, [connectionSearch, selectedIntegration, states, data]);
 
@@ -154,10 +157,10 @@ export default function ConnectionList() {
             {connections && connections.length > 0 && (
                 <>
                     <div className="flex justify-end w-full text-[12px] text-white">
-                        {connections.length} connections{' '}
+                        {filteredConnections.length} connection{filteredConnections.length !== 1 ? 's' : ''}
                         {errorNotifications > 0 && (
                             <span className="flex items-center ml-1">
-                                ({errorNotifications} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                ({setNumberofErroredConnections} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
                             </span>
                         )}
                     </div>
