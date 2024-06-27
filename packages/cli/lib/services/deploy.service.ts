@@ -145,7 +145,7 @@ class DeployService {
         const nangoYamlBody = response.yaml;
 
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
-        const bodyDeploy: PostDeploy['Body'] = { ...postData, reconcile: false, debug, nangoYamlBody, singleDeployMode };
+        const bodyDeploy: PostDeploy['Body'] = { ...postData, reconcile: true, debug, nangoYamlBody, singleDeployMode };
 
         if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
             const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
@@ -400,7 +400,7 @@ function loadScriptJsFile({ scriptName, providerConfigKey, fullPath }: { scriptN
 
         return content;
     } catch (error) {
-        console.error(chalk.red(`Error loading file ${filePath}`), error);
+        console.error(chalk.red(`Error loading file ${filePath}`), error instanceof Error ? error.message : error);
         return null;
     }
 }
