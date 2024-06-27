@@ -176,6 +176,7 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
             oauth_client_id: config.oauth_client_id,
             oauth_client_secret: config.oauth_client_secret
         },
+        metadata: {},
         config,
         environment,
         account

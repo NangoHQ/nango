@@ -119,6 +119,7 @@ class ConnectionService {
         providerConfigKey,
         credentials,
         connectionConfig,
+        metadata,
         config,
         environment,
         account
@@ -128,6 +129,7 @@ class ConnectionService {
         credentials: TbaCredentials;
         connectionConfig: ConnectionConfig;
         config: ProviderConfig;
+        metadata: Metadata;
         environment: Environment;
         account: Account;
     }): Promise<ConnectionUpsertResponse[]> {
@@ -138,6 +140,7 @@ class ConnectionService {
                 connection_id: connectionId,
                 config_id: config.id as number,
                 provider_config_key: providerConfigKey,
+                metadata,
                 credentials,
                 connection_config: connectionConfig,
                 environment_id: environment.id
