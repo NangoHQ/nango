@@ -17,7 +17,7 @@ export function reconcileTemporalSchedules(): void {
             e.cause = err instanceof Error ? err.message : err;
             errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
         }
-        metrics.duration(metrics.Types.RENCONCILE_TEMPORAL_SCHEDULES, Date.now() - start);
+        metrics.duration(metrics.Types.RECONCILE_TEMPORAL_SCHEDULES, Date.now() - start);
     });
 }
 
@@ -74,6 +74,7 @@ export async function exec(): Promise<void> {
                                 'CRON: Schedule is marked as paused in temporal but not in the database. The schedule has been unpaused in temporal',
                                 LogActionEnum.SYNC,
                                 {
+                                    environmentId: '',
                                     sync_id,
                                     schedule_id,
                                     level: 'warn',
@@ -83,10 +84,10 @@ export async function exec(): Promise<void> {
                             );
                         }
                     }
-                    metrics.increment(metrics.Types.RENCONCILE_TEMPORAL_SCHEDULES_SUCCESS);
+                    metrics.increment(metrics.Types.RECONCILE_TEMPORAL_SCHEDULES_SUCCESS);
                 } catch {
                     logger.error(`${cronName} failed to reconcile scheduleId: ${schedule_id}, syncId: ${sync_id}`);
-                    metrics.increment(metrics.Types.RENCONCILE_TEMPORAL_SCHEDULES_FAILED);
+                    metrics.increment(metrics.Types.RECONCILE_TEMPORAL_SCHEDULES_FAILED);
                 }
             }
 

@@ -119,7 +119,8 @@ declare enum AuthModes {
     AppStore = "APP_STORE",
     App = "APP",
     Custom = "CUSTOM",
-    None = "NONE"
+    None = "NONE",
+    TBA = "TBA"
 }
 interface OAuth1Token {
     oAuthToken: string;
@@ -162,8 +163,15 @@ interface OAuth1Credentials extends CredentialsCommon {
     oauth_token: string;
     oauth_token_secret: string;
 }
+interface TbaCredentials {
+    type: AuthModes.TBA;
+    token: string;
+    secret: string;
+    oauth_client_id: string;
+    oauth_client_secret: string;
+}
 type UnauthCredentials = Record<string, never>;
-type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials;
+type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials;
 type Metadata = Record<string, unknown>;
 interface MetadataChangeResponse {
     metadata: Metadata;
@@ -268,7 +276,7 @@ export declare class NangoAction {
     put<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
     patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
     delete<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
-    getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials>;
+    getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | TbaCredentials>;
     getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection>;
     setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
     updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;

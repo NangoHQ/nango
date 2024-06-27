@@ -12,7 +12,6 @@ import { isHosted } from '@nangohq/utils';
 import type { Template as ProviderTemplate, AuthModeType } from '@nangohq/types';
 import {
     flowService,
-    getConfigWithEndpointsByProviderConfigKey,
     errorManager,
     NangoError,
     analytics,
@@ -22,7 +21,8 @@ import {
     getUniqueSyncsByProviderConfig,
     getActionsByProviderConfigKey,
     getFlowConfigsByParams,
-    getGlobalWebhookReceiveUrl
+    getGlobalWebhookReceiveUrl,
+    getSyncConfigsAsStandardConfig
 } from '@nangohq/shared';
 import { getOrchestrator, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import type { RequestLocals } from '../utils/express.js';
@@ -81,7 +81,7 @@ const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: 
                     return (
                         flow.name === publicFlow.name ||
                         flowEndpointPaths.some((endpoint) => publicEndpointPaths.includes(endpoint)) ||
-                        flowModelNames.some((model) => publicModelNames.includes(model))
+                        (flow.type === 'sync' && flowModelNames.some((model) => publicModelNames.includes(model)))
                     );
                 })
         );
@@ -386,7 +386,7 @@ class ConfigController {
             if (includeFlows && !isHosted) {
                 const availablePublicFlows = flowService.getAllAvailableFlowsAsStandardConfig();
                 const [publicFlows] = availablePublicFlows.filter((flow) => flow.providerConfigKey === config.provider);
-                const allFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, providerConfigKey);
+                const allFlows = await getSyncConfigsAsStandardConfig(environmentId, providerConfigKey);
 
                 if (availablePublicFlows.length && publicFlows && allFlows) {
                     const { disabledFlows, flows } = getEnabledAndDisabledFlows(publicFlows, allFlows);

@@ -178,6 +178,9 @@ export class Scheduler {
             const created = await tasks.create(trx, taskProps);
             if (created.isOk()) {
                 const task = created.value;
+                if (task.scheduleId) {
+                    await schedules.update(trx, { id: task.scheduleId, lastScheduledTaskId: task.id });
+                }
                 this.onCallbacks[task.state](task);
             }
             return created;

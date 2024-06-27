@@ -48,7 +48,8 @@ export enum AuthModes {
     AppStore = 'APP_STORE',
     Custom = 'CUSTOM',
     App = 'APP',
-    None = 'NONE'
+    None = 'NONE',
+    TBA = 'TBA'
 }
 
 export interface CredentialsCommon<T = Record<string, any>> {

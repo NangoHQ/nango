@@ -4,7 +4,6 @@ import { validateRequest } from 'zod-express';
 import { z } from 'zod';
 import { getLogger } from '@nangohq/utils';
 import persistController from './controllers/persist.controller.js';
-import { logLevelValues } from '@nangohq/shared';
 import { authMiddleware } from './middleware/auth.middleware.js';
 
 const logger = getLogger('Persist');
@@ -44,13 +43,13 @@ server.post(
         body: z
             .object({
                 activityLogId: z.union([z.number(), z.string()]),
-                level: z.enum(logLevelValues),
+                level: z.enum(['info', 'debug', 'error', 'warn', 'http', 'verbose', 'silly']),
                 msg: z.string(),
                 timestamp: z.number().optional() // Optional until fully deployed
             })
             .strict()
     }),
-    persistController.saveActivityLog.bind(persistController)
+    persistController.saveLog.bind(persistController)
 );
 
 const validateRecordsRequest = validateRequest({

@@ -16,7 +16,7 @@ import { getApiUrl } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
-import { LogActionEnum } from '../../models/Activity.js';
+import { LogActionEnum } from '../../models/Telemetry.js';
 import type { Environment } from '../../models/Environment.js';
 import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '../../sdk/sync.js';
@@ -439,11 +439,6 @@ export class SyncRunService {
             const errorType = this.determineErrorType();
 
             return { success: false, error: new NangoError(errorType, errorMessage), response: result };
-        } finally {
-            if (!this.isInvokedImmediately) {
-                const totalRunTime = (Date.now() - startTime) / 1000;
-                metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, totalRunTime);
-            }
         }
     }
 
