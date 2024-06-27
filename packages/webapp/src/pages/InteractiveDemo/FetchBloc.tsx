@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight } from '@geist-ui/icons';
 import { Language, Steps, endpointSync, model } from './utils';
 import Button from '../../components/ui/button/Button';
 import { useEffect, useMemo, useState } from 'react';
-import { curlSnippet, nodeSnippet } from '../../utils/language-snippets';
+import { curlSnippet, nodeSyncSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
 import CopyButton from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
@@ -34,7 +34,7 @@ export const FetchBloc: React.FC<{
 
     const snippet = useMemo<string>(() => {
         if (language === Language.Node) {
-            return nodeSnippet(model, secretKey, connectionId, providerConfigKey);
+            return nodeSyncSnippet({ modelName: model, secretKey, connectionId, providerConfigKey });
         } else if (language === Language.cURL) {
             return curlSnippet(baseUrl, endpointSync, secretKey, connectionId, providerConfigKey);
         }
@@ -155,7 +155,7 @@ export const FetchBloc: React.FC<{
         >
             <div className="border bg-zinc-900 border-zinc-900 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
-                    <div className="space-x-4">
+                    <div className="flex gap-4">
                         <Tab
                             variant={language === Language.Node ? 'black' : 'zombie'}
                             className={cn('cursor-default', language !== Language.Node && 'cursor-pointer bg-zinc-900 pointer-events-auto')}

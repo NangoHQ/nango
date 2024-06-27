@@ -58,7 +58,7 @@ export interface ApiKeyCredentials {
     apiKey: string;
 }
 
-export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
+export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials | TbaCredentials;
 
 export interface AppCredentials {
     type?: 'APP';
@@ -111,6 +111,14 @@ export interface CredentialsRefresh {
 }
 
 export type UnauthCredentials = Record<string, never>;
+
+export interface TbaCredentials {
+    type: 'TBA';
+    token: string;
+    secret: string;
+    oauth_client_id: string;
+    oauth_client_secret: string;
+}
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;
 

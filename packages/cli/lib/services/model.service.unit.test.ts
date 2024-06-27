@@ -114,7 +114,7 @@ describe('fieldToTypescript', () => {
                         { name: '0', value: 'male' },
                         { name: '1', value: 'string', tsType: true },
                         { name: '1', value: null, tsType: true },
-                        { name: '2', value: undefined, tsType: true },
+                        { name: '2', value: 'undefined', tsType: true },
                         { name: '3', value: 1, tsType: true },
                         { name: '4', value: true, tsType: true }
                     ]

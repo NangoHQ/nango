@@ -9,13 +9,12 @@ import {
     deployPreBuilt as deployPreBuiltSyncConfig,
     syncManager,
     remoteFileService,
-    getAllSyncsAndActions,
     getNangoConfigIdAndLocationFromId,
-    getConfigWithEndpointsByProviderConfigKeyAndName,
     getSyncsByConnectionIdsAndEnvironmentIdAndSyncName,
     enableScriptConfig as enableConfig,
     disableScriptConfig as disableConfig,
-    environmentService
+    environmentService,
+    getSyncConfigsAsStandardConfig
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
@@ -46,13 +45,20 @@ class FlowController {
                 return;
             }
 
-            const { environment } = result;
+            const { environment, account } = result;
 
             const {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environment, config, req.body.nangoYamlBody || '', logContextGetter, orchestrator);
+            } = await deployPreBuiltSyncConfig({
+                environment,
+                account,
+                configs: config,
+                nangoYamlBody: req.body.nangoYamlBody || '',
+                logContextGetter,
+                orchestrator
+            });
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
@@ -119,7 +125,7 @@ class FlowController {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter, orchestrator);
+            } = await deployPreBuiltSyncConfig({ environment, account, configs: config, nangoYamlBody: '', logContextGetter, orchestrator });
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
@@ -179,7 +185,7 @@ class FlowController {
         try {
             const environmentId = res.locals['environment'].id;
 
-            const nangoConfigs = await getAllSyncsAndActions(environmentId);
+            const nangoConfigs = await getSyncConfigsAsStandardConfig(environmentId);
 
             res.send(nangoConfigs);
         } catch (e) {
@@ -277,7 +283,7 @@ class FlowController {
 
             const flow = flowService.getSingleFlowAsStandardConfig(flowName);
             const provider = await configService.getProviderName(providerConfigKey);
-            const flowConfig = await getConfigWithEndpointsByProviderConfigKeyAndName(environment.id, providerConfigKey, flowName);
+            const flowConfig = await getSyncConfigsAsStandardConfig(environment.id, providerConfigKey, flowName);
 
             res.send({ flowConfig, unEnabledFlow: flow, provider });
         } catch (e) {
