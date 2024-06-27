@@ -1,4 +1,4 @@
-import type { NangoSyncEndpoint, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
+import type { NangoModel, NangoSyncEndpoint, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
 
 export interface IncomingScriptFiles {
     js: string;
@@ -36,7 +36,7 @@ interface InternalIncomingPreBuiltFlowConfig {
     auto_start?: boolean;
     attributes?: object | undefined;
     metadata?: NangoConfigMetadata | undefined;
-    model_schema: string; // TODO: improve this type
+    model_schema: string | NangoModel[];
     input?: string | LegacySyncModelSchema | undefined;
     endpoints?: NangoSyncEndpoint[] | undefined;
 }

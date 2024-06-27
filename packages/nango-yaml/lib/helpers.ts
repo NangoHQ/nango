@@ -149,7 +149,7 @@ export function getPotentialTypeAlias(value: string): string | undefined {
     return typesAliases[value.toLocaleLowerCase()];
 }
 
-export function getNativeDataType(value: string): number | boolean | null | undefined | Error {
+export function getNativeDataType(value: string): number | boolean | null | 'undefined' | Error {
     const int = parseInt(value, 10);
     if (!Number.isNaN(int)) {
         return int;
@@ -163,7 +163,7 @@ export function getNativeDataType(value: string): number | boolean | null | unde
         case 'null':
             return null;
         case 'undefined':
-            return undefined;
+            return 'undefined';
         default:
             return new Error();
     }

@@ -65,6 +65,7 @@
         "@types/braintree": "^3.3.12",
         "@types/fs-extra": "^11.0.1",
         "@types/ip": "^1.1.0",
+        "@types/json-schema": "7.0.15",
         "@types/js-yaml": "^4.0.5",
         "@types/lodash-es": "^4.17.10",
         "@types/node": "20.12.2",

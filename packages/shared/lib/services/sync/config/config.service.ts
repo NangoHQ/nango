@@ -20,7 +20,13 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
 
     for (const syncConfig of syncConfigs) {
         if (!tmp[syncConfig.provider]) {
-            tmp[syncConfig.provider] = { actions: [], postConnectionScripts: [], providerConfigKey: syncConfig.provider, syncs: [] };
+            tmp[syncConfig.provider] = {
+                actions: [],
+                postConnectionScripts: [],
+                providerConfigKey: syncConfig.unique_key,
+                provider: syncConfig.provider,
+                syncs: []
+            };
         }
 
         const integration = tmp[syncConfig.provider]!;
@@ -50,7 +56,8 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             enabled: syncConfig.enabled,
             layout_mode: 'nested',
             models: syncConfig.model_schema as any,
-            last_deployed: syncConfig.updated_at!.toISOString()
+            last_deployed: syncConfig.updated_at!.toISOString(),
+            webhookSubscriptions: syncConfig.webhook_subscriptions || []
         };
 
         if (syncConfig.type === 'sync') {

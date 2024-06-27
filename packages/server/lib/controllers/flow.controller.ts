@@ -45,13 +45,20 @@ class FlowController {
                 return;
             }
 
-            const { environment } = result;
+            const { environment, account } = result;
 
             const {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environment, config, req.body.nangoYamlBody || '', logContextGetter, orchestrator);
+            } = await deployPreBuiltSyncConfig({
+                environment,
+                account,
+                configs: config,
+                nangoYamlBody: req.body.nangoYamlBody || '',
+                logContextGetter,
+                orchestrator
+            });
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
@@ -118,7 +125,7 @@ class FlowController {
                 success: preBuiltSuccess,
                 error: preBuiltError,
                 response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig(environment, config, '', logContextGetter, orchestrator);
+            } = await deployPreBuiltSyncConfig({ environment, account, configs: config, nangoYamlBody: '', logContextGetter, orchestrator });
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);

@@ -125,8 +125,9 @@ export interface SyncDeploymentResult {
     models: string | string[];
     id?: number | undefined;
 
-    // legacy
+    /** @deprecated legacy **/
     sync_name?: string;
+    /** @deprecated legacy **/
     syncName?: string;
 }
 
