@@ -8,18 +8,10 @@ import { exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
 import { getNangoRootPath } from './utils.js';
 import parserService from './services/parser.service.js';
-import { copyDirectoryAndContents, removeVersion } from './tests/helpers.js';
+import { copyDirectoryAndContents, removeVersion, fixturesPath, getTestDirectory } from './tests/helpers.js';
 import { parse } from './services/config.service.js';
 
-function getTestDirectory(name: string) {
-    const dir = `/tmp/${name}/nango-integrations/`;
-    fs.mkdirSync(dir, { recursive: true });
-    fs.rmSync(dir, { recursive: true, force: true });
-    return dir;
-}
-
 describe('generate function tests', () => {
-    const fixturesPath = './packages/cli/fixtures';
     // Not the best but until we have a logger it will work
     const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
@@ -27,8 +19,8 @@ describe('generate function tests', () => {
         consoleMock.mockReset();
     });
 
-    it('should init the expected files in the nango-integrations directory', () => {
-        const dir = getTestDirectory('init');
+    it('should init the expected files in the nango-integrations directory', async () => {
+        const dir = await getTestDirectory('init');
         init({ absolutePath: path.resolve(dir, '..'), debug: false });
         expect(fs.existsSync(`${dir}/demo-github-integration/syncs/${exampleSyncName}.ts`)).toBe(true);
         expect(fs.existsSync(`${dir}/.env`)).toBe(true);
@@ -39,7 +31,7 @@ describe('generate function tests', () => {
     });
 
     it('should not overwrite existing integration files', async () => {
-        const dir = getTestDirectory('overwrite');
+        const dir = await getTestDirectory('overwrite');
         init({ absolutePath: dir, debug: false });
         await fs.promises.writeFile(`${dir}/${exampleSyncName}.ts`, 'dummy fake content', 'utf8');
 
@@ -55,7 +47,7 @@ describe('generate function tests', () => {
     });
 
     it('should generate a different sync correctly', async () => {
-        const dir = getTestDirectory('generate');
+        const dir = await getTestDirectory('generate');
         init({ absolutePath: dir });
         const data = {
             integrations: {
@@ -90,7 +82,7 @@ describe('generate function tests', () => {
     });
 
     it('should support a single model return in v1 format', async () => {
-        const dir = getTestDirectory('single-model-v1');
+        const dir = await getTestDirectory('single-model-v1');
         init({ absolutePath: dir });
         const data = {
             integrations: {
@@ -125,7 +117,7 @@ describe('generate function tests', () => {
     });
 
     it('should support a single model return in v2 format', async () => {
-        const dir = getTestDirectory('single-model-v2');
+        const dir = await getTestDirectory('single-model-v2');
         init({ absolutePath: dir });
         const data = {
             integrations: {
@@ -162,7 +154,7 @@ describe('generate function tests', () => {
     });
 
     it('should not create a file if endpoint is missing from a v2 config', async () => {
-        const dir = getTestDirectory('endpoint-missing-v2');
+        const dir = await getTestDirectory('endpoint-missing-v2');
         init({ absolutePath: dir });
         const data = {
             integrations: {
@@ -198,7 +190,7 @@ describe('generate function tests', () => {
     });
 
     it('should generate missing from a v2 config', async () => {
-        const dir = getTestDirectory('v2-incremental-compile');
+        const dir = await getTestDirectory('v2-incremental-compile');
         init({ absolutePath: dir });
         const data = {
             integrations: {
@@ -235,7 +227,7 @@ describe('generate function tests', () => {
     });
 
     it('should throw an error if a model is missing an id that is actively used', async () => {
-        const dir = getTestDirectory('missing-id');
+        const dir = await getTestDirectory('missing-id');
         init({ absolutePath: dir });
         const data = {
             integrations: {
@@ -278,7 +270,7 @@ describe('generate function tests', () => {
     });
 
     it('should allow models to end with an "s"', async () => {
-        const dir = getTestDirectory('model-with-an-s');
+        const dir = await getTestDirectory('model-with-an-s');
         init({ absolutePath: dir });
         const data = {
             integrations: {
@@ -314,7 +306,7 @@ describe('generate function tests', () => {
     });
 
     it('should not throw an error if a model is missing an id for an action', async () => {
-        const dir = getTestDirectory('missing-id-action');
+        const dir = await getTestDirectory('missing-id-action');
         init({ absolutePath: dir });
         const data = {
             integrations: {
@@ -346,7 +338,7 @@ describe('generate function tests', () => {
     });
 
     it('should allow javascript primitives as a return type with no model', async () => {
-        const dir = getTestDirectory('model-returns-primitives');
+        const dir = await getTestDirectory('model-returns-primitives');
         init({ absolutePath: dir });
         const data = {
             integrations: {
@@ -368,7 +360,7 @@ describe('generate function tests', () => {
     });
 
     it('should catch non javascript primitives in the config', async () => {
-        const dir = getTestDirectory('model-returns-invalid-primitives');
+        const dir = await getTestDirectory('model-returns-invalid-primitives');
         init({ absolutePath: dir });
         const data = {
             integrations: {
@@ -440,7 +432,7 @@ describe('generate function tests', () => {
     });
 
     it('should be able to compile files in nested directories', async () => {
-        const dir = getTestDirectory('nested');
+        const dir = await getTestDirectory('nested');
         init({ absolutePath: dir });
 
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/nested-integrations/hubspot`, `${dir}/hubspot`);
@@ -458,7 +450,7 @@ describe('generate function tests', () => {
     });
 
     it('should be backwards compatible with the single directory for integration files', async () => {
-        const dir = getTestDirectory('old-directory');
+        const dir = await getTestDirectory('old-directory');
         init({ absolutePath: dir });
 
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/non-nested-integrations`, dir);
@@ -472,7 +464,7 @@ describe('generate function tests', () => {
     });
 
     it('should be able to compile and run imported files', async () => {
-        const dir = getTestDirectory('relative-imports');
+        const dir = await getTestDirectory('relative-imports');
         init({ absolutePath: dir });
 
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/relative-imports/github`, `${dir}/github`);
@@ -490,7 +482,7 @@ describe('generate function tests', () => {
 
     it('should compile helper functions and throw an error if there is a complication error with an imported file', async () => {
         const name = 'relative-imports-with-error';
-        const dir = getTestDirectory('relative-imports-with-error');
+        const dir = await getTestDirectory('relative-imports-with-error');
         init({ absolutePath: dir });
 
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/${name}/github`, `${dir}/github`);
@@ -512,7 +504,7 @@ describe('generate function tests', () => {
 
     it('should complain if a nango call is used incorrectly in a nested file', async () => {
         const name = 'relative-imports-with-nango-misuse';
-        const dir = getTestDirectory('relative-imports-with-nango-misuse');
+        const dir = await getTestDirectory('relative-imports-with-nango-misuse');
         init({ absolutePath: dir });
 
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/${name}/github`, `${dir}/github`);
@@ -534,7 +526,7 @@ describe('generate function tests', () => {
 
     it('should not allow imports higher than the current directory', async () => {
         const name = 'relative-imports-with-higher-import';
-        const dir = getTestDirectory('relative-imports-with-higher-import');
+        const dir = await getTestDirectory('relative-imports-with-higher-import');
         init({ absolutePath: dir });
 
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/${name}/github`, `${dir}/github`);

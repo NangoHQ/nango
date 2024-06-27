@@ -298,7 +298,7 @@ export const getSyncs = async (
                 return {
                     ...sync,
                     status: syncManager.classifySyncStatus(sync?.latest_sync?.status, schedule.state),
-                    futureActionTimes: schedule.state === 'PAUSED' ? [] : [schedule.nextDueDate.getTime() / 1000]
+                    futureActionTimes: schedule.nextDueDate ? [schedule.nextDueDate.getTime() / 1000] : []
                 };
             }
             return sync;

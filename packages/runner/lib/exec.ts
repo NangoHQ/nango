@@ -92,7 +92,7 @@ export async function exec(
                     return await scriptExports.default(nango);
                 }
             }
-        } catch (error: any) {
+        } catch (error) {
             if (error instanceof ActionError) {
                 const { type, payload } = error;
                 return {
