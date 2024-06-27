@@ -358,7 +358,7 @@ class DeployService {
             return null;
         }
 
-        return { flowConfigs: postData, postConnectionScriptsByProvider, jsonSchema: JSON.parse(jsonSchema) as JSONSchema7 };
+        return { flowConfigs: postData, postConnectionScriptsByProvider, jsonSchema };
     }
 }
 
@@ -428,10 +428,10 @@ function loadScriptTsFile({
     }
 }
 
-function loadSchemaJson({ fullPath }: { fullPath: string }): string | null {
+function loadSchemaJson({ fullPath }: { fullPath: string }): JSONSchema7 | null {
     const filePath = path.join(fullPath, '.nango', 'schema.json');
     try {
-        return fs.readFileSync(filePath).toString();
+        return JSON.parse(fs.readFileSync(filePath).toString()) as JSONSchema7;
     } catch (error) {
         console.error(chalk.red(`Error loading ${filePath}`), error);
         return null;
