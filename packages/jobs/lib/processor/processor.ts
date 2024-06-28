@@ -6,16 +6,10 @@ const logger = getLogger('jobs.processor');
 export class Processor {
     private orchestratorServiceUrl: string;
     private workers: ProcessorWorker[];
-    private stopped: boolean;
 
     constructor(orchestratorServiceUrl: string) {
         this.orchestratorServiceUrl = orchestratorServiceUrl;
         this.workers = [];
-        this.stopped = true;
-    }
-
-    isStopped() {
-        return this.stopped;
     }
 
     start() {
@@ -41,8 +35,15 @@ export class Processor {
                 maxConcurrency: 50
             });
             webhookWorker.start();
-            this.workers = [syncWorker, actionWorker, webhookWorker];
-            this.stopped = false;
+
+            const postConnectionScriptWorker = new ProcessorWorker({
+                orchestratorUrl: this.orchestratorServiceUrl,
+                groupKey: 'post-connection-script',
+                maxConcurrency: 50
+            });
+            postConnectionScriptWorker.start();
+
+            this.workers = [syncWorker, actionWorker, webhookWorker, postConnectionScriptWorker];
         } catch (e) {
             logger.error(e);
         }
@@ -52,6 +53,5 @@ export class Processor {
         if (this.workers) {
             this.workers.forEach((worker) => worker.stop());
         }
-        this.stopped = true;
     }
 }

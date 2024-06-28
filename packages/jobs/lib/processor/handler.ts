@@ -299,5 +299,44 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
 }
 
 async function postConnection(task: TaskPostConnection): Promise<Result<JsonValue>> {
-    return Promise.resolve(Err(`Not implemented: TaskId: ${task.id}`));
+    const providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
+    if (providerConfig === null) {
+        return Err(`Provider config not found for connection: ${task.connection.connection_id}`);
+    }
+
+    const syncRun = new SyncRunService({
+        bigQueryClient,
+        integrationService,
+        recordsService,
+        slackService,
+        writeToDb: true,
+        nangoConnection: task.connection,
+        syncConfig: {
+            sync_name: task.postConnectionName,
+            file_location: task.fileLocation,
+            models: [],
+            track_deletes: false,
+            type: 'sync',
+            version: task.version
+        },
+        sendSyncWebhook: sendSync,
+        isAction: false,
+        isPostConnectionScript: true,
+        syncType: SyncType.POST_CONNECTION_SCRIPT,
+        isWebhook: false,
+        activityLogId: task.activityLogId,
+        logCtx: await logContextGetter.get({ id: String(task.activityLogId) }),
+        provider: providerConfig.provider,
+        debug: false
+    });
+
+    const { error, response } = await syncRun.run();
+    if (error) {
+        return Err(error);
+    }
+    const res = jsonSchema.safeParse(response);
+    if (!res.success) {
+        return Err(`Invalid post connection script response format: ${response}. TaskId: ${task.id}`);
+    }
+    return Ok(res.data);
 }
