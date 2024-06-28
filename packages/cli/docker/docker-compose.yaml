@@ -19,7 +19,6 @@ services:
         container_name: nango-server
         platform: linux/amd64
         environment:
-            - TEMPORAL_ADDRESS=temporal:7233
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/database/lib/migrations
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
@@ -62,7 +61,6 @@ services:
         ports:
             - '${WORKER_PORT:-3004}:${WORKER_PORT:-3004}'
         environment:
-            - TEMPORAL_ADDRESS=temporal:7233
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
@@ -77,7 +75,6 @@ services:
             - ORCHESTRATOR_SERVICE_URL=${ORCHESTRATOR_SERVICE_URL}
         depends_on:
             - nango-db
-            - temporal
             # - nango-elasticsearch
         volumes:
             - '${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-jobs/src/packages/shared/dist/nango-integrations'
@@ -109,22 +106,6 @@ services:
         networks:
             - nango
 
-    temporal:
-        image: temporalio/auto-setup
-        container_name: temporal
-        depends_on:
-            - nango-db
-        environment:
-            - DB=postgresql
-            - DB_PORT=5432
-            - POSTGRES_USER=nango
-            - POSTGRES_PWD=nango
-            - POSTGRES_SEEDS=nango-db
-            - LOG_LEVEL=error
-        ports:
-            - 7233:7233
-        networks:
-            - nango
     #
     # Optional dependency
     # To load elasticsearch, set NANGO_LOGS_ENABLED=true in nango-server and uncomment this dependency

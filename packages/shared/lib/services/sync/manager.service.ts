@@ -1,8 +1,6 @@
 import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
 import connectionService from '../connection.service.js';
-import { deleteScheduleForSync, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { getLatestSyncJob } from './job.service.js';
-import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import {
     createSync,
     getSyncsByConnectionId,
@@ -13,23 +11,19 @@ import {
     softDeleteSync
 } from './sync.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
-import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
-import type { SyncDeploymentResult, Sync, SyncType, ReportedSyncJobStatus } from '../../models/Sync.js';
+import type { SyncDeploymentResult, Sync, SyncType, ReportedSyncJobStatus, SyncCommand } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { SyncStatus, ScheduleStatus, SyncCommand } from '../../models/Sync.js';
+import { SyncStatus } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import type { RecordsServiceInterface } from '../../clients/sync.client.js';
-import { LogActionEnum } from '../../models/Telemetry.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
 import type { Environment } from '../../models/Environment.js';
-import type { Orchestrator } from '../../clients/orchestrator.js';
+import type { Orchestrator, RecordsServiceInterface } from '../../clients/orchestrator.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
-import { featureFlags } from '../../index.js';
 import type { IncomingFlowConfig } from '@nangohq/types';
 
 // Should be in "logs" package but impossible thanks to CLI
@@ -68,11 +62,6 @@ export class SyncManagerService {
             return;
         }
 
-        const syncClient = await SyncClient.getInstance();
-        if (!syncClient) {
-            return;
-        }
-
         const providerConfig: ProviderConfig = (await configService.getProviderConfig(
             nangoConnection?.provider_config_key,
             nangoConnection?.environment_id
@@ -88,7 +77,14 @@ export class SyncManagerService {
             }
             const sync = await createSync(nangoConnectionId, syncName);
             if (sync) {
-                await orchestrator.scheduleSyncHelper(nangoConnection, sync, providerConfig, syncName, syncData, logContextGetter);
+                await orchestrator.scheduleSync({
+                    nangoConnection,
+                    sync,
+                    providerConfig,
+                    syncName,
+                    syncData,
+                    logContextGetter
+                });
             }
         }
     }
@@ -117,15 +113,15 @@ export class SyncManagerService {
                 }
 
                 const createdSync = await createSync(connection.id as number, syncName);
-                await orchestrator.scheduleSyncHelper(
-                    connection,
-                    createdSync as Sync,
-                    syncConfig as ProviderConfig,
+                await orchestrator.scheduleSync({
+                    nangoConnection: connection,
+                    sync: createdSync as Sync,
+                    providerConfig: syncConfig as ProviderConfig,
                     syncName,
-                    { ...sync, returns: sync.models, input: '' } as NangoIntegrationData,
+                    syncData: { ...sync, returns: sync.models, input: '' } as NangoIntegrationData,
                     logContextGetter,
                     debug
-                );
+                });
             }
             if (debug) {
                 await logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
@@ -180,8 +176,6 @@ export class SyncManagerService {
     }
 
     public async softDeleteSync(syncId: string, environmentId: number, orchestrator: Orchestrator) {
-        await deleteScheduleForSync(syncId, environmentId); // TODO: legacy, to remove once temporal is removed
-
         await orchestrator.deleteSync({ syncId, environmentId });
         await softDeleteSync(syncId);
         await errorNotificationService.sync.clearBySyncId({ sync_id: syncId });
@@ -258,28 +252,15 @@ export class SyncManagerService {
                 if (!sync) {
                     throw new Error(`Sync "${syncName}" doesn't exists.`);
                 }
-                const schedule = await getSchedule(sync.id);
-                if (!schedule) {
-                    continue;
-                }
 
-                await orchestrator.runSyncCommandHelper({
-                    scheduleId: schedule.schedule_id,
+                await orchestrator.runSyncCommand({
                     syncId: sync?.id,
                     command,
                     environmentId: environment.id,
-                    providerConfigKey,
-                    connectionId,
-                    syncName,
-                    nangoConnectionId: connection.id,
                     logCtx,
                     recordsService,
                     initiator
                 });
-                // if they're triggering a sync that shouldn't change the schedule status
-                if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, logCtx);
-                }
             }
         } else {
             const syncs =
@@ -294,32 +275,19 @@ export class SyncManagerService {
             }
 
             for (const sync of syncs) {
-                const schedule = await getSchedule(sync.id);
-                if (!schedule) {
-                    continue;
-                }
-
                 const connection = await connectionService.getConnectionById(sync.nango_connection_id);
                 if (!connection) {
                     continue;
                 }
 
-                await orchestrator.runSyncCommandHelper({
-                    scheduleId: schedule.schedule_id,
+                await orchestrator.runSyncCommand({
                     syncId: sync.id,
                     command,
                     environmentId: environment.id,
-                    providerConfigKey,
-                    connectionId: connection.connection_id,
-                    syncName: sync.name,
-                    nangoConnectionId: connection.id,
                     logCtx,
                     recordsService,
                     initiator
                 });
-                if (command !== SyncCommand.RUN) {
-                    await updateScheduleStatus(schedule.schedule_id, command, logCtx);
-                }
             }
         }
 
@@ -378,32 +346,6 @@ export class SyncManagerService {
         }
 
         return { success: true, error: null, response: syncsWithStatus };
-    }
-
-    /**
-     * Classify Sync Status
-     * @desc categornize the different scenarios of sync status
-     * 1. If the schedule is paused and the job is not running, then the sync is paused
-     * 2. If the schedule is paused and the job is not running then the sync is stopped (last return case)
-     * 3. If the schedule is running but the last job is null then it is an error
-     * 4. If the job status is stopped then it is an error
-     * 5. If the job status is running then it is running
-     * 6. If the job status is success then it is success
-     */
-    public legacyClassifySyncStatus(jobStatus: SyncStatus, scheduleStatus: ScheduleStatus): SyncStatus {
-        if (scheduleStatus === ScheduleStatus.PAUSED && jobStatus !== SyncStatus.RUNNING) {
-            return SyncStatus.PAUSED;
-        } else if (scheduleStatus === ScheduleStatus.RUNNING && jobStatus === null) {
-            return SyncStatus.ERROR;
-        } else if (jobStatus === SyncStatus.STOPPED) {
-            return SyncStatus.ERROR;
-        } else if (jobStatus === SyncStatus.RUNNING) {
-            return SyncStatus.RUNNING;
-        } else if (jobStatus === SyncStatus.SUCCESS) {
-            return SyncStatus.SUCCESS;
-        }
-
-        return SyncStatus.STOPPED;
     }
 
     public classifySyncStatus(jobStatus: SyncStatus, scheduleState: 'STARTED' | 'PAUSED' | 'DELETED'): SyncStatus {
@@ -474,107 +416,32 @@ export class SyncManagerService {
         includeJobStatus: boolean;
         orchestrator: Orchestrator;
     }): Promise<ReportedSyncJobStatus> {
-        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
-        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
-        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
-        if (isOrchestrator) {
-            const latestJob = await getLatestSyncJob(sync.id);
-            const schedules = await orchestrator.searchSchedules([{ syncId: sync.id, environmentId }]);
-            let frequency = sync.frequency;
-            if (!frequency) {
-                const syncConfig = await getSyncConfigByParams(environmentId, sync.name, providerConfigKey);
-                frequency = syncConfig?.runs || null;
-            }
-            if (schedules.isErr()) {
-                throw new Error(`Failed to get schedule for sync ${sync.id} in environment ${environmentId}: ${stringifyError(schedules.error)}`);
-            }
-            const schedule = schedules.value.get(sync.id);
-            if (!schedule) {
-                throw new Error(`Schedule for sync ${sync.id} and environment ${environmentId} not found`);
-            }
-            return {
-                id: sync.id,
-                type: latestJob?.type as SyncType,
-                finishedAt: latestJob?.updated_at,
-                nextScheduledSyncAt: schedule.nextDueDate,
-                name: sync.name,
-                status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule.state),
-                frequency,
-                latestResult: latestJob?.result,
-                latestExecutionStatus: latestJob?.status,
-                ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})
-            } as ReportedSyncJobStatus;
-        }
-        return this.legacySyncStatus(sync, environmentId, includeJobStatus);
-    }
-
-    private async legacySyncStatus(sync: Sync, environmentId: number, includeJobStatus: boolean): Promise<ReportedSyncJobStatus> {
-        const syncClient = await SyncClient.getInstance();
-        const schedule = await getSchedule(sync.id);
         const latestJob = await getLatestSyncJob(sync.id);
-        let status = this.legacyClassifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus);
-        const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
-        if (syncSchedule) {
-            if (syncSchedule?.schedule?.state?.paused && schedule?.status === ScheduleStatus.RUNNING) {
-                await updateScheduleStatus(schedule?.id as string, SyncCommand.PAUSE);
-                if (status !== SyncStatus.RUNNING) {
-                    status = SyncStatus.PAUSED;
-                }
-                await telemetry.log(
-                    LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING,
-                    'API: Schedule is marked as paused in temporal but not in the database. The schedule has been updated in the database to be paused.',
-                    LogActionEnum.SYNC,
-                    {
-                        environmentId: String(environmentId),
-                        syncId: sync.id,
-                        scheduleId: String(schedule?.schedule_id),
-                        level: 'warn'
-                    },
-                    `syncId:${sync.id}`
-                );
-            } else if (!syncSchedule?.schedule?.state?.paused && status === SyncStatus.PAUSED) {
-                await updateScheduleStatus(schedule?.id as string, SyncCommand.UNPAUSE);
-                status = SyncStatus.STOPPED;
-                await telemetry.log(
-                    LogTypes.TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED,
-                    'API: Schedule is marked as running in temporal but not in the database. The schedule has been updated in the database to be running.',
-                    LogActionEnum.SYNC,
-                    {
-                        environmentId: String(environmentId),
-                        syncId: sync.id,
-                        scheduleId: String(schedule?.schedule_id),
-                        level: 'warn'
-                    },
-                    `syncId:${sync.id}`
-                );
-            }
+        const schedules = await orchestrator.searchSchedules([{ syncId: sync.id, environmentId }]);
+        if (schedules.isErr()) {
+            throw new Error(`Failed to get schedule for sync ${sync.id} in environment ${environmentId}: ${stringifyError(schedules.error)}`);
         }
-
-        let nextScheduledSyncAt = null;
-        if (status !== SyncStatus.PAUSED) {
-            if (syncSchedule && syncSchedule?.info && syncSchedule?.info.futureActionTimes && syncSchedule?.info?.futureActionTimes?.length > 0) {
-                const futureRun = syncSchedule.info.futureActionTimes[0];
-                nextScheduledSyncAt = syncClient?.formatFutureRun(futureRun?.seconds?.toNumber() as number) || null;
-            }
+        const schedule = schedules.value.get(sync.id);
+        let frequency = sync.frequency;
+        if (!frequency) {
+            const syncConfig = await getSyncConfigByParams(environmentId, sync.name, providerConfigKey);
+            frequency = syncConfig?.runs || null;
         }
-
-        const reportedStatus: ReportedSyncJobStatus = {
-            id: sync?.id,
+        if (!schedule) {
+            throw new Error(`Schedule for sync ${sync.id} and environment ${environmentId} not found`);
+        }
+        return {
+            id: sync.id,
             type: latestJob?.type as SyncType,
             finishedAt: latestJob?.updated_at,
-            nextScheduledSyncAt,
-            name: sync?.name,
-            status,
-            frequency: schedule?.frequency,
+            nextScheduledSyncAt: schedule.nextDueDate,
+            name: sync.name,
+            status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule.state),
+            frequency,
             latestResult: latestJob?.result,
-            latestExecutionStatus: latestJob?.status
+            latestExecutionStatus: latestJob?.status,
+            ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})
         } as ReportedSyncJobStatus;
-
-        if (includeJobStatus) {
-            reportedStatus['jobStatus'] = latestJob?.status as SyncStatus;
-        }
-
-        return reportedStatus;
     }
 }
 

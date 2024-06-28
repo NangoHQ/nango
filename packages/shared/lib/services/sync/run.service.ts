@@ -1,4 +1,3 @@
-import type { Context } from '@temporalio/activity';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Account } from '../../models/Admin.js';
 import type { Metadata, ErrorPayload } from '@nangohq/types';
@@ -78,8 +77,6 @@ export type SyncRunConfig = {
 
     account?: Account;
     environment?: Environment;
-
-    temporalContext?: Context;
 } & (
     | {
           writeToDb: true;
@@ -138,7 +135,6 @@ export class SyncRunService {
     account?: Account;
     environment?: Environment;
 
-    temporalContext?: Context;
     isWebhook: boolean;
 
     logCtx?: LogContext;
@@ -198,10 +194,6 @@ export class SyncRunService {
 
         if (config.stubbedMetadata) {
             this.stubbedMetadata = config.stubbedMetadata;
-        }
-
-        if (config.temporalContext) {
-            this.temporalContext = config.temporalContext;
         }
     }
 
@@ -345,8 +337,7 @@ export class SyncRunService {
                 isInvokedImmediately: this.isInvokedImmediately,
                 isWebhook: this.isWebhook,
                 optionalLoadLocation: this.loadLocation,
-                input: this.input,
-                temporalContext: this.temporalContext
+                input: this.input
             });
 
             if (!success || (error && userDefinedResults === null)) {

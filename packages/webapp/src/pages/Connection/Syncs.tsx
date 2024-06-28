@@ -267,7 +267,7 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                         )}
                                     </div>
                                     <div className="flex items-center w-28">
-                                        {sync.schedule_status === 'RUNNING' && (
+                                        {sync.schedule_status === 'STARTED' && (
                                             <>
                                                 {interpretNextRun(sync.futureActionTimes) === '-' ? (
                                                     <span className="">-</span>
@@ -276,8 +276,8 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                                 )}
                                             </>
                                         )}
-                                        {sync.schedule_status === 'RUNNING' && !sync.futureActionTimes && <span className="">-</span>}
-                                        {sync.schedule_status !== 'RUNNING' && <span className="">-</span>}
+                                        {sync.schedule_status === 'STARTED' && !sync.futureActionTimes && <span className="">-</span>}
+                                        {sync.schedule_status !== 'STARTED' && <span className="">-</span>}
                                     </div>
                                     <div className="w-12">{getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}</div>
                                     <div className="relative interact-with-sync">
@@ -290,7 +290,7 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                                         onClick={async () => {
                                                             setShowPauseStartLoader(true);
                                                             await syncCommand(
-                                                                sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE',
+                                                                sync.schedule_status === 'STARTED' ? 'PAUSE' : 'UNPAUSE',
                                                                 sync.nango_connection_id,
                                                                 sync.schedule_id,
                                                                 sync.id,
@@ -298,7 +298,7 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                                                             );
                                                         }}
                                                     >
-                                                        {sync.schedule_status !== 'RUNNING' ? (
+                                                        {sync.schedule_status !== 'STARTED' ? (
                                                             <>
                                                                 <PlayCircleIcon
                                                                     className={`flex h-6 w-6 ${syncCommandButtonsDisabled ? 'text-gray-800' : 'text-gray-400 cursor-pointer'}`}

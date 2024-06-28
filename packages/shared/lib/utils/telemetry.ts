@@ -31,9 +31,7 @@ export enum LogTypes {
     INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER = 'incoming_webhook_issue_wrong_connection_identifier',
     INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND = 'incoming_webhook_issue_connection_not_found',
     INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY = 'incoming_webhook_processed_successfully',
-    INCOMING_WEBHOOK_FAILED_PROCESSING = 'incoming_webhook_failed_processing',
-    TEMPORAL_SCHEDULE_MISMATCH_NOT_PAUSED = 'temporal_schedule_mismatch_not_paused',
-    TEMPORAL_SCHEDULE_MISMATCH_NOT_RUNNING = 'temporal_schedule_mismatch_not_running'
+    INCOMING_WEBHOOK_FAILED_PROCESSING = 'incoming_webhook_failed_processing'
 }
 
 export enum SpanTypes {

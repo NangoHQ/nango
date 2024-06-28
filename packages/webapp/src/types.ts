@@ -42,7 +42,7 @@ export interface SyncResponse {
     frequency_override: string | null;
     futureActionTimes: number[];
     offset: number;
-    schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
+    schedule_status: 'STARTED' | 'PAUSED' | 'DELETED';
     models: string | string[];
     schedule_id: string;
     status: 'SUCCESS' | 'RUNNING' | 'STOPPED' | 'PAUSED' | 'ERROR';
