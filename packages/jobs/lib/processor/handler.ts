@@ -11,7 +11,6 @@ import {
     environmentService,
     errorManager,
     ErrorSourceEnum,
-    featureFlags,
     getLastSyncDate,
     getSyncByIdAndName,
     getSyncConfigRaw,
@@ -86,13 +85,6 @@ async function abort(task: OrchestratorTask): Promise<Result<void>> {
 }
 
 async function sync(task: TaskSync): Promise<Result<JsonValue>> {
-    const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
-    const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${task.connection.environment_id}`, false);
-    const isOrchestrator = isGloballyEnabled || isEnvEnabled;
-    if (!isOrchestrator) {
-        return Ok({ dryrun: true });
-    }
-
     let logCtx: LogContext | undefined;
     let syncJob: Pick<Job, 'id'> | null = null;
     let lastSyncDate: Date | null = null;
