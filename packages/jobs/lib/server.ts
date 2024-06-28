@@ -33,7 +33,7 @@ function healthProcedure() {
 }
 
 function idleProcedure() {
-    return publicProcedure.input(z.object({ runnerId: z.string().nonempty(), idleTimeMs: z.number() })).mutation(async ({ input }) => {
+    return publicProcedure.input(z.object({ runnerId: z.string().min(1), idleTimeMs: z.number() })).mutation(async ({ input }) => {
         const { runnerId, idleTimeMs } = input;
         logger.info(`[runner ${runnerId}]: idle for ${idleTimeMs}ms. Suspending...`);
         await suspendRunner(runnerId);

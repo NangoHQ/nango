@@ -9,6 +9,7 @@ tracer.use('pg', {
 tracer.use('elasticsearch', {
     service: 'nango-elasticsearch'
 });
-tracer.use('express', {
-    blocklist: ['/health']
+tracer.use('express');
+tracer.use('http', {
+    blocklist: ['/health', '/favicon.ico', '/logo-dark.svg', '/logo-text.svg', /^\/static\//, /^\/images\//, '/manifest.json']
 });

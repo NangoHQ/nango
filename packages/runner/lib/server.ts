@@ -9,6 +9,9 @@ import { RunnerMonitor } from './monitor.js';
 import { exec } from './exec.js';
 import { cancel } from './cancel.js';
 import superjson from 'superjson';
+import { getLogger } from '@nangohq/utils';
+
+const logger = getLogger('runner');
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -50,10 +53,12 @@ function runProcedure() {
         .mutation(async ({ input }): Promise<RunnerOutput> => {
             const { nangoProps, code, codeParams } = input;
             try {
+                logger.info('Received task', { env: nangoProps.environmentId, connectionId: nangoProps.connectionId, syncId: nangoProps.syncId });
                 usage.track(nangoProps);
                 return await exec(nangoProps, input.isInvokedImmediately, input.isWebhook, code, codeParams);
             } finally {
                 usage.untrack(nangoProps);
+                logger.info('Task done');
             }
         });
 }
@@ -62,6 +67,7 @@ function cancelProcedure() {
     return publicProcedure
         .input((input) => input as { syncId: string })
         .mutation(({ input }) => {
+            logger.info('Received cancel', { input });
             return cancel(input.syncId);
         });
 }
