@@ -5,7 +5,7 @@ export default async function runAction(nango: NangoAction): Promise<BackgroundC
     const accountHierarchyEnabled = connection.connection_config['accountHierarchyEnabled'] || false;
 
     let parameters = [
-        { key: 'package', type: 'string', title: 'Service Key', description: 'Slug of the associated service_key.', required: true },
+        { key: 'service_key', type: 'string', title: 'Service Key', description: 'Slug of the associated service_key.', required: true },
         { key: 'candidate_id', type: 'string', title: 'Candidate ID', description: 'Id of the candidate to trigger the background check for.', required: true },
         { key: 'tags', type: 'string[]', title: 'Tags', description: 'Array of tags for the report.', required: false },
         {
@@ -13,7 +13,7 @@ export default async function runAction(nango: NangoAction): Promise<BackgroundC
             type: 'string',
             title: 'Country',
             description: 'Country name of the user who is to undergo the background check. Example: U.S.',
-            required: Boolean(accountHierarchyEnabled)
+            required: true
         },
         {
             key: 'state',

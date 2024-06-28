@@ -593,6 +593,7 @@ integrations:
             UtilityAnyType:
                 __string: any
             Location:
+                city?: string
                 country: string
                 state?: string
             Candidate:
@@ -619,8 +620,12 @@ integrations:
                 adjudication: string
                 metadata: UtilityAnyType
             CreateCandidate:
+                city?: string
+                country: string
+                state?: string
                 first_name: string
                 middle_name?: string
+                no_middle_name?: boolean
                 last_name: string
                 email: string
                 phone: string
