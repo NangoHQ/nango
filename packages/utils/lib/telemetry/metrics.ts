@@ -43,7 +43,14 @@ export enum Types {
     WEBHOOK_EXECUTION = 'nango.jobs.webhookExecution',
     WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
     WEBHOOK_SUCCESS = 'nango.orch.webhook.success',
-    WEBHOOK_FAILURE = 'nango.orch.webhook.failure'
+    WEBHOOK_FAILURE = 'nango.orch.webhook.failure',
+
+    ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
+    ORCH_TASKS_STARTED = 'nango.orch.tasks.started',
+    ORCH_TASKS_SUCCEEDED = 'nango.orch.tasks.succeeded',
+    ORCH_TASKS_FAILED = 'nango.orch.tasks.failed',
+    ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
+    ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled'
 }
 
 export function increment(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
