@@ -88,8 +88,16 @@ export async function exec(
                         inputParams = undefined;
                     }
 
+                    // Validate action input against json schema
                     if (inputParams) {
-                        validateInput({ input: inputParams, modelName: nangoProps.syncConfig.input, jsonSchema: nangoProps.syncConfig.models_json_schema });
+                        const val = validateInput({
+                            input: inputParams,
+                            modelName: nangoProps.syncConfig.input,
+                            jsonSchema: nangoProps.syncConfig.models_json_schema
+                        });
+                        if (val !== true) {
+                            return { success: false, response: null, error: { type: 'invalid_action_input', status: 400, payload: val } };
+                        }
                     }
 
                     return await scriptExports.default(nango, inputParams);

@@ -5,7 +5,7 @@ import type { Tracer } from 'dd-trace';
 import type { ErrorEvent } from '@sentry/types';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
-import { getLogger, isCloud, stringifyError } from '@nangohq/utils';
+import { errorToObject, getLogger, isCloud } from '@nangohq/utils';
 import environmentService from '../services/environment.service.js';
 import accountService from '../services/account.service.js';
 import userService from '../services/user.service.js';
@@ -111,7 +111,7 @@ class ErrorManager {
             }
         });
 
-        logger.error(`Exception caught: ${stringifyError(e, { stack: true })}`);
+        logger.error('Exception caught', errorToObject(e));
 
         if (e instanceof Error && tracer) {
             // Log to datadog manually
@@ -125,7 +125,7 @@ class ErrorManager {
 
     public errResFromNangoErr(res: Response, err: NangoError | null) {
         if (err) {
-            logger.error(`Response error: ${JSON.stringify({ statusCode: err.status, type: err.type, payload: err.payload, message: err.message })}`);
+            logger.error(`Response error`, errorToObject(err));
             if (!err.message) {
                 res.status(err.status || 500).send({ error: { code: err.type || 'unknown_error', payload: err.payload } });
             } else {

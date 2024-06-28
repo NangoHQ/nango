@@ -108,7 +108,7 @@ export interface MessageRow {
     parentId: string | null;
 
     // Associated meta
-    error: { name: string; message: string } | null;
+    error: { name: string; message: string; type?: string | null; payload?: any } | null;
     request: {
         url: string;
         method: string;

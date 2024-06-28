@@ -252,10 +252,20 @@ export class NangoError extends Error {
 
             case 'action_failure':
                 this.status = 400;
-                this.message = `Failed to perform the action. Please try again.`;
-                if (this.payload) {
-                    this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
-                }
+                this.message = `Failed to perform the action`;
+                // if (this.payload) {
+                //     this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
+                // }
+                break;
+
+            case 'webhook_failure':
+                this.status = 400;
+                this.message = `Failed to perform the webhook`;
+                break;
+
+            case 'post_connection_failure':
+                this.status = 400;
+                this.message = `Failed to perform the post connection script`;
                 break;
 
             case 'missing_provider_template':
@@ -579,6 +589,11 @@ export class NangoError extends Error {
             case 'deploy_missing_json_schema_model':
                 this.status = 400;
                 this.message = String(this.payload);
+                break;
+
+            case 'invalid_action_input':
+                this.status = 400;
+                this.message = 'Failed to validate the input passed to the action';
                 break;
 
             default:

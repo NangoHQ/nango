@@ -67,7 +67,14 @@ export class LogContextStateless {
             type: 'log',
             level: 'error',
             message,
-            error: err ? { name: err.name, message: err.message } : null,
+            error: err
+                ? {
+                      name: error instanceof Error ? error.constructor.name : err.name,
+                      message: err.message,
+                      type: 'type' in err ? (err.type as string) : null,
+                      payload: 'payload' in err ? err.payload : null
+                  }
+                : null,
             meta: Object.keys(rest).length > 0 ? rest : null,
             source: 'internal'
         });
