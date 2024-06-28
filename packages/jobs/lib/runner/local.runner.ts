@@ -3,7 +3,7 @@ import { RunnerType } from './runner.js';
 import type { ChildProcess } from 'child_process';
 import { execSync, spawn } from 'child_process';
 import { getRunnerClient } from '@nangohq/nango-runner';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, stringifyError } from '@nangohq/utils';
 
 const logger = getLogger('Jobs');
 
@@ -21,6 +21,7 @@ export class LocalRunner implements Runner {
     suspend() {
         this.childProcess.kill();
     }
+
     toJSON() {
         return { runnerType: this.runnerType, id: this.id, url: this.url };
     }
@@ -61,19 +62,23 @@ export class LocalRunner implements Runner {
 
             if (childProcess.stdout) {
                 childProcess.stdout.on('data', (data) => {
-                    logger.info(`[Runner] ${data.toString()} `);
+                    // used on purpose to not append jobs formatting to runner
+                    // eslint-disable-next-line no-console
+                    console.log(`[Runner] ${data.toString().slice(0, -1)} `);
                 });
             }
 
             if (childProcess.stderr) {
                 childProcess.stderr.on('data', (data) => {
-                    logger.info(`[Runner][ERROR] ${data.toString()} `);
+                    // used on purpose to not append jobs formatting to runner
+                    // eslint-disable-next-line no-console
+                    console.error(`[Runner][ERROR] ${data.toString().slice(0, -1)} `);
                 });
             }
 
             return Promise.resolve(new LocalRunner(runnerId, `http://localhost:${port}`, childProcess));
         } catch (err) {
-            throw new Error(`Unable to get runner ${runnerId}: ${err}`);
+            throw new Error(`Unable to get runner ${runnerId}: ${stringifyError(err)}`);
         }
     }
 }

@@ -231,6 +231,7 @@ export class Orchestrator {
                     input: JSON.stringify(input, null, 2),
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
+                    providerConfigKey: connection.provider_config_key,
                     actionName
                 },
                 `actionName:${actionName}`
@@ -266,6 +267,7 @@ export class Orchestrator {
                     input: JSON.stringify(input, null, 2),
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
+                    providerConfigKey: connection.provider_config_key,
                     actionName,
                     level: 'error'
                 },
@@ -371,7 +373,7 @@ export class Orchestrator {
                     const error = new NangoError('action_failure', { error: errorMsg });
                     span.setTag('error', e);
                     metrics.increment(metrics.Types.WEBHOOK_FAILURE);
-                    return Err(error);
+                    throw error;
                 } finally {
                     span.finish();
                 }
@@ -477,7 +479,7 @@ export class Orchestrator {
                 'connection.environment_id': connection.environment_id
             };
             if (isGloballyEnabled || isEnvEnabled) {
-                const span = tracer.startSpan('execute.action', {
+                const span = tracer.startSpan('execute.postConnectionScript', {
                     tags: spanTags,
                     ...(activeSpan ? { childOf: activeSpan } : {})
                 });
@@ -573,6 +575,7 @@ export class Orchestrator {
                     workflowId,
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
+                    providerConfigKey: connection.provider_config_key,
                     name
                 },
                 `postConnectionScript:${name}`
@@ -606,6 +609,7 @@ export class Orchestrator {
                     workflowId,
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
+                    providerConfigKey: connection.provider_config_key,
                     name,
                     level: 'error'
                 },

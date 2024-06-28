@@ -92,7 +92,7 @@ export async function exec(
                     return await scriptExports.default(nango);
                 }
             }
-        } catch (error: any) {
+        } catch (error) {
             if (error instanceof ActionError) {
                 const { type, payload } = error;
                 return {
@@ -105,7 +105,7 @@ export async function exec(
                     response: null
                 };
             } else {
-                if (error instanceof AxiosError && error?.response?.data) {
+                if (error instanceof AxiosError && error.response?.data) {
                     const errorResponse = error.response.data.payload || error.response.data;
                     throw new Error(JSON.stringify(errorResponse));
                 }

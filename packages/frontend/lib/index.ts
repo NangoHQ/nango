@@ -119,9 +119,9 @@ export default class Nango {
         if (
             options &&
             'credentials' in options &&
-            (!('oauth_client_id_override' in options.credentials) || !('oauth_client_secret_override' in options.credentials)) &&
-            !('token_id' in options.credentials) &&
-            !('token_secret' in options.credentials) &&
+            (('token_id' in options.credentials && 'token_secret' in options.credentials) ||
+                !('oauth_client_id_override' in options.credentials) ||
+                !('oauth_client_secret_override' in options.credentials)) &&
             Object.keys(options.credentials).length > 0
         ) {
             const credentials = options.credentials as BasicApiCredentials | ApiKeyCredentials;
@@ -130,11 +130,7 @@ export default class Nango {
             return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
         }
 
-        let url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
-
-        if (options && 'credentials' in options && 'token_id' in options.credentials && 'token_secret' in options.credentials) {
-            url = this.hostBaseUrl + `/auth/tba/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
-        }
+        const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
 
         try {
             new URL(url);
@@ -246,6 +242,23 @@ export default class Nango {
             return { params: oauth2CCCredentials } as unknown as ConnectionConfig;
         }
 
+        if ('token_id' in credentials && 'token_secret' in credentials) {
+            const tbaCredentials: TBACredentials = {
+                token_id: credentials.token_id as string,
+                token_secret: credentials.token_secret as string
+            };
+
+            if ('oauth_client_id_override' in credentials) {
+                tbaCredentials['oauth_client_id_override'] = credentials.oauth_client_id_override as string;
+            }
+
+            if ('oauth_client_secret_override' in credentials) {
+                tbaCredentials['oauth_client_secret_override'] = credentials.oauth_client_secret_override as string;
+            }
+
+            return { params: tbaCredentials } as unknown as ConnectionConfig;
+        }
+
         return { params };
     }
 
@@ -321,6 +334,27 @@ export default class Nango {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(appCredentials)
+            });
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+                throw new AuthError(errorResponse.error, errorResponse.type);
+            }
+
+            return res.json();
+        }
+
+        if ('token_id' in credentials && 'token_secret' in credentials) {
+            const tbaCredentials = credentials as unknown as TBACredentials;
+
+            const url = this.hostBaseUrl + `/auth/tba/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(tbaCredentials)
             });
 
             if (!res.ok) {
@@ -450,6 +484,8 @@ interface AppStoreCredentials {
 interface TBACredentials {
     token_id: string;
     token_secret: string;
+    oauth_client_id_override?: string;
+    oauth_client_secret_override?: string;
 }
 
 interface OAuth2ClientCredentials {

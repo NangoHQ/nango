@@ -1661,9 +1661,6 @@ netsuite:
 netsuite-tba:
     alias: netsuite
     auth_mode: TBA
-    authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/secure/authorizetoken.nl
-    token_url: https://${connectionConfig.accountId}.restlets.api.netsuite.com/rest/requesttoken
-    access_token_url: https://${connectionConfig.accountId}.restlets.api.netsuite.com/rest/accesstoken
     docs: https://docs.nango.dev/integrations/all/netsuite
 next-cloud-ocs:
     auth_mode: BASIC
@@ -1748,6 +1745,22 @@ osu:
     proxy:
         base_url: https://osu.ppy.sh
     docs: https://docs.nango.dev/integrations/all/osu
+oura:
+    categories:
+        - sports
+    auth_mode: OAUTH2
+    authorization_url: https://cloud.ouraring.com/oauth/authorize
+    token_url: https://api.ouraring.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.ouraring.com
+    docs: https://docs.nango.dev/integrations/all/oura
 outlook:
     categories:
         - communication
