@@ -130,11 +130,7 @@ export default class Nango {
             return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
         }
 
-        let url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
-
-        if (options && 'credentials' in options && 'token_id' in options.credentials && 'token_secret' in options.credentials) {
-            url = this.hostBaseUrl + `/auth/tba/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
-        }
+        const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
 
         try {
             new URL(url);

@@ -10,8 +10,8 @@ import { connectionCreated as connectionCreatedHook, connectionTest as connectio
 
 const bodyValidation = z
     .object({
-        token_id: z.string().nonempty(),
-        token_secret: z.string().nonempty(),
+        token_id: z.string().min(1),
+        token_secret: z.string().min(1),
         oauth_client_id_override: z.string().optional(),
         oauth_client_secret_override: z.string().optional()
     })
