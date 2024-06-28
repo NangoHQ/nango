@@ -1,5 +1,5 @@
 import './tracer.js';
-import { getLogger, stringifyError } from '@nangohq/utils';
+import { getLogger, metrics, stringifyError } from '@nangohq/utils';
 import { getServer } from './server.js';
 import { envs } from './env.js';
 import type { Task } from '@nangohq/scheduler';
@@ -20,12 +20,30 @@ try {
 
     // TODO: add logic to update syncs and syncs jobs in the database
     const eventsHandler = new EventsHandler({
-        CREATED: (task: Task) => logger.info(`Task created: ${stringifyTask(task)}`),
-        STARTED: (task: Task) => logger.info(`Task started: ${stringifyTask(task)}`),
-        SUCCEEDED: (task: Task) => logger.info(`Task succeeded: ${stringifyTask(task)}`),
-        FAILED: (task: Task) => logger.error(`Task failed: ${stringifyTask(task)}`),
-        EXPIRED: (task: Task) => logger.error(`Task expired: ${stringifyTask(task)}`),
-        CANCELLED: (task: Task) => logger.info(`Task cancelled: ${stringifyTask(task)}`)
+        CREATED: (task: Task) => {
+            logger.info(`Task created: ${stringifyTask(task)}`);
+            metrics.increment(metrics.Types.ORCH_TASKS_CREATED);
+        },
+        STARTED: (task: Task) => {
+            logger.info(`Task started: ${stringifyTask(task)}`);
+            metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
+        },
+        SUCCEEDED: (task: Task) => {
+            logger.info(`Task succeeded: ${stringifyTask(task)}`);
+            metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
+        },
+        FAILED: (task: Task) => {
+            logger.error(`Task failed: ${stringifyTask(task)}`);
+            metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
+        },
+        EXPIRED: (task: Task) => {
+            logger.error(`Task expired: ${stringifyTask(task)}`);
+            metrics.increment(metrics.Types.ORCH_TASKS_EXPIRED);
+        },
+        CANCELLED: (task: Task) => {
+            logger.info(`Task cancelled: ${stringifyTask(task)}`);
+            metrics.increment(metrics.Types.ORCH_TASKS_CANCELLED);
+        }
     });
     const scheduler = new Scheduler({
         dbClient,
