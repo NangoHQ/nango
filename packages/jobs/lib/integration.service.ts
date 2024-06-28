@@ -27,14 +27,13 @@ class IntegrationService implements IntegrationServiceInterface {
         }
 
         const { runner, activityLogId } = scriptObject;
+        this.runningScripts.set(syncId, { ...scriptObject, cancelled: true });
 
         const res = await runner.client.cancel.mutate({
             syncId
         });
 
-        if (res.isOk()) {
-            this.runningScripts.set(syncId, { ...scriptObject, cancelled: true });
-        } else {
+        if (res.isErr()) {
             if (activityLogId) {
                 const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
                 await logCtx.error('Failed to cancel script');

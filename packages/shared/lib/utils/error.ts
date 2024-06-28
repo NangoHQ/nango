@@ -521,7 +521,7 @@ export class NangoError extends Error {
                 break;
 
             case 'script_cancelled':
-                this.message = 'The script was cancelled successfully';
+                this.message = 'The script was cancelled';
                 break;
 
             case 'run_id_not_found':
