@@ -1,8 +1,10 @@
 import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
-import { axiosInstance as axios, getLogger } from '@nangohq/utils';
+import OAuth from 'oauth-1.0a';
+import * as crypto from 'node:crypto';
+import { axiosInstance as axios, getLogger, SIGNATURE_METHOD } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-import type { ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
+import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
@@ -321,7 +323,7 @@ class ProxyService {
         options.url = this.constructUrl(configBody);
         options.method = method;
 
-        const headers = this.constructHeaders(configBody);
+        const headers = this.constructHeaders(configBody, method, options.url);
         options.headers = { ...options.headers, ...headers };
 
         return this.request(configBody, options);
@@ -402,7 +404,7 @@ class ProxyService {
      * Construct Headers
      * @param {ApplicationConstructedProxyConfiguration} config
      */
-    public constructHeaders(config: ApplicationConstructedProxyConfiguration) {
+    public constructHeaders(config: ApplicationConstructedProxyConfiguration, method: HTTP_VERB, url: string): Record<string, string> {
         let headers = {};
 
         switch (config.template.auth_mode) {
@@ -455,6 +457,42 @@ class ProxyService {
                 },
                 { ...headers }
             );
+        }
+
+        if (config.template.auth_mode === 'TBA') {
+            const credentials = config.connection.credentials as TbaCredentials;
+            const consumerKey: string = credentials.config_override['client_id'] || config.connection.connection_config['oauth_client_id'];
+            const consumerSecret: string = credentials.config_override['client_secret'] || config.connection.connection_config['oauth_client_secret'];
+            const accessToken = credentials['token_id'];
+            const accessTokenSecret = credentials['token_secret'];
+
+            const oauth = new OAuth({
+                consumer: { key: consumerKey, secret: consumerSecret },
+                signature_method: SIGNATURE_METHOD,
+                hash_function(baseString: string, key: string) {
+                    return crypto.createHmac('sha256', key).update(baseString).digest('base64');
+                }
+            });
+
+            const requestData = {
+                url,
+                method
+            };
+
+            const token = {
+                key: accessToken,
+                secret: accessTokenSecret
+            };
+
+            const authHeaders = oauth.toHeader(oauth.authorize(requestData, token));
+
+            // splice in the realm into the header
+            let realm = config.connection.connection_config['accountId'];
+            realm = realm.replace('-', '_').toUpperCase();
+
+            authHeaders.Authorization = authHeaders.Authorization.replace('OAuth ', `OAuth realm="${realm}", `);
+
+            headers = authHeaders;
         }
 
         if (config.headers) {

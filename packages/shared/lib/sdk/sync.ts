@@ -4,11 +4,11 @@ import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import type { AxiosInstance } from 'axios';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
-import { getLogger, metrics } from '@nangohq/utils';
+import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangohq/utils';
 
 const logger = getLogger('SDK');
 
@@ -128,7 +128,8 @@ enum AuthModes {
     AppStore = 'APP_STORE',
     App = 'APP',
     Custom = 'CUSTOM',
-    None = 'NONE'
+    None = 'NONE',
+    TBA = 'TBA'
 }
 
 interface OAuth1Token {
@@ -181,6 +182,17 @@ interface OAuth1Credentials extends CredentialsCommon {
     oauth_token_secret: string;
 }
 
+interface TbaCredentials {
+    type: AuthModes.TBA;
+    token_id: string;
+    token_secret: string;
+
+    config_override: {
+        client_id?: string;
+        client_secret?: string;
+    };
+}
+
 type UnauthCredentials = Record<string, never>;
 
 type AuthCredentials =
@@ -190,7 +202,8 @@ type AuthCredentials =
     | ApiKeyCredentials
     | AppCredentials
     | AppStoreCredentials
-    | UnauthCredentials;
+    | UnauthCredentials
+    | TbaCredentials;
 
 type Metadata = Record<string, unknown>;
 
@@ -486,7 +499,7 @@ export class NangoAction {
         });
     }
 
-    public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials> {
+    public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | TbaCredentials> {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
@@ -691,19 +704,32 @@ export class NangoAction {
     }
 
     private async sendLogToPersist(content: string, options: { level: LogLevel; timestamp: number }) {
-        const response = await this.persistApi({
-            method: 'POST',
-            url: `/environment/${this.environmentId}/log`,
-            headers: {
-                Authorization: `Bearer ${this.nango.secretKey}`
-            },
-            data: {
-                activityLogId: this.activityLogId,
-                level: options.level ?? 'info',
-                timestamp: options.timestamp,
-                msg: content
-            }
-        });
+        let response: AxiosResponse;
+        try {
+            response = await retryWithBackoff(
+                async () => {
+                    return await this.persistApi({
+                        method: 'POST',
+                        url: `/environment/${this.environmentId}/log`,
+                        headers: {
+                            Authorization: `Bearer ${this.nango.secretKey}`
+                        },
+                        data: {
+                            activityLogId: this.activityLogId,
+                            level: options.level ?? 'info',
+                            timestamp: options.timestamp,
+                            msg: content
+                        }
+                    });
+                },
+                { retry: httpRetryStrategy }
+            );
+        } catch (err) {
+            logger.error('Failed to log to persist, due to an internal error', err instanceof AxiosError ? err.code : err);
+            // We don't want to block a sync because logging failed, so we fail silently until we have a way to report error
+            // TODO: find a way to report that
+            return;
+        }
 
         if (response.status > 299) {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
@@ -778,20 +804,32 @@ export class NangoSync extends NangoAction {
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            const response = await this.persistApi({
-                method: 'POST',
-                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                headers: {
-                    Authorization: `Bearer ${this.nango.secretKey}`
-                },
-                data: {
-                    model,
-                    records: batch,
-                    providerConfigKey: this.providerConfigKey,
-                    connectionId: this.connectionId,
-                    activityLogId: this.activityLogId
-                }
-            });
+            let response: AxiosResponse;
+            try {
+                response = await retryWithBackoff(
+                    () => {
+                        return this.persistApi({
+                            method: 'POST',
+                            url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                            headers: {
+                                Authorization: `Bearer ${this.nango.secretKey}`
+                            },
+                            data: {
+                                model,
+                                records: batch,
+                                providerConfigKey: this.providerConfigKey,
+                                connectionId: this.connectionId,
+                                activityLogId: this.activityLogId
+                            }
+                        });
+                    },
+                    { retry: httpRetryStrategy }
+                );
+            } catch (err) {
+                logger.error('Internal error', err instanceof AxiosError ? err.code : err);
+                throw new Error('Failed to save records due to an internal error', { cause: err });
+            }
+
             if (response.status > 299) {
                 logger.error(
                     `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
@@ -836,20 +874,32 @@ export class NangoSync extends NangoAction {
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            const response = await this.persistApi({
-                method: 'DELETE',
-                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                headers: {
-                    Authorization: `Bearer ${this.nango.secretKey}`
-                },
-                data: {
-                    model,
-                    records: batch,
-                    providerConfigKey: this.providerConfigKey,
-                    connectionId: this.connectionId,
-                    activityLogId: this.activityLogId
-                }
-            });
+            let response: AxiosResponse;
+            try {
+                response = await retryWithBackoff(
+                    async () => {
+                        return await this.persistApi({
+                            method: 'DELETE',
+                            url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                            headers: {
+                                Authorization: `Bearer ${this.nango.secretKey}`
+                            },
+                            data: {
+                                model,
+                                records: batch,
+                                providerConfigKey: this.providerConfigKey,
+                                connectionId: this.connectionId,
+                                activityLogId: this.activityLogId
+                            }
+                        });
+                    },
+                    { retry: httpRetryStrategy }
+                );
+            } catch (err) {
+                logger.error('Internal error', err instanceof AxiosError ? err.code : err);
+                throw new Error('Failed to delete records due to an internal error', { cause: err });
+            }
+
             if (response.status > 299) {
                 logger.error(
                     `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
@@ -887,20 +937,32 @@ export class NangoSync extends NangoAction {
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            const response = await this.persistApi({
-                method: 'PUT',
-                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                headers: {
-                    Authorization: `Bearer ${this.nango.secretKey}`
-                },
-                data: {
-                    model,
-                    records: batch,
-                    providerConfigKey: this.providerConfigKey,
-                    connectionId: this.connectionId,
-                    activityLogId: this.activityLogId
-                }
-            });
+            let response: AxiosResponse;
+            try {
+                response = await retryWithBackoff(
+                    async () => {
+                        return await this.persistApi({
+                            method: 'PUT',
+                            url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                            headers: {
+                                Authorization: `Bearer ${this.nango.secretKey}`
+                            },
+                            data: {
+                                model,
+                                records: batch,
+                                providerConfigKey: this.providerConfigKey,
+                                connectionId: this.connectionId,
+                                activityLogId: this.activityLogId
+                            }
+                        });
+                    },
+                    { retry: httpRetryStrategy }
+                );
+            } catch (err) {
+                logger.error('Internal error', err instanceof AxiosError ? err.code : err);
+                throw new Error('Failed to update records due to an internal error', { cause: err });
+            }
+
             if (response.status > 299) {
                 logger.error(
                     `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,

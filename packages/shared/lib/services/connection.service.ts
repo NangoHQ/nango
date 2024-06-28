@@ -3,7 +3,7 @@ import type { Knex } from '@nangohq/database';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Account, Environment } from '../models/index.js';
-import { LogActionEnum } from '../models/Activity.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
 import syncManager from './sync/manager.service.js';
@@ -18,6 +18,7 @@ import type {
     Template as ProviderTemplate,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     AuthModeType,
+    TbaCredentials,
     MaybePromise
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
@@ -109,6 +110,68 @@ class ConnectionService {
             .returning('*');
 
         void analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
+
+        return [{ connection: connection[0]!, operation: 'creation' }];
+    }
+
+    public async upsertTbaConnection({
+        connectionId,
+        providerConfigKey,
+        credentials,
+        connectionConfig,
+        metadata,
+        config,
+        environment,
+        account
+    }: {
+        connectionId: string;
+        providerConfigKey: string;
+        credentials: TbaCredentials;
+        connectionConfig: ConnectionConfig;
+        config: ProviderConfig;
+        metadata: Metadata;
+        environment: Environment;
+        account: Account;
+    }): Promise<ConnectionUpsertResponse[]> {
+        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
+
+        if (storedConnection) {
+            const encryptedConnection = encryptionManager.encryptConnection({
+                connection_id: connectionId,
+                config_id: config.id as number,
+                provider_config_key: providerConfigKey,
+                metadata,
+                credentials,
+                connection_config: connectionConfig,
+                environment_id: environment.id
+            });
+            encryptedConnection.updated_at = new Date();
+            const connection = await db.knex
+                .from<StoredConnection>(`_nango_connections`)
+                .where({ id: storedConnection.id, deleted: false })
+                .update(encryptedConnection)
+                .returning('*');
+
+            void analytics.track(AnalyticsTypes.TBA_CONNECTION_INSERTED, account.id, { provider: config.provider });
+
+            return [{ connection: connection[0]!, operation: 'override' }];
+        }
+        const connection = await db.knex
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(
+                encryptionManager.encryptConnection({
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    config_id: config.id as number,
+                    credentials,
+                    metadata,
+                    connection_config: connectionConfig,
+                    environment_id: environment.id
+                })
+            )
+            .returning('*');
+
+        void analytics.track(AnalyticsTypes.TBA_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
         return [{ connection: connection[0]!, operation: 'creation' }];
     }
@@ -597,7 +660,6 @@ class ConnectionService {
         onRefreshSuccess: (args: { connection: Connection; environment: Environment; config: ProviderConfig }) => Promise<void>;
         onRefreshFailed: (args: {
             connection: Connection;
-            activityLogId: string | number;
             logCtx: LogContext;
             authError: { type: string; description: string };
             environment: Environment;
@@ -664,7 +726,6 @@ class ConnectionService {
                 if (logCtx) {
                     await onRefreshFailed({
                         connection,
-                        activityLogId: logCtx.id,
                         logCtx,
                         authError: {
                             type: error!.type,

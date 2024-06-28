@@ -323,7 +323,10 @@ class ProxyController {
     }) {
         try {
             const logs: LogsBuffer[] = [];
-            const headers = proxyService.constructHeaders(config);
+            const headers = proxyService.constructHeaders(config, method, url);
+
+            await logCtx.debug(`Sending ${method.toUpperCase()} request to ${url}`, { headers });
+
             const requestConfig: AxiosRequestConfig = {
                 method,
                 url,

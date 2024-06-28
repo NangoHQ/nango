@@ -48,6 +48,8 @@ export default function IntegrationCreate() {
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
     const [oAuthClientId, setOAuthClientId] = useState('');
+    const [tokenId, setTokenId] = useState('');
+    const [tokenSecret, setTokenSecret] = useState('');
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
@@ -150,7 +152,7 @@ export default function IntegrationCreate() {
             };
         }
 
-        if (authMode === 'OAUTH2') {
+        if (authMode === 'OAUTH2' || authMode === 'TBA') {
             credentials = {
                 oauth_client_id_override: oAuthClientId,
                 oauth_client_secret_override: oAuthClientSecret
@@ -176,6 +178,14 @@ export default function IntegrationCreate() {
                     oauth_scopes: oauthccSelectedScopes.join(',')
                 };
             }
+        }
+
+        if (authMode === 'TBA') {
+            credentials = {
+                ...credentials,
+                token_id: tokenId,
+                token_secret: tokenSecret
+            };
         }
 
         nango[authMode === 'NONE' ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
@@ -358,6 +368,26 @@ export default function IntegrationCreate() {
     }
   `;
         }
+        let tbaCredentialsString = '';
+        if (integration?.authMode === 'TBA') {
+            if (oAuthClientId && oAuthClientSecret) {
+                tbaCredentialsString = `
+    credentials: {
+        token_id: '${tokenId}',
+        token_secret: '${tokenSecret}',
+        oauth_client_id_override: '${oAuthClientId}',
+        oauth_client_secret_override: '${oAuthClientSecret}'
+    }
+  `;
+            } else {
+                tbaCredentialsString = `
+    credentials: {
+        token_id: '${tokenId}',
+        token_secret: '${tokenSecret}'
+    }
+  `;
+            }
+        }
 
         let oauth2ClientCredentialsString = '';
 
@@ -386,6 +416,7 @@ export default function IntegrationCreate() {
     }
   `;
             }
+
             if (authMode === 'OAUTH2_CC' && oauthccSelectedScopes.length > 0) {
                 connectionConfigParamsStr = connectionConfigParamsStr ? `${connectionConfigParamsStr.slice(0, -2)}, ` : 'params: { ';
                 connectionConfigParamsStr += `oauth_scopes: '${oauthccSelectedScopes.join(',')}' }`;
@@ -400,7 +431,8 @@ export default function IntegrationCreate() {
             !apiAuthString &&
             !appStoreAuthString &&
             !oauthCredentialsString &&
-            !oauth2ClientCredentialsString
+            !oauth2ClientCredentialsString &&
+            !tbaCredentialsString
                 ? ''
                 : ', { ' +
                   [
@@ -411,7 +443,8 @@ export default function IntegrationCreate() {
                       apiAuthString,
                       appStoreAuthString,
                       oauthCredentialsString,
-                      oauth2ClientCredentialsString
+                      oauth2ClientCredentialsString,
+                      tbaCredentialsString
                   ]
                       .filter(Boolean)
                       .join(', ') +
@@ -569,7 +602,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </>
                             )}
 
-                            {integration?.provider === 'netsuite' && (
+                            {integration?.provider.includes('netsuite') && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
@@ -596,22 +629,59 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             setoptionalvalue={setOAuthClientSecret}
                                         />
                                     </div>
+                                    {integration?.provider !== 'netsuite-tba' && (
+                                        <>
+                                            <div className="flex mt-6">
+                                                <label htmlFor="oauth_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                                    OAuth Scope Override
+                                                </label>
+                                            </div>
+                                            <div className="mt-1">
+                                                <TagsInput
+                                                    id="scopes"
+                                                    name="oauth_scopes"
+                                                    type="text"
+                                                    defaultValue={''}
+                                                    onChange={() => null}
+                                                    selectedScopes={oauthSelectedScopes}
+                                                    addToScopesSet={oauthAddToScopesSet}
+                                                    removeFromSelectedSet={oauthRemoveFromSelectedSet}
+                                                    minLength={1}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+
+                            {integration?.authMode === 'TBA' && (
+                                <div>
                                     <div className="flex mt-6">
-                                        <label htmlFor="oauth_scopes" className="text-text-light-gray block text-sm font-semibold">
-                                            OAuth Scope Override
+                                        <label htmlFor="token_id" className="text-text-light-gray block text-sm font-semibold">
+                                            Token ID
                                         </label>
                                     </div>
                                     <div className="mt-1">
-                                        <TagsInput
-                                            id="scopes"
-                                            name="oauth_scopes"
-                                            type="text"
-                                            defaultValue={''}
-                                            onChange={() => null}
-                                            selectedScopes={oauthSelectedScopes}
-                                            addToScopesSet={oauthAddToScopesSet}
-                                            removeFromSelectedSet={oauthRemoveFromSelectedSet}
-                                            minLength={1}
+                                        <SecretInput
+                                            copy={true}
+                                            id="token_id"
+                                            name="token_id"
+                                            placeholder="Token ID"
+                                            optionalvalue={tokenId}
+                                            setoptionalvalue={setTokenId}
+                                        />
+                                    </div>
+                                    <div className="mt-4">
+                                        <label htmlFor="token_secret" className="text-text-light-gray block text-sm font-semibold">
+                                            Token Secret
+                                        </label>
+                                        <SecretInput
+                                            copy={true}
+                                            id="token_secret"
+                                            name="token_secret"
+                                            placeholder="Token secret"
+                                            optionalvalue={tokenSecret}
+                                            setoptionalvalue={setTokenSecret}
                                         />
                                     </div>
                                 </div>

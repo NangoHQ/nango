@@ -4,10 +4,9 @@ import { jsonSchema } from '@nangohq/nango-orchestrator';
 import type { JsonValue } from 'type-fest';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { Job, LogLevel } from '@nangohq/shared';
+import type { Job } from '@nangohq/shared';
 import {
     configService,
-    createActivityLog,
     createSyncJob,
     environmentService,
     errorManager,
@@ -16,7 +15,6 @@ import {
     getLastSyncDate,
     getSyncByIdAndName,
     getSyncConfigRaw,
-    LogActionEnum,
     SyncRunService,
     SyncStatus,
     SyncType,
@@ -112,25 +110,6 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
             return Err(`Failed to create sync job for sync: ${task.syncId}. TaskId: ${task.id}`);
         }
 
-        const log = {
-            level: 'info' as LogLevel,
-            success: null,
-            action: lastSyncDate ? LogActionEnum.FULL_SYNC : LogActionEnum.SYNC,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: task.connection.connection_id,
-            provider_config_key: task.connection.provider_config_key,
-            provider: providerConfig.provider,
-            session_id: syncJob.id.toString(),
-            environment_id: task.connection.environment_id,
-            operation_name: task.syncName
-        };
-        const activityLogId = await createActivityLog(log);
-        if (activityLogId === null) {
-            return Err(`Failed to create activity log. TaskId: ${task.id}`);
-        }
-
         const syncConfig = await getSyncConfigRaw({
             environmentId: providerConfig.environment_id,
             config_id: providerConfig.id!,
@@ -149,7 +128,7 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
         const { account, environment } = accountAndEnv;
 
         logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             {
                 account,
                 environment,
@@ -182,7 +161,7 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
             nangoConnection: task.connection,
             syncConfig,
             syncType: syncType,
-            activityLogId,
+            activityLogId: logCtx.id,
             provider: providerConfig.provider,
             debug: task.debug,
             logCtx

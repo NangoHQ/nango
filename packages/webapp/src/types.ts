@@ -1,4 +1,4 @@
-import type { ActiveLogIds } from '@nangohq/types';
+import type { ActiveLogIds, NangoModel } from '@nangohq/types';
 
 export type SyncResult = Record<string, Result>;
 
@@ -51,7 +51,6 @@ export interface SyncResponse {
         updated_at: string;
         type: 'INITIAL' | 'INCREMENTAL';
         status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
-        activity_log_id: number | null;
         result: SyncResult;
         job_id: string;
         sync_config_id: number;
@@ -80,7 +79,8 @@ export enum AuthModes {
     AppStore = 'APP_STORE',
     App = 'APP',
     Custom = 'CUSTOM',
-    None = 'NONE'
+    None = 'NONE',
+    TBA = 'TBA'
 }
 
 export interface Connection {
@@ -200,7 +200,7 @@ export interface Flow {
     track_deletes: boolean;
     auto_start?: boolean;
     endpoint?: string;
-    models: NangoSyncModel[];
+    models: NangoSyncModel[] | NangoModel[];
     nango_yaml_version: 'v1' | 'v2';
     webhookSubscriptions: string[];
 }

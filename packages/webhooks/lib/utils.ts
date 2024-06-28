@@ -1,7 +1,6 @@
 import crypto from 'crypto';
-import { backOff } from 'exponential-backoff';
 import type { AxiosError } from 'axios';
-import { axiosInstance as axios } from '@nangohq/utils';
+import { axiosInstance as axios, retryWithBackoff } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
 import type { WebhookTypes, SyncType, AuthOperationType, Environment, ExternalWebhook } from '@nangohq/types';
 
@@ -132,7 +131,7 @@ export const deliver = async ({
                 ...filterHeaders(incomingHeaders || {})
             };
 
-            const response = await backOff(
+            const response = await retryWithBackoff(
                 () => {
                     return axios.post(url, body, { headers });
                 },

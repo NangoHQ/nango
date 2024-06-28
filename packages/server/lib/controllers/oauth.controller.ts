@@ -9,6 +9,7 @@ import {
     missesInterpolationParam,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
+import type { Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
 import type {
     Config as ProviderConfig,
     OAuthSession,
@@ -37,7 +38,6 @@ import {
     hmacService,
     ErrorSourceEnum
 } from '@nangohq/shared';
-import type { Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
 import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';

@@ -119,7 +119,9 @@ export default class Nango {
         if (
             options &&
             'credentials' in options &&
-            (!('oauth_client_id_override' in options.credentials) || !('oauth_client_secret_override' in options.credentials)) &&
+            (('token_id' in options.credentials && 'token_secret' in options.credentials) ||
+                !('oauth_client_id_override' in options.credentials) ||
+                !('oauth_client_secret_override' in options.credentials)) &&
             Object.keys(options.credentials).length > 0
         ) {
             const credentials = options.credentials as BasicApiCredentials | ApiKeyCredentials;
@@ -240,6 +242,23 @@ export default class Nango {
             return { params: oauth2CCCredentials } as unknown as ConnectionConfig;
         }
 
+        if ('token_id' in credentials && 'token_secret' in credentials) {
+            const tbaCredentials: TBACredentials = {
+                token_id: credentials.token_id as string,
+                token_secret: credentials.token_secret as string
+            };
+
+            if ('oauth_client_id_override' in credentials) {
+                tbaCredentials['oauth_client_id_override'] = credentials.oauth_client_id_override as string;
+            }
+
+            if ('oauth_client_secret_override' in credentials) {
+                tbaCredentials['oauth_client_secret_override'] = credentials.oauth_client_secret_override as string;
+            }
+
+            return { params: tbaCredentials } as unknown as ConnectionConfig;
+        }
+
         return { params };
     }
 
@@ -325,6 +344,27 @@ export default class Nango {
             return res.json();
         }
 
+        if ('token_id' in credentials && 'token_secret' in credentials) {
+            const tbaCredentials = credentials as unknown as TBACredentials;
+
+            const url = this.hostBaseUrl + `/auth/tba/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(tbaCredentials)
+            });
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+                throw new AuthError(errorResponse.error, errorResponse.type);
+            }
+
+            return res.json();
+        }
+
         if ('client_id' in credentials && 'client_secret' in credentials) {
             const oauthCredentials = credentials as unknown as OAuth2ClientCredentials;
 
@@ -388,6 +428,14 @@ export default class Nango {
                 if ('oauth_client_secret_override' in credentials) {
                     query.push(`credentials[oauth_client_secret_override]=${encodeURIComponent(credentials.oauth_client_secret_override)}`);
                 }
+
+                if ('token_id' in credentials) {
+                    query.push(`token_id=${encodeURIComponent(credentials.token_id)}`);
+                }
+
+                if ('token_secret' in credentials) {
+                    query.push(`token_secret=${encodeURIComponent(credentials.token_secret)}`);
+                }
             }
 
             for (const param in connectionConfig.authorization_params) {
@@ -409,7 +457,7 @@ interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
-    credentials?: OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials;
+    credentials?: OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials | TBACredentials;
 }
 
 interface OAuthCredentialsOverride {
@@ -431,6 +479,13 @@ interface AppStoreCredentials {
     issuerId: string;
     privateKey: string;
     scope?: string[];
+}
+
+interface TBACredentials {
+    token_id: string;
+    token_secret: string;
+    oauth_client_id_override?: string;
+    oauth_client_secret_override?: string;
 }
 
 interface OAuth2ClientCredentials {

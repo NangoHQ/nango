@@ -1,4 +1,12 @@
-import type { AppStoreCredentials, AuthCredentials, ApiKeyCredentials, BasicApiCredentials, AppCredentials, UnauthCredentials } from './Auth.js';
+import type {
+    TbaCredentials,
+    AppStoreCredentials,
+    AuthCredentials,
+    ApiKeyCredentials,
+    BasicApiCredentials,
+    AppCredentials,
+    UnauthCredentials
+} from './Auth.js';
 import type { Account } from './Admin.js';
 import type { Environment } from './Environment.js';
 import type { TimestampsAndDeleted } from './Generic.js';
@@ -24,7 +32,7 @@ export interface StoredConnection extends BaseConnection {
 }
 
 export interface Connection extends BaseConnection {
-    credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials;
+    credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials;
 }
 
 export interface RecentlyCreatedConnection {

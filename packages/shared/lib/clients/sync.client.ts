@@ -8,10 +8,8 @@ import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData } from '../models/NangoConfig.js';
 import type { Sync, SyncWithSchedule } from '../models/Sync.js';
 import { SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Sync.js';
-import type { LogLevel } from '../models/Activity.js';
-import { LogActionEnum } from '../models/Activity.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import { SYNC_TASK_QUEUE } from '../constants.js';
-import { createActivityLog } from '../services/activity/activity.service.js';
 import { isSyncJobRunning, createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '@nangohq/nango-yaml';
 import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
@@ -114,24 +112,6 @@ class SyncClient {
         let logCtx: LogContext | undefined;
 
         try {
-            const activityLogId = await createActivityLog({
-                level: 'info' as LogLevel,
-                success: null,
-                action: LogActionEnum.SYNC_INIT,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: nangoConnection.connection_id,
-                provider_config_key: nangoConnection.provider_config_key,
-                provider: providerConfig.provider,
-                session_id: sync?.id?.toString(),
-                environment_id: nangoConnection.environment_id,
-                operation_name: syncName
-            });
-            if (!activityLogId) {
-                return;
-            }
-
             const syncConfig = await getSyncConfigRaw({
                 environmentId: nangoConnection.environment_id,
                 config_id: providerConfig.id!,
@@ -142,7 +122,7 @@ class SyncClient {
             const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
 
             logCtx = await logContextGetter.create(
-                { id: String(activityLogId), operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
+                { operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
                 {
                     account,
                     environment,

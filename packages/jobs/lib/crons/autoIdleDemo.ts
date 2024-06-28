@@ -1,9 +1,7 @@
 import { schedule } from 'node-cron';
 import {
-    CommandToActivityLog,
     ErrorSourceEnum,
     SyncCommand,
-    createActivityLog,
     errorManager,
     updateScheduleStatus,
     findPausableDemoSyncs,
@@ -23,7 +21,7 @@ const orchestrator = new Orchestrator(new OrchestratorClient({ baseUrl: getOrche
 export function cronAutoIdleDemo(): void {
     schedule('1 * * * *', () => {
         const span = tracer.startSpan(SpanTypes.JOBS_IDLE_DEMO);
-        tracer.scope().activate(span, async () => {
+        void tracer.scope().activate(span, async () => {
             try {
                 await exec();
             } catch (err: unknown) {
@@ -42,27 +40,9 @@ export async function exec(): Promise<void> {
 
     logger.info(`[autoidle] found ${syncs.length} syncs`);
 
-    const action = CommandToActivityLog['PAUSE'];
     for (const sync of syncs) {
-        const activityLogId = await createActivityLog({
-            level: 'info',
-            success: false,
-            action,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: String(sync.connection_id),
-            provider: sync.provider,
-            provider_config_key: sync.unique_key,
-            environment_id: sync.environment_id,
-            operation_name: sync.name
-        });
-        if (!activityLogId) {
-            continue;
-        }
-
         const logCtx = await logContextGetter.create(
-            { id: String(activityLogId), operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
+            { operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
             {
                 account: { id: sync.account_id, name: sync.account_name },
                 environment: { id: sync.environment_id, name: sync.environment_name },
@@ -78,7 +58,6 @@ export async function exec(): Promise<void> {
             scheduleId: sync.schedule_id,
             syncId: sync.id,
             command: SyncCommand.PAUSE,
-            activityLogId: activityLogId,
             environmentId: sync.environment_id,
             providerConfigKey: sync.unique_key,
             connectionId: sync.connection_id,

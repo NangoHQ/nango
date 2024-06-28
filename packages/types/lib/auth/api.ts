@@ -10,6 +10,7 @@ export interface AuthModes {
     Custom: 'CUSTOM';
     App: 'APP';
     None: 'NONE';
+    TBA: 'TBA';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -118,6 +119,17 @@ export interface CredentialsRefresh<T = unknown> {
     providerConfigKey: string;
     connectionId: string;
     promise: Promise<T>;
+}
+
+export interface TbaCredentials {
+    type: AuthModes['TBA'];
+    token_id: string;
+    token_secret: string;
+
+    config_override: {
+        client_id?: string;
+        client_secret?: string;
+    };
 }
 
 export type UnauthCredentials = Record<string, never>;

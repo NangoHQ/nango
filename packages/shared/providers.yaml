@@ -1318,6 +1318,19 @@ jira:
     post_connection_script: jira-post-connection
     webhook_routing_script: jira-webhook-routing
     docs: https://docs.nango.dev/integrations/all/jira
+jira-basic:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: BASIC
+    proxy:
+        retry:
+            after: 'Retry-After'
+        base_url: https://${connectionConfig.subdomain}.atlassian.net
+        verification:
+            method: GET
+            endpoint: /rest/api/3/events
+    docs: https://docs.nango.dev/integrations/all/jira
 jira-data-center:
     categories:
         - productivity
@@ -1510,6 +1523,21 @@ marketo:
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
+medallia:
+    categories:
+        - crm
+        - support
+        - surveys
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.reportingInstance}/oauth/${connectionConfig.tenantName}/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        retry:
+            after: 'X-RateLimit-Reset'
+        base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
+    docs: https://docs.nango.dev/integrations/all/medallia
 microsoft:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
@@ -1655,6 +1683,10 @@ netsuite:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/netsuite
+netsuite-tba:
+    alias: netsuite
+    auth_mode: TBA
+    docs: https://docs.nango.dev/integrations/all/netsuite
 next-cloud-ocs:
     auth_mode: BASIC
     proxy:
@@ -1738,6 +1770,22 @@ osu:
     proxy:
         base_url: https://osu.ppy.sh
     docs: https://docs.nango.dev/integrations/all/osu
+oura:
+    categories:
+        - sports
+    auth_mode: OAUTH2
+    authorization_url: https://cloud.ouraring.com/oauth/authorize
+    token_url: https://api.ouraring.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.ouraring.com
+    docs: https://docs.nango.dev/integrations/all/oura
 outlook:
     categories:
         - communication

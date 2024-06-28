@@ -415,11 +415,6 @@ export class NangoError extends Error {
                 this.message = `Missing id field in the "${this.payload}" model. Make sure every single element in the array has an id property.`;
                 break;
 
-            case 'failed_to_create_activity_log':
-                this.status = 500;
-                this.message = 'Failed to create the activity log. Please try again.';
-                break;
-
             case 'sync_interval_too_short':
                 this.status = 400;
                 this.message = 'Sync interval is too short. The minimum interval is 5 minutes.';

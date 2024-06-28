@@ -27,13 +27,13 @@ export interface OAuthSession {
     connectionConfig: Record<string, string>;
     environmentId: number;
     webSocketClientId: string | undefined;
+    activityLogId: string;
 
     // Needed for OAuth 2.0 PKCE
     codeVerifier: string;
 
     // Needed for oAuth 1.0a
     requestTokenSecret?: string;
-    activityLogId: string;
 }
 
 export interface OAuth1RequestTokenResult {
@@ -58,7 +58,7 @@ export interface ApiKeyCredentials {
     apiKey: string;
 }
 
-export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
+export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials | TbaCredentials;
 
 export interface AppCredentials {
     type?: 'APP';
@@ -111,6 +111,17 @@ export interface CredentialsRefresh {
 }
 
 export type UnauthCredentials = Record<string, never>;
+
+export interface TbaCredentials {
+    type: 'TBA';
+    token_id: string;
+    token_secret: string;
+
+    config_override: {
+        client_id?: string;
+        client_secret?: string;
+    };
+}
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;
 

@@ -7,7 +7,7 @@ import accountService from '../services/account.service.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import type { Account, User } from '../models/Admin.js';
-import { LogActionEnum } from '../models/Activity.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import { NANGO_VERSION } from '../version.js';
 
 export enum AnalyticsTypes {
@@ -15,6 +15,7 @@ export enum AnalyticsTypes {
     ACCOUNT_JOINED = 'server:account_joined',
     API_CONNECTION_INSERTED = 'server:api_key_connection_inserted',
     API_CONNECTION_UPDATED = 'server:api_key_connection_updated',
+    TBA_CONNECTION_INSERTED = 'server:tba_connection_inserted',
     CONFIG_CREATED = 'server:config_created',
     CONNECTION_INSERTED = 'server:connection_inserted',
     CONNECTION_LIST_FETCHED = 'server:connection_list_fetched',
@@ -41,6 +42,7 @@ export enum AnalyticsTypes {
     PRE_UNAUTH = 'server:pre_unauth',
     PRE_WS_OAUTH = 'server:pre_ws_oauth',
     PRE_OAUTH2_CC_AUTH = 'server:pre_oauth2_cc_auth',
+    PRE_TBA_AUTH = 'server:pre_tba_auth',
     RESOURCE_CAPPED_CONNECTION_CREATED = 'server:resource_capped:connection_creation',
     RESOURCE_CAPPED_CONNECTION_IMPORTED = 'server:resource_capped:connection_imported',
     RESOURCE_CAPPED_SCRIPT_ACTIVATE = 'server:resource_capped:script_activate',
