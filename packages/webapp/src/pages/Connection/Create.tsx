@@ -152,7 +152,7 @@ export default function IntegrationCreate() {
             };
         }
 
-        if (authMode === 'OAUTH2') {
+        if (authMode === 'OAUTH2' || authMode === 'TBA') {
             credentials = {
                 oauth_client_id_override: oAuthClientId,
                 oauth_client_secret_override: oAuthClientSecret
@@ -182,6 +182,7 @@ export default function IntegrationCreate() {
 
         if (authMode === 'TBA') {
             credentials = {
+                ...credentials,
                 token_id: tokenId,
                 token_secret: tokenSecret
             };
@@ -369,12 +370,23 @@ export default function IntegrationCreate() {
         }
         let tbaCredentialsString = '';
         if (integration?.authMode === 'TBA') {
-            tbaCredentialsString = `
+            if (oAuthClientId && oAuthClientSecret) {
+                tbaCredentialsString = `
+    credentials: {
+        token_id: '${tokenId}',
+        token_secret: '${tokenSecret}',
+        oauth_client_id_override: '${oAuthClientId}',
+        oauth_client_secret_override: '${oAuthClientSecret}'
+    }
+  `;
+            } else {
+                tbaCredentialsString = `
     credentials: {
         token_id: '${tokenId}',
         token_secret: '${tokenSecret}'
     }
   `;
+            }
         }
 
         let oauth2ClientCredentialsString = '';
@@ -590,7 +602,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </>
                             )}
 
-                            {integration?.provider === 'netsuite' && (
+                            {integration?.provider.includes('netsuite') && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
@@ -617,31 +629,35 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             setoptionalvalue={setOAuthClientSecret}
                                         />
                                     </div>
-                                    <div className="flex mt-6">
-                                        <label htmlFor="oauth_scopes" className="text-text-light-gray block text-sm font-semibold">
-                                            OAuth Scope Override
-                                        </label>
-                                    </div>
-                                    <div className="mt-1">
-                                        <TagsInput
-                                            id="scopes"
-                                            name="oauth_scopes"
-                                            type="text"
-                                            defaultValue={''}
-                                            onChange={() => null}
-                                            selectedScopes={oauthSelectedScopes}
-                                            addToScopesSet={oauthAddToScopesSet}
-                                            removeFromSelectedSet={oauthRemoveFromSelectedSet}
-                                            minLength={1}
-                                        />
-                                    </div>
+                                    {integration?.provider !== 'netsuite-tba' && (
+                                        <>
+                                            <div className="flex mt-6">
+                                                <label htmlFor="oauth_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                                    OAuth Scope Override
+                                                </label>
+                                            </div>
+                                            <div className="mt-1">
+                                                <TagsInput
+                                                    id="scopes"
+                                                    name="oauth_scopes"
+                                                    type="text"
+                                                    defaultValue={''}
+                                                    onChange={() => null}
+                                                    selectedScopes={oauthSelectedScopes}
+                                                    addToScopesSet={oauthAddToScopesSet}
+                                                    removeFromSelectedSet={oauthRemoveFromSelectedSet}
+                                                    minLength={1}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             )}
 
                             {integration?.authMode === 'TBA' && (
                                 <div>
                                     <div className="flex mt-6">
-                                        <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                        <label htmlFor="token_id" className="text-text-light-gray block text-sm font-semibold">
                                             Token ID
                                         </label>
                                     </div>

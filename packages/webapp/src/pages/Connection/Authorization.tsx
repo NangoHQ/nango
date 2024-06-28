@@ -153,6 +153,18 @@ export default function Authorization(props: AuthorizationProps) {
                     <SecretInput disabled defaultValue={connection.credentials.oauth_token_secret} copy={true} />
                 </div>
             )}
+            {connection.credentials.type === AuthModes.TBA && connection.credentials.token_id && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Token Id</span>
+                    <SecretInput disabled defaultValue={connection.credentials.token_id} copy={true} />
+                </div>
+            )}
+            {connection.credentials.type === AuthModes.TBA && connection.credentials.token_secret && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Token Secret</span>
+                    <SecretInput disabled defaultValue={connection.credentials.token_secret} copy={true} />
+                </div>
+            )}
             {connection.credentials.type === AuthModes.OAuth2 && connection.credentials.refresh_token && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Refresh Token</span>

@@ -6,6 +6,8 @@ export type TbaAuthorization = Endpoint<{
     Body: {
         token_id: string;
         token_secret: string;
+        oauth_client_id_override?: string;
+        oauth_client_secret_override?: string;
     };
     QueryParams: {
         connectionId: string;
@@ -20,8 +22,9 @@ export type TbaAuthorization = Endpoint<{
         | ApiError<'invalid_query_params'>
         | ApiError<'unknown_provider_config'>
         | ApiError<'invalid_auth_mode'>
-        | ApiError<'missing_token_url'>
-        | ApiError<'no_data_returned_from_token_request'>
-        | ApiError<'missing_connection_config_param'>;
-    Success: never;
+        | ApiError<'invalid_credentials'>;
+    Success: {
+        providerConfigKey: string;
+        connectionId: string;
+    };
 }>;

@@ -1,5 +1,7 @@
 import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
-import { axiosInstance as axios, getLogger, generateBaseString, getTbaMetaParams, percentEncode, SIGNATURE_METHOD, generateSignature } from '@nangohq/utils';
+import OAuth from 'oauth-1.0a';
+import * as crypto from 'node:crypto';
+import { axiosInstance as axios, getLogger, SIGNATURE_METHOD } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
@@ -458,49 +460,39 @@ class ProxyService {
         }
 
         if (config.template.auth_mode === 'TBA') {
-            const { nonce, timestamp } = getTbaMetaParams();
-
-            const consumerKey = config.connection.connection_config['consumer_key'];
             const credentials = config.connection.credentials as TbaCredentials;
+            const consumerKey: string = credentials.config_override['client_id'] || config.connection.connection_config['oauth_client_id'];
+            const consumerSecret: string = credentials.config_override['client_secret'] || config.connection.connection_config['oauth_client_secret'];
+            const accessToken = credentials['token_id'];
+            const accessTokenSecret = credentials['token_secret'];
 
-            const realm = config.connection.connection_config['accountId'];
+            const oauth = new OAuth({
+                consumer: { key: consumerKey, secret: consumerSecret },
+                signature_method: SIGNATURE_METHOD,
+                hash_function(baseString: string, key: string) {
+                    return crypto.createHmac('sha256', key).update(baseString).digest('base64');
+                }
+            });
 
-            const oauthParams = {
-                oauth_consumer_key: consumerKey,
-                oauth_nonce: nonce,
-                oauth_signature_method: SIGNATURE_METHOD,
-                oauth_timestamp: timestamp,
-                oauth_token: credentials.token,
-                oauth_version: '1.0'
-            };
-
-            const baseString = generateBaseString({
-                method,
+            const requestData = {
                 url,
-                params: oauthParams
-            });
-
-            const clientSecret = credentials.oauth_client_secret;
-
-            const hash = generateSignature({
-                baseString,
-                clientSecret,
-                tokenSecret: credentials.secret
-            });
-
-            const authHeader =
-                `OAuth realm="${percentEncode(realm)}", ` +
-                `oauth_consumer_key="${percentEncode(consumerKey)}", ` +
-                `oauth_token="${percentEncode(credentials.token)}", ` +
-                `oauth_signature_method="${percentEncode(SIGNATURE_METHOD)}", ` +
-                `oauth_timestamp="${percentEncode(timestamp)}", ` +
-                `oauth_nonce="${percentEncode(nonce)}", ` +
-                `oauth_signature="${percentEncode(hash)}"`;
-
-            headers = {
-                ...headers,
-                Authorization: authHeader
+                method
             };
+
+            const token = {
+                key: accessToken,
+                secret: accessTokenSecret
+            };
+
+            const authHeaders = oauth.toHeader(oauth.authorize(requestData, token));
+
+            // splice in the realm into the header
+            let realm = config.connection.connection_config['accountId'];
+            realm = realm.replace('-', '_').toUpperCase();
+
+            authHeaders.Authorization = authHeaders.Authorization.replace('OAuth ', `OAuth realm="${realm}", `);
+
+            headers = authHeaders;
         }
 
         if (config.headers) {
