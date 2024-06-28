@@ -213,12 +213,15 @@ export function formatFrequency(frequency: string): string {
     const unitMap: Record<string, string> = {
         minutes: 'm',
         minute: 'm',
+        mins: 'm',
+        min: 'm',
         hours: 'h',
         hour: 'h',
         days: 'd',
         day: 'd'
     };
 
+    frequency = frequency.replace('every', '');
     for (const [unit, abbreviation] of Object.entries(unitMap)) {
         if (frequency.includes(unit)) {
             return frequency.replace(unit, abbreviation).replace(/\s/g, '');
