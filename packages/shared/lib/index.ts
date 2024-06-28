@@ -4,7 +4,6 @@ import configService from './services/config.service.js';
 import encryptionManager from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
 import providerClientManager from './clients/provider.client.js';
-import SyncClient from './clients/sync.client.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 import telemetry, { LogTypes, SpanTypes } from './utils/telemetry.js';
 import accountService from './services/account.service.js';
@@ -26,7 +25,6 @@ import { SlackService, generateSlackConnectionId } from './services/notification
 export * from './services/sync/post-connection.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
-export * from './services/sync/schedule.service.js';
 export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
@@ -54,7 +52,6 @@ export {
     encryptionManager,
     externalWebhookService,
     providerClientManager,
-    SyncClient,
     errorManager,
     telemetry,
     LogTypes,

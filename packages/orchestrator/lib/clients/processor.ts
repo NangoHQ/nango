@@ -117,6 +117,10 @@ export class OrchestratorProcessor {
                 heartbeat = this.heartbeat(task);
                 const res = await this.handler(task);
                 if (res.isErr()) {
+                    if (task.abortController.signal.aborted) {
+                        // task was aborted. No need to set it as failed
+                        return;
+                    }
                     const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error: res.error });
                     if (setFailed.isErr()) {
                         logger.error(`failed to set task ${task.id} as failed: ${stringifyError(setFailed.error)}`);

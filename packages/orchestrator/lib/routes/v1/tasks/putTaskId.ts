@@ -26,7 +26,7 @@ const method = 'PUT';
 const validate = validateRequest<PutTask>({
     parseBody: (data) =>
         z
-            .object({ output: jsonSchema, state: z.enum(['SUCCEEDED', 'FAILED']) })
+            .object({ output: jsonSchema, state: z.enum(['SUCCEEDED', 'FAILED', 'CANCELLED']) })
             .strict()
             .parse(data),
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)

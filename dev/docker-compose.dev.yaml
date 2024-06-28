@@ -14,34 +14,6 @@ services:
         networks:
             - nango
 
-    temporal:
-        image: temporalio/auto-setup
-        container_name: temporal
-        depends_on:
-            - nango-db
-        environment:
-            - DB=postgresql
-            - DB_PORT=5432
-            - POSTGRES_USER=nango
-            - POSTGRES_PWD=nango
-            - POSTGRES_SEEDS=nango-db
-        ports:
-            - 7233:7233
-        networks:
-            - nango
-
-    temporal-ui:
-        image: temporalio/ui:2.26.0
-        depends_on:
-            - temporal
-        environment:
-            - TEMPORAL_ADDRESS=temporal:7233
-            - TEMPORAL_CORS_ORIGINS=http://localhost:3000
-        ports:
-            - 8081:8080
-        networks:
-            - nango
-
     nango-redis:
         image: redis:7.2.4
         container_name: nango-redis

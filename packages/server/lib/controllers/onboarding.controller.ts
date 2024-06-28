@@ -18,8 +18,6 @@ import {
     DEFAULT_GITHUB_CLIENT_SECRET,
     SyncCommand,
     SyncStatus,
-    SyncClient,
-    NangoError,
     DEMO_ACTION_NAME,
     analytics,
     AnalyticsTypes,
@@ -383,12 +381,6 @@ class OnboardingController {
 
             void analytics.track(AnalyticsTypes.DEMO_5, account.id, { user_id: user.id });
 
-            const syncClient = await SyncClient.getInstance();
-            if (!syncClient) {
-                void analytics.track(AnalyticsTypes.DEMO_5_ERR, account.id, { user_id: user.id });
-                throw new NangoError('failed_to_get_sync_client');
-            }
-
             const {
                 success,
                 error,
@@ -426,7 +418,6 @@ class OnboardingController {
                 connection,
                 actionName: DEMO_ACTION_NAME,
                 input: { title: req.body.title },
-                environment_id: environment.id,
                 logCtx
             });
 

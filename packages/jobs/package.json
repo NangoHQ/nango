@@ -25,10 +25,6 @@
         "@nangohq/records": "file:../records",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
-        "@temporalio/activity": "^1.9.1",
-        "@temporalio/client": "^1.9.1",
-        "@temporalio/worker": "^1.9.1",
-        "@temporalio/workflow": "^1.9.1",
         "@trpc/client": "^10.44.1",
         "@trpc/server": "^10.44.1",
         "@types/fs-extra": "^11.0.1",
@@ -42,6 +38,7 @@
     },
     "devDependencies": {
         "@types/node": "^20.12.2",
+        "get-port": "7.1.0",
         "nodemon": "^3.0.1",
         "typescript": "5.3.3",
         "type-fest": "4.14.0",

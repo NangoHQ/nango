@@ -1,17 +1,17 @@
 import * as cron from 'node-cron';
 import db from '@nangohq/database';
-import { errorManager, ErrorSourceEnum, softDeleteSchedules, softDeleteJobs, findRecentlyDeletedSync } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, softDeleteJobs, findRecentlyDeletedSync, Orchestrator } from '@nangohq/shared';
 import { records } from '@nangohq/records';
 import { getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
+import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
 const logger = getLogger('Jobs');
 
 const limitJobs = 1000;
-const limitSchedules = 1000;
 const limitRecords = 1000;
 
-export function deleteSyncsData(): void {
+export function deleteSyncsData({ orchestratorUrl }: { orchestratorUrl: string }): void {
     /**
      * Clean data from soft deleted syncs.
      * This cron needs to be removed at some point, we need a queue to delete specific provider/connection/sync
@@ -19,7 +19,7 @@ export function deleteSyncsData(): void {
     cron.schedule('*/20 * * * *', async () => {
         const start = Date.now();
         try {
-            await exec();
+            await exec({ orchestratorUrl });
         } catch (err: unknown) {
             const e = new Error('failed_to_hard_delete_syncs_data', { cause: err instanceof Error ? err.message : err });
             errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
@@ -28,7 +28,7 @@ export function deleteSyncsData(): void {
     });
 }
 
-export async function exec(): Promise<void> {
+export async function exec({ orchestratorUrl }: { orchestratorUrl: string }): Promise<void> {
     logger.info('[deleteSyncs] starting');
 
     await db.knex.transaction(async (trx) => {
@@ -41,6 +41,9 @@ export async function exec(): Promise<void> {
         }
 
         const syncs = await findRecentlyDeletedSync();
+
+        const orchestratorClient = new OrchestratorClient({ baseUrl: orchestratorUrl });
+        const orchestrator = new Orchestrator(orchestratorClient);
 
         for (const sync of syncs) {
             logger.info(`[deleteSyncs] deleting syncId: ${sync.id}`);
@@ -55,12 +58,10 @@ export async function exec(): Promise<void> {
 
             // -----
             // Soft delete schedules
-            let countSchedules = 0;
-            do {
-                countSchedules = await softDeleteSchedules({ syncId: sync.id, limit: limitSchedules });
-                logger.info(`[deleteSyncs] soft deleted ${countSchedules} schedules`);
-                metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_SCHEDULES, countSchedules);
-            } while (countSchedules >= limitSchedules);
+            const resSchedule = await orchestrator.deleteSync({ syncId: sync.id, environmentId: sync.environmentId });
+            const deletedScheduleCount = resSchedule.isErr() ? 1 : 0;
+            logger.info(`[deleteSyncs] soft deleted ${deletedScheduleCount} schedules`);
+            metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_SCHEDULES, deletedScheduleCount);
 
             // ----
             // hard delete records

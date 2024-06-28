@@ -5,15 +5,11 @@ import { Err, Ok, stringifyError, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { NangoError } from '../utils/error.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
-import type { RunnerOutput } from '../models/Runner.js';
-import type { NangoConnection, Connection as NangoFullConnection } from '../models/Connection.js';
+import type { NangoConnection } from '../models/Connection.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
 import { v4 as uuid } from 'uuid';
-import featureFlags from '../utils/featureflags.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import SyncClient from './sync.client.js';
-import type { Client as TemporalClient } from '@temporalio/client';
 import { LogActionEnum } from '../models/Telemetry.js';
 import type {
     ExecuteReturn,
@@ -34,17 +30,8 @@ import { SyncCommand } from '../models/index.js';
 import tracer from 'dd-trace';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { isSyncJobRunning } from '../services/sync/job.service.js';
-import { updateSyncScheduleFrequency } from '../services/sync/schedule.service.js';
 import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
-
-async function getTemporal(): Promise<TemporalClient> {
-    const instance = await SyncClient.getInstance();
-    if (!instance) {
-        throw new Error('Temporal client not initialized');
-    }
-    return instance.getClient() as TemporalClient;
-}
 
 export interface RecordsServiceInterface {
     deleteRecordsBySyncId({ syncId }: { syncId: string }): Promise<{ totalDeletedRecords: number }>;
@@ -104,115 +91,58 @@ export class Orchestrator {
         connection,
         actionName,
         input,
-        environment_id,
         logCtx
     }: {
         connection: NangoConnection;
         actionName: string;
         input: object;
-        environment_id: number;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
+        const activeSpan = tracer.scope().active();
+        const spanTags = {
+            'action.name': actionName,
+            'connection.id': connection.id,
+            'connection.connection_id': connection.connection_id,
+            'connection.provider_config_key': connection.provider_config_key,
+            'connection.environment_id': connection.environment_id
+        };
+        const span = tracer.startSpan('execute.action', {
+            tags: spanTags,
+            ...(activeSpan ? { childOf: activeSpan } : {})
+        });
         const startTime = Date.now();
         const workflowId = `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connection.connection_id}.${uuid()}`;
         try {
             await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input });
 
-            let res: Result<any, NangoError>;
-
-            const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:immediate', 'global', false);
-            const isEnvEnabled = await featureFlags.isEnabled('orchestrator:immediate', `${environment_id}`, false);
-            const activeSpan = tracer.scope().active();
-            const spanTags = {
-                'action.name': actionName,
-                'connection.id': connection.id,
-                'connection.connection_id': connection.connection_id,
-                'connection.provider_config_key': connection.provider_config_key,
-                'connection.environment_id': connection.environment_id
-            };
-
-            if (isGloballyEnabled || isEnvEnabled) {
-                const span = tracer.startSpan('execute.action', {
-                    tags: spanTags,
-                    ...(activeSpan ? { childOf: activeSpan } : {})
-                });
-                try {
-                    const groupKey: string = 'action';
-                    const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:action:${actionName}:at:${new Date().toISOString()}:${uuid()}`;
-                    const parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
-                    const args = {
-                        actionName,
-                        connection: {
-                            id: connection.id!,
-                            connection_id: connection.connection_id,
-                            provider_config_key: connection.provider_config_key,
-                            environment_id: connection.environment_id
-                        },
-                        activityLogId: logCtx.id,
-                        input: parsedInput
-                    };
-                    const actionResult = await this.client.executeAction({
-                        name: executionId,
-                        groupKey,
-                        args
-                    });
-
-                    res = actionResult.mapError((e) => new NangoError('action_failure', { error: e.message, ...(e.payload ? { payload: e.payload } : {}) }));
-                    if (res.isErr()) {
-                        span.setTag('error', res.error);
-                    }
-                } catch (e: unknown) {
-                    const error = new NangoError('action_failure', { error: e, input });
-                    span.setTag('error', e);
-
-                    throw error;
-                } finally {
-                    span.finish();
-                }
-            } else {
-                const span = tracer.startSpan('execute.actionTemporal', {
-                    tags: spanTags,
-                    ...(activeSpan ? { childOf: activeSpan } : {})
-                });
-                try {
-                    const temporal = await getTemporal();
-                    const actionHandler = await temporal.workflow.execute('action', {
-                        taskQueue: SYNC_TASK_QUEUE,
-                        workflowId,
-                        args: [
-                            {
-                                actionName,
-                                nangoConnection: {
-                                    id: connection.id,
-                                    connection_id: connection.connection_id,
-                                    provider_config_key: connection.provider_config_key,
-                                    environment_id: connection.environment_id
-                                },
-                                input,
-                                activityLogId: logCtx.id
-                            }
-                        ]
-                    });
-
-                    const { error: rawError, response }: RunnerOutput = actionHandler;
-                    if (rawError) {
-                        // Errors received from temporal are raw objects not classes
-                        const error = new NangoError(rawError['type'], rawError['payload'], rawError['status']);
-                        res = Err(error);
-                        await logCtx.error(`Failed with error ${rawError['type']}`, { payload: rawError['payload'] });
-                    } else {
-                        res = Ok(response);
-                    }
-                    if (res.isErr()) {
-                        span.setTag('error', res.error);
-                    }
-                } catch (e: unknown) {
-                    span.setTag('error', e);
-                    throw e;
-                } finally {
-                    span.finish();
-                }
+            let parsedInput = null;
+            try {
+                parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
+            } catch (e: unknown) {
+                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
+                const error = new NangoError('action_failure', { error: errorMsg });
+                throw error;
             }
+            const groupKey: string = 'action';
+            const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:action:${actionName}:at:${new Date().toISOString()}:${uuid()}`;
+            const args = {
+                actionName,
+                connection: {
+                    id: connection.id!,
+                    connection_id: connection.connection_id,
+                    provider_config_key: connection.provider_config_key,
+                    environment_id: connection.environment_id
+                },
+                activityLogId: logCtx.id,
+                input: parsedInput
+            };
+            const actionResult = await this.client.executeAction({
+                name: executionId,
+                groupKey,
+                args
+            });
+
+            const res = actionResult.mapError((e) => new NangoError('action_failure', { error: e.message, ...(e.payload ? { payload: e.payload } : {}) }));
 
             if (res.isErr()) {
                 throw res.error;
@@ -238,7 +168,7 @@ export class Orchestrator {
             );
 
             metrics.increment(metrics.Types.ACTION_SUCCESS);
-            return res;
+            return res as Result<T, NangoError>;
         } catch (err) {
             const errorMessage = stringifyError(err, { pretty: true });
             const error = new NangoError('action_failure', { errorMessage });
@@ -275,11 +205,13 @@ export class Orchestrator {
             );
 
             metrics.increment(metrics.Types.ACTION_FAILURE);
+            span.setTag('error', error);
             return Err(error);
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
             metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
+            span.finish();
         }
     }
 
@@ -302,6 +234,19 @@ export class Orchestrator {
         input: object;
         logContextGetter: LogContextGetter;
     }): Promise<Result<T, NangoError>> {
+        const activeSpan = tracer.scope().active();
+        const spanTags = {
+            'webhook.name': webhookName,
+            'connection.id': connection.id,
+            'connection.connection_id': connection.connection_id,
+            'connection.provider_config_key': connection.provider_config_key,
+            'connection.environment_id': connection.environment_id
+        };
+
+        const span = tracer.startSpan('execute.webhook', {
+            tags: spanTags,
+            ...(activeSpan ? { childOf: activeSpan } : {})
+        });
         const logCtx = await logContextGetter.create(
             {
                 operation: { type: 'webhook', action: 'incoming' },
@@ -322,98 +267,34 @@ export class Orchestrator {
         try {
             await logCtx.info('Starting webhook workflow', { workflowId, input });
 
-            const { credentials, credentials_iv, credentials_tag, deleted, deleted_at, ...nangoConnectionWithoutCredentials } =
-                connection as unknown as NangoFullConnection;
-
-            const activeSpan = tracer.scope().active();
-            const spanTags = {
-                'webhook.name': webhookName,
-                'connection.id': connection.id,
-                'connection.connection_id': connection.connection_id,
-                'connection.provider_config_key': connection.provider_config_key,
-                'connection.environment_id': connection.environment_id
-            };
-
-            let res: Result<any, NangoError>;
-
-            const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:immediate', 'global', false);
-            const isEnvEnabled = await featureFlags.isEnabled('orchestrator:immediate', `${integration.environment_id}`, false);
-            if (isGloballyEnabled || isEnvEnabled) {
-                const span = tracer.startSpan('execute.webhook', {
-                    tags: spanTags,
-                    ...(activeSpan ? { childOf: activeSpan } : {})
-                });
-                try {
-                    const groupKey: string = 'webhook';
-                    const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:webhook:${webhookName}:at:${new Date().toISOString()}:${uuid()}`;
-                    const parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
-                    const args = {
-                        webhookName,
-                        parentSyncName: syncConfig.sync_name,
-                        connection: {
-                            id: connection.id!,
-                            connection_id: connection.connection_id,
-                            provider_config_key: connection.provider_config_key,
-                            environment_id: connection.environment_id
-                        },
-                        input: parsedInput,
-                        activityLogId: logCtx.id
-                    };
-                    const webhookResult = await this.client.executeWebhook({
-                        name: executionId,
-                        groupKey,
-                        args
-                    });
-                    res = webhookResult.mapError((e) => new NangoError('action_failure', e.payload ?? { error: e.message }));
-                    if (res.isErr()) {
-                        span.setTag('error', res.error);
-                    }
-                } catch (e: unknown) {
-                    const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
-                    const error = new NangoError('action_failure', { error: errorMsg });
-                    span.setTag('error', e);
-                    metrics.increment(metrics.Types.WEBHOOK_FAILURE);
-                    throw error;
-                } finally {
-                    span.finish();
-                }
-            } else {
-                const span = tracer.startSpan('execute.webhookTemporal', {
-                    tags: spanTags,
-                    ...(activeSpan ? { childOf: activeSpan } : {})
-                });
-                try {
-                    const temporal = await getTemporal();
-                    const webhookHandler = await temporal.workflow.execute('webhook', {
-                        taskQueue: WEBHOOK_TASK_QUEUE,
-                        workflowId,
-                        args: [
-                            {
-                                name: webhookName,
-                                parentSyncName: syncConfig.sync_name,
-                                nangoConnection: nangoConnectionWithoutCredentials,
-                                input,
-                                activityLogId: logCtx.id
-                            }
-                        ]
-                    });
-
-                    const { error, response } = webhookHandler;
-                    if (error) {
-                        res = Err(error);
-                    } else {
-                        res = Ok(response);
-                    }
-                    if (res.isErr()) {
-                        span.setTag('error', res.error);
-                    }
-                } catch (e: unknown) {
-                    span.setTag('error', e);
-                    throw e;
-                } finally {
-                    span.finish();
-                }
+            let parsedInput = null;
+            try {
+                parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
+            } catch (e: unknown) {
+                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
+                const error = new NangoError('webhook_failure', { error: errorMsg });
+                throw error;
             }
+            const groupKey: string = 'webhook';
+            const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:webhook:${webhookName}:at:${new Date().toISOString()}:${uuid()}`;
+            const args = {
+                webhookName,
+                parentSyncName: syncConfig.sync_name,
+                connection: {
+                    id: connection.id!,
+                    connection_id: connection.connection_id,
+                    provider_config_key: connection.provider_config_key,
+                    environment_id: connection.environment_id
+                },
+                input: parsedInput,
+                activityLogId: logCtx.id
+            };
+            const webhookResult = await this.client.executeWebhook({
+                name: executionId,
+                groupKey,
+                args
+            });
+            const res = webhookResult.mapError((e) => new NangoError('action_failure', e.payload ?? { error: e.message }));
 
             if (res.isErr()) {
                 throw res.error;
@@ -423,7 +304,7 @@ export class Orchestrator {
             await logCtx.success();
 
             metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
-            return res;
+            return res as Result<T, NangoError>;
         } catch (e) {
             const errorMessage = stringifyError(e, { pretty: true });
             const error = new NangoError('webhook_script_failure', { errorMessage });
@@ -444,7 +325,10 @@ export class Orchestrator {
             });
 
             metrics.increment(metrics.Types.WEBHOOK_FAILURE);
+            span.setTag('error', error);
             return Err(error);
+        } finally {
+            span.finish();
         }
     }
 
@@ -461,103 +345,43 @@ export class Orchestrator {
         fileLocation: string;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
+        const activeSpan = tracer.scope().active();
+        const spanTags = {
+            'postConnection.name': name,
+            'connection.id': connection.id,
+            'connection.connection_id': connection.connection_id,
+            'connection.provider_config_key': connection.provider_config_key,
+            'connection.environment_id': connection.environment_id
+        };
+        const span = tracer.startSpan('execute.postConnectionScript', {
+            tags: spanTags,
+            ...(activeSpan ? { childOf: activeSpan } : {})
+        });
         const startTime = Date.now();
         const workflowId = `${SYNC_TASK_QUEUE}.POST_CONNECTION_SCRIPT:${name}.${connection.connection_id}.${uuid()}`;
         try {
             await logCtx.info(`Starting post connection script workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`);
 
-            let res: Result<any, NangoError>;
-
-            const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:immediate', 'global', false);
-            const isEnvEnabled = await featureFlags.isEnabled('orchestrator:immediate', `${connection.environment_id}`, false);
-            const activeSpan = tracer.scope().active();
-            const spanTags = {
-                'postConnection.name': name,
-                'connection.id': connection.id,
-                'connection.connection_id': connection.connection_id,
-                'connection.provider_config_key': connection.provider_config_key,
-                'connection.environment_id': connection.environment_id
+            const groupKey: string = 'post-connection-script';
+            const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
+            const args = {
+                postConnectionName: name,
+                connection: {
+                    id: connection.id!,
+                    connection_id: connection.connection_id,
+                    provider_config_key: connection.provider_config_key,
+                    environment_id: connection.environment_id
+                },
+                version,
+                activityLogId: logCtx.id,
+                fileLocation
             };
-            if (isGloballyEnabled || isEnvEnabled) {
-                const span = tracer.startSpan('execute.postConnectionScript', {
-                    tags: spanTags,
-                    ...(activeSpan ? { childOf: activeSpan } : {})
-                });
-                try {
-                    const groupKey: string = 'post-connection-script';
-                    const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
-                    const args = {
-                        postConnectionName: name,
-                        connection: {
-                            id: connection.id!,
-                            connection_id: connection.connection_id,
-                            provider_config_key: connection.provider_config_key,
-                            environment_id: connection.environment_id
-                        },
-                        version,
-                        activityLogId: logCtx.id,
-                        fileLocation
-                    };
-                    const result = await this.client.executePostConnection({
-                        name: executionId,
-                        groupKey,
-                        args
-                    });
-                    res = result.mapError((e) => new NangoError('post_connection_failure', e.payload ?? { error: e.message }));
-                    if (res.isErr()) {
-                        span.setTag('error', res.error);
-                    }
-                } catch (e: unknown) {
-                    span.setTag('error', e);
-                    throw e;
-                } finally {
-                    span.finish();
-                }
-            } else {
-                const span = tracer.startSpan('execute.postConnectionTemporal', {
-                    tags: spanTags,
-                    ...(activeSpan ? { childOf: activeSpan } : {})
-                });
-                try {
-                    const temporal = await getTemporal();
-                    const postConnectionScriptHandler = await temporal.workflow.execute('postConnectionScript', {
-                        taskQueue: SYNC_TASK_QUEUE,
-                        workflowId,
-                        args: [
-                            {
-                                name,
-                                nangoConnection: {
-                                    id: connection.id,
-                                    connection_id: connection.connection_id,
-                                    provider_config_key: connection.provider_config_key,
-                                    environment_id: connection.environment_id
-                                },
-                                version,
-                                fileLocation,
-                                activityLogId: logCtx.id
-                            }
-                        ]
-                    });
-
-                    const { error: rawError, response }: RunnerOutput = postConnectionScriptHandler;
-                    if (rawError) {
-                        // Errors received from temporal are raw objects not classes
-                        const error = new NangoError(rawError['type'], rawError['payload'], rawError['status']);
-                        res = Err(error);
-                        await logCtx.error(`Failed with error ${rawError['type']}`, { payload: rawError['payload'] });
-                    } else {
-                        res = Ok(response);
-                    }
-                    if (res.isErr()) {
-                        span.setTag('error', res.error);
-                    }
-                } catch (e: unknown) {
-                    span.setTag('error', e);
-                    throw e;
-                } finally {
-                    span.finish();
-                }
-            }
+            const result = await this.client.executePostConnection({
+                name: executionId,
+                groupKey,
+                args
+            });
+            const res = result.mapError((e) => new NangoError('post_connection_failure', e.payload ?? { error: e.message }));
 
             if (res.isErr()) {
                 throw res.error;
@@ -582,7 +406,7 @@ export class Orchestrator {
             );
 
             metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_SUCCESS);
-            return res;
+            return res as Result<T, NangoError>;
         } catch (err) {
             const errorMessage = stringifyError(err, { pretty: true });
             const error = new NangoError('post_connection_script_failure', { errorMessage });
@@ -617,11 +441,13 @@ export class Orchestrator {
             );
 
             metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_FAILURE);
+            span.setTag('error', error);
             return Err(error);
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
             metrics.duration(metrics.Types.POST_CONNECTION_SCRIPT_RUNTIME, totalRunTime);
+            span.finish();
         }
     }
 
@@ -638,16 +464,11 @@ export class Orchestrator {
         environmentId: number;
         logCtx?: LogContext;
     }): Promise<Result<void>> {
-        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
-        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${environmentId}`, false);
-        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
-
-        // Orchestrator
         const scheduleName = ScheduleName.get({ environmentId, syncId });
 
-        const cleanInterval = this.cleanInterval(interval);
-        if (isOrchestrator && cleanInterval.isErr()) {
-            errorManager.report(cleanInterval.error, {
+        const frequencyMs = this.getFrequencyMs(interval);
+        if (frequencyMs.isErr()) {
+            errorManager.report(frequencyMs.error, {
                 source: ErrorSourceEnum.CUSTOMER,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId,
@@ -657,35 +478,25 @@ export class Orchestrator {
                     interval
                 }
             });
-            return Err(cleanInterval.error);
+            return Err(frequencyMs.error);
         }
-        let res: Result<void> = Ok(undefined);
-        if (cleanInterval.isOk()) {
-            const frequencyMs = ms(cleanInterval.value as StringValue);
-            res = await this.client.updateSyncFrequency({ scheduleName, frequencyMs });
-        }
+        const res = await this.client.updateSyncFrequency({ scheduleName, frequencyMs: frequencyMs.value });
 
-        // Legacy
-        const { success, error } = await updateSyncScheduleFrequency(syncId, interval, syncName, environmentId, logCtx);
-
-        if (isOrchestrator) {
-            if (res.isErr()) {
-                errorManager.report(res.error, {
-                    source: ErrorSourceEnum.PLATFORM,
-                    operation: LogActionEnum.SYNC_CLIENT,
-                    environmentId,
-                    metadata: {
-                        syncName,
-                        scheduleName,
-                        interval
-                    }
-                });
-            } else {
-                await logCtx?.info(`Sync frequency for "${syncName}" updated to ${interval}`);
-            }
-            return res;
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC_CLIENT,
+                environmentId,
+                metadata: {
+                    syncName,
+                    scheduleName,
+                    interval
+                }
+            });
+        } else {
+            await logCtx?.info(`Sync frequency for "${syncName}" updated to ${interval}`);
         }
-        return success ? Ok(undefined) : Err(error?.message ?? 'Failed to update sync frequency');
+        return res;
     }
 
     async runSyncCommand({
@@ -751,74 +562,6 @@ export class Orchestrator {
         }
     }
 
-    // TODO: remove once temporal is removed
-    async runSyncCommandHelper(props: {
-        scheduleId: string;
-        syncId: string;
-        command: SyncCommand;
-        environmentId: number;
-        providerConfigKey: string;
-        connectionId: string;
-        syncName: string;
-        nangoConnectionId?: number | undefined;
-        logCtx: LogContext;
-        recordsService: RecordsServiceInterface;
-        initiator: string;
-    }): Promise<Result<void>> {
-        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
-        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${props.environmentId}`, false);
-        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
-
-        const runWithOrchestrator = () => {
-            return this.runSyncCommand({
-                syncId: props.syncId,
-                command: props.command,
-                environmentId: props.environmentId,
-                logCtx: props.logCtx,
-                recordsService: props.recordsService,
-                initiator: props.initiator
-            });
-        };
-        const runLegacy = async (): Promise<Result<void>> => {
-            const syncClient = await SyncClient.getInstance();
-            if (!syncClient) {
-                return Err(new NangoError('failed_to_get_sync_client'));
-            }
-            const res = await syncClient.runSyncCommand({
-                scheduleId: props.scheduleId,
-                syncId: props.syncId,
-                command: props.command,
-                environmentId: props.environmentId,
-                providerConfigKey: props.providerConfigKey,
-                connectionId: props.connectionId,
-                syncName: props.syncName,
-                nangoConnectionId: props.nangoConnectionId,
-                logCtx: props.logCtx,
-                recordsService: props.recordsService,
-                initiator: props.initiator
-            });
-            return res.isErr() ? Err(res.error) : Ok(undefined);
-        };
-        const isRunFullCommand = props.command === SyncCommand.RUN_FULL;
-
-        if (isRunFullCommand) {
-            // RUN_FULL command is triggering side effect (deleting records, ...)
-            // so we run only orchestrator OR legacy
-            if (isOrchestrator) {
-                return runWithOrchestrator();
-            }
-            return await runLegacy();
-        } else {
-            // if the command is NOT a run command,
-            // we run BOTH orchestrator and legacy
-            const [resOrchestrator, resLegacy] = await Promise.all([runWithOrchestrator(), runLegacy()]);
-            if (isOrchestrator) {
-                return resOrchestrator;
-            }
-            return resLegacy;
-        }
-    }
-
     async deleteSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
         const res = await this.client.deleteSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
         if (res.isErr()) {
@@ -839,8 +582,7 @@ export class Orchestrator {
         syncName,
         syncData,
         logContextGetter,
-        debug = false,
-        shouldLog
+        debug = false
     }: {
         nangoConnection: NangoConnection;
         sync: Sync;
@@ -849,7 +591,6 @@ export class Orchestrator {
         syncData: NangoIntegrationData;
         logContextGetter: LogContextGetter;
         debug?: boolean;
-        shouldLog: boolean; // to remove once temporal is removed
     }): Promise<Result<void>> {
         let logCtx: LogContext | undefined;
 
@@ -871,16 +612,15 @@ export class Orchestrator {
                     integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                     connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
                     syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name }
-                },
-                { dryRun: shouldLog }
+                }
             );
 
-            const interval = this.cleanInterval(syncData.runs);
+            const frequencyMs = this.getFrequencyMs(syncData.runs);
 
-            if (interval.isErr()) {
-                const content = `The sync was not scheduled due to an error with the sync interval "${syncData.runs}": ${interval.error.message}`;
+            if (frequencyMs.isErr()) {
+                const content = `The sync was not scheduled due to an error with the sync interval "${syncData.runs}": ${frequencyMs.error.message}`;
                 await logCtx.error('The sync was not created or started due to an error with the sync interval', {
-                    error: interval.error,
+                    error: frequencyMs.error,
                     runs: syncData.runs
                 });
                 await logCtx.failed();
@@ -898,13 +638,13 @@ export class Orchestrator {
                     }
                 });
 
-                return Err(interval.error);
+                return Err(frequencyMs.error);
             }
 
             const schedule = await this.client.recurring({
                 name: ScheduleName.get({ environmentId: nangoConnection.environment_id, syncId: sync.id }),
                 state: syncData.auto_start ? 'STARTED' : 'PAUSED',
-                frequencyMs: ms(interval.value as StringValue),
+                frequencyMs: frequencyMs.value,
                 groupKey: 'sync',
                 retry: { max: 0 },
                 timeoutSettingsInSecs: {
@@ -954,90 +694,30 @@ export class Orchestrator {
             return Err(`Failed to schedule sync: ${err}`);
         }
     }
-    // TODO: remove once temporal is removed
-    async scheduleSyncHelper(
-        nangoConnection: NangoConnection,
-        sync: Sync,
-        providerConfig: ProviderConfig,
-        syncName: string,
-        syncData: NangoIntegrationData,
-        logContextGetter: LogContextGetter,
-        debug = false
-    ): Promise<Result<void>> {
-        const isGloballyEnabled = await featureFlags.isEnabled('orchestrator:schedule', 'global', false);
-        const isEnvEnabled = await featureFlags.isEnabled('orchestrator:schedule', `${nangoConnection.environment_id}`, false);
-        const isOrchestrator = isGloballyEnabled || isEnvEnabled;
 
-        const res = await this.scheduleSync({
-            nangoConnection,
-            sync,
-            providerConfig,
-            syncName,
-            syncData,
-            logContextGetter,
-            shouldLog: isOrchestrator,
-            debug
-        });
+    private getFrequencyMs(runs: string): Result<number> {
+        const runsMap = new Map([
+            ['every half day', '12h'],
+            ['every half hour', '30m'],
+            ['every quarter hour', '15m'],
+            ['every hour', '1h'],
+            ['every day', '1d'],
+            ['every month', '30d'],
+            ['every week', '7d']
+        ]);
+        const interval = runsMap.get(runs) || runs.replace('every ', '');
 
-        const syncClient = await SyncClient.getInstance();
-
-        let resTemporal: Result<void>;
-        if (syncClient) {
-            try {
-                const shouldLog = !isOrchestrator;
-                await syncClient.startContinuous(nangoConnection, sync, providerConfig, syncName, syncData, logContextGetter, shouldLog, debug);
-                resTemporal = Ok(undefined);
-            } catch (e) {
-                resTemporal = Err(`Failed to schedule sync: ${e}`);
-            }
-        } else {
-            resTemporal = Err(new NangoError('failed_to_get_sync_client'));
-        }
-
-        return isOrchestrator ? res : resTemporal;
-    }
-
-    private cleanInterval(runs: string): Result<string> {
-        if (runs === 'every half day') {
-            return Ok('12h');
-        }
-
-        if (runs === 'every half hour') {
-            return Ok('30m');
-        }
-
-        if (runs === 'every quarter hour') {
-            return Ok('15m');
-        }
-
-        if (runs === 'every hour') {
-            return Ok('1h');
-        }
-
-        if (runs === 'every day') {
-            return Ok('1d');
-        }
-
-        if (runs === 'every month') {
-            return Ok('30d');
-        }
-
-        if (runs === 'every week') {
-            return Ok('7d');
-        }
-
-        const interval = runs.replace('every ', '') as StringValue;
-
-        if (!ms(interval)) {
+        const intervalMs = ms(interval as StringValue);
+        if (!intervalMs) {
             const error = new NangoError('sync_interval_invalid');
             return Err(error);
         }
 
-        if (ms(interval) < ms('5m')) {
+        if (intervalMs < ms('5m')) {
             const error = new NangoError('sync_interval_too_short');
             return Err(error);
         }
 
-        return Ok(interval);
+        return Ok(intervalMs);
     }
 }

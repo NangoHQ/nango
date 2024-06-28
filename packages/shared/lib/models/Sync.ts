@@ -1,4 +1,3 @@
-import type { Context } from '@temporalio/activity';
 import type { JSONSchema7 } from 'json-schema';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoProps } from '../sdk/sync.js';
@@ -136,24 +135,6 @@ export interface SyncConfigResult {
     logCtx: LogContext;
 }
 
-export enum ScheduleStatus {
-    RUNNING = 'RUNNING',
-    PAUSED = 'PAUSED',
-    STOPPED = 'STOPPED'
-}
-
-export interface Schedule extends TimestampsAndDeleted {
-    id?: string;
-    schedule_id: string;
-    status: ScheduleStatus;
-    sync_id: string;
-    sync_job_id: number;
-    frequency: string;
-    offset: number;
-}
-
-export type SyncWithSchedule = Sync & Schedule;
-
 export enum SyncCommand {
     PAUSE = 'PAUSE',
     UNPAUSE = 'UNPAUSE',
@@ -161,14 +142,6 @@ export enum SyncCommand {
     RUN_FULL = 'RUN_FULL',
     CANCEL = 'CANCEL'
 }
-
-export const SyncCommandToScheduleStatus = {
-    PAUSE: ScheduleStatus.PAUSED,
-    UNPAUSE: ScheduleStatus.RUNNING,
-    RUN: ScheduleStatus.RUNNING,
-    RUN_FULL: ScheduleStatus.RUNNING,
-    CANCEL: ScheduleStatus.RUNNING
-};
 
 export interface SyncConfigWithProvider {
     id: number;
@@ -194,7 +167,6 @@ export interface RunScriptOptions {
     isWebhook: boolean;
     optionalLoadLocation?: string | undefined;
     input?: object | undefined;
-    temporalContext?: Context | undefined;
 }
 export interface IntegrationServiceInterface {
     runScript(options: RunScriptOptions): Promise<any>;
