@@ -243,10 +243,12 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
     if (error) {
         return Err(error);
     }
+
     const res = jsonSchema.safeParse(response);
     if (!res.success) {
         return Err(`Invalid action response format: ${response}. TaskId: ${task.id}`);
     }
+
     return Ok(res.data);
 }
 

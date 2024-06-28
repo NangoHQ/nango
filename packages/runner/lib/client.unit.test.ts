@@ -1,6 +1,7 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import { getRunnerClient } from './client.js';
 import { server } from './server.js';
+import type { NangoProps, SyncConfig } from '@nangohq/shared';
 
 describe('Runner client', () => {
     const port = 3095;
@@ -18,7 +19,7 @@ describe('Runner client', () => {
     });
 
     it('should run code', async () => {
-        const nangoProps = {
+        const nangoProps: NangoProps = {
             host: 'http://localhost:3003',
             connectionId: 'connection-id',
             environmentId: 1,
@@ -36,6 +37,7 @@ describe('Runner client', () => {
                 counts: { updated: 0, added: 0, deleted: 0 },
                 messages: []
             },
+            syncConfig: {} as SyncConfig,
 
             stubbedMetadata: {}
         };

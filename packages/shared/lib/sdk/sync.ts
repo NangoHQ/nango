@@ -9,6 +9,7 @@ import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangohq/utils';
+import type { SyncConfig } from '../models/Sync.js';
 
 const logger = getLogger('SDK');
 
@@ -278,6 +279,7 @@ export interface NangoProps {
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
+    syncConfig: SyncConfig;
 }
 
 export interface EnvironmentVariable {

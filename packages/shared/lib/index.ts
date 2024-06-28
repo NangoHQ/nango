@@ -43,6 +43,7 @@ export * from './utils/error.js';
 export * from './constants.js';
 
 export * from './sdk/sync.js';
+export * from './sdk/dataValidation.js';
 
 export { NANGO_VERSION } from './version.js';
 
