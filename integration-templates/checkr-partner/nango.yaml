@@ -112,11 +112,10 @@ models:
         service_key: string
         deleted_at: string | null
     TriggerBackgroundCheckInput:
+        __extends: Location
         service_key: string
         candidate_id: string
         node?: string
-        country: string
-        state?: string
         tags?: string[]
     BackgroundCheckParameterResponse:
         parameters: BackgroundCheckParameters[]

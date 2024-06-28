@@ -676,11 +676,12 @@ integrations:
                 service_key: string
                 deleted_at: string | null
             TriggerBackgroundCheckInput:
+                city?: string
+                country: string
+                state?: string
                 service_key: string
                 candidate_id: string
                 node?: string
-                country: string
-                state?: string
                 tags?: string[]
             BackgroundCheckParameterResponse:
                 parameters: BackgroundCheckParameters[]
