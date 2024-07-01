@@ -3,7 +3,7 @@ import type { StringValue } from 'ms';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { Err, Ok, stringifyError, metrics, errorToObject } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import { NangoError } from '../utils/error.js';
+import { NangoError, deserializeNangoError } from '../utils/error.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type { NangoConnection } from '../models/Connection.js';
 import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
@@ -143,11 +143,10 @@ export class Orchestrator {
             });
 
             const res = actionResult.mapError((err) => {
-                if ('payload' in err && typeof err.payload === 'object' && err.payload && 'type' in err.payload) {
-                    const pl = err.payload as unknown as NangoError;
-                    return new NangoError(pl['type'], pl.payload, pl.status);
-                }
-                return new NangoError('action_failure', { error: err.message, ...(err.payload ? { payload: err.payload } : {}) });
+                return (
+                    deserializeNangoError(err.payload) ||
+                    new NangoError('action_failure', { error: err.message, ...(err.payload ? { payload: err.payload } : {}) })
+                );
             });
 
             if (res.isErr()) {

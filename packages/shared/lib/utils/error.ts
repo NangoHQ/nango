@@ -629,3 +629,14 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
 
     return { success: false, error, response: null };
 };
+
+export function isNangoErrorAsJson(obj: unknown): obj is NangoError {
+    return Boolean(typeof obj === 'object' && obj && 'payload' in obj && 'type' in obj);
+}
+
+export function deserializeNangoError(err: unknown): NangoError | null {
+    if (isNangoErrorAsJson(err)) {
+        return new NangoError(err['type'], err.payload, err.status);
+    }
+    return null;
+}

@@ -95,7 +95,7 @@ export async function exec(
                             modelName: nangoProps.syncConfig.input,
                             jsonSchema: nangoProps.syncConfig.models_json_schema
                         });
-                        if (val !== true) {
+                        if (Array.isArray(val)) {
                             return { success: false, response: null, error: { type: 'invalid_action_input', status: 400, payload: val } };
                         }
                     }

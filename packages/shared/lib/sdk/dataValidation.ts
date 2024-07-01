@@ -24,7 +24,7 @@ export function validateInput({
 
     const bag: ErrorObject[] = [];
     for (const error of validate.errors!) {
-        if (!error.message || error.message === ' ') {
+        if (!error.message) {
             continue;
         }
 
