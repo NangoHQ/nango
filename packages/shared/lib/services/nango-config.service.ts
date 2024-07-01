@@ -124,7 +124,8 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints: sync?.endpoints || [],
                 nango_yaml_version: 'v1',
-                layout_mode
+                layout_mode,
+                json_schema: null
             };
 
             if (sync.type === 'action') {
@@ -463,7 +464,8 @@ function buildSyncs({
             nango_yaml_version: sync.nango_yaml_version || 'v2',
             webhookSubscriptions,
             enabled,
-            layout_mode: localFileService.getLayoutMode(syncName, providerConfigKey, 'sync')
+            layout_mode: localFileService.getLayoutMode(syncName, providerConfigKey, 'sync'),
+            json_schema: null
         };
 
         if (sync.id) {
@@ -582,7 +584,8 @@ function buildActions({
             endpoints,
             nango_yaml_version: action.nango_yaml_version || 'v2',
             enabled,
-            layout_mode: localFileService.getLayoutMode(actionName, providerConfigKey, 'action')
+            layout_mode: localFileService.getLayoutMode(actionName, providerConfigKey, 'action'),
+            json_schema: null
         };
 
         if (action.id) {

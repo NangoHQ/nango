@@ -103,7 +103,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     sync_type?: SyncType | undefined;
     webhook_subscriptions: string[] | null;
     enabled: boolean;
-    models_json_schema?: JSONSchema7;
+    models_json_schema?: JSONSchema7 | null;
 }
 
 export interface SyncEndpoint extends Timestamps {

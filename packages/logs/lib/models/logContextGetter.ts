@@ -43,7 +43,7 @@ export const logContextGetter = {
                 logger.info(`[debug] operation(${JSON.stringify(msg)})`);
             }
         } catch (err) {
-            // TODO: reup throw
+            // TODO: Report error
             logger.error(`failed_to_create_operation ${stringifyError(err)}`);
         }
 
@@ -63,7 +63,7 @@ export const logContextGetter = {
                 return new LogContext({ parentId: id, operation }, options);
             }
         } catch (err) {
-            // TODO: reup throw
+            // TODO: Report error
             logger.error(`failed_to_get_operation ${stringifyError(err)}`);
         }
 

@@ -24,7 +24,6 @@ export interface GithubIssue {
 exports[`generate function tests > should init the expected files in the nango-integrations directory 2`] = `
 "{
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/GithubIssue",
   "definitions": {
     "GithubIssue": {
       "type": "object",

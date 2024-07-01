@@ -48,6 +48,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         nangoYamlBody: body.nangoYamlBody,
         postConnectionScriptsByProvider: body.postConnectionScriptsByProvider,
         debug: body.debug,
+        jsonSchema: req.body.jsonSchema,
         logContextGetter,
         orchestrator
     });

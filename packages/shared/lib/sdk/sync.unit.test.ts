@@ -2,7 +2,7 @@
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
-import type { Config } from '../models/index.js';
+import type { Config, SyncConfig } from '../models/index.js';
 import type { Template } from '@nangohq/types';
 import configService from '../services/config.service.js';
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
@@ -20,7 +20,8 @@ const nangoProps: NangoProps = {
     activityLogId: '1',
     accountId: 1,
     environmentId: 1,
-    lastSyncDate: new Date()
+    lastSyncDate: new Date(),
+    syncConfig: {} as SyncConfig
 };
 
 describe('cache', () => {

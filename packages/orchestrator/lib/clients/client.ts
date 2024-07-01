@@ -370,7 +370,12 @@ export class OrchestratorClient {
     }
 
     public async failed({ taskId, error }: { taskId: string; error: Error }): Promise<Result<OrchestratorTask, ClientError>> {
-        const output = { name: error.name, message: error.message };
+        const output = {
+            name: error.name,
+            type: 'type' in error ? (error.type as string) : null,
+            message: error.message,
+            payload: 'payload' in error ? (error.payload as any) : null
+        };
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
             body: { output, state: 'FAILED' }
