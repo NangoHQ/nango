@@ -187,7 +187,8 @@ export const connectionRefreshFailed = async ({
 
     const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
 
-    await delay(500);
+    const randomDelay = Math.random() * 1000;
+    await delay(randomDelay);
     await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
 };
 
