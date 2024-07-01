@@ -99,7 +99,7 @@ class DeployService {
     }
 
     public async prep({ fullPath, options, environment, debug = false }: { fullPath: string; options: DeployOptions; environment: string; debug?: boolean }) {
-        const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm } = options;
+        const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm, allowDestructive } = options;
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, checkDist: false });
 
         await parseSecretKey(environment, debug);
@@ -148,57 +148,77 @@ class DeployService {
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
         const bodyDeploy: PostDeploy['Body'] = { ...postData, reconcile: true, debug, nangoYamlBody, singleDeployMode };
 
-        if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
-            const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
-            try {
-                const bodyConfirmation: PostDeployConfirmation['Body'] = { ...postData, reconcile: false, debug, singleDeployMode };
-                const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });
+        const shouldConfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm;
+        const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
+        try {
+            const bodyConfirmation: PostDeployConfirmation['Body'] = { ...postData, reconcile: false, debug, singleDeployMode };
+            const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });
 
+            if (shouldConfirm) {
                 // Show response in term
                 console.log(JSON.stringify(response.data, null, 2));
+            }
 
-                const { newSyncs, deletedSyncs } = response.data;
+            const { newSyncs, deletedSyncs } = response.data;
 
-                for (const sync of newSyncs) {
-                    const actionMessage =
-                        sync.connections === 0 || sync.auto_start === false
-                            ? 'The sync will be added to your Nango instance if you deploy.'
-                            : `Nango will start syncing the corresponding data for ${sync.connections} existing connections.`;
-                    console.log(chalk.yellow(`Sync "${sync.name}" is new. ${actionMessage}`));
+            for (const sync of newSyncs) {
+                const syncMessage =
+                    sync.connections === 0 || sync.auto_start === false
+                        ? 'The sync will be added to your Nango instance if you deploy.'
+                        : `Nango will start syncing the corresponding data for ${sync.connections} existing connections.`;
+                console.log(chalk.yellow(`Sync "${sync.name}" is new. ${syncMessage}`));
+            }
+
+            let deletedSyncsConnectionsCount = 0;
+            for (const sync of deletedSyncs) {
+                console.log(
+                    chalk.red(
+                        `Sync "${sync.name}" has been removed. It will stop running and the corresponding data will be deleted for ${sync.connections} existing connections.`
+                    )
+                );
+                deletedSyncsConnectionsCount += sync.connections;
+            }
+
+            // force confirmation :
+            // - if auto-confirm flag is not set
+            // - OR if there are deleted syncs with connections (and allow-destructive flag is not set)
+            const shouldConfirmDestructive = deletedSyncsConnectionsCount > 0 && !allowDestructive;
+            if (shouldConfirm || shouldConfirmDestructive) {
+                let confirmationMsg = 'Are you sure you want to continue y/n?';
+                if (!shouldConfirm && shouldConfirmDestructive) {
+                    confirmationMsg += ' (set --allow-destructive flag to skip this confirmation)';
                 }
-
-                for (const sync of deletedSyncs) {
-                    console.log(
-                        chalk.red(
-                            `Sync "${sync.name}" has been removed. It will stop running and the corresponding data will be deleted for ${sync.connections} existing connections.`
-                        )
-                    );
-                }
-
-                const confirmation = await promptly.confirm('Do you want to continue y/n?');
+                const confirmation = await promptly.confirm(confirmationMsg);
                 if (!confirmation) {
                     console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                     process.exit(0);
                 }
-            } catch (err: any) {
-                console.log(chalk.red(`Error deploying the syncs/actions with the following error`));
-
-                let errorObject = err;
-                if (err instanceof AxiosError) {
-                    if (err.response?.data?.error) {
-                        errorObject = err.response.data.error;
-                    } else {
-                        errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.config?.method };
+            } else {
+                if (debug) {
+                    const flags: string[] = [];
+                    if (!shouldConfirm) {
+                        flags.push('Auto confirm flag');
                     }
+                    if (!shouldConfirmDestructive) {
+                        flags.push('Allow destructive flag');
+                    }
+                    printDebug(`${flags.join(' and ')} ${flags.length > 1 ? 'are' : 'is'} set, so deploy will start without confirmation`);
                 }
+            }
+        } catch (err: any) {
+            console.log(chalk.red(`Error deploying the syncs/actions with the following error`));
 
-                console.log(chalk.red(JSON.stringify(errorObject, null, 2)));
-                process.exit(1);
+            let errorObject = err;
+            if (err instanceof AxiosError) {
+                if (err.response?.data?.error) {
+                    errorObject = err.response.data.error;
+                } else {
+                    errorObject = { message: err.message, stack: err.stack, code: err.code, status: err.status, url, method: err.config?.method };
+                }
             }
-        } else {
-            if (debug) {
-                printDebug(`Auto confirm is set so deploy will start without confirmation`);
-            }
+
+            console.log(chalk.red(JSON.stringify(errorObject, null, 2)));
+            process.exit(1);
         }
 
         await this.deploy(url, bodyDeploy);
