@@ -43,6 +43,7 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 
 import { Nango } from '@nangohq/node';
 import type { AxiosInstance } from 'axios';
+import type { SyncConfig } from '../models/Sync.js';
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 interface GenericFormData {
@@ -241,6 +242,7 @@ export interface NangoProps {
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
+    syncConfig: SyncConfig;
 }
 export interface EnvironmentVariable {
     name: string;
@@ -427,7 +429,6 @@ export type Anonymous_unauthenticated_action_inputoutputunion_input = true | 'he
 exports[`generate exports > json > should export to JSON 1`] = `
 "{
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/Test",
   "definitions": {
     "Test": {
       "type": "object",
