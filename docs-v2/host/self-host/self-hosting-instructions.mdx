@@ -47,6 +47,12 @@ NANGO_DB_NAME=<REPLACE>
 NANGO_DB_SSL=true
 ```
 
+Records saved by syncs can be persisted in a dedicated database. If you opt in for this setup, set the `RECORDS_DATABASE_URL` env var. Ex:
+```
+RECORDS_DATABASE_URL=postgresql://user:password@host:port/dbname
+```
+If not specified, the records will be stored in the main database.
+
 <Tip>
 Deploying with Render or Heroku automatically generates a persistent database
 connected to your Nango instance.
