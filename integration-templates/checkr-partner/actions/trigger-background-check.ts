@@ -18,7 +18,7 @@ export default async function runAction(nango: NangoAction, input: TriggerBackgr
     const connection = await nango.getConnection();
     const accountHierarchyEnabled = connection.connection_config['accountHierarchyEnabled'] || false;
 
-    if (accountHierarchyEnabled && !input?.country) {
+    if (!input?.country) {
         throw new nango.ActionError({
             message: `country is missing. This is required when account hierarchy is enabled.`
         });
