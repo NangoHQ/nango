@@ -416,9 +416,8 @@ certn:
         headers:
             Authorization: Bearer ${apiKey}
         paginate:
-            type: offset
-            offset_name_in_request: page
-            limit_name_in_request: limit
+            type: link
+            link_path_in_response_body: next
         verification:
             method: GET
             endpoint: /api/v2/teams
