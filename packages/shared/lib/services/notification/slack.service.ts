@@ -3,7 +3,7 @@ import type { SlackNotification } from '../../models/SlackNotification.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import environmentService from '../environment.service.js';
-import { basePublicUrl, getLogger } from '@nangohq/utils';
+import { basePublicUrl, getLogger, stringToHash } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
@@ -472,7 +472,6 @@ export class SlackService {
                 type,
                 connection_list: [nangoConnection.id as number]
             })
-            .forUpdate()
             .returning('id');
 
         if (result && result.length > 0 && result[0]) {
@@ -489,6 +488,15 @@ export class SlackService {
      */
     async addFailingConnection(nangoConnection: NangoConnection, name: string, type: string): Promise<ServiceResponse<NotificationResponse>> {
         return await db.knex.transaction(async (trx) => {
+            const lockKey = stringToHash(`${nangoConnection.environment_id}-${name}-${type}`);
+
+            const { rows } = await trx.raw<{ rows: { pg_try_advisory_xact_lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?);`, [lockKey]);
+
+            if (!rows?.[0]?.pg_try_advisory_xact_lock) {
+                logger.info(`${lockKey} could not acquire lock, skipping`);
+                return { success: true, error: null, response: null };
+            }
+
             const isOpen = await this.hasOpenNotification(nangoConnection, name, type, trx);
 
             if (isOpen && type === 'auth') {
@@ -536,7 +544,6 @@ export class SlackService {
             await trx
                 .from<SlackNotification>(TABLE)
                 .where({ id: id as number })
-                .forUpdate()
                 .update({
                     connection_list,
                     updated_at: new Date()
@@ -597,7 +604,6 @@ export class SlackService {
 
             await trx
                 .from<SlackNotification>(TABLE)
-                .forUpdate()
                 .where({ id: id as number })
                 .update({
                     open: connection_list.length > 0,
