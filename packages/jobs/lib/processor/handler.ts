@@ -317,7 +317,15 @@ async function postConnection(task: TaskPostConnection): Promise<Result<JsonValu
             models: [],
             track_deletes: false,
             type: 'sync',
-            version: task.version
+            version: task.version,
+            active: true,
+            auto_start: false,
+            enabled: true,
+            environment_id: task.connection.environment_id,
+            model_schema: [],
+            nango_config_id: -1,
+            runs: '',
+            webhook_subscriptions: []
         },
         sendSyncWebhook: sendSync,
         isAction: false,
