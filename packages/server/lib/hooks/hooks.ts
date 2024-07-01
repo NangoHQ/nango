@@ -37,6 +37,8 @@ import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
     environmentId,
@@ -142,7 +144,7 @@ export const connectionRefreshSuccess = async ({
 
     const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
 
-    void slackNotificationService.removeFailingConnection(connection, connection.connection_id, 'auth', null, environment.id, config.provider);
+    await slackNotificationService.removeFailingConnection(connection, connection.connection_id, 'auth', null, environment.id, config.provider);
 };
 
 export const connectionRefreshFailed = async ({
@@ -185,7 +187,8 @@ export const connectionRefreshFailed = async ({
 
     const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
 
-    void slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
+    await delay(500);
+    await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
 };
 
 export const connectionTest = async (
