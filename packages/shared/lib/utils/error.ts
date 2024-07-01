@@ -253,9 +253,6 @@ export class NangoError extends Error {
             case 'action_failure':
                 this.status = 400;
                 this.message = `Failed to perform the action`;
-                // if (this.payload) {
-                //     this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
-                // }
                 break;
 
             case 'webhook_failure':
