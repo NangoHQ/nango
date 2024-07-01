@@ -133,7 +133,11 @@ export default function Scripts(props: ScriptProps) {
                             {actions.length > 0 ? (
                                 actions.map((flow) => {
                                     return (
-                                        <Table.Row key={flow.name} className={cn(flow.enabled && 'text-white')}>
+                                        <Table.Row
+                                            key={flow.name}
+                                            className={cn('cursor-pointer', flow.enabled && 'text-white')}
+                                            onClick={() => routeToScript(flow)}
+                                        >
                                             <Table.Cell bordered>{flow.name}</Table.Cell>
                                             <Table.Cell bordered>
                                                 <div className="w-72 max-w-3xl truncate">{flow.description}</div>
