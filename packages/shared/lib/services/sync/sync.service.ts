@@ -186,7 +186,7 @@ export const getSyncs = async (
                             )
                         END as latest_sync `),
                     db.knex.raw(
-                        `ROW_NUMBER() OVER (PARTITION BY ${SYNC_JOB_TABLE}.sync_id ORDER BY ${SYNC_JOB_TABLE}.deleted ASC, ${SYNC_JOB_TABLE}.updated_at DESC) as job_row_number`
+                        `ROW_NUMBER() OVER (PARTITION BY ${TABLE}.id, ${SYNC_JOB_TABLE}.sync_id ORDER BY ${SYNC_JOB_TABLE}.updated_at DESC) as job_row_number`
                     )
                 )
                 .leftJoin(ACTIVE_LOG_TABLE, function () {
