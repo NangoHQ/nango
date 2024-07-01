@@ -372,13 +372,15 @@ function buildSyncs({
             return { success: false, error: modelError, response: null };
         }
 
-        const inputModel: NangoSyncModel = {} as NangoSyncModel;
+        let inputModel: NangoSyncModel | undefined = undefined;
 
         if (sync.input) {
             const modelFields = getFieldsForModel(sync.input, config) as { name: string; type: string }[];
             if (modelFields) {
-                inputModel.name = sync.input;
-                inputModel.fields = modelFields;
+                inputModel = {
+                    name: sync.input,
+                    fields: modelFields
+                };
             }
         }
 
@@ -511,7 +513,7 @@ function buildActions({
             return { success: false, error: modelError, response: null };
         }
 
-        let inputModel: NangoSyncModel = {} as NangoSyncModel;
+        let inputModel: NangoSyncModel | undefined = undefined;
 
         if (action.input) {
             if (action.input.includes('{') && action.input.includes('}')) {
@@ -524,8 +526,10 @@ function buildActions({
             }
             const modelFields = getFieldsForModel(action.input, config) as { name: string; type: string }[];
             if (modelFields) {
-                inputModel.name = action.input;
-                inputModel.fields = modelFields;
+                inputModel = {
+                    name: action.input,
+                    fields: modelFields
+                };
             }
         }
 
@@ -546,7 +550,7 @@ function buildActions({
 
             endpoints = assignEndpoints(actionEndpoint, 'POST', false, showMessages);
             if (actionEndpoint?.includes('{') && actionEndpoint.includes('}')) {
-                const { success, error, response } = parseModelInEndpoint(actionEndpoint, allModelNames, inputModel, config);
+                const { success, error, response } = parseModelInEndpoint(actionEndpoint, allModelNames, inputModel!, config);
                 if (!success || !response) {
                     return { success, error, response: null };
                 }
