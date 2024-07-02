@@ -257,7 +257,8 @@ const runJob = async (
         syncId: sync.id,
         syncJobId: syncJob.id,
         activityLogId: logCtx.id,
-        logCtx: logCtx
+        logCtx: logCtx,
+        runnerFlags: {} as any
     };
     const syncRun = new SyncRunService(config);
 
