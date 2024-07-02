@@ -4,7 +4,10 @@ import type { EndpointResponse, FlowConfiguration } from './Show';
 import { SubTabs } from './Show';
 import type { IntegrationConfig, Flow } from '../../types';
 import EnableDisableSync from './components/EnableDisableSync';
-import HelpFooter from './components/HelpFooter';
+import { HelpFooter } from './components/HelpFooter';
+import * as Table from '../../components/ui/Table';
+import { cn } from '../../utils/utils';
+import { EmptyState } from '../../components/EmptyState';
 
 interface ScriptProps {
     endpoints: EndpointResponse;
@@ -34,125 +37,136 @@ export default function Scripts(props: ScriptProps) {
     return (
         <div className="h-fit rounded-md text-white text-sm">
             {!hasScripts ? (
-                <div className="flex flex-col border border-border-gray rounded-md text-white text-sm text-center p-10">
-                    <h2 className="text-xl text-center w-full">No available script</h2>
-                    <div className="mt-4 text-gray-400">
-                        There is no{' '}
-                        <a
-                            className="text-text-blue hover:text-text-light-blue"
-                            href="https://docs.nango.dev/understand/concepts/templates"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            integration template
-                        </a>{' '}
-                        available for this API yet.
+                <EmptyState
+                    title="No available scripts"
+                    help={
+                        <>
+                            There is no{' '}
+                            <a
+                                className="text-text-blue hover:text-text-light-blue"
+                                href="https://docs.nango.dev/understand/concepts/templates"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                integration template
+                            </a>{' '}
+                            available for this API yet.
+                        </>
+                    }
+                >
+                    <div className="mt-10">
+                        <HelpFooter />
                     </div>
-                    <HelpFooter />
-                </div>
+                </EmptyState>
             ) : (
-                <>
-                    <table className="w-[976px]">
-                        <tbody className="flex flex-col">
-                            <tr>
-                                <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
+                <div className="flex flex-col gap-10">
+                    <Table.Table className="table-fixed">
+                        <Table.Header>
+                            <Table.Row>
+                                <Table.Head className="w-[150px]">
                                     <div className="flex w-18 items-center">
                                         <ArrowPathRoundedSquareIcon className="flex h-4 w-4 mr-1" />
                                         Sync Scripts
                                     </div>
-                                    <div className="w-12 -ml-10">Models</div>
-                                    <div className="w-72">Description</div>
-                                    <div className="w-12">Source</div>
-                                    <div className="">Enabled</div>
-                                </td>
-                            </tr>
-                            <tr>
-                                {syncs.length > 0 && (
-                                    <>
-                                        {syncs.map((flow) => (
-                                            <td
-                                                key={flow.name}
-                                                className="flex items-center p-3 py-4 hover:bg-hover-gray cursor-pointer justify-between border-b border-border-gray"
-                                                onClick={() => routeToScript(flow)}
-                                            >
-                                                <div className="flex items-center w-36">
-                                                    <span className="w-48">{flow.name}</span>
-                                                </div>
-                                                <div className="flex items-center w-36 -ml-8">
-                                                    <Tooltip text={Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns} type="dark">
-                                                        <div className="w-36 max-w-3xl truncate">
-                                                            {Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns}
-                                                        </div>
-                                                    </Tooltip>
-                                                </div>
-                                                <div className="flex items-center w-[22rem] -ml-8">
-                                                    <div className="w-72 max-w-3xl truncate">{flow.description}</div>
-                                                </div>
-                                                <div className="flex items-center w-32">{flow.is_public ? 'Template' : 'Custom'}</div>
-                                                <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
-                                                    <EnableDisableSync
-                                                        flow={flow}
-                                                        provider={integration.provider}
-                                                        providerConfigKey={integration.unique_key}
-                                                        reload={reload}
-                                                        rawName={endpoints?.disabledFlows?.rawName}
-                                                        connections={integration?.connections}
-                                                    />
-                                                </div>
-                                            </td>
-                                        ))}
-                                    </>
-                                )}
-                            </tr>
-                        </tbody>
-                        <tbody className="flex mt-16 flex-col">
-                            <tr>
-                                <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
-                                    <div className="flex w-36 items-center">
+                                </Table.Head>
+                                <Table.Head className="w-[200px]">Models</Table.Head>
+                                <Table.Head className="w-[400px]">Description</Table.Head>
+                                <Table.Head className="w-[100px]">Source</Table.Head>
+                                <Table.Head className="w-[100px]">Enabled</Table.Head>
+                            </Table.Row>
+                        </Table.Header>
+                        <Table.Body>
+                            {syncs.length > 0 ? (
+                                syncs.map((flow) => {
+                                    return (
+                                        <Table.Row
+                                            key={flow.name}
+                                            className={cn('cursor-pointer', flow.enabled && 'text-white')}
+                                            onClick={() => routeToScript(flow)}
+                                        >
+                                            <Table.Cell bordered>{flow.name}</Table.Cell>
+                                            <Table.Cell bordered>
+                                                <Tooltip text={Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns} type="dark">
+                                                    <div className="w-36 max-w-3xl truncate">
+                                                        {Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns}
+                                                    </div>
+                                                </Tooltip>
+                                            </Table.Cell>
+                                            <Table.Cell bordered>
+                                                <div className="w-72 max-w-3xl truncate">{flow.description}</div>
+                                            </Table.Cell>
+                                            <Table.Cell bordered>{flow.is_public ? 'Template' : 'Custom'}</Table.Cell>
+                                            <Table.Cell bordered onClick={(e) => e.stopPropagation()}>
+                                                <EnableDisableSync
+                                                    flow={flow}
+                                                    provider={integration.provider}
+                                                    providerConfigKey={integration.unique_key}
+                                                    reload={reload}
+                                                    rawName={endpoints?.disabledFlows?.rawName}
+                                                    connections={integration?.connections}
+                                                />
+                                            </Table.Cell>
+                                        </Table.Row>
+                                    );
+                                })
+                            ) : (
+                                <Table.Empty colSpan={5}>No syncs</Table.Empty>
+                            )}
+                        </Table.Body>
+                    </Table.Table>
+
+                    <Table.Table className="table-fixed">
+                        <Table.Header>
+                            <Table.Row>
+                                <Table.Head className="w-[150px]">
+                                    <div className="flex w-18 items-center">
                                         <BoltIcon className="flex h-4 w-4 mr-1" />
-                                        Action Scripts
+                                        Actions Scripts
                                     </div>
-                                    <div className="w-[36rem]">Description</div>
-                                    <div className="w-12">Source</div>
-                                    <div className="">Enabled</div>
-                                </td>
-                            </tr>
-                            <tr>
-                                {actions.length > 0 && (
-                                    <>
-                                        {actions.map((flow) => (
-                                            <td
-                                                key={flow.name}
-                                                className="flex items-center cursor-pointer p-3 py-6 hover:bg-hover-gray justify-between border-b border-border-gray"
-                                                onClick={() => routeToScript(flow)}
-                                            >
-                                                <div className="flex items-center w-36">
-                                                    <span className="w-48">{flow.name}</span>
-                                                </div>
-                                                <div className="flex items-center w-[36rem]">
-                                                    <div className="w-[710px] max-w-3xl truncate">{flow.description}</div>
-                                                </div>
-                                                <div className="flex items-center w-16">{flow.is_public ? 'Template' : 'Custom'}</div>
-                                                <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
-                                                    <EnableDisableSync
-                                                        flow={flow}
-                                                        provider={integration.provider}
-                                                        providerConfigKey={integration.unique_key}
-                                                        reload={reload}
-                                                        rawName={endpoints?.disabledFlows?.rawName}
-                                                        connections={integration?.connections}
-                                                        showSpinner={true}
-                                                    />
-                                                </div>
-                                            </td>
-                                        ))}
-                                    </>
-                                )}
-                            </tr>
-                        </tbody>
-                    </table>
-                    <HelpFooter />
-                </>
+                                </Table.Head>
+                                <Table.Head className="w-[600px]">Description</Table.Head>
+                                <Table.Head className="w-[100px]">Source</Table.Head>
+                                <Table.Head className="w-[100px]">Enabled</Table.Head>
+                            </Table.Row>
+                        </Table.Header>
+                        <Table.Body>
+                            {actions.length > 0 ? (
+                                actions.map((flow) => {
+                                    return (
+                                        <Table.Row
+                                            key={flow.name}
+                                            className={cn('cursor-pointer', flow.enabled && 'text-white')}
+                                            onClick={() => routeToScript(flow)}
+                                        >
+                                            <Table.Cell bordered>{flow.name}</Table.Cell>
+                                            <Table.Cell bordered>
+                                                <div className="w-72 max-w-3xl truncate">{flow.description}</div>
+                                            </Table.Cell>
+                                            <Table.Cell bordered>{flow.is_public ? 'Template' : 'Custom'}</Table.Cell>
+                                            <Table.Cell bordered onClick={(e) => e.stopPropagation()}>
+                                                <EnableDisableSync
+                                                    flow={flow}
+                                                    provider={integration.provider}
+                                                    providerConfigKey={integration.unique_key}
+                                                    reload={reload}
+                                                    rawName={endpoints?.disabledFlows?.rawName}
+                                                    connections={integration?.connections}
+                                                    showSpinner={true}
+                                                />
+                                            </Table.Cell>
+                                        </Table.Row>
+                                    );
+                                })
+                            ) : (
+                                <Table.Empty colSpan={4}>No actions</Table.Empty>
+                            )}
+                        </Table.Body>
+                    </Table.Table>
+
+                    <div className="mt-10">
+                        <HelpFooter />
+                    </div>
+                </div>
             )}
         </div>
     );
