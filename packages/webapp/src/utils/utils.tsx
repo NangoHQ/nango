@@ -219,8 +219,8 @@ export function formatFrequency(frequency: string): string {
         hour: 'h',
         days: 'd',
         day: 'd',
-        months: 'mon',
-        month: 'mon',
+        months: 'mos',
+        month: 'mo',
         years: 'y',
         year: 'y'
     };
