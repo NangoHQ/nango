@@ -102,7 +102,7 @@ export async function exec(
                                 span.setTag('error', new Error('invalid_action_input'));
                                 return { success: false, response: null, error: { type: 'invalid_action_input', status: 400, payload: val } };
                             } else {
-                                nango.log('Invalid action input', { validation: val }, { level: 'warn' });
+                                await nango.log('Invalid action input', { validation: val }, { level: 'warn' });
                                 logger.error('data_validation_invalid_action_input');
                             }
                         }
