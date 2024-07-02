@@ -97,9 +97,9 @@ export async function exec(
                             jsonSchema: nangoProps.syncConfig.models_json_schema
                         });
                         if (Array.isArray(val)) {
-                            console.log(nangoProps.runnerFlags);
                             metrics.increment(metrics.Types.RUNNER_INVALID_ACTION_INPUT);
                             if (nangoProps.runnerFlags?.validateActionInput) {
+                                span.setTag('error', new Error('invalid_action_input'));
                                 return { success: false, response: null, error: { type: 'invalid_action_input', status: 400, payload: val } };
                             } else {
                                 nango.log('Invalid action input', { validation: val }, { level: 'warn' });
@@ -115,6 +115,7 @@ export async function exec(
             }
         } catch (error) {
             if (error instanceof ActionError) {
+                span.setTag('error', error);
                 const { type, payload } = error;
                 return {
                     success: false,
@@ -128,8 +129,11 @@ export async function exec(
             } else {
                 if (error instanceof AxiosError && error.response?.data) {
                     const errorResponse = error.response.data.payload || error.response.data;
+                    span.setTag('error', errorResponse);
                     throw new Error(JSON.stringify(errorResponse));
                 }
+
+                span.setTag('error', error);
                 throw new Error(`Error executing code '${stringifyError(error)}'`);
             }
         } finally {
