@@ -6,12 +6,19 @@ import https from 'node:https';
 import type {
     ApiKeyCredentials,
     AppCredentials,
+    AppStoreCredentials,
     BasicApiCredentials,
+    CredentialsCommon,
+    CustomCredentials,
+    OAuth2ClientCredentials,
+    TbaCredentials,
+    UnauthCredentials
+} from '@nangohq/types';
+import type {
     Connection,
     ConnectionList,
     CreateConnectionOAuth1,
     CreateConnectionOAuth2,
-    CredentialsCommon,
     GetRecordsRequestConfig,
     Integration,
     IntegrationWithCreds,
@@ -235,7 +242,18 @@ export class Nango {
         providerConfigKey: string,
         connectionId: string,
         forceRefresh?: boolean
-    ): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials> {
+    ): Promise<
+        | string
+        | OAuth1Token
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppCredentials
+        | OAuth2ClientCredentials
+        | AppStoreCredentials
+        | UnauthCredentials
+        | CustomCredentials
+        | TbaCredentials
+    > {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 
         switch (response.data.credentials.type) {

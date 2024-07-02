@@ -55,20 +55,20 @@ export interface CredentialsCommon<T = Record<string, any>> {
 }
 
 export interface BasicApiCredentials {
-    type?: AuthModes['Basic'];
+    type: AuthModes['Basic'];
     username: string;
     password: string;
 }
 
 export interface ApiKeyCredentials {
-    type?: AuthModes['ApiKey'];
+    type: AuthModes['ApiKey'];
     apiKey: string;
 }
 
 export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
 
 export interface AppCredentials {
-    type?: AuthModes['App'];
+    type: AuthModes['App'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
@@ -143,3 +143,15 @@ export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'typ
 export type ImportedCredentials =
     | (OAuth2Credentials & Partial<Pick<AuthorizationTokenResponse, 'expires_in'>> & Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>)
     | OAuth1Credentials;
+
+export type AllAuthCredentials =
+    | OAuth1Credentials
+    | OAuth2Credentials
+    | OAuth2ClientCredentials
+    | BasicApiCredentials
+    | ApiKeyCredentials
+    | AppCredentials
+    | AppStoreCredentials
+    | UnauthCredentials
+    | CustomCredentials
+    | TbaCredentials;

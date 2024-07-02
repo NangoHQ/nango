@@ -178,6 +178,16 @@ interface OAuth2Credentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
+interface OAuth2ClientCredentials extends CredentialsCommon {
+    type: AuthModes['OAuth2CC'];
+    token: string;
+
+    expires_at?: Date | undefined;
+
+    client_id: string;
+    client_secret: string;
+}
+
 interface OAuth1Credentials extends CredentialsCommon {
     type: AuthModes['OAuth1'];
     oauth_token: string;
@@ -194,18 +204,23 @@ interface TbaCredentials {
         client_secret?: string;
     };
 }
+interface CustomCredentials extends CredentialsCommon {
+    type: AuthModes['Custom'];
+}
 
 type UnauthCredentials = Record<string, never>;
 
 type AuthCredentials =
     | OAuth2Credentials
+    | OAuth2ClientCredentials
     | OAuth1Credentials
     | BasicApiCredentials
     | ApiKeyCredentials
     | AppCredentials
     | AppStoreCredentials
     | UnauthCredentials
-    | TbaCredentials;
+    | TbaCredentials
+    | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
 
@@ -494,7 +509,18 @@ export class NangoAction {
         });
     }
 
-    public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | TbaCredentials> {
+    public async getToken(): Promise<
+        | string
+        | OAuth1Token
+        | OAuth2ClientCredentials
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppCredentials
+        | AppStoreCredentials
+        | UnauthCredentials
+        | CustomCredentials
+        | TbaCredentials
+    > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
