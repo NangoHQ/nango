@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.10] - 2024-07-02
+
+### Fixed
+
+- *(node)* Correctly export Auth and Webhooks type (#2442) by @bodinsamuel
+- *(validation)* Use feature flag (#2444) by @bodinsamuel
+- Frequency when no quantity (#2443) by @TBonnin
+
 ## [v0.40.9] - 2024-07-02
 
 ### Fixed
@@ -1494,6 +1502,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.10]: https://github.com/NangoHQ/nango/compare/v0.40.9..v0.40.10
 [v0.40.9]: https://github.com/NangoHQ/nango/compare/v0.40.8..v0.40.9
 [v0.40.8]: https://github.com/NangoHQ/nango/compare/v0.40.7..v0.40.8
 [v0.40.7]: https://github.com/NangoHQ/nango/compare/v0.40.6..v0.40.7
