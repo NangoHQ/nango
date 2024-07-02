@@ -26,7 +26,6 @@ import type {
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
 } from './types.js';
-import { AuthModes } from './types.js';
 import { getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 export const stagingHost = 'https://api-staging.nango.dev';
@@ -240,9 +239,9 @@ export class Nango {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 
         switch (response.data.credentials.type) {
-            case AuthModes.OAuth2:
+            case 'OAUTH2':
                 return response.data.credentials.access_token;
-            case AuthModes.OAuth1:
+            case 'OAUTH1':
                 return { oAuthToken: response.data.credentials.oauth_token, oAuthTokenSecret: response.data.credentials.oauth_token_secret };
             default:
                 return response.data.credentials;

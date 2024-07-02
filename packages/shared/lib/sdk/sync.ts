@@ -120,18 +120,19 @@ export interface ProxyConfiguration {
     retryOn?: number[] | null;
 }
 
-enum AuthModes {
-    OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2',
-    OAuth2CC = 'OAUTH2_CC',
-    Basic = 'BASIC',
-    ApiKey = 'API_KEY',
-    AppStore = 'APP_STORE',
-    App = 'APP',
-    Custom = 'CUSTOM',
-    None = 'NONE',
-    TBA = 'TBA'
+export interface AuthModes {
+    OAuth1: 'OAUTH1';
+    OAuth2: 'OAUTH2';
+    OAuth2CC: 'OAUTH2_CC';
+    Basic: 'BASIC';
+    ApiKey: 'API_KEY';
+    AppStore: 'APP_STORE';
+    Custom: 'CUSTOM';
+    App: 'APP';
+    None: 'NONE';
+    TBA: 'TBA';
 }
+export type AuthModeType = AuthModes[keyof AuthModes];
 
 interface OAuth1Token {
     oAuthToken: string;
@@ -139,14 +140,14 @@ interface OAuth1Token {
 }
 
 interface AppCredentials {
-    type: AuthModes.App;
+    type: AuthModes['App'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
 }
 
 interface AppStoreCredentials {
-    type?: AuthModes.AppStore;
+    type?: AuthModes['AppStore'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
@@ -154,23 +155,23 @@ interface AppStoreCredentials {
 }
 
 interface BasicApiCredentials {
-    type: AuthModes.Basic;
+    type: AuthModes['Basic'];
     username: string;
     password: string;
 }
 
 interface ApiKeyCredentials {
-    type: AuthModes.ApiKey;
+    type: AuthModes['ApiKey'];
     apiKey: string;
 }
 
 interface CredentialsCommon<T = Record<string, any>> {
-    type: AuthModes;
+    type: AuthModeType;
     raw: T;
 }
 
 interface OAuth2Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth2;
+    type: AuthModes['OAuth2'];
     access_token: string;
 
     refresh_token?: string;
@@ -178,13 +179,13 @@ interface OAuth2Credentials extends CredentialsCommon {
 }
 
 interface OAuth1Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth1;
+    type: AuthModes['OAuth1'];
     oauth_token: string;
     oauth_token_secret: string;
 }
 
 interface TbaCredentials {
-    type: AuthModes.TBA;
+    type: AuthModes['TBA'];
     token_id: string;
     token_secret: string;
 
@@ -335,15 +336,7 @@ export class NangoAction {
             this.activityLogId = config.activityLogId;
         }
 
-        this.nango = new Nango(
-            {
-                isSync: true,
-                ...config
-            },
-            {
-                userAgent: 'sdk'
-            }
-        );
+        this.nango = new Nango({ isSync: true, ...config }, { userAgent: 'sdk' });
 
         if (config.syncId) {
             this.syncId = config.syncId;

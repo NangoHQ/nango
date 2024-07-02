@@ -7,15 +7,15 @@ import { MagnifyingGlassIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import { useGetIntegrationDetailsAPI, useGetProvidersAPI, useCreateEmptyIntegrationAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
-import type { AuthModes } from '../../types';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { useStore } from '../../store';
 import { useSWRConfig } from 'swr';
+import type { AuthModeType } from '@nangohq/types';
 
 interface Provider {
     name: string;
     defaultScopes: string[];
-    authMode: AuthModes;
+    authMode: AuthModeType;
     categories?: string[];
     docs?: string;
 }

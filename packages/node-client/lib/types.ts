@@ -1,5 +1,15 @@
 import type { ParamsSerializerOptions } from 'axios';
-import type { NangoSyncWebhookBodySuccess, NangoSyncWebhookBodyError, NangoAuthWebhookBodySuccess, NangoAuthWebhookBodyError } from '@nangohq/types';
+import type {
+    NangoSyncWebhookBodySuccess,
+    NangoSyncWebhookBodyError,
+    NangoAuthWebhookBodySuccess,
+    NangoAuthWebhookBodyError,
+    NangoWebhookBody,
+    AuthOperation,
+    AuthOperationType,
+    AuthModeType,
+    AuthModes
+} from '@nangohq/types';
 
 export type {
     NangoSyncWebhookBodySuccess,
@@ -9,7 +19,12 @@ export type {
     NangoAuthWebhookBodySuccess,
     /** @deprecated use NangoAuthWebhookBodySuccess */
     NangoAuthWebhookBodySuccess as NangoAuthWebhookBody,
-    NangoAuthWebhookBodyError
+    NangoAuthWebhookBodyError,
+    NangoWebhookBody,
+    AuthOperation,
+    AuthOperationType,
+    AuthModeType,
+    AuthModes
 };
 
 export interface NangoProps {
@@ -25,7 +40,7 @@ export interface NangoProps {
 export interface CreateConnectionOAuth1 extends OAuth1Credentials {
     connection_id: string;
     provider_config_key: string;
-    type: AuthModes.OAuth1;
+    type: AuthModes['OAuth1'];
 }
 
 export interface OAuth1Token {
@@ -36,35 +51,22 @@ export interface OAuth1Token {
 export interface CreateConnectionOAuth2 extends OAuth2Credentials {
     connection_id: string;
     provider_config_key: string;
-    type: AuthModes.OAuth2;
-}
-
-export enum AuthModes {
-    OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2',
-    OAuth2CC = 'OAUTH2_CC',
-    Basic = 'BASIC',
-    ApiKey = 'API_KEY',
-    AppStore = 'APP_STORE',
-    Custom = 'CUSTOM',
-    App = 'APP',
-    None = 'NONE',
-    TBA = 'TBA'
+    type: AuthModes['OAuth2'];
 }
 
 export interface CredentialsCommon<T = Record<string, any>> {
-    type: AuthModes;
+    type: AuthModeType;
     raw: T;
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth1;
+    type: AuthModes['OAuth1'];
     oauth_token: string;
     oauth_token_secret: string;
 }
 
 export interface OAuth2Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth2;
+    type: AuthModes['OAuth2'];
     access_token: string;
 
     refresh_token?: string;
@@ -72,7 +74,7 @@ export interface OAuth2Credentials extends CredentialsCommon {
 }
 
 export interface AppCredentials extends CredentialsCommon {
-    type: AuthModes.App;
+    type: AuthModes['App'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
@@ -126,13 +128,13 @@ export interface ListRecordsRequestConfig {
 }
 
 export interface BasicApiCredentials extends CredentialsCommon {
-    type: AuthModes.Basic;
+    type: AuthModes['Basic'];
     username: string;
     password: string;
 }
 
 export interface ApiKeyCredentials extends CredentialsCommon {
-    type: AuthModes.ApiKey;
+    type: AuthModes['ApiKey'];
     apiKey: string;
 }
 

@@ -4,7 +4,7 @@ import type { ErrorPayload } from '../api.js';
 
 export type WebhookTypes = 'sync' | 'auth' | 'forward';
 
-export interface NangoSyncWebhookBody {
+export interface NangoSyncWebhookBodyBase {
     from: string;
     type: 'sync';
     connectionId: string;
@@ -14,7 +14,7 @@ export interface NangoSyncWebhookBody {
     syncType: SyncType;
 }
 
-export interface NangoSyncWebhookBodySuccess extends NangoSyncWebhookBody {
+export interface NangoSyncWebhookBodySuccess extends NangoSyncWebhookBodyBase {
     modifiedAfter: string;
     responseResults: SyncResult;
     success: true;
@@ -29,8 +29,9 @@ export interface NangoSyncWebhookBodyError {
     startedAt: string;
     failedAt: string;
 }
+export type NangoSyncWebhookBody = NangoSyncWebhookBodyBase | NangoSyncWebhookBodyError;
 
-export interface NangoAuthWebhookBody {
+export interface NangoAuthWebhookBodyBase {
     from: string;
     type: 'auth';
     connectionId: string;
@@ -41,14 +42,15 @@ export interface NangoAuthWebhookBody {
     operation: AuthOperationType;
 }
 
-export interface NangoAuthWebhookBodySuccess extends NangoAuthWebhookBody {
+export interface NangoAuthWebhookBodySuccess extends NangoAuthWebhookBodyBase {
     success: true;
 }
 
-export interface NangoAuthWebhookBodyError extends NangoAuthWebhookBody {
+export interface NangoAuthWebhookBodyError extends NangoAuthWebhookBodyBase {
     success: false;
     error: ErrorPayload;
 }
+export type NangoAuthWebhookBody = NangoAuthWebhookBodySuccess | NangoAuthWebhookBodyError;
 
 export interface NangoForwardWebhookBody {
     from: string;
@@ -57,3 +59,5 @@ export interface NangoForwardWebhookBody {
     providerConfigKey: string;
     payload: unknown;
 }
+
+export type NangoWebhookBody = NangoSyncWebhookBody | NangoAuthWebhookBody;
