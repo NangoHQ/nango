@@ -77,6 +77,7 @@ export abstract class NangoYamlParser {
 
             // --- Validate syncs
             for (const sync of integration.syncs) {
+                const usedModelsSync = new Set<string>();
                 if (sync.output) {
                     for (const output of sync.output) {
                         if (usedModels.has(output)) {
@@ -84,6 +85,7 @@ export abstract class NangoYamlParser {
                             continue;
                         }
                         usedModels.add(output);
+                        usedModelsSync.add(output);
 
                         const model = this.modelsParser.get(output)!;
                         if (!model.fields.find((field) => field.name === 'id')) {
@@ -108,6 +110,7 @@ export abstract class NangoYamlParser {
                         }
                     }
                     usedModels.add(sync.input);
+                    usedModelsSync.add(sync.input);
                 }
                 for (const endpointByVerb of sync.endpoints) {
                     for (const [verb, endpoint] of Object.entries(endpointByVerb)) {
@@ -134,19 +137,20 @@ export abstract class NangoYamlParser {
                     }
                 }
 
-                sync.usedModels = Array.from(usedModels);
+                sync.usedModels = Array.from(usedModelsSync);
             }
 
             // --- Validate actions
             for (const action of integration.actions) {
-                const usedModels = new Set<string>();
+                const usedModelsAction = new Set<string>();
                 if (action.output) {
                     for (const output of action.output) {
-                        if (usedModels.has(output)) {
+                        if (usedModelsAction.has(output)) {
                             this.errors.push(new ParserErrorDuplicateModel({ model: output, path: [integrationName, 'actions', action.name, '[output]'] }));
                             continue;
                         }
                         usedModels.add(output);
+                        usedModelsAction.add(output);
 
                         const model = this.modelsParser.get(output)!;
                         if (output.startsWith('Anonymous') && !model.fields[0]?.union) {
@@ -172,6 +176,7 @@ export abstract class NangoYamlParser {
                         }
                     }
                     usedModels.add(action.input);
+                    usedModelsAction.add(action.input);
                 }
                 if (action.endpoint) {
                     for (const [verb, endpoint] of Object.entries(action.endpoint)) {
@@ -198,7 +203,7 @@ export abstract class NangoYamlParser {
                         }
                     }
                 }
-                action.usedModels = Array.from(usedModels);
+                action.usedModels = Array.from(usedModelsAction);
             }
         }
     }

@@ -242,7 +242,15 @@ const runJob = async (
             type: 'sync',
             attributes: {},
             is_public: false,
-            version: '0'
+            version: '0',
+            active: true,
+            auto_start: false,
+            enabled: true,
+            environment_id: 1,
+            model_schema: [],
+            nango_config_id: 1,
+            runs: '',
+            webhook_subscriptions: []
         },
         sendSyncWebhook: sendSyncWebhookMock,
         syncType: SyncType.INITIAL,

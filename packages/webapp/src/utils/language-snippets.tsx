@@ -42,20 +42,22 @@ export function nodeActionSnippet({
     providerConfigKey: string;
     input?: NangoModel | NangoSyncModel;
 }) {
-    const formattedInput = input ? modelToString(input) : '';
-
     const secretKeyDisplay = isProd() ? maskedKey : secretKey;
 
-    return `import Nango from '@nangohq/node';
+    let snippet = `import Nango from '@nangohq/node';
 const nango = new Nango({ secretKey: '${secretKeyDisplay}' });
 
 const response = await nango.triggerAction(
     '${providerConfigKey}',
     '${connectionId}',
-    '${actionName}',
-${formattedInput}
-);
-`;
+    '${actionName}'`;
+    if (input && Object.keys(input).length > 0) {
+        snippet += `,
+${modelToString(input)}`;
+    }
+    snippet += `
+);`;
+    return snippet;
 }
 
 export function curlSnippet(
@@ -74,17 +76,18 @@ export function curlSnippet(
         endpoint = (Array.isArray(endpoint) ? endpoint[0][curlMethod] : endpoint[curlMethod]) as string;
     }
 
-    const formattedInput = input ? modelToString(input) : '';
+    let snippet = `curl --request ${curlMethod} \\
+--url ${baseUrl}/v1${endpoint} \\
+--header 'Authorization: Bearer ${secretKeyDisplay}' \\
+--header 'Content-Type: application/json' \\
+--header 'Connection-Id: ${connectionId}' \\
+--header 'Provider-Config-Key: ${providerConfigKey}'`;
+    if (input && Object.keys(input).length > 0) {
+        snippet += ` \\
+--data '${modelToString(input)}'`;
+    }
 
-    return `
-    curl --request ${curlMethod} \\
-    --url ${baseUrl}/v1${endpoint} \\
-    --header 'Authorization: Bearer ${secretKeyDisplay}' \\
-    --header 'Content-Type: application/json' \\
-    --header 'Connection-Id: ${connectionId}' \\
-    --header 'Provider-Config-Key: ${providerConfigKey}' ${formattedInput ? '\\' : ''}
-    ${formattedInput ? `--data '${formattedInput}'` : ''}
-        `;
+    return snippet;
 }
 
 export const autoStartSnippet = (secretKey: string, provider: string, sync: string) => {

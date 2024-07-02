@@ -94,7 +94,7 @@ export const ENVS = z.object({
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
 
     // Records
-    RECORDS_DATABASE_URL: z.string().url().optional().default('postgres://nango:nango@localhost:5432/nango'), //TODO remove default and deal with default value in the records package (ie: envVar || mainDB || localhost )
+    RECORDS_DATABASE_URL: z.string().url().optional(),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
 
     // Redis

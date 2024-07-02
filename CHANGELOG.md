@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.8] - 2024-07-02
+
+### Added
+
+- *(integrations)* Add support for Oura  (#2417) by @henrymgarrett
+- *(integrations)* Add certn implementation and cleanup other integrations (#2418) by @khaliqgant
+
+### Changed
+
+- Remove temporal (#2403) by @TBonnin
+- Send metric when tasks change state (#2429) by @TBonnin
+- Cleaning up legacy records tables (#2432) by @TBonnin
+- RECORDS_DATABASE_URL defaults to main db (#2431) by @TBonnin
+
+### Fixed
+
+- *(sdk)* Handle internal issue when reaching persist (#2416) by @bodinsamuel
+- Schedule nextDueDate should be null when schedule is not running (#2420) by @TBonnin
+- *(tracing)* Various (#2413) by @bodinsamuel
+- *(slack-notifications)* [nan-1164] dedupe slack notifications (#2421) by @khaliqgant
+- *(webapp)* [nan-1164] fix connection count when filtering (#2423) by @khaliqgant
+- *(tba-integration)* [nan 1259] support netsuite tba authorization (#2425) by @khaliqgant
+- *(tracing)* Various fix (#2422) by @bodinsamuel
+- Support post connection script execution in jobs handler (#2427) by @TBonnin
+- Create processor for post connection scripts (#2428) by @TBonnin
+- Every 1 hour" in nango.yaml -> "every1h" in UI (#2430) by @TBonnin
+- /api/v1/sync is slow (#2424) by @TBonnin
+- *(pagination)* [nan-1193] fix pagination (#2434) by @khaliqgant
+- *(syncs)* Use JSON schema and validate action input (#2426) by @bodinsamuel
+- Missing syncs in connections page (#2437) by @TBonnin
+- *(ui)* Display code snippets more appropriately (#2436) by @bodinsamuel
+- *(slack-notifications)* [nan-1164] multiple notifications on refresh error (#2433) by @khaliqgant
+
 ## [v0.40.7] - 2024-06-27
 
 ### Added
@@ -1453,6 +1486,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.8]: https://github.com/NangoHQ/nango/compare/v0.40.7..v0.40.8
 [v0.40.7]: https://github.com/NangoHQ/nango/compare/v0.40.6..v0.40.7
 [v0.40.6]: https://github.com/NangoHQ/nango/compare/v0.40.5..v0.40.6
 [v0.40.5]: https://github.com/NangoHQ/nango/compare/v0.40.4..v0.40.5

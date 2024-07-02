@@ -231,7 +231,15 @@ export class DryRunService {
                 file_location: '',
                 models: [],
                 track_deletes: false,
-                type: syncInfo?.type || 'sync'
+                type: syncInfo?.type || 'sync',
+                active: true,
+                auto_start: false,
+                enabled: true,
+                environment_id: 1,
+                model_schema: [],
+                nango_config_id: 1,
+                runs: '',
+                webhook_subscriptions: []
             },
             provider,
             input: normalizedInput as object,
