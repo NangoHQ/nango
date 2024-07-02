@@ -91,11 +91,14 @@ export class ParserErrorModelIsLiteral extends ParserError {
 }
 
 export class ParserErrorCycle extends ParserError {
-    constructor(options: { name: string }) {
+    constructor(options: { stack: Set<string> }) {
+        const arr = Array.from(options.stack);
+        const start = arr.shift();
+        const end = arr.pop();
         super({
             code: 'cyclic_model',
-            message: `Cyclic import ${options.name}->${options.name}`,
-            path: [options.name]
+            message: `Cyclic import ${start}->${end}`,
+            path: Array.from(options.stack)
         });
     }
 }
