@@ -1,4 +1,4 @@
-import type { ActiveLogIds, NangoModel } from '@nangohq/types';
+import type { ActiveLogIds, NangoModel, SyncTypeLiteral } from '@nangohq/types';
 
 export type SyncResult = Record<string, Result>;
 
@@ -46,6 +46,7 @@ export interface SyncResponse {
     models: string | string[];
     schedule_id: string;
     status: 'SUCCESS' | 'RUNNING' | 'STOPPED' | 'PAUSED' | 'ERROR';
+    sync_type: SyncTypeLiteral;
     latest_sync: {
         created_at: string;
         updated_at: string;
