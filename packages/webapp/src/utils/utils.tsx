@@ -218,10 +218,20 @@ export function formatFrequency(frequency: string): string {
         hours: 'h',
         hour: 'h',
         days: 'd',
-        day: 'd'
+        day: 'd',
+        months: 'mon',
+        month: 'mon',
+        years: 'y',
+        year: 'y'
     };
 
-    frequency = frequency.replace('every', '');
+    // 1. replace every: every 5 minutes -> 5 minutes
+    frequency = frequency.replace('every', '').trim();
+    // 2. prefix with `1` if no quantity. Ex: every day -> day -> 1day
+    if (!/^\d/.test(frequency)) {
+        frequency = '1' + frequency;
+    }
+    // 3. replace unit by shortname if possible: Ex: 5 minutes -> 5m
     for (const [unit, abbreviation] of Object.entries(unitMap)) {
         if (frequency.includes(unit)) {
             return frequency.replace(unit, abbreviation).replace(/\s/g, '');
