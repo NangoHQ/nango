@@ -88,6 +88,7 @@ bump_other_pkg "nango-yaml" "types"
 # NangoYaml
 bump_and_npm_publish "@nangohq/nango-yaml" "$VERSION"
 bump_other_pkg "cli" "nango-yaml"
+bump_other_pkg "shared" "nango-yaml"
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
