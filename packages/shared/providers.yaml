@@ -2843,6 +2843,21 @@ wealthbox:
     proxy:
         base_url: https://api.crmworkspace.com
     docs: https://docs.nango.dev/integrations/all/wealthbox
+webflow:
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: OAUTH2
+    authorization_url: https://webflow.com/oauth/authorize
+    token_url: https://api.webflow.com/oauth/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.webflow.com
+    docs: https://docs.nango.dev/integrations/all/webflow
 whoop:
     categories:
         - sports
