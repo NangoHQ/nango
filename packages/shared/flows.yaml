@@ -2897,6 +2897,10 @@ integrations:
                 endpoint: PUT /lead
                 description: Update a lead
                 output: Lead
+            get-leads:
+                endpoint: GET /leads
+                description: Fetch all leads
+                output: Lead[]
             get-schema:
                 endpoint: GET /schema
                 input: Entity
@@ -2909,7 +2913,7 @@ integrations:
                 description: Retrieve information about a company
             create-company:
                 endpoint: POST /company
-                input: Entity
+                input: Company
                 output: Company
                 description: Create a company in the system
             create-opportunity:
@@ -2917,6 +2921,11 @@ integrations:
                 input: Opportunity
                 output: Opportunity
                 description: Create an opportunity in the system
+            create-contact:
+                endpoint: POST /contact
+                input: Contact
+                output: Contact
+                description: Create a contact in the system
             list-stages:
                 endpoint: GET /stages
                 description: List all the stages that exist in the system
@@ -2928,8 +2937,10 @@ integrations:
             Entity:
                 name: string
             Location:
-                city: string
-                country: string
+                city?: string
+                state?: string
+                country?: string
+                zip?: string
             Stage:
                 id: number
                 name: string
@@ -2937,31 +2948,68 @@ integrations:
             Company:
                 name: string
                 externalId: string
+                federalAgency?: FederalAgency
                 shortName: string
                 description: string
                 id?: string
             Opportunity:
+                city?: string
+                state?: string
+                country?: string
+                zip?: string
                 name: string
                 description: string
                 id?: string
                 externalId: string
-                companyName: string
+                dueDate: string
+                federalAgency: FederalAgency
                 stage: string
                 active: boolean
             Activity:
                 createdAt: string
                 id: string
                 message: string
+            FederalAgency:
+                city?: string
+                state?: string
+                country?: string
+                zip?: string
+                companyId?: number
+                name: string
+                externalId?: string
+                acronym?: string
+                address1?: string
+                address2?: string
+                address3?: string
+                isHeadquarters?: boolean
+                parentCompanyId?: number
+                parentCompanyName?: string
+                childCount?: number
+                addrLat?: number
+                addrLong?: number
+            Contact:
+                id?: string
+                firstName: string
+                lastName: string
+                federalAgency: FederalAgency
+                position: string
+                emailAddress: string
+                phone: string
+                fax: string
             Lead:
                 createdAt?: string
                 updatedAt?: string
-                id: string
-                description: string
-                comments?: Comment[]
-                activities?: Activity[]
-                opportunity?: Opportunity
+                id?: string
+                federalAgency: FederalAgency
                 name: string
-                stage?: Stage
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
             Schema:
                 PropertyName: string
                 Group: string | null

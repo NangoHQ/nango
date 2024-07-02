@@ -1,0 +1,11 @@
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "position": "Software Engineer",
+    "emailAddress": "foo@gmail.com",
+    "phone": "123-456-7890",
+    "fax": "123-456-7890",
+    "federalAgency": {
+        "name": "Department of Defense"
+    }
+}

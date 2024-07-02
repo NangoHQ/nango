@@ -16,7 +16,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         },
         paginate: {
             response_path: 'collection'
-        }
+        },
+        retries: 10
     })) {
         for (const event of eventResponse) {
             const eventUri = event.uri;
