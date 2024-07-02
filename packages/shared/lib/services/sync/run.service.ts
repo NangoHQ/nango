@@ -21,7 +21,6 @@ import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '../../sdk/sync.js';
 import type { UpsertSummary } from '@nangohq/records';
 import type { SendSyncParams } from '@nangohq/webhooks';
-import type { RunnerFlags } from './run.utils.js';
 
 const logger = getLogger('run.service');
 
@@ -80,7 +79,6 @@ export type SyncRunConfig = {
           logCtx: LogContext;
           slackService: SlackService;
           sendSyncWebhook: (params: SendSyncParams) => Promise<void>;
-          runnerFlags: RunnerFlags;
       }
     | { writeToDb: false }
 );
