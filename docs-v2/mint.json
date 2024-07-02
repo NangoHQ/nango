@@ -366,6 +366,7 @@
                 "integrations/all/freshsales",
                 "integrations/all/freshservice",
                 "integrations/all/front",
+                "integrations/all/garmin",
                 "integrations/all/guru",
                 "integrations/all/github",
                 "integrations/all/gitlab",
