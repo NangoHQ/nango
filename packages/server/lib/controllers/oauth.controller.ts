@@ -689,7 +689,7 @@ class OAuthController {
 
         session.requestTokenSecret = tokenResult.request_token_secret;
         await oAuthSessionService.create(session);
-        const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
+        const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult, oAuth1CallbackURL);
 
         await logCtx.info('Successfully requested token. Redirecting...', {
             providerConfigKey: session.providerConfigKey,
