@@ -6,7 +6,6 @@ import { PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import type { EnvironmentAndAccount } from '@nangohq/server';
 import { Tooltip, useModal } from '@geist-ui/core';
 import type { IntegrationConfig } from '../../types';
-import { AuthModes } from '../../types';
 import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI, useEditIntegrationNameAPI } from '../../utils/api';
 import Info from '../../components/ui/Info';
 import ActionModal from '../../components/ui/ActionModal';
@@ -18,6 +17,7 @@ import TagsInput from '../../components/ui/input/TagsInput';
 
 import { useStore } from '../../store';
 import { useSWRConfig } from 'swr';
+import type { AuthModeType } from '@nangohq/types';
 
 interface AuthSettingsProps {
     integration: IntegrationConfig | null;
@@ -96,13 +96,13 @@ export default function AuthSettings(props: AuthSettingsProps) {
                 incoming_webhook_secret: { value: string };
             };
 
-            const client_secret = integration?.auth_mode === AuthModes.App ? target.private_key?.value : target.client_secret?.value;
-            const client_id = integration?.auth_mode === AuthModes.App ? target.app_id?.value : target.client_id?.value;
+            const client_secret = integration.auth_mode === 'APP' ? target.private_key?.value : target.client_secret?.value;
+            const client_id = integration.auth_mode === 'APP' ? target.app_id?.value : target.client_id?.value;
 
-            const private_key = integration?.auth_mode === AuthModes.App || AuthModes.Custom ? target.private_key?.value : target.client_secret?.value;
-            const appId = integration?.auth_mode === AuthModes.App || AuthModes.Custom ? target.app_id?.value : target.client_id?.value;
+            const private_key = integration.auth_mode === 'APP' || integration.auth_mode === 'CUSTOM' ? target.private_key?.value : target.client_secret?.value;
+            const appId = integration.auth_mode === 'APP' || integration.auth_mode === 'CUSTOM' ? target.app_id?.value : target.client_id?.value;
 
-            let custom: Record<string, string> | undefined = integration?.auth_mode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
+            let custom: Record<string, string> | undefined = integration.auth_mode === 'CUSTOM' ? { app_id: appId, private_key } : undefined;
 
             if (target.incoming_webhook_secret?.value) {
                 custom = { webhookSecret: target.incoming_webhook_secret.value };
@@ -137,17 +137,18 @@ export default function AuthSettings(props: AuthSettingsProps) {
 
             const [provider] = target.provider.value.split('|');
 
-            const client_secret = integration?.auth_mode === AuthModes.App ? target.private_key?.value : target.client_secret?.value;
-            const client_id = integration?.auth_mode === AuthModes.App ? target.app_id?.value : target.client_id?.value;
+            const client_secret = integration?.auth_mode === 'APP' ? target.private_key?.value : target.client_secret?.value;
+            const client_id = integration?.auth_mode === 'APP' ? target.app_id?.value : target.client_id?.value;
 
-            const private_key = integration?.auth_mode === AuthModes.App || AuthModes.Custom ? target.private_key?.value : target.client_secret?.value;
-            const appId = integration?.auth_mode === AuthModes.App || AuthModes.Custom ? target.app_id?.value : target.client_id?.value;
+            const private_key =
+                integration?.auth_mode === 'APP' || integration?.auth_mode === 'CUSTOM' ? target.private_key?.value : target.client_secret?.value;
+            const appId = integration?.auth_mode === 'APP' || integration?.auth_mode === 'CUSTOM' ? target.app_id?.value : target.client_id?.value;
 
-            const custom = integration?.auth_mode === AuthModes.Custom ? { app_id: appId, private_key } : undefined;
+            const custom = integration?.auth_mode === 'CUSTOM' ? { app_id: appId, private_key } : undefined;
 
             const res = await createIntegrationAPI(
                 provider,
-                integration?.auth_mode as AuthModes,
+                integration?.auth_mode as AuthModeType,
                 target.unique_key?.value,
                 client_id,
                 client_secret,
@@ -273,10 +274,10 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     <span className="text-white">{integration?.auth_mode}</span>
                 </div>
             </div>
-            {(integration?.auth_mode === AuthModes.OAuth1 ||
-                integration?.auth_mode === AuthModes.OAuth2 ||
-                integration?.auth_mode === AuthModes.Custom ||
-                integration?.auth_mode === AuthModes.TBA) && (
+            {(integration?.auth_mode === 'OAUTH1' ||
+                integration?.auth_mode === 'OAUTH2' ||
+                integration?.auth_mode === 'CUSTOM' ||
+                integration?.auth_mode === 'TBA') && (
                 <div className="flex">
                     <div className="flex flex-col">
                         <div className="flex items-center mb-1">
@@ -289,7 +290,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     </div>
                 </div>
             )}
-            {integration?.auth_mode === AuthModes.App && environment.callback_url && (
+            {integration?.auth_mode === 'APP' && environment.callback_url && (
                 <div className="flex">
                     <div className="flex flex-col">
                         <div className="flex items-center mb-1">
@@ -324,7 +325,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                 text={
                                     <>
                                         <div className="flex text-white text-sm">
-                                            <p>{`Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks.${integration?.auth_mode === AuthModes.Custom ? ' Use this for github organizations that need app approvals.' : ''}`}</p>
+                                            <p>{`Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks.${integration?.auth_mode === 'CUSTOM' ? ' Use this for github organizations that need app approvals.' : ''}`}</p>
                                         </div>
                                     </>
                                 }
@@ -337,7 +338,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             <CopyButton text={`${environment.webhook_receive_url}/${integrationId}`} dark />
                         </div>
                     </div>
-                    {(integration?.auth_mode === AuthModes.App || integration?.auth_mode === AuthModes.Custom) && integration?.webhook_secret && (
+                    {(integration?.auth_mode === 'APP' || integration?.auth_mode === 'CUSTOM') && integration?.webhook_secret && (
                         <div className="flex flex-col">
                             <div className="flex items-center mb-1">
                                 <span className="text-gray-400 text-xs uppercase">Webhook Secret</span>
@@ -392,10 +393,10 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     )}
                 </>
             )}
-            {(integration?.auth_mode === AuthModes.Basic || integration?.auth_mode === AuthModes.ApiKey) && (
+            {(integration?.auth_mode === 'BASIC' || integration?.auth_mode === 'API_KEY') && (
                 <Info size={20} color="blue">
-                    The &quot;{integration?.provider}&quot; integration provider uses {integration?.auth_mode === AuthModes.Basic ? 'basic auth' : 'API Keys'}{' '}
-                    for authentication (
+                    The &quot;{integration?.provider}&quot; integration provider uses {integration?.auth_mode === 'BASIC' ? 'basic auth' : 'API Keys'} for
+                    authentication (
                     <a
                         href="https://docs.nango.dev/integrate/guides/authorize-an-api"
                         className="text-white underline hover:text-text-light-blue"
@@ -407,7 +408,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     ).
                 </Info>
             )}
-            {(integration?.auth_mode === AuthModes.App || integration?.auth_mode === AuthModes.Custom) && (
+            {(integration?.auth_mode === 'APP' || integration?.auth_mode === 'CUSTOM') && (
                 <>
                     <div className="flex">
                         <div className="flex flex-col w-1/2">
@@ -417,9 +418,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     id="app_id"
                                     name="app_id"
                                     type="text"
-                                    defaultValue={
-                                        integration ? (integration?.auth_mode === AuthModes.Custom ? integration.custom?.app_id : integration.client_id) : ''
-                                    }
+                                    defaultValue={integration ? (integration?.auth_mode === 'CUSTOM' ? integration.custom?.app_id : integration.client_id) : ''}
                                     placeholder="Obtain the app id from the app page."
                                     autoComplete="new-password"
                                     required
@@ -468,11 +467,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     id="private_key"
                                     name="private_key"
                                     defaultValue={
-                                        integration
-                                            ? integration?.auth_mode === AuthModes.Custom
-                                                ? integration.custom?.private_key
-                                                : integration.client_secret
-                                            : ''
+                                        integration ? (integration?.auth_mode === 'CUSTOM' ? integration.custom?.private_key : integration.client_secret) : ''
                                     }
                                     additionalclass={`w-full`}
                                     required
@@ -482,10 +477,10 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     </div>
                 </>
             )}
-            {(integration?.auth_mode === AuthModes.OAuth1 ||
-                integration?.auth_mode === AuthModes.OAuth2 ||
-                integration?.auth_mode === AuthModes.Custom ||
-                integration?.auth_mode === AuthModes.TBA) && (
+            {(integration?.auth_mode === 'OAUTH1' ||
+                integration?.auth_mode === 'OAUTH2' ||
+                integration?.auth_mode === 'CUSTOM' ||
+                integration?.auth_mode === 'TBA') && (
                 <>
                     <div className="flex flex-col">
                         <div className="flex items-center mb-1">
@@ -526,7 +521,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             />
                         </div>
                     </div>
-                    {integration?.auth_mode !== AuthModes.Custom && integration?.auth_mode !== AuthModes.TBA && (
+                    {integration?.auth_mode !== 'CUSTOM' && integration?.auth_mode !== 'TBA' && (
                         <div className="flex flex-col">
                             <div className="flex items-center mb-1">
                                 <span className="text-gray-400 text-xs">Scopes</span>
@@ -540,7 +535,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
             )}
             <div className="pb-4">
                 <div className="flex justify-between">
-                    {(!integration || (integration?.auth_mode !== AuthModes.Basic && integration?.auth_mode !== AuthModes.ApiKey)) && (
+                    {(!integration || (integration?.auth_mode !== 'BASIC' && integration?.auth_mode !== 'API_KEY')) && (
                         <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
                             Save
                         </button>
