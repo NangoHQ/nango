@@ -6,7 +6,7 @@ import { findStage } from '../helpers/find-stage.js';
 import { toOpportunity } from '../mappers/to-opportunity.js';
 
 export default async function runAction(nango: NangoAction, input: Opportunity): Promise<Opportunity> {
-    if (!input.companyName) {
+    if (!input.federalAgency || !input.federalAgency.name) {
         throw new nango.ActionError({
             message: 'Company Name is required to create an opportunity',
             code: 'missing_company_name'
@@ -27,7 +27,8 @@ export default async function runAction(nango: NangoAction, input: Opportunity):
         });
     }
 
-    const company = await getOrCreateCompany(nango, input.companyName);
+    const company = await getOrCreateCompany(nango, input.federalAgency);
+    const companyId = Number(company.id);
 
     const stage = await findStage(nango, input.stage);
 
@@ -39,9 +40,14 @@ export default async function runAction(nango: NangoAction, input: Opportunity):
     }
 
     const opportunity: CreateUnanetOpportunity = {
-        ClientId: Number(company.id),
+        ClientId: Number(companyId),
         ClientName: company.name,
         OpportunityName: input.name,
+        CloseDate: input.dueDate,
+        OpportunityDescription: input.description,
+        City: input.city || '',
+        State: input.state || '',
+        Country: input.country || '',
         Stage: input.stage,
         StageId: stage.id,
         ActiveInd: Number(input.active || true)
@@ -52,5 +58,5 @@ export default async function runAction(nango: NangoAction, input: Opportunity):
         data: [opportunity]
     });
 
-    return toOpportunity(response.data[0]);
+    return toOpportunity(response.data[0], input);
 }

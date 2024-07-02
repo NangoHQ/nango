@@ -16,7 +16,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         },
         paginate: {
             response_path: 'collection'
-        }
+        },
+        retries: 10
     })) {
         const events: Event[] = [];
         const cancelledEvents: Event[] = [];

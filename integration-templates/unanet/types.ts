@@ -62,13 +62,137 @@ export interface UnanetCompany {
     Sector: string;
     ROW_VERSION: string;
     version_userName: string;
+    Addresses?: Address[];
     version_device: string;
     AddrLat: number;
     AddrLong: number;
     isConfidential: boolean;
 }
 
-export type CreateUnanetOpportunity = Partial<UnanetOpportunity> & Pick<UnanetOpportunity, 'ClientId' | 'ClientName' | 'OpportunityName' | 'Stage' | 'StageId'>;
+interface Address {
+    AddressID?: number;
+    CompanyId?: number;
+    AddressTypeName: string; // Required
+    defaultInd?: boolean;
+    createdate?: Date;
+    Address1?: string;
+    Address2?: string;
+    City?: string;
+    PostalCode?: string;
+    StateAbrv?: string;
+    CountryName?: string;
+    Comments?: string;
+    deleterecord?: boolean;
+    OfficePhone?: string;
+    OfficeFax?: string;
+    isAddressVerified?: boolean;
+    AddrVerifiedDateTime?: Date;
+    AddrVerifiedMethod?: string;
+    AddrLat?: number;
+    AddrLong?: number;
+    County?: string;
+    CongressDistrict?: string;
+    CarrierRoute?: string;
+    OfficeSecPhone?: string;
+    version_userName?: string;
+    version_device?: string;
+    ROW_VERSION?: Uint8Array;
+}
+
+export interface UnanetContact {
+    ContactId?: number;
+    CompanyId?: number;
+    CompanyName?: string;
+    Prefix?: string;
+    FirstName: string;
+    MiddleName?: string;
+    LastName: string;
+    Suffix?: string;
+    Title?: string;
+    FormalName?: string;
+    NickName?: string;
+    Email?: string;
+    IsPrimaryContact?: boolean;
+    IsPrivate?: number;
+    IsActive?: number;
+    DeleteRecord?: boolean;
+    HomeEMailAddress?: string;
+    BusinessEmailAddress?: string;
+    AssistantName?: string;
+    AssistantTitle?: string;
+    AssistantPhone?: string;
+    AssistantEmail?: string;
+    Notes?: string;
+    Department?: string;
+    Birthday?: Date;
+    SpouseName?: string;
+    SpouseBirthDay?: Date;
+    ExternalId?: string;
+    ImportedRecord?: number;
+    SameAsCompanyInd?: number;
+    customField1?: string;
+    customField2?: string;
+    customField3?: string;
+    customField4?: string;
+    IndividualShortText1?: string;
+    IndividualShortText2?: string;
+    IndividualShortText3?: string;
+    IndividualShortText4?: string;
+    IndividualShortText5?: string;
+    IndividualLongText1?: string;
+    IndividualLongText2?: string;
+    IndividualLongText3?: string;
+    IndividualLongText4?: string;
+    IndividualLongText5?: string;
+    IndividualNumber1?: number;
+    IndividualNumber2?: number;
+    IndividualDate1?: Date;
+    IndividualDate2?: Date;
+    IndividualValueListID1?: number;
+    IndividualValueListID2?: number;
+    IndividualMoney1?: number;
+    IndividualMoney2?: number;
+    IndividualValueListID3?: number;
+    importTypeID?: number;
+    MailingStatusID?: number;
+    twitterURL?: string;
+    linkedinURL?: string;
+    CreateDateTime?: Date;
+    CreatedByUserId?: number;
+    LastModifiedDateTime?: Date;
+    LastModifiedByUserId?: number;
+    LastDeletedDateTime?: Date;
+    LastDeletedByUserId?: number;
+    ROW_VERSION?: Uint8Array;
+    CompanyAddressID?: number;
+    Contact_Category?: any[];
+    AdvMailLists?: any[];
+    Divisions?: any[];
+    Offices?: any[];
+    PracticeAreas?: any[];
+    Studios?: any[];
+    Territories?: any[];
+    Relationships?: any[];
+    Contact_MailingList?: any[];
+    Contact_ContactTypes?: any[];
+    Company?: any;
+    Addresses?: Address[];
+    Images?: any[];
+    personnelreferences?: any[];
+    Opportunities?: any[];
+    Projects?: any[];
+    InfluenceLevel?: any;
+    Social?: any[];
+    Emails?: any;
+    ProfileImageUrl?: string;
+    EmailMarketing?: any[];
+}
+
+type PartialExcept<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+export type UnanetCompanyWithRequiredName = PartialExcept<UnanetCompany, 'Name'>;
+
+export type CreateUnanetOpportunity = PartialExcept<UnanetOpportunity, 'ClientId' | 'ClientName' | 'OpportunityName' | 'Stage' | 'StageId'>;
 
 export interface UnanetOpportunity {
     OpportunityId: number;
@@ -78,7 +202,7 @@ export interface UnanetOpportunity {
     SF330Form: number;
     OpportunityName: string;
     EstimatedSelectionDate: Date;
-    CloseDate: Date;
+    CloseDate: string;
     Cost: number;
     Size: number;
     SizeUnit: string;
@@ -231,6 +355,26 @@ export interface UnanetOpportunity {
     ClonedFrom: object;
 }
 
+export interface PotentialClient {
+    CompanyId: number;
+    Name: string;
+    ExternalId?: string;
+    Acronym?: string;
+    Address1?: string;
+    Address2?: string;
+    Address3?: string;
+    City?: string;
+    State?: string;
+    zip?: string;
+    Country?: string;
+    IsHeadquarters?: boolean;
+    ParentCompanyId?: number;
+    ParentCompanyName?: string;
+    ChildCount?: number;
+    AddrLat?: number;
+    AddrLong?: number;
+}
+
 export interface UnanetLead {
     LeadId?: number;
     Name: string;
@@ -284,7 +428,7 @@ export interface UnanetLead {
     recordsource?: any[];
     Opportunity?: UnanetOpportunity[][];
     AssociatedContacts?: any[];
-    PotentialClient?: any;
+    PotentialClient?: PotentialClient;
     Naics?: any[];
 }
 
