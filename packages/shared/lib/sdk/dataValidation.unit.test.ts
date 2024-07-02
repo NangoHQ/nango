@@ -64,4 +64,16 @@ describe('validateInput', () => {
             }
         ]);
     });
+
+    it('should not throw if invalid json schema', () => {
+        const val = validateInput({
+            input: { foo: 'bar' },
+            modelName: 'Test',
+            jsonSchema: {
+                definitions: { Test: { type: 'object', properties: { ref: { $ref: '#/definitions/NotFound' } } } }
+            }
+        });
+        // Stringify because it's an exotic error object
+        expect(JSON.parse(JSON.stringify(val))).toStrictEqual([{ missingRef: '#/definitions/NotFound', missingSchema: '' }]);
+    });
 });
