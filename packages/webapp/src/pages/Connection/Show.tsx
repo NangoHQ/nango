@@ -332,7 +332,6 @@ We could not retrieve and/or refresh your access token due to the following erro
                         reload={reload}
                         loaded={loaded}
                         syncLoaded={!syncLoading}
-                        env={env}
                     />
                 )}
                 {activeTab === Tabs.Authorization && (

@@ -44,9 +44,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({ size
     }
 
     return (
-        <button ref={ref} className={cn(buttonStyles({ className, variant, size }), 'flex gap-2 items-center', isLoading && 'opacity-0')} {...props}>
+        <button ref={ref} className={cn(buttonStyles({ className, variant, size }), 'relative flex gap-2 items-center', isLoading && 'opacity-0')} {...props}>
             {children}
-            {isLoading && <Loader className="absolute animate-spin top-0 flex mx-auto inset-x-0 h-full" />}
+            {isLoading && <Loader className="animate-spin flex inset-x-0 h-full" />}
         </button>
     );
 });

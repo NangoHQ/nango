@@ -3,7 +3,7 @@ import db, { schema, dbNamespace } from '@nangohq/database';
 import type { Sync, Job as SyncJob } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
-import type { ActiveLogIds, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences } from '@nangohq/types';
+import type { ActiveLogIds, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences, SyncTypeLiteral } from '@nangohq/types';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey,
@@ -160,13 +160,14 @@ export const getSyncByIdAndName = async (nangoConnectionId: number, name: string
 export const getSyncs = async (
     nangoConnection: Connection,
     orchestrator: Orchestrator
-): Promise<(Sync & { status: SyncStatus; active_logs: ActiveLogIds })[]> => {
+): Promise<(Sync & { sync_type: SyncTypeLiteral; status: SyncStatus; active_logs: ActiveLogIds })[]> => {
     const q = db.knex
         .with('syncs', (qb) => {
             qb.from<Sync>(TABLE)
                 .select(
                     `${TABLE}.*`,
                     `${TABLE}.frequency as frequency_override`,
+                    `${SYNC_CONFIG_TABLE}.sync_type`,
                     `${SYNC_CONFIG_TABLE}.runs as frequency`,
                     `${SYNC_CONFIG_TABLE}.models`,
                     `${ACTIVE_LOG_TABLE}.log_id as error_log_id`,
