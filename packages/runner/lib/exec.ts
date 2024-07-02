@@ -8,7 +8,8 @@ import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
 import tracer from 'dd-trace';
-import { stringifyError } from '@nangohq/utils';
+import { metrics, stringifyError } from '@nangohq/utils';
+import { logger } from './utils.js';
 
 export async function exec(
     nangoProps: NangoProps,
@@ -96,7 +97,14 @@ export async function exec(
                             jsonSchema: nangoProps.syncConfig.models_json_schema
                         });
                         if (Array.isArray(val)) {
-                            return { success: false, response: null, error: { type: 'invalid_action_input', status: 400, payload: val } };
+                            console.log(nangoProps.runnerFlags);
+                            metrics.increment(metrics.Types.RUNNER_INVALID_ACTION_INPUT);
+                            if (nangoProps.runnerFlags?.validateActionInput) {
+                                return { success: false, response: null, error: { type: 'invalid_action_input', status: 400, payload: val } };
+                            } else {
+                                nango.log('Invalid action input', { validation: val }, { level: 'warn' });
+                                logger.error('data_validation_invalid_action_input');
+                            }
                         }
                     }
 

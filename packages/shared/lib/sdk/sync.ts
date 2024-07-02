@@ -10,6 +10,7 @@ import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangohq/utils';
 import type { SyncConfig } from '../models/Sync.js';
+import type { RunnerFlags } from '../services/sync/run.utils.js';
 
 const logger = getLogger('SDK');
 
@@ -280,6 +281,7 @@ export interface NangoProps {
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
+    runnerFlags?: RunnerFlags | undefined;
 }
 
 export interface EnvironmentVariable {
