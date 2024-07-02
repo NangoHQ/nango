@@ -63,14 +63,14 @@ export default function Scripts(props: ScriptProps) {
                     <Table.Table className="table-fixed">
                         <Table.Header>
                             <Table.Row>
-                                <Table.Head className="w-[150px]">
+                                <Table.Head className="w-[200px]">
                                     <div className="flex w-18 items-center">
                                         <ArrowPathRoundedSquareIcon className="flex h-4 w-4 mr-1" />
                                         Sync Scripts
                                     </div>
                                 </Table.Head>
                                 <Table.Head className="w-[200px]">Models</Table.Head>
-                                <Table.Head className="w-[400px]">Description</Table.Head>
+                                <Table.Head className="w-[300px]">Description</Table.Head>
                                 <Table.Head className="w-[100px]">Source</Table.Head>
                                 <Table.Head className="w-[100px]">Enabled</Table.Head>
                             </Table.Row>
@@ -87,13 +87,11 @@ export default function Scripts(props: ScriptProps) {
                                             <Table.Cell bordered>{flow.name}</Table.Cell>
                                             <Table.Cell bordered>
                                                 <Tooltip text={Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns} type="dark">
-                                                    <div className="w-36 max-w-3xl truncate">
-                                                        {Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns}
-                                                    </div>
+                                                    <div className="truncate">{Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns}</div>
                                                 </Tooltip>
                                             </Table.Cell>
                                             <Table.Cell bordered>
-                                                <div className="w-72 max-w-3xl truncate">{flow.description}</div>
+                                                <div className="truncate">{flow.description}</div>
                                             </Table.Cell>
                                             <Table.Cell bordered>{flow.is_public ? 'Template' : 'Custom'}</Table.Cell>
                                             <Table.Cell bordered onClick={(e) => e.stopPropagation()}>
@@ -118,13 +116,13 @@ export default function Scripts(props: ScriptProps) {
                     <Table.Table className="table-fixed">
                         <Table.Header>
                             <Table.Row>
-                                <Table.Head className="w-[150px]">
-                                    <div className="flex w-18 items-center">
+                                <Table.Head className="w-[200px]">
+                                    <div className="flex items-center">
                                         <BoltIcon className="flex h-4 w-4 mr-1" />
                                         Actions Scripts
                                     </div>
                                 </Table.Head>
-                                <Table.Head className="w-[600px]">Description</Table.Head>
+                                <Table.Head className="w-[500px]">Description</Table.Head>
                                 <Table.Head className="w-[100px]">Source</Table.Head>
                                 <Table.Head className="w-[100px]">Enabled</Table.Head>
                             </Table.Row>
@@ -140,7 +138,7 @@ export default function Scripts(props: ScriptProps) {
                                         >
                                             <Table.Cell bordered>{flow.name}</Table.Cell>
                                             <Table.Cell bordered>
-                                                <div className="w-72 max-w-3xl truncate">{flow.description}</div>
+                                                <div className="truncate">{flow.description}</div>
                                             </Table.Cell>
                                             <Table.Cell bordered>{flow.is_public ? 'Template' : 'Custom'}</Table.Cell>
                                             <Table.Cell bordered onClick={(e) => e.stopPropagation()}>

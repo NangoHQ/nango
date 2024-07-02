@@ -16,7 +16,7 @@ export class RemoteRunner implements Runner {
     }
 
     suspend() {
-        logger.warn('cannot suspend a remote runner');
+        logger.warning('cannot suspend a remote runner');
     }
 
     toJSON() {

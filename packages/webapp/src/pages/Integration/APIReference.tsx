@@ -57,8 +57,8 @@ export default function APIReference(props: APIReferenceProps) {
                     <Table.Table className="table-fixed">
                         <Table.Header>
                             <Table.Row>
-                                <Table.Head className="w-[250px]">Endpoint</Table.Head>
-                                <Table.Head className="w-[600px]">Description</Table.Head>
+                                <Table.Head className="w-[300px]">Endpoint</Table.Head>
+                                <Table.Head className="w-[400px]">Description</Table.Head>
                                 <Table.Head className="w-[60px]">Enabled</Table.Head>
                             </Table.Row>
                         </Table.Header>

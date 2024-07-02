@@ -41,6 +41,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
     const [showInterruptLoader, setShowInterruptLoader] = useState(false);
     const [showTriggerIncrementalLoader, setShowTriggerIncrementalLoader] = useState(false);
     const [modalSpinner, setModalShowSpinner] = useState(false);
+    const [openConfirm, setOpenConfirm] = useState(false);
 
     const confirmFullRefresh = async () => {
         if (!sync || syncCommandButtonsDisabled) {
@@ -61,6 +62,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
 
         setModalShowSpinner(false);
         setSyncCommandButtonsDisabled(false);
+        setOpenConfirm(false);
     };
 
     const logUrl = useMemo(() => {
@@ -101,13 +103,13 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
 
     return (
         <Table.Row>
-            <Table.Cell>
+            <Table.Cell bordered>
                 <div className="w-36 max-w-3xl ml-1 truncate">{sync.name}</div>
             </Table.Cell>
-            <Table.Cell>
+            <Table.Cell bordered>
                 <div className="w-36 max-w-3xl truncate">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</div>
             </Table.Cell>
-            <Table.Cell>
+            <Table.Cell bordered>
                 <Link to={logUrl} title="See execution logs">
                     {sync.status === 'PAUSED' && (
                         <Tag bgClassName="bg-yellow-500 bg-opacity-30" textClassName="text-yellow-500">
@@ -131,8 +133,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                     )}
                 </Link>
             </Table.Cell>
-            <Table.Cell>{formatFrequency(sync.frequency)}</Table.Cell>
-            <Table.Cell>
+            <Table.Cell bordered>{formatFrequency(sync.frequency)}</Table.Cell>
+            <Table.Cell bordered>
                 {sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
                     <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync?.result, sync.latest_sync?.models)}</pre>} type="dark">
                         <Link to={logUrl} className="block w-32 ml-1">
@@ -145,7 +147,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                     </Link>
                 )}
             </Table.Cell>
-            <Table.Cell>
+            <Table.Cell bordered>
                 {sync.schedule_status === 'STARTED' && (
                     <>
                         {interpretNextRun(sync.futureActionTimes) === '-' ? (
@@ -158,8 +160,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                 {sync.schedule_status === 'STARTED' && !sync.futureActionTimes && <span className="">-</span>}
                 {sync.schedule_status !== 'STARTED' && <span className="">-</span>}
             </Table.Cell>
-            <Table.Cell>{getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}</Table.Cell>
-            <Table.Cell>
+            <Table.Cell bordered>{getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}</Table.Cell>
+            <Table.Cell bordered>
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button variant={'zombie'}>
@@ -257,7 +259,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                 )}
 
                                 {sync.status !== 'RUNNING' && (
-                                    <Dialog>
+                                    <Dialog open={openConfirm} onOpenChange={setOpenConfirm}>
                                         <DialogTrigger asChild>
                                             <Button variant="zombie" className="w-full" disabled={syncCommandButtonsDisabled} isLoading={modalSpinner}>
                                                 <ArrowPathRoundedSquareIcon className="flex h-6 w-6" />
