@@ -1,5 +1,28 @@
 import type { ParamsSerializerOptions } from 'axios';
-import type { NangoSyncWebhookBodySuccess, NangoSyncWebhookBodyError, NangoAuthWebhookBodySuccess, NangoAuthWebhookBodyError } from '@nangohq/types';
+import type {
+    NangoSyncWebhookBodySuccess,
+    NangoSyncWebhookBodyError,
+    NangoAuthWebhookBodySuccess,
+    NangoAuthWebhookBodyError,
+    NangoWebhookBody,
+    AuthOperation,
+    AuthOperationType,
+    AuthModeType,
+    AuthModes,
+    HTTP_VERB,
+    NangoSyncEndpoint,
+    AllAuthCredentials,
+    OAuth1Credentials,
+    OAuth2Credentials,
+    OAuth2ClientCredentials,
+    BasicApiCredentials,
+    ApiKeyCredentials,
+    AppCredentials,
+    AppStoreCredentials,
+    UnauthCredentials,
+    CustomCredentials,
+    TbaCredentials
+} from '@nangohq/types';
 
 export type {
     NangoSyncWebhookBodySuccess,
@@ -9,8 +32,27 @@ export type {
     NangoAuthWebhookBodySuccess,
     /** @deprecated use NangoAuthWebhookBodySuccess */
     NangoAuthWebhookBodySuccess as NangoAuthWebhookBody,
-    NangoAuthWebhookBodyError
+    NangoAuthWebhookBodyError,
+    NangoWebhookBody
 };
+export type {
+    AuthOperation,
+    AuthOperationType,
+    AuthModeType,
+    AuthModes,
+    AllAuthCredentials,
+    OAuth1Credentials,
+    OAuth2Credentials,
+    OAuth2ClientCredentials,
+    BasicApiCredentials,
+    ApiKeyCredentials,
+    AppCredentials,
+    AppStoreCredentials,
+    UnauthCredentials,
+    CustomCredentials,
+    TbaCredentials
+};
+export type { HTTP_VERB, NangoSyncEndpoint };
 
 export interface NangoProps {
     host?: string;
@@ -25,7 +67,7 @@ export interface NangoProps {
 export interface CreateConnectionOAuth1 extends OAuth1Credentials {
     connection_id: string;
     provider_config_key: string;
-    type: AuthModes.OAuth1;
+    type: AuthModes['OAuth1'];
 }
 
 export interface OAuth1Token {
@@ -36,46 +78,7 @@ export interface OAuth1Token {
 export interface CreateConnectionOAuth2 extends OAuth2Credentials {
     connection_id: string;
     provider_config_key: string;
-    type: AuthModes.OAuth2;
-}
-
-export enum AuthModes {
-    OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2',
-    OAuth2CC = 'OAUTH2_CC',
-    Basic = 'BASIC',
-    ApiKey = 'API_KEY',
-    AppStore = 'APP_STORE',
-    Custom = 'CUSTOM',
-    App = 'APP',
-    None = 'NONE',
-    TBA = 'TBA'
-}
-
-export interface CredentialsCommon<T = Record<string, any>> {
-    type: AuthModes;
-    raw: T;
-}
-
-export interface OAuth1Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth1;
-    oauth_token: string;
-    oauth_token_secret: string;
-}
-
-export interface OAuth2Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth2;
-    access_token: string;
-
-    refresh_token?: string;
-    expires_at?: Date | undefined;
-}
-
-export interface AppCredentials extends CredentialsCommon {
-    type: AuthModes.App;
-    access_token: string;
-    expires_at?: Date | undefined;
-    raw: Record<string, any>;
+    type: AuthModes['OAuth2'];
 }
 
 export interface ProxyConfiguration {
@@ -125,19 +128,6 @@ export interface ListRecordsRequestConfig {
     cursor?: string | null;
 }
 
-export interface BasicApiCredentials extends CredentialsCommon {
-    type: AuthModes.Basic;
-    username: string;
-    password: string;
-}
-
-export interface ApiKeyCredentials extends CredentialsCommon {
-    type: AuthModes.ApiKey;
-    apiKey: string;
-}
-
-type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
-
 export type Metadata = Record<string, unknown>;
 
 export interface MetadataChangeResponse {
@@ -157,7 +147,7 @@ export interface Connection {
     metadata?: Metadata | null;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
-    credentials: AuthCredentials;
+    credentials: AllAuthCredentials;
 }
 
 export interface ConnectionList {
@@ -257,12 +247,6 @@ export interface NangoSyncModel {
     description?: string;
     fields: NangoSyncModelField[];
 }
-
-export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
-
-export type NangoSyncEndpoint = {
-    [key in HTTP_VERB]?: string;
-};
 
 export interface NangoSyncConfig {
     name: string;

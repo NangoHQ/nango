@@ -1,6 +1,7 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
-import type { AuthModes, RunSyncCommand, PreBuiltFlow } from '../types';
+import type { RunSyncCommand, PreBuiltFlow } from '../types';
+import type { AuthModeType } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
     return await fetch(input, {
@@ -362,7 +363,7 @@ export function useCreateIntegrationAPI(env: string) {
 
     return async (
         provider: string,
-        authMode: AuthModes,
+        authMode: AuthModeType,
         providerConfigKey: string,
         clientId: string,
         clientSecret: string,
@@ -428,7 +429,7 @@ export function useEditIntegrationAPI(env: string) {
 
     return async (
         provider: string,
-        authMode: AuthModes,
+        authMode: AuthModeType,
         providerConfigKey: string,
         clientId: string,
         clientSecret: string,
