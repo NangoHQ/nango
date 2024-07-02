@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.40.9] - 2024-07-02
+
+### Fixed
+
+- *(integration-templates)* [nan-1298] unanet updates (#2438) by @khaliqgant
+- Pinning CLI dependencies (#2439) by @TBonnin
+- *(ui)* Integration table style + wording (#2435) by @bodinsamuel
+
 ## [v0.40.8] - 2024-07-02
 
 ### Added
@@ -1486,6 +1494,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.40.9]: https://github.com/NangoHQ/nango/compare/v0.40.8..v0.40.9
 [v0.40.8]: https://github.com/NangoHQ/nango/compare/v0.40.7..v0.40.8
 [v0.40.7]: https://github.com/NangoHQ/nango/compare/v0.40.6..v0.40.7
 [v0.40.6]: https://github.com/NangoHQ/nango/compare/v0.40.5..v0.40.6
