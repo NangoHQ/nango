@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
 import type { NangoConfigMetadata, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
 import type { SyncType } from './Sync.js';
+import type { JSONSchema7 } from 'json-schema';
 
 export interface NangoIntegrationDataV1 {
     type?: ScriptTypeLiteral;
@@ -132,6 +133,7 @@ export interface NangoSyncConfig {
     nango_yaml_version?: string;
     webhookSubscriptions?: string[];
     enabled?: boolean;
+    json_schema: JSONSchema7 | null;
 
     layout_mode: LayoutMode;
 }

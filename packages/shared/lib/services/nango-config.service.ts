@@ -124,7 +124,8 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints: sync?.endpoints || [],
                 nango_yaml_version: 'v1',
-                layout_mode
+                layout_mode,
+                json_schema: null
             };
 
             if (sync.type === 'action') {
@@ -371,13 +372,15 @@ function buildSyncs({
             return { success: false, error: modelError, response: null };
         }
 
-        const inputModel: NangoSyncModel = {} as NangoSyncModel;
+        let inputModel: NangoSyncModel | undefined = undefined;
 
         if (sync.input) {
             const modelFields = getFieldsForModel(sync.input, config) as { name: string; type: string }[];
             if (modelFields) {
-                inputModel.name = sync.input;
-                inputModel.fields = modelFields;
+                inputModel = {
+                    name: sync.input,
+                    fields: modelFields
+                };
             }
         }
 
@@ -463,7 +466,8 @@ function buildSyncs({
             nango_yaml_version: sync.nango_yaml_version || 'v2',
             webhookSubscriptions,
             enabled,
-            layout_mode: localFileService.getLayoutMode(syncName, providerConfigKey, 'sync')
+            layout_mode: localFileService.getLayoutMode(syncName, providerConfigKey, 'sync'),
+            json_schema: null
         };
 
         if (sync.id) {
@@ -509,7 +513,7 @@ function buildActions({
             return { success: false, error: modelError, response: null };
         }
 
-        let inputModel: NangoSyncModel = {} as NangoSyncModel;
+        let inputModel: NangoSyncModel | undefined = undefined;
 
         if (action.input) {
             if (action.input.includes('{') && action.input.includes('}')) {
@@ -522,8 +526,10 @@ function buildActions({
             }
             const modelFields = getFieldsForModel(action.input, config) as { name: string; type: string }[];
             if (modelFields) {
-                inputModel.name = action.input;
-                inputModel.fields = modelFields;
+                inputModel = {
+                    name: action.input,
+                    fields: modelFields
+                };
             }
         }
 
@@ -544,7 +550,7 @@ function buildActions({
 
             endpoints = assignEndpoints(actionEndpoint, 'POST', false, showMessages);
             if (actionEndpoint?.includes('{') && actionEndpoint.includes('}')) {
-                const { success, error, response } = parseModelInEndpoint(actionEndpoint, allModelNames, inputModel, config);
+                const { success, error, response } = parseModelInEndpoint(actionEndpoint, allModelNames, inputModel!, config);
                 if (!success || !response) {
                     return { success, error, response: null };
                 }
@@ -582,7 +588,8 @@ function buildActions({
             endpoints,
             nango_yaml_version: action.nango_yaml_version || 'v2',
             enabled,
-            layout_mode: localFileService.getLayoutMode(actionName, providerConfigKey, 'action')
+            layout_mode: localFileService.getLayoutMode(actionName, providerConfigKey, 'action'),
+            json_schema: null
         };
 
         if (action.id) {

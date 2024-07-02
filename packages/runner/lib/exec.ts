@@ -1,6 +1,6 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { AxiosError } from 'axios';
-import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes } from '@nangohq/shared';
+import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateInput } from '@nangohq/shared';
 import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
@@ -87,6 +87,19 @@ export async function exec(
                     if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
                         inputParams = undefined;
                     }
+
+                    // Validate action input against json schema
+                    if (inputParams) {
+                        const val = validateInput({
+                            input: inputParams,
+                            modelName: nangoProps.syncConfig.input,
+                            jsonSchema: nangoProps.syncConfig.models_json_schema
+                        });
+                        if (Array.isArray(val)) {
+                            return { success: false, response: null, error: { type: 'invalid_action_input', status: 400, payload: val } };
+                        }
+                    }
+
                     return await scriptExports.default(nango, inputParams);
                 } else {
                     return await scriptExports.default(nango);

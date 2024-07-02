@@ -142,7 +142,7 @@ export const connectionRefreshSuccess = async ({
 
     const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
 
-    void slackNotificationService.removeFailingConnection(connection, connection.connection_id, 'auth', null, environment.id, config.provider);
+    await slackNotificationService.removeFailingConnection(connection, connection.connection_id, 'auth', null, environment.id, config.provider);
 };
 
 export const connectionRefreshFailed = async ({
@@ -185,7 +185,7 @@ export const connectionRefreshFailed = async ({
 
     const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
 
-    void slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
+    await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
 };
 
 export const connectionTest = async (

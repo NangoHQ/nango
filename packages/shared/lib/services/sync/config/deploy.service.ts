@@ -18,6 +18,7 @@ import type { Environment } from '../../../models/Environment.js';
 import type { Account } from '../../../models/Admin.js';
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { Merge } from 'type-fest';
+import type { JSONSchema7 } from 'json-schema';
 
 const TABLE = dbNamespace + 'sync_configs';
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
@@ -31,6 +32,7 @@ export async function deploy({
     environment,
     account,
     flows,
+    jsonSchema,
     postConnectionScriptsByProvider,
     nangoYamlBody,
     logContextGetter,
@@ -40,6 +42,7 @@ export async function deploy({
     environment: Environment;
     account: Account;
     flows: IncomingFlowConfig[];
+    jsonSchema?: JSONSchema7 | undefined;
     postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
     nangoYamlBody: string;
     logContextGetter: LogContextGetter;
@@ -71,6 +74,7 @@ export async function deploy({
 
         const { success, error, response } = await compileDeployInfo({
             flow: flowParsed,
+            jsonSchema,
             env,
             environment_id: environment.id,
             account,
@@ -512,6 +516,7 @@ export async function deployPreBuilt({
 
 async function compileDeployInfo({
     flow,
+    jsonSchema,
     env,
     environment_id,
     account,
@@ -520,6 +525,7 @@ async function compileDeployInfo({
     orchestrator
 }: {
     flow: FlowParsed;
+    jsonSchema?: JSONSchema7 | undefined;
     env: string;
     environment_id: number;
     account: Account;
@@ -629,6 +635,40 @@ async function compileDeployInfo({
         shouldCap = await connectionService.shouldCapUsage({ providerConfigKey, environmentId: environment_id, type: 'deploy' });
     }
 
+    // Only store relevant JSON schema
+    const flowJsonSchema: JSONSchema7 = {
+        definitions: {}
+    };
+    if (jsonSchema) {
+        for (const model of model_schema) {
+            const schema = jsonSchema.definitions![model.name];
+            if (!schema) {
+                return {
+                    success: false,
+                    error: new NangoError('deploy_missing_json_schema_model', `json_schema doesn't contain model "${model.name}"`),
+                    response: null
+                };
+            }
+
+            flowJsonSchema.definitions![model.name] = schema;
+            const models = findModelInModelSchema(model.fields);
+
+            // Fields that may contain other Model
+            for (const modelName of models) {
+                const schema = jsonSchema.definitions![modelName];
+                if (!schema) {
+                    return {
+                        success: false,
+                        error: new NangoError('deploy_missing_json_schema_model', `json_schema doesn't contain model "${modelName}"`),
+                        response: null
+                    };
+                }
+
+                flowJsonSchema.definitions![modelName] = schema;
+            }
+        }
+    }
+
     return {
         success: true,
         error: null,
@@ -652,8 +692,26 @@ async function compileDeployInfo({
                 input: typeof flow.input === 'string' ? flow.input : flow.input ? flow.input.name : undefined,
                 sync_type: flow.sync_type as SyncType,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
-                enabled: lastSyncWasEnabled && !shouldCap
+                enabled: lastSyncWasEnabled && !shouldCap,
+                models_json_schema: jsonSchema ? flowJsonSchema : null
             }
         }
     };
+}
+
+function findModelInModelSchema(fields: NangoModel['fields']) {
+    const models = new Set<string>();
+    for (const field of fields) {
+        if (field.model) {
+            models.add(field.value as string);
+        }
+        if (Array.isArray(field.value)) {
+            const res = findModelInModelSchema(field.value);
+            if (res.size > 0) {
+                res.forEach((name) => models.add(name));
+            }
+        }
+    }
+
+    return models;
 }

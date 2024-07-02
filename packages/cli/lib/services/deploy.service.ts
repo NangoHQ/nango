@@ -293,7 +293,7 @@ class DeployService {
                     sync_type: sync.sync_type,
                     type: sync.type,
                     fileBody: files,
-                    model_schema: JSON.stringify(sync.usedModels.map((name) => parsed.models.get(name))),
+                    model_schema: sync.usedModels.map((name) => parsed.models.get(name)!),
                     endpoints: sync.endpoints,
                     webhookSubscriptions: sync.webhookSubscriptions
                 };

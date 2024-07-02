@@ -11,6 +11,24 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
         return formatDateToLogFormat(message.createdAt);
     }, [message.createdAt]);
 
+    const payload = useMemo(() => {
+        if (!message.meta && !message.error) {
+            return null;
+        }
+
+        const pl: Record<string, any> = {};
+        if (message.meta) {
+            pl.output = message.meta;
+        }
+        if (message.error) {
+            pl.error = message.error.message;
+            if (message.error.name === 'NangoError') {
+                pl.errorPayload = message.error.payload;
+            }
+        }
+        return pl;
+    }, [message.meta, message.error]);
+
     return (
         <div className="py-8 px-6 flex flex-col gap-5 h-full">
             <header className="flex gap-2 flex-col border-b border-b-gray-400 pb-5">
@@ -56,7 +74,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
             <div className="overflow-x-hidden">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
 
-                {message.meta || message.error ? (
+                {payload ? (
                     <div className="text-gray-400 text-sm bg-pure-black py-2 h-full overflow-y-scroll">
                         <Prism
                             language="json"
@@ -66,7 +84,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                                 return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                             }}
                         >
-                            {JSON.stringify({ error: message.error?.message || undefined, output: message.meta || undefined }, null, 2)}
+                            {JSON.stringify(payload, null, 2)}
                         </Prism>
                     </div>
                 ) : (

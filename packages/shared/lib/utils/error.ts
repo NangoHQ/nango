@@ -252,10 +252,17 @@ export class NangoError extends Error {
 
             case 'action_failure':
                 this.status = 400;
-                this.message = `Failed to perform the action. Please try again.`;
-                if (this.payload) {
-                    this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
-                }
+                this.message = `Failed to perform the action`;
+                break;
+
+            case 'webhook_failure':
+                this.status = 400;
+                this.message = `Failed to perform the webhook`;
+                break;
+
+            case 'post_connection_failure':
+                this.status = 400;
+                this.message = `Failed to perform the post connection script`;
                 break;
 
             case 'missing_provider_template':
@@ -576,10 +583,20 @@ export class NangoError extends Error {
                 this.message = `Your nango.yaml contains some errors`;
                 break;
 
+            case 'deploy_missing_json_schema_model':
+                this.status = 400;
+                this.message = String(this.payload);
+                break;
+
+            case 'invalid_action_input':
+                this.status = 400;
+                this.message = 'Failed to validate the input passed to the action';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
-                this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occured`;
+                this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occurred`;
         }
     }
 
@@ -612,3 +629,14 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
 
     return { success: false, error, response: null };
 };
+
+export function isNangoErrorAsJson(obj: unknown): obj is NangoError {
+    return Boolean(typeof obj === 'object' && obj && 'payload' in obj && 'type' in obj);
+}
+
+export function deserializeNangoError(err: unknown): NangoError | null {
+    if (isNangoErrorAsJson(err)) {
+        return new NangoError(err['type'], err.payload, err.status);
+    }
+    return null;
+}

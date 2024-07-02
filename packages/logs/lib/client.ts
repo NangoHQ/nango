@@ -40,7 +40,7 @@ export class LogContextStateless {
             await createMessage(getFormattedMessage({ ...data, parentId: this.id }));
             return true;
         } catch (err) {
-            // TODO: reup throw
+            // TODO: Report error
             logger.error(`failed_to_insert_in_es: ${stringifyError(err)}`);
             return false;
         } finally {
@@ -67,7 +67,14 @@ export class LogContextStateless {
             type: 'log',
             level: 'error',
             message,
-            error: err ? { name: err.name, message: err.message } : null,
+            error: err
+                ? {
+                      name: error instanceof Error ? error.constructor.name : err.name,
+                      message: err.message,
+                      type: 'type' in err ? (err.type as string) : null,
+                      payload: 'payload' in err ? err.payload : null
+                  }
+                : null,
             meta: Object.keys(rest).length > 0 ? rest : null,
             source: 'internal'
         });
@@ -141,7 +148,7 @@ export class LogContext extends LogContextStateless {
         try {
             await callback();
         } catch (err) {
-            // TODO: reup throw
+            // TODO: Report error
             logger.error(`failed_to_set_${log} ${stringifyError(err)}`);
         }
     }

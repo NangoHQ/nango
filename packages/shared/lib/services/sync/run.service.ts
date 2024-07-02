@@ -46,11 +46,6 @@ interface RunScriptRow {
     createdAt: number;
 }
 
-type SyncConfigForScript = Pick<
-    SyncConfig,
-    'id' | 'sync_name' | 'type' | 'models' | 'track_deletes' | 'is_public' | 'version' | 'attributes' | 'file_location'
->;
-
 export type SyncRunConfig = {
     bigQueryClient?: BigQueryClientInterface;
     integrationService: IntegrationServiceInterface;
@@ -61,7 +56,7 @@ export type SyncRunConfig = {
     isWebhook?: boolean;
     isPostConnectionScript?: boolean;
     nangoConnection: NangoConnection;
-    syncConfig: SyncConfigForScript;
+    syncConfig: SyncConfig;
     syncType: SyncType;
 
     syncId?: string;
@@ -115,7 +110,7 @@ export class SyncRunService {
     isPostConnectionScript: boolean;
     isInvokedImmediately: boolean;
     nangoConnection: NangoConnection;
-    syncConfig: SyncConfigForScript;
+    syncConfig: SyncConfig;
     syncType: SyncType;
 
     syncId?: string;
@@ -295,7 +290,8 @@ export class SyncRunService {
             attributes: this.syncConfig.attributes,
             track_deletes: syncData.track_deletes,
             logMessages: this.logMessages,
-            stubbedMetadata: this.stubbedMetadata
+            stubbedMetadata: this.stubbedMetadata,
+            syncConfig: syncData
         };
 
         if (this.dryRunService) {
