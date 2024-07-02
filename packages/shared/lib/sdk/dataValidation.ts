@@ -10,20 +10,25 @@ export function validateInput({
     input: unknown;
     modelName: string | undefined;
     jsonSchema: JSONSchema7 | undefined | null;
-}): true | ErrorObject[] {
+}): true | (ErrorObject | Error)[] {
     if (!jsonSchema || !modelName) {
         return true;
     }
 
     const ajv = new Ajv({ allErrors: true, discriminator: true });
-    const validate = ajv.compile({ ...(jsonSchema as any), ...(jsonSchema['definitions']![modelName] as any) });
-    const val = validate(input);
-    if (val) {
-        return true;
+    let validator;
+    try {
+        validator = ajv.compile({ ...(jsonSchema as any), ...(jsonSchema['definitions']![modelName] as any) });
+
+        if (validator(input)) {
+            return true;
+        }
+    } catch (err) {
+        return [err instanceof Error ? err : new Error('failed_to_parse_json_schema')];
     }
 
     const bag: ErrorObject[] = [];
-    for (const error of validate.errors!) {
+    for (const error of validator.errors!) {
         if (!error.message) {
             continue;
         }
