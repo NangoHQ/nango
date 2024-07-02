@@ -44,6 +44,7 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 import { Nango } from '@nangohq/node';
 import type { AxiosInstance } from 'axios';
 import type { SyncConfig } from '../models/Sync.js';
+import type { RunnerFlags } from '../services/sync/run.utils.js';
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 interface GenericFormData {
@@ -254,6 +255,7 @@ export interface NangoProps {
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
+    runnerFlags?: RunnerFlags | undefined;
 }
 export interface EnvironmentVariable {
     name: string;
