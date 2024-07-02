@@ -4,6 +4,9 @@ import type { UnanetContact } from '../types';
 import { toContact } from '../mappers/to-contact.js';
 import { getOrCreateCompany } from '../helpers/get-or-create-company.js';
 
+type contacts = keyof Contact;
+const required: contacts[] = ['firstName', 'lastName', 'position', 'emailAddress', 'phone', 'fax'];
+
 export default async function runAction(nango: NangoAction, input: Contact): Promise<Contact> {
     validate(nango, input);
 
@@ -41,9 +44,6 @@ export default async function runAction(nango: NangoAction, input: Contact): Pro
 }
 
 function validate(nango: NangoAction, input: Contact) {
-    type contacts = keyof Contact;
-    const required: contacts[] = ['firstName', 'lastName', 'position', 'emailAddress', 'phone', 'fax'];
-
     required.forEach((field) => {
         if (!input[field]) {
             throw new nango.ActionError({

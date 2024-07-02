@@ -7,7 +7,7 @@ export function toLead(unanetLead: UnanetLead, input: Lead): Lead {
     }
 
     const lead: Lead = {
-        id: unanetLead.LeadId?.toString(),
+        id: unanetLead.LeadId.toString(),
         name: unanetLead.Name,
         description: unanetLead.Description || '',
         dueDate: unanetLead.BidDate ? new Date(unanetLead.BidDate).toISOString() : '',
