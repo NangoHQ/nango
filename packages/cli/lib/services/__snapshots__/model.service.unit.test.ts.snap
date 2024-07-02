@@ -44,6 +44,7 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 import { Nango } from '@nangohq/node';
 import type { AxiosInstance } from 'axios';
 import type { SyncConfig } from '../models/Sync.js';
+import type { RunnerFlags } from '../services/sync/run.utils.js';
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 interface GenericFormData {
@@ -111,61 +112,69 @@ export interface ProxyConfiguration {
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
     retryOn?: number[] | null;
 }
-declare enum AuthModes {
-    OAuth1 = "OAUTH1",
-    OAuth2 = "OAUTH2",
-    OAuth2CC = "OAUTH2_CC",
-    Basic = "BASIC",
-    ApiKey = "API_KEY",
-    AppStore = "APP_STORE",
-    App = "APP",
-    Custom = "CUSTOM",
-    None = "NONE",
-    TBA = "TBA"
+export interface AuthModes {
+    OAuth1: 'OAUTH1';
+    OAuth2: 'OAUTH2';
+    OAuth2CC: 'OAUTH2_CC';
+    Basic: 'BASIC';
+    ApiKey: 'API_KEY';
+    AppStore: 'APP_STORE';
+    Custom: 'CUSTOM';
+    App: 'APP';
+    None: 'NONE';
+    TBA: 'TBA';
 }
+export type AuthModeType = AuthModes[keyof AuthModes];
 interface OAuth1Token {
     oAuthToken: string;
     oAuthTokenSecret: string;
 }
 interface AppCredentials {
-    type: AuthModes.App;
+    type: AuthModes['App'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
 }
 interface AppStoreCredentials {
-    type?: AuthModes.AppStore;
+    type?: AuthModes['AppStore'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
     private_key: string;
 }
 interface BasicApiCredentials {
-    type: AuthModes.Basic;
+    type: AuthModes['Basic'];
     username: string;
     password: string;
 }
 interface ApiKeyCredentials {
-    type: AuthModes.ApiKey;
+    type: AuthModes['ApiKey'];
     apiKey: string;
 }
 interface CredentialsCommon<T = Record<string, any>> {
-    type: AuthModes;
+    type: AuthModeType;
     raw: T;
 }
 interface OAuth2Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth2;
+    type: AuthModes['OAuth2'];
     access_token: string;
     refresh_token?: string;
     expires_at?: Date | undefined;
 }
+interface OAuth2ClientCredentials extends CredentialsCommon {
+    type: AuthModes['OAuth2CC'];
+    token: string;
+    expires_at?: Date | undefined;
+    client_id: string;
+    client_secret: string;
+}
 interface OAuth1Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth1;
+    type: AuthModes['OAuth1'];
     oauth_token: string;
     oauth_token_secret: string;
 }
 interface TbaCredentials {
-    type: AuthModes.TBA;
+    type: AuthModes['TBA'];
     token_id: string;
     token_secret: string;
     config_override: {
@@ -173,8 +182,11 @@ interface TbaCredentials {
         client_secret?: string;
     };
 }
+interface CustomCredentials extends CredentialsCommon {
+    type: AuthModes['Custom'];
+}
 type UnauthCredentials = Record<string, never>;
-type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials;
+type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | CustomCredentials;
 type Metadata = Record<string, unknown>;
 interface MetadataChangeResponse {
     metadata: Metadata;
@@ -243,6 +255,7 @@ export interface NangoProps {
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
+    runnerFlags?: RunnerFlags | undefined;
 }
 export interface EnvironmentVariable {
     name: string;
@@ -280,7 +293,7 @@ export declare class NangoAction {
     put<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
     patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
     delete<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
-    getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | TbaCredentials>;
+    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials>;
     getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection>;
     setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
     updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;

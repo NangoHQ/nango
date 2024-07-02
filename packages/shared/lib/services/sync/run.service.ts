@@ -21,6 +21,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '../../sdk/sync.js';
 import type { UpsertSummary } from '@nangohq/records';
 import type { SendSyncParams } from '@nangohq/webhooks';
+import type { RunnerFlags } from './run.utils.js';
 
 const logger = getLogger('run.service');
 
@@ -78,6 +79,7 @@ export type SyncRunConfig = {
           activityLogId: string | number;
           logCtx: LogContext;
           slackService: SlackService;
+          runnerFlags: RunnerFlags;
           sendSyncWebhook: (params: SendSyncParams) => Promise<void>;
       }
     | { writeToDb: false }
@@ -120,6 +122,7 @@ export class SyncRunService {
     loadLocation?: string;
     debug?: boolean;
     input?: object;
+    runnerFlags?: RunnerFlags;
 
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined = {
         counts: { updated: 0, added: 0, deleted: 0 },
@@ -164,6 +167,7 @@ export class SyncRunService {
             this.slackNotificationService = config.slackService;
             this.activityLogId = config.activityLogId;
             this.logCtx = config.logCtx;
+            this.runnerFlags = config.runnerFlags;
             this.sendSyncWebhook = config.sendSyncWebhook;
         }
 
@@ -291,7 +295,8 @@ export class SyncRunService {
             track_deletes: syncData.track_deletes,
             logMessages: this.logMessages,
             stubbedMetadata: this.stubbedMetadata,
-            syncConfig: syncData
+            syncConfig: syncData,
+            runnerFlags: this.runnerFlags
         };
 
         if (this.dryRunService) {

@@ -1,3 +1,4 @@
+import type React from 'react';
 import { forwardRef } from 'react';
 import { cn } from '../../utils/utils';
 
@@ -45,9 +46,15 @@ const Head = forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCe
 ));
 Head.displayName = 'Head';
 
-const Cell = forwardRef<HTMLTableCellElement, React.TdHTMLAttributes<HTMLTableCellElement>>(({ className, ...props }, ref) => (
-    <td ref={ref} className={cn('px-3 py-2.5 align-middle [&:has([role=checkbox])]:pr-0', className)} {...props} />
-));
+const Cell = forwardRef<HTMLTableCellElement, React.TdHTMLAttributes<HTMLTableCellElement> & { bordered?: boolean }>(
+    ({ className, bordered, ...props }, ref) => (
+        <td
+            ref={ref}
+            className={cn('px-3 py-2.5 align-middle [&:has([role=checkbox])]:pr-0', bordered && 'border-b border-b-active-gray', className)}
+            {...props}
+        />
+    )
+);
 Cell.displayName = 'Cell';
 
 const Caption = forwardRef<HTMLTableCaptionElement, React.HTMLAttributes<HTMLTableCaptionElement>>(({ className, ...props }, ref) => (
@@ -55,4 +62,16 @@ const Caption = forwardRef<HTMLTableCaptionElement, React.HTMLAttributes<HTMLTab
 ));
 Caption.displayName = 'Caption';
 
-export { Table, Header, Body, Footer, Head, Row, Cell, Caption };
+const Empty: React.FC<{ children: React.ReactNode; colSpan?: number }> = ({ children, colSpan }) => {
+    return (
+        <Row className="hover:bg-transparent">
+            <Cell className="h-24 text-center p-0" colSpan={colSpan}>
+                <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-5">
+                    <div className="text-center">{children}</div>
+                </div>
+            </Cell>
+        </Row>
+    );
+};
+
+export { Table, Header, Body, Footer, Head, Row, Cell, Caption, Empty };

@@ -34,7 +34,10 @@ export enum Types {
     REFRESH_TOKENS = 'nango.server.cron.refreshTokens',
     REFRESH_TOKENS_FAILED = 'nango.server.cron.refreshTokens.failed',
     REFRESH_TOKENS_SUCCESS = 'nango.server.cron.refreshTokens.success',
+
     RUNNER_SDK = 'nango.runner.sdk',
+    RUNNER_INVALID_ACTION_INPUT = 'nango.runner.invalidActionInput',
+
     SYNC_EXECUTION = 'nango.jobs.syncExecution',
     SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
     SYNC_SUCCESS = 'nango.orch.sync.success',

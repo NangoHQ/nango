@@ -1,4 +1,4 @@
-import type { ActiveLogIds, NangoModel, SyncTypeLiteral } from '@nangohq/types';
+import type { ActiveLogIds, NangoModel, SyncTypeLiteral, AuthModeType, NangoSyncEndpoint } from '@nangohq/types';
 
 export type SyncResult = Record<string, Result>;
 
@@ -70,19 +70,6 @@ export const UserFacingSyncCommand = {
     RUN_FULL: 'run full',
     CANCEL: 'cancelled'
 };
-
-export enum AuthModes {
-    OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2',
-    OAuth2CC = 'OAUTH2_CC',
-    Basic = 'BASIC',
-    ApiKey = 'API_KEY',
-    AppStore = 'APP_STORE',
-    App = 'APP',
-    Custom = 'CUSTOM',
-    None = 'NONE',
-    TBA = 'TBA'
-}
 
 export interface Connection {
     id: number;
@@ -174,12 +161,6 @@ export interface NangoSyncModel {
     fields: NangoSyncModelField[];
 }
 
-export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
-
-export type NangoSyncEndpoint = {
-    [key in HTTP_VERB]?: string;
-};
-
 export interface Flow {
     id?: number;
     attributes: Record<string, unknown>;
@@ -248,7 +229,7 @@ export interface IntegrationConfig {
     has_webhook: boolean;
     has_webhook_user_defined_secret?: boolean;
     scopes: string;
-    auth_mode: AuthModes;
+    auth_mode: AuthModeType;
     created_at: string;
     webhook_secret?: string;
     custom?: Record<string, string>;

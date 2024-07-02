@@ -25,6 +25,7 @@ import { SlackService, generateSlackConnectionId } from './services/notification
 export * from './services/sync/post-connection.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
+export * from './services/sync/run.utils.js';
 export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
