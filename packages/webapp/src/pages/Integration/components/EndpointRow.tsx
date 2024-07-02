@@ -2,6 +2,8 @@ import EndpointLabel from './EndpointLabel';
 import type { Flow, FlowEndpoint, IntegrationConfig } from '../../../types';
 import FlowCard from './FlowCard';
 import { SubTabs } from '../Show';
+import * as Table from '../../../components/ui/Table';
+import { cn } from '../../../utils/utils';
 
 export interface EndpointRowProps {
     flow: Flow;
@@ -20,23 +22,25 @@ export default function EndpointRow({ flow, endpoint, setSubTab, setFlow, setEnd
     };
 
     return (
-        <td className="flex items-center p-3 py-2.5 border-b border-border-gray hover:bg-hover-gray cursor-pointer" onClick={routeToReference}>
-            <div className="flex items-center w-80">
+        <Table.Row onClick={routeToReference} className={cn('cursor-pointer')}>
+            <Table.Cell bordered>
                 <EndpointLabel endpoint={endpoint} type={flow.type} />
-            </div>
-            <div className="flex items-center">
-                <div className="text-gray-400 ml-12 w-[36rem] truncate">{flow.description}</div>
-            </div>
-            <div className="flex flex-end relative group hover:bg-neutral-800 rounded p-2 ml-12">
-                {flow.enabled ? (
-                    <div className="w-2 h-2 bg-green-500 rounded-full cursor-pointer"></div>
-                ) : (
-                    <div className="w-2 h-2 bg-pink-600 rounded-full cursor-pointer"></div>
-                )}
-                <div className="hidden group-hover:block text-white absolute z-10 top-10 -left-24 bg-neutral-800 rounded border border-neutral-700 w-56">
-                    <FlowCard flow={flow} />
+            </Table.Cell>
+            <Table.Cell bordered>
+                <div className="truncate">{flow.description}</div>
+            </Table.Cell>
+            <Table.Cell bordered className="relative">
+                <div className="group flex justify-end">
+                    {flow.enabled ? (
+                        <div className="w-2 h-2 bg-green-500 rounded-full cursor-pointer"></div>
+                    ) : (
+                        <div className="w-2 h-2 bg-pink-600 rounded-full cursor-pointer"></div>
+                    )}
+                    <div className="hidden group-hover:block text-white absolute z-10 top-10 -left-24 bg-neutral-800 rounded border border-neutral-700 w-56">
+                        <FlowCard flow={flow} />
+                    </div>
                 </div>
-            </div>
-        </td>
+            </Table.Cell>
+        </Table.Row>
     );
 }
