@@ -279,9 +279,9 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                                 </div>
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="bg-pure-black text-white">
-                                            <DialogTitle className="text-red-500">Full Refresh?</DialogTitle>
-                                            <DialogDescription className="">
+                                        <DialogContent>
+                                            <DialogTitle>Are you absolutely sure?</DialogTitle>
+                                            <DialogDescription>
                                                 Triggering a full refresh in Nango will clear all existing records and reset the last sync date used for
                                                 incremental syncs. This means every record will be fetched again from the start of your sync window and treated
                                                 as new.
@@ -289,8 +289,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
 
                                             <DialogFooter>
                                                 <DialogClose asChild>
-                                                    <Button className="!text-text-light-gray" variant="zombie">
-                                                        cancel
+                                                    <Button className="!text-text-light-gray" variant="zombieGray">
+                                                        Cancel
                                                     </Button>
                                                 </DialogClose>
                                                 <Button type="submit" disabled={modalSpinner} onClick={confirmFullRefresh} isLoading={modalSpinner}>
