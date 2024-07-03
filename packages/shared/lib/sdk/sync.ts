@@ -642,7 +642,7 @@ export class NangoAction {
         const level = userDefinedLevel?.level ?? 'info';
 
         if (this.dryRun) {
-            logger[logLevelToLogger[level]]([...args]);
+            logger[logLevelToLogger[level] ?? 'info']([...args]);
             return;
         }
 
