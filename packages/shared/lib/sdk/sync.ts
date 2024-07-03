@@ -11,6 +11,8 @@ import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangohq/utils';
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
+import { validateData } from './dataValidation.js';
+import type { JSONSchema7 } from 'json-schema';
 
 const logger = getLogger('SDK');
 
@@ -308,6 +310,7 @@ export interface NangoProps {
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
     runnerFlags?: RunnerFlags | undefined;
+    jsonSchema?: JSONSchema7 | null | undefined;
 }
 
 export interface EnvironmentVariable {
@@ -341,6 +344,8 @@ export class NangoAction {
     dryRun?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
+    jsonSchema?: JSONSchema7;
+    runnerFlags?: RunnerFlags;
 
     public connectionId: string;
     public providerConfigKey: string;
@@ -405,8 +410,20 @@ export class NangoAction {
             this.dryRunService = config.dryRunService;
         }
 
-        if (this.dryRun !== true && !this.activityLogId) {
-            throw new Error('Parameter activityLogId is required when not in dryRun');
+        if (config.jsonSchema) {
+            this.jsonSchema = config.jsonSchema;
+        }
+
+        if (config.runnerFlags) {
+            this.runnerFlags = config.runnerFlags;
+        }
+
+        if (this.dryRun !== true) {
+            if (!this.activityLogId) throw new Error('Parameter activityLogId is required when not in dryRun');
+            if (!this.environmentId) throw new Error('Parameter environmentId is required when not in dryRun');
+            if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required when not in dryRun');
+            if (!this.syncId) throw new Error('Parameter syncId is required when not in dryRun');
+            if (!this.syncJobId) throw new Error('Parameter syncJobId is required when not in dryRun');
         }
     }
 
@@ -818,8 +835,19 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
+        // Validate records
+        for (const record of results) {
+            const validation = validateData({ input: record, jsonSchema: this.jsonSchema, modelName: model });
+            if (validation === true) {
+                continue;
+            }
+
+            metrics.increment(metrics.Types.RUNNER_INVALID_SYNCS_RECORDS);
+
+            await this.log('Invalid record payload', { record, validation, model }, { level: 'warn' });
+            if (this.runnerFlags?.validateSyncRecords) {
+                throw new Error(`invalid_syncs_record`);
+            }
         }
 
         if (this.dryRun) {
@@ -888,10 +916,6 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
-        }
-
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch delete call would delete the following data:`);
             for (const msg of results) {
@@ -949,10 +973,6 @@ export class NangoSync extends NangoAction {
                 logger.info('batchUpdate received an empty array. No records to update.');
             }
             return true;
-        }
-
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
         }
 
         if (this.dryRun) {

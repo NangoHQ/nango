@@ -7,7 +7,7 @@ import type { Template } from '@nangohq/types';
 import configService from '../services/config.service.js';
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
 import type { NangoProps } from './sync.js';
-import { NangoAction } from './sync.js';
+import { NangoAction, NangoSync } from './sync.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 import proxyService from '../services/proxy.service.js';
 import type { AxiosResponse } from 'axios';
@@ -21,7 +21,10 @@ const nangoProps: NangoProps = {
     accountId: 1,
     environmentId: 1,
     lastSyncDate: new Date(),
-    syncConfig: {} as SyncConfig
+    syncConfig: {} as SyncConfig,
+    syncId: '1',
+    syncJobId: 1,
+    nangoConnectionId: 1
 };
 
 describe('cache', () => {
@@ -406,6 +409,23 @@ describe('Pagination', () => {
             token_url: ''
         };
     };
+});
+
+describe('batchSave', () => {
+    it('should validate records with json schema', async () => {
+        const nango = new NangoSync({
+            ...nangoProps,
+            dryRun: true,
+            runnerFlags: { validateSyncRecords: true } as any,
+            jsonSchema: { definitions: { Test: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false } } }
+        });
+
+        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(
+            new Error(
+                `invalid_syncs_record: {"record":{"foo":"bar"},"validation":[{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"id"},"message":"must have required property 'id'"},{"instancePath":"","schemaPath":"#/additionalProperties","keyword":"additionalProperties","params":{"additionalProperty":"foo"},"message":"must NOT have additional properties"}],"model":"Test"}`
+            )
+        );
+    });
 });
 
 describe('Log', () => {

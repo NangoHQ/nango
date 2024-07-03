@@ -22,6 +22,10 @@ export function validateData({ input, modelName, jsonSchema }: ValidateProps): t
         // No expectation and no input, skip everything
         return true;
     }
+    if (!jsonSchema['definitions']![modelName!]) {
+        // Unexpected input while the script expect nothing
+        return [new Error(`model_not_found_${modelName}`)];
+    }
 
     const ajv = new Ajv({ allErrors: true, discriminator: true });
     addFormats(ajv);

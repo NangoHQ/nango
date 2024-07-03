@@ -296,7 +296,8 @@ export class SyncRunService {
             logMessages: this.logMessages,
             stubbedMetadata: this.stubbedMetadata,
             syncConfig: syncData,
-            runnerFlags: this.runnerFlags
+            runnerFlags: this.runnerFlags,
+            jsonSchema: syncData.models_json_schema
         };
 
         if (this.dryRunService) {
