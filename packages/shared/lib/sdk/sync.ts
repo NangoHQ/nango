@@ -12,7 +12,6 @@ import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangoh
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
-import type { JSONSchema7 } from 'json-schema';
 
 const logger = getLogger('SDK');
 
@@ -310,7 +309,6 @@ export interface NangoProps {
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
     runnerFlags?: RunnerFlags | undefined;
-    jsonSchema?: JSONSchema7 | null | undefined;
 }
 
 export interface EnvironmentVariable {
@@ -344,7 +342,7 @@ export class NangoAction {
     dryRun?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
-    jsonSchema?: JSONSchema7;
+    syncConfig?: SyncConfig;
     runnerFlags?: RunnerFlags;
 
     public connectionId: string;
@@ -410,8 +408,8 @@ export class NangoAction {
             this.dryRunService = config.dryRunService;
         }
 
-        if (config.jsonSchema) {
-            this.jsonSchema = config.jsonSchema;
+        if (config.syncConfig) {
+            this.syncConfig = config.syncConfig;
         }
 
         if (config.runnerFlags) {
@@ -424,6 +422,7 @@ export class NangoAction {
             if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required when not in dryRun');
             if (!this.syncId) throw new Error('Parameter syncId is required when not in dryRun');
             if (!this.syncJobId) throw new Error('Parameter syncJobId is required when not in dryRun');
+            if (!this.syncConfig) throw new Error('Parameter syncConfig is required when not in dryRun');
         }
     }
 
@@ -837,7 +836,7 @@ export class NangoSync extends NangoAction {
 
         // Validate records
         for (const record of results) {
-            const validation = validateData({ input: record, jsonSchema: this.jsonSchema, modelName: model });
+            const validation = validateData({ input: record, jsonSchema: this.syncConfig!.models_json_schema, modelName: model });
             if (validation === true) {
                 continue;
             }

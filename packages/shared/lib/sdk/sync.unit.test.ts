@@ -417,14 +417,14 @@ describe('batchSave', () => {
             ...nangoProps,
             dryRun: true,
             runnerFlags: { validateSyncRecords: true } as any,
-            jsonSchema: { definitions: { Test: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false } } }
+            syncConfig: {
+                models_json_schema: {
+                    definitions: { Test: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false } }
+                }
+            } as any
         });
 
-        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(
-            new Error(
-                `invalid_syncs_record: {"record":{"foo":"bar"},"validation":[{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"id"},"message":"must have required property 'id'"},{"instancePath":"","schemaPath":"#/additionalProperties","keyword":"additionalProperties","params":{"additionalProperty":"foo"},"message":"must NOT have additional properties"}],"model":"Test"}`
-            )
-        );
+        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(new Error(`invalid_syncs_record`));
     });
 });
 

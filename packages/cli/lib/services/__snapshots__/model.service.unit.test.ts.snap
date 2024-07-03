@@ -275,6 +275,8 @@ export declare class NangoAction {
     dryRun?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
+    syncConfig?: SyncConfig;
+    runnerFlags?: RunnerFlags;
     connectionId: string;
     providerConfigKey: string;
     provider?: string;
