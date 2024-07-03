@@ -41,7 +41,7 @@ export default async function runAction(nango: NangoAction, input: SlackMessage)
                                   elements: [
                                       {
                                           type: 'mrkdwn',
-                                          text: `${input.meta.accountName} (${input.meta.accountUuid})`
+                                          text: `${input.meta.accountName} (uuid: ${input.meta.accountUuid})`
                                       }
                                   ]
                               }
