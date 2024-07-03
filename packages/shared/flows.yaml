@@ -2890,13 +2890,20 @@ integrations:
         actions:
             create-lead:
                 endpoint: POST /lead
-                description: Create a lead with information about the opportunity and company
-                input: Lead
+                description: >-
+                    Create a lead with with information about the federal agency, the
+                    name, due date, posted date, solicitation number, naics category or
+                    categories, the city, state, country, and description.
+                input: CreateLead
                 output: Lead
             update-lead:
                 endpoint: PUT /lead
-                description: Update a lead
+                description: >-
+                    Update a lead with any changed information about the federal agency,
+                    the name, due date, posted date, solicitation number, naics category
+                    or categories, the city, state, country, and description.
                 output: Lead
+                input: UpdateLead
             get-leads:
                 endpoint: GET /leads
                 description: Fetch all leads
@@ -2904,7 +2911,9 @@ integrations:
             get-schema:
                 endpoint: GET /schema
                 input: Entity
-                description: Get the schema of any entity
+                description: >-
+                    Get the schema of any entity. Useful to know the properties of any
+                    object that exists in the system.
                 output: Schema[]
             get-company:
                 endpoint: GET /company
@@ -2920,7 +2929,11 @@ integrations:
                 endpoint: POST /opportunity
                 input: Opportunity
                 output: Opportunity
-                description: Create an opportunity in the system
+                description: >
+                    Create an opportunity in the system. Requires a stage that exists
+
+                    in the system. Use the list-stages action to find the appropriate
+                    stage.
             create-contact:
                 endpoint: POST /contact
                 input: Contact
@@ -2928,7 +2941,9 @@ integrations:
                 description: Create a contact in the system
             list-stages:
                 endpoint: GET /stages
-                description: List all the stages that exist in the system
+                description: |
+                    List all the stages that exist in the system. Use this action to find
+                    the correct stage to be able to create an opportunity.
                 output: Stage
         models:
             Timestamps:
@@ -2999,10 +3014,7 @@ integrations:
                 emailAddress: string
                 phone: string
                 fax: string
-            Lead:
-                createdAt?: string
-                updatedAt?: string
-                id?: string
+            BaseLead:
                 federalAgency: FederalAgency
                 name: string
                 dueDate: string
@@ -3013,6 +3025,43 @@ integrations:
                 state: string
                 country: string
                 description: string
+            CreateLead:
+                federalAgency: FederalAgency
+                name: string
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
+            UpdateLead:
+                federalAgency: FederalAgency
+                name: string
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
+                id: string
+            Lead:
+                createdAt?: string
+                updatedAt?: string
+                federalAgency: FederalAgency
+                name: string
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
+                id: string
             Schema:
                 PropertyName: string
                 Group: string | null
