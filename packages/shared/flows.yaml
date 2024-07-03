@@ -2913,7 +2913,7 @@ integrations:
                 description: Retrieve information about a company
             create-company:
                 endpoint: POST /company
-                input: Company
+                input: CreateCompany
                 output: Company
                 description: Create a company in the system
             create-opportunity:
@@ -2945,6 +2945,9 @@ integrations:
                 id: number
                 name: string
                 status: string
+            CreateCompany:
+                name: string
+                federalAgency?: FederalAgency
             Company:
                 name: string
                 externalId: string
