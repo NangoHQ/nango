@@ -1493,6 +1493,19 @@ linkhut:
     proxy:
         base_url: https://api.ln.ht
     docs: https://docs.nango.dev/integrations/all/linkhut
+luma:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-luma-api-key: ${apiKey}
+        base_url: https://api.lu.ma
+        verification:
+            method: GET
+            endpoint: /public/v1/user/get-self
+    docs: https://docs.nango.dev/integrations/all/luma
 mailgun:
     categories:
         - marketing
