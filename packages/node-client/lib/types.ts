@@ -119,7 +119,7 @@ export interface ListRecordsRequestConfig {
     connectionId: string;
     model: string;
     /**
-     * @deprecated
+     * @deprecated use modifiedAfter
      */
     delta?: string;
     modifiedAfter?: string;
