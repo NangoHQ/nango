@@ -1,8 +1,8 @@
-import type { NangoAction, Company } from '../../models';
+import type { NangoAction, Company, CreateCompany } from '../../models';
 
 import { getOrCreateCompany } from '../helpers/get-or-create-company.js';
 
-export default async function runAction(nango: NangoAction, input: Company): Promise<Company> {
+export default async function runAction(nango: NangoAction, input: CreateCompany): Promise<Company> {
     if (!input?.name) {
         throw new nango.ActionError({
             message: 'Name is required to create a company',

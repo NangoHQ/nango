@@ -1,9 +1,9 @@
-import type { NangoAction, Lead } from '../../models';
+import type { NangoAction, CreateLead, Lead } from '../../models';
 import type { UnanetLead } from '../types';
 import { toLead } from '../mappers/to-lead.js';
 import { optionalsToPotentialClient } from '../mappers/federal-agency.js';
 
-export default async function runAction(nango: NangoAction, input: Lead): Promise<Lead> {
+export default async function runAction(nango: NangoAction, input: CreateLead): Promise<Lead> {
     validate(nango, input);
 
     const data: UnanetLead = {
@@ -34,8 +34,8 @@ export default async function runAction(nango: NangoAction, input: Lead): Promis
     return mapped;
 }
 
-function validate(nango: NangoAction, input: Lead) {
-    type leads = keyof Lead;
+function validate(nango: NangoAction, input: CreateLead) {
+    type leads = keyof CreateLead;
     const required: leads[] = ['name', 'dueDate', 'postedDate', 'solicitationNumber', 'naicsCategory', 'city', 'state', 'country', 'description'];
 
     required.forEach((field) => {
