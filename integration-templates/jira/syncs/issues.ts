@@ -37,8 +37,8 @@ export default async function fetchData(nango: NangoSync) {
 async function getCloudId(nango: NangoSync): Promise<string> {
     const connection = await nango.getConnection();
 
-    if (connection.connection_config.cloud_id) {
-        return connection.connection_config.cloud_id;
+    if (connection.connection_config['cloud_id']) {
+        return connection.connection_config['cloud_id'];
     }
 
     const response = await nango.get({
