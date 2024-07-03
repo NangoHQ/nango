@@ -23,9 +23,11 @@ export default async function runAction(nango: NangoAction, input: CreditNote[])
     for (const creditNote of input) {
         const invalidCreditNoteItems = creditNote.fees.filter((x: any) => !x.description || x.description.length < 1);
         if (invalidCreditNoteItems.length > 0) {
-            throw new Error(`Every credit note item needs at least a description with 1 character.\n
-            Invalid items:\n${JSON.stringify(invalidCreditNoteItems, null, 4)}\n
-            Credit note: ${JSON.stringify(creditNote, null, 4)}`);
+            throw new nango.ActionError<ActionErrorResponse>({
+                message: `Every credit note item needs at least a description with 1 character.\n
+                    Invalid items:\n${JSON.stringify(invalidCreditNoteItems, null, 4)}\n
+                    Credit note: ${JSON.stringify(creditNote, null, 4)}`
+            });
         }
     }
 

@@ -19,9 +19,11 @@ export default async function runAction(nango: NangoAction, input: Invoice[]): P
     for (const invoice of input) {
         const invalidInvoiceItems = invoice.fees.filter((x: any) => !x.description || x.description.length < 1);
         if (invalidInvoiceItems.length > 0) {
-            throw new Error(`Every invoice item needs at least a description with 1 character.\n
-            Invalid items:\n${JSON.stringify(invalidInvoiceItems, null, 4)}\n
-            Invoice: ${JSON.stringify(invoice, null, 4)}`);
+            throw new nango.ActionError<ActionErrorResponse>({
+                message: `Every invoice item needs at least a description with 1 character.\n
+                    Invalid items:\n${JSON.stringify(invalidInvoiceItems, null, 4)}\n
+                    Invoice: ${JSON.stringify(invoice, null, 4)}`
+            });
         }
     }
 
