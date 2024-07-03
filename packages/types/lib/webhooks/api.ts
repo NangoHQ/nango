@@ -50,15 +50,15 @@ export interface NangoAuthWebhookBodyBase extends NangoWebhookBase {
     providerConfigKey: string;
     provider: string;
     environment: string;
-}
-
-export interface NangoAuthWebhookBodySuccess extends NangoWebhookBase {
-    success: true;
-    type: 'auth';
     operation: AuthOperationType;
 }
 
-export interface NangoAuthWebhookBodyError extends NangoWebhookBase {
+export interface NangoAuthWebhookBodySuccess extends NangoAuthWebhookBodyBase {
+    success: true;
+    type: 'auth';
+}
+
+export interface NangoAuthWebhookBodyError extends NangoAuthWebhookBodyBase {
     success: false;
     error: ErrorPayload;
     type: 'auth';
