@@ -121,8 +121,8 @@ function mapFailedXeroContact(xeroContact: any): FailedContact {
 
 function mapXeroContact(xeroContact: any): Contact {
     // Find Street address & default phone object, if they exist
-    const streetAddress = xeroContact.Addresses.filter((x: any) => x.AddressType === 'POBOX')[0];
-    const defaultPhone = xeroContact.Phones.filter((x: any) => x.PhoneType === 'DEFAULT')[0];
+    let streetAddress = xeroContact.Addresses.filter((x: any) => x.AddressType === 'POBOX')[0];
+    let defaultPhone = xeroContact.Phones.filter((x: any) => x.PhoneType === 'DEFAULT')[0];
 
     streetAddress = streetAddress ? streetAddress : {};
     defaultPhone = defaultPhone ? defaultPhone : {};
