@@ -1,5 +1,6 @@
 import type { FailedPayment, NangoAction, Payment, PaymentActionResponse, ActionErrorResponse } from '../../models';
 import { getTenantId } from '../helpers/get-tenant-id.js';
+import { parseDate } from '../utils.js';
 
 export default async function runAction(nango: NangoAction, input: Payment[]): Promise<PaymentActionResponse> {
     const tenant_id = await getTenantId(nango);
@@ -106,17 +107,4 @@ function mapXeroPayment(xeroPayment: any): Payment {
         date: parseDate(xeroPayment.Date),
         amount_cents: parseFloat(xeroPayment.Amount) * 100
     } as Payment;
-}
-
-// Discards the timeZone data and assumes all dates returned are in UTC
-function parseDate(xeroDateString: string): Date {
-    const match = xeroDateString.match(/\/Date\((\d+)([+-]\d{4})\)\//);
-    if (match) {
-        const timestamp = parseInt(match[1] as string, 10);
-
-        // Create a new date object with the timestamp
-        const date = new Date(timestamp);
-        return date;
-    }
-    throw new Error(`Cannot parse date from Xero API with parseDate function, input was: ${xeroDateString}`);
 }

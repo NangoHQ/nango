@@ -1,11 +1,5 @@
 import type { NangoSync, Account } from '../../models';
-
-async function getTenantId(nango: NangoSync) {
-    const tenants = await nango.get({
-        endpoint: 'connections'
-    });
-    return tenants.data[0]['tenantId'];
-}
+import { getTenantId } from '../helpers/get-tenant-id.js';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const tenant_id = await getTenantId(nango);

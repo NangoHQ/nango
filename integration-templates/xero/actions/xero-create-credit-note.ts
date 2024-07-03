@@ -1,5 +1,6 @@
-import type { NangoAction, CreditNoteActionResponse, FailedCreditNote, CreditNote, CreditNoteFee, ActionErrorResponse } from '../../models';
+import type { NangoAction, CreditNoteActionResponse, CreditNote, ActionErrorResponse } from '../../models';
 import { getTenantId } from '../helpers/get-tenant-id.js';
+import { toFailedCreditNote, toCreditNote } from '../mappers/to-credit-note.js';
 
 export default async function runAction(nango: NangoAction, input: CreditNote[]): Promise<CreditNoteActionResponse> {
     const tenant_id = await getTenantId(nango);
@@ -56,8 +57,8 @@ export default async function runAction(nango: NangoAction, input: CreditNote[])
     const succeededCreditNotes = creditNotes.filter((x: any) => !x.HasErrors);
 
     const response = {
-        succeededCreditNotes: succeededCreditNotes.map(mapXeroCreditNote),
-        failedCreditNotes: failedCreditNotes.map(mapFailedXeroCreditNote)
+        succeededCreditNotes: succeededCreditNotes.map(toCreditNote),
+        failedCreditNotes: failedCreditNotes.map(toFailedCreditNote)
     } as CreditNoteActionResponse;
 
     return response;
@@ -123,51 +124,4 @@ function mapCreditNoteToXero(creditNote: CreditNote) {
     }
 
     return xeroCreditNote;
-}
-
-function mapFailedXeroCreditNote(xeroCreditNote: any): FailedCreditNote {
-    const failedCreditNote = mapXeroCreditNote(xeroCreditNote) as FailedCreditNote;
-    failedCreditNote.validation_errors = xeroCreditNote.ValidationErrors;
-    return failedCreditNote;
-}
-
-function mapXeroCreditNote(xeroCreditNote: any): CreditNote {
-    return {
-        id: xeroCreditNote.CreditNoteID,
-        type: xeroCreditNote.Type,
-        external_contact_id: xeroCreditNote.Contact.ContactID,
-        status: xeroCreditNote.Status,
-        number: xeroCreditNote.CreditNoteNumber,
-        currency: xeroCreditNote.CurrencyCode,
-        reference: xeroCreditNote.Reference,
-        issuing_date: xeroCreditNote.Date ? parseDate(xeroCreditNote.Date) : null,
-        fees: xeroCreditNote.LineItems.map(mapXeroCreditNoteItem)
-    } as CreditNote;
-}
-
-function mapXeroCreditNoteItem(xeroCreditNoteItem: any): CreditNoteFee {
-    return {
-        item_id: xeroCreditNoteItem.LineItemID,
-        item_code: xeroCreditNoteItem.ItemCode,
-        description: xeroCreditNoteItem.Description,
-        units: xeroCreditNoteItem.Quantity,
-        precise_unit_amount: xeroCreditNoteItem.UnitAmount,
-        account_code: xeroCreditNoteItem.AccountCode,
-        account_external_id: xeroCreditNoteItem.AccountId,
-        amount_cents: parseFloat(xeroCreditNoteItem.LineAmount) * 100, // Amounts in xero are not in cents
-        taxes_amount_cents: parseFloat(xeroCreditNoteItem.TaxAmount) * 100 // Amounts in xero are not in cents
-    } as CreditNoteFee;
-}
-
-// Discards the timeZone data and assumes all dates returned are in UTC
-function parseDate(xeroDateString: string): Date {
-    const match = xeroDateString.match(/\/Date\((\d+)([+-]\d{4})\)\//);
-    if (match) {
-        const timestamp = parseInt(match[1] as string, 10);
-
-        // Create a new date object with the timestamp
-        const date = new Date(timestamp);
-        return date;
-    }
-    throw new Error(`Cannot parse date from Xero API with parseDate function, input was: ${xeroDateString}`);
 }

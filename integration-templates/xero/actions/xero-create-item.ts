@@ -1,5 +1,6 @@
-import type { NangoAction, ItemActionResponse, Item, FailedItem, ActionErrorResponse } from '../../models';
+import type { NangoAction, ItemActionResponse, Item, ActionErrorResponse } from '../../models';
 import { getTenantId } from '../helpers/get-tenant-id.js';
+import { toItem, toXeroItem, toFailedItem } from '../mappers/to-item.js';
 
 export default async function runAction(nango: NangoAction, input: Item[]): Promise<ItemActionResponse> {
     const tenant_id = await getTenantId(nango);
@@ -23,7 +24,7 @@ export default async function runAction(nango: NangoAction, input: Item[]): Prom
             summarizeErrors: 'false'
         },
         data: {
-            Items: input.map(mapItemToXero)
+            Items: input.map(toXeroItem)
         }
     };
 
@@ -42,47 +43,9 @@ export default async function runAction(nango: NangoAction, input: Item[]): Prom
     const succeededItems = items.filter((x: any) => x.ValidationErrors.length === 0);
 
     const response = {
-        succeededItems: succeededItems.map(mapXeroItem),
-        failedItems: failedItems.map(mapFailedXeroItem)
+        succeededItems: succeededItems.map(toItem),
+        failedItems: failedItems.map(toFailedItem)
     } as ItemActionResponse;
 
     return response;
-}
-
-function mapItemToXero(item: Item) {
-    const xeroItem: Record<string, any> = {
-        Code: item.item_code
-    };
-
-    if (item.name) {
-        xeroItem['Name'] = item.name;
-    }
-
-    if (item.description) {
-        xeroItem['Description'] = item.description;
-    }
-
-    if (item.account_code) {
-        xeroItem['SalesDetails'] = {
-            AccountCode: item.account_code
-        };
-    }
-
-    return xeroItem;
-}
-
-function mapFailedXeroItem(xeroItem: any): FailedItem {
-    const failedItem = mapXeroItem(xeroItem) as FailedItem;
-    failedItem.validation_errors = xeroItem.ValidationErrors;
-    return failedItem;
-}
-
-function mapXeroItem(xeroItem: any): Item {
-    return {
-        id: xeroItem.ItemID,
-        item_code: xeroItem.Code,
-        name: xeroItem.Name,
-        description: xeroItem.Description,
-        account_code: xeroItem.SalesDetails ? xeroItem.SalesDetails.AccountCode : null
-    } as Item;
 }

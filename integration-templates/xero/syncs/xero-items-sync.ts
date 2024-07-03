@@ -1,11 +1,6 @@
-import type { NangoSync, Item } from '../../models';
-
-async function getTenantId(nango: NangoSync) {
-    const tenants = await nango.get({
-        endpoint: 'connections'
-    });
-    return tenants.data[0]['tenantId'];
-}
+import type { NangoSync } from '../../models';
+import { getTenantId } from '../helpers/get-tenant-id.js';
+import { toItem } from '../mappers/to-item.js';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const tenant_id = await getTenantId(nango);
@@ -27,16 +22,6 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
     const res = await nango.get(config);
     const items = res.data.Items;
 
-    const mappedItems = items.map(mapXeroItem);
+    const mappedItems = items.map(toItem);
     await nango.batchSave(mappedItems, 'Item');
-}
-
-function mapXeroItem(xeroItem: any): Item {
-    return {
-        id: xeroItem.ItemID,
-        item_code: xeroItem.Code,
-        name: xeroItem.Name,
-        description: xeroItem.Description,
-        account_code: xeroItem.SalesDetails ? xeroItem.SalesDetails.AccountCode : null
-    } as Item;
 }

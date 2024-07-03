@@ -1,5 +1,6 @@
-import type { NangoAction, Invoice, InvoiceActionResponse, FailedInvoice, InvoiceFee, ActionErrorResponse } from '../../models';
+import type { NangoAction, Invoice, InvoiceActionResponse, FailedInvoice, ActionErrorResponse } from '../../models';
 import { getTenantId } from '../helpers/get-tenant-id.js';
+import { toInvoice } from '../mappers/to-invoice.js';
 
 export default async function runAction(nango: NangoAction, input: Invoice[]): Promise<InvoiceActionResponse> {
     const tenant_id = await getTenantId(nango);
@@ -52,7 +53,7 @@ export default async function runAction(nango: NangoAction, input: Invoice[]): P
     const succeededInvoices = invoices.filter((x: any) => !x.HasErrors);
 
     const response = {
-        succeededInvoices: succeededInvoices.map(mapXeroInvoice),
+        succeededInvoices: succeededInvoices.map(toInvoice),
         failedInvoices: failedInvoices.map(mapFailedXeroInvoice)
     } as InvoiceActionResponse;
 
@@ -123,49 +124,7 @@ function mapInvoiceToXero(invoice: Invoice) {
 }
 
 function mapFailedXeroInvoice(xeroInvoice: any): FailedInvoice {
-    const failedInvoice = mapXeroInvoice(xeroInvoice) as FailedInvoice;
+    const failedInvoice = toInvoice(xeroInvoice) as FailedInvoice;
     failedInvoice.validation_errors = xeroInvoice.ValidationErrors;
     return failedInvoice;
-}
-
-function mapXeroInvoice(xeroInvoice: any): Invoice {
-    return {
-        id: xeroInvoice.InvoiceID,
-        type: xeroInvoice.Type,
-        external_contact_id: xeroInvoice.Contact.ContactID,
-        status: xeroInvoice.Status,
-        issuing_date: xeroInvoice.Date ? parseDate(xeroInvoice.Date) : null,
-        payment_due_date: xeroInvoice.DueDate ? parseDate(xeroInvoice.DueDate) : null,
-        number: xeroInvoice.InvoiceNumber,
-        currency: xeroInvoice.CurrencyCode,
-        purchase_order: null,
-        fees: xeroInvoice.LineItems.map(mapXeroInvoiceItem)
-    } as Invoice;
-}
-
-function mapXeroInvoiceItem(xeroInvoiceItem: any): InvoiceFee {
-    return {
-        item_id: xeroInvoiceItem.LineItemID,
-        item_code: xeroInvoiceItem.ItemCode,
-        description: xeroInvoiceItem.Description,
-        units: xeroInvoiceItem.Quantity,
-        precise_unit_amount: xeroInvoiceItem.UnitAmount,
-        account_code: xeroInvoiceItem.AccountCode,
-        account_external_id: xeroInvoiceItem.AccountId,
-        amount_cents: parseFloat(xeroInvoiceItem.LineAmount) * 100, // Amounts in xero are not in cents
-        taxes_amount_cents: parseFloat(xeroInvoiceItem.TaxAmount) * 100 // Amounts in xero are not in cents
-    } as InvoiceFee;
-}
-
-// Discards the timeZone data and assumes all dates returned are in UTC
-function parseDate(xeroDateString: string): Date {
-    const match = xeroDateString.match(/\/Date\((\d+)([+-]\d{4})\)\//);
-    if (match) {
-        const timestamp = parseInt(match[1] as string, 10);
-
-        // Create a new date object with the timestamp
-        const date = new Date(timestamp);
-        return date;
-    }
-    throw new Error(`Cannot parse date from Xero API with parseDate function, input was: ${xeroDateString}`);
 }
