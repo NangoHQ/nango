@@ -561,7 +561,6 @@ coros-sandbox:
     authorization_url: https://opentest.coros.com/oauth2/authorize
     token_url: https://opentest.coros.com/oauth2/accesstoken
     refresh_url: https://opentest.coros.com/oauth2/refresh-token
-    # scope_separator: ' '
     authorization_params:
         response_type: code
     token_response_metadata:
