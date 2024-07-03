@@ -10,6 +10,7 @@ import { compileAllFiles } from './compile.service.js';
 import integrationService from './local-integration.service.js';
 import type { RecordsServiceInterface } from '@nangohq/shared/lib/services/sync/run.service.js';
 import { parse } from './config.service.js';
+import { loadSchemaJson } from './model.service.js';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -220,6 +221,12 @@ export class DryRunService {
             }
         };
 
+        const jsonSchema = loadSchemaJson({ fullPath: this.fullPath });
+        if (!jsonSchema) {
+            console.log(chalk.red('Failed to load schema.json'));
+            return;
+        }
+
         const syncRun = new SyncRunService({
             integrationService,
             recordsService,
@@ -229,7 +236,8 @@ export class DryRunService {
             syncConfig: {
                 sync_name: syncName,
                 file_location: '',
-                models: [],
+                models: syncInfo?.output || [],
+                input: syncInfo?.input || undefined,
                 track_deletes: false,
                 type: syncInfo?.type || 'sync',
                 active: true,
@@ -239,7 +247,8 @@ export class DryRunService {
                 model_schema: [],
                 nango_config_id: 1,
                 runs: '',
-                webhook_subscriptions: []
+                webhook_subscriptions: [],
+                models_json_schema: jsonSchema
             },
             provider,
             input: normalizedInput as object,
@@ -255,14 +264,26 @@ export class DryRunService {
         });
 
         try {
+            console.log('---');
             const secretKey = process.env['NANGO_SECRET_KEY'];
             const results = await syncRun.run(lastSyncDate, true, secretKey, process.env['NANGO_HOSTPORT']);
+            console.log('---');
 
-            let resultOutput = '';
+            if (results.error) {
+                console.error(chalk.red('An error occurred during execution'));
+                console.error(JSON.stringify(results.error, null, 2));
+                return;
+            }
 
-            if (results) {
-                console.log(JSON.stringify(results, null, 2));
-                resultOutput += JSON.stringify(results, null, 2);
+            const resultOutput = [];
+            if (type === 'actions') {
+                if (!results.response) {
+                    console.log(chalk.gray('no output'));
+                    resultOutput.push(chalk.gray('no output'));
+                } else {
+                    console.log(JSON.stringify(results.response, null, 2));
+                    resultOutput.push(JSON.stringify(results.response, null, 2));
+                }
             }
 
             if (syncRun.logMessages && syncRun.logMessages.messages.length > 0) {
@@ -274,14 +295,14 @@ export class DryRunService {
                     for (let i = 0; i < batchCount && index < logMessages.length; i++, index++) {
                         const logs = logMessages[index];
                         console.log(chalk.yellow(JSON.stringify(logs, null, 2)));
-                        resultOutput += JSON.stringify(logs, null, 2);
+                        resultOutput.push(JSON.stringify(logs, null, 2));
                     }
                 };
 
                 console.log(chalk.yellow(`The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`));
-                resultOutput += `The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`;
+                resultOutput.push(`The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`);
                 console.log(chalk.yellow('The following log messages were generated:'));
-                resultOutput += 'The following log messages were generated:';
+                resultOutput.push('The following log messages were generated:');
 
                 displayBatch();
 
@@ -299,7 +320,7 @@ export class DryRunService {
             }
 
             if (this.returnOutput) {
-                return resultOutput;
+                return resultOutput.join('\n');
             }
 
             process.exit(0);

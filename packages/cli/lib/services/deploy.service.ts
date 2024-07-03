@@ -22,6 +22,7 @@ import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.
 import type { DeployOptions } from '../types.js';
 import { parse } from './config.service.js';
 import type { JSONSchema7 } from 'json-schema';
+import { loadSchemaJson } from './model.service.js';
 
 class DeployService {
     public async admin({ fullPath, environmentName, debug = false }: { fullPath: string; environmentName: string; debug?: boolean }): Promise<void> {
@@ -424,16 +425,6 @@ function loadScriptTsFile({
         return tsIntegrationFileContents;
     } catch (error) {
         console.error(chalk.red(`Error loading file ${filePath}`), error);
-        return null;
-    }
-}
-
-function loadSchemaJson({ fullPath }: { fullPath: string }): JSONSchema7 | null {
-    const filePath = path.join(fullPath, '.nango', 'schema.json');
-    try {
-        return JSON.parse(fs.readFileSync(filePath).toString()) as JSONSchema7;
-    } catch (error) {
-        console.error(chalk.red(`Error loading ${filePath}`), error);
         return null;
     }
 }

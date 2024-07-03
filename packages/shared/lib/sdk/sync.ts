@@ -24,6 +24,15 @@ const logger = getLogger('SDK');
  */
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
+const logLevelToLogger = {
+    info: 'info',
+    debug: 'debug',
+    error: 'error',
+    warn: 'warning',
+    http: 'info',
+    verbose: 'debug',
+    silly: 'debug'
+} as const;
 
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 
@@ -630,13 +639,14 @@ export class NangoAction {
         }
 
         const content = safeStringify(args);
+        const level = userDefinedLevel?.level ?? 'info';
 
         if (this.dryRun) {
-            logger.info([...args]);
+            logger[logLevelToLogger[level]]([...args]);
             return;
         }
 
-        await this.sendLogToPersist(content, { level: userDefinedLevel?.level ?? 'info', timestamp: Date.now() });
+        await this.sendLogToPersist(content, { level, timestamp: Date.now() });
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
