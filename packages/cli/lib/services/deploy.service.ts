@@ -182,11 +182,20 @@ class DeployService {
             // force confirmation :
             // - if auto-confirm flag is not set
             // - OR if there are deleted syncs with connections (and allow-destructive flag is not set)
+            // If CI, fail the deploy
             const shouldConfirmDestructive = deletedSyncsConnectionsCount > 0 && !allowDestructive;
             if (shouldConfirm || shouldConfirmDestructive) {
                 let confirmationMsg = 'Are you sure you want to continue y/n?';
                 if (!shouldConfirm && shouldConfirmDestructive) {
                     confirmationMsg += ' (set --allow-destructive flag to skip this confirmation)';
+                }
+                if (process.env['CI']) {
+                    console.log(
+                        chalk.red(
+                            `Syncs/Actions were not deployed. Confirm the deploy by passing the --auto-confirm flag${shouldConfirmDestructive ? ' and --allow-destructive flag' : ''}. Exiting`
+                        )
+                    );
+                    process.exit(1);
                 }
                 const confirmation = await promptly.confirm(confirmationMsg);
                 if (!confirmation) {
