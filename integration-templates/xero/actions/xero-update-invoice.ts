@@ -1,11 +1,5 @@
 import type { NangoAction, InvoiceActionResponse, Invoice, FailedInvoice, InvoiceFee, ActionErrorResponse } from '../../models';
-
-async function getTenantId(nango: NangoAction) {
-    const tenants = await nango.get({
-        endpoint: 'connections'
-    });
-    return tenants.data[0]['tenantId'];
-}
+import { getTenantId } from '../helpers/get-tenant-id.js';
 
 export default async function runAction(nango: NangoAction, input: Invoice[]): Promise<InvoiceActionResponse> {
     const tenant_id = await getTenantId(nango);
