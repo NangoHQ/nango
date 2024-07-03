@@ -69,10 +69,10 @@ export default function Scripts(props: ScriptProps) {
                                         Sync Scripts
                                     </div>
                                 </Table.Head>
-                                <Table.Head className="w-[200px]">Models</Table.Head>
+                                <Table.Head className="w-[220px]">Models</Table.Head>
                                 <Table.Head className="w-[300px]">Description</Table.Head>
                                 <Table.Head className="w-[100px]">Source</Table.Head>
-                                <Table.Head className="w-[100px]">Enabled</Table.Head>
+                                <Table.Head className="w-[80px]">Enabled</Table.Head>
                             </Table.Row>
                         </Table.Header>
                         <Table.Body>
@@ -84,11 +84,19 @@ export default function Scripts(props: ScriptProps) {
                                             className={cn('cursor-pointer', flow.enabled && 'text-white')}
                                             onClick={() => routeToScript(flow)}
                                         >
-                                            <Table.Cell bordered>{flow.name}</Table.Cell>
                                             <Table.Cell bordered>
-                                                <Tooltip text={Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns} type="dark">
-                                                    <div className="truncate">{Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns}</div>
-                                                </Tooltip>
+                                                <div className="truncate">{flow.name}</div>
+                                            </Table.Cell>
+                                            <Table.Cell bordered>
+                                                <div className="truncate">
+                                                    <Tooltip
+                                                        text={Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns}
+                                                        type="dark"
+                                                        className="truncate"
+                                                    >
+                                                        {Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns}
+                                                    </Tooltip>
+                                                </div>
                                             </Table.Cell>
                                             <Table.Cell bordered>
                                                 <div className="truncate">{flow.description}</div>
@@ -136,7 +144,9 @@ export default function Scripts(props: ScriptProps) {
                                             className={cn('cursor-pointer', flow.enabled && 'text-white')}
                                             onClick={() => routeToScript(flow)}
                                         >
-                                            <Table.Cell bordered>{flow.name}</Table.Cell>
+                                            <Table.Cell bordered>
+                                                <div className="truncate">{flow.name}</div>
+                                            </Table.Cell>
                                             <Table.Cell bordered>
                                                 <div className="truncate">{flow.description}</div>
                                             </Table.Cell>
