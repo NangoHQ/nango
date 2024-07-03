@@ -2939,6 +2939,7 @@ xero:
         - offline_access
     proxy:
         base_url: https://api.xero.com
+    post_connection_script: xero-post-connection
     docs: https://docs.nango.dev/integrations/all/xero
 yahoo:
     categories:
