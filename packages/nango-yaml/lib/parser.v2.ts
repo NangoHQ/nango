@@ -210,7 +210,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
         }
 
         // Create anonymous model for validation
-        const parsed = this.modelsParser.parseFields({ fields: { input: rawInput }, parent: name });
+        const parsed = this.modelsParser.parseFields({ fields: { input: rawInput }, stack: new Set([name]) });
 
         const anon = `Anonymous_${integrationName.replace(/[^A-Za-z0-9_]/g, '')}_${type}_${name.replace(/[^A-Za-z0-9_]/g, '')}_input`;
         const anonModel: NangoModel = { name: anon, fields: parsed, isAnon: true };
