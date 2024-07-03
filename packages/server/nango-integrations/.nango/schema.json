@@ -1,0 +1,136 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "SlackMessage": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "providerConfigKey": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["closed", "open"]
+                },
+                "ts": {
+                    "type": "string"
+                },
+                "meta": {
+                    "type": "object",
+                    "properties": {
+                        "accountName": {
+                            "type": "string"
+                        },
+                        "accountUuid": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["accountName", "accountUuid"],
+                    "additionalProperties": false
+                }
+            },
+            "required": ["content", "providerConfigKey", "provider", "status"],
+            "additionalProperties": false
+        },
+        "SlackResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean"
+                },
+                "channel": {
+                    "type": "string"
+                },
+                "ts": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "object",
+                    "properties": {
+                        "bot_id": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "user": {
+                            "type": "string"
+                        },
+                        "ts": {
+                            "type": "string"
+                        },
+                        "app_id": {
+                            "type": "string"
+                        },
+                        "team": {
+                            "type": "string"
+                        },
+                        "bot_profile": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "app_id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "icons": {
+                                    "type": "object"
+                                },
+                                "deleted": {
+                                    "type": "boolean"
+                                },
+                                "updated": {
+                                    "type": "number"
+                                },
+                                "team_id": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["id", "app_id", "name", "icons", "deleted", "updated", "team_id"],
+                            "additionalProperties": false
+                        },
+                        "attachments": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "required": ["bot_id", "type", "text", "user", "ts", "app_id", "team", "bot_profile", "attachments"],
+                    "additionalProperties": false
+                },
+                "warning": {
+                    "type": "string"
+                },
+                "response_metadata": {
+                    "type": "object",
+                    "properties": {
+                        "warnings": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": ["warnings"],
+                    "additionalProperties": false
+                }
+            },
+            "required": ["ok", "channel", "ts", "message", "response_metadata"],
+            "additionalProperties": false
+        }
+    },
+    "$comment": "This file was generated by Nango (v0.40.10)"
+}
