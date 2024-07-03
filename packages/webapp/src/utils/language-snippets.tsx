@@ -1,5 +1,5 @@
-import type { NangoModel } from '@nangohq/types';
-import type { NangoSyncEndpoint, NangoSyncModel, HTTP_VERB } from '../types';
+import type { HTTP_VERB, NangoModel, NangoSyncEndpoint } from '@nangohq/types';
+import type { NangoSyncModel } from '../types';
 import { isProd } from './utils';
 import { legacyModelToObject, modelToString } from './scripts';
 

@@ -577,7 +577,7 @@ export class NangoAction {
      * @deprecated please use setMetadata instead.
      */
     public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<object>> {
-        logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
+        logger.warning('setFieldMapping is deprecated. Please use setMetadata instead.');
         return this.setMetadata(fieldMapping);
     }
 
@@ -604,7 +604,7 @@ export class NangoAction {
      * @deprecated please use getMetadata instead.
      */
     public async getFieldMapping(): Promise<Metadata> {
-        logger.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
+        logger.warning('getFieldMapping is deprecated. Please use getMetadata instead.');
         const metadata = await this.getMetadata();
         return (metadata['fieldMapping'] as Metadata) || {};
     }
@@ -804,7 +804,7 @@ export class NangoSync extends NangoAction {
      * @deprecated please use batchSave
      */
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
-        logger.warn('batchSend will be deprecated in future versions. Please use batchSave instead.');
+        logger.warning('batchSend will be deprecated in future versions. Please use batchSave instead.');
         return this.batchSave(results, model);
     }
 
