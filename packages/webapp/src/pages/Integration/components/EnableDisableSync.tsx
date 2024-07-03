@@ -266,12 +266,14 @@ export default function EnableDisableSync({
                 modalOkLink={modalOkButtonLink}
                 modalCancelLink={modalCancelButtonLink}
             />
-            {showSpinner && (!('version' in flow) || flow.version === null) && modalShowSpinner && (
-                <span className="mr-2">
-                    <Spinner size={1} />
-                </span>
-            )}
-            <ToggleButton enabled={enabled} onChange={() => toggleSync(flow)} />
+            <div className="flex">
+                {showSpinner && (!('version' in flow) || flow.version === null) && modalShowSpinner && (
+                    <span className="mr-1">
+                        <Spinner size={1} />
+                    </span>
+                )}
+                <ToggleButton enabled={enabled} onChange={() => toggleSync(flow)} />
+            </div>
         </>
     );
 }
