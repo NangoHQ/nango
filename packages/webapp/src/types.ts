@@ -1,4 +1,4 @@
-import type { ActiveLogIds, AuthModeType, NangoModel } from '@nangohq/types';
+import type { ActiveLogIds, NangoModel, SyncTypeLiteral, AuthModeType, NangoSyncEndpoint } from '@nangohq/types';
 
 export type SyncResult = Record<string, Result>;
 
@@ -46,6 +46,7 @@ export interface SyncResponse {
     models: string | string[];
     schedule_id: string;
     status: 'SUCCESS' | 'RUNNING' | 'STOPPED' | 'PAUSED' | 'ERROR';
+    sync_type: SyncTypeLiteral;
     latest_sync: {
         created_at: string;
         updated_at: string;
@@ -159,12 +160,6 @@ export interface NangoSyncModel {
     description?: string;
     fields: NangoSyncModelField[];
 }
-
-export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
-
-export type NangoSyncEndpoint = {
-    [key in HTTP_VERB]?: string;
-};
 
 export interface Flow {
     id?: number;
