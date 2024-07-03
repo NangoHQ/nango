@@ -106,5 +106,5 @@ function mapXeroPayment(xeroPayment: any): Payment {
         account_code: xeroPayment.Account.Code,
         date: parseDate(xeroPayment.Date),
         amount_cents: parseFloat(xeroPayment.Amount) * 100
-    };
+    } as Payment;
 }
