@@ -111,10 +111,10 @@ export class OAuth1Client {
         const scopes = this.config.oauth_scopes ? this.config.oauth_scopes.split(',').join(this.authConfig.scope_separator || ' ') : '';
 
         let additionalAuthParams: Record<string, any> = {};
-        additionalAuthParams['oauth_callback'] = oAuth1CallbackURL;
         if (this.authConfig.authorization_params) {
             additionalAuthParams = this.authConfig.authorization_params;
         }
+        additionalAuthParams['oauth_callback'] = oAuth1CallbackURL;
 
         const queryParams = {
             oauth_token: requestToken.request_token,
