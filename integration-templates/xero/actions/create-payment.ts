@@ -1,8 +1,8 @@
-import type { FailedPayment, NangoAction, Payment, PaymentActionResponse, ActionErrorResponse } from '../../models';
+import type { FailedPayment, NangoAction, CreatePayment, Payment, PaymentActionResponse, ActionErrorResponse } from '../../models';
 import { getTenantId } from '../helpers/get-tenant-id.js';
 import { parseDate } from '../utils.js';
 
-export default async function runAction(nango: NangoAction, input: Payment[]): Promise<PaymentActionResponse> {
+export default async function runAction(nango: NangoAction, input: CreatePayment[]): Promise<PaymentActionResponse> {
     const tenant_id = await getTenantId(nango);
 
     // Validate the credit notes:
@@ -20,7 +20,7 @@ export default async function runAction(nango: NangoAction, input: Payment[]): P
     }
 
     // Check for required fields
-    invalidPayments = input.filter((x: any) => !x.account_code || !x.date || !x.amount_cents);
+    invalidPayments = input.filter((x: any) => (!x.account_code && !x.account_id) || !x.date || !x.amount_cents);
     if (invalidPayments.length > 0) {
         throw new nango.ActionError<ActionErrorResponse>({
             message: `Some payments are missing required fields.\nInvalid payments:\n${JSON.stringify(invalidPayments, null, 4)}`
@@ -62,16 +62,28 @@ export default async function runAction(nango: NangoAction, input: Payment[]): P
     return response;
 }
 
-function mapPaymentToXero(payment: Payment) {
-    const date = new Date(payment.date);
-
+function mapPaymentToXero(payment: CreatePayment) {
     const xeroPayment: Record<string, any> = {
-        Account: {
-            Code: payment.account_code
-        },
-        Date: date.toISOString().split('T')[0],
         Amount: payment.amount_cents / 100
     };
+
+    if (payment.account_code) {
+        xeroPayment['Account'] = {
+            Code: payment.account_code
+        };
+    }
+
+    if (payment.account_id) {
+        xeroPayment['Account'] = {
+            ...xeroPayment['Account'],
+            AccountID: payment.account_id
+        };
+    }
+
+    if (payment.date) {
+        const date = new Date(payment.date);
+        xeroPayment['Date'] = date.toISOString().split('T')[0];
+    }
 
     if (payment.invoice_id) {
         xeroPayment['Invoice'] = {
@@ -98,13 +110,15 @@ function mapFailedXeroPayment(xeroPayment: any): FailedPayment {
 // as returned by GET /Payments
 // This mapping function is correct, do not use the same one as for the sync
 function mapXeroPayment(xeroPayment: any): Payment {
-    return {
+    const payment = {
         id: xeroPayment.PaymentID,
         status: xeroPayment.Status,
         invoice_id: xeroPayment.Invoice ? xeroPayment.Invoice.InvoiceID : null,
         credit_note_id: xeroPayment.CreditNote ? xeroPayment.CreditNote.CreditNoteID : null,
         account_code: xeroPayment.Account.Code,
-        date: parseDate(xeroPayment.Date),
+        date: parseDate(xeroPayment.Date).toISOString(),
         amount_cents: parseFloat(xeroPayment.Amount) * 100
-    } as Payment;
+    };
+
+    return payment;
 }
