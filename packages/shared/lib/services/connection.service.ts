@@ -811,7 +811,7 @@ class ConnectionService {
             }
 
             case 'OAUTH2_CC': {
-                if (!rawCreds['access_token'] && !rawCreds['data']['token']) {
+                if (!rawCreds['access_token'] && !(rawCreds['data'] && rawCreds['data']['token']) && !rawCreds['jwt']) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
 
@@ -821,11 +821,13 @@ class ConnectionService {
                     expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
                 } else if (rawCreds['expires_in']) {
                     expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
+                } else {
+                    expiresAt = new Date(Date.now() + 55 * 60 * 1000);
                 }
 
                 const oauth2Creds: OAuth2ClientCredentials = {
                     type: 'OAUTH2_CC',
-                    token: rawCreds['access_token'] || rawCreds['data']['token'],
+                    token: rawCreds['access_token'] || (rawCreds['data'] && rawCreds['data']['token']) || rawCreds['jwt'],
                     client_id: '',
                     client_secret: '',
                     expires_at: expiresAt,
@@ -1094,6 +1096,9 @@ class ConnectionService {
 
         if (template.token_request_auth_method === 'basic') {
             headers['Authorization'] = 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64');
+        } else if (template.token_request_auth_method === 'custom') {
+            params.append('username', client_id);
+            params.append('password', client_secret);
         } else {
             params.append('client_id', client_id);
             params.append('client_secret', client_secret);
