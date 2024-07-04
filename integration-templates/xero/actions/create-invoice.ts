@@ -1,8 +1,8 @@
-import type { NangoAction, Invoice, InvoiceActionResponse, FailedInvoice, ActionErrorResponse } from '../../models';
+import type { NangoAction, CreateInvoice, InvoiceActionResponse, FailedInvoice, ActionErrorResponse } from '../../models';
 import { getTenantId } from '../helpers/get-tenant-id.js';
-import { toInvoice } from '../mappers/to-invoice.js';
+import { toInvoice, toXeroInvoice } from '../mappers/to-invoice.js';
 
-export default async function runAction(nango: NangoAction, input: Invoice[]): Promise<InvoiceActionResponse> {
+export default async function runAction(nango: NangoAction, input: CreateInvoice[]): Promise<InvoiceActionResponse> {
     const tenant_id = await getTenantId(nango);
 
     // Validate the invoices:
@@ -36,7 +36,7 @@ export default async function runAction(nango: NangoAction, input: Invoice[]): P
             summarizeErrors: 'false'
         },
         data: {
-            Invoices: input.map(mapInvoiceToXero)
+            Invoices: input.map(toXeroInvoice)
         }
     };
 
@@ -54,75 +54,12 @@ export default async function runAction(nango: NangoAction, input: Invoice[]): P
     }
     const succeededInvoices = invoices.filter((x: any) => !x.HasErrors);
 
-    const response = {
+    const response: InvoiceActionResponse = {
         succeededInvoices: succeededInvoices.map(toInvoice),
         failedInvoices: failedInvoices.map(mapFailedXeroInvoice)
-    } as InvoiceActionResponse;
-
-    return response;
-}
-
-function mapInvoiceToXero(invoice: Invoice) {
-    const xeroInvoice: Record<string, any> = {
-        Type: invoice.type,
-        Contact: {
-            ContactID: invoice.external_contact_id
-        },
-        LineItems: []
     };
 
-    if (invoice.number) {
-        xeroInvoice['InvoiceNumber'] = invoice.number;
-    }
-
-    if (invoice.status) {
-        xeroInvoice['Status'] = invoice.status;
-    }
-
-    if (invoice.currency) {
-        xeroInvoice['CurrencyCode'] = invoice.currency;
-    }
-
-    if (invoice.issuing_date) {
-        const issuingDate = new Date(invoice.issuing_date);
-        xeroInvoice['Date'] = issuingDate.toISOString().split('T')[0];
-    }
-
-    if (invoice.payment_due_date) {
-        const dueDate = new Date(invoice.payment_due_date);
-        xeroInvoice['DueDate'] = dueDate.toISOString().split('T')[0];
-    }
-
-    for (const item of invoice.fees) {
-        const xeroItem: Record<string, any> = {
-            Description: item.description,
-            AccountCode: item.account_code
-        };
-
-        if (item.item_code) {
-            xeroItem['ItemCode'] = item.item_code;
-        }
-
-        if (item.units) {
-            xeroItem['Quantity'] = item.units;
-        }
-
-        if (item.precise_unit_amount) {
-            xeroItem['UnitAmount'] = item.precise_unit_amount;
-        }
-
-        if (item.amount_cents) {
-            xeroItem['LineAmount'] = item.amount_cents / 100;
-        }
-
-        if (item.taxes_amount_cents) {
-            xeroItem['TaxAmount'] = item.taxes_amount_cents / 100;
-        }
-
-        xeroInvoice['LineItems'].push(xeroItem);
-    }
-
-    return xeroInvoice;
+    return response;
 }
 
 function mapFailedXeroInvoice(xeroInvoice: any): FailedInvoice {

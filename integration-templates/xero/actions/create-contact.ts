@@ -1,8 +1,9 @@
-import type { NangoAction, Contact, ContactActionResponse, FailedContact, ActionErrorResponse } from '../../models';
+import type { NangoAction, CreateContact, ContactActionResponse, FailedContact, ActionErrorResponse } from '../../models';
+import type { Contact as XeroContact } from '../types';
 import { getTenantId } from '../helpers/get-tenant-id.js';
 import { toXeroContact, toContact } from '../mappers/to-contact.js';
 
-export default async function runAction(nango: NangoAction, input?: Contact[]): Promise<ContactActionResponse> {
+export default async function runAction(nango: NangoAction, input: CreateContact[]): Promise<ContactActionResponse> {
     const tenant_id = await getTenantId(nango);
 
     // Check if input is an array
@@ -34,7 +35,7 @@ export default async function runAction(nango: NangoAction, input?: Contact[]): 
     };
 
     const res = await nango.post(config);
-    const contacts = res.data.Contacts;
+    const contacts: XeroContact[] = res.data.Contacts;
 
     // Check if Xero failed import of any contacts
     const failedContacts = contacts.filter((x: any) => x.HasValidationErrors);

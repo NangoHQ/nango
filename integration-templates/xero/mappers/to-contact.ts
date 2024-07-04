@@ -1,15 +1,16 @@
-import type { Contact } from '../../models';
+import type { Contact, CreateContact } from '../../models';
+import type { Contact as XeroContact, Address as XeroAddress, Phone as XeroPhone } from '../types';
 
-export function toContact(xeroContact: any): Contact {
+export function toContact(xeroContact: XeroContact): Contact {
     // Find Street address & default phone object, if they exist
-    let streetAddress = xeroContact.Addresses.filter((x: any) => x.AddressType === 'POBOX')[0];
-    let defaultPhone = xeroContact.Phones.filter((x: any) => x.PhoneType === 'DEFAULT')[0];
+    let streetAddress: XeroAddress | null | undefined = xeroContact.Addresses.filter((x: any) => x.AddressType === 'POBOX')[0];
+    let defaultPhone: XeroPhone | null | undefined = xeroContact.Phones.filter((x: any) => x.PhoneType === 'DEFAULT')[0];
 
-    streetAddress = streetAddress ? streetAddress : {};
-    defaultPhone = defaultPhone ? defaultPhone : {};
+    streetAddress = streetAddress ? streetAddress : null;
+    defaultPhone = defaultPhone ? defaultPhone : null;
 
-    let formattedPhoneNumber: any = null;
-    if (defaultPhone.PhoneNumber) {
+    let formattedPhoneNumber: string | null = null;
+    if (defaultPhone?.PhoneNumber) {
         formattedPhoneNumber = defaultPhone.PhoneCountryCode
             ? `+${defaultPhone.PhoneCountryCode}${defaultPhone.PhoneAreaCode}${defaultPhone.PhoneNumber}`
             : `${defaultPhone.PhoneAreaCode}${defaultPhone.PhoneNumber}`;
@@ -21,20 +22,20 @@ export function toContact(xeroContact: any): Contact {
         external_id: xeroContact.ContactNumber,
         tax_number: xeroContact.TaxNumber,
         email: xeroContact.EmailAddress,
-        address_line_1: streetAddress.AddressLine1,
-        address_line_2: streetAddress.AddressLine2,
-        city: streetAddress.City,
-        zip: streetAddress.PostalCode,
-        country: streetAddress.Country,
-        state: streetAddress.Region,
+        address_line_1: streetAddress?.AddressLine1,
+        address_line_2: streetAddress?.AddressLine2,
+        city: streetAddress?.City,
+        zip: streetAddress?.PostalCode,
+        country: streetAddress?.Country,
+        state: streetAddress?.Region,
         phone: formattedPhoneNumber
     } as Contact;
 }
 
-export function toXeroContact(contact: Contact) {
+export function toXeroContact(contact: Contact | CreateContact): XeroContact {
     const xeroContact: any = {};
 
-    if (contact.id) {
+    if ('id' in contact) {
         xeroContact['ContactID'] = contact.id;
     }
 
