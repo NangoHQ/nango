@@ -22,7 +22,17 @@ const logger = getLogger('SDK');
  * over this file to the cli
  *
  */
+
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
+const logLevelToLogger = {
+    info: 'info',
+    debug: 'debug',
+    error: 'error',
+    warn: 'warning',
+    http: 'info',
+    verbose: 'debug',
+    silly: 'debug'
+} as const;
 
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 
@@ -603,13 +613,10 @@ export class NangoAction {
      * Log
      * @desc Log a message to the activity log which shows up in the Nango Dashboard
      * note that the last argument can be an object with a level property to specify the log level
-     * example: await nango.log('This is a log message', { level: 'error' })
-     * error = red
-     * warn = orange
-     * info = white
-     * debug = grey
-     * http = green
-     * silly = light green
+     * @example
+     * ```ts
+     * await nango.log('This is a log message', { level: 'error' })
+     * ```
      */
     public async log(message: any, options?: { level?: LogLevel } | { [key: string]: any; level?: never }): Promise<void>;
     public async log(message: string, ...args: [any, { level?: LogLevel }]): Promise<void>;
@@ -632,13 +639,14 @@ export class NangoAction {
         }
 
         const content = safeStringify(args);
+        const level = userDefinedLevel?.level ?? 'info';
 
         if (this.dryRun) {
-            logger.info([...args]);
+            logger[logLevelToLogger[level] ?? 'info']([...args]);
             return;
         }
 
-        await this.sendLogToPersist(content, { level: userDefinedLevel?.level ?? 'info', timestamp: Date.now() });
+        await this.sendLogToPersist(content, { level, timestamp: Date.now() });
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
@@ -1022,6 +1030,8 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
 
 /* eslint-disable no-inner-declarations */
 /**
+ * @internal
+ *
  * This function will enable tracing on the SDK
  * It has been split from the actual code to avoid making the code too dirty and to easily enable/disable tracing if there is an issue with it
  */

@@ -593,6 +593,11 @@ export class NangoError extends Error {
                 this.message = 'Failed to validate the input passed to the action';
                 break;
 
+            case 'invalid_action_output':
+                this.status = 400;
+                this.message = 'Failed to validate the output passed to the action';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

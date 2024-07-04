@@ -376,7 +376,7 @@ export class SyncRunService {
             }
 
             if (!this.writeToDb) {
-                return userDefinedResults;
+                return { success: true, error: null, response: userDefinedResults };
             }
 
             const totalRunTime = (Date.now() - startTime) / 1000;
