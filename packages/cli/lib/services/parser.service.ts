@@ -14,8 +14,10 @@ class ParserService {
 
         traverseFn(ast, {
             ImportDeclaration(path: NodePath<t.ImportDeclaration>) {
-                const importPath = path.node.source.value;
-                importedFiles.push(importPath);
+                if (path.node.importKind !== 'type') {
+                    const importPath = path.node.source.value;
+                    importedFiles.push(importPath);
+                }
             }
         });
 
