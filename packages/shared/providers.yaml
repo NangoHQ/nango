@@ -418,6 +418,7 @@ certn:
         paginate:
             type: link
             link_path_in_response_body: next
+            response_path: results
         verification:
             method: GET
             endpoint: /api/v2/teams
