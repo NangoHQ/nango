@@ -33,7 +33,20 @@ export default async function runAction(nango: NangoAction, input: SlackMessage)
                             type: 'mrkdwn',
                             text: input.content
                         }
-                    }
+                    },
+                    ...(input.meta
+                        ? [
+                              {
+                                  type: 'context',
+                                  elements: [
+                                      {
+                                          type: 'mrkdwn',
+                                          text: `${input.meta.accountName} (uuid: ${input.meta.accountUuid})`
+                                      }
+                                  ]
+                              }
+                          ]
+                        : [])
                 ]
             }
         ]
