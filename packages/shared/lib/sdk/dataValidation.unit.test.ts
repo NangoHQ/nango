@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { validateInput } from './dataValidation.js';
+import { validateData } from './dataValidation.js';
 
-describe('validateInput', () => {
+describe('validateData', () => {
     it('should skip if no json schema ', () => {
-        const val = validateInput({ input: { foo: 'bar' }, modelName: 'Test', jsonSchema: undefined });
+        const val = validateData({ input: { foo: 'bar' }, modelName: 'Test', jsonSchema: undefined });
         expect(val).toStrictEqual(true);
     });
 
     it('should return true if no error', () => {
-        const val = validateInput({
+        const val = validateData({
             input: { foo: 'bar' },
             modelName: 'Test',
             jsonSchema: { definitions: { Test: { type: 'object', properties: { foo: { type: 'string' } } } } }
@@ -17,7 +17,7 @@ describe('validateInput', () => {
     });
 
     it('should return an error', () => {
-        const val = validateInput({
+        const val = validateData({
             input: { foo: 'bar' },
             modelName: 'Test',
             jsonSchema: {
@@ -30,7 +30,7 @@ describe('validateInput', () => {
     });
 
     it('should support ref', () => {
-        const val = validateInput({
+        const val = validateData({
             input: { ref: { id: 'bar' } },
             modelName: 'Test1',
             jsonSchema: {
@@ -44,7 +44,7 @@ describe('validateInput', () => {
     });
 
     it('should support ref error', () => {
-        const val = validateInput({
+        const val = validateData({
             input: { ref: { id: 1 } },
             modelName: 'Test1',
             jsonSchema: {
@@ -66,7 +66,7 @@ describe('validateInput', () => {
     });
 
     it('should not throw if invalid json schema', () => {
-        const val = validateInput({
+        const val = validateData({
             input: { foo: 'bar' },
             modelName: 'Test',
             jsonSchema: {
@@ -75,5 +75,54 @@ describe('validateInput', () => {
         });
         // Stringify because it's an exotic error object
         expect(JSON.parse(JSON.stringify(val))).toStrictEqual([{ missingRef: '#/definitions/NotFound', missingSchema: '' }]);
+    });
+
+    it('should support exotic format', () => {
+        const val = validateData({
+            input: { foo: 'bar' },
+            modelName: 'Test',
+            jsonSchema: {
+                definitions: { Test: { type: 'object', properties: { date: { type: 'string', format: 'date-time' } } } }
+            }
+        });
+        expect(val).toStrictEqual(true);
+    });
+
+    it('should handle empty input with model', () => {
+        const val = validateData({
+            input: undefined,
+            modelName: 'Test',
+            jsonSchema: {
+                definitions: { Test: { type: 'object', properties: { date: { type: 'string', format: 'date-time' } } } }
+            }
+        });
+        expect(val).toStrictEqual([
+            {
+                instancePath: '',
+                keyword: 'type',
+                message: 'must be object',
+                params: {
+                    type: 'object'
+                },
+                schemaPath: '#/type'
+            }
+        ]);
+    });
+
+    it('should handle unexpected input', () => {
+        const val = validateData({
+            input: '1',
+            modelName: undefined,
+            jsonSchema: { definitions: {} }
+        });
+        expect(val).toStrictEqual([
+            {
+                instancePath: '',
+                keyword: 'type',
+                message: 'must be empty',
+                params: {},
+                schemaPath: '#/type'
+            }
+        ]);
     });
 });

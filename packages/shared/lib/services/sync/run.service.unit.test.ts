@@ -110,16 +110,8 @@ describe('SyncRun', () => {
 
         vi.spyOn(environmentService, 'getAccountAndEnvironment').mockImplementation(() => {
             return Promise.resolve({
-                account: {
-                    id: 1,
-                    name: 'test',
-                    uuid: '1234'
-                } as Account,
-                environment: {
-                    id: 1,
-                    name: 'test',
-                    secret_key: 'secret'
-                } as Environment
+                account: { id: 1, name: 'test', uuid: '1234' } as Account,
+                environment: { id: 1, name: 'test', secret_key: 'secret' } as Environment
             });
         });
 
@@ -131,7 +123,7 @@ describe('SyncRun', () => {
         });
 
         const run = await syncRun.run();
-        expect(run).toEqual({ success: true });
+        expect(run).toEqual({ success: true, error: null, response: { success: true } });
     });
 
     it('should failed to run (mocked)', async () => {
@@ -139,16 +131,8 @@ describe('SyncRun', () => {
 
         vi.spyOn(environmentService, 'getAccountAndEnvironment').mockImplementation(() => {
             return Promise.resolve({
-                account: {
-                    id: 1,
-                    name: 'test',
-                    uuid: '1234'
-                } as Account,
-                environment: {
-                    id: 1,
-                    name: 'test',
-                    secret_key: 'secret'
-                } as Environment
+                account: { id: 1, name: 'test', uuid: '1234' } as Account,
+                environment: { id: 1, name: 'test', secret_key: 'secret' } as Environment
             });
         });
 

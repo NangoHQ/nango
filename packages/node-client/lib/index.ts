@@ -409,7 +409,7 @@ export class Nango {
      */
 
     /**
-     * @deprecated. Use listRecords() instead.
+     * @deprecated Use listRecords() instead.
      */
     public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<(T & { _nango_metadata: RecordMetadata })[]> {
         const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter } = config;
@@ -842,8 +842,8 @@ export class Nango {
      *
      * Verify incoming webhooks signature
      *
-     * @param signatureInHeader The value in the header X-Nango-Signature
-     * @param jsonPayload The HTTP body as JSON
+     * @param signatureInHeader - The value in the header X-Nango-Signature
+     * @param jsonPayload - The HTTP body as JSON
      * @returns Whether the signature is valid
      */
     public verifyWebhookSignature(signatureInHeader: string, jsonPayload: unknown): boolean {
@@ -912,7 +912,7 @@ export class Nango {
 
     /**
      * Enriches the headers with the Authorization token
-     * @param - Optional. The headers to enrich
+     * @param headers - Optional. The headers to enrich
      * @returns The enriched headers
      */
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}): Record<string, string | number | boolean> {
