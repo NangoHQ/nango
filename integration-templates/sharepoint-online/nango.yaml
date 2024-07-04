@@ -1,10 +1,10 @@
 integrations:
-    microsoft:
+    sharepoint-online:
         actions:
             list-sites:
                 description: |
                     This action will be used to display a list of sites to the end-user, who will pick the ones he wants to sync.
-                endpoint: POST /microsoft/list-sites
+                endpoint: GET /sharepoint/list-sites
                 scopes:
                     - Sites.ReadWrite.All
                     - offline_access
@@ -13,7 +13,7 @@ integrations:
             file-sync:
                 description: |
                     This sync will be used to sync file metadata from SharePoint site based on the ones the user has picked.
-                endpoint: GET /microsoft/file-sync
+                endpoint: /sharepoint/file-sync
                 sync_type: incremental
                 track_deletes: true
                 runs: every 1 hour

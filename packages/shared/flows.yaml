@@ -2291,45 +2291,6 @@ integrations:
                 updatedAt: date
                 teamId: string
                 projectIds: string
-    microsoft:
-        actions:
-            list-sites:
-                description: >
-                    This action will be used to display a list of sites to the end-user,
-                    who will pick the ones he wants to sync.
-                endpoint: POST /microsoft/list-sites
-                scopes:
-                    - Sites.ReadWrite.All
-                    - offline_access
-                output: SharePointSiteId
-        syncs:
-            file-sync:
-                description: >
-                    This sync will be used to sync file metadata from SharePoint site
-                    based on the ones the user has picked.
-                endpoint: GET /microsoft/file-sync
-                sync_type: incremental
-                track_deletes: true
-                runs: every 1 hour
-                scopes:
-                    - Sites.ReadWrite.All
-                    - offline_access
-                auto_start: true
-                output: FileMetadata
-        models:
-            FileMetadata:
-                etag: string
-                id: string
-                is_folder: boolean
-                mime_type: string
-                path: string
-                raw_source: object
-                updated_at: Date
-                download_url: string
-                created_at: Date
-                blob_size: number
-            SharePointSiteId:
-                id: string
     microsoft-teams:
         syncs:
             org-units:
@@ -2703,6 +2664,45 @@ integrations:
                     created_date: string
                     created_by: string
                 last_modified_date: string
+    sharepoint-online:
+        actions:
+            list-sites:
+                description: >
+                    This action will be used to display a list of sites to the end-user,
+                    who will pick the ones he wants to sync.
+                endpoint: GET /sharepoint/list-sites
+                scopes:
+                    - Sites.ReadWrite.All
+                    - offline_access
+                output: SharePointSiteId
+        syncs:
+            file-sync:
+                description: >
+                    This sync will be used to sync file metadata from SharePoint site
+                    based on the ones the user has picked.
+                endpoint: /sharepoint/file-sync
+                sync_type: incremental
+                track_deletes: true
+                runs: every 1 hour
+                scopes:
+                    - Sites.ReadWrite.All
+                    - offline_access
+                auto_start: true
+                output: FileMetadata
+        models:
+            FileMetadata:
+                etag: string
+                id: string
+                is_folder: boolean
+                mime_type: string
+                path: string
+                raw_source: object
+                updated_at: Date
+                download_url: string
+                created_at: Date
+                blob_size: number
+            SharePointSiteId:
+                id: string
     slack:
         syncs:
             users:
