@@ -279,6 +279,7 @@
                         "integrations/integration-templates/kustomer",
                         "integrations/integration-templates/lever",
                         "integrations/integration-templates/linear",
+                        "integrations/integration-templates/microsoft",
                         "integrations/integration-templates/microsoft-active-directory",
                         "integrations/integration-templates/next-cloud",
                         "integrations/integration-templates/notion",
