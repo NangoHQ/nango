@@ -88,7 +88,7 @@ export default function Scripts(props: ScriptProps) {
                                                 <div className="truncate">{flow.name}</div>
                                             </Table.Cell>
                                             <Table.Cell bordered>
-                                                <div className="truncate">
+                                                <div className="truncate flex items-center">
                                                     <Tooltip
                                                         text={Array.isArray(flow.returns) ? flow.returns.join(', ') : flow.returns}
                                                         type="dark"
