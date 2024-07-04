@@ -1,0 +1,157 @@
+---
+title: 'Validate input and output'
+sidebarTitle: 'Validate input and output'
+description: 'How to automatically validate your input and ouput with JSON schema and custom alternatives'
+---
+
+Nango provides a straightforward way to validate your data using automatically generated schema files. This guide will walk you through the essentials of data validation in Nango.
+
+## Auto-Generated schema files
+
+When you use Nango CLI, it automatically generates two schema files in the `.nango` folder:
+
+- **schema.ts** a TypeScript file that contains all your models.
+- **schema.json** a JSON Schema file that is used for automatic data validation.
+
+These files can be versioned and integrated into your own codebase, ensuring consistency and reliability across different environments.
+
+## Automatic validation
+
+The `schema.json` file plays a crucial role in Nango's data validation process. This `schema.json` file is used to validate both Actions input/output and Syncs record automatically.
+
+- **CLI**: When running a dry run using the Nango CLI, all your input and output will be automatically checked and will stop execution
+- **Production**: This file is stored along your scripts and execute the same check at execution time. Validation errors are only logged and do not halt execution.
+
+<Tip>
+The behavior in production ensures that validation issues are tracked without disrupting the application's operation.
+We are planning to enforce validation errors in the coming months with a way to configure the failure mode; a communication will be broadcasted before this goes into effects.
+</Tip>
+
+## Using `schema.json` in your codebase
+
+JSON Schema is supported in most of the main software languages, here is a non-exhaustive list of how you can directly use this file to validate the records you receive from Nango.
+
+<Tabs>
+
+<Tab title="Typescript">
+
+```ts
+import { Ajv } from 'ajv';
+import addFormats from 'ajv-formats';
+import jsonSchema from '.nango/schema.json';
+
+// Initiate AJV
+const ajv = new Ajv({ allErrors: true, discriminator: true });
+addFormats(ajv);
+
+const modelToValidate = 'MyModelName';
+const myData = {"id": "hello-word"};
+
+// Compile the JSON schema
+const validate = ajv.compile({
+  ...jsonSchema,
+  ...jsonSchema['definitions'][modelToValidate]
+});
+
+// Validate your data
+validate(mydata);
+```
+</Tab>
+
+
+<Tab title="Golang">
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"github.com/santhosh-tekuri/jsonschema/v5"
+)
+
+func main() {
+  sch, err := jsonschema.Compile(".nango/schema.json")
+  if err != nil {
+    log.Fatalf("%#v", err)
+  }
+
+  myData := map[string]interface{}{
+		"id": "hello-word",
+	}
+  if err = sch.Validate(v); err != nil {
+    log.Fatalf("%#v", err)
+  }
+}
+```
+</Tab>
+
+<Tab title="Rust">
+```rust
+use jsonschema::{Draft, JSONSchema};
+use serde_json::json;
+
+let data = fs::read_to_string(".nango/schema.json").expect("Unable to read file");
+let schema: serde_json::Value = serde_json::from_str(&data).expect("Unable to parse");
+
+let instance = json!("{'id': 'hello-word'}");
+let compiled = JSONSchema::compile(&schema).expect("A valid schema");
+let result = compiled.validate(&instance);
+```
+</Tab>
+
+
+<Tab title="Python">
+```py
+import json
+from jsonschema import validate
+
+with open('.nango/schema.json') as file:
+    schema = json.load(file)
+    print(schema)
+
+    validate(instance={"id": "hello-word"}, schema=schema)
+```
+</Tab>
+</Tabs>
+
+
+
+
+## Custom Validation
+
+For more advanced use cases, you can generate your own validation schemas using the available files with the tool of your choice.
+
+
+
+<Tabs>
+
+<Tab title="Typescript `zod`">
+
+To create `zod` schemas you can use [`ts-to-zod` npm package](https://www.npmjs.com/package/ts-to-zod). This tool converts TypeScript definitions into Zod schemas, which can be used for runtime validation in your own Typescript codebase.
+
+```bash
+npx ts-to-zod .nango/schema.ts schema.zod.ts
+```
+</Tab>
+
+
+<Tab title="Golang">
+You can use [`go-jsonschema` golang package](https://github.com/omissis/go-jsonschema). This tool converts JSON Schema definitions into Golang struct. Note that some syntax are not supported by this package.
+
+```bash
+go-jsonschema -p main .nango/schema.json > test.go
+```
+
+</Tab>
+
+
+<Tab title="Rust">
+
+You can use [`typify` rust package](https://github.com/oxidecomputer/typify). This tool converts JSON Schema definitions into Rust types.  Note that some syntax are not supported by this package.
+
+```bash
+cargo typify .nango/schema.json
+```
+</Tab>
+</Tabs>
+
