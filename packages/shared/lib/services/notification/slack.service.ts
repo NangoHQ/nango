@@ -698,6 +698,10 @@ export class SlackService {
         return `${basePublicUrl}/${envName}/logs?${usp.toString()}`;
     }
 
+    private getPageUrl({ envName, providerConfigKey, name, type }: { envName: string; providerConfigKey: string; name: string; type: string }) {
+        return `${basePublicUrl}/${envName}/${type}/${providerConfigKey}/${name}`;
+    }
+
     private getMessage({
         type,
         count,
@@ -725,16 +729,16 @@ export class SlackService {
             case 'sync':
             case 'action': {
                 if (resolved) {
-                    return `[Resolved] <${this.getLogUrl({ envName, originalActivityLogId: null, name, date, type })}|*${name}*> ${flowType.toLowerCase()} (integration: <${this.getLogUrl({ envName, originalActivityLogId: null, name: providerConfigKey, date, type: 'integration' })}|${providerConfigKey}>) in *${envName}* failed. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
+                    return `[Resolved] \`${name}\` ${flowType.toLowerCase()} (integration: \`${providerConfigKey}\`) in *${envName}* failed. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
                 } else {
-                    return `<${this.getLogUrl({ envName, originalActivityLogId: null, name, date, type })}|*${name}*> ${flowType.toLowerCase()} (integration: <${this.getLogUrl({ envName, originalActivityLogId: null, name: providerConfigKey, date, type: 'integration' })}|${providerConfigKey}>) is failing for ${count} ${connectionWord} in *${envName}*. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
+                    return `\`${name}\` ${flowType.toLowerCase()} (integration: \`${providerConfigKey}\`) is failing for ${count} ${connectionWord} in *${envName}*. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
                 }
             }
             case 'auth': {
                 if (resolved) {
-                    return `[Resolved] connection <${this.getLogUrl({ envName, originalActivityLogId: null, name, date, type })}|*${name}*> (integration: <${this.getLogUrl({ envName, originalActivityLogId: null, name: providerConfigKey, date, type: 'integration' })}|${providerConfigKey}>) in *${envName}* refresh failed.`;
+                    return `[Resolved] connection <${this.getPageUrl({ envName, name, providerConfigKey, type: 'connections' })}|*${name}*> (integration: \`${providerConfigKey}\`) in *${envName}* refresh failed.`;
                 } else {
-                    return `Could not refresh token of connection <${this.getLogUrl({ envName, originalActivityLogId: null, name, date, type })}|*${name}*> in *${envName}* (integration: <${this.getLogUrl({ envName, originalActivityLogId: null, name: providerConfigKey, date, type: 'integration' })}|${providerConfigKey}>). Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
+                    return `Could not refresh token of connection <${this.getPageUrl({ envName, name, providerConfigKey, type: 'connections' })}|*${name}*> in *${envName}* (integration: \`${providerConfigKey}\`). Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
                 }
             }
         }
