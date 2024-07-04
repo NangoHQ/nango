@@ -3,4 +3,5 @@ dist/*
 *-audit.json
 node_modules
 nango-integrations/models.ts
+nango-integrations/.nango
 nango-integrations/dist/*

@@ -1,0 +1,294 @@
+integrations:
+    xero:
+        syncs:
+            contacts:
+                description: |
+                    Fetches all Xero contacts.
+                    Details: incremental sync, detects deletes, metadata is not required.
+                runs: every hour
+                output: Contact
+                sync_type: incremental
+                auto_start: false
+                endpoint: GET /xero/contacts
+            accounts:
+                description: |
+                    Fetches all accounts in Xero (chart of accounts). Incremental sync, detects deletes, metadata is not required.
+                runs: every hour
+                scopes: accounting.settings
+                output: Account
+                sync_type: incremental
+                auto_start: false
+                endpoint: GET /xero/accounts
+            items:
+                description: |
+                    Fetches all items in Xero. Incremental sync, does not detect deletes, metadata is not
+                    required.
+                runs: every hour
+                scopes: accounting.settings
+                output: Item
+                sync_type: incremental
+                auto_start: false
+                endpoint: GET /xero/items
+            invoices:
+                description: |
+                    Fetches all invoices in Xero. Incremental sync.
+                runs: every hour
+                scopes: accounting.transactions
+                output: Invoice
+                sync_type: incremental
+                auto_start: false
+                endpoint: GET /xero/invoices
+            payments:
+                description: |
+                    Fetches all payments in Xero. Incremental sync.
+                runs: every hour
+                scopes: accounting.transactions
+                output: Payment
+                sync_type: incremental
+                auto_start: false
+                endpoint: GET /xero/payments
+        actions:
+            create-contact:
+                description: |
+                    Creates one or multiple contacts in Xero.
+                    Note: Does NOT check if these contacts already exist.
+                input: CreateContact[]
+                scopes: accounting.contacts
+                output: ContactActionResponse
+                endpoint: POST /xero/contacts
+            update-contact:
+                description: >
+                    Updates one or multiple contacts in Xero.
+                    Only fields that are passed in are modified. If a field should not be
+                    changed, omit it in the input.
+                    The id field is mandatory.
+                input: Contact[]
+                scopes: accounting.contacts
+                output: ContactActionResponse
+                endpoint: PUT /xero/contacts
+            create-invoice:
+                description: |
+                    Creates one or more invoices in Xero.
+                    Note: Does NOT check if the invoice already exists.
+                input: CreateInvoice[]
+                scopes: accounting.transactions
+                output: InvoiceActionResponse
+                endpoint: POST /xero/invoices
+            update-invoice:
+                description: |
+                    Updates one or more invoices in Xero. To delete an invoice
+                    that is in DRAFT or SUBMITTED set the status to DELETED. If an
+                    invoice has been AUTHORISED it can't be deleted but you can set
+                    the status to VOIDED.
+                input: Invoice[]
+                scopes: accounting.transactions
+                output: InvoiceActionResponse
+                endpoint: PUT /xero/invoices
+            create-credit-note:
+                description: |
+                    Creates one or more credit notes in Xero.
+                    Note: Does NOT check if the credit note already exists.
+                input: CreditNote[]
+                scopes: accounting.transactions
+                output: CreditNoteActionResponse
+                endpoint: POST /xero/creditnotes
+            update-credit-note:
+                description: |
+                    Updates one or more credit notes in Xero.
+                input: CreditNote[]
+                scopes: accounting.transactions
+                output: CreditNoteActionResponse
+                endpoint: PUT /xero/creditnotes
+            create-payment:
+                description: |
+                    Creates one or more payments in Xero.
+                    Note: Does NOT check if the payment already exists.
+                scopes: accounting.transactions
+                input: CreatePayment[]
+                output: PaymentActionResponse
+                endpoint: POST /xero/payments
+            create-item:
+                description: |
+                    Creates one or more items in Xero.
+                    Note: Does NOT check if the item already exists.
+                scopes: accounting.settings
+                input: Item[]
+                output: ItemActionResponse
+                endpoint: POST /xero/items
+            update-item:
+                description: |
+                    Updates one or more items in Xero.
+                scopes: accounting.settings
+                input: Item[]
+                output: ItemActionResponse
+                endpoint: PUT /xero/items
+
+models:
+    ActionErrorResponse:
+        message: string
+    BaseContact:
+        name: string
+    CreateContact:
+        __extends: BaseContact
+        external_id?: string
+        email?: string
+        tax_number?: string
+        address_line_1?: string
+        address_line_2?: string
+        city?: string
+        zip?: string
+        country?: string
+        state?: string
+        phone?: string
+    Contact:
+        __extends: BaseContact
+        id: string
+        external_id?: string
+        email: string | null
+        tax_number?: string | null
+        address_line_1?: string | null
+        address_line_2?: string | null
+        city: string | null
+        zip: string | null
+        country: string | null
+        state: string | null
+        phone: string | null
+        subsidiary?: string | null
+    FailedContact:
+        __extends: Contact
+        validation_errors: any[]
+    ContactActionResponse:
+        succeededContacts: Contact[]
+        failedContacts: FailedContact[]
+    Account:
+        id: string
+        code?: string
+        name: string
+        type: string
+        tax_type: string
+        description: string | null
+        class: string
+        bank_account_type: string
+        reporting_code: string
+        reporting_code_name: string
+    Item:
+        id: string
+        item_code: string | null
+        name: string
+        description: string | null
+        account_code: string | null
+    FailedItem:
+        __extends: Item
+        validation_errors: any[]
+    ItemActionResponse:
+        succeededItems: Item[]
+        failedItems: FailedItem[]
+    BasePayment:
+        date: string | null
+        amount_cents: number
+        external_contact_id?: string
+        account_code?: string
+        account_id?: string
+    CreatePayment:
+        __extends: BasePayment
+        status?: string
+        invoice_id?: string
+        credit_note_id?: string
+    Payment:
+        __extends: BasePayment
+        id: string
+        status: string
+        invoice_id: string | null
+        credit_note_id: string | null
+    FailedPayment:
+        __extends: Payment
+        validation_errors: any[]
+    IdEntity:
+        id: string
+    StatusOutput:
+        status: string
+    PaymentActionResponse:
+        succeededPayment: Payment[]
+        failedPayments: FailedPayment[]
+    BaseInvoice:
+        type: ACCPAY | ACCREC
+        external_contact_id: string
+    CreateInvoice:
+        __extends: BaseInvoice
+        fees: CreateInvoiceFee[]
+        issuing_date?: date
+        payment_due_date?: date | null
+        status?: string
+        number?: string
+        tax_rate?: number
+        currency?: string
+        purchase_order?: string | null
+    CreateInvoiceFee:
+        description: string
+        item_id?: string
+        item_code?: string | null
+        units?: number
+        precise_unit_amount?: number | null
+        account_code?: string
+        account_external_id?: string | null
+        amount_cents?: number | null
+        taxes_amount_cents?: number | null
+        rate?: number | null
+        price?: number | null
+    Invoice:
+        __extends: BaseInvoice
+        id: string
+        issuing_date: string | null
+        payment_due_date: string | null
+        status: string
+        number?: string
+        currency: string
+        purchase_order: string | null
+        fees: InvoiceFee[]
+    InvoiceFee:
+        item_id: string
+        item_code?: string | null
+        description: string | null
+        units: number | null
+        precise_unit_amount: number | null
+        account_code?: string
+        account_external_id?: string | null
+        amount_cents: number | null
+        taxes_amount_cents: number | null
+        rate?: number | null
+        price?: number | null
+    FailedInvoice:
+        __extends: Invoice
+        validation_errors: any[]
+    InvoiceActionResponse:
+        succeededInvoices: Invoice[]
+        failedInvoices: FailedInvoice[]
+    CreditNote:
+        id: string
+        type: string
+        external_contact_id: string
+        status: string
+        number: string
+        is_taxable: boolean
+        tax_rate_id: string
+        tax_rate: number
+        currency: string
+        reference: string
+        issuing_date: date
+        fees: CreditNoteFee[]
+    CreditNoteFee:
+        item_id: string
+        item_code: string
+        description: string
+        units: number
+        precise_unit_amount: number
+        account_code: string
+        account_external_id: string
+        amount_cents: number
+        taxes_amount_cents: number
+    FailedCreditNote:
+        __extends: CreditNote
+        validation_errors: any[]
+    CreditNoteActionResponse:
+        succeededCreditNotes: CreditNote[]
+        failedCreditNotes: FailedCreditNote[]

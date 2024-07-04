@@ -418,6 +418,7 @@ certn:
         paginate:
             type: link
             link_path_in_response_body: next
+            response_path: results
         verification:
             method: GET
             endpoint: /api/v2/teams
@@ -902,6 +903,17 @@ front:
             response_path: _results
             link_path_in_response_body: _pagination.next
     docs: https://docs.nango.dev/integrations/all/front
+garmin:
+    categories:
+        - sports
+    auth_mode: OAUTH1
+    request_url: https://connectapi.garmin.com/oauth-service/oauth/request_token
+    authorization_url: https://connect.garmin.com/oauthConfirm
+    token_url: https://connectapi.garmin.com/oauth-service/oauth/access_token
+    signature_method: 'HMAC-SHA1'
+    proxy:
+        base_url: https://apis.garmin.com
+    docs: https://docs.nango.dev/integrations/all/garmin
 guru:
     categories:
         - knowledge-base
@@ -1493,6 +1505,19 @@ linkhut:
     proxy:
         base_url: https://api.ln.ht
     docs: https://docs.nango.dev/integrations/all/linkhut
+luma:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-luma-api-key: ${apiKey}
+        base_url: https://api.lu.ma
+        verification:
+            method: GET
+            endpoint: /public/v1/user/get-self
+    docs: https://docs.nango.dev/integrations/all/luma
 mailgun:
     categories:
         - marketing
@@ -2843,6 +2868,21 @@ wealthbox:
     proxy:
         base_url: https://api.crmworkspace.com
     docs: https://docs.nango.dev/integrations/all/wealthbox
+webflow:
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: OAUTH2
+    authorization_url: https://webflow.com/oauth/authorize
+    token_url: https://api.webflow.com/oauth/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.webflow.com
+    docs: https://docs.nango.dev/integrations/all/webflow
 whoop:
     categories:
         - sports
@@ -2939,6 +2979,7 @@ xero:
         - offline_access
     proxy:
         base_url: https://api.xero.com
+    post_connection_script: xero-post-connection
     docs: https://docs.nango.dev/integrations/all/xero
 yahoo:
     categories:

@@ -1,0 +1,13 @@
+[
+    {
+        "id": "c1f8a953-fbd1-4510-8de1-4e65dd744114",
+        "external_contact_id": "69559f1c-5b66-4320-826d-892cc34c4934",
+        "type": "ACCPAY",
+        "fees": [
+            {
+                "item_id": "43e7425a-b397-4024-9f9a-bad9bce1c7f0",
+                "description": "no"
+            }
+        ]
+    }
+]
