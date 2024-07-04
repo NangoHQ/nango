@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 import type { NangoConnection } from '@nangohq/shared';
 import type { Metadata, ScriptFileType } from '@nangohq/types';
-import { SyncType, cloudHost, stagingHost, SyncRunService } from '@nangohq/shared';
+import { SyncType, cloudHost, stagingHost, SyncRunService, localFileService } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
@@ -16,7 +16,7 @@ interface RunArgs extends GlobalOptions {
     connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
-    input?: object;
+    input?: unknown;
     metadata?: Metadata;
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
@@ -182,18 +182,40 @@ export class DryRunService {
             return;
         }
 
-        let normalizedInput;
         let stubbedMetadata;
-        try {
-            normalizedInput = JSON.parse(actionInput as unknown as string);
-        } catch {
-            normalizedInput = actionInput;
-        }
+        let normalizedInput;
 
-        try {
-            stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
-        } catch {
-            stubbedMetadata = rawStubbedMetadata;
+        // the user can reference a file for input
+        // if it includes both '@' and 'json'
+        if (actionInput && actionInput.toString().includes('@') && actionInput.toString().includes('.json')) {
+            // fetch the file contents
+            const fileContents = localFileService.readFile(actionInput.toString());
+            if (!fileContents) {
+                console.log(chalk.red('The file could not be read. Please make sure it exists.'));
+                return;
+            }
+            normalizedInput = JSON.parse(fileContents);
+
+            if (rawStubbedMetadata) {
+                const metadataFileContents = localFileService.readFile(rawStubbedMetadata.toString());
+                if (!metadataFileContents) {
+                    console.log(chalk.red('The metadata file could not be read. Please make sure it exists.'));
+                    return;
+                }
+                stubbedMetadata = JSON.parse(fileContents);
+            }
+        } else {
+            try {
+                normalizedInput = JSON.parse(actionInput as string);
+            } catch {
+                normalizedInput = actionInput;
+            }
+
+            try {
+                stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
+            } catch {
+                stubbedMetadata = rawStubbedMetadata;
+            }
         }
 
         const logMessages = {
