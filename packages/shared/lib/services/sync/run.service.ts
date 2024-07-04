@@ -73,13 +73,13 @@ export type SyncRunConfig = {
 
     account?: Account;
     environment?: Environment;
+    runnerFlags: RunnerFlags;
 } & (
     | {
           writeToDb: true;
           activityLogId: string | number;
           logCtx: LogContext;
           slackService: SlackService;
-          runnerFlags: RunnerFlags;
           sendSyncWebhook: (params: SendSyncParams) => Promise<void>;
       }
     | { writeToDb: false }
@@ -122,7 +122,7 @@ export class SyncRunService {
     loadLocation?: string;
     debug?: boolean;
     input?: object;
-    runnerFlags?: RunnerFlags;
+    runnerFlags: RunnerFlags;
 
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined = {
         counts: { updated: 0, added: 0, deleted: 0 },
@@ -153,6 +153,7 @@ export class SyncRunService {
         this.syncType = config.syncType;
         this.syncConfig = config.syncConfig;
         this.isInvokedImmediately = Boolean(config.isAction || config.isWebhook || config.isPostConnectionScript);
+        this.runnerFlags = config.runnerFlags;
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -167,7 +168,6 @@ export class SyncRunService {
             this.slackNotificationService = config.slackService;
             this.activityLogId = config.activityLogId;
             this.logCtx = config.logCtx;
-            this.runnerFlags = config.runnerFlags;
             this.sendSyncWebhook = config.sendSyncWebhook;
         }
 

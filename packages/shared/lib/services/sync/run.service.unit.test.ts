@@ -69,7 +69,8 @@ describe('SyncRun', () => {
         syncType: SyncType.INCREMENTAL,
         syncId: 'some-sync',
         syncJobId: 123,
-        debug: true
+        debug: true,
+        runnerFlags: {} as any
     };
 
     it('should initialize correctly', () => {

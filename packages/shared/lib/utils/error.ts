@@ -598,6 +598,11 @@ export class NangoError extends Error {
                 this.message = 'Failed to validate the output passed to the action';
                 break;
 
+            case 'invalid_sync_record':
+                this.status = 400;
+                this.message = 'Failed to validate a record in batchSave';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

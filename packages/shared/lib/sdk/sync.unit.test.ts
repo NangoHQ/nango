@@ -11,6 +11,7 @@ import { NangoAction, NangoSync } from './sync.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 import proxyService from '../services/proxy.service.js';
 import type { AxiosResponse } from 'axios';
+import { NangoError } from '../utils/error.js';
 
 const nangoProps: NangoProps = {
     secretKey: '***',
@@ -24,7 +25,8 @@ const nangoProps: NangoProps = {
     syncConfig: {} as SyncConfig,
     syncId: '1',
     syncJobId: 1,
-    nangoConnectionId: 1
+    nangoConnectionId: 1,
+    runnerFlags: {} as any
 };
 
 describe('cache', () => {
@@ -424,7 +426,7 @@ describe('batchSave', () => {
             } as any
         });
 
-        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(new Error(`invalid_syncs_record`));
+        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(new NangoError(`invalid_sync_record`));
     });
 });
 

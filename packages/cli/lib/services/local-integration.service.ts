@@ -103,6 +103,8 @@ class IntegrationService implements IntegrationServiceInterface {
                         },
                         response: null
                     };
+                } else if (err instanceof NangoError) {
+                    return { success: false, error: err, response: null };
                 }
 
                 let errorType = 'sync_script_failure';

@@ -25,11 +25,23 @@ interface RunArgs extends GlobalOptions {
 
 export class DryRunService {
     fullPath: string;
+    validation: boolean;
     environment?: string;
     returnOutput?: boolean;
 
-    constructor({ environment, returnOutput = false, fullPath }: { environment?: string; returnOutput?: boolean; fullPath: string }) {
+    constructor({
+        environment,
+        returnOutput = false,
+        fullPath,
+        validation
+    }: {
+        environment?: string;
+        returnOutput?: boolean;
+        fullPath: string;
+        validation: boolean;
+    }) {
         this.fullPath = fullPath;
+        this.validation = validation;
         if (environment) {
             this.environment = environment;
         }
@@ -230,7 +242,7 @@ export class DryRunService {
         const syncRun = new SyncRunService({
             integrationService,
             recordsService,
-            dryRunService: new DryRunService({ environment, returnOutput: true, fullPath: this.fullPath }),
+            dryRunService: new DryRunService({ environment, returnOutput: true, fullPath: this.fullPath, validation: this.validation }),
             writeToDb: false,
             nangoConnection,
             syncConfig: {
@@ -260,7 +272,13 @@ export class DryRunService {
             loadLocation: './',
             debug,
             logMessages,
-            stubbedMetadata
+            stubbedMetadata,
+            runnerFlags: {
+                validateActionInput: this.validation, // irrelevant for cli
+                validateActionOutput: this.validation, // irrelevant for cli
+                validateSyncRecords: this.validation,
+                validateSyncMetadata: false
+            }
         });
 
         try {

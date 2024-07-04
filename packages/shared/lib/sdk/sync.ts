@@ -12,6 +12,7 @@ import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangoh
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
+import { NangoError } from '../utils/error.js';
 
 const logger = getLogger('SDK');
 
@@ -308,7 +309,7 @@ export interface NangoProps {
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
-    runnerFlags?: RunnerFlags | undefined;
+    runnerFlags: RunnerFlags;
 }
 
 export interface EnvironmentVariable {
@@ -343,7 +344,7 @@ export class NangoAction {
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig?: SyncConfig;
-    runnerFlags?: RunnerFlags;
+    runnerFlags: RunnerFlags;
 
     public connectionId: string;
     public providerConfigKey: string;
@@ -361,6 +362,7 @@ export class NangoAction {
         this.connectionId = config.connectionId;
         this.providerConfigKey = config.providerConfigKey;
         this.persistApi = persistApi;
+        this.runnerFlags = config.runnerFlags;
 
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
@@ -410,10 +412,6 @@ export class NangoAction {
 
         if (config.syncConfig) {
             this.syncConfig = config.syncConfig;
-        }
-
-        if (config.runnerFlags) {
-            this.runnerFlags = config.runnerFlags;
         }
 
         if (this.dryRun !== true) {
@@ -654,14 +652,14 @@ export class NangoAction {
             args.pop();
         }
 
-        const content = safeStringify(args);
         const level = userDefinedLevel?.level ?? 'info';
 
         if (this.dryRun) {
-            logger[logLevelToLogger[level] ?? 'info']([...args]);
+            logger[logLevelToLogger[level] ?? 'info'].apply(null, args as any);
             return;
         }
 
+        const content = safeStringify(args);
         await this.sendLogToPersist(content, { level, timestamp: Date.now() });
     }
 
@@ -845,7 +843,7 @@ export class NangoSync extends NangoAction {
 
             await this.log('Invalid record payload', { record, validation, model }, { level: 'warn' });
             if (this.runnerFlags?.validateSyncRecords) {
-                throw new Error(`invalid_syncs_record`);
+                throw new NangoError(`invalid_sync_record`, { record, validation, model });
             }
         }
 
