@@ -2,8 +2,10 @@ import type { ParamsSerializerOptions } from 'axios';
 import type {
     NangoSyncWebhookBodySuccess,
     NangoSyncWebhookBodyError,
+    NangoSyncWebhookBody,
     NangoAuthWebhookBodySuccess,
     NangoAuthWebhookBodyError,
+    NangoAuthWebhookBody,
     NangoWebhookBody,
     AuthOperation,
     AuthOperationType,
@@ -26,13 +28,11 @@ import type {
 
 export type {
     NangoSyncWebhookBodySuccess,
-    /** @deprecated use NangoSyncWebhookBodySuccess */
-    NangoSyncWebhookBodySuccess as NangoSyncWebhookBody,
     NangoSyncWebhookBodyError,
+    NangoSyncWebhookBody,
     NangoAuthWebhookBodySuccess,
-    /** @deprecated use NangoAuthWebhookBodySuccess */
-    NangoAuthWebhookBodySuccess as NangoAuthWebhookBody,
     NangoAuthWebhookBodyError,
+    NangoAuthWebhookBody,
     NangoWebhookBody
 };
 export type {

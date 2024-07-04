@@ -23,6 +23,10 @@ interface NotificationResponse {
 
 interface NotificationPayload {
     content: string;
+    meta?: {
+        accountName: string;
+        accountUuid: string;
+    };
     providerConfigKey: string;
     provider: string;
     status: string;
@@ -138,7 +142,10 @@ export class SlackService {
             throw new Error('failed_to_get_account');
         }
 
-        payload.content = `${payload.content} [Account ${account.uuid} Environment ${environment_id}]`;
+        payload.meta = {
+            accountName: account.name,
+            accountUuid: account.uuid
+        };
 
         if (ts) {
             payload.ts = ts;
@@ -259,7 +266,18 @@ export class SlackService {
         const flowType = type;
         const date = new Date();
         const payload: NotificationPayload = {
-            content: this.getMessage({ type, count, connectionWord, flowType, name, envName, originalActivityLogId, date, resolved: false }),
+            content: this.getMessage({
+                type,
+                count,
+                connectionWord,
+                flowType,
+                name,
+                providerConfigKey: nangoConnection.provider_config_key,
+                envName,
+                originalActivityLogId,
+                date,
+                resolved: false
+            }),
             status: 'open',
             providerConfigKey: nangoConnection.provider_config_key,
             provider
@@ -344,6 +362,7 @@ export class SlackService {
                 connectionWord: 'connections',
                 flowType: type,
                 name: syncName,
+                providerConfigKey: nangoConnection.provider_config_key,
                 envName,
                 originalActivityLogId,
                 date: new Date(),
@@ -358,6 +377,7 @@ export class SlackService {
                 connectionWord: connection,
                 flowType: type,
                 name: syncName,
+                providerConfigKey: nangoConnection.provider_config_key,
                 envName,
                 originalActivityLogId,
                 date: new Date(),
@@ -669,6 +689,8 @@ export class SlackService {
 
         if (type === 'auth') {
             usp.set('connections', name);
+        } else if (type === 'integration') {
+            usp.set('integrations', name);
         } else {
             usp.set('syncs', name);
         }
@@ -682,6 +704,7 @@ export class SlackService {
         connectionWord,
         flowType,
         name,
+        providerConfigKey,
         envName,
         originalActivityLogId,
         date,
@@ -692,6 +715,7 @@ export class SlackService {
         connectionWord: string;
         flowType: string;
         name: string;
+        providerConfigKey: string;
         envName: string;
         originalActivityLogId: string | null;
         date: Date;
@@ -701,16 +725,16 @@ export class SlackService {
             case 'sync':
             case 'action': {
                 if (resolved) {
-                    return `[Resolved] *${name}* (${flowType.toLowerCase()}) in *${envName}* failed. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
+                    return `[Resolved] <${this.getLogUrl({ envName, originalActivityLogId: null, name, date, type })}|*${name}*> ${flowType.toLowerCase()} (integration: <${this.getLogUrl({ envName, originalActivityLogId: null, name: providerConfigKey, date, type: 'integration' })}|${providerConfigKey}>) in *${envName}* failed. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
                 } else {
-                    return `*${name}* (${flowType.toLowerCase()}) is failing for ${count} ${connectionWord} in *${envName}*. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
+                    return `<${this.getLogUrl({ envName, originalActivityLogId: null, name, date, type })}|*${name}*> ${flowType.toLowerCase()} (integration: <${this.getLogUrl({ envName, originalActivityLogId: null, name: providerConfigKey, date, type: 'integration' })}|${providerConfigKey}>) is failing for ${count} ${connectionWord} in *${envName}*. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
                 }
             }
             case 'auth': {
                 if (resolved) {
-                    return `[Resolved] connection *${name}* in *${envName}* refresh failed.`;
+                    return `[Resolved] connection <${this.getLogUrl({ envName, originalActivityLogId: null, name, date, type })}|*${name}*> (integration: <${this.getLogUrl({ envName, originalActivityLogId: null, name: providerConfigKey, date, type: 'integration' })}|${providerConfigKey}>) in *${envName}* refresh failed.`;
                 } else {
-                    return `Could not refresh token of connection *${name}* in *${envName}*. Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
+                    return `Could not refresh token of connection <${this.getLogUrl({ envName, originalActivityLogId: null, name, date, type })}|*${name}*> in *${envName}* (integration: <${this.getLogUrl({ envName, originalActivityLogId: null, name: providerConfigKey, date, type: 'integration' })}|${providerConfigKey}>). Read <${this.getLogUrl({ envName, originalActivityLogId, name, date, type })}|logs>.`;
                 }
             }
         }
