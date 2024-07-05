@@ -19,6 +19,7 @@ integrations:
     asana:
         syncs:
             tasks:
+                version: 0.0.9
                 runs: every hour
                 description: Retrieve all tasks that exist in the workspace
                 output: Task
