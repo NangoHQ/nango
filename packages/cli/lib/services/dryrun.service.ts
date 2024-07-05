@@ -188,7 +188,7 @@ export class DryRunService {
 
         // the user can reference a file for input
         // if it includes both '@' and 'json'
-        if (actionInput && actionInput.toString().includes('@') && actionInput.toString().includes('.json')) {
+        if (actionInput && actionInput.toString().includes('@') && actionInput.toString().endsWith('.json')) {
             // fetch the file contents
             const fileContents = localFileService.readFile(actionInput.toString());
             if (!fileContents) {

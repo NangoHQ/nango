@@ -113,11 +113,13 @@ program
     )
     .option(
         '-i, --input [input]',
-        'Optional (for actions only): input to pass to the action script. The `input` can be supplied in either JSON format or as a plain string. For example --input \'{"foo": "bar"}\'  --input \'foobar\''
+        'Optional (for actions only): input to pass to the action script. The `input` can be supplied in either JSON format or as a plain string. For example --input \'{"foo": "bar"}\'  --input \'foobar\'. ' +
+            'You can also pass a file path prefixed with `@` to the input and appended by `json`, for example @fixtures/data.json'
     )
     .option(
         '-m, --metadata [metadata]',
-        'Optional (for syncs only): metadata to stub for the sync script supplied in JSON format, for example --metadata \'{"foo": "bar"}\''
+        'Optional (for syncs only): metadata to stub for the sync script supplied in JSON format, for example --metadata \'{"foo": "bar"}\'. ' +
+            'You can also pass a file path prefixed with `@` to the metadata and appended by `json`, for example @fixtures/metadata.json'
     )
     .option(
         '--integration-id [integrationId]',
