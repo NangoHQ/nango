@@ -27,10 +27,10 @@ export default function ConnectionList() {
 
     const [connections, setConnections] = useState<Connection[] | null>(null);
     const [filteredConnections, setFilteredConnections] = useState<Connection[]>([]);
-    const [setNumberofErroredConnections, setNumberOfErroredConnections] = useState<number>(0);
-    const [selectedIntegration, setSelectedIntegration] = useState<string[]>(defaultFilter);
+    const [numberOfErroredConnections, setNumberOfErroredConnections] = useState<number>(0);
+    const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>(defaultFilter);
     const [connectionSearch, setConnectionSearch] = useState<string>('');
-    const [states, setStates] = useState<string[]>(defaultFilter);
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>(defaultFilter);
 
     useEffect(() => {
         if (data) {
@@ -47,15 +47,19 @@ export default function ConnectionList() {
                 filtered = filtered?.filter((connection) => connection.connection_id.toLowerCase().includes(connectionSearch.toLowerCase()));
             }
 
-            if (selectedIntegration.length > 0 && !selectedIntegration.includes('all')) {
-                filtered = filtered?.filter((connection) => selectedIntegration.includes(connection.provider_config_key));
+            if (selectedIntegrations.length > 0 && !selectedIntegrations.includes('all')) {
+                filtered = filtered?.filter((connection) => selectedIntegrations.includes(connection.provider_config_key));
             }
 
-            if (states.length !== 0 && !states.includes('all') && !(states.includes('ok') && states.includes('error'))) {
-                if (states.includes('error')) {
+            if (
+                selectedStatuses.length !== 0 &&
+                !selectedStatuses.includes('all') &&
+                !(selectedStatuses.includes('ok') && selectedStatuses.includes('error'))
+            ) {
+                if (selectedStatuses.includes('error')) {
                     filtered = filtered?.filter((connection) => connection.active_logs);
                 }
-                if (states.includes('ok')) {
+                if (selectedStatuses.includes('ok')) {
                     filtered = filtered?.filter((connection) => !connection.active_logs);
                 }
             }
@@ -63,7 +67,7 @@ export default function ConnectionList() {
             setFilteredConnections(filtered || []);
             setNumberOfErroredConnections((filtered || []).filter((connection) => connection.active_logs).length);
         }
-    }, [connectionSearch, selectedIntegration, states, data]);
+    }, [connectionSearch, selectedIntegrations, selectedStatuses, data]);
 
     const debouncedSearch = useCallback(
         debounce((value: string) => {
@@ -83,10 +87,10 @@ export default function ConnectionList() {
 
     const handleIntegrationChange = (values: string[]) => {
         if (values.includes('all')) {
-            setSelectedIntegration(defaultFilter);
+            setSelectedIntegrations(defaultFilter);
             return;
         }
-        setSelectedIntegration(values);
+        setSelectedIntegrations(values);
     };
 
     useEffect(() => {
@@ -160,7 +164,7 @@ export default function ConnectionList() {
                         {filteredConnections.length} connection{filteredConnections.length !== 1 ? 's' : ''}
                         {errorNotifications > 0 && (
                             <span className="flex items-center ml-1">
-                                ({setNumberofErroredConnections} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                ({numberOfErroredConnections} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
                             </span>
                         )}
                     </div>
@@ -180,7 +184,7 @@ export default function ConnectionList() {
                                 options={providers.map((integration: string) => {
                                     return { name: integration, value: integration };
                                 })}
-                                selected={selectedIntegration}
+                                selected={selectedIntegrations}
                                 defaultSelect={defaultFilter}
                                 onChange={handleIntegrationChange}
                                 all
@@ -191,9 +195,9 @@ export default function ConnectionList() {
                                     { name: 'OK', value: 'ok' },
                                     { name: 'Error', value: 'error' }
                                 ]}
-                                selected={states}
+                                selected={selectedStatuses}
                                 defaultSelect={defaultFilter}
-                                onChange={setStates}
+                                onChange={setSelectedStatuses}
                                 all
                             />
                         </div>
