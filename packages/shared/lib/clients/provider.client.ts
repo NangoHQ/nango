@@ -7,6 +7,7 @@ import { NangoError } from '../utils/error.js';
 import { getLogger, axiosInstance as axios } from '@nangohq/utils';
 
 const stripeAppExpiresIn = 3600;
+const corosExpiresIn = 2592000;
 const logger = getLogger('Provider.Client');
 
 class ProviderClient {
@@ -14,6 +15,8 @@ class ProviderClient {
         switch (provider) {
             case 'braintree':
             case 'braintree-sandbox':
+            case 'coros':
+            case 'coros-sandbox':
             case 'figma':
             case 'figjam':
             case 'facebook':
@@ -42,6 +45,9 @@ class ProviderClient {
             case 'braintree':
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
+            case 'coros':
+            case 'coros-sandbox':
+                return this.createCorosToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'figma':
             case 'figjam':
                 return this.createFigmaToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
@@ -76,6 +82,15 @@ class ProviderClient {
             case 'braintree':
             case 'braintree-sandbox':
                 return this.refreshBraintreeToken(credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+            case 'coros':
+            case 'coros-sandbox':
+                return this.refreshCorosToken(
+                    template.refresh_url as string,
+                    credentials.access_token,
+                    credentials.refresh_token!,
+                    config.oauth_client_id,
+                    config.oauth_client_secret
+                );
             case 'figma':
             case 'figjam':
                 return this.refreshFigmaToken(template.refresh_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
@@ -371,6 +386,66 @@ class ProviderClient {
             refresh_token: creds['refreshToken'],
             expires_at: creds['expiresAt']
         };
+    }
+
+    private async createCorosToken(tokenUrl: string, code: string, clientId: string, clientSecret: string, callback: string): Promise<object> {
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        };
+        const body = {
+            client_id: clientId,
+            redirect_uri: callback,
+            code: code,
+            client_secret: clientSecret,
+            grant_type: 'authorization_code'
+        };
+        try {
+            const response = await axios.post(tokenUrl, body, { headers: headers });
+            if (response.status === 200 && response.data !== null) {
+                return {
+                    access_token: response.data['access_token'],
+                    refresh_token: response.data['refresh_token'],
+                    expires_in: response.data['expires_in'],
+                    openId: response.data['openId']
+                };
+            }
+
+            throw new NangoError('coros_token_request_error');
+        } catch (e: any) {
+            throw new NangoError('coros_token_request_error', e.message);
+        }
+    }
+
+    private async refreshCorosToken(
+        refreshTokenUrl: string,
+        accessToken: string,
+        refreshToken: string,
+        clientId: string,
+        clientSecret: string
+    ): Promise<object> {
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        };
+
+        const body = {
+            client_id: clientId,
+            refresh_token: refreshToken,
+            client_secret: clientSecret,
+            grant_type: 'refresh_token'
+        };
+        try {
+            const response = await axios.post(refreshTokenUrl, body, { headers: headers });
+            if (response.status === 200 && response.data !== null && response.data.result === '0000') {
+                return {
+                    access_token: accessToken,
+                    refresh_token: refreshToken,
+                    expires_in: corosExpiresIn
+                };
+            }
+            throw new NangoError('coros_token_refresh_request_error');
+        } catch (e: any) {
+            throw new NangoError('coros_token_refresh_request_error', e.message);
+        }
     }
 
     private async refreshBraintreeToken(refreshToken: string, clientId: string, clientSecret: string): Promise<object> {
