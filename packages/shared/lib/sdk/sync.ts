@@ -841,9 +841,9 @@ export class NangoSync extends NangoAction {
 
             metrics.increment(metrics.Types.RUNNER_INVALID_SYNCS_RECORDS);
 
-            await this.log('Invalid record payload', { record, validation, model }, { level: 'warn' });
+            await this.log('Invalid record payload', { data: record, validation, model }, { level: 'warn' });
             if (this.runnerFlags?.validateSyncRecords) {
-                throw new NangoError(`invalid_sync_record`, { record, validation, model });
+                throw new NangoError(`invalid_sync_record`, { data: record, validation, model });
             }
         }
 

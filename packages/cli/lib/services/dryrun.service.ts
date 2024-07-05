@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 import type { NangoConnection } from '@nangohq/shared';
 import type { Metadata, ScriptFileType } from '@nangohq/types';
-import { SyncType, cloudHost, stagingHost, SyncRunService } from '@nangohq/shared';
+import { SyncType, cloudHost, stagingHost, SyncRunService, NangoError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
@@ -11,6 +11,7 @@ import integrationService from './local-integration.service.js';
 import type { RecordsServiceInterface } from '@nangohq/shared/lib/services/sync/run.service.js';
 import { parse } from './config.service.js';
 import { loadSchemaJson } from './model.service.js';
+import { displayValidationError } from '../utils/errors.js';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -288,8 +289,20 @@ export class DryRunService {
             console.log('---');
 
             if (results.error) {
+                const err = results.error;
                 console.error(chalk.red('An error occurred during execution'));
-                console.error(JSON.stringify(results.error, null, 2));
+                if (err instanceof NangoError) {
+                    console.error(chalk.red(err.message), chalk.gray(`(${err.type})`));
+                    if (err.type === 'invalid_action_output' || err.type === 'invalid_action_input' || err.type === 'invalid_sync_record') {
+                        displayValidationError(err.payload as any);
+                        return;
+                    }
+
+                    console.error(JSON.stringify(err.payload, null, 2));
+                    return;
+                }
+
+                console.error(JSON.stringify(err, null, 2));
                 return;
             }
 
