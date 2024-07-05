@@ -1424,7 +1424,7 @@ klaviyo:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/klaviyo
-klaviyo-OAuth:
+klaviyo-oauth:
     categories:
         - marketing
     auth_mode: OAUTH2

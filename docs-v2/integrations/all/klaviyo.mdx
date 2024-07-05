@@ -3,7 +3,7 @@ title: Klaviyo
 sidebarTitle: Klaviyo
 ---
 
-API configuration: [`klaviyo`](https://nango.dev/providers.yaml), [`klaviyo-OAuth`](https://nango.dev/providers.yaml)
+API configuration: [`klaviyo`](https://nango.dev/providers.yaml), [`klaviyo-oauth`](https://nango.dev/providers.yaml)
 
 ## Features
 
@@ -34,6 +34,6 @@ API configuration: [`klaviyo`](https://nango.dev/providers.yaml), [`klaviyo-OAut
 
 - For `API_KEY` auth mode, `Klaviyo` uses Public and Private API Keys to access different endpoints. Endpoints that begin with `/api` need to be authenticated with the private API key, while endpoints that begin with `/client` need to be authenticated using the public API key.
 - When adding a new connection, you will also need to add a `revisionHeader` to resolve API versions. For more details check [Klaviyo API versioning](https://developers.klaviyo.com/en/docs/api_versioning_and_deprecation_policy#api-versioning)
-- Rate limiting in `Klaviyo-OAuth` is different from the [standard API rate limiting](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling). For more details check [Klaviyo-OAuth rate limits](https://developers.klaviyo.com/en/docs/set_up_oauth#rate-limits)
+- Rate limiting in `klaviyo-oauth` is different from the [standard API rate limiting](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling). For more details check [klaviyo-oauth rate limits](https://developers.klaviyo.com/en/docs/set_up_oauth#rate-limits)
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo.mdx)</Note>
