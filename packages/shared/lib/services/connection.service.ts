@@ -769,6 +769,7 @@ class ConnectionService {
     // Throws if values are missing/missing the input is malformed.
     public parseRawCredentials(rawCredentials: object, authMode: AuthModeType): AuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
+        const DEFAULT_EXPIRES_AT = new Date(Date.now() + 55 * 60 * 1000); // This ensures we have an expiresAt value
 
         switch (authMode) {
             case 'OAUTH2': {
@@ -822,7 +823,7 @@ class ConnectionService {
                 } else if (rawCreds['expires_in']) {
                     expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
                 } else {
-                    expiresAt = new Date(Date.now() + 55 * 60 * 1000);
+                    expiresAt = DEFAULT_EXPIRES_AT;
                 }
 
                 const oauth2Creds: OAuth2ClientCredentials = {
