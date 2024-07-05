@@ -418,8 +418,6 @@ export class NangoAction {
             if (!this.activityLogId) throw new Error('Parameter activityLogId is required when not in dryRun');
             if (!this.environmentId) throw new Error('Parameter environmentId is required when not in dryRun');
             if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required when not in dryRun');
-            if (!this.syncId) throw new Error('Parameter syncId is required when not in dryRun');
-            if (!this.syncJobId) throw new Error('Parameter syncJobId is required when not in dryRun');
             if (!this.syncConfig) throw new Error('Parameter syncConfig is required when not in dryRun');
         }
     }
@@ -811,6 +809,10 @@ export class NangoSync extends NangoAction {
 
         if (config.stubbedMetadata) {
             this.stubbedMetadata = config.stubbedMetadata;
+        }
+        if (!config.dryRun) {
+            if (!this.syncId) throw new Error('Parameter syncId is required when not in dryRun');
+            if (!this.syncJobId) throw new Error('Parameter syncJobId is required when not in dryRun');
         }
     }
 
