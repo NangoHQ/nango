@@ -50,6 +50,7 @@
         "redis": "4.6.13",
         "semver": "^7.5.4",
         "simple-oauth2": "^5.0.1",
+        "fast-safe-stringify": "2.1.1",
         "uuid": "^9.0.0"
     },
     "engines": {

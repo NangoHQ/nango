@@ -5,7 +5,7 @@ import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import type { AxiosInstance } from 'axios';
 import axios, { AxiosError } from 'axios';
-import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
+import { getPersistAPIUrl } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangohq/utils';
@@ -13,6 +13,7 @@ import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
+import { stringifyAndTruncateLog } from './utils.js';
 
 const logger = getLogger('SDK');
 
@@ -657,7 +658,8 @@ export class NangoAction {
             return;
         }
 
-        const content = safeStringify(args);
+        const content = stringifyAndTruncateLog(args, 99_000);
+
         await this.sendLogToPersist(content, { level, timestamp: Date.now() });
     }
 
