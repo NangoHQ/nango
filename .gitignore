@@ -11,3 +11,4 @@ node_modules
 integration-templates/**/.nango
 integration-templates/**/schema.ts
 integration-templates/**/models.ts
+temp
