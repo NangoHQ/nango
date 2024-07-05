@@ -200,6 +200,10 @@ async function compile({
     const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === file.baseName);
     const type = syncConfig?.type || 'sync';
 
+    if (process.env['_NANGO_IN_REPO']) {
+        file.inputPath = file.inputPath.split('/').slice(0, -1).join('/') + `/${type}s/` + file.baseName + '.ts';
+    }
+
     const success = compileImportedFile({ fullPath, filePath: file.inputPath, compiler, type, parsed });
 
     if (!success) {
