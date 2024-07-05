@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Loading } from '@geist-ui/core';
 import debounce from 'lodash/debounce';
 import uniq from 'lodash/uniq';
 
 import { Input } from '../../components/ui/input/Input';
 import { useConnections } from '../../hooks/useConnections';
-import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { ErrorCircle } from '../../components/ui/label/error-circle';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -25,58 +25,42 @@ export default function ConnectionList() {
     const env = useStore((state) => state.env);
     const { data, error, errorNotifications } = useConnections(env);
 
-    const [connections, setConnections] = useState<Connection[] | null>(null);
-    const [filteredConnections, setFilteredConnections] = useState<Connection[]>([]);
-    const [numberOfErroredConnections, setNumberOfErroredConnections] = useState<number>(0);
+    const connections: Connection[] = data?.connections || [];
+
     const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>(defaultFilter);
     const [connectionSearch, setConnectionSearch] = useState<string>('');
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>(defaultFilter);
 
-    useEffect(() => {
-        if (data) {
-            setConnections(data.connections);
-            setFilteredConnections(data.connections);
-            setNumberOfErroredConnections(data.connections.filter((connection) => connection.active_logs).length);
+    const filteredConnections = useMemo(() => {
+        if (!data) {
+            return [];
         }
-    }, [data]);
 
-    useEffect(() => {
-        if (data) {
-            let filtered = data.connections;
-            if (connectionSearch) {
-                filtered = filtered?.filter((connection) => connection.connection_id.toLowerCase().includes(connectionSearch.toLowerCase()));
-            }
+        const allConnections: Connection[] = data.connections || [];
+        return allConnections.filter((connection) => {
+            const matchesSearch: boolean = !connectionSearch || connection.connection_id.toLowerCase().includes(connectionSearch.toLowerCase());
+            const matchesIntegration: boolean = selectedIntegrations.includes('all') || selectedIntegrations.includes(connection.provider_config_key);
+            const matchesStatus: boolean =
+                selectedStatuses.includes('all') ||
+                (selectedStatuses.includes('ok') && !connection.active_logs) ||
+                (selectedStatuses.includes('error') && connection.active_logs);
 
-            if (selectedIntegrations.length > 0 && !selectedIntegrations.includes('all')) {
-                filtered = filtered?.filter((connection) => selectedIntegrations.includes(connection.provider_config_key));
-            }
-
-            if (
-                selectedStatuses.length !== 0 &&
-                !selectedStatuses.includes('all') &&
-                !(selectedStatuses.includes('ok') && selectedStatuses.includes('error'))
-            ) {
-                if (selectedStatuses.includes('error')) {
-                    filtered = filtered?.filter((connection) => connection.active_logs);
-                }
-                if (selectedStatuses.includes('ok')) {
-                    filtered = filtered?.filter((connection) => !connection.active_logs);
-                }
-            }
-
-            setFilteredConnections(filtered || []);
-            setNumberOfErroredConnections((filtered || []).filter((connection) => connection.active_logs).length);
-        }
+            return matchesSearch && matchesIntegration && matchesStatus;
+        });
     }, [connectionSearch, selectedIntegrations, selectedStatuses, data]);
 
+    const numberOfErroredConnections = useMemo(() => {
+        if (!data) {
+            return 0;
+        }
+
+        return (data.connections || []).filter((connection) => connection.active_logs).length;
+    }, [data]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedSearch = useCallback(
         debounce((value: string) => {
-            if (!value.trim()) {
-                setConnectionSearch('');
-                setFilteredConnections(data?.connections || []);
-                return;
-            }
-            setConnectionSearch(value);
+            setConnectionSearch(value.trim());
         }, 300),
         [data?.connections]
     );
