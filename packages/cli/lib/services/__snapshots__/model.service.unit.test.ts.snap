@@ -401,7 +401,7 @@ export interface Base {
   obj: {  nested: string;};
   optional?: string;
   arrayLiteral: any[];
-  objectLiteral: object;
+  objectLiteral: Record<string, any>;
   any: any;
   float: number;
   bigint: bigint;
