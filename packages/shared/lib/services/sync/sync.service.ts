@@ -533,25 +533,16 @@ export const getAndReconcileDifferences = async ({
     // the "custom" sync configs
     const existingSyncs = await getActiveCustomSyncConfigsByEnvironmentId(environmentId);
 
-    const deletedModels = flows
-        .filter((flow) => flow.type === 'sync')
-        .flatMap((flow) => {
-            const existing = existingSyncs.find((sync) => sync.sync_name === flow.syncName && sync.unique_key === flow.providerConfigKey);
-            if (existing) {
-                return existing?.models.filter((model) => !flow.models.includes(model));
-            }
-            return [];
-        });
-
     const deletedSyncs: SlimSync[] = [];
     const deletedActions: SlimAction[] = [];
+    const deletedModels: string[] = [];
 
     if (!singleDeployMode) {
         for (const existingSync of existingSyncs) {
-            const exists = flows.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
+            const flow = flows.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
+            const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
 
-            if (!exists) {
-                const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
+            if (!flow) {
                 if (existingSync.type === 'sync') {
                     deletedSyncs.push({
                         name: existingSync.sync_name,
@@ -587,6 +578,14 @@ export const getAndReconcileDifferences = async ({
                         const content = `Successfully deleted ${existingSync.type} ${existingSync.sync_name} for ${existingSync.unique_key}${connectionDescription}`;
 
                         await logCtx?.info(content);
+                    }
+                }
+            } else {
+                if (existingSync.type === 'sync') {
+                    const missingModels = existingSync.models.filter((model) => !flow.models.includes(model));
+                    // we only consider the model as missing if there are connections
+                    if (connections.length > 0) {
+                        deletedModels.push(...missingModels);
                     }
                 }
             }
