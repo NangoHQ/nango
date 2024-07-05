@@ -4,9 +4,9 @@ import paginate from '../helper/pagination.js';
 import type { SharePointMetadata } from '../types';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
-    const metadata = (await nango.getMetadata()) as SharePointMetadata;
+    const metadata = await nango.getMetadata<SharePointMetadata>();
 
-    if (!metadata || !metadata.sitesToSync || metadata.sitesToSync.length === 0) {
+    if (!metadata || !Array.isArray(metadata.sitesToSync) || metadata.sitesToSync.length === 0) {
         throw new Error(`Metadata empty for connection id: ${nango.connectionId}`);
     }
 
@@ -16,22 +16,18 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
 
     for (const [siteId, listIds] of Object.entries(siteIdToLists)) {
         for (const listId of listIds) {
-            try {
-                const deltaToken = getDeltaToken(metadata, siteId, listId);
+            const deltaToken = getDeltaToken(metadata, siteId, listId);
 
-                const params: PaginationParams = {
-                    endpoint: `/v1.0/sites/${siteId}/lists/${listId}/items/delta`,
-                    deltaToken: deltaToken,
-                    $top: 100
-                };
+            const params: PaginationParams = {
+                endpoint: `/v1.0/sites/${siteId}/lists/${listId}/items/delta`,
+                deltaToken: deltaToken,
+                $top: 100
+            };
 
-                const newDeltaToken = await processListItems(nango, params, siteId, listId);
+            const newDeltaToken = await processListItems(nango, params, siteId, listId);
 
-                if (newDeltaToken) {
-                    await updateDeltaToken(nango, metadata, siteId, listId, newDeltaToken);
-                }
-            } catch (error) {
-                throw new Error(`Error in fetchData: ${error}`);
+            if (newDeltaToken) {
+                await updateDeltaToken(nango, metadata, siteId, listId, newDeltaToken);
             }
         }
     }
@@ -99,11 +95,11 @@ function fileMetadata(item: any): FileMetadata {
         etag: item.eTag,
         id: item.id,
         is_folder: 'folder' in item,
-        mime_type: 'folder' in item ? '' : item.file.mimeType,
+        mime_type: 'folder' in item ? null : item.file.mimeType,
         path: item.parentReference.path,
         raw_source: item,
         updated_at: new Date(item.lastModifiedDateTime),
-        download_url: 'folder' in item ? '' : item.downloadUrl,
+        download_url: 'folder' in item ? null : item.downloadUrl,
         created_at: new Date(item.createdDateTime),
         blob_size: item.size
     };

@@ -19,22 +19,20 @@ export default async function runAction(nango: NangoAction): Promise<void> {
         },
         retries: 10
     };
+    const allIds: string[] = [];
 
-    try {
-        for await (const sites of nango.paginate<SharePointSiteId>(config)) {
-            const ids: string[] = sites.map(mapSharePointId);
-            let metadata: Partial<SharePointMetadata> = (await nango.getMetadata()) || {};
-            metadata = {
-                ...(metadata as SharePointMetadata),
-                sitesToSync: [...(metadata.sitesToSync || []), ...ids]
-            };
-            await nango.setMetadata(metadata as SharePointMetadata);
-        }
-    } catch (error) {
-        throw new nango.ActionError({
-            message: `Error in runAction: ${error}`
-        });
+    for await (const sites of nango.paginate<SharePointSiteId>(config)) {
+        const ids: string[] = sites.map(mapSharePointId);
+        allIds.push(...ids);
     }
+
+    let metadata: Partial<SharePointMetadata> = (await nango.getMetadata()) || {};
+    metadata = {
+        ...(metadata as SharePointMetadata),
+        sitesToSync: [...(metadata.sitesToSync || []), ...allIds]
+    };
+
+    await nango.setMetadata(metadata as SharePointMetadata);
 }
 
 function mapSharePointId(sharePoint: any): string {
