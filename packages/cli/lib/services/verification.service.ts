@@ -31,7 +31,7 @@ class VerificationService {
             printDebug(`Current stripped directory is read as: ${currentDirectory}`);
         }
 
-        if (process.env['_NANGO_IN_REPO'] !== 'true' && currentDirectory !== NANGO_INTEGRATIONS_NAME) {
+        if (currentDirectory !== NANGO_INTEGRATIONS_NAME) {
             console.log(chalk.red(`You must run this command in the ${NANGO_INTEGRATIONS_NAME} directory.`));
             process.exit(1);
         }
