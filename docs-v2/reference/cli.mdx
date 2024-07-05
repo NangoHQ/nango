@@ -70,6 +70,7 @@ Global command flags:
 
 ```bash
 # Command flag to auto-confirm all prompts (useful for CI).
+# Note: Destructive changes (like removing a sync) requires confirmation, even when --auto-confirm is set. To bypass this restriction, the --allow-destructive flag can be passed to nango deploy.
 --auto-confirm
 ```
 
@@ -88,6 +89,7 @@ NANGO_HOSTPORT=https://api.nango.dev # Default value
 NANGO_CLI_UPGRADE_MODE=prompt # Default value
 
 # Whether to prompt before deployments.
+# Note: Destructive changes (like removing a sync) requires confirmation, even when NANGO_DEPLOY_AUTO_CONFIRM is set to true. To bypass this restriction, the --allow-destructive flag can be passed to nango deploy.
 NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
 ```
 

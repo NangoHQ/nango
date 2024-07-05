@@ -158,6 +158,7 @@ program
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
         const options: DeployOptions = this.opts();
         const { debug } = options;
@@ -189,6 +190,7 @@ program
     .arguments('environment')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
         const options: DeployOptions = this.opts();
         const fullPath = process.cwd();
@@ -205,10 +207,11 @@ program
 program
     .command('deploy:staging', { hidden: true })
     .alias('ds')
-    .description('Deploy a Nango integration to local')
+    .description('Deploy a Nango integration to staging')
     .arguments('environment')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
         const options: DeployOptions = this.opts();
         const fullPath = process.cwd();

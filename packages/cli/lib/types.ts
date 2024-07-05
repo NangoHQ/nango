@@ -12,4 +12,5 @@ export interface DeployOptions extends GlobalOptions {
     version?: string;
     sync?: string;
     action?: string;
+    allowDestructive?: boolean;
 }
