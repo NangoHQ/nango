@@ -38,6 +38,7 @@ export enum Types {
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_ACTION_INPUT = 'nango.runner.invalidActionInput',
     RUNNER_INVALID_ACTION_OUTPUT = 'nango.runner.invalidActionOutput',
+    RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',
 
     SYNC_EXECUTION = 'nango.jobs.syncExecution',
     SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',

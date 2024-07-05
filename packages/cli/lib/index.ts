@@ -125,11 +125,12 @@ program
         '--integration-id [integrationId]',
         'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
     )
+    .option('--validation', 'Optional: Enforce input, output and records validation', false)
     .action(async function (this: Command, sync: string, connectionId: string) {
-        const { autoConfirm, debug, e: environment, integrationId } = this.opts();
+        const { autoConfirm, debug, e: environment, integrationId, validation } = this.opts();
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        const dryRun = new DryRunService({ fullPath });
+        const dryRun = new DryRunService({ fullPath, validation });
         await dryRun.run({ ...this.opts(), sync, connectionId, optionalEnvironment: environment, optionalProviderConfigKey: integrationId }, debug);
     });
 

@@ -1,6 +1,6 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { AxiosError } from 'axios';
-import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData } from '@nangohq/shared';
+import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
 import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
@@ -148,6 +148,8 @@ export async function exec(
                     },
                     response: null
                 };
+            } else if (error instanceof NangoError) {
+                throw error;
             } else {
                 if (error instanceof AxiosError && error.response?.data) {
                     const errorResponse = error.response.data.payload || error.response.data;

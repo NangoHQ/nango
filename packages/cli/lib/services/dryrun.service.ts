@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 import type { NangoConnection } from '@nangohq/shared';
 import type { Metadata, ScriptFileType } from '@nangohq/types';
-import { SyncType, cloudHost, stagingHost, SyncRunService, localFileService } from '@nangohq/shared';
+import { SyncType, cloudHost, stagingHost, SyncRunService, NangoError, localFileService } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
@@ -11,6 +11,7 @@ import integrationService from './local-integration.service.js';
 import type { RecordsServiceInterface } from '@nangohq/shared/lib/services/sync/run.service.js';
 import { parse } from './config.service.js';
 import { loadSchemaJson } from './model.service.js';
+import { displayValidationError } from '../utils/errors.js';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -25,11 +26,23 @@ interface RunArgs extends GlobalOptions {
 
 export class DryRunService {
     fullPath: string;
+    validation: boolean;
     environment?: string;
     returnOutput?: boolean;
 
-    constructor({ environment, returnOutput = false, fullPath }: { environment?: string; returnOutput?: boolean; fullPath: string }) {
+    constructor({
+        environment,
+        returnOutput = false,
+        fullPath,
+        validation
+    }: {
+        environment?: string;
+        returnOutput?: boolean;
+        fullPath: string;
+        validation: boolean;
+    }) {
         this.fullPath = fullPath;
+        this.validation = validation;
         if (environment) {
             this.environment = environment;
         }
@@ -263,7 +276,7 @@ export class DryRunService {
         const syncRun = new SyncRunService({
             integrationService,
             recordsService,
-            dryRunService: new DryRunService({ environment, returnOutput: true, fullPath: this.fullPath }),
+            dryRunService: new DryRunService({ environment, returnOutput: true, fullPath: this.fullPath, validation: this.validation }),
             writeToDb: false,
             nangoConnection,
             syncConfig: {
@@ -293,7 +306,13 @@ export class DryRunService {
             loadLocation: './',
             debug,
             logMessages,
-            stubbedMetadata
+            stubbedMetadata,
+            runnerFlags: {
+                validateActionInput: this.validation, // irrelevant for cli
+                validateActionOutput: this.validation, // irrelevant for cli
+                validateSyncRecords: this.validation,
+                validateSyncMetadata: false
+            }
         });
 
         try {
@@ -303,8 +322,20 @@ export class DryRunService {
             console.log('---');
 
             if (results.error) {
+                const err = results.error;
                 console.error(chalk.red('An error occurred during execution'));
-                console.error(JSON.stringify(results.error, null, 2));
+                if (err instanceof NangoError) {
+                    console.error(chalk.red(err.message), chalk.gray(`(${err.type})`));
+                    if (err.type === 'invalid_action_output' || err.type === 'invalid_action_input' || err.type === 'invalid_sync_record') {
+                        displayValidationError(err.payload as any);
+                        return;
+                    }
+
+                    console.error(JSON.stringify(err.payload, null, 2));
+                    return;
+                }
+
+                console.error(JSON.stringify(err, null, 2));
                 return;
             }
 
