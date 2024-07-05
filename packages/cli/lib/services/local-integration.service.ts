@@ -69,12 +69,14 @@ class IntegrationService implements IntegrationServiceInterface {
                         jsonSchema: nangoProps.syncConfig.models_json_schema
                     });
                     if (Array.isArray(valInput)) {
-                        await nango.log('Invalid action input', { level: 'error' });
-                        return {
-                            success: false,
-                            response: null,
-                            error: new NangoError('invalid_action_input', { data: input, validation: valInput, model: nangoProps.syncConfig.input })
-                        };
+                        await nango.log('Invalid action input', { data: input, validation: valInput, model: nangoProps.syncConfig.input }, { level: 'error' });
+                        if (nangoProps.runnerFlags.validateActionInput) {
+                            return {
+                                success: false,
+                                response: null,
+                                error: new NangoError('invalid_action_input', { data: input, validation: valInput, model: nangoProps.syncConfig.input })
+                            };
+                        }
                     }
 
                     const output = await scriptExports.default(nango, input);
@@ -87,12 +89,14 @@ class IntegrationService implements IntegrationServiceInterface {
                         jsonSchema: nangoProps.syncConfig.models_json_schema
                     });
                     if (Array.isArray(valOutput)) {
-                        await nango.log('Invalid action output', { level: 'error' });
-                        return {
-                            success: false,
-                            response: null,
-                            error: new NangoError('invalid_action_output', { data: output, validation: valOutput, model: modelNameOutput })
-                        };
+                        await nango.log('Invalid action output', { data: output, validation: valOutput, model: modelNameOutput }, { level: 'error' });
+                        if (nangoProps.runnerFlags.validateActionOutput) {
+                            return {
+                                success: false,
+                                response: null,
+                                error: new NangoError('invalid_action_output', { data: output, validation: valOutput, model: modelNameOutput })
+                            };
+                        }
                     }
 
                     return { success: true, error: null, response: output };
