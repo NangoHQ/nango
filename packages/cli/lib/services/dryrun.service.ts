@@ -186,36 +186,47 @@ export class DryRunService {
         let stubbedMetadata;
         let normalizedInput;
 
-        // the user can reference a file for input
-        // if it includes both '@' and 'json'
-        if (actionInput && actionInput.toString().includes('@') && actionInput.toString().endsWith('.json')) {
-            // fetch the file contents
-            const fileContents = localFileService.readFile(actionInput.toString());
-            if (!fileContents) {
-                console.log(chalk.red('The file could not be read. Please make sure it exists.'));
-                return;
+        if (actionInput) {
+            if (actionInput.toString().includes('@') && actionInput.toString().endsWith('.json')) {
+                const fileContents = localFileService.readFile(actionInput.toString());
+                if (!fileContents) {
+                    console.log(chalk.red('The file could not be read. Please make sure it exists.'));
+                    return;
+                }
+                try {
+                    normalizedInput = JSON.parse(fileContents);
+                } catch {
+                    console.log(chalk.red('There was an issue parsing the action input file. Please make sure it is valid JSON.'));
+                    return;
+                }
+            } else {
+                try {
+                    normalizedInput = JSON.parse(actionInput as string);
+                } catch {
+                    normalizedInput = actionInput;
+                }
             }
-            normalizedInput = JSON.parse(fileContents);
+        }
 
-            if (rawStubbedMetadata) {
-                const metadataFileContents = localFileService.readFile(rawStubbedMetadata.toString());
-                if (!metadataFileContents) {
+        if (rawStubbedMetadata) {
+            if (rawStubbedMetadata.toString().includes('@') && rawStubbedMetadata.toString().endsWith('.json')) {
+                const fileContents = localFileService.readFile(rawStubbedMetadata.toString());
+                if (!fileContents) {
                     console.log(chalk.red('The metadata file could not be read. Please make sure it exists.'));
                     return;
                 }
-                stubbedMetadata = JSON.parse(fileContents);
-            }
-        } else {
-            try {
-                normalizedInput = JSON.parse(actionInput as string);
-            } catch {
-                normalizedInput = actionInput;
-            }
-
-            try {
-                stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
-            } catch {
-                stubbedMetadata = rawStubbedMetadata;
+                try {
+                    stubbedMetadata = JSON.parse(fileContents);
+                } catch {
+                    console.log(chalk.red('There was an issue parsing the metadata file. Please make sure it is valid JSON.'));
+                    return;
+                }
+            } else {
+                try {
+                    stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
+                } catch {
+                    stubbedMetadata = rawStubbedMetadata;
+                }
             }
         }
 
