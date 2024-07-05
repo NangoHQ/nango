@@ -533,6 +533,16 @@ export const getAndReconcileDifferences = async ({
     // the "custom" sync configs
     const existingSyncs = await getActiveCustomSyncConfigsByEnvironmentId(environmentId);
 
+    const deletedModels = flows
+        .filter((flow) => flow.type === 'sync')
+        .flatMap((flow) => {
+            const existing = existingSyncs.find((sync) => sync.sync_name === flow.syncName && sync.unique_key === flow.providerConfigKey);
+            if (existing) {
+                return existing?.models.filter((model) => !flow.models.includes(model));
+            }
+            return [];
+        });
+
     const deletedSyncs: SlimSync[] = [];
     const deletedActions: SlimAction[] = [];
 
@@ -591,7 +601,8 @@ export const getAndReconcileDifferences = async ({
         newSyncs,
         newActions,
         deletedSyncs,
-        deletedActions
+        deletedActions,
+        deletedModels
     };
 };
 
