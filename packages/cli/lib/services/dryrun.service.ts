@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 import type { NangoConnection } from '@nangohq/shared';
 import type { Metadata, ScriptFileType } from '@nangohq/types';
-import { SyncType, cloudHost, stagingHost, SyncRunService } from '@nangohq/shared';
+import { SyncType, cloudHost, stagingHost, SyncRunService, localFileService } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
@@ -17,7 +17,7 @@ interface RunArgs extends GlobalOptions {
     connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
-    input?: object;
+    input?: unknown;
     metadata?: Metadata;
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
@@ -183,18 +183,51 @@ export class DryRunService {
             return;
         }
 
-        let normalizedInput;
         let stubbedMetadata;
-        try {
-            normalizedInput = JSON.parse(actionInput as unknown as string);
-        } catch {
-            normalizedInput = actionInput;
+        let normalizedInput;
+
+        if (actionInput) {
+            if (actionInput.toString().includes('@') && actionInput.toString().endsWith('.json')) {
+                const fileContents = localFileService.readFile(actionInput.toString());
+                if (!fileContents) {
+                    console.log(chalk.red('The file could not be read. Please make sure it exists.'));
+                    return;
+                }
+                try {
+                    normalizedInput = JSON.parse(fileContents);
+                } catch {
+                    console.log(chalk.red('There was an issue parsing the action input file. Please make sure it is valid JSON.'));
+                    return;
+                }
+            } else {
+                try {
+                    normalizedInput = JSON.parse(actionInput as string);
+                } catch {
+                    normalizedInput = actionInput;
+                }
+            }
         }
 
-        try {
-            stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
-        } catch {
-            stubbedMetadata = rawStubbedMetadata;
+        if (rawStubbedMetadata) {
+            if (rawStubbedMetadata.toString().includes('@') && rawStubbedMetadata.toString().endsWith('.json')) {
+                const fileContents = localFileService.readFile(rawStubbedMetadata.toString());
+                if (!fileContents) {
+                    console.log(chalk.red('The metadata file could not be read. Please make sure it exists.'));
+                    return;
+                }
+                try {
+                    stubbedMetadata = JSON.parse(fileContents);
+                } catch {
+                    console.log(chalk.red('There was an issue parsing the metadata file. Please make sure it is valid JSON.'));
+                    return;
+                }
+            } else {
+                try {
+                    stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
+                } catch {
+                    stubbedMetadata = rawStubbedMetadata;
+                }
+            }
         }
 
         const logMessages = {
