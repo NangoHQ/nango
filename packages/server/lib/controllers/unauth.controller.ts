@@ -23,10 +23,6 @@ class UnAuthController {
         const connectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
-        console.log('THIS JUST RAN OH YEAH');
-        console.log(req.query['params']);
-        console.log(connectionConfig);
-
         let logCtx: LogContext | undefined;
 
         try {
