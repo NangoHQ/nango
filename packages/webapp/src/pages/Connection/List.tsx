@@ -195,7 +195,7 @@ export default function ConnectionList() {
                                 <MultiSelect
                                     label="Customer Domains"
                                     options={connections.reduce((acc: { name: string; value: string }[], connection: Connection) => {
-                                        const sitename = connection.metadata?.['nango.meta.customer_domain'];
+                                        const sitename = connection?.connection_config ? connection.connection_config['customer_domain'] : undefined;
                                         if (typeof sitename === 'string') {
                                             acc.push({
                                                 name: sitename,
@@ -244,7 +244,7 @@ export default function ConnectionList() {
                                         provider_config_key: providerConfigKey,
                                         created: creationDate,
                                         active_logs,
-                                        metadata
+                                        connection_config
                                     }) => (
                                         <div
                                             key={`tr-${id}`}
@@ -257,13 +257,13 @@ export default function ConnectionList() {
                                         >
                                             <div className="flex items-center w-1/4 gap-2 py-2 truncate">
                                                 <span className="break-words break-all truncate">
-                                                    {metadata ? (metadata['nango.meta.display_name'] as string | undefined) : '-'}
+                                                    {connection_config?.display_name ? (connection_config.display_name as string | undefined) : '-'}
                                                 </span>
                                                 {active_logs && <ErrorCircle />}
                                             </div>
                                             <div className="flex w-1/4">
                                                 <span className="break-words break-all truncate">
-                                                    {metadata ? (metadata['nango.meta.customer_domain'] as string | undefined) : '-'}
+                                                    {connection_config?.customer_domain ? (connection_config.customer_domain as string | undefined) : '-'}
                                                 </span>
                                             </div>
                                             <div className="flex items-center w-1/4 gap-3">

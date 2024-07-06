@@ -1,5 +1,15 @@
 import type { Request, Response, NextFunction } from 'express';
-import { errorManager, analytics, AnalyticsTypes, configService, connectionService, hmacService, ErrorSourceEnum, LogActionEnum } from '@nangohq/shared';
+import {
+    errorManager,
+    analytics,
+    AnalyticsTypes,
+    configService,
+    connectionService,
+    hmacService,
+    ErrorSourceEnum,
+    LogActionEnum,
+    getConnectionConfig
+} from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
@@ -11,6 +21,11 @@ class UnAuthController {
         const { environment, account } = res.locals;
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
+        const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+
+        console.log('THIS JUST RAN OH YEAH');
+        console.log(req.query['params']);
+        console.log(connectionConfig);
 
         let logCtx: LogContext | undefined;
 
@@ -86,6 +101,7 @@ class UnAuthController {
                 connectionId,
                 providerConfigKey,
                 config.provider,
+                connectionConfig,
                 environment.id,
                 account.id
             );

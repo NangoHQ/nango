@@ -28,9 +28,9 @@ export default function Authorization(props: AuthorizationProps) {
 
     if (!loaded) return <Loading spaceRatio={2.5} className="top-24" />;
 
-    const displayName = connection.metadata ? connection.metadata['nango.meta.display_name'] : undefined;
-    const customerEmail = connection.metadata ? connection.metadata['nango.meta.customer_email'] : undefined;
-    const customerDomain = connection.metadata ? connection.metadata['nango.meta.customer_domain'] : undefined;
+    const displayName = connection.connection_config?.display_name;
+    const customerDomain = connection.connection_config?.customer_domain;
+    const customerEmail = connection.connection_config?.customer_email;
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
