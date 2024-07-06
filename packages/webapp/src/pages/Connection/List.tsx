@@ -20,6 +20,13 @@ import { useStore } from '../../store';
 
 const defaultFilter = ['all'];
 
+function truncateWithEllipsis(text: string) {
+    if (text.length <= 6) {
+        return text;
+    }
+    return text.slice(0, 3) + '...' + text.slice(-3);
+}
+
 export default function ConnectionList() {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
@@ -30,8 +37,9 @@ export default function ConnectionList() {
     const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>(defaultFilter);
     const [connectionSearch, setConnectionSearch] = useState<string>('');
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>(defaultFilter);
+    const [selectedCustomerDomains, setSelectedCustomerDomains] = useState<string[]>(defaultFilter);
 
-    const filteredConnections = useMemo(() => {
+    const filteredConnections = useMemo<Connection[]>(() => {
         if (!data) {
             return [];
         }
@@ -43,13 +51,13 @@ export default function ConnectionList() {
             const matchesStatus: boolean =
                 selectedStatuses.includes('all') ||
                 (selectedStatuses.includes('ok') && !connection.active_logs) ||
-                (selectedStatuses.includes('error') && connection.active_logs);
+                (selectedStatuses.includes('error') && !!connection.active_logs);
 
             return matchesSearch && matchesIntegration && matchesStatus;
         });
     }, [connectionSearch, selectedIntegrations, selectedStatuses, data]);
 
-    const numberOfErroredConnections = useMemo(() => {
+    const numberOfErroredConnections = useMemo<number>(() => {
         if (!data) {
             return 0;
         }
@@ -75,6 +83,14 @@ export default function ConnectionList() {
             return;
         }
         setSelectedIntegrations(values);
+    };
+
+    const handleCustomerDomainChange = (values: string[]) => {
+        if (values.includes('all')) {
+            setSelectedCustomerDomains(defaultFilter);
+            return;
+        }
+        setSelectedCustomerDomains(values);
     };
 
     useEffect(() => {
@@ -163,66 +179,112 @@ export default function ConnectionList() {
                             />
                         </div>
                         <div className="flex">
-                            <MultiSelect
-                                label="Integrations"
-                                options={providers.map((integration: string) => {
-                                    return { name: integration, value: integration };
-                                })}
-                                selected={selectedIntegrations}
-                                defaultSelect={defaultFilter}
-                                onChange={handleIntegrationChange}
-                                all
-                            />
-                            <MultiSelect
-                                label="Filter Errors"
-                                options={[
-                                    { name: 'OK', value: 'ok' },
-                                    { name: 'Error', value: 'error' }
-                                ]}
-                                selected={selectedStatuses}
-                                defaultSelect={defaultFilter}
-                                onChange={setSelectedStatuses}
-                                all
-                            />
+                            <div className="mr-2">
+                                <MultiSelect
+                                    label="Integrations"
+                                    options={providers.map((integration: string) => {
+                                        return { name: integration, value: integration };
+                                    })}
+                                    selected={selectedIntegrations}
+                                    defaultSelect={defaultFilter}
+                                    onChange={handleIntegrationChange}
+                                    all
+                                />
+                            </div>
+                            <div className="mr-2">
+                                <MultiSelect
+                                    label="Customer Domains"
+                                    options={connections.reduce((acc: { name: string; value: string }[], connection: Connection) => {
+                                        const sitename = connection.metadata?.['nango.meta.customer_domain'];
+                                        if (typeof sitename === 'string') {
+                                            acc.push({
+                                                name: sitename,
+                                                value: sitename
+                                            });
+                                        }
+                                        return acc;
+                                    }, [])}
+                                    selected={selectedCustomerDomains}
+                                    defaultSelect={defaultFilter}
+                                    onChange={handleCustomerDomainChange}
+                                    all
+                                    emptyLabel="No customer domains"
+                                />
+                            </div>
+                            <div className="mr-2">
+                                <MultiSelect
+                                    label="Filter Errors"
+                                    options={[
+                                        { name: 'OK', value: 'ok' },
+                                        { name: 'Error', value: 'error' }
+                                    ]}
+                                    selected={selectedStatuses}
+                                    defaultSelect={defaultFilter}
+                                    onChange={setSelectedStatuses}
+                                    all
+                                />
+                            </div>
                         </div>
                     </div>
                     <div className="h-fit rounded-md text-white text-sm">
                         <div className="w-full">
-                            <div className="flex gap-4 items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md">
-                                <div className="w-2/3">Connection IDs</div>
-                                <div className="w-1/3">Integration</div>
-                                <div className="w-20">Created</div>
+                            <div className="flex gap-4 items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md mb-1">
+                                <div className="w-1/4">Display Name</div>
+                                <div className="w-1/4">Customer Domain</div>
+                                <div className="w-1/4">Integration</div>
+                                <div className="w-1/4">Connection ID</div>
+                                <div className="w-20 text-right float-right">Created</div>
                             </div>
-                            {filteredConnections.map(
-                                ({ id, connection_id: connectionId, provider, provider_config_key: providerConfigKey, created: creationDate, active_logs }) => (
-                                    <div
-                                        key={`tr-${id}`}
-                                        className={`flex gap-4 ${
-                                            id !== connections.at(-1)?.id ? 'border-b border-border-gray' : ''
-                                        } min-h-[4em] px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
-                                        onClick={() => {
-                                            navigate(`/${env}/connections/${encodeURIComponent(providerConfigKey)}/${encodeURIComponent(connectionId)}`);
-                                        }}
-                                    >
-                                        <div className="flex items-center w-2/3 gap-2 py-2 truncate">
-                                            <span className="break-words break-all truncate">{connectionId}</span>
-                                            {active_logs && <ErrorCircle />}
-                                            <CopyButton dark text={connectionId} />
-                                        </div>
-                                        <div className="flex items-center w-1/3 gap-3">
-                                            <div className="w-7">
-                                                <IntegrationLogo provider={provider} height={7} width={7} />
+                            <div className="rounded-md overflow-hidden">
+                                {filteredConnections.map(
+                                    ({
+                                        id,
+                                        connection_id: connectionId,
+                                        provider,
+                                        provider_config_key: providerConfigKey,
+                                        created: creationDate,
+                                        active_logs,
+                                        metadata
+                                    }) => (
+                                        <div
+                                            key={`tr-${id}`}
+                                            className={`flex gap-4 ${
+                                                id !== connections.at(-1)?.id ? 'border-b border-border-gray' : ''
+                                            } min-h-[4em] px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
+                                            onClick={() => {
+                                                navigate(`/${env}/connections/${encodeURIComponent(providerConfigKey)}/${encodeURIComponent(connectionId)}`);
+                                            }}
+                                        >
+                                            <div className="flex items-center w-1/4 gap-2 py-2 truncate">
+                                                <span className="break-words break-all truncate">
+                                                    {metadata ? (metadata['nango.meta.display_name'] as string | undefined) : '-'}
+                                                </span>
+                                                {active_logs && <ErrorCircle />}
                                             </div>
-                                            <p className="break-words break-all">{providerConfigKey}</p>
+                                            <div className="flex w-1/4">
+                                                <span className="break-words break-all truncate">
+                                                    {metadata ? (metadata['nango.meta.customer_domain'] as string | undefined) : '-'}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center w-1/4 gap-3">
+                                                <div className="w-7">
+                                                    <IntegrationLogo provider={provider} height={7} width={7} />
+                                                </div>
+                                                <p className="break-words break-all">{providerConfigKey}</p>
+                                            </div>
+                                            <div className="flex w-1/4 items-center">
+                                                <span className="break-words break-all truncate text-gray-400 mr-2">{truncateWithEllipsis(connectionId)}</span>
+                                                <CopyButton dark text={connectionId} />
+                                            </div>
+                                            <div className="flex w-20 justify-end">
+                                                <time dateTime={creationDate} title={creationDate}>
+                                                    {formatDate(creationDate)}
+                                                </time>
+                                            </div>
                                         </div>
-                                        <div className="flex w-20">
-                                            <time dateTime={creationDate} title={creationDate}>
-                                                {formatDate(creationDate)}
-                                            </time>
-                                        </div>
-                                    </div>
-                                )
-                            )}
+                                    )
+                                )}
+                            </div>
                         </div>
                     </div>
                 </>

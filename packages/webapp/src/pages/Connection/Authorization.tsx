@@ -28,14 +28,17 @@ export default function Authorization(props: AuthorizationProps) {
 
     if (!loaded) return <Loading spaceRatio={2.5} className="top-24" />;
 
+    const displayName = connection.metadata ? connection.metadata['nango.meta.display_name'] : undefined;
+    const customerEmail = connection.metadata ? connection.metadata['nango.meta.customer_email'] : undefined;
+    const customerDomain = connection.metadata ? connection.metadata['nango.meta.customer_domain'] : undefined;
+
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
             <div className="flex">
                 <div className="flex flex-col w-1/2">
-                    <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
+                    <span className="text-gray-400 text-xs uppercase mb-1">Connection Display Name</span>
                     <div className="flex items-center gap-2">
-                        <span className="text-white break-all">{connection.connection_id}</span>
-                        <CopyButton text={connection.connection_id} dark />
+                        <span className="text-white break-all">{typeof displayName === 'string' ? displayName : '-'}</span>
                     </div>
                 </div>
                 {connection.created_at && (
@@ -46,6 +49,25 @@ export default function Authorization(props: AuthorizationProps) {
                 )}
             </div>
             <div className="flex">
+                <div className="flex flex-col w-1/2">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Domain</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-white break-all">{typeof customerDomain === 'string' ? customerDomain : '-'}</span>
+                    </div>
+                </div>
+                <div className="flex flex-col w-1/2">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-white break-all">{connection.connection_id}</span>
+                        <CopyButton text={connection.connection_id} dark />
+                    </div>
+                </div>
+            </div>
+            <div className="flex">
+                <div className="flex flex-col w-1/2">
+                    <span className="text-gray-400 text-xs uppercase mb-2">Customer Email</span>
+                    <span className="text-white break-all">{typeof customerEmail === 'string' ? customerEmail : '-'}</span>
+                </div>
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-2">Auth Type</span>
                     <span className="text-white">{connection.credentials.type || 'None'}</span>
