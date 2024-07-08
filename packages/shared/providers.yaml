@@ -3135,3 +3135,16 @@ zoom:
     proxy:
         base_url: https://api.zoom.us/v2
     docs: https://docs.nango.dev/integrations/all/zoom
+zoominfo:
+    categories:
+        - crm
+        - marketing
+    auth_mode: OAUTH2_CC
+    proxy:
+        retry:
+            after: 'X-RateLimit-Reset'
+        base_url: https://api.zoominfo.com
+    token_url: https://api.zoominfo.com/authenticate
+    token_request_auth_method: custom
+    body_format: json
+    docs: https://docs.nango.dev/integrations/all/zoominfo
