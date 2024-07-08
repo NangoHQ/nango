@@ -87,12 +87,13 @@ export default function ShowIntegration() {
         );
     }
 
-    if (!data || !environmentAndAccount)
+    if (!data || !environmentAndAccount) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
                 <Loading spaceRatio={2.5} className="-top-36" />
             </DashboardLayout>
         );
+    }
 
     const { config: integration, flows: endpoints } = data;
 

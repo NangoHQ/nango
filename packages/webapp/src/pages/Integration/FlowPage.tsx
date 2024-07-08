@@ -62,6 +62,38 @@ export default function FlowPage(props: FlowPageProps) {
         }
     }, [error]);
 
+    /*
+     * If the flow is enabled then we need to make sure to assign
+     * the updated ID to the flow object. This covers the scenario of a user
+     * enabled a flow, then disables it
+     */
+    useEffect(() => {
+        if (!endpoints.allFlows) {
+            return;
+        }
+
+        const { syncs, actions } = endpoints.allFlows;
+
+        if (flow?.type === 'sync') {
+            const sync = syncs.find((sync: Flow) => sync.name === flow.name);
+            if (sync) {
+                setFlow({
+                    ...flow,
+                    id: sync.id
+                });
+            }
+        } else {
+            const action = actions.find((action: Flow) => action.name === flow?.name);
+            if (action) {
+                setFlow({
+                    ...(flow as Flow),
+                    id: action.id
+                });
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(endpoints), setFlow]);
+
     const downloadFlow = async () => {
         setIsDownloading(true);
         const flowInfo = {
