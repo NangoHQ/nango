@@ -8,7 +8,6 @@ integrations:
                 runs: every hour
                 output: Contact
                 sync_type: incremental
-                auto_start: false
                 endpoint: GET /xero/contacts
             accounts:
                 description: |
@@ -17,7 +16,6 @@ integrations:
                 scopes: accounting.settings
                 output: Account
                 sync_type: incremental
-                auto_start: false
                 endpoint: GET /xero/accounts
             items:
                 description: |
@@ -27,7 +25,6 @@ integrations:
                 scopes: accounting.settings
                 output: Item
                 sync_type: incremental
-                auto_start: false
                 endpoint: GET /xero/items
             invoices:
                 description: |
@@ -36,7 +33,6 @@ integrations:
                 scopes: accounting.transactions
                 output: Invoice
                 sync_type: incremental
-                auto_start: false
                 endpoint: GET /xero/invoices
             payments:
                 description: |
@@ -45,7 +41,6 @@ integrations:
                 scopes: accounting.transactions
                 output: Payment
                 sync_type: incremental
-                auto_start: false
                 endpoint: GET /xero/payments
         actions:
             create-contact:
