@@ -1,25 +1,24 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { ApiError, UpdateMetadata, MetadataBody } from '@nangohq/types';
+import { zodErrorToHTTP } from '@nangohq/utils';
+import type { ApiError, UpdateMetadata, MetadataBody, ConnectionConfig } from '@nangohq/types';
 import { connectionService } from '@nangohq/shared';
 import type { Connection } from '@nangohq/shared';
+import db from '@nangohq/database';
 
 const validation = z
     .object({
         connection_id: z.union([z.string().min(1), z.array(z.string().min(1))]),
         provider_config_key: z.string().min(1),
-        metadata: z.record(z.unknown())
+        metadata: z.record(z.unknown()).optional(),
+        display_name: z.string().optional(),
+        customer_domain: z.string().optional(),
+        customer_email: z.string().optional(),
+        env: z.record(z.unknown()).optional()
     })
     .strict();
 
 export const updateMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
-    const emptyQuery = requireEmptyQuery(req);
-    if (emptyQuery) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
-        return;
-    }
-
     const val = validation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -30,9 +29,22 @@ export const updateMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
 
     const { environment } = res.locals;
 
-    const body: Required<MetadataBody> = val.data;
+    const body: MetadataBody = val.data as MetadataBody;
 
-    const { connection_id: connectionIdArg, provider_config_key: providerConfigKey, metadata } = body;
+    const {
+        connection_id: connectionIdArg,
+        provider_config_key: providerConfigKey,
+        metadata,
+        display_name: displayName,
+        customer_email: customerEmail,
+        customer_domain: customerDomain
+    } = body;
+
+    const connectionConfig: Partial<ConnectionConfig> = {
+        display_name: displayName,
+        customer_email: customerEmail,
+        customer_domain: customerDomain
+    };
 
     const connectionIds = Array.isArray(connectionIdArg) ? connectionIdArg : [connectionIdArg];
 
@@ -65,7 +77,15 @@ export const updateMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
         validConnections.push(connection);
     }
 
-    await connectionService.updateMetadata(validConnections, metadata);
+    await db.knex.transaction(async (trx) => {
+        if (metadata) {
+            await connectionService.updateMetadata(validConnections, metadata, trx);
+        }
+
+        for (const connection of validConnections) {
+            await connectionService.updateConnectionConfig(connection, connectionConfig, trx);
+        }
+    });
 
     res.status(200).send(req.body);
 });

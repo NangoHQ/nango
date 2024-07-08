@@ -199,6 +199,7 @@ web.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, con
 web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 
 web.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
+web.route('/api/v1/connection/metadata').patch(webAuth, updateMetadata);
 web.route('/api/v1/connection/:connectionId').get(webAuth, getConnectionWeb);
 web.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
 web.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));

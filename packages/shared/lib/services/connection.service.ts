@@ -524,26 +524,42 @@ class ConnectionService {
         await trx.from<StoredConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 
-    public async replaceConnectionConfig(connection: Connection, config: ConnectionConfig) {
-        await db.knex
+    public async replaceConnectionConfig(connection: Connection, config: ConnectionConfig, trx?: Knex.Transaction) {
+        const query = db.knex
             .from<StoredConnection>(`_nango_connections`)
             .where({ id: connection.id as number, deleted: false })
             .update({ connection_config: config });
+
+        if (trx) {
+            await query.transacting(trx);
+        } else {
+            await query;
+        }
     }
 
-    public async updateMetadata(connections: Connection[], metadata: Metadata): Promise<void> {
-        await db.knex.transaction(async (trx) => {
+    public async updateMetadata(connections: Connection[], metadata: Metadata, trx?: Knex.Transaction): Promise<void> {
+        const transaction: Knex.Transaction = trx || (await db.knex.transaction());
+
+        try {
             for (const connection of connections) {
                 const newMetadata = { ...connection.metadata, ...metadata };
-                await this.replaceMetadata([connection.id as number], newMetadata, trx);
+                await this.replaceMetadata([connection.id as number], newMetadata, transaction);
             }
-        });
+            if (!trx) {
+                await transaction.commit();
+            }
+        } catch (error) {
+            if (!trx) {
+                await transaction.rollback();
+            }
+            throw error;
+        }
     }
 
-    public async updateConnectionConfig(connection: Connection, config: ConnectionConfig): Promise<ConnectionConfig> {
+    public async updateConnectionConfig(connection: Connection, config: ConnectionConfig, trx?: Knex.Transaction): Promise<ConnectionConfig> {
         const existingConfig = await this.getConnectionConfig(connection);
         const newConfig = { ...existingConfig, ...config };
-        await this.replaceConnectionConfig(connection, newConfig);
+        await this.replaceConnectionConfig(connection, newConfig, trx);
 
         return newConfig;
     }

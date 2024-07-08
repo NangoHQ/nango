@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Prism } from '@mantine/prism';
 import { Loading } from '@geist-ui/core';
 
@@ -8,6 +8,11 @@ import { formatDateToShortUSFormat } from '../../utils/utils';
 import SecretInput from '../../components/ui/input/SecretInput';
 import CopyButton from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
+import EditableField from '../../components/ui/input/EditableField';
+import { useStore } from '../../store';
+import { useEditConnectionMetadataAPI } from '../../utils/api';
+import { useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 interface AuthorizationProps {
     connection: Connection;
@@ -18,7 +23,29 @@ interface AuthorizationProps {
 
 export default function Authorization(props: AuthorizationProps) {
     const { connection, forceRefresh, loaded } = props;
+    const env = useStore((state) => state.env);
     const [refreshing, setRefreshing] = useState(false);
+
+    const [displayName, setDisplayName] = useState<string>(connection.connection_config?.display_name || '');
+    const [customerDomain, setCustomerDomain] = useState<string>(connection.connection_config?.customer_domain || '');
+    const [customerEmail, setCustomerEmail] = useState<string>(connection.connection_config?.customer_email || '');
+
+    const mergedConnectionConfig = {
+        ...connection.connection_config,
+        display_name: displayName,
+        customer_domain: customerDomain,
+        customer_email: customerEmail
+    };
+
+    const editConnectionMetadataAPI = useEditConnectionMetadataAPI(env);
+
+    const { providerConfigKey } = useParams();
+
+    useEffect(() => {
+        setDisplayName(connection.connection_config?.display_name || '');
+        setCustomerDomain(connection.connection_config?.customer_domain || '');
+        setCustomerEmail(connection.connection_config?.customer_email || '');
+    }, [connection]);
 
     const handleForceRefresh = async () => {
         setRefreshing(true);
@@ -26,20 +53,26 @@ export default function Authorization(props: AuthorizationProps) {
         setRefreshing(false);
     };
 
-    if (!loaded) return <Loading spaceRatio={2.5} className="top-24" />;
+    const handleSave = async () => {
+        if (typeof providerConfigKey === 'string') {
+            const res = await editConnectionMetadataAPI(connection.connection_id, providerConfigKey, undefined, displayName, customerEmail, customerDomain);
 
-    const displayName = connection.connection_config?.display_name;
-    const customerDomain = connection.connection_config?.customer_domain;
-    const customerEmail = connection.connection_config?.customer_email;
+            if (res) {
+                toast.success('Connection updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            }
+        } else {
+            console.error('providerConfigKey is not a string');
+        }
+    };
+
+    if (!loaded) return <Loading spaceRatio={2.5} className="top-24" />;
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
-            <div className="flex">
+            <div className="flex space-x-8">
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-1">Connection Display Name</span>
-                    <div className="flex items-center gap-2">
-                        <span className="text-white break-all">{typeof displayName === 'string' ? displayName : '-'}</span>
-                    </div>
+                    <EditableField value={displayName} onSave={handleSave} onChange={setDisplayName} dark />
                 </div>
                 {connection.created_at && (
                     <div className="flex flex-col w-1/2">
@@ -48,12 +81,10 @@ export default function Authorization(props: AuthorizationProps) {
                     </div>
                 )}
             </div>
-            <div className="flex">
+            <div className="flex space-x-8">
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-1">Domain</span>
-                    <div className="flex items-center gap-2">
-                        <span className="text-white break-all">{typeof customerDomain === 'string' ? customerDomain : '-'}</span>
-                    </div>
+                    <EditableField value={customerDomain} onSave={handleSave} onChange={setCustomerDomain} dark />
                 </div>
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
@@ -63,10 +94,10 @@ export default function Authorization(props: AuthorizationProps) {
                     </div>
                 </div>
             </div>
-            <div className="flex">
+            <div className="flex space-x-8">
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-2">Customer Email</span>
-                    <span className="text-white break-all">{typeof customerEmail === 'string' ? customerEmail : '-'}</span>
+                    <EditableField value={customerEmail} onChange={setCustomerEmail} onSave={handleSave} dark />
                 </div>
                 <div className="flex flex-col w-1/2">
                     <span className="text-gray-400 text-xs uppercase mb-2">Auth Type</span>
@@ -195,7 +226,7 @@ export default function Authorization(props: AuthorizationProps) {
             <div className="flex flex-col">
                 <span className="text-gray-400 text-xs uppercase mb-2">Connection Configuration</span>
                 <Prism language="json" colorScheme="dark">
-                    {JSON.stringify(connection.connection_config, null, 4) || '{}'}
+                    {JSON.stringify(mergedConnectionConfig, null, 4) || '{}'}
                 </Prism>
             </div>
             <div className="flex flex-col">
