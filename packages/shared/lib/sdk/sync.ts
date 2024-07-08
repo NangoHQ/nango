@@ -838,14 +838,18 @@ export class NangoSync extends NangoAction {
 
         // Validate records
         for (const record of results) {
-            const validation = validateData({ input: record, jsonSchema: this.syncConfig!.models_json_schema, modelName: model });
+            const validation = validateData({ input: JSON.parse(JSON.stringify(record)), jsonSchema: this.syncConfig!.models_json_schema, modelName: model });
             if (validation === true) {
                 continue;
             }
 
             metrics.increment(metrics.Types.RUNNER_INVALID_SYNCS_RECORDS);
 
-            await this.log('Invalid record payload', { data: record, validation, model }, { level: 'warn' });
+            if (this.dryRun) {
+                await this.log('Invalid action input. Use `--validation` option to see the details', { level: 'warn' });
+            } else {
+                await this.log('Invalid record payload', { data: record, validation, model }, { level: 'warn' });
+            }
             if (this.runnerFlags?.validateSyncRecords) {
                 throw new NangoError(`invalid_sync_record`, { data: record, validation, model });
             }

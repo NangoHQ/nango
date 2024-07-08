@@ -75,7 +75,7 @@ export default function EnableDisableSync({
         setModalTitleColor('text-white');
     };
 
-    const enableSync = (flow: Flow) => {
+    const showEnableSyncModal = (flow: Flow) => {
         resetModal();
         setModalTitle(`Enable ${flow.type}?`);
         setModalTitleColor('text-white');
@@ -196,14 +196,15 @@ export default function EnableDisableSync({
             success = await createNewFlow(flowPayload);
         }
 
-        if (success && flow?.type === 'sync') {
+        if (success) {
             setEnabled(true);
+            reload();
         }
 
         return success;
     };
 
-    const disableSync = (flow: Flow) => {
+    const showDisableSyncModal = (flow: Flow) => {
         resetModal();
 
         setModalTitle(`Disable ${flow?.type === 'sync' ? 'sync? (destructive action)' : 'action?'}`);
@@ -225,6 +226,7 @@ export default function EnableDisableSync({
         });
 
         if (res.status === 200) {
+            setEnabled(false);
             reload();
         } else {
             toast.error('Something went wrong', {
@@ -236,17 +238,17 @@ export default function EnableDisableSync({
     };
 
     const toggleSync = async (flow: Flow) => {
-        if (enabled) {
-            flow?.type === 'sync' ? disableSync(flow) : await onDisableSync(flow);
-            setEnabled(false);
-        } else {
-            if (flow?.type === 'sync') {
-                enableSync(flow);
+        if (flow.type === 'sync') {
+            if (enabled) {
+                showDisableSyncModal(flow);
             } else {
-                const success = await onEnableSync(flow);
-                if (success) {
-                    setEnabled(true);
-                }
+                showEnableSyncModal(flow);
+            }
+        } else {
+            if (enabled) {
+                await onDisableSync(flow);
+            } else {
+                await onEnableSync(flow);
             }
         }
     };
