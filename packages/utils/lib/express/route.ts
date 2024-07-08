@@ -69,11 +69,17 @@ export const routeFetch = <E extends Endpoint<any>>(
                 json = (await res.json()) as Endpoint<E>['Reply'];
             }
             if (res.status >= 400) {
-                return { error: { code: 'fetch_failed', message: `${route.method} ${url} failed with status code ${res.status}: ${JSON.stringify(json)}` } };
+                return {
+                    error: {
+                        code: 'fetch_failed',
+                        message: `${route.method} ${url} failed with status code ${res.status}`,
+                        payload: json
+                    }
+                };
             }
             return json;
         } catch (error: unknown) {
-            return { error: { code: 'fetch_failed', message: `${route.method} ${url} failed: ${error}` } };
+            return { error: { code: 'fetch_failed', message: `${route.method} ${url} failed: ${error}`, payload: error } };
         }
     };
 };
