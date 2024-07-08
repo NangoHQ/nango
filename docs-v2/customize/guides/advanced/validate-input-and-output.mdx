@@ -1,31 +1,82 @@
 ---
 title: 'Validate input and output'
 sidebarTitle: 'Validate input and output'
-description: 'How to automatically validate your input and ouput with JSON schema and custom alternatives'
+description: 'How to automatically validate your input and ouput with JSON schema'
 ---
 
-Nango provides a straightforward way to validate your data using automatically generated schema files. This guide will walk you through the essentials of data validation in Nango.
-
-## Auto-Generated schema files
-
-When you use Nango CLI, it automatically generates two schema files in the `.nango` folder:
-
-- **schema.ts** a TypeScript file that contains all your models.
-- **schema.json** a JSON Schema file that is used for automatic data validation.
-
-These files can be versioned and integrated into your own codebase, ensuring consistency and reliability across different environments.
+Nango automatically validates your integration inputs & outputs. It also offers ways to further customize data validation in code. The guide will walk you through each approach.
 
 ## Automatic validation
 
-The `schema.json` file plays a crucial role in Nango's data validation process. This `schema.json` file is used to validate both Actions input/output and Syncs record automatically.
+The validation is available during development and production, and do not require any configuration from you:
 
-- **CLI**: When running a dry run using the Nango CLI, all your input and output will be automatically checked and will stop execution
-- **Production**: This file is stored along your scripts and execute the same check at execution time. Validation errors are only logged and do not halt execution.
+- **CLI**: Dry Run validation errors are logged and will halt execution.
+- **Production**: Validation errors are logged but do not halt execution.
 
+
+## Available schema files
+
+When you use Nango CLI, it automatically generates two schema files in the `.nango` folder:
+
+- `schema.ts` a TypeScript file that contains all your models.
+- `schema.json` a JSON Schema file that is used for automatic data validation.
+
+These files can be versioned and integrated into your own codebase, ensuring consistency and reliability across different environments.
+
+
+
+## Custom Validation
+
+For more advanced use cases, you can generate your own validation schemas using the available files with the tool of your choice.
+
+
+<Tabs>
+
+<Tab title="Typescript `zod`">
+
+To create `zod` schemas you can use [`ts-to-zod` npm package](https://www.npmjs.com/package/ts-to-zod). This tool converts TypeScript definitions into Zod schemas, which can be used for runtime validation in your own Typescript codebase.
+
+
+```bash
+npx ts-to-zod .nango/schema.ts schema.zod.ts
+```
 <Tip>
-The behavior in production ensures that validation issues are tracked without disrupting the application's operation.
-We are planning to enforce validation errors in the coming months with a way to configure the failure mode; a communication will be broadcasted before this goes into effects.
+You can use zod models in your scripts too
 </Tip>
+```typescript
+import { myZodModel } from '../../schema.zod.ts';
+
+export default async fetchData(nango: Nango) {
+  const response = await nango.get({ endpoint: '/tickets' });
+  const isValid = myZodModel.parse(response.json);
+  if (isValid) {
+    [...]
+  }
+}
+```
+</Tab>
+
+
+<Tab title="Golang">
+You can use [`go-jsonschema` golang package](https://github.com/omissis/go-jsonschema). This tool converts JSON Schema definitions into Golang struct. Note that some syntax are not supported by this package.
+
+```bash
+go-jsonschema -p main .nango/schema.json > test.go
+```
+
+</Tab>
+
+
+<Tab title="Rust">
+
+You can use [`typify` rust package](https://github.com/oxidecomputer/typify). This tool converts JSON Schema definitions into Rust types.  Note that some syntax are not supported by this package.
+
+```bash
+cargo typify .nango/schema.json
+```
+</Tab>
+</Tabs>
+
 
 ## Using `schema.json` in your codebase
 
@@ -115,43 +166,4 @@ with open('.nango/schema.json') as file:
 </Tabs>
 
 
-
-
-## Custom Validation
-
-For more advanced use cases, you can generate your own validation schemas using the available files with the tool of your choice.
-
-
-
-<Tabs>
-
-<Tab title="Typescript `zod`">
-
-To create `zod` schemas you can use [`ts-to-zod` npm package](https://www.npmjs.com/package/ts-to-zod). This tool converts TypeScript definitions into Zod schemas, which can be used for runtime validation in your own Typescript codebase.
-
-```bash
-npx ts-to-zod .nango/schema.ts schema.zod.ts
-```
-</Tab>
-
-
-<Tab title="Golang">
-You can use [`go-jsonschema` golang package](https://github.com/omissis/go-jsonschema). This tool converts JSON Schema definitions into Golang struct. Note that some syntax are not supported by this package.
-
-```bash
-go-jsonschema -p main .nango/schema.json > test.go
-```
-
-</Tab>
-
-
-<Tab title="Rust">
-
-You can use [`typify` rust package](https://github.com/oxidecomputer/typify). This tool converts JSON Schema definitions into Rust types.  Note that some syntax are not supported by this package.
-
-```bash
-cargo typify .nango/schema.json
-```
-</Tab>
-</Tabs>
 
