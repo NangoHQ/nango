@@ -1545,6 +1545,15 @@ luma:
             method: GET
             endpoint: /public/v1/user/get-self
     docs: https://docs.nango.dev/integrations/all/luma
+listmonk:
+    categories:
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.domain}/api
+        headers:
+            'Content-Type': 'application/json'
+    docs: https://docs.nango.dev/integrations/all/listmonk
 mailgun:
     categories:
         - marketing
