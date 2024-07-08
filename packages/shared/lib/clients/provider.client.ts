@@ -436,15 +436,21 @@ class ProviderClient {
         try {
             const response = await axios.post(refreshTokenUrl, body, { headers: headers });
             if (response.status === 200 && response.data !== null && response.data.result === '0000') {
+                // Sample success response: { "result": "0000", "message": "OK" }
                 return {
                     access_token: accessToken,
                     refresh_token: refreshToken,
                     expires_in: corosExpiresIn
                 };
             }
-            throw new NangoError('coros_token_refresh_request_error');
+            const payload = {
+                external_result: response.data.result,
+                external_message: response.data.message
+            };
+            // Sample failure response: { "result": "1001", "message": "Service exceptions" }
+            throw new NangoError('refresh_token_external_error', payload);
         } catch (e: any) {
-            throw new NangoError('coros_token_refresh_request_error', e.message);
+            throw new NangoError('refresh_token_external_error', e.message);
         }
     }
 
