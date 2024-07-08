@@ -401,7 +401,7 @@ class ProviderClient {
         };
         try {
             const response = await axios.post(tokenUrl, body, { headers: headers });
-            if (response.status === 200 && response.data !== null) {
+            if (response.status === 200 && response.data !== null && response.data['access_token']) {
                 return {
                     access_token: response.data['access_token'],
                     refresh_token: response.data['refresh_token'],
@@ -409,10 +409,14 @@ class ProviderClient {
                     openId: response.data['openId']
                 };
             }
-
-            throw new NangoError('coros_token_request_error');
+            const payload = {
+                external_result: response.data.result,
+                external_message: response.data.message
+            };
+            // Sample failure response: { "result": "5002", "message": "Unauthorized client ID" }
+            throw new NangoError('request_token_external_error', payload);
         } catch (e: any) {
-            throw new NangoError('coros_token_request_error', e.message);
+            throw new NangoError('request_token_external_error', e.message);
         }
     }
 

@@ -341,6 +341,14 @@ export class NangoError extends Error {
                 }
                 break;
 
+            case 'request_token_external_error':
+                this.status = 400;
+                this.message = `The external API returned an error when trying to request for an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
+                }
+                break;
+
             case 'connection_already_exists':
                 this.status = 409;
                 this.message = 'A connection already exists for this provider configuration.';
