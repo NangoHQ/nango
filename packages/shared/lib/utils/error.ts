@@ -112,7 +112,7 @@ export class NangoError extends Error {
                 this.message = 'The API endpoint could not be found and returned a 404. Please ensure you have the endpoint specified and spelled correctly.';
                 break;
 
-            case 'fobidden':
+            case 'forbidden':
                 this.status = 403;
                 this.message = 'The API endpoint returned back a 403 error. Check the scopes requested to make sure proper access is requested to the API.';
                 break;
@@ -601,6 +601,11 @@ export class NangoError extends Error {
             case 'invalid_sync_record':
                 this.status = 400;
                 this.message = 'Failed to validate a record in batchSave';
+                break;
+
+            case 'action_output_too_big':
+                this.status = 400;
+                this.message = 'Action output is too big';
                 break;
 
             default:
