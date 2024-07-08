@@ -255,7 +255,7 @@ export interface NangoProps {
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
-    runnerFlags?: RunnerFlags | undefined;
+    runnerFlags: RunnerFlags;
 }
 export interface EnvironmentVariable {
     name: string;
@@ -275,6 +275,8 @@ export declare class NangoAction {
     dryRun?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
+    syncConfig?: SyncConfig;
+    runnerFlags: RunnerFlags;
     connectionId: string;
     providerConfigKey: string;
     provider?: string;
@@ -399,7 +401,7 @@ export interface Base {
   obj: {  nested: string;};
   optional?: string;
   arrayLiteral: any[];
-  objectLiteral: object;
+  objectLiteral: Record<string, any>;
   any: any;
   float: number;
   bigint: bigint;

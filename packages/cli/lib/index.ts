@@ -113,21 +113,24 @@ program
     )
     .option(
         '-i, --input [input]',
-        'Optional (for actions only): input to pass to the action script. The `input` can be supplied in either JSON format or as a plain string. For example --input \'{"foo": "bar"}\'  --input \'foobar\''
+        'Optional (for actions only): input to pass to the action script. The `input` can be supplied in either JSON format or as a plain string. For example --input \'{"foo": "bar"}\'  --input \'foobar\'. ' +
+            'You can also pass a file path prefixed with `@` to the input and appended by `json`, for example @fixtures/data.json. Note that only json files can be passed.'
     )
     .option(
         '-m, --metadata [metadata]',
-        'Optional (for syncs only): metadata to stub for the sync script supplied in JSON format, for example --metadata \'{"foo": "bar"}\''
+        'Optional (for syncs only): metadata to stub for the sync script supplied in JSON format, for example --metadata \'{"foo": "bar"}\'. ' +
+            'You can also pass a file path prefixed with `@` to the metadata and appended by `json`, for example @fixtures/metadata.json. Note that only json files can be passed.'
     )
     .option(
         '--integration-id [integrationId]',
         'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
     )
+    .option('--validation', 'Optional: Enforce input, output and records validation', false)
     .action(async function (this: Command, sync: string, connectionId: string) {
-        const { autoConfirm, debug, e: environment, integrationId } = this.opts();
+        const { autoConfirm, debug, e: environment, integrationId, validation } = this.opts();
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        const dryRun = new DryRunService({ fullPath });
+        const dryRun = new DryRunService({ fullPath, validation });
         await dryRun.run({ ...this.opts(), sync, connectionId, optionalEnvironment: environment, optionalProviderConfigKey: integrationId }, debug);
     });
 
@@ -155,6 +158,7 @@ program
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
         const options: DeployOptions = this.opts();
         const { debug } = options;
@@ -186,6 +190,7 @@ program
     .arguments('environment')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
         const options: DeployOptions = this.opts();
         const fullPath = process.cwd();
@@ -202,10 +207,11 @@ program
 program
     .command('deploy:staging', { hidden: true })
     .alias('ds')
-    .description('Deploy a Nango integration to local')
+    .description('Deploy a Nango integration to staging')
     .arguments('environment')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
         const options: DeployOptions = this.opts();
         const fullPath = process.cwd();
