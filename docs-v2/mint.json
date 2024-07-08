@@ -169,7 +169,8 @@
                             "pages": [
                                 "customize/guides/advanced/handle-rate-limits",
                                 "customize/guides/advanced/handle-large-datasets",
-                                "customize/guides/advanced/migrate-integration-configuration"
+                                "customize/guides/advanced/migrate-integration-configuration",
+                                "customize/guides/advanced/validate-input-and-output"
                             ]
                         }
                     ]

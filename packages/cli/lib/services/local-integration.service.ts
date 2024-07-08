@@ -69,7 +69,7 @@ class IntegrationService implements IntegrationServiceInterface {
                         jsonSchema: nangoProps.syncConfig.models_json_schema
                     });
                     if (Array.isArray(valInput)) {
-                        await nango.log('Invalid action input', { data: input, validation: valInput, model: nangoProps.syncConfig.input }, { level: 'error' });
+                        await nango.log('Invalid action input. Use `--validation` option to see the details', { level: 'warn' });
                         if (nangoProps.runnerFlags.validateActionInput) {
                             return {
                                 success: false,
@@ -89,7 +89,7 @@ class IntegrationService implements IntegrationServiceInterface {
                         jsonSchema: nangoProps.syncConfig.models_json_schema
                     });
                     if (Array.isArray(valOutput)) {
-                        await nango.log('Invalid action output', { data: output, validation: valOutput, model: modelNameOutput }, { level: 'error' });
+                        await nango.log('Invalid action output. Use `--validation` option to see the details', { level: 'warn' });
                         if (nangoProps.runnerFlags.validateActionOutput) {
                             return {
                                 success: false,
