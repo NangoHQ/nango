@@ -9,7 +9,7 @@ popd () {
     command popd "$@" > /dev/null
 }
 
-TEMP_DIRECTORY=tmp/run-integration-template
+TEMP_DIRECTORY=tmp-run-integration-template
 INTEGRATION=$1
 shift
 
