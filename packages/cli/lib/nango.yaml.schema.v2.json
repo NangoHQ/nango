@@ -50,6 +50,12 @@
                                             "type": "auto_start must be a boolean."
                                         }
                                     },
+                                    "version": {
+                                        "type": "string",
+                                        "errorMessage": {
+                                            "type": "version must be a string."
+                                        }
+                                    },
                                     "runs": {
                                         "type": "string",
                                         "errorMessage": {
@@ -157,6 +163,12 @@
                                         "type": "string",
                                         "errorMessage": {
                                             "type": "description must be a string."
+                                        }
+                                    },
+                                    "version": {
+                                        "type": "string",
+                                        "errorMessage": {
+                                            "type": "version must be a string."
                                         }
                                     },
                                     "endpoint": {

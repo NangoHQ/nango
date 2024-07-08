@@ -308,12 +308,13 @@ class DeployService {
                 if (debug) {
                     printDebug(`Scripts files found for ${sync.name}`);
                 }
+                console.log(integration);
 
                 const body: IncomingFlowConfig = {
                     syncName: sync.name,
                     providerConfigKey,
                     models: sync.output || [],
-                    version: version,
+                    version: version || sync.version,
                     runs: sync.runs,
                     track_deletes: sync.track_deletes,
                     auto_start: sync.auto_start,
@@ -357,7 +358,7 @@ class DeployService {
                     syncName: action.name,
                     providerConfigKey,
                     models: action.output || [],
-                    version: version,
+                    version: version || action.version,
                     runs: '',
                     metadata: metadata,
                     input: action.input || undefined,

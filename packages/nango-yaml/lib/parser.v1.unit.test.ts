@@ -35,7 +35,8 @@ describe('parse', () => {
                             track_deletes: false,
                             type: 'sync',
                             usedModels: ['GithubIssue'],
-                            webhookSubscriptions: []
+                            webhookSubscriptions: [],
+                            version: '0.0.1'
                         }
                     ],
                     postConnectionScripts: [],
@@ -48,7 +49,8 @@ describe('parse', () => {
                             output: ['GithubIssue'],
                             scopes: [],
                             type: 'action',
-                            usedModels: ['GithubIssue']
+                            usedModels: ['GithubIssue'],
+                            version: '0.0.1'
                         }
                     ]
                 }
@@ -87,7 +89,8 @@ describe('parse', () => {
                             track_deletes: false,
                             type: 'sync',
                             usedModels: ['Anonymous_provider_sync_hello_output'],
-                            webhookSubscriptions: []
+                            webhookSubscriptions: [],
+                            version: '0.0.1'
                         }
                     ],
                     postConnectionScripts: [],
