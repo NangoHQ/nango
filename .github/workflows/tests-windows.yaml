@@ -1,0 +1,35 @@
+name: Run cli and unit tests on Windows
+
+on:
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
+
+concurrency:
+    group: tests-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    tests:
+        runs-on: windows-latest
+        strategy:
+            matrix:
+                node-version: [18.x, 20.x]
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: '0'
+
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version: ${{ matrix.node-version }}
+
+            - run: npm ci
+            - run: npm run ts-build
+            - run: npm run test:cli
+            - run: npm run test:unit
