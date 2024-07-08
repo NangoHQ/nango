@@ -420,18 +420,6 @@ export default class Nango {
                 query.push(`user_scope=${encodeURIComponent(connectionConfig.user_scope.join(','))}`);
             }
 
-            if (connectionConfig.display_name) {
-                query.push(`params[display_name]=${encodeURIComponent(connectionConfig.display_name)}`);
-            }
-
-            if (connectionConfig.customer_email) {
-                query.push(`params[customer_email]=${encodeURIComponent(connectionConfig.customer_email)}`);
-            }
-
-            if (connectionConfig.customer_domain) {
-                query.push(`params[customer_domain]=${encodeURIComponent(connectionConfig.customer_domain)}`);
-            }
-
             if (connectionConfig.credentials) {
                 const credentials = connectionConfig.credentials;
                 if ('oauth_client_id_override' in credentials) {
@@ -470,9 +458,6 @@ interface ConnectionConfig {
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
     credentials?: OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials | TBACredentials;
-    display_name?: string;
-    customer_email?: string;
-    customer_domain?: string;
 }
 
 interface OAuthCredentialsOverride {
