@@ -1,0 +1,52 @@
+name: Deploy Nango Integrations
+'on':
+    # To deploy nango integrations automatically on code changes:
+    # - uncomment the push option below
+    # - set the appropriate branch
+    # - uncomment the elif at the bottom of this file to deploy to the appropriate stage
+    # push:
+    #     branches:
+    #         - main
+    workflow_dispatch:
+        inputs:
+            stage:
+                type: choice
+                description: 'stage to deploy to, defaults to dev'
+                required: true
+                default: 'dev'
+                options:
+                    - dev
+                    - prod
+            allowDestructive:
+                type: choice
+                description: 'deploy destructive changes without confirmation'
+                required: true
+                default: false
+                options:
+                    - true
+                    - false
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check if NANGO_DEV_SECRET_KEY is set
+              run: |
+                  if [ -z "${{ secrets.NANGO_DEV_SECRET_KEY }}" ]; then
+                    echo "Error: NANGO_DEV_SECRET_KEY secret is not set"
+                    exit 1
+                  fi
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Install Nango CLI
+              run: npm install nango -g
+            - name: run Nango deploy
+              run: |
+                  cd nango-integrations
+                  if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+                      stage="${{ inputs.stage }}"
+                  # elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+                  #     stage="prod"
+                  else
+                      stage="dev"
+                  fi
+                  nango deploy "$stage" --auto-confirm ${{ inputs.allowDestructive == 'true' && '--allow-destructive' || '' }}

@@ -38,7 +38,7 @@ describe('Runner client', () => {
                 messages: []
             },
             syncConfig: {} as SyncConfig,
-
+            runnerFlags: {} as any,
             stubbedMetadata: {}
         };
         const jsCode = `
