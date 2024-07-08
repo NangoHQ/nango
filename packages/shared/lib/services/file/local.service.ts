@@ -13,6 +13,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 class LocalFileService {
+    public readFile(rawFilePath: string) {
+        try {
+            const filePath = rawFilePath.replace('@', '');
+            const realPath = fs.realpathSync(filePath);
+            const fileContents = fs.readFileSync(realPath, 'utf8');
+
+            return fileContents;
+        } catch {
+            return null;
+        }
+    }
+
     public getIntegrationFile(syncName: string, providerConfigKey: string, setIntegrationPath?: string | null) {
         try {
             const filePath = setIntegrationPath ? `${setIntegrationPath}dist/${syncName}.${SYNC_FILE_EXTENSION}` : this.resolveIntegrationFile(syncName);

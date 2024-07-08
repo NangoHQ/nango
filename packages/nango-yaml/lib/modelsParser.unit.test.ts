@@ -120,7 +120,7 @@ describe('parse', () => {
             expect(Object.fromEntries(parser.parsed)).toStrictEqual({
                 Test: {
                     name: 'Test',
-                    fields: [{ name: 'sub', optional: false, tsType: true, value: 'object', array: false }]
+                    fields: [{ name: 'sub', optional: false, tsType: true, value: 'Record<string, any>', array: false }]
                 }
             });
         });

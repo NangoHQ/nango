@@ -36,7 +36,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         const mappedActiveContacts = activeContacts.map(toContact);
         await nango.batchSave(mappedActiveContacts, 'Contact');
 
-        // If it is an incremential refresh, mark archived contacts as deleted
+        // If it is an incremental refresh, mark archived contacts as deleted
         if (nango.lastSyncDate) {
             const archivedContacts = contacts.filter((x: any) => x.ContactStatus === 'ARCHIVED');
             const mappedArchivedContacts = archivedContacts.map(toContact);

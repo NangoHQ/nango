@@ -125,4 +125,13 @@ describe('validateData', () => {
             }
         ]);
     });
+
+    it('should handle unknown modelName', () => {
+        const val = validateData({
+            input: '1',
+            modelName: 'Test',
+            jsonSchema: { definitions: {} }
+        });
+        expect(val).toStrictEqual([new Error(`model_not_found_Test`)]);
+    });
 });

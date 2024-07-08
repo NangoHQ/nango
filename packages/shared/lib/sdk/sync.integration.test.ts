@@ -49,7 +49,8 @@ describe('Connection service integration tests', () => {
                 syncId: 'aaa-bbb-ccc',
                 syncJobId: 2,
                 lastSyncDate: new Date(),
-                syncConfig: {} as SyncConfig
+                syncConfig: {} as SyncConfig,
+                runnerFlags: {} as any
             };
 
             const nango = new NangoAction(nangoProps);
