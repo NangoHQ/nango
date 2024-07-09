@@ -178,7 +178,7 @@ class EnvironmentService {
             hashLocalCache.set(opts.secretKey, hash);
         }
         return {
-            // Getting things with row_to_json breaks to automatic string -> date parser
+            // Getting data with row_to_json breaks the automatic string to date parser
             account: { ...res.account, created_at: new Date(res.account.created_at), updated_at: new Date(res.account.updated_at) },
             environment: encryptionManager.decryptEnvironment(res.environment)
         };
