@@ -137,7 +137,12 @@ export default function Authorization(props: AuthorizationProps) {
             {(connection.credentials.type === 'OAUTH2' || connection.credentials.type === 'APP') && connection.credentials.access_token && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Access Token</span>
-                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.access_token} copy={true} refresh={handleForceRefresh} />
+                    <SecretInput
+                        disabled
+                        value={refreshing ? 'Refreshing...' : connection.credentials.access_token}
+                        copy={true}
+                        refresh={connection.credentials.type === 'OAUTH2' && connection.credentials.refresh_token ? handleForceRefresh : undefined}
+                    />
                 </div>
             )}
             {connection.credentials.type === 'OAUTH1' && connection.credentials.oauth_token && (
