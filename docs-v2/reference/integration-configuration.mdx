@@ -368,6 +368,9 @@ For [full refresh syncs](/understand/concepts/syncs#full-refresh-syncs), as the 
 
 For [incremental syncs](/understand/concepts/syncs#incremental-syncs), you can end up with model disparities, as older records will have outdated content. You will still be able to fetch them from the Nango cache. In some cases, it's better to trigger a full resync via the [API](/reference/api/sync/trigger) or the Nango UI, so that all historical records are fetched again using the new script & model.
 
+<Warning>
+Changing a model name in your configuration is the equivalent of deleting the model with the old name, and creating a new one.
+</Warning>
 
 # Importing models in scripts
 

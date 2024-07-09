@@ -53,4 +53,5 @@ export interface SyncAndActionDifferences {
     deletedSyncs: SlimSync[];
     newActions: SlimAction[];
     deletedActions: SlimAction[];
+    deletedModels: string[];
 }

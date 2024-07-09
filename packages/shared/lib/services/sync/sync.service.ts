@@ -535,13 +535,14 @@ export const getAndReconcileDifferences = async ({
 
     const deletedSyncs: SlimSync[] = [];
     const deletedActions: SlimAction[] = [];
+    const deletedModels: string[] = [];
 
     if (!singleDeployMode) {
         for (const existingSync of existingSyncs) {
-            const exists = flows.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
+            const flow = flows.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
+            const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
 
-            if (!exists) {
-                const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
+            if (!flow) {
                 if (existingSync.type === 'sync') {
                     deletedSyncs.push({
                         name: existingSync.sync_name,
@@ -579,6 +580,14 @@ export const getAndReconcileDifferences = async ({
                         await logCtx?.info(content);
                     }
                 }
+            } else {
+                if (existingSync.type === 'sync') {
+                    const missingModels = existingSync.models.filter((model) => !flow.models.includes(model));
+                    // we only consider the model as missing if there are connections
+                    if (connections.length > 0) {
+                        deletedModels.push(...missingModels);
+                    }
+                }
             }
         }
     }
@@ -591,7 +600,8 @@ export const getAndReconcileDifferences = async ({
         newSyncs,
         newActions,
         deletedSyncs,
-        deletedActions
+        deletedActions,
+        deletedModels
     };
 };
 
