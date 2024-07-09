@@ -1,14 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
-import crypto from 'crypto';
-import util from 'util';
-import { resetPasswordSecret } from '../utils/utils.js';
-import jwt from 'jsonwebtoken';
-import EmailClient from '../clients/email.client.js';
-import type { User } from '@nangohq/shared';
-import { baseUrl, basePublicUrl, getLogger, Err, Ok } from '@nangohq/utils';
+
+import { basePublicUrl, getLogger, Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { getWorkOSClient } from '../clients/workos.client.js';
-import { userService, accountService, errorManager, ErrorSourceEnum, NangoError } from '@nangohq/shared';
+import { userService, accountService, errorManager, NangoError } from '@nangohq/shared';
 
 export interface WebUser {
     id: number;
@@ -73,92 +68,6 @@ class AuthController {
             });
         } catch (err) {
             next(err);
-        }
-    }
-
-    async forgotPassword(req: Request, res: Response<any, never>, next: NextFunction) {
-        try {
-            const { email } = req.body;
-
-            if (email == null) {
-                errorManager.errRes(res, 'missing_email_param');
-                return;
-            }
-
-            const user = await userService.getUserByEmail(email);
-
-            if (user == null) {
-                errorManager.errRes(res, 'unknown_user');
-                return;
-            }
-
-            const resetToken = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
-
-            user.reset_password_token = resetToken;
-            await userService.editUserPassword(user);
-
-            this.sendResetPasswordEmail(user, resetToken);
-
-            res.status(200).json();
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    resetPassword(req: Request, res: Response<any, never>, next: NextFunction) {
-        try {
-            const { password, token } = req.body;
-
-            if (!token && !password) {
-                errorManager.errRes(res, 'missing_password_reset_token');
-                return;
-            }
-
-            if (token) {
-                jwt.verify(token, resetPasswordSecret(), async (error: any, _: any) => {
-                    if (error) {
-                        errorManager.errRes(res, 'unknown_password_reset_token');
-                        return;
-                    }
-
-                    const user = await userService.getUserByResetPasswordToken(token);
-
-                    if (!user) {
-                        errorManager.errRes(res, 'unknown_password_reset_token');
-                        return;
-                    }
-
-                    const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256')).toString('base64');
-
-                    user.hashed_password = hashedPassword;
-                    user.reset_password_token = undefined;
-                    await userService.editUserPassword(user);
-
-                    res.status(200).json();
-                });
-            }
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    sendResetPasswordEmail(user: User, token: string) {
-        try {
-            const emailClient = EmailClient.getInstance();
-            emailClient
-                .send(
-                    user.email,
-                    'Nango password reset',
-                    `<p><b>Reset your password</b></p>
-                <p>Someone requested a password reset.</p>
-                <p><a href="${baseUrl}/reset-password/${token}">Reset password</a></p>
-                <p>If you didn't initiate this request, please contact us immediately at support@nango.dev</p>`
-                )
-                .catch((e: Error) => {
-                    errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, userId: user.id, operation: 'user' });
-                });
-        } catch (e) {
-            errorManager.report(e, { userId: user.id, source: ErrorSourceEnum.PLATFORM, operation: 'user' });
         }
     }
 

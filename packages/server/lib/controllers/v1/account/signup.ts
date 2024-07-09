@@ -9,10 +9,17 @@ import type { Signup } from '@nangohq/types';
 
 const logger = getLogger('Server.Signup');
 
+export const passwordSchema = z
+    .string()
+    .min(8)
+    .max(64)
+    .refine((value) => {
+        return value.match(/[a-z]+/) && value.match(/[A-Z]+/) && value.match(/[0-9]/) && value.match(/[^a-zA-Z0-9]/);
+    }, 'Password should be least 8 characters with lowercase, uppercase, a number and a special character');
 const validation = z
     .object({
         email: z.string().email(),
-        password: z.string().min(8),
+        password: passwordSchema,
         name: z.string()
     })
     .strict();

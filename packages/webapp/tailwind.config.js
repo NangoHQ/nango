@@ -29,6 +29,7 @@ module.exports = {
                 'green-base': '#84D65A',
                 'blue-base': '#509AF8',
                 'red-base': '#EF665B',
+                'yellow-base': '#F7C752',
                 'alert-red': '#EF665B',
                 'dark-0': '#FFFFFF',
                 'dark-100': '#F4F4F5',

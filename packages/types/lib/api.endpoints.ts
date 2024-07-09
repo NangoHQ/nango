@@ -3,8 +3,13 @@ import type { GetOperation, SearchFilters, SearchMessages, SearchOperations } fr
 import type { GetOnboardingStatus } from './onboarding/api';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata';
 import type { PostDeploy, PostDeployConfirmation } from './deploy/api';
+import type { PostForgotPassword, PutResetPassword, Signin, Signup } from './account/api';
 
 export type APIEndpoints =
+    | Signup
+    | Signin
+    | PostForgotPassword
+    | PutResetPassword
     | SearchOperations
     | GetOperation
     | SearchMessages

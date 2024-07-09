@@ -4,7 +4,7 @@ import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('Server.EmailClient');
 
-class EmailClient {
+export class EmailClient {
     private static instance: EmailClient | undefined;
     private client: any;
 
@@ -39,5 +39,3 @@ class EmailClient {
         });
     }
 }
-
-export default EmailClient;

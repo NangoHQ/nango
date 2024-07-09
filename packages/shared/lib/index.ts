@@ -1,7 +1,7 @@
 import * as seeders from './seeders/index.js';
 import * as externalWebhookService from './services/external-webhook.service.js';
 import configService from './services/config.service.js';
-import encryptionManager from './utils/encryption.manager.js';
+import encryptionManager, { pbkdf2 } from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
 import providerClientManager from './clients/provider.client.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
@@ -51,6 +51,7 @@ export {
     configService,
     connectionService,
     encryptionManager,
+    pbkdf2,
     externalWebhookService,
     providerClientManager,
     errorManager,
