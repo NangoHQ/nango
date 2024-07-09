@@ -1552,7 +1552,7 @@ listmonk:
     proxy:
         base_url: https://${connectionConfig.domain}/api
         headers:
-            'Content-Type': 'application/json'
+            content-type: application/json
     docs: https://docs.nango.dev/integrations/all/listmonk
 mailgun:
     categories:
