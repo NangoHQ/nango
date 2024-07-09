@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import type { Knex } from '@nangohq/database';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Account, Environment } from '../models/index.js';
+import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials } from '../models/index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
@@ -19,7 +19,9 @@ import type {
     TemplateOAuth2 as ProviderTemplateOAuth2,
     AuthModeType,
     TbaCredentials,
-    MaybePromise
+    MaybePromise,
+    DBTeam,
+    DBEnvironment
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -82,7 +84,7 @@ class ConnectionService {
                 metadata: metadata || storedConnection.metadata || null
             });
 
-            encryptedConnection.updated_at = new Date();
+            (encryptedConnection as Connection).updated_at = new Date();
 
             const connection = await db.knex
                 .from<StoredConnection>(`_nango_connections`)
@@ -131,8 +133,8 @@ class ConnectionService {
         connectionConfig: ConnectionConfig;
         config: ProviderConfig;
         metadata: Metadata;
-        environment: Environment;
-        account: Account;
+        environment: DBEnvironment;
+        account: DBTeam;
     }): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
 
@@ -146,7 +148,7 @@ class ConnectionService {
                 connection_config: connectionConfig,
                 environment_id: environment.id
             });
-            encryptedConnection.updated_at = new Date();
+            (encryptedConnection as Connection).updated_at = new Date();
             const connection = await db.knex
                 .from<StoredConnection>(`_nango_connections`)
                 .where({ id: storedConnection.id, deleted: false })
@@ -198,7 +200,7 @@ class ConnectionService {
                 connection_config: connectionConfig,
                 environment_id
             });
-            encryptedConnection.updated_at = new Date();
+            (encryptedConnection as Connection).updated_at = new Date();
             const connection = await db.knex
                 .from<StoredConnection>(`_nango_connections`)
                 .where({ id: storedConnection.id, deleted: false })
@@ -495,7 +497,7 @@ class ConnectionService {
     }: {
         days: number;
         limit: number;
-    }): Promise<{ connection_id: string; provider_config_key: string; account: Account; environment: Environment }[]> {
+    }): Promise<{ connection_id: string; provider_config_key: string; account: DBTeam; environment: DBEnvironment }[]> {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - days);
 
@@ -652,18 +654,18 @@ class ConnectionService {
         onRefreshSuccess,
         onRefreshFailed
     }: {
-        account: Account;
-        environment: Environment;
+        account: DBTeam;
+        environment: DBEnvironment;
         connectionId: string;
         providerConfigKey: string;
         logContextGetter: LogContextGetter;
         instantRefresh: boolean;
-        onRefreshSuccess: (args: { connection: Connection; environment: Environment; config: ProviderConfig }) => Promise<void>;
+        onRefreshSuccess: (args: { connection: Connection; environment: DBEnvironment; config: ProviderConfig }) => Promise<void>;
         onRefreshFailed: (args: {
             connection: Connection;
             logCtx: LogContext;
             authError: { type: string; description: string };
-            environment: Environment;
+            environment: DBEnvironment;
             template: ProviderTemplate;
             config: ProviderConfig;
         }) => Promise<void>;

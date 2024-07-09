@@ -7,11 +7,9 @@ import connectionService from '../../connection.service.js';
 import configService from '../../config.service.js';
 import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
 import { logContextGetter } from '@nangohq/logs';
-import type { Environment } from '../../../models/Environment.js';
-import type { Account } from '../../../models/Admin.js';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
-import type { IncomingFlowConfig } from '@nangohq/types';
+import type { DBTeam, IncomingFlowConfig, DBEnvironment } from '@nangohq/types';
 import type { SyncConfig } from '../../../models/Sync.js';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
@@ -30,8 +28,8 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
 
 describe('Sync config create', () => {
-    const environment = { id: 1, name: '' } as Environment;
-    const account = { id: 1, name: '' } as Account;
+    const environment = { id: 1, name: '' } as DBEnvironment;
+    const account = { id: 1, name: '' } as DBTeam;
     const debug = true;
 
     it('Create sync configs correctly', async () => {
@@ -39,7 +37,7 @@ describe('Sync config create', () => {
         const debug = true;
 
         vi.spyOn(environmentService, 'getAccountFromEnvironment').mockImplementation(() => {
-            return Promise.resolve({ id: 1, name: '' } as Account);
+            return Promise.resolve({ id: 1, name: '' } as DBTeam);
         });
 
         // empty sync config should return back an empty array
@@ -122,7 +120,9 @@ describe('Sync config create', () => {
                 oauth_client_id: '123',
                 oauth_client_secret: '123',
                 post_connection_scripts: null,
-                environment_id: 1
+                environment_id: 1,
+                created_at: new Date(),
+                updated_at: new Date()
             });
         });
 

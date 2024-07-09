@@ -1,14 +1,15 @@
 import { describe, it, beforeAll, afterAll, expect } from 'vitest';
-import type { Environment, SyncConfig } from '@nangohq/shared';
+import type { SyncConfig } from '@nangohq/shared';
 import { Orchestrator, seeders, configService, connectionService, DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME, createSync } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
 import { exec } from './autoIdleDemo.js';
 import { nanoid } from '@nangohq/utils';
 import { TestOrchestratorService } from '@nangohq/nango-orchestrator';
 import getPort from 'get-port';
+import type { DBEnvironment } from '@nangohq/types';
 
 describe('Auto Idle Demo', async () => {
-    let env: Environment;
+    let env: DBEnvironment;
     const orchestratorService = new TestOrchestratorService({ port: await getPort() });
     const orchestrator = new Orchestrator(orchestratorService.getClient());
 
@@ -31,7 +32,9 @@ describe('Auto Idle Demo', async () => {
             provider: 'github',
             environment_id: env.id,
             oauth_client_id: '',
-            oauth_client_secret: ''
+            oauth_client_secret: '',
+            created_at: new Date(),
+            updated_at: new Date()
         });
         await db.knex
             .from<SyncConfig>('_nango_sync_configs')

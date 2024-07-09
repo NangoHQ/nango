@@ -2,7 +2,7 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendAuth } from './auth.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoAuthWebhookBodySuccess, Connection, Environment, ExternalWebhook } from '@nangohq/types';
+import type { NangoAuthWebhookBodySuccess, Connection, ExternalWebhook, DBEnvironment } from '@nangohq/types';
 import * as logPackage from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
@@ -20,7 +20,9 @@ const webhookSettings: ExternalWebhook = {
     on_sync_completion_always: true,
     on_auth_creation: true,
     on_auth_refresh_error: true,
-    on_sync_error: true
+    on_sync_error: true,
+    created_at: new Date(),
+    updated_at: new Date()
 };
 
 const getLogCtx = () => new logPackage.LogContext({ parentId: '1', operation: {} as any }, { dryRun: true, logToConsole: false });
@@ -40,7 +42,7 @@ describe('Webhooks: auth notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment,
+            } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 primary_url: '',
@@ -66,7 +68,7 @@ describe('Webhooks: auth notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment,
+            } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 secondary_url: '',
@@ -92,7 +94,7 @@ describe('Webhooks: auth notification tests', () => {
                 id: 1,
                 secret_key: 'secret',
                 always_send_webhook: true
-            } as Environment,
+            } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 on_auth_creation: true,
@@ -117,7 +119,7 @@ describe('Webhooks: auth notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment,
+            } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 on_auth_creation: true
@@ -145,7 +147,7 @@ describe('Webhooks: auth notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment,
+            } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 secondary_url: '',
@@ -169,7 +171,7 @@ describe('Webhooks: auth notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment,
+            } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 on_auth_creation: false
@@ -192,7 +194,7 @@ describe('Webhooks: auth notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment,
+            } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 primary_url: '',
@@ -218,7 +220,7 @@ describe('Webhooks: auth notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment,
+            } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 secondary_url: '',
@@ -243,7 +245,7 @@ describe('Webhooks: auth notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment,
+            } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 on_auth_creation: true,
@@ -268,7 +270,7 @@ describe('Webhooks: auth notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment,
+            } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 on_auth_creation: false,

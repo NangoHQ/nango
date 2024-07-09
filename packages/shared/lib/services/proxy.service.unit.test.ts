@@ -527,7 +527,9 @@ describe('Proxy service configure', () => {
                 connection_id: 'connection-1',
                 provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {}
+                connection_config: {},
+                created_at: new Date(),
+                updated_at: new Date()
             },
             existingActivityLogId: '1'
         };
@@ -558,7 +560,9 @@ describe('Proxy service configure', () => {
                 connection_id: 'connection-1',
                 provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {}
+                connection_config: {},
+                created_at: new Date(),
+                updated_at: new Date()
             },
             existingActivityLogId: '1'
         };
@@ -590,7 +594,9 @@ describe('Proxy service configure', () => {
                 connection_id: 'connection-1',
                 provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {}
+                connection_config: {},
+                created_at: new Date(),
+                updated_at: new Date()
             },
             existingActivityLogId: '1'
         };
@@ -622,7 +628,9 @@ describe('Proxy service configure', () => {
                 connection_id: 'connection-1',
                 provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {}
+                connection_config: {},
+                created_at: new Date(),
+                updated_at: new Date()
             },
             existingActivityLogId: '1'
         };
@@ -661,7 +669,9 @@ describe('Proxy service configure', () => {
                 connection_id: 'connection-1',
                 provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {}
+                connection_config: {},
+                created_at: new Date(),
+                updated_at: new Date()
             },
             existingActivityLogId: '1'
         };

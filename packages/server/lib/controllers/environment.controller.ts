@@ -1,6 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { Environment } from '@nangohq/shared';
-import type { EnvironmentVariable, ExternalWebhook } from '@nangohq/types';
+import type { DBEnvironment, DBEnvironmentVariable, ExternalWebhook } from '@nangohq/types';
 import { isCloud, baseUrl } from '@nangohq/utils';
 import {
     accountService,
@@ -21,7 +20,7 @@ import { NANGO_ADMIN_UUID } from './account.controller.js';
 import type { RequestLocals } from '../utils/express.js';
 
 export interface GetMeta {
-    environments: Pick<Environment, 'name'>[];
+    environments: Pick<DBEnvironment, 'name'>[];
     email: string;
     version: string;
     baseUrl: string;
@@ -30,8 +29,8 @@ export interface GetMeta {
 }
 
 export interface EnvironmentAndAccount {
-    environment: Environment;
-    env_variables: EnvironmentVariable[];
+    environment: DBEnvironment;
+    env_variables: DBEnvironmentVariable[];
     webhook_settings: ExternalWebhook | null;
     host: string;
     uuid: string;

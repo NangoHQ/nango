@@ -1,7 +1,7 @@
 import type { TimestampsAndDeleted } from '../db.js';
 import type { ApiKeyCredentials, BasicApiCredentials, AuthModeType, AuthOperationType, AllAuthCredentials } from '../auth/api.js';
-import type { Environment } from '../environment/db.js';
-import type { Account } from '../account/db.js';
+import type { DBEnvironment } from '../environment/db.js';
+import type { DBTeam } from '../team/db.js';
 
 export type Metadata = Record<string, unknown>;
 
@@ -32,8 +32,8 @@ export type RecentlyCreatedConnection = Pick<StoredConnection, 'id' | 'connectio
     auth_mode: AuthModeType;
     error?: string;
     operation: AuthOperationType;
-    environment: Environment;
-    account: Account;
+    environment: DBEnvironment;
+    account: DBTeam;
 };
 
 export interface ApiConnection {

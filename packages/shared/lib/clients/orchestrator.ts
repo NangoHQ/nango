@@ -23,8 +23,6 @@ import type {
     SchedulesReturn,
     OrchestratorSchedule
 } from '@nangohq/nango-orchestrator';
-import type { Account } from '../models/Admin.js';
-import type { Environment } from '../models/Environment.js';
 import type { NangoIntegrationData, Sync, SyncConfig } from '../models/index.js';
 import { SyncCommand } from '../models/index.js';
 import tracer from 'dd-trace';
@@ -32,6 +30,7 @@ import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { isSyncJobRunning } from '../services/sync/job.service.js';
 import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
+import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 export interface RecordsServiceInterface {
     deleteRecordsBySyncId({ syncId }: { syncId: string }): Promise<{ totalDeletedRecords: number }>;
@@ -234,8 +233,8 @@ export class Orchestrator {
         input,
         logContextGetter
     }: {
-        account: Account;
-        environment: Environment;
+        account: DBTeam;
+        environment: DBEnvironment;
         integration: ProviderConfig;
         connection: NangoConnection;
         webhookName: string;

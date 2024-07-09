@@ -8,7 +8,7 @@ export function getLogsUrl(
             [P in keyof SearchOperations['Body']]?: string | undefined;
         }>,
         'period'
-    > & { operationId?: string | null | number; env: string; day?: Date }
+    > & { operationId?: string | null | number; env: string; day?: Date | null }
 ): string {
     const usp = new URLSearchParams();
     for (const [key, val] of Object.entries(options)) {

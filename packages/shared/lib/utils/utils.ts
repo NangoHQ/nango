@@ -1,9 +1,9 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
-import type { Environment } from '../models/Environment.js';
 import environmentService from '../services/environment.service.js';
 import type { Connection } from '../models/Connection.js';
+import type { DBEnvironment } from '@nangohq/types';
 
 export { cloudHost, stagingHost };
 
@@ -141,7 +141,7 @@ export async function getOauthCallbackUrl(environmentId?: number) {
     const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
     if (environmentId != null) {
-        const environment: Environment | null = await environmentService.getById(environmentId);
+        const environment: DBEnvironment | null = await environmentService.getById(environmentId);
         return environment?.callback_url || globalCallbackUrl;
     }
 

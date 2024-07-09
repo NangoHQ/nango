@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import type { AxiosError } from 'axios';
 import { axiosInstance as axios, retryWithBackoff } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
-import type { WebhookTypes, SyncType, AuthOperationType, Environment, ExternalWebhook } from '@nangohq/types';
+import type { WebhookTypes, SyncType, AuthOperationType, ExternalWebhook, DBEnvironment } from '@nangohq/types';
 
 export const RETRY_ATTEMPTS = 7;
 
@@ -115,7 +115,7 @@ export const deliver = async ({
     webhooks: { url: string; type: string }[];
     body: unknown;
     webhookType: WebhookTypes;
-    environment: Environment;
+    environment: DBEnvironment;
     logCtx?: LogContext | undefined;
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;

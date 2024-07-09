@@ -10,32 +10,6 @@ export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud;
 export const AUTH_ADMIN_SWITCH_MS = 600 * 1000;
 
 class AccountController {
-    async getAccount(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { account, user } = res.locals;
-
-            if (account.uuid === NANGO_ADMIN_UUID) {
-                account.is_admin = true;
-            }
-
-            const { uuid, ...accountData } = account;
-
-            const users = await userService.getUsersByAccountId(account.id);
-            const invitedUsers = await userService.getInvitedUsersByAccountId(account.id);
-
-            const usersWithCurrentUser = users.map((invitedUser) => {
-                if (invitedUser.email === user.email) {
-                    invitedUser.currentUser = true;
-                }
-                return invitedUser;
-            });
-
-            res.status(200).send({ account: accountData, users: usersWithCurrentUser, invitedUsers });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async editAccount(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { account } = res.locals;

@@ -69,7 +69,9 @@ export async function createOnboardingProvider({ envId }: { envId: number }): Pr
         provider: 'github',
         oauth_client_id: DEFAULT_GITHUB_CLIENT_ID,
         oauth_client_secret: DEFAULT_GITHUB_CLIENT_SECRET,
-        oauth_scopes: 'public_repo'
+        oauth_scopes: 'public_repo',
+        created_at: new Date(),
+        updated_at: new Date()
     };
 
     await configService.createProviderConfig(config);
