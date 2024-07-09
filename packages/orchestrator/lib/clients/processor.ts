@@ -1,10 +1,11 @@
 import type { Result } from '@nangohq/utils';
 import { Err, stringifyError, getLogger } from '@nangohq/utils';
 import type { OrchestratorClient } from './client.js';
-import type { OrchestratorTask } from './types.js';
+import type { ClientError, OrchestratorTask } from './types.js';
 import type { JsonValue } from 'type-fest';
 import PQueue from 'p-queue';
 import type { Tracer } from 'dd-trace';
+import type { ApiError } from '@nangohq/types';
 
 const logger = getLogger('orchestrator.clients.processor');
 
@@ -121,9 +122,11 @@ export class OrchestratorProcessor {
                         // task was aborted. No need to set it as failed
                         return;
                     }
+
                     const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error: res.error });
                     if (setFailed.isErr()) {
-                        logger.error(`failed to set task ${task.id} as failed: ${stringifyError(setFailed.error)}`);
+                        throwIfPayloadTooBig(setFailed.error);
+                        logger.error(`failed to set task ${task.id} as failed`, setFailed.error);
                         span.setTag('error', setFailed);
                     } else {
                         span.setTag('error', res.error);
@@ -131,16 +134,17 @@ export class OrchestratorProcessor {
                 } else {
                     const setSucceed = await this.orchestratorClient.succeed({ taskId: task.id, output: res.value });
                     if (setSucceed.isErr()) {
-                        logger.error(`failed to set task ${task.id} as succeeded: ${stringifyError(setSucceed.error)}`);
+                        throwIfPayloadTooBig(setSucceed.error);
+                        logger.error(`failed to set task ${task.id} as succeeded`, setSucceed.error);
                         span.setTag('error', setSucceed);
                     }
                 }
             } catch (err: unknown) {
-                const error = new Error(stringifyError(err));
-                logger.error(`Failed to process task ${task.id}: ${stringifyError(error)}`);
+                const error = err instanceof Error ? err : new Error(stringifyError(err));
+                logger.error(`Failed to process task ${task.id}`, error);
                 const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error });
                 if (setFailed.isErr()) {
-                    logger.error(`failed to set task ${task.id} as failed. Unknown error: ${stringifyError(setFailed.error)}`);
+                    logger.error(`failed to set task ${task.id} as failed. Unknown error`, setFailed.error);
                     span.setTag('error', setFailed);
                 } else {
                     span.setTag('error', error);
@@ -157,8 +161,23 @@ export class OrchestratorProcessor {
         return setInterval(async () => {
             const res = await this.orchestratorClient.heartbeat({ taskId: task.id });
             if (res.isErr()) {
-                logger.error(`failed to send heartbeat for task ${task.id}: ${stringifyError(res.error)}`);
+                logger.error(`failed to send heartbeat for task ${task.id}`, res.error);
             }
         }, 300_000);
+    }
+}
+
+// We don't have access to NangoError so we have to create a temp error
+class PayloadTooBigError extends Error {
+    type = 'action_output_too_big';
+    override message = 'Output is too big';
+}
+
+function throwIfPayloadTooBig(err: ClientError) {
+    if (err.payload && typeof err.payload === 'object' && 'response' in err.payload && err.payload['response'] && typeof err.payload['response'] === 'object') {
+        const res = err.payload['response'] as unknown as ApiError<string>;
+        if (res.error.code === 'payload_too_big') {
+            throw new PayloadTooBigError();
+        }
     }
 }

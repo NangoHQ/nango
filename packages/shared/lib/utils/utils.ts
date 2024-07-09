@@ -227,28 +227,3 @@ export function getConnectionConfig(queryParams: any): Record<string, string> {
     const arr = Object.entries(queryParams).filter(([, v]) => typeof v === 'string'); // Filter strings
     return Object.fromEntries(arr) as Record<string, string>;
 }
-
-export function safeStringify(obj: any): string {
-    const stringify = (obj: any, indent = 2) => {
-        const cache = new Set();
-        const jsonString = JSON.stringify(
-            obj,
-            (_key, value) => {
-                if (typeof value === 'object' && value !== null) {
-                    if (cache.has(value)) {
-                        return;
-                    }
-                    cache.add(value);
-                }
-                return value;
-            },
-            indent
-        );
-        cache.clear();
-        return jsonString;
-    };
-
-    const content = obj.map((arg: any) => (typeof arg === 'object' ? stringify(arg) : String(arg))).join(' ');
-
-    return content;
-}

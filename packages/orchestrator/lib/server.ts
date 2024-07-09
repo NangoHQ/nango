@@ -42,16 +42,17 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
     createRoute(server, postHeartbeatHandler(scheduler));
     createRoute(server, postDequeueHandler(scheduler, eventEmmiter));
 
-    server.use((err: unknown, _req: Request, res: Response<ApiError<'server_error', any>>, next: NextFunction) => {
-        res.status(500).json({ error: { code: 'server_error', errors: err } });
-        next();
-    });
-
-    server.use((err: any, _req: Request, res: Response<ApiError<'invalid_json' | 'internal_error'>>, _next: any) => {
+    server.use((err: any, _req: Request, res: Response<ApiError<'invalid_json' | 'internal_error' | 'payload_too_big'>>, _next: NextFunction) => {
         if (err instanceof SyntaxError && 'body' in err && 'type' in err && err.type === 'entity.parse.failed') {
             res.status(400).send({ error: { code: 'invalid_json', message: err.message } });
             return;
+        } else if (err instanceof Error) {
+            if (err.message === 'request entity too large') {
+                res.status(400).json({ error: { code: 'payload_too_big', message: 'Payload is too big' } });
+                return;
+            }
         }
+
         res.status(500).send({ error: { code: 'internal_error', message: err.message } });
     });
 

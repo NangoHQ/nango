@@ -159,7 +159,7 @@ class DeployService {
                 console.log(JSON.stringify(response.data, null, 2));
             }
 
-            const { newSyncs, deletedSyncs } = response.data;
+            const { newSyncs, deletedSyncs, deletedModels } = response.data;
 
             for (const sync of newSyncs) {
                 const syncMessage =
@@ -179,13 +179,22 @@ class DeployService {
                 deletedSyncsConnectionsCount += sync.connections;
             }
 
+            if (deletedModels.length > 0) {
+                console.log(
+                    chalk.red(
+                        `The following models have been removed: ${deletedModels.join(', ')}. WARNING: Renaming a model is the equivalent of deleting the old model and creating a new one. Records from the old model won't be transferred to the new model. Consider running a full sync to transfer records.`
+                    )
+                );
+            }
+
             // force confirmation :
             // - if auto-confirm flag is not set
             // - OR if there are deleted syncs with connections (and allow-destructive flag is not set)
+            // - OR if there are deleted models (and allow-destructive flag is not set)
             // If CI, fail the deploy
-            const shouldConfirmDestructive = deletedSyncsConnectionsCount > 0 && !allowDestructive;
+            const shouldConfirmDestructive = (deletedSyncsConnectionsCount > 0 || deletedModels.length > 0) && !allowDestructive;
             if (shouldConfirm || shouldConfirmDestructive) {
-                let confirmationMsg = 'Are you sure you want to continue y/n?';
+                let confirmationMsg = `Are you sure you want to continue y/n?`;
                 if (!shouldConfirm && shouldConfirmDestructive) {
                     confirmationMsg += ' (set --allow-destructive flag to skip this confirmation)';
                 }

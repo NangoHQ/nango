@@ -112,7 +112,7 @@ export class NangoError extends Error {
                 this.message = 'The API endpoint could not be found and returned a 404. Please ensure you have the endpoint specified and spelled correctly.';
                 break;
 
-            case 'fobidden':
+            case 'forbidden':
                 this.status = 403;
                 this.message = 'The API endpoint returned back a 403 error. Check the scopes requested to make sure proper access is requested to the API.';
                 break;
@@ -336,6 +336,14 @@ export class NangoError extends Error {
             case 'refresh_token_external_error':
                 this.status = 400;
                 this.message = `The external API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
+                }
+                break;
+
+            case 'request_token_external_error':
+                this.status = 400;
+                this.message = `The external API returned an error when trying to request for an access token. Please try again later.`;
                 if (this.payload) {
                     this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
                 }
@@ -601,6 +609,11 @@ export class NangoError extends Error {
             case 'invalid_sync_record':
                 this.status = 400;
                 this.message = 'Failed to validate a record in batchSave';
+                break;
+
+            case 'action_output_too_big':
+                this.status = 400;
+                this.message = 'Action output is too big';
                 break;
 
             default:

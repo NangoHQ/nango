@@ -63,7 +63,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                         className="transparent-code"
                         colorScheme="dark"
                         styles={() => {
-                            return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
+                            return { code: { padding: '0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' } };
                         }}
                         noCopy
                     >
