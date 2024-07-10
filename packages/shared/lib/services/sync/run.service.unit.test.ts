@@ -4,9 +4,8 @@ import { SyncRunService } from './run.service.js';
 import environmentService from '../environment.service.js';
 import { SyncType } from '../../models/Sync.js';
 import type { IntegrationServiceInterface, SyncConfig } from '../../models/Sync.js';
-import type { Environment } from '../../models/Environment.js';
-import type { Account } from '../../models/Admin.js';
 import { NangoError } from '../../utils/error.js';
+import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 class integrationServiceMock implements IntegrationServiceInterface {
     async runScript() {
@@ -64,7 +63,9 @@ describe('SyncRun', () => {
             model_schema: [],
             nango_config_id: 1,
             runs: '',
-            webhook_subscriptions: []
+            webhook_subscriptions: [],
+            created_at: new Date(),
+            updated_at: new Date()
         },
         syncType: SyncType.INCREMENTAL,
         syncId: 'some-sync',
@@ -111,8 +112,8 @@ describe('SyncRun', () => {
 
         vi.spyOn(environmentService, 'getAccountAndEnvironment').mockImplementation(() => {
             return Promise.resolve({
-                account: { id: 1, name: 'test', uuid: '1234' } as Account,
-                environment: { id: 1, name: 'test', secret_key: 'secret' } as Environment
+                account: { id: 1, name: 'test', uuid: '1234' } as DBTeam,
+                environment: { id: 1, name: 'test', secret_key: 'secret' } as DBEnvironment
             });
         });
 
@@ -132,8 +133,8 @@ describe('SyncRun', () => {
 
         vi.spyOn(environmentService, 'getAccountAndEnvironment').mockImplementation(() => {
             return Promise.resolve({
-                account: { id: 1, name: 'test', uuid: '1234' } as Account,
-                environment: { id: 1, name: 'test', secret_key: 'secret' } as Environment
+                account: { id: 1, name: 'test', uuid: '1234' } as DBTeam,
+                environment: { id: 1, name: 'test', secret_key: 'secret' } as DBEnvironment
             });
         });
 

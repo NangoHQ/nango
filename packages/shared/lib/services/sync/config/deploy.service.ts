@@ -12,7 +12,15 @@ import connectionService from '../../connection.service.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
 import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType } from '../../../models/Sync.js';
-import type { IncomingFlowConfig, IncomingFlowConfigUpgrade, IncomingPreBuiltFlowConfig, NangoModel, PostConnectionScriptByProvider } from '@nangohq/types';
+import type {
+    DBEnvironment,
+    DBTeam,
+    IncomingFlowConfig,
+    IncomingFlowConfigUpgrade,
+    IncomingPreBuiltFlowConfig,
+    NangoModel,
+    PostConnectionScriptByProvider
+} from '@nangohq/types';
 import { postConnectionScriptService } from '../post-connection.service.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
@@ -20,8 +28,6 @@ import { env, Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import type { Environment } from '../../../models/Environment.js';
-import type { Account } from '../../../models/Admin.js';
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { Merge } from 'type-fest';
 import type { JSONSchema7 } from 'json-schema';
@@ -45,8 +51,8 @@ export async function deploy({
     orchestrator,
     debug
 }: {
-    environment: Environment;
-    account: Account;
+    environment: DBEnvironment;
+    account: DBTeam;
     flows: IncomingFlowConfig[];
     jsonSchema?: JSONSchema7 | undefined;
     postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
@@ -146,7 +152,9 @@ export async function deploy({
                     const res: SyncEndpoint = {
                         sync_config_id: row.id as number,
                         method,
-                        path
+                        path,
+                        created_at: new Date(),
+                        updated_at: new Date()
                     };
                     const model = flow.models[endpointIndex] as string;
                     if (model) {
@@ -223,8 +231,8 @@ export async function upgradePreBuilt({
     flowConfig,
     logContextGetter
 }: {
-    environment: Environment;
-    account: Account;
+    environment: DBEnvironment;
+    account: DBTeam;
     flowConfig: IncomingFlowConfigUpgrade;
     logContextGetter: LogContextGetter;
 }): Promise<Result<boolean | null>> {
@@ -275,12 +283,13 @@ export async function upgradePreBuilt({
         `${name}.ts`
     );
 
-    const created_at = new Date();
+    const now = new Date();
 
     const model_schema = typeof model_schema_string === 'string' ? JSON.parse(model_schema_string) : model_schema_string;
 
     const flowData: SyncConfig = {
-        created_at,
+        created_at: now,
+        updated_at: now,
         sync_name: name,
         sync_type: flowConfig.sync_type as SyncType,
         runs: flowConfig.runs,
@@ -313,7 +322,9 @@ export async function upgradePreBuilt({
                 const res: SyncEndpoint = {
                     sync_config_id: syncId?.id as number,
                     method,
-                    path
+                    path,
+                    created_at: now,
+                    updated_at: now
                 };
                 const model = flowData.models[endpointIndex] as string;
                 if (model) {
@@ -382,8 +393,8 @@ export async function deployPreBuilt({
     logContextGetter,
     orchestrator
 }: {
-    environment: Environment;
-    account: Account;
+    environment: DBEnvironment;
+    account: DBTeam;
     configs: IncomingPreBuiltFlowConfig[];
     nangoYamlBody: string;
     logContextGetter: LogContextGetter;
@@ -571,7 +582,8 @@ export async function deployPreBuilt({
             pre_built: true,
             is_public,
             enabled: true,
-            webhook_subscriptions: null
+            webhook_subscriptions: null,
+            updated_at: new Date()
         };
 
         insertData.push(flowData);
@@ -608,7 +620,9 @@ export async function deployPreBuilt({
                     const res: SyncEndpoint = {
                         sync_config_id: row.id as number,
                         method,
-                        path
+                        path,
+                        created_at: new Date(),
+                        updated_at: new Date()
                     };
                     const model = sync.models[endpointIndex] as string;
                     if (model) {
@@ -698,7 +712,7 @@ async function compileDeployInfo({
     jsonSchema?: JSONSchema7 | undefined;
     env: string;
     environment_id: number;
-    account: Account;
+    account: DBTeam;
     debug: boolean;
     logCtx: LogContext;
     orchestrator: Orchestrator;
@@ -863,7 +877,9 @@ async function compileDeployInfo({
                 sync_type: flow.sync_type as SyncType,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
                 enabled: lastSyncWasEnabled && !shouldCap,
-                models_json_schema: jsonSchema ? flowJsonSchema : null
+                models_json_schema: jsonSchema ? flowJsonSchema : null,
+                created_at: new Date(),
+                updated_at: new Date()
             }
         }
     };

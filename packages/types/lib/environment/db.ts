@@ -1,6 +1,6 @@
 import type { Timestamps } from '../db';
 
-export interface EnvironmentVariable extends Timestamps {
+export interface DBEnvironmentVariable extends Timestamps {
     id?: number;
     name: string;
     value: string;
@@ -9,7 +9,7 @@ export interface EnvironmentVariable extends Timestamps {
     value_tag?: string | null;
 }
 
-export interface Environment extends Timestamps {
+export interface DBEnvironment extends Timestamps {
     id: number;
     uuid: string;
     name: string;
@@ -32,7 +32,7 @@ export interface Environment extends Timestamps {
     secret_key_rotatable?: boolean;
     public_key_rotatable?: boolean;
 
-    pending_secret_key?: string | null;
+    pending_secret_key: string | null;
     pending_secret_key_iv?: string | null;
     pending_secret_key_tag?: string | null;
     pending_public_key?: string | null;

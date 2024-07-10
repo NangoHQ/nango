@@ -2,7 +2,7 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendSync } from './sync.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoSyncWebhookBodySuccess, Connection, Environment, ExternalWebhook } from '@nangohq/types';
+import type { NangoSyncWebhookBodySuccess, Connection, ExternalWebhook, DBEnvironment } from '@nangohq/types';
 import * as logPackage from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
@@ -20,7 +20,9 @@ const webhookSettings: ExternalWebhook = {
     on_sync_completion_always: true,
     on_auth_creation: true,
     on_auth_refresh_error: true,
-    on_sync_error: true
+    on_sync_error: true,
+    created_at: new Date(),
+    updated_at: new Date()
 };
 
 const getLogCtx = () => new logPackage.LogContext({ parentId: '1', operation: {} as any }, { dryRun: true, logToConsole: false });
@@ -36,7 +38,7 @@ describe('Webhooks: sync notification tests', () => {
 
         await sendSync({
             connection,
-            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             webhookSettings: {
                 ...webhookSettings,
                 primary_url: '',
@@ -73,7 +75,7 @@ describe('Webhooks: sync notification tests', () => {
                 secondary_url: '',
                 on_sync_completion_always: true
             },
-            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment
         });
         expect(axiosInstance.post).not.toHaveBeenCalled();
     });
@@ -96,7 +98,7 @@ describe('Webhooks: sync notification tests', () => {
                 secondary_url: '',
                 on_sync_completion_always: false
             },
-            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment
         });
         expect(spy).not.toHaveBeenCalled();
     });
@@ -119,7 +121,7 @@ describe('Webhooks: sync notification tests', () => {
                 secondary_url: '',
                 on_sync_completion_always: false
             },
-            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment
         });
         expect(spy).toHaveBeenCalled();
     });
@@ -142,7 +144,7 @@ describe('Webhooks: sync notification tests', () => {
                 secondary_url: '',
                 on_sync_completion_always: true
             },
-            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment
         });
         expect(spy).toHaveBeenCalled();
     });
@@ -165,7 +167,7 @@ describe('Webhooks: sync notification tests', () => {
                 secondary_url: '',
                 on_sync_completion_always: true
             },
-            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment
         });
         expect(spy).toHaveBeenCalled();
     });
@@ -191,7 +193,7 @@ describe('Webhooks: sync notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment
+            } as DBEnvironment
         });
         expect(spy).toHaveBeenCalledTimes(2);
     });
@@ -216,7 +218,7 @@ describe('Webhooks: sync notification tests', () => {
                 name: 'dev',
                 id: 1,
                 secret_key: 'secret'
-            } as Environment
+            } as DBEnvironment
         });
 
         const body: NangoSyncWebhookBodySuccess = {
@@ -278,7 +280,7 @@ describe('Webhooks: sync notification tests', () => {
                 ...webhookSettings,
                 on_sync_error: false
             },
-            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment
         });
 
         expect(spy).not.toHaveBeenCalled();
@@ -305,7 +307,7 @@ describe('Webhooks: sync notification tests', () => {
                 ...webhookSettings,
                 on_sync_error: true
             },
-            environment: { name: 'dev', id: 1, secret_key: 'secret' } as Environment
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment
         });
 
         expect(spy).toHaveBeenCalled();

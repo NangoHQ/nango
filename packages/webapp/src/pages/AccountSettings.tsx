@@ -36,7 +36,9 @@ export default function AccountSettings() {
             const res = await getAccountInfo();
 
             if (res?.status === 200) {
-                const { account, users, invitedUsers } = await res.json();
+                const {
+                    data: { account, users, invitedUsers }
+                } = await res.json();
                 setAccountName(account['name']);
                 setIsAdmin(account['is_admin']);
                 setMembers(users);

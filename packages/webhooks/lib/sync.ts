@@ -1,12 +1,12 @@
 import type {
     Connection,
-    Environment,
     SyncResult,
     ErrorPayload,
     SyncType,
     ExternalWebhook,
     NangoSyncWebhookBody,
-    NangoSyncWebhookBodyBase
+    NangoSyncWebhookBodyBase,
+    DBEnvironment
 } from '@nangohq/types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
@@ -29,7 +29,7 @@ export const sendSync = async ({
     logCtx
 }: {
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
-    environment: Environment;
+    environment: DBEnvironment;
     webhookSettings: ExternalWebhook | null;
     syncName: string;
     model: string;

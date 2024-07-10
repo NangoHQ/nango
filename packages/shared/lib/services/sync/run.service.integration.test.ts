@@ -250,7 +250,9 @@ const runJob = async (
             model_schema: [],
             nango_config_id: 1,
             runs: '',
-            webhook_subscriptions: []
+            webhook_subscriptions: [],
+            created_at: new Date(),
+            updated_at: new Date()
         },
         sendSyncWebhook: sendSyncWebhookMock,
         syncType: SyncType.INITIAL,

@@ -2,9 +2,9 @@ import db from '@nangohq/database';
 import connectionService from '../services/connection.service.js';
 import type { NangoConnection } from '../models/Connection.js';
 import type { AuthCredentials } from '../models/Auth.js';
-import type { Environment } from '../models/Environment.js';
+import type { DBEnvironment } from '@nangohq/types';
 
-export const createConnectionSeeds = async (env: Environment): Promise<number[]> => {
+export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[]> => {
     const connectionIds = [];
 
     for (let i = 0; i < 4; i++) {
@@ -15,7 +15,7 @@ export const createConnectionSeeds = async (env: Environment): Promise<number[]>
     return connectionIds;
 };
 
-export const createConnectionSeed = async (env: Environment, provider: string): Promise<NangoConnection> => {
+export const createConnectionSeed = async (env: DBEnvironment, provider: string): Promise<NangoConnection> => {
     const name = Math.random().toString(36).substring(7);
     const result = await connectionService.upsertConnection(name, provider, 'google', {} as AuthCredentials, {}, env.id, 0);
 

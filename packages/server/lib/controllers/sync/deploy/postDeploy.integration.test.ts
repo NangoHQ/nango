@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 import { getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
 import { envs } from '@nangohq/logs';
-import type { Environment } from '@nangohq/types';
+import type { DBEnvironment } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -80,7 +80,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     describe('deploy', () => {
-        let env: Environment;
+        let env: DBEnvironment;
         // This describe must be executed in order
 
         it('should deploy', async () => {

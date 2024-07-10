@@ -704,7 +704,7 @@ export function useGetAccountAPI(env: string) {
 
     return async () => {
         try {
-            const res = await apiFetch(`/api/v1/account?env=${env}`);
+            const res = await apiFetch(`/api/v1/team?env=${env}`);
 
             if (res.status === 401) {
                 return signout();
@@ -722,7 +722,7 @@ export function useEditAccountNameAPI(env: string) {
 
     return async (name: string) => {
         try {
-            const res = await apiFetch(`/api/v1/account?env=${env}`, {
+            const res = await apiFetch(`/api/v1/team?env=${env}`, {
                 method: 'PUT',
                 body: JSON.stringify({ name })
             });
