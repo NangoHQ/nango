@@ -126,7 +126,6 @@ export default function FlowPage(props: FlowPageProps) {
         setModalVisible(true);
         setModalAction(() => async () => {
             setModalSpinner(true);
-            setModalVisible(false);
             await confirmVersionUpgrade();
             setModalSpinner(false);
         });
@@ -296,7 +295,7 @@ export default function FlowPage(props: FlowPageProps) {
 
         if (response.status !== 200) {
             const error = await response.json();
-            toast.error(error.error, {
+            toast.error(error.error.message, {
                 position: toast.POSITION.BOTTOM_CENTER
             });
             return;
@@ -326,7 +325,9 @@ export default function FlowPage(props: FlowPageProps) {
 
     const onClickModalButton = async () => {
         setModalSpinner(true);
-        await modalAction!();
+        if (modalAction) {
+            await modalAction();
+        }
         setModalSpinner(false);
     };
 
