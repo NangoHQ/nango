@@ -76,6 +76,7 @@ export class Scheduler {
     stop(): void {
         this.monitor?.stop();
         this.scheduling?.stop();
+        this.cleanup?.stop();
     }
 
     /**
