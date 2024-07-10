@@ -585,6 +585,61 @@ export function useGetConnectionDetailsAPI(env: string) {
     };
 }
 
+export function useEditConnectionMetadataAPI(env: string) {
+    const signout = useSignout();
+
+    return async (
+        connectionId: string,
+        providerConfigKey: string,
+        metadata: Record<string, string> | undefined = undefined,
+        displayName: string | undefined = undefined,
+        customerEmail: string | undefined = undefined,
+        customerDomain: string | undefined = undefined
+    ) => {
+        try {
+            const body: Record<string, any> = {
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey
+            };
+
+            if (metadata) {
+                body.metadata = metadata;
+            }
+
+            if (displayName) {
+                body.display_name = displayName;
+            }
+
+            if (customerEmail) {
+                body.customer_email = customerEmail;
+            }
+
+            if (customerDomain) {
+                body.customer_domain = customerDomain;
+            }
+
+            const options = {
+                method: 'PATCH',
+                body: JSON.stringify(body)
+            };
+
+            const res = await apiFetch(`/api/v1/connection/metadata?env=${env}`, options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            if (res.status !== 200) {
+                return serverErrorToast();
+            }
+
+            return res;
+        } catch {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useDeleteConnectionAPI(env: string) {
     const signout = useSignout();
 

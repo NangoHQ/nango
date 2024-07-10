@@ -30,7 +30,7 @@ export const setMetadata = asyncWrapper<SetMetadata>(async (req, res) => {
 
     const { environment } = res.locals;
 
-    const body: Required<MetadataBody> = val.data;
+    const body: MetadataBody = val.data;
 
     const { connection_id: connectionIdArg, provider_config_key: providerConfigKey, metadata } = body;
 

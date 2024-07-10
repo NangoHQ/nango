@@ -120,6 +120,7 @@ class ConnectionController {
 
                 if (isWeb) {
                     list.active_logs = connection.active_logs;
+                    list.connection_config = connection.connection_config;
                 }
 
                 return list;
@@ -647,7 +648,16 @@ class ConnectionController {
                     updatedConnection = imported;
                 }
             } else if (template.auth_mode === 'NONE') {
-                const [imported] = await connectionService.upsertUnauthConnection(connection_id, provider_config_key, provider, environment.id, account.id);
+                const { connection_config } = req.body;
+
+                const [imported] = await connectionService.upsertUnauthConnection(
+                    connection_id,
+                    provider_config_key,
+                    provider,
+                    connection_config,
+                    environment.id,
+                    account.id
+                );
 
                 if (imported) {
                     updatedConnection = imported;

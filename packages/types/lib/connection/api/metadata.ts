@@ -5,6 +5,9 @@ export interface MetadataBody {
     connection_id: string | string[];
     provider_config_key: string;
     metadata: Metadata;
+    display_name?: string;
+    customer_domain?: string;
+    customer_email?: string;
 }
 
 type MetadataError = ApiError<'invalid_body'> | ApiError<'unknown_connection'>;

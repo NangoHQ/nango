@@ -12,9 +12,10 @@ export interface MultiSelectArgs<T> {
     defaultSelect: T[];
     all?: boolean;
     onChange: (selected: T[]) => void;
+    emptyLabel?: string;
 }
 
-export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, selected, defaultSelect, all, onChange }) => {
+export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, selected, defaultSelect, all, onChange, emptyLabel = 'No framework found.' }) => {
     const [open, setOpen] = useState(false);
 
     const select = (val: string, checked: boolean) => {
@@ -71,7 +72,7 @@ export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, se
             <PopoverContent className="w-56 p-0 text-white bg-active-gray" align="end">
                 <Command>
                     <CommandList>
-                        <CommandEmpty>No framework found.</CommandEmpty>
+                        <CommandEmpty>{emptyLabel}</CommandEmpty>
                         <CommandGroup>
                             {options.map((option) => {
                                 const checked = selected.some((sel) => option.value === sel);
