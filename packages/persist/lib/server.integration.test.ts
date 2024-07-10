@@ -1,11 +1,12 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
-import type { AuthCredentials, Connection, Sync, Job as SyncJob, Environment, Account } from '@nangohq/shared';
+import type { AuthCredentials, Connection, Sync, Job as SyncJob } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
 import { environmentService, connectionService, createSync, createSyncJob, SyncType, SyncStatus, accountService } from '@nangohq/shared';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { migrate as migrateRecords } from '@nangohq/records';
+import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 const mockSecretKey = 'secret-key';
 
@@ -13,8 +14,8 @@ describe('Persist API', () => {
     const port = 3096;
     const serverUrl = `http://localhost:${port}`;
     let seed: {
-        account: Account;
-        env: Environment;
+        account: DBTeam;
+        env: DBEnvironment;
         activityLogId: string;
         connection: Connection;
         sync: Sync;

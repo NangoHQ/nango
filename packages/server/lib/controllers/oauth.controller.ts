@@ -9,16 +9,14 @@ import {
     missesInterpolationParam,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
-import type { Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
+import type { DBEnvironment, DBTeam, Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
 import type {
     Config as ProviderConfig,
     OAuthSession,
     OAuth1RequestTokenResult,
     OAuth2Credentials,
     ConnectionConfig,
-    ConnectionUpsertResponse,
-    Environment,
-    Account
+    ConnectionUpsertResponse
 } from '@nangohq/shared';
 import {
     getConnectionConfig,
@@ -806,8 +804,8 @@ class OAuthController {
         session: OAuthSession,
         req: Request,
         res: Response,
-        environment: Environment,
-        account: Account,
+        environment: DBEnvironment,
+        account: DBTeam,
         logCtx: LogContext
     ) {
         const { code } = req.query;
@@ -1173,8 +1171,8 @@ class OAuthController {
         session: OAuthSession,
         req: Request,
         res: Response,
-        environment: Environment,
-        account: Account,
+        environment: DBEnvironment,
+        account: DBTeam,
         logCtx: LogContext
     ) {
         const { oauth_token, oauth_verifier } = req.query;

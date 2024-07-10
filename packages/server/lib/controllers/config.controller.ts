@@ -225,7 +225,14 @@ class ConfigController {
                 custom['private_key'] = Buffer.from(private_key).toString('base64');
             }
 
+            const oldConfig = await configService.getProviderConfig(req.body['provider_config_key'], environment.id);
+            if (oldConfig == null) {
+                errorManager.errRes(res, 'unknown_provider_config');
+                return;
+            }
+
             const newConfig: ProviderConfig = {
+                ...oldConfig,
                 unique_key: req.body['provider_config_key'],
                 provider: req.body['provider'],
                 oauth_client_id: req.body['client_id'],
@@ -236,13 +243,6 @@ class ConfigController {
             };
             if (custom) {
                 newConfig.custom = custom;
-            }
-
-            const oldConfig = await configService.getProviderConfig(newConfig.unique_key, environment.id);
-
-            if (oldConfig == null) {
-                errorManager.errRes(res, 'unknown_provider_config');
-                return;
             }
 
             await configService.editProviderConfig(newConfig);
@@ -370,7 +370,7 @@ class ConfigController {
                       scopes: config.oauth_scopes,
                       app_link: config.app_link,
                       auth_mode: authMode,
-                      created_at: config.created_at as Date,
+                      created_at: config.created_at,
                       syncs,
                       actions,
                       has_webhook: Boolean(hasWebhook),
@@ -558,7 +558,9 @@ class ConfigController {
                           .join(',')
                     : '',
                 app_link,
-                environment_id: environmentId
+                environment_id: environmentId,
+                created_at: new Date(),
+                updated_at: new Date()
             };
             if (custom) {
                 config.custom = custom;
@@ -643,29 +645,28 @@ class ConfigController {
                 custom.private_key = Buffer.from(private_key).toString('base64');
             }
 
-            const newConfig: ProviderConfig = {
-                unique_key: req.body['provider_config_key'],
-                provider: req.body['provider'],
+            const uniqueKey = req.body['provider_config_key'];
+            const oldConfig = await configService.getProviderConfig(uniqueKey, environmentId);
+            if (oldConfig == null) {
+                errorManager.errRes(res, 'unknown_provider_config');
+                return;
+            }
+
+            await configService.editProviderConfig({
+                ...oldConfig,
+                unique_key: uniqueKey,
+                provider: provider,
                 oauth_client_id: req.body['oauth_client_id'],
                 oauth_client_secret,
                 oauth_scopes: req.body['oauth_scopes'],
                 app_link: req.body['app_link'],
                 environment_id: environmentId,
                 custom
-            };
-
-            const oldConfig = await configService.getProviderConfig(newConfig.unique_key, environmentId);
-
-            if (oldConfig == null) {
-                errorManager.errRes(res, 'unknown_provider_config');
-                return;
-            }
-
-            await configService.editProviderConfig(newConfig);
+            });
             res.status(200).send({
                 config: {
-                    unique_key: newConfig.unique_key,
-                    provider: newConfig.provider
+                    unique_key: uniqueKey,
+                    provider: provider
                 }
             });
         } catch (err) {

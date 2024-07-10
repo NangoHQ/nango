@@ -1,6 +1,5 @@
 import type { NangoConnection } from '../../models/Connection.js';
-import type { Account } from '../../models/Admin.js';
-import type { Metadata, ErrorPayload } from '@nangohq/types';
+import type { Metadata, ErrorPayload, DBTeam, DBEnvironment } from '@nangohq/types';
 import type { SyncResult, SyncType, Job as SyncJob, IntegrationServiceInterface, SyncConfig } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -16,7 +15,6 @@ import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import telemetry, { LogTypes } from '../../utils/telemetry.js';
 import { LogActionEnum } from '../../models/Telemetry.js';
-import type { Environment } from '../../models/Environment.js';
 import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '../../sdk/sync.js';
 import type { UpsertSummary } from '@nangohq/records';
@@ -71,8 +69,8 @@ export type SyncRunConfig = {
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
 
-    account?: Account;
-    environment?: Environment;
+    account?: DBTeam;
+    environment?: DBEnvironment;
     runnerFlags: RunnerFlags;
 } & (
     | {
@@ -130,8 +128,8 @@ export class SyncRunService {
     };
     stubbedMetadata?: Metadata | undefined = undefined;
 
-    account?: Account;
-    environment?: Environment;
+    account?: DBTeam;
+    environment?: DBEnvironment;
 
     isWebhook: boolean;
 
@@ -222,8 +220,8 @@ export class SyncRunService {
         const models = syncData.models;
 
         // if there is a matching customer integration code for the provider config key then run it
-        let environment: Environment | null = null;
-        let account: Account | null = null;
+        let environment: DBEnvironment | null = null;
+        let account: DBTeam | null = null;
 
         if (!bypassEnvironment) {
             const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: this.nangoConnection.environment_id });

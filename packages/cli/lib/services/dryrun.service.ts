@@ -294,7 +294,9 @@ export class DryRunService {
                 nango_config_id: 1,
                 runs: '',
                 webhook_subscriptions: [],
-                models_json_schema: jsonSchema
+                models_json_schema: jsonSchema,
+                created_at: new Date(),
+                updated_at: new Date()
             },
             provider,
             input: normalizedInput as object,

@@ -54,7 +54,7 @@ export const createSync = async (nangoConnectionId: number, name: string): Promi
         return null;
     }
 
-    const sync: Sync = {
+    const sync: Omit<Sync, 'created_at' | 'updated_at'> = {
         id: uuidv4(),
         nango_connection_id: nangoConnectionId,
         name,

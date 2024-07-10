@@ -5,7 +5,6 @@ export * from './Generic.js';
 export * from './Provider.js';
 export * from './Auth.js';
 export * from './Sync.js';
-export * from './Environment.js';
 export * from './Flow.js';
 export * from './NangoConfig.js';
 export * from './Proxy.js';

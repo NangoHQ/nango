@@ -1,9 +1,7 @@
 import db from '@nangohq/database';
 import remoteFileService from '../file/remote.service.js';
-import type { Account } from '../../models/Admin.js';
-import type { Environment } from '../../models/Environment.js';
 import { env } from '@nangohq/utils';
-import type { PostConnectionScriptByProvider, PostConnectionScript } from '@nangohq/types';
+import type { PostConnectionScriptByProvider, PostConnectionScript, DBTeam, DBEnvironment } from '@nangohq/types';
 import { increment } from './config/config.service.js';
 import configService from '../config.service.js';
 
@@ -15,12 +13,12 @@ export const postConnectionScriptService = {
         account,
         postConnectionScriptsByProvider
     }: {
-        environment: Environment;
-        account: Account;
+        environment: DBEnvironment;
+        account: DBTeam;
         postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
     }): Promise<void> {
         await db.knex.transaction(async (trx) => {
-            const postConnectionInserts: Omit<PostConnectionScript, 'id'>[] = [];
+            const postConnectionInserts: Omit<PostConnectionScript, 'id' | 'created_at' | 'updated_at'>[] = [];
             for (const postConnectionScriptByProvider of postConnectionScriptsByProvider) {
                 const { providerConfigKey, scripts } = postConnectionScriptByProvider;
 

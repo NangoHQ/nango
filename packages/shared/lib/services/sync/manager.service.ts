@@ -21,10 +21,9 @@ import { SyncStatus } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
-import type { Environment } from '../../models/Environment.js';
 import type { Orchestrator, RecordsServiceInterface } from '../../clients/orchestrator.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
-import type { IncomingFlowConfig } from '@nangohq/types';
+import type { DBEnvironment, IncomingFlowConfig } from '@nangohq/types';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -218,7 +217,7 @@ export class SyncManagerService {
     }: {
         recordsService: RecordsServiceInterface;
         orchestrator: Orchestrator;
-        environment: Environment;
+        environment: DBEnvironment;
         providerConfigKey: string;
         syncNames: string[];
         command: SyncCommand;

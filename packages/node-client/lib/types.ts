@@ -138,8 +138,8 @@ export interface MetadataChangeResponse {
 
 export interface Connection {
     id?: number;
-    created_at?: Date;
-    updated_at?: Date;
+    created_at: Date;
+    updated_at: Date;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;

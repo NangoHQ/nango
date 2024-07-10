@@ -3,8 +3,7 @@ import crypto from 'crypto';
 import { getLogger, Encryption } from '@nangohq/utils';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
-import type { Environment } from '../models/Environment.js';
-import type { EnvironmentVariable } from '@nangohq/types';
+import type { DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
 import db from '@nangohq/database';
 import { hashSecretKey } from '../services/environment.service.js';
@@ -21,12 +20,12 @@ export class EncryptionManager extends Encryption {
         return Boolean(this?.key && this.key.length > 0);
     }
 
-    public async encryptEnvironment(environment: Environment) {
+    public async encryptEnvironment(environment: DBEnvironment) {
         if (!this.shouldEncrypt()) {
             return environment;
         }
 
-        const encryptedEnvironment: Environment = Object.assign({}, environment);
+        const encryptedEnvironment: DBEnvironment = Object.assign({}, environment);
 
         const [encryptedClientSecret, iv, authTag] = this.encrypt(environment.secret_key);
         encryptedEnvironment.secret_key_hashed = await hashSecretKey(environment.secret_key);
@@ -44,13 +43,13 @@ export class EncryptionManager extends Encryption {
         return encryptedEnvironment;
     }
 
-    public decryptEnvironment(environment: Environment | null): Environment | null {
+    public decryptEnvironment<TEnv extends DBEnvironment | null>(environment: TEnv): TEnv {
         // Check if the individual row is encrypted.
         if (environment == null || environment.secret_key_iv == null || environment.secret_key_tag == null) {
             return environment;
         }
 
-        const decryptedEnvironment: Environment = Object.assign({}, environment);
+        const decryptedEnvironment: TEnv = Object.assign({}, environment);
 
         decryptedEnvironment.secret_key = this.decrypt(environment.secret_key, environment.secret_key_iv, environment.secret_key_tag);
 
@@ -65,12 +64,12 @@ export class EncryptionManager extends Encryption {
         return decryptedEnvironment;
     }
 
-    public encryptApiConnection(connection: ApiConnection): StoredConnection {
+    public encryptApiConnection(connection: ApiConnection): Omit<StoredConnection, 'created_at' | 'updated_at'> {
         if (!this.shouldEncrypt()) {
-            return connection as StoredConnection;
+            return connection;
         }
 
-        const storedConnection: StoredConnection = Object.assign({}, connection) as StoredConnection;
+        const storedConnection = Object.assign({}, connection) as Omit<StoredConnection, 'created_at' | 'updated_at'>;
 
         const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
         const encryptedCreds = { encrypted_credentials: encryptedClientSecret };
@@ -82,12 +81,12 @@ export class EncryptionManager extends Encryption {
         return storedConnection;
     }
 
-    public encryptConnection(connection: Connection): StoredConnection {
+    public encryptConnection(connection: Omit<Connection, 'created_at' | 'updated_at'>): Omit<StoredConnection, 'created_at' | 'updated_at'> {
         if (!this.shouldEncrypt()) {
-            return connection as StoredConnection;
+            return connection;
         }
 
-        const storedConnection: StoredConnection = Object.assign({}, connection) as StoredConnection;
+        const storedConnection = Object.assign({}, connection) as Omit<StoredConnection, 'created_at' | 'updated_at'>;
 
         const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
         const encryptedCreds = { encrypted_credentials: encryptedClientSecret };
@@ -114,12 +113,12 @@ export class EncryptionManager extends Encryption {
         return decryptedConnection as Connection;
     }
 
-    public encryptEnvironmentVariables(environmentVariables: EnvironmentVariable[]): EnvironmentVariable[] {
+    public encryptEnvironmentVariables(environmentVariables: DBEnvironmentVariable[]): DBEnvironmentVariable[] {
         if (!this.shouldEncrypt()) {
             return environmentVariables;
         }
 
-        const encryptedEnvironmentVariables: EnvironmentVariable[] = Object.assign([], environmentVariables);
+        const encryptedEnvironmentVariables: DBEnvironmentVariable[] = Object.assign([], environmentVariables);
 
         for (const environmentVariable of encryptedEnvironmentVariables) {
             const [encryptedValue, iv, authTag] = this.encrypt(environmentVariable.value);
@@ -131,12 +130,12 @@ export class EncryptionManager extends Encryption {
         return encryptedEnvironmentVariables;
     }
 
-    public decryptEnvironmentVariables(environmentVariables: EnvironmentVariable[] | null): EnvironmentVariable[] | null {
+    public decryptEnvironmentVariables(environmentVariables: DBEnvironmentVariable[] | null): DBEnvironmentVariable[] | null {
         if (environmentVariables === null) {
             return environmentVariables;
         }
 
-        const decryptedEnvironmentVariables: EnvironmentVariable[] = Object.assign([], environmentVariables);
+        const decryptedEnvironmentVariables: DBEnvironmentVariable[] = Object.assign([], environmentVariables);
 
         for (const environmentVariable of decryptedEnvironmentVariables) {
             if (environmentVariable.value_iv == null || environmentVariable.value_tag == null) {
@@ -257,7 +256,7 @@ export class EncryptionManager extends Encryption {
     private async encryptDatabase() {
         logger.info('🔐⚙️ Starting encryption of database...');
 
-        const environments: Environment[] = await db.knex.select('*').from<Environment>(`_nango_environments`);
+        const environments: DBEnvironment[] = await db.knex.select('*').from<DBEnvironment>(`_nango_environments`);
 
         for (let environment of environments) {
             if (environment.secret_key_iv && environment.secret_key_tag) {
@@ -265,7 +264,7 @@ export class EncryptionManager extends Encryption {
             }
 
             environment = await this.encryptEnvironment(environment);
-            await db.knex.from<Environment>(`_nango_environments`).where({ id: environment.id }).update(environment);
+            await db.knex.from<DBEnvironment>(`_nango_environments`).where({ id: environment.id }).update(environment);
         }
 
         const connections: Connection[] = await db.knex.select('*').from<Connection>(`_nango_connections`);
@@ -290,7 +289,7 @@ export class EncryptionManager extends Encryption {
             await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id: providerConfig.id! }).update(providerConfig);
         }
 
-        const environmentVariables: EnvironmentVariable[] = await db.knex.select('*').from<EnvironmentVariable>(`_nango_environment_variables`);
+        const environmentVariables: DBEnvironmentVariable[] = await db.knex.select('*').from<DBEnvironmentVariable>(`_nango_environment_variables`);
 
         for (const environmentVariable of environmentVariables) {
             if (environmentVariable.value_iv && environmentVariable.value_tag) {
@@ -303,7 +302,7 @@ export class EncryptionManager extends Encryption {
             environmentVariable.value_tag = authTag;
 
             await db.knex
-                .from<EnvironmentVariable>(`_nango_environment_variables`)
+                .from<DBEnvironmentVariable>(`_nango_environment_variables`)
                 .where({ id: environmentVariable.id as number })
                 .update(environmentVariable);
         }

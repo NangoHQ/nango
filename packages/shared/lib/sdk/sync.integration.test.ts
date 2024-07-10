@@ -8,11 +8,11 @@ import environmentService from '../services/environment.service.js';
 import { createConnectionSeeds } from '../seeders/connection.seeder.js';
 import { createConfigSeeds } from '../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
-import type { Environment } from '../models/Environment.js';
 import type { SyncConfig } from '../models/Sync.js';
+import type { DBEnvironment } from '@nangohq/types';
 
 describe('Connection service integration tests', () => {
-    let env: Environment;
+    let env: DBEnvironment;
     beforeAll(async () => {
         await multipleMigrations();
         env = await createEnvironmentSeed();

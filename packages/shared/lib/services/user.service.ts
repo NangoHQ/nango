@@ -2,7 +2,8 @@ import db from '@nangohq/database';
 import * as uuid from 'uuid';
 import type { Result } from '@nangohq/utils';
 import { isEnterprise, Ok, Err } from '@nangohq/utils';
-import type { User, InviteUser, Account } from '../models/Admin.js';
+import type { User } from '../models/Admin.js';
+import type { DBInvitation, DBTeam } from '@nangohq/types';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 const INVITE_EMAIL_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
@@ -28,7 +29,7 @@ class UserService {
         return result || null;
     }
 
-    async getUserAndAccountByToken(token: string): Promise<Result<User & Account & { account_id: number; user_id: number }>> {
+    async getUserAndAccountByToken(token: string): Promise<Result<User & DBTeam & { account_id: number; user_id: number }>> {
         const result = await db.knex
             .select('*', '_nango_accounts.id as account_id', '_nango_users.id as user_id')
             .from<User>(`_nango_users`)
@@ -63,9 +64,9 @@ class UserService {
     }
 
     async getUsersByAccountId(accountId: number): Promise<User[]> {
-        const result = await db.knex.select('id', 'name', 'email', 'suspended').from<User>(`_nango_users`).where({ account_id: accountId });
+        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ account_id: accountId });
 
-        if (result == null || result.length == 0 || result[0] == null) {
+        if (!result || result.length == 0 || result[0] == null) {
             return [];
         }
 
@@ -174,7 +175,7 @@ class UserService {
         const expires_at = new Date(new Date().getTime() + INVITE_EMAIL_EXPIRATION);
 
         const result = await db.knex
-            .from<InviteUser>(`_nango_invited_users`)
+            .from<DBInvitation>(`_nango_invited_users`)
             .insert({
                 email,
                 name,
@@ -185,22 +186,22 @@ class UserService {
             })
             .returning('*');
 
-        if (result == null || result.length == 0 || result[0] == null) {
+        if (!result || result.length == 0 || result[0] == null) {
             return null;
         }
 
         return result[0];
     }
 
-    async getInvitedUsersByAccountId(accountId: number): Promise<InviteUser[]> {
+    async getInvitedUsersByAccountId(accountId: number): Promise<DBInvitation[]> {
         const date = new Date();
 
-        const result = await db.knex.select('*').from<InviteUser>(`_nango_invited_users`).where({ account_id: accountId }).whereRaw('expires_at > ?', date);
+        const result = await db.knex.select('*').from<DBInvitation>(`_nango_invited_users`).where({ account_id: accountId }).whereRaw('expires_at > ?', date);
 
         return result || [];
     }
 
-    async getInvitedUserByToken(token: string): Promise<InviteUser | null> {
+    async getInvitedUserByToken(token: string): Promise<DBInvitation | null> {
         const date = new Date();
 
         if (isEnterprise && process.env['NANGO_ADMIN_INVITE_TOKEN'] === token) {
@@ -212,12 +213,14 @@ class UserService {
                 invited_by: 0,
                 token: '',
                 expires_at: new Date(),
-                accepted: true
+                accepted: true,
+                created_at: new Date(),
+                updated_at: new Date()
             };
         }
-        const result = await db.knex.select('*').from<InviteUser>(`_nango_invited_users`).where({ token }).whereRaw('expires_at > ?', date);
+        const result = await db.knex.select('*').from<DBInvitation>(`_nango_invited_users`).where({ token }).whereRaw('expires_at > ?', date);
 
-        if (result == null || result.length == 0 || result[0] == null) {
+        if (!result || result.length == 0 || result[0] == null) {
             return null;
         }
 
@@ -225,7 +228,7 @@ class UserService {
     }
 
     async markAcceptedInvite(token: string) {
-        const result = await db.knex.from<InviteUser>(`_nango_invited_users`).where({ token }).update({ accepted: true });
+        const result = await db.knex.from<DBInvitation>(`_nango_invited_users`).where({ token }).update({ accepted: true });
 
         return result;
     }

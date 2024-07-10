@@ -84,3 +84,8 @@ export interface ErrorPayload {
     type: string;
     description: string;
 }
+
+export interface ApiTimestamps {
+    created_at: string;
+    updated_at: string;
+}
