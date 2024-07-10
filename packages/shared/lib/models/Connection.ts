@@ -84,4 +84,5 @@ export interface ConnectionList {
     created: string;
     metadata?: Metadata | null;
     active_logs?: ActiveLogIds | null;
+    connection_config?: ConnectionConfig;
 }

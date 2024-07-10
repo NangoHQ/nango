@@ -83,7 +83,11 @@ For OAuth, the `nango.auth()` method will trigger the OAuth flow in a popup, to 
 
 ```js
 nango
-    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
+    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+        display_name: '<OPTIONAL-DISPLAY-NAME>',
+        customer_email: '<OPTIONAL-DISPLAY-NAME>'
+        customer_domain: '<OPTIONAL-CUSTOMER-DOMAIN>',
+    })
     .then((result) => {
         // Show success UI.
     })

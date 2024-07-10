@@ -24,7 +24,7 @@ let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
       </ResponseField>
 
       <ResponseField name="host" type="string">
-        Omitting the host points to Nango Cloud. For local development, use `http://localhost:3003`. Use your instance URL if self-hosting. 
+        Omitting the host points to Nango Cloud. For local development, use `http://localhost:3003`. Use your instance URL if self-hosting.
       </ResponseField>
 
       <ResponseField name="websocketsPath" type="string">
@@ -106,6 +106,15 @@ const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
 
   <ResponseField name="options" type="object">
     <Expandable title="options" defaultOpen>
+      <ResponseField name="display_name" type="string">
+            A human-readable display name for the connection.
+      </ResponseField>
+      <ResponseField name="customer_email" type="string">
+            The email address of the end-user. This field is just used for ease of reference and does not alter the behaviour of the connection.
+      </ResponseField>
+      <ResponseField name="customer_domain" type="string">
+            The end-user's domain. This field is just used for ease of reference and does not alter the behaviour of the connection.
+      </ResponseField>
       <ResponseField name="params" type="object">
         Specify additional [connection configuration](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization) necessary to perform the authorization request.
       </ResponseField>
@@ -119,11 +128,11 @@ const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
       </ResponseField>
 
       <ResponseField name="authorization_params" type="object">
-        For OAuth, specify the query parameters of the authorization URL. 
+        For OAuth, specify the query parameters of the authorization URL.
       </ResponseField>
 
       <ResponseField name="user_scope" type="string[]">
-        For Slack OAuth, specify user-specific scopes. 
+        For Slack OAuth, specify user-specific scopes.
       </ResponseField>
 
       <ResponseField name="credentials" type="object">

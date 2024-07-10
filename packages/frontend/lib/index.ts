@@ -413,11 +413,11 @@ export default class Nango {
             }
 
             if (connectionConfig.hmac) {
-                query.push(`hmac=${connectionConfig.hmac}`);
+                query.push(`hmac=${encodeURIComponent(connectionConfig.hmac)}`);
             }
 
             if (connectionConfig.user_scope) {
-                query.push(`user_scope=${connectionConfig.user_scope.join(',')}`);
+                query.push(`user_scope=${encodeURIComponent(connectionConfig.user_scope.join(','))}`);
             }
 
             if (connectionConfig.credentials) {

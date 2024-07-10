@@ -232,6 +232,7 @@ class ConnectionService {
         connectionId: string,
         providerConfigKey: string,
         provider: string,
+        connectionConfig: ConnectionConfig,
         environment_id: number,
         accountId: number
     ): Promise<ConnectionUpsertResponse[]> {
@@ -246,7 +247,8 @@ class ConnectionService {
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
                     config_id: config_id as number,
-                    updated_at: new Date()
+                    updated_at: new Date(),
+                    connection_config: connectionConfig
                 })
                 .returning('*');
 
@@ -260,7 +262,7 @@ class ConnectionService {
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 credentials: {},
-                connection_config: {},
+                connection_config: connectionConfig,
                 environment_id,
                 config_id: config_id!
             })
@@ -580,7 +582,17 @@ class ConnectionService {
     public async listConnections(
         environment_id: number,
         connectionId?: string
-    ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata; active_logs: ActiveLogIds }[]> {
+    ): Promise<
+        {
+            id: number;
+            connection_id: string;
+            provider: string;
+            created: string;
+            metadata: Metadata;
+            active_logs: ActiveLogIds;
+            connection_config: ConnectionConfig;
+        }[]
+    > {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
             .select(
@@ -589,6 +601,7 @@ class ConnectionService {
                 { provider: '_nango_connections.provider_config_key' },
                 { created: '_nango_connections.created_at' },
                 '_nango_connections.metadata',
+                '_nango_connections.connection_config',
                 db.knex.raw(`
                   (SELECT json_build_object(
                       'log_id', log_id
