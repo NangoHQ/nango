@@ -336,9 +336,6 @@ export class NangoError extends Error {
             case 'refresh_token_external_error':
                 this.status = 400;
                 this.message = `The external API returned an error when trying to refresh the access token. Please try again later.`;
-                if (this.payload) {
-                    this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
-                }
                 break;
 
             case 'request_token_external_error':

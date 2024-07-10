@@ -97,22 +97,21 @@ export async function getFreshOAuth2Credentials(
 
     try {
         rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
-    } catch (e: any) {
+    } catch (err) {
         let nangoErr: NangoError;
-        let errorPayload;
-        if ('data' in e && 'payload' in e.data) {
-            errorPayload = e.data.payload;
-        }
-
-        if (Boom.isBoom(e)) {
+        if (Boom.isBoom(err)) {
+            let errorPayload;
+            if ('data' in err && 'payload' in err.data) {
+                errorPayload = err.data.payload;
+            }
             const payload = {
-                external_message: e.message,
-                external_request_details: e.output,
+                external_message: err.message,
+                external_request_details: err.output,
                 dataMessage: errorPayload instanceof Buffer ? errorPayload.toString() : errorPayload
             };
             nangoErr = new NangoError(`refresh_token_external_error`, payload);
         } else {
-            nangoErr = new NangoError(`refresh_token_external_error`, { message: e.message });
+            nangoErr = new NangoError(`refresh_token_external_error`, { message: err instanceof Error ? err.message : 'unknown Error' });
         }
 
         errorManager.report(nangoErr.message, {
@@ -120,9 +119,8 @@ export async function getFreshOAuth2Credentials(
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.AUTH,
             metadata: {
-                connection,
-                config,
-                template
+                connectionId: connection.id,
+                configId: config.id
             }
         });
 
@@ -152,9 +150,8 @@ export async function getFreshOAuth2Credentials(
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.AUTH,
             metadata: {
-                connection,
-                config,
-                template
+                connectionId: connection.id,
+                configId: config.id
             }
         });
         return { success: false, error, response: null };
