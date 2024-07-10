@@ -36,7 +36,7 @@ describe('parse', () => {
                             type: 'sync',
                             usedModels: ['GithubIssue'],
                             webhookSubscriptions: [],
-                            version: '0.0.1'
+                            version: ''
                         }
                     ],
                     postConnectionScripts: [],
@@ -50,7 +50,7 @@ describe('parse', () => {
                             scopes: [],
                             type: 'action',
                             usedModels: ['GithubIssue', 'Anonymous_provider_action_createIssue_input'],
-                            version: '0.0.1'
+                            version: ''
                         }
                     ]
                 }
@@ -98,7 +98,7 @@ describe('parse', () => {
                             scopes: [],
                             type: 'action',
                             usedModels: ['Start', 'Middle', 'End'],
-                            version: '0.0.1'
+                            version: ''
                         }
                     ]
                 }
@@ -142,7 +142,7 @@ describe('parse', () => {
                             type: 'sync',
                             usedModels: ['Anonymous_provider_sync_top_output', 'Anonymous_provider_sync_top_input'],
                             webhookSubscriptions: [],
-                            version: '0.0.1'
+                            version: ''
                         }
                     ],
                     postConnectionScripts: [],
