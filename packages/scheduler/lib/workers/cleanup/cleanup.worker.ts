@@ -101,7 +101,7 @@ export class CleanupChild {
                 logger.info(`Hard deleted ${deletedSchedules.value.length} schedules`);
             }
             // hard delete terminated tasks older than 60 days unless it is the last task for an active schedule
-            const deletedTasks = await tasks.hardDeleteOlderThanNDays(trx, 0);
+            const deletedTasks = await tasks.hardDeleteOlderThanNDays(trx, 30);
             if (deletedTasks.isErr()) {
                 logger.error(deletedTasks.error);
             } else if (deletedTasks.value.length > 0) {
