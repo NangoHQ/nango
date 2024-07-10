@@ -16,7 +16,7 @@ export function toEvent(event: LumaEvent): Event {
         description_md: event.event.description_md,
         series_api_id: event.event.series_api_id,
         start_at: new Date(event.event.start_at).toISOString(),
-        duration_interval: event.event.duration_interval,
+        duration_interval_iso8601: event.event.duration_interval,
         end_at: new Date(event.event.end_at).toISOString(),
         geo_latitude: event.event.geo_latitude,
         geo_longitude: event.event.geo_longitude,

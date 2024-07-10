@@ -21,7 +21,7 @@ models:
         description: string
         description_md: string
         series_api_id: string | null
-        duration_interval: string
+        duration_interval_iso8601: string
         geo_latitude: string | null
         geo_longitude: string | null
         geo_address_json: GeoAddress | null
