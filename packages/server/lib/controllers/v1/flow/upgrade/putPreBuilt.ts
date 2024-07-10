@@ -14,7 +14,7 @@ const validation = flowConfig.extend({
     pre_built: z.boolean()
 });
 
-export const upgradePreBuilt = asyncWrapper<UpgradePreBuiltFlow>(async (req, res) => {
+export const putUpgradePreBuilt = asyncWrapper<UpgradePreBuiltFlow>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
