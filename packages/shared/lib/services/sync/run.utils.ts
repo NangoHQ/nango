@@ -9,10 +9,10 @@ export interface RunnerFlags {
 
 export async function getRunnerFlags(): Promise<RunnerFlags> {
     const [validateActionInput, validateActionOutput, validateSyncRecords, validateSyncMetadata] = await Promise.all([
-        featureFlags.isEnabled('runner.validateActionInput', 'global', true),
-        featureFlags.isEnabled('runner.validateActionOutput', 'global', true),
-        featureFlags.isEnabled('runner.validateSyncRecords', 'global', true),
-        featureFlags.isEnabled('runner.validateSyncMetadata', 'global', true)
+        featureFlags.isEnabled('runner.validateActionInput', 'global', false),
+        featureFlags.isEnabled('runner.validateActionOutput', 'global', false),
+        featureFlags.isEnabled('runner.validateSyncRecords', 'global', false),
+        featureFlags.isEnabled('runner.validateSyncMetadata', 'global', false)
     ]);
 
     return {
