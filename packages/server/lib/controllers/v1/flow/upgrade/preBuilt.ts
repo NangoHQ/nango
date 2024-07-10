@@ -33,12 +33,17 @@ export const upgradePreBuilt = asyncWrapper<UpgradePreBuiltFlow>(async (req, res
     const flowConfig: IncomingFlowConfigUpgrade = val.data as IncomingFlowConfigUpgrade;
     const { environment, account } = res.locals;
 
-    await upgradePrebuiltFlow({
+    const result = await upgradePrebuiltFlow({
         environment,
         account,
         flowConfig,
         logContextGetter
     });
 
-    res.send({ success: true });
+    if (result.isOk()) {
+        res.send({ success: true });
+        return;
+    }
+
+    res.status(400).send({ error: { code: 'upgrade_failed', message: result.error.message } });
 });
