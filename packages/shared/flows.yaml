@@ -3429,7 +3429,6 @@ integrations:
                 output: Contact
                 sync_type: incremental
                 endpoint: GET /xero/contacts
-                version: 0.0.2
             accounts:
                 description: >
                     Fetches all accounts in Xero (chart of accounts). Incremental sync,
