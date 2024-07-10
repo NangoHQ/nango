@@ -185,6 +185,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "type": "action",
           "usedModels": [
             "GithubCreateOutput",
+            "GithubIssue",
             "GithubCreateIssueInput",
           ],
         },

@@ -57,7 +57,7 @@ class Telemetry {
     }
 
     public async log(
-        eventId: string,
+        eventId: LogTypes,
         message: string,
         operation: string,
         context: Record<string, string> & { level?: 'info' | 'error' | 'warn'; environmentId: string },

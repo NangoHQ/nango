@@ -12,6 +12,7 @@ import {
     errorManager,
     ErrorSourceEnum,
     getLastSyncDate,
+    getRunnerFlags,
     getSyncByIdAndName,
     getSyncConfigRaw,
     SyncRunService,
@@ -156,7 +157,8 @@ async function sync(task: TaskSync): Promise<Result<JsonValue>> {
             activityLogId: logCtx.id,
             provider: providerConfig.provider,
             debug: task.debug,
-            logCtx
+            logCtx,
+            runnerFlags: await getRunnerFlags()
         });
 
         const { success, error, response } = await syncRun.run();
@@ -228,7 +230,8 @@ async function action(task: TaskAction): Promise<Result<JsonValue>> {
         activityLogId: task.activityLogId,
         input: task.input as object, // TODO: fix type after temporal is removed
         provider: providerConfig.provider,
-        debug: false
+        debug: false,
+        runnerFlags: await getRunnerFlags()
     });
 
     const { error, response } = await syncRun.run();
@@ -285,7 +288,8 @@ async function webhook(task: TaskWebhook): Promise<Result<JsonValue>> {
         logCtx: await logContextGetter.get({ id: String(task.activityLogId) }),
         input: task.input as object, // TODO: fix type after temporal is removed
         provider: providerConfig.provider,
-        debug: false
+        debug: false,
+        runnerFlags: await getRunnerFlags()
     });
     const { error, response } = await syncRun.run();
     if (error) {
@@ -335,7 +339,8 @@ async function postConnection(task: TaskPostConnection): Promise<Result<JsonValu
         activityLogId: task.activityLogId,
         logCtx: await logContextGetter.get({ id: String(task.activityLogId) }),
         provider: providerConfig.provider,
-        debug: false
+        debug: false,
+        runnerFlags: await getRunnerFlags()
     });
 
     const { error, response } = await syncRun.run();

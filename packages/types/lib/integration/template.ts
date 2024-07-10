@@ -68,7 +68,7 @@ export interface TemplateOAuth2 extends Template {
 
     refresh_url?: string;
 
-    token_request_auth_method?: 'basic';
+    token_request_auth_method?: 'basic' | 'custom';
 }
 
 export interface TemplateOAuth1 extends Template {

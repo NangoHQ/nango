@@ -1,6 +1,6 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { AxiosError } from 'axios';
-import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateInput } from '@nangohq/shared';
+import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
 import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'vm';
@@ -8,7 +8,8 @@ import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
 import tracer from 'dd-trace';
-import { stringifyError } from '@nangohq/utils';
+import { metrics, stringifyError } from '@nangohq/utils';
+import { logger } from './utils.js';
 
 export async function exec(
     nangoProps: NangoProps,
@@ -78,35 +79,65 @@ export async function exec(
                 }
 
                 return await scriptExports.onWebhookPayloadReceived(nango, codeParams);
+            }
+
+            if (!scriptExports.default || typeof scriptExports.default !== 'function') {
+                throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
+            }
+            if (isAction) {
+                let inputParams = codeParams;
+                if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
+                    inputParams = undefined;
+                }
+
+                // Validate action input against json schema
+                const valInput = validateData({
+                    input: inputParams,
+                    modelName: nangoProps.syncConfig.input,
+                    jsonSchema: nangoProps.syncConfig.models_json_schema
+                });
+                if (Array.isArray(valInput)) {
+                    metrics.increment(metrics.Types.RUNNER_INVALID_ACTION_INPUT);
+                    if (nangoProps.runnerFlags?.validateActionInput) {
+                        span.setTag('error', new Error('invalid_action_input'));
+                        return { success: false, response: null, error: { type: 'invalid_action_input', status: 400, payload: valInput } };
+                    } else {
+                        await nango.log('Invalid action input', { validation: valInput }, { level: 'warn' });
+                        logger.error('data_validation_invalid_action_input');
+                    }
+                }
+
+                const output = await scriptExports.default(nango, inputParams);
+
+                // Validate action output against json schema
+                const valOutput = validateData({
+                    input: output,
+                    modelName: nangoProps.syncConfig.models.length > 0 ? nangoProps.syncConfig.models[0] : undefined,
+                    jsonSchema: nangoProps.syncConfig.models_json_schema
+                });
+                if (Array.isArray(valOutput)) {
+                    metrics.increment(metrics.Types.RUNNER_INVALID_ACTION_OUTPUT);
+                    if (nangoProps.runnerFlags?.validateActionOutput) {
+                        span.setTag('error', new Error('invalid_action_output'));
+                        return {
+                            success: false,
+                            response: null,
+                            error: { type: 'invalid_action_output', status: 400, payload: { output, validation: valOutput } }
+                        };
+                    } else {
+                        await nango.log('Invalid action output', { output, validation: valOutput }, { level: 'warn' });
+                        logger.error('data_validation_invalid_action_output');
+                    }
+                }
+
+                return output;
             } else {
-                if (!scriptExports.default || typeof scriptExports.default !== 'function') {
-                    throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
-                }
-                if (isAction) {
-                    let inputParams = codeParams;
-                    if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
-                        inputParams = undefined;
-                    }
-
-                    // Validate action input against json schema
-                    if (inputParams) {
-                        const val = validateInput({
-                            input: inputParams,
-                            modelName: nangoProps.syncConfig.input,
-                            jsonSchema: nangoProps.syncConfig.models_json_schema
-                        });
-                        if (Array.isArray(val)) {
-                            return { success: false, response: null, error: { type: 'invalid_action_input', status: 400, payload: val } };
-                        }
-                    }
-
-                    return await scriptExports.default(nango, inputParams);
-                } else {
-                    return await scriptExports.default(nango);
-                }
+                return await scriptExports.default(nango);
             }
         } catch (error) {
             if (error instanceof ActionError) {
+                // It's not a mistake, we don't want to report user generated error
+                // span.setTag('error', error);
                 const { type, payload } = error;
                 return {
                     success: false,
@@ -117,11 +148,16 @@ export async function exec(
                     },
                     response: null
                 };
+            } else if (error instanceof NangoError) {
+                throw error;
             } else {
                 if (error instanceof AxiosError && error.response?.data) {
                     const errorResponse = error.response.data.payload || error.response.data;
+                    span.setTag('error', errorResponse);
                     throw new Error(JSON.stringify(errorResponse));
                 }
+
+                span.setTag('error', error);
                 throw new Error(`Error executing code '${stringifyError(error)}'`);
             }
         } finally {

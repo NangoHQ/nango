@@ -1,8 +1,7 @@
 import './tracer.js';
 import { server } from './server.js';
-import { getLogger, stringifyError } from '@nangohq/utils';
-
-const logger = getLogger('Runner');
+import { stringifyError } from '@nangohq/utils';
+import { logger } from './utils.js';
 
 try {
     const port = parseInt(process.argv[2] || '') || 3006;

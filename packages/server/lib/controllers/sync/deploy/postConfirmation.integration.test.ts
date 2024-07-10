@@ -72,7 +72,8 @@ describe(`POST ${endpoint}`, () => {
             deletedActions: [],
             deletedSyncs: [],
             newActions: [],
-            newSyncs: []
+            newSyncs: [],
+            deletedModels: []
         });
         expect(res.res.status).toBe(200);
     });

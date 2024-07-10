@@ -30,7 +30,7 @@ export class OAuth1Client {
             typeof this.authConfig.token_url === 'string' ? this.authConfig.token_url : (this.authConfig.token_url?.['OAUTH1'] as string),
             this.config.oauth_client_id,
             this.config.oauth_client_secret,
-            '1.0A',
+            '1.0',
             callbackUrl,
             this.authConfig.signature_method,
             undefined,
@@ -107,13 +107,14 @@ export class OAuth1Client {
         return promise;
     }
 
-    getAuthorizationURL(requestToken: OAuth1RequestTokenResult) {
+    getAuthorizationURL(requestToken: OAuth1RequestTokenResult, oAuth1CallbackURL: string) {
         const scopes = this.config.oauth_scopes ? this.config.oauth_scopes.split(',').join(this.authConfig.scope_separator || ' ') : '';
 
-        let additionalAuthParams = {};
+        let additionalAuthParams: Record<string, any> = {};
         if (this.authConfig.authorization_params) {
             additionalAuthParams = this.authConfig.authorization_params;
         }
+        additionalAuthParams['oauth_callback'] = oAuth1CallbackURL;
 
         const queryParams = {
             oauth_token: requestToken.request_token,

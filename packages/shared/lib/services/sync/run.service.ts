@@ -21,6 +21,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '../../sdk/sync.js';
 import type { UpsertSummary } from '@nangohq/records';
 import type { SendSyncParams } from '@nangohq/webhooks';
+import type { RunnerFlags } from './run.utils.js';
 
 const logger = getLogger('run.service');
 
@@ -72,6 +73,7 @@ export type SyncRunConfig = {
 
     account?: Account;
     environment?: Environment;
+    runnerFlags: RunnerFlags;
 } & (
     | {
           writeToDb: true;
@@ -120,6 +122,7 @@ export class SyncRunService {
     loadLocation?: string;
     debug?: boolean;
     input?: object;
+    runnerFlags: RunnerFlags;
 
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined = {
         counts: { updated: 0, added: 0, deleted: 0 },
@@ -150,6 +153,7 @@ export class SyncRunService {
         this.syncType = config.syncType;
         this.syncConfig = config.syncConfig;
         this.isInvokedImmediately = Boolean(config.isAction || config.isWebhook || config.isPostConnectionScript);
+        this.runnerFlags = config.runnerFlags;
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -291,7 +295,8 @@ export class SyncRunService {
             track_deletes: syncData.track_deletes,
             logMessages: this.logMessages,
             stubbedMetadata: this.stubbedMetadata,
-            syncConfig: syncData
+            syncConfig: syncData,
+            runnerFlags: this.runnerFlags
         };
 
         if (this.dryRunService) {
@@ -371,7 +376,7 @@ export class SyncRunService {
             }
 
             if (!this.writeToDb) {
-                return userDefinedResults;
+                return { success: true, error: null, response: userDefinedResults };
             }
 
             const totalRunTime = (Date.now() - startTime) / 1000;

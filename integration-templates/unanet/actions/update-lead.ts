@@ -1,9 +1,9 @@
-import type { NangoAction, Lead } from '../../models';
+import type { NangoAction, UpdateLead, Lead } from '../../models';
 import type { UnanetLead } from '../types';
 import { toLead } from '../mappers/to-lead.js';
 import { optionalsToPotentialClient } from '../mappers/federal-agency.js';
 
-export default async function runAction(nango: NangoAction, input: Lead): Promise<Lead> {
+export default async function runAction(nango: NangoAction, input: UpdateLead): Promise<Lead> {
     if (!input.id) {
         throw new nango.ActionError({
             message: 'ID is required to update a lead',

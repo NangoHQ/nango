@@ -3,10 +3,10 @@ import fs from 'fs';
 import type { NangoProps } from '@nangohq/shared';
 import * as superjson from 'superjson';
 import { fetch } from 'undici';
-import { getLogger, stringifyError } from '@nangohq/utils';
+import { stringifyError } from '@nangohq/utils';
+import { logger } from './utils.js';
 
 const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
-const logger = getLogger('Runner');
 
 export class RunnerMonitor {
     private runnerId: string;

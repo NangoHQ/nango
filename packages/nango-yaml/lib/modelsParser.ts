@@ -24,7 +24,7 @@ export class ModelsParser {
                 continue;
             }
 
-            this.parseOne({ name, fields });
+            this.parseOne({ name, fields, stack: new Set([name]) });
         }
     }
 
@@ -37,17 +37,16 @@ export class ModelsParser {
         return parsed;
     }
 
-    parseOne({ name, fields }: { name: string; fields: NangoYamlModelFields }): void {
-        const parsed = this.parseFields({ fields, parent: name });
+    parseOne({ name, fields, stack }: { name: string; fields: NangoYamlModelFields; stack: Set<string> }): void {
+        const parsed = this.parseFields({ fields, stack });
         if (parsed) {
             this.parsed.set(name, { name, fields: parsed });
         }
     }
 
-    ifModelParse({ name, parent }: { name: string; parent: string }): true | false {
-        if (this.references.has(`${parent}-${name}`) || parent === name) {
-            this.references.add(`${parent}-${name}`);
-            this.warnings.push(new ParserErrorCycle({ name }));
+    ifModelParse({ name, stack }: { name: string; stack: Set<string> }): true | false {
+        if (stack.has(name)) {
+            this.warnings.push(new ParserErrorCycle({ stack }));
             return true;
         }
 
@@ -60,23 +59,29 @@ export class ModelsParser {
         // Model does not exists but that could just mean string literal
         if (!this.raw[name]) {
             this.warnings.push(
-                new ParserError({ code: 'model_not_found_fallback', message: `Model "${name}" is not defined, using as string literal`, path: [parent, name] })
+                new ParserError({
+                    code: 'model_not_found_fallback',
+                    message: `Model "${name}" is not defined, using as string literal`,
+                    path: [...Array.from(stack), name]
+                })
             );
             return false;
         }
 
         // At this point we are sure it's a Model
-        this.parseOne({ name, fields: this.raw[name]! });
+        stack.add(name);
+        this.parseOne({ name, fields: this.raw[name]!, stack });
         return true;
     }
 
-    parseFields({ fields, parent }: { fields: NangoYamlModelFields; parent: string }): NangoModelField[] {
+    parseFields({ fields, stack }: { fields: NangoYamlModelFields; stack: Set<string> }): NangoModelField[] {
         const parsed: NangoModelField[] = [];
         let dynamicField: NangoModelField | null = null;
 
         for (const [nameTmp, value] of Object.entries(fields)) {
             const optional = nameTmp.endsWith('?');
             const name = optional ? nameTmp.substring(0, nameTmp.length - 1) : nameTmp;
+            const parent = Array.from(stack).pop()!;
 
             // Special key to extends models
             if (name === '__extends') {
@@ -84,9 +89,9 @@ export class ModelsParser {
 
                 for (const extendedModel of extendedModels) {
                     const trimmed = extendedModel.trim();
-                    const isModel = this.ifModelParse({ name: trimmed, parent });
+                    const isModel = this.ifModelParse({ name: trimmed, stack });
                     if (!isModel) {
-                        this.errors.push(new ParserErrorExtendsNotFound({ model: parent, inherit: trimmed, path: [parent, name] }));
+                        this.errors.push(new ParserErrorExtendsNotFound({ model: parent, inherit: trimmed, path: [...Array.from(stack), '__extends'] }));
                         continue;
                     }
 
@@ -105,14 +110,14 @@ export class ModelsParser {
 
             // Special key for dynamic interface `[key: string]: *`
             if (name === '__string') {
-                const acc = this.parseFields({ fields: { tmp: value }, parent })[0]!;
+                const acc = this.parseFields({ fields: { tmp: value }, stack })[0]!;
                 dynamicField = { ...acc, name, dynamic: true, optional };
                 continue;
             }
 
             // Array of unknown
             if (Array.isArray(value)) {
-                const acc = this.parseFields({ fields: value as unknown as NangoYamlModelFields, parent });
+                const acc = this.parseFields({ fields: value as unknown as NangoYamlModelFields, stack });
                 if (!acc) {
                     this.errors.push(new ParserError({ code: 'failed_to_parse_array', message: `Failed to parse array in "${parent}"`, path: [parent, name] }));
                     continue;
@@ -130,7 +135,7 @@ export class ModelsParser {
 
             // Special case for literal objects
             if (typeof value === 'object') {
-                const acc = this.parseFields({ fields: value, parent });
+                const acc = this.parseFields({ fields: value, stack });
                 if (!acc) {
                     this.errors.push(
                         new ParserError({ code: 'failed_to_parse_object', message: `Failed to parse object in "${parent}"`, path: [parent, name] })
@@ -146,7 +151,7 @@ export class ModelsParser {
             if (value.includes('|')) {
                 // union
                 const types = value.split('|').map((v) => v.trim());
-                const acc = this.parseFields({ fields: { tmp: types } as unknown as NangoYamlModelFields, parent });
+                const acc = this.parseFields({ fields: { tmp: types } as unknown as NangoYamlModelFields, stack });
 
                 if (!acc) {
                     this.errors.push(new ParserError({ code: 'failed_to_parse_union', message: `Failed to parse union in "${parent}"`, path: [parent, name] }));
@@ -183,7 +188,7 @@ export class ModelsParser {
             }
 
             // Model name
-            const isModel = this.ifModelParse({ name: valueClean, parent });
+            const isModel = this.ifModelParse({ name: valueClean, stack });
             if (isModel) {
                 parsed.push({ name, value: valueClean, model: true, optional, array: isArray });
                 continue;
@@ -199,4 +204,34 @@ export class ModelsParser {
 
         return parsed;
     }
+}
+
+/**
+ * Get recursively (and safely) all the model names inside a model
+ */
+export function getRecursiveModelNames(parser: ModelsParser, name: string): Set<string> {
+    const model = parser.get(name);
+    if (!model) {
+        return new Set();
+    }
+    return getRecursiveModelInModel(parser, model.fields, new Set([name]));
+}
+
+function getRecursiveModelInModel(parser: ModelsParser, fields: NangoModel['fields'], names: Set<string>): Set<string> {
+    for (const field of fields) {
+        if (field.model) {
+            if (names.has(field.value as string)) {
+                continue;
+            }
+            names.add(field.value as string);
+            const sub = parser.get(field.value as string);
+            const res = getRecursiveModelInModel(parser, sub!.fields, names);
+            res.forEach((name) => names.add(name));
+        }
+        if (Array.isArray(field.value)) {
+            const res = getRecursiveModelInModel(parser, field.value, names);
+            res.forEach((name) => names.add(name));
+        }
+    }
+    return names;
 }

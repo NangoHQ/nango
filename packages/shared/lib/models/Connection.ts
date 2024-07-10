@@ -1,16 +1,8 @@
-import type {
-    TbaCredentials,
-    AppStoreCredentials,
-    AuthCredentials,
-    ApiKeyCredentials,
-    BasicApiCredentials,
-    AppCredentials,
-    UnauthCredentials
-} from './Auth.js';
+import type { ApiKeyCredentials, BasicApiCredentials } from './Auth.js';
 import type { Account } from './Admin.js';
 import type { Environment } from './Environment.js';
 import type { TimestampsAndDeleted } from './Generic.js';
-import type { AuthModeType, Metadata, ActiveLogIds, AuthOperationType } from '@nangohq/types';
+import type { AuthModeType, Metadata, ActiveLogIds, AuthOperationType, AllAuthCredentials } from '@nangohq/types';
 
 export type ConnectionConfig = Record<string, any>;
 
@@ -32,7 +24,7 @@ export interface StoredConnection extends BaseConnection {
 }
 
 export interface Connection extends BaseConnection {
-    credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials;
+    credentials: AllAuthCredentials;
 }
 
 export interface RecentlyCreatedConnection {

@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.41.0] - 2024-07-05
+
+### Added
+
+- *(integration-templates)* [nan-1328] add xero templates (#2452) by @khaliqgant
+- *(integrations)* Add support for webflow (#2446) by @hassan254-prog
+- *(integrations)* Add support for luma (#2453) by @hassan254-prog
+- *(slack-notifications)* [nan-1148] slack notification UI polish (#2455) by @khaliqgant
+- Validate action output, support dryun (#2454) by @bodinsamuel
+- *(integrations)* Add support for garmin (#2445) by @hassan254-prog
+- *(integration-templates)* [nan-1328] update xero more after test (#2463) by @khaliqgant
+- Add kapa.ai (#2471) by @bodinsamuel
+- *(integrations)* Add support for klaviyo-OAuth (#2470) by @hassan254-prog
+- *(cli-reference)* [nan-1168] allow a user to reference a file to use for the input or metadata (#2464) by @khaliqgant
+- Validate sync records (#2457) by @bodinsamuel
+- *(integration-templates)* Add sharepoint integration templates (#2467) by @hassan254-prog
+
+### Changed
+
+- Reduce dequeue long polling timeout to 10s (#2459) by @TBonnin
+- *(CLI)* Force confirmation when deletedSyncs (#2440) by @TBonnin
+
+### Fixed
+
+- *(validation)* Do no throw if invalid json schema (#2447) by @bodinsamuel
+- *(webapp)* Fix spinner button (#2450) by @khaliqgant
+- *(unanet-integration-template)* [nan-1298] tweaks to the template (#2451) by @khaliqgant
+- *(nango-yaml)* Handle deep circular ref, correctly output recursive models (#2448) by @bodinsamuel
+- *(ui)* Syncs use table and correct button depending on sync_type (#2441) by @bodinsamuel
+- *(types)* Correct webhooks inheritance and exports  (#2458) by @bodinsamuel
+- *(integration-templates)* [nan-1327] add response_path (#2460) by @khaliqgant
+- *(slack-notifications)* [nan-1148] notification tweaks based on product conversation (#2461) by @khaliqgant
+- *(ui)* Truncate long strings (#2456) by @bodinsamuel
+- *(nango-yaml)* Object -> Record (#2466) by @bodinsamuel
+- *(cli)* [nan-1344] allow type imports (#2465) by @khaliqgant
+
+## [v0.40.10] - 2024-07-02
+
+### Fixed
+
+- *(node)* Correctly export Auth and Webhooks type (#2442) by @bodinsamuel
+- *(validation)* Use feature flag (#2444) by @bodinsamuel
+- Frequency when no quantity (#2443) by @TBonnin
+
+## [v0.40.9] - 2024-07-02
+
+### Fixed
+
+- *(integration-templates)* [nan-1298] unanet updates (#2438) by @khaliqgant
+- Pinning CLI dependencies (#2439) by @TBonnin
+- *(ui)* Integration table style + wording (#2435) by @bodinsamuel
+
 ## [v0.40.8] - 2024-07-02
 
 ### Added
@@ -1486,6 +1538,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.41.0]: https://github.com/NangoHQ/nango/compare/v0.40.10..v0.41.0
+[v0.40.10]: https://github.com/NangoHQ/nango/compare/v0.40.9..v0.40.10
+[v0.40.9]: https://github.com/NangoHQ/nango/compare/v0.40.8..v0.40.9
 [v0.40.8]: https://github.com/NangoHQ/nango/compare/v0.40.7..v0.40.8
 [v0.40.7]: https://github.com/NangoHQ/nango/compare/v0.40.6..v0.40.7
 [v0.40.6]: https://github.com/NangoHQ/nango/compare/v0.40.5..v0.40.6

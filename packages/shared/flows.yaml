@@ -2664,6 +2664,45 @@ integrations:
                     created_date: string
                     created_by: string
                 last_modified_date: string
+    sharepoint-online:
+        actions:
+            list-sites:
+                description: >
+                    This action will be used to display a list of sites to the end-user,
+                    who will pick the ones he wants to sync.
+                endpoint: GET /sharepoint/list-sites
+                scopes:
+                    - Sites.ReadWrite.All
+                    - offline_access
+                output: SharePointSiteId
+        syncs:
+            file-sync:
+                description: >
+                    This sync will be used to sync file metadata from SharePoint site
+                    based on the ones the user has picked.
+                endpoint: /sharepoint/file-sync
+                sync_type: incremental
+                track_deletes: true
+                runs: every 1 hour
+                scopes:
+                    - Sites.ReadWrite.All
+                    - offline_access
+                auto_start: true
+                output: FileMetadata
+        models:
+            FileMetadata:
+                etag: string
+                id: string
+                is_folder: boolean
+                mime_type: string
+                path: string
+                raw_source: object
+                updated_at: Date
+                download_url: string
+                created_at: Date
+                blob_size: number
+            SharePointSiteId:
+                id: string
     slack:
         syncs:
             users:
@@ -2890,13 +2929,20 @@ integrations:
         actions:
             create-lead:
                 endpoint: POST /lead
-                description: Create a lead with information about the opportunity and company
-                input: Lead
+                description: >-
+                    Create a lead with with information about the federal agency, the
+                    name, due date, posted date, solicitation number, naics category or
+                    categories, the city, state, country, and description.
+                input: CreateLead
                 output: Lead
             update-lead:
                 endpoint: PUT /lead
-                description: Update a lead
+                description: >-
+                    Update a lead with any changed information about the federal agency,
+                    the name, due date, posted date, solicitation number, naics category
+                    or categories, the city, state, country, and description.
                 output: Lead
+                input: UpdateLead
             get-leads:
                 endpoint: GET /leads
                 description: Fetch all leads
@@ -2904,7 +2950,9 @@ integrations:
             get-schema:
                 endpoint: GET /schema
                 input: Entity
-                description: Get the schema of any entity
+                description: >-
+                    Get the schema of any entity. Useful to know the properties of any
+                    object that exists in the system.
                 output: Schema[]
             get-company:
                 endpoint: GET /company
@@ -2913,14 +2961,18 @@ integrations:
                 description: Retrieve information about a company
             create-company:
                 endpoint: POST /company
-                input: Company
+                input: CreateCompany
                 output: Company
                 description: Create a company in the system
             create-opportunity:
                 endpoint: POST /opportunity
                 input: Opportunity
                 output: Opportunity
-                description: Create an opportunity in the system
+                description: >
+                    Create an opportunity in the system. Requires a stage that exists
+
+                    in the system. Use the list-stages action to find the appropriate
+                    stage.
             create-contact:
                 endpoint: POST /contact
                 input: Contact
@@ -2928,7 +2980,9 @@ integrations:
                 description: Create a contact in the system
             list-stages:
                 endpoint: GET /stages
-                description: List all the stages that exist in the system
+                description: |
+                    List all the stages that exist in the system. Use this action to find
+                    the correct stage to be able to create an opportunity.
                 output: Stage
         models:
             Timestamps:
@@ -2945,6 +2999,9 @@ integrations:
                 id: number
                 name: string
                 status: string
+            CreateCompany:
+                name: string
+                federalAgency?: FederalAgency
             Company:
                 name: string
                 externalId: string
@@ -2996,10 +3053,7 @@ integrations:
                 emailAddress: string
                 phone: string
                 fax: string
-            Lead:
-                createdAt?: string
-                updatedAt?: string
-                id?: string
+            BaseLead:
                 federalAgency: FederalAgency
                 name: string
                 dueDate: string
@@ -3010,6 +3064,43 @@ integrations:
                 state: string
                 country: string
                 description: string
+            CreateLead:
+                federalAgency: FederalAgency
+                name: string
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
+            UpdateLead:
+                federalAgency: FederalAgency
+                name: string
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
+                id: string
+            Lead:
+                createdAt?: string
+                updatedAt?: string
+                federalAgency: FederalAgency
+                name: string
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
+                id: string
             Schema:
                 PropertyName: string
                 Group: string | null
@@ -3328,6 +3419,349 @@ integrations:
             Attachment:
                 name: string
                 data: string
+    xero:
+        syncs:
+            contacts:
+                description: |
+                    Fetches all Xero contacts.
+                    Details: incremental sync, detects deletes, metadata is not required.
+                runs: every hour
+                output: Contact
+                sync_type: incremental
+                endpoint: GET /xero/contacts
+            accounts:
+                description: >
+                    Fetches all accounts in Xero (chart of accounts). Incremental sync,
+                    detects deletes, metadata is not required.
+                runs: every hour
+                scopes: accounting.settings
+                output: Account
+                sync_type: incremental
+                endpoint: GET /xero/accounts
+            items:
+                description: >
+                    Fetches all items in Xero. Incremental sync, does not detect deletes,
+                    metadata is not
+
+                    required.
+                runs: every hour
+                scopes: accounting.settings
+                output: Item
+                sync_type: incremental
+                endpoint: GET /xero/items
+            invoices:
+                description: |
+                    Fetches all invoices in Xero. Incremental sync.
+                runs: every hour
+                scopes: accounting.transactions
+                output: Invoice
+                sync_type: incremental
+                endpoint: GET /xero/invoices
+            payments:
+                description: |
+                    Fetches all payments in Xero. Incremental sync.
+                runs: every hour
+                scopes: accounting.transactions
+                output: Payment
+                sync_type: incremental
+                endpoint: GET /xero/payments
+        actions:
+            create-contact:
+                description: |
+                    Creates one or multiple contacts in Xero.
+                    Note: Does NOT check if these contacts already exist.
+                input: CreateContact[]
+                scopes: accounting.contacts
+                output: ContactActionResponse
+                endpoint: POST /xero/contacts
+            update-contact:
+                description: >
+                    Updates one or multiple contacts in Xero. Only fields that are passed
+                    in are modified. If a field should not be changed, omit it in the
+                    input. The id field is mandatory.
+                input: Contact[]
+                scopes: accounting.contacts
+                output: ContactActionResponse
+                endpoint: PUT /xero/contacts
+            create-invoice:
+                description: |
+                    Creates one or more invoices in Xero.
+                    Note: Does NOT check if the invoice already exists.
+                input: CreateInvoice[]
+                scopes: accounting.transactions
+                output: InvoiceActionResponse
+                endpoint: POST /xero/invoices
+            update-invoice:
+                description: |
+                    Updates one or more invoices in Xero. To delete an invoice
+                    that is in DRAFT or SUBMITTED set the status to DELETED. If an
+                    invoice has been AUTHORISED it can't be deleted but you can set
+                    the status to VOIDED.
+                input: Invoice[]
+                scopes: accounting.transactions
+                output: InvoiceActionResponse
+                endpoint: PUT /xero/invoices
+            create-credit-note:
+                description: |
+                    Creates one or more credit notes in Xero.
+                    Note: Does NOT check if the credit note already exists.
+                input: CreditNote[]
+                scopes: accounting.transactions
+                output: CreditNoteActionResponse
+                endpoint: POST /xero/creditnotes
+            update-credit-note:
+                description: |
+                    Updates one or more credit notes in Xero.
+                input: CreditNote[]
+                scopes: accounting.transactions
+                output: CreditNoteActionResponse
+                endpoint: PUT /xero/creditnotes
+            create-payment:
+                description: |
+                    Creates one or more payments in Xero.
+                    Note: Does NOT check if the payment already exists.
+                scopes: accounting.transactions
+                input: CreatePayment[]
+                output: PaymentActionResponse
+                endpoint: POST /xero/payments
+            create-item:
+                description: |
+                    Creates one or more items in Xero.
+                    Note: Does NOT check if the item already exists.
+                scopes: accounting.settings
+                input: Item[]
+                output: ItemActionResponse
+                endpoint: POST /xero/items
+            update-item:
+                description: |
+                    Updates one or more items in Xero.
+                scopes: accounting.settings
+                input: Item[]
+                output: ItemActionResponse
+                endpoint: PUT /xero/items
+        models:
+            ActionErrorResponse:
+                message: string
+            BaseContact:
+                name: string
+            CreateContact:
+                name: string
+                external_id?: string
+                email?: string
+                tax_number?: string
+                address_line_1?: string
+                address_line_2?: string
+                city?: string
+                zip?: string
+                country?: string
+                state?: string
+                phone?: string
+            Contact:
+                name: string
+                id: string
+                external_id?: string
+                email: string | null
+                tax_number?: string | null
+                address_line_1?: string | null
+                address_line_2?: string | null
+                city: string | null
+                zip: string | null
+                country: string | null
+                state: string | null
+                phone: string | null
+                subsidiary?: string | null
+            FailedContact:
+                name: string
+                id: string
+                external_id?: string
+                email: string | null
+                tax_number?: string | null
+                address_line_1?: string | null
+                address_line_2?: string | null
+                city: string | null
+                zip: string | null
+                country: string | null
+                state: string | null
+                phone: string | null
+                subsidiary?: string | null
+                validation_errors: any[]
+            ContactActionResponse:
+                succeededContacts: Contact[]
+                failedContacts: FailedContact[]
+            Account:
+                id: string
+                code?: string
+                name: string
+                type: string
+                tax_type: string
+                description: string | null
+                class: string
+                bank_account_type: string
+                reporting_code: string
+                reporting_code_name: string
+            Item:
+                id: string
+                item_code: string | null
+                name: string
+                description: string | null
+                account_code: string | null
+            FailedItem:
+                id: string
+                item_code: string | null
+                name: string
+                description: string | null
+                account_code: string | null
+                validation_errors: any[]
+            ItemActionResponse:
+                succeededItems: Item[]
+                failedItems: FailedItem[]
+            BasePayment:
+                date: string | null
+                amount_cents: number
+                external_contact_id?: string
+                account_code?: string
+                account_id?: string
+            CreatePayment:
+                date: string | null
+                amount_cents: number
+                external_contact_id?: string
+                account_code?: string
+                account_id?: string
+                status?: string
+                invoice_id?: string
+                credit_note_id?: string
+            Payment:
+                date: string | null
+                amount_cents: number
+                external_contact_id?: string
+                account_code?: string
+                account_id?: string
+                id: string
+                status: string
+                invoice_id: string | null
+                credit_note_id: string | null
+            FailedPayment:
+                date: string | null
+                amount_cents: number
+                external_contact_id?: string
+                account_code?: string
+                account_id?: string
+                id: string
+                status: string
+                invoice_id: string | null
+                credit_note_id: string | null
+                validation_errors: any[]
+            IdEntity:
+                id: string
+            StatusOutput:
+                status: string
+            PaymentActionResponse:
+                succeededPayment: Payment[]
+                failedPayments: FailedPayment[]
+            BaseInvoice:
+                type: ACCPAY | ACCREC
+                external_contact_id: string
+            CreateInvoice:
+                type: ACCPAY | ACCREC
+                external_contact_id: string
+                fees: CreateInvoiceFee[]
+                issuing_date?: date
+                payment_due_date?: date | null
+                status?: string
+                number?: string
+                tax_rate?: number
+                currency?: string
+                purchase_order?: string | null
+            CreateInvoiceFee:
+                description: string
+                item_id?: string
+                item_code?: string | null
+                units?: number
+                precise_unit_amount?: number | null
+                account_code?: string
+                account_external_id?: string | null
+                amount_cents?: number | null
+                taxes_amount_cents?: number | null
+                rate?: number | null
+                price?: number | null
+            Invoice:
+                type: ACCPAY | ACCREC
+                external_contact_id: string
+                id: string
+                issuing_date: string | null
+                payment_due_date: string | null
+                status: string
+                number?: string
+                currency: string
+                purchase_order: string | null
+                fees: InvoiceFee[]
+            InvoiceFee:
+                item_id: string
+                item_code?: string | null
+                description: string | null
+                units: number | null
+                precise_unit_amount: number | null
+                account_code?: string
+                account_external_id?: string | null
+                amount_cents: number | null
+                taxes_amount_cents: number | null
+                rate?: number | null
+                price?: number | null
+            FailedInvoice:
+                type: ACCPAY | ACCREC
+                external_contact_id: string
+                id: string
+                issuing_date: string | null
+                payment_due_date: string | null
+                status: string
+                number?: string
+                currency: string
+                purchase_order: string | null
+                fees: InvoiceFee[]
+                validation_errors: any[]
+            InvoiceActionResponse:
+                succeededInvoices: Invoice[]
+                failedInvoices: FailedInvoice[]
+            CreditNote:
+                id: string
+                type: string
+                external_contact_id: string
+                status: string
+                number: string
+                is_taxable: boolean
+                tax_rate_id: string
+                tax_rate: number
+                currency: string
+                reference: string
+                issuing_date: date
+                fees: CreditNoteFee[]
+            CreditNoteFee:
+                item_id: string
+                item_code: string
+                description: string
+                units: number
+                precise_unit_amount: number
+                account_code: string
+                account_external_id: string
+                amount_cents: number
+                taxes_amount_cents: number
+            FailedCreditNote:
+                id: string
+                type: string
+                external_contact_id: string
+                status: string
+                number: string
+                is_taxable: boolean
+                tax_rate_id: string
+                tax_rate: number
+                currency: string
+                reference: string
+                issuing_date: date
+                fees: CreditNoteFee[]
+                validation_errors: any[]
+            CreditNoteActionResponse:
+                succeededCreditNotes: CreditNote[]
+                failedCreditNotes: FailedCreditNote[]
     zendesk:
         syncs:
             tickets:

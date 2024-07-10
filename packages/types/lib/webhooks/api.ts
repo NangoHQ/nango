@@ -4,8 +4,16 @@ import type { ErrorPayload } from '../api.js';
 
 export type WebhookTypes = 'sync' | 'auth' | 'forward';
 
-export interface NangoSyncWebhookBody {
+export interface NangoWebhookBase {
     from: string;
+    type: WebhookTypes;
+}
+export type NangoWebhookBody = NangoSyncWebhookBody | NangoAuthWebhookBody;
+
+// -----
+// Sync
+// -----
+export interface NangoSyncWebhookBodyBase extends NangoWebhookBase {
     type: 'sync';
     connectionId: string;
     providerConfigKey: string;
@@ -14,24 +22,28 @@ export interface NangoSyncWebhookBody {
     syncType: SyncType;
 }
 
-export interface NangoSyncWebhookBodySuccess extends NangoSyncWebhookBody {
+export interface NangoSyncWebhookBodySuccess extends NangoSyncWebhookBodyBase {
+    success: true;
     modifiedAfter: string;
     responseResults: SyncResult;
-    success: true;
-
-    // legacy, use modifiedAfter instead
+    /**
+     * @deprecated legacy, use modifiedAfter instead
+     */
     queryTimeStamp: string | null;
 }
 
-export interface NangoSyncWebhookBodyError {
+export interface NangoSyncWebhookBodyError extends NangoSyncWebhookBodyBase {
     success: false;
     error: ErrorPayload;
     startedAt: string;
     failedAt: string;
 }
+export type NangoSyncWebhookBody = NangoSyncWebhookBodySuccess | NangoSyncWebhookBodyError;
 
-export interface NangoAuthWebhookBody {
-    from: string;
+// -----
+// Auth
+// -----
+export interface NangoAuthWebhookBodyBase extends NangoWebhookBase {
     type: 'auth';
     connectionId: string;
     authMode: AuthModeType;
@@ -41,18 +53,24 @@ export interface NangoAuthWebhookBody {
     operation: AuthOperationType;
 }
 
-export interface NangoAuthWebhookBodySuccess extends NangoAuthWebhookBody {
+export interface NangoAuthWebhookBodySuccess extends NangoAuthWebhookBodyBase {
     success: true;
+    type: 'auth';
 }
 
-export interface NangoAuthWebhookBodyError extends NangoAuthWebhookBody {
+export interface NangoAuthWebhookBodyError extends NangoAuthWebhookBodyBase {
     success: false;
     error: ErrorPayload;
+    type: 'auth';
 }
 
-export interface NangoForwardWebhookBody {
-    from: string;
-    type: WebhookTypes;
+export type NangoAuthWebhookBody = NangoAuthWebhookBodySuccess | NangoAuthWebhookBodyError;
+
+// -----
+// Forward
+// -----
+export interface NangoForwardWebhookBody extends NangoWebhookBase {
+    type: 'forward';
     connectionId?: string;
     providerConfigKey: string;
     payload: unknown;

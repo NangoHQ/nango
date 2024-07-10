@@ -5,11 +5,15 @@ import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import type { AxiosInstance } from 'axios';
 import axios, { AxiosError } from 'axios';
-import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
+import { getPersistAPIUrl } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangohq/utils';
 import type { SyncConfig } from '../models/Sync.js';
+import type { RunnerFlags } from '../services/sync/run.utils.js';
+import { validateData } from './dataValidation.js';
+import { NangoError } from '../utils/error.js';
+import { stringifyAndTruncateLog } from './utils.js';
 
 const logger = getLogger('SDK');
 
@@ -21,7 +25,17 @@ const logger = getLogger('SDK');
  * over this file to the cli
  *
  */
+
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
+const logLevelToLogger = {
+    info: 'info',
+    debug: 'debug',
+    error: 'error',
+    warn: 'warning',
+    http: 'info',
+    verbose: 'debug',
+    silly: 'debug'
+} as const;
 
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 
@@ -120,18 +134,19 @@ export interface ProxyConfiguration {
     retryOn?: number[] | null;
 }
 
-enum AuthModes {
-    OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2',
-    OAuth2CC = 'OAUTH2_CC',
-    Basic = 'BASIC',
-    ApiKey = 'API_KEY',
-    AppStore = 'APP_STORE',
-    App = 'APP',
-    Custom = 'CUSTOM',
-    None = 'NONE',
-    TBA = 'TBA'
+export interface AuthModes {
+    OAuth1: 'OAUTH1';
+    OAuth2: 'OAUTH2';
+    OAuth2CC: 'OAUTH2_CC';
+    Basic: 'BASIC';
+    ApiKey: 'API_KEY';
+    AppStore: 'APP_STORE';
+    Custom: 'CUSTOM';
+    App: 'APP';
+    None: 'NONE';
+    TBA: 'TBA';
 }
+export type AuthModeType = AuthModes[keyof AuthModes];
 
 interface OAuth1Token {
     oAuthToken: string;
@@ -139,14 +154,14 @@ interface OAuth1Token {
 }
 
 interface AppCredentials {
-    type: AuthModes.App;
+    type: AuthModes['App'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
 }
 
 interface AppStoreCredentials {
-    type?: AuthModes.AppStore;
+    type?: AuthModes['AppStore'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
@@ -154,37 +169,47 @@ interface AppStoreCredentials {
 }
 
 interface BasicApiCredentials {
-    type: AuthModes.Basic;
+    type: AuthModes['Basic'];
     username: string;
     password: string;
 }
 
 interface ApiKeyCredentials {
-    type: AuthModes.ApiKey;
+    type: AuthModes['ApiKey'];
     apiKey: string;
 }
 
 interface CredentialsCommon<T = Record<string, any>> {
-    type: AuthModes;
+    type: AuthModeType;
     raw: T;
 }
 
 interface OAuth2Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth2;
+    type: AuthModes['OAuth2'];
     access_token: string;
 
     refresh_token?: string;
     expires_at?: Date | undefined;
 }
 
+interface OAuth2ClientCredentials extends CredentialsCommon {
+    type: AuthModes['OAuth2CC'];
+    token: string;
+
+    expires_at?: Date | undefined;
+
+    client_id: string;
+    client_secret: string;
+}
+
 interface OAuth1Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth1;
+    type: AuthModes['OAuth1'];
     oauth_token: string;
     oauth_token_secret: string;
 }
 
 interface TbaCredentials {
-    type: AuthModes.TBA;
+    type: AuthModes['TBA'];
     token_id: string;
     token_secret: string;
 
@@ -193,18 +218,23 @@ interface TbaCredentials {
         client_secret?: string;
     };
 }
+interface CustomCredentials extends CredentialsCommon {
+    type: AuthModes['Custom'];
+}
 
 type UnauthCredentials = Record<string, never>;
 
 type AuthCredentials =
     | OAuth2Credentials
+    | OAuth2ClientCredentials
     | OAuth1Credentials
     | BasicApiCredentials
     | ApiKeyCredentials
     | AppCredentials
     | AppStoreCredentials
     | UnauthCredentials
-    | TbaCredentials;
+    | TbaCredentials
+    | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
 
@@ -280,6 +310,7 @@ export interface NangoProps {
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
+    runnerFlags: RunnerFlags;
 }
 
 export interface EnvironmentVariable {
@@ -313,6 +344,8 @@ export class NangoAction {
     dryRun?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
+    syncConfig?: SyncConfig;
+    runnerFlags: RunnerFlags;
 
     public connectionId: string;
     public providerConfigKey: string;
@@ -330,20 +363,13 @@ export class NangoAction {
         this.connectionId = config.connectionId;
         this.providerConfigKey = config.providerConfigKey;
         this.persistApi = persistApi;
+        this.runnerFlags = config.runnerFlags;
 
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }
 
-        this.nango = new Nango(
-            {
-                isSync: true,
-                ...config
-            },
-            {
-                userAgent: 'sdk'
-            }
-        );
+        this.nango = new Nango({ isSync: true, ...config }, { userAgent: 'sdk' });
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -385,8 +411,15 @@ export class NangoAction {
             this.dryRunService = config.dryRunService;
         }
 
-        if (this.dryRun !== true && !this.activityLogId) {
-            throw new Error('Parameter activityLogId is required when not in dryRun');
+        if (config.syncConfig) {
+            this.syncConfig = config.syncConfig;
+        }
+
+        if (this.dryRun !== true) {
+            if (!this.activityLogId) throw new Error('Parameter activityLogId is required when not in dryRun');
+            if (!this.environmentId) throw new Error('Parameter environmentId is required when not in dryRun');
+            if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required when not in dryRun');
+            if (!this.syncConfig) throw new Error('Parameter syncConfig is required when not in dryRun');
         }
     }
 
@@ -501,7 +534,18 @@ export class NangoAction {
         });
     }
 
-    public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | TbaCredentials> {
+    public async getToken(): Promise<
+        | string
+        | OAuth1Token
+        | OAuth2ClientCredentials
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppCredentials
+        | AppStoreCredentials
+        | UnauthCredentials
+        | CustomCredentials
+        | TbaCredentials
+    > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
@@ -546,7 +590,7 @@ export class NangoAction {
      * @deprecated please use setMetadata instead.
      */
     public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<object>> {
-        logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
+        logger.warning('setFieldMapping is deprecated. Please use setMetadata instead.');
         return this.setMetadata(fieldMapping);
     }
 
@@ -573,7 +617,7 @@ export class NangoAction {
      * @deprecated please use getMetadata instead.
      */
     public async getFieldMapping(): Promise<Metadata> {
-        logger.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
+        logger.warning('getFieldMapping is deprecated. Please use getMetadata instead.');
         const metadata = await this.getMetadata();
         return (metadata['fieldMapping'] as Metadata) || {};
     }
@@ -582,13 +626,10 @@ export class NangoAction {
      * Log
      * @desc Log a message to the activity log which shows up in the Nango Dashboard
      * note that the last argument can be an object with a level property to specify the log level
-     * example: await nango.log('This is a log message', { level: 'error' })
-     * error = red
-     * warn = orange
-     * info = white
-     * debug = grey
-     * http = green
-     * silly = light green
+     * @example
+     * ```ts
+     * await nango.log('This is a log message', { level: 'error' })
+     * ```
      */
     public async log(message: any, options?: { level?: LogLevel } | { [key: string]: any; level?: never }): Promise<void>;
     public async log(message: string, ...args: [any, { level?: LogLevel }]): Promise<void>;
@@ -610,14 +651,16 @@ export class NangoAction {
             args.pop();
         }
 
-        const content = safeStringify(args);
+        const level = userDefinedLevel?.level ?? 'info';
 
         if (this.dryRun) {
-            logger.info([...args]);
+            logger[logLevelToLogger[level] ?? 'info'].apply(null, args as any);
             return;
         }
 
-        await this.sendLogToPersist(content, { level: userDefinedLevel?.level ?? 'info', timestamp: Date.now() });
+        const content = stringifyAndTruncateLog(args, 99_000);
+
+        await this.sendLogToPersist(content, { level, timestamp: Date.now() });
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
@@ -769,13 +812,17 @@ export class NangoSync extends NangoAction {
         if (config.stubbedMetadata) {
             this.stubbedMetadata = config.stubbedMetadata;
         }
+        if (!config.dryRun) {
+            if (!this.syncId) throw new Error('Parameter syncId is required when not in dryRun');
+            if (!this.syncJobId) throw new Error('Parameter syncJobId is required when not in dryRun');
+        }
     }
 
     /**
      * @deprecated please use batchSave
      */
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
-        logger.warn('batchSend will be deprecated in future versions. Please use batchSave instead.');
+        logger.warning('batchSend will be deprecated in future versions. Please use batchSave instead.');
         return this.batchSave(results, model);
     }
 
@@ -789,8 +836,23 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
+        // Validate records
+        for (const record of results) {
+            const validation = validateData({ input: JSON.parse(JSON.stringify(record)), jsonSchema: this.syncConfig!.models_json_schema, modelName: model });
+            if (validation === true) {
+                continue;
+            }
+
+            metrics.increment(metrics.Types.RUNNER_INVALID_SYNCS_RECORDS);
+
+            if (this.dryRun) {
+                await this.log('Invalid action input. Use `--validation` option to see the details', { level: 'warn' });
+            } else {
+                await this.log('Invalid record payload', { data: record, validation, model }, { level: 'warn' });
+            }
+            if (this.runnerFlags?.validateSyncRecords) {
+                throw new NangoError(`invalid_sync_record`, { data: record, validation, model });
+            }
         }
 
         if (this.dryRun) {
@@ -859,10 +921,6 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
-        }
-
         if (this.dryRun) {
             this.logMessages?.messages.push(`A batch delete call would delete the following data:`);
             for (const msg of results) {
@@ -920,10 +978,6 @@ export class NangoSync extends NangoAction {
                 logger.info('batchUpdate received an empty array. No records to update.');
             }
             return true;
-        }
-
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id and Sync Job Id are all required');
         }
 
         if (this.dryRun) {
@@ -1001,6 +1055,8 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
 
 /* eslint-disable no-inner-declarations */
 /**
+ * @internal
+ *
  * This function will enable tracing on the SDK
  * It has been split from the actual code to avoid making the code too dirty and to easily enable/disable tracing if there is an issue with it
  */

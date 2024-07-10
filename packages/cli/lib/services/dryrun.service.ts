@@ -3,20 +3,22 @@ import chalk from 'chalk';
 
 import type { NangoConnection } from '@nangohq/shared';
 import type { Metadata, ScriptFileType } from '@nangohq/types';
-import { SyncType, cloudHost, stagingHost, SyncRunService } from '@nangohq/shared';
+import { SyncType, cloudHost, stagingHost, SyncRunService, NangoError, localFileService } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
 import integrationService from './local-integration.service.js';
 import type { RecordsServiceInterface } from '@nangohq/shared/lib/services/sync/run.service.js';
 import { parse } from './config.service.js';
+import { loadSchemaJson } from './model.service.js';
+import { displayValidationError } from '../utils/errors.js';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
     connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
-    input?: object;
+    input?: unknown;
     metadata?: Metadata;
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
@@ -24,11 +26,23 @@ interface RunArgs extends GlobalOptions {
 
 export class DryRunService {
     fullPath: string;
+    validation: boolean;
     environment?: string;
     returnOutput?: boolean;
 
-    constructor({ environment, returnOutput = false, fullPath }: { environment?: string; returnOutput?: boolean; fullPath: string }) {
+    constructor({
+        environment,
+        returnOutput = false,
+        fullPath,
+        validation
+    }: {
+        environment?: string;
+        returnOutput?: boolean;
+        fullPath: string;
+        validation: boolean;
+    }) {
         this.fullPath = fullPath;
+        this.validation = validation;
         if (environment) {
             this.environment = environment;
         }
@@ -182,18 +196,51 @@ export class DryRunService {
             return;
         }
 
-        let normalizedInput;
         let stubbedMetadata;
-        try {
-            normalizedInput = JSON.parse(actionInput as unknown as string);
-        } catch {
-            normalizedInput = actionInput;
+        let normalizedInput;
+
+        if (actionInput) {
+            if (actionInput.toString().includes('@') && actionInput.toString().endsWith('.json')) {
+                const fileContents = localFileService.readFile(actionInput.toString());
+                if (!fileContents) {
+                    console.log(chalk.red('The file could not be read. Please make sure it exists.'));
+                    return;
+                }
+                try {
+                    normalizedInput = JSON.parse(fileContents);
+                } catch {
+                    console.log(chalk.red('There was an issue parsing the action input file. Please make sure it is valid JSON.'));
+                    return;
+                }
+            } else {
+                try {
+                    normalizedInput = JSON.parse(actionInput as string);
+                } catch {
+                    normalizedInput = actionInput;
+                }
+            }
         }
 
-        try {
-            stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
-        } catch {
-            stubbedMetadata = rawStubbedMetadata;
+        if (rawStubbedMetadata) {
+            if (rawStubbedMetadata.toString().includes('@') && rawStubbedMetadata.toString().endsWith('.json')) {
+                const fileContents = localFileService.readFile(rawStubbedMetadata.toString());
+                if (!fileContents) {
+                    console.log(chalk.red('The metadata file could not be read. Please make sure it exists.'));
+                    return;
+                }
+                try {
+                    stubbedMetadata = JSON.parse(fileContents);
+                } catch {
+                    console.log(chalk.red('There was an issue parsing the metadata file. Please make sure it is valid JSON.'));
+                    return;
+                }
+            } else {
+                try {
+                    stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
+                } catch {
+                    stubbedMetadata = rawStubbedMetadata;
+                }
+            }
         }
 
         const logMessages = {
@@ -220,16 +267,23 @@ export class DryRunService {
             }
         };
 
+        const jsonSchema = loadSchemaJson({ fullPath: this.fullPath });
+        if (!jsonSchema) {
+            console.log(chalk.red('Failed to load schema.json'));
+            return;
+        }
+
         const syncRun = new SyncRunService({
             integrationService,
             recordsService,
-            dryRunService: new DryRunService({ environment, returnOutput: true, fullPath: this.fullPath }),
+            dryRunService: new DryRunService({ environment, returnOutput: true, fullPath: this.fullPath, validation: this.validation }),
             writeToDb: false,
             nangoConnection,
             syncConfig: {
                 sync_name: syncName,
                 file_location: '',
-                models: [],
+                models: syncInfo?.output || [],
+                input: syncInfo?.input || undefined,
                 track_deletes: false,
                 type: syncInfo?.type || 'sync',
                 active: true,
@@ -239,7 +293,8 @@ export class DryRunService {
                 model_schema: [],
                 nango_config_id: 1,
                 runs: '',
-                webhook_subscriptions: []
+                webhook_subscriptions: [],
+                models_json_schema: jsonSchema
             },
             provider,
             input: normalizedInput as object,
@@ -251,18 +306,48 @@ export class DryRunService {
             loadLocation: './',
             debug,
             logMessages,
-            stubbedMetadata
+            stubbedMetadata,
+            runnerFlags: {
+                validateActionInput: this.validation, // irrelevant for cli
+                validateActionOutput: this.validation, // irrelevant for cli
+                validateSyncRecords: this.validation,
+                validateSyncMetadata: false
+            }
         });
 
         try {
+            console.log('---');
             const secretKey = process.env['NANGO_SECRET_KEY'];
             const results = await syncRun.run(lastSyncDate, true, secretKey, process.env['NANGO_HOSTPORT']);
+            console.log('---');
 
-            let resultOutput = '';
+            if (results.error) {
+                const err = results.error;
+                console.error(chalk.red('An error occurred during execution'));
+                if (err instanceof NangoError) {
+                    console.error(chalk.red(err.message), chalk.gray(`(${err.type})`));
+                    if (err.type === 'invalid_action_output' || err.type === 'invalid_action_input' || err.type === 'invalid_sync_record') {
+                        displayValidationError(err.payload as any);
+                        return;
+                    }
 
-            if (results) {
-                console.log(JSON.stringify(results, null, 2));
-                resultOutput += JSON.stringify(results, null, 2);
+                    console.error(JSON.stringify(err.payload, null, 2));
+                    return;
+                }
+
+                console.error(JSON.stringify(err, null, 2));
+                return;
+            }
+
+            const resultOutput = [];
+            if (type === 'actions') {
+                if (!results.response) {
+                    console.log(chalk.gray('no output'));
+                    resultOutput.push(chalk.gray('no output'));
+                } else {
+                    console.log(JSON.stringify(results.response, null, 2));
+                    resultOutput.push(JSON.stringify(results.response, null, 2));
+                }
             }
 
             if (syncRun.logMessages && syncRun.logMessages.messages.length > 0) {
@@ -274,14 +359,14 @@ export class DryRunService {
                     for (let i = 0; i < batchCount && index < logMessages.length; i++, index++) {
                         const logs = logMessages[index];
                         console.log(chalk.yellow(JSON.stringify(logs, null, 2)));
-                        resultOutput += JSON.stringify(logs, null, 2);
+                        resultOutput.push(JSON.stringify(logs, null, 2));
                     }
                 };
 
                 console.log(chalk.yellow(`The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`));
-                resultOutput += `The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`;
+                resultOutput.push(`The dry run would produce the following results: ${JSON.stringify(syncRun.logMessages.counts, null, 2)}`);
                 console.log(chalk.yellow('The following log messages were generated:'));
-                resultOutput += 'The following log messages were generated:';
+                resultOutput.push('The following log messages were generated:');
 
                 displayBatch();
 
@@ -299,7 +384,7 @@ export class DryRunService {
             }
 
             if (this.returnOutput) {
-                return resultOutput;
+                return resultOutput.join('\n');
             }
 
             process.exit(0);
