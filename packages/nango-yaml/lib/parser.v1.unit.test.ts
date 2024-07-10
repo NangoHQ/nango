@@ -36,7 +36,7 @@ describe('parse', () => {
                             type: 'sync',
                             usedModels: ['GithubIssue'],
                             webhookSubscriptions: [],
-                            version: '0.0.1'
+                            version: ''
                         }
                     ],
                     postConnectionScripts: [],
@@ -50,7 +50,7 @@ describe('parse', () => {
                             scopes: [],
                             type: 'action',
                             usedModels: ['GithubIssue'],
-                            version: '0.0.1'
+                            version: ''
                         }
                     ]
                 }
@@ -90,7 +90,7 @@ describe('parse', () => {
                             type: 'sync',
                             usedModels: ['Anonymous_provider_sync_hello_output'],
                             webhookSubscriptions: [],
-                            version: '0.0.1'
+                            version: ''
                         }
                     ],
                     postConnectionScripts: [],
