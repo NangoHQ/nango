@@ -540,6 +540,38 @@ contentstack:
     authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
     token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
     docs: https://docs.nango.dev/integrations/all/contentstack
+coros:
+    categories:
+        - sports
+    auth_mode: OAUTH2
+    authorization_url: https://open.coros.com/oauth2/authorize
+    token_url: https://open.coros.com/oauth2/accesstoken
+    refresh_url: https://open.coros.com/oauth2/refresh-token
+    authorization_params:
+        response_type: code
+    token_response_metadata:
+        - openId
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://open.coros.com
+coros-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://opentest.coros.com/oauth2/authorize
+    token_url: https://opentest.coros.com/oauth2/accesstoken
+    refresh_url: https://opentest.coros.com/oauth2/refresh-token
+    authorization_params:
+        response_type: code
+    token_response_metadata:
+        - openId
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://opentest.coros.com
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     categories:
