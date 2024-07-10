@@ -2297,7 +2297,7 @@ integrations:
                 description: >
                     This sync will be used to sync all of the events managed by your
                     Calendar. See https://docs.lu.ma/reference/calendar-list-events for
-                    more information.
+                    more details.
                 endpoint: GET /luma/list-events
                 sync_type: incremental
                 runs: every day
@@ -2719,24 +2719,24 @@ integrations:
                 description: >
                     This action will be used to display a list of sites to the end-user,
                     who will pick the ones he wants to sync.
-                endpoint: POST /sharepoint/list-sites
+                endpoint: GET /sharepoint/list-sites
                 scopes:
                     - Sites.ReadWrite.All
                     - offline_access
-                output: SharePointSite[]
+                output: SharePointSiteId
         syncs:
             file-sync:
                 description: >
                     This sync will be used to sync file metadata from SharePoint site
                     based on the ones the user has picked.
-                endpoint: GET /sharepoint/file-sync
+                endpoint: /sharepoint/file-sync
                 sync_type: incremental
+                track_deletes: true
                 runs: every 1 hour
                 scopes:
                     - Sites.ReadWrite.All
                     - offline_access
-                input: SharePointSite
-                auto_start: false
+                auto_start: true
                 output: FileMetadata
         models:
             FileMetadata:
@@ -2750,12 +2750,8 @@ integrations:
                 download_url: string
                 created_at: Date
                 blob_size: number
-            SharePointSite:
+            SharePointSiteId:
                 id: string
-                name: string
-                webUrl: string
-            SharePointMetadata:
-                sitesToSync: SharePointSite[]
     slack:
         syncs:
             users:
