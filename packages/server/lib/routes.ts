@@ -55,6 +55,8 @@ import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { tbaAuthorization } from './controllers/auth/tba.js';
+import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
+import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
 
 export const router = express.Router();
 
@@ -153,8 +155,8 @@ if (AUTH_ENABLED) {
     web.route('/api/v1/account/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
     web.route('/api/v1/account/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
     web.route('/api/v1/account/signin').post(rateLimiterMiddleware, passport.authenticate('local'), signin);
-    web.route('/api/v1/account/forgot-password').put(rateLimiterMiddleware, authController.forgotPassword.bind(authController));
-    web.route('/api/v1/account/reset-password').put(rateLimiterMiddleware, authController.resetPassword.bind(authController));
+    web.route('/api/v1/account/forgot-password').post(rateLimiterMiddleware, postForgotPassword);
+    web.route('/api/v1/account/reset-password').put(rateLimiterMiddleware, putResetPassword);
     web.route('/api/v1/account/resend-verification-email/by-uuid').post(rateLimiterMiddleware, resendVerificationEmailByUuid);
     web.route('/api/v1/account/resend-verification-email/by-email').post(rateLimiterMiddleware, resendVerificationEmailByEmail);
     web.route('/api/v1/account/email/:uuid').get(rateLimiterMiddleware, getEmailByUuid);

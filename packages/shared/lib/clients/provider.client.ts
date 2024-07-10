@@ -453,8 +453,8 @@ class ProviderClient {
             };
             // Sample failure response: { "result": "1001", "message": "Service exceptions" }
             throw new NangoError('refresh_token_external_error', payload);
-        } catch (e: any) {
-            throw new NangoError('refresh_token_external_error', e.message);
+        } catch (err) {
+            throw new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
         }
     }
 

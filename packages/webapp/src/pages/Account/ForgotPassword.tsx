@@ -3,66 +3,67 @@ import { toast } from 'react-toastify';
 
 import { useRequestPasswordResetAPI } from '../../utils/api';
 import DefaultLayout from '../../layout/DefaultLayout';
+import { Input } from '../../components/ui/input/Input';
+import Button from '../../components/ui/button/Button';
 
 export default function Signin() {
-    const [serverErrorMessage, setServerErrorMessage] = useState('');
     const requestPasswordResetAPI = useRequestPasswordResetAPI();
+
+    const [serverErrorMessage, setServerErrorMessage] = useState('');
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [done, setDone] = useState(false);
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
         setServerErrorMessage('');
+        setLoading(true);
 
-        const target = e.target as typeof e.target & {
-            email: { value: string };
-        };
-
-        const res = await requestPasswordResetAPI(target.email.value);
+        const res = await requestPasswordResetAPI(email);
 
         if (res?.status === 200) {
             toast.success('Email sent!', { position: toast.POSITION.BOTTOM_CENTER });
-        } else if (res?.status === 404) {
+            setDone(true);
+        } else if (res?.status === 400) {
             setServerErrorMessage('No user matching this email.');
         } else {
             setServerErrorMessage('Unknown error...');
         }
+        setLoading(false);
     };
 
     return (
-        <>
-            <DefaultLayout>
-                <div className="flex flex-col justify-center">
-                    <div className="w-80">
-                        <h2 className="mt-4 text-center text-[20px] text-white">Request password reset</h2>
-                        <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
-                            <div>
-                                <div>
-                                    <div className="mt-1">
-                                        <input
-                                            id="email"
-                                            name="email"
-                                            type="email"
-                                            placeholder="Email"
-                                            autoComplete="email"
-                                            required
-                                            className="border-border-gray bg-dark-600 placeholder-dark-500 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-sm focus:outline-none"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+        <DefaultLayout>
+            <div className="flex flex-col justify-center">
+                <div className="w-80 flex flex-col gap-6">
+                    <h2 className="mt-4 text-center text-[20px] text-white">Request password reset</h2>
+                    {!done ? (
+                        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+                            <Input
+                                id="email"
+                                name="email"
+                                type="email"
+                                autoFocus
+                                placeholder="Email"
+                                autoComplete="email"
+                                required
+                                inputSize="lg"
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="border-border-gray bg-dark-600"
+                            />
 
                             <div className="grid">
-                                <button
-                                    type="submit"
-                                    className="bg-white flex h-11 justify-center rounded-md border px-4 pt-3 text-[14px] text-black shadow active:ring-2 active:ring-offset-2"
-                                >
+                                <Button type="submit" className="justify-center" size={'lg'} isLoading={loading}>
                                     Send password reset email
-                                </button>
-                                {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
+                                </Button>
+                                {serverErrorMessage && <p className="place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
                             </div>
                         </form>
-                    </div>
+                    ) : (
+                        <div className="text-text-light-gray text-sm text-center">Email sent to {email}</div>
+                    )}
                 </div>
-            </DefaultLayout>
-        </>
+            </div>
+        </DefaultLayout>
     );
 }

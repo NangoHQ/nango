@@ -7,7 +7,7 @@ import type { WebUser, Signin } from '@nangohq/types';
 const validation = z
     .object({
         email: z.string().email(),
-        password: z.string().min(8)
+        password: z.string().min(8).max(64)
     })
     .strict();
 
