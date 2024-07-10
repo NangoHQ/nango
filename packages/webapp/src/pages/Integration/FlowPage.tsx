@@ -18,7 +18,7 @@ import type { IntegrationConfig, Flow, Connection } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '../../components/ui/Dialog';
 import Info from '../../components/ui/Info';
-import { formatDateToShortUSFormat } from '../../utils/utils';
+import { formatDateToShortUSFormat, githubIntegrationTemplates } from '../../utils/utils';
 import EnableDisableSync from './components/EnableDisableSync';
 import { autoStartSnippet, setMetadataSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
@@ -104,10 +104,23 @@ export default function FlowPage(props: FlowPageProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(endpoints), setFlow]);
 
-    const onScriptUprade = (currentVersion: string, upgrade_version: string) => {
+    const onScriptUprade = (flow: Flow) => {
+        const { version: currentVersion, upgrade_version } = flow;
         setModalTitle('Upgrade with caution');
         setModalContent(
-            `You are about to upgrade from version ${currentVersion} to ${upgrade_version}. The new integration will replace the old as soon as you upgrade. Major version changes indicate incompatible API modifications, possibly requiring changes to your code.`
+            <>
+                You are about to upgrade from version {currentVersion} to{' '}
+                <a
+                    className="underline"
+                    target="_blank"
+                    rel="noreferrer"
+                    href={`${githubIntegrationTemplates}/${integration.provider}/${flow.type}s/${flow.name}.ts`}
+                >
+                    {upgrade_version}
+                </a>
+                . The new integration will replace the old as soon as you upgrade. Major version changes indicate incompatible API modifications, possibly
+                requiring changes to your code.
+            </>
         );
         setModalConfirmationButton('danger');
         setModalVisible(true);
@@ -412,16 +425,26 @@ export default function FlowPage(props: FlowPageProps) {
                                         <Spinner size={1} />
                                     </span>
                                 )}
-                                {flow.is_public && flow.version && (
+                                {flow.is_public && (
                                     <div className="flex items-center">
-                                        <span className="ml-2 text-white underline">Template version: v{flow.version}</span>
+                                        <span className="ml-2 text-white">
+                                            Template version:{' '}
+                                            <a
+                                                className="underline"
+                                                rel="noreferrer"
+                                                href={`${githubIntegrationTemplates}/${integration.provider}/${flow.type}s/${flow.name}.ts`}
+                                                target="_blank"
+                                            >
+                                                v{flow.version || '0.0.1'}
+                                            </a>
+                                        </span>
                                         {flow.upgrade_version ? (
                                             <span className="flex items-center text-white mx-1">
                                                 {' '}
                                                 (latest: <span className="underline ml-1">v{flow.upgrade_version}</span>)
                                                 <Button
                                                     variant="black"
-                                                    onClick={() => onScriptUprade(flow.version as string, flow.upgrade_version as string)}
+                                                    onClick={() => onScriptUprade(flow)}
                                                     size="sm"
                                                     className="ml-2 rounded-full h-6 px-2 bg-zinc-800 text-zinc-200"
                                                 >

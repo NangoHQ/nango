@@ -317,7 +317,6 @@ class DeployService {
                 if (debug) {
                     printDebug(`Scripts files found for ${sync.name}`);
                 }
-                console.log(integration);
 
                 const body: IncomingFlowConfig = {
                     syncName: sync.name,
