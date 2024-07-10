@@ -18,7 +18,7 @@ export default function Signup() {
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
-    const [passwordStrength, setPasswordStrength] = useState(0);
+    const [passwordStrength, setPasswordStrength] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
@@ -111,7 +111,7 @@ export default function Signup() {
                                 type="submit"
                                 size={'lg'}
                                 className="justify-center"
-                                disabled={!name || !email || !password || passwordStrength < 100}
+                                disabled={!name || !email || !password || !passwordStrength}
                                 isLoading={loading}
                             >
                                 Sign up

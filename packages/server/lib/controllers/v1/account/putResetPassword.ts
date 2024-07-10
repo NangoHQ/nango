@@ -48,7 +48,6 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
 
         user.hashed_password = hashedPassword;
         user.reset_password_token = null;
-        console.log('on edit', user);
         await userService.editUserPassword(user);
 
         res.status(200).json({

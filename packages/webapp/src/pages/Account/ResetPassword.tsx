@@ -14,7 +14,7 @@ export default function ResetPassword() {
     const { token } = useParams();
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [passwordStrength, setPasswordStrength] = useState(0);
+    const [passwordStrength, setPasswordStrength] = useState(false);
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -53,7 +53,7 @@ export default function ResetPassword() {
                         />
 
                         <div className="grid">
-                            <Button type="submit" size={'lg'} className="justify-center" disabled={!password || passwordStrength < 100} isLoading={loading}>
+                            <Button type="submit" size={'lg'} className="justify-center" disabled={!password || !passwordStrength} isLoading={loading}>
                                 Reset
                             </Button>
                             {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
