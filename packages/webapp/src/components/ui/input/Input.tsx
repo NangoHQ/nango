@@ -1,17 +1,32 @@
 import { forwardRef } from 'react';
 import type { InputHTMLAttributes } from 'react';
+import { cva } from 'class-variance-authority';
 
 import { cn } from '../../../utils/utils';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
+export const inputStyles = cva('', {
+    variants: {
+        size: {
+            xs: 'text-sm ',
+            sm: 'text-sm ',
+            md: 'text-sm',
+            lg: 'text-sm px-3 py-[13px] placeholder-gray-400'
+        }
+    },
+    defaultVariants: {
+        size: 'sm'
+    }
+});
 
 const Input = forwardRef<
     HTMLInputElement,
     InputProps & {
         before?: React.ReactNode;
         after?: React.ReactNode;
+        inputSize?: 'xs' | 'sm' | 'md' | 'lg';
     }
->(({ className, type, before, after, ...props }, ref) => {
+>(({ className, type, before, after, inputSize, ...props }, ref) => {
     return (
         <div
             className={cn(
@@ -24,7 +39,8 @@ const Input = forwardRef<
                 type={type}
                 ref={ref}
                 className={cn(
-                    'bg-transparent border-0 h-full px-3 py-[7px] w-full text-white file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none',
+                    'bg-transparent border-0 h-full w-full text-white file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none',
+                    inputStyles({ size: inputSize }),
                     before && 'pl-8',
                     after && 'pr-8'
                 )}

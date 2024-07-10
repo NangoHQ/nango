@@ -58,7 +58,7 @@ export const EmailVerified: React.FC = () => {
             }
         };
 
-        verifyEmail();
+        void verifyEmail();
     }, [token, navigate, env, signin, analyticsTrack]);
 
     return !loaded ? <Loading spaceRatio={2.5} className="-top-36" /> : null;

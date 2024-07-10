@@ -18,7 +18,7 @@ export interface User extends Timestamps {
     hashed_password: string;
     salt: string;
     account_id: number;
-    reset_password_token: string | undefined;
+    reset_password_token: string | null;
     suspended: boolean;
     suspended_at: Date;
     currentUser?: boolean;
