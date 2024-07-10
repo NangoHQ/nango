@@ -2,17 +2,23 @@ import db, { dbNamespace } from '@nangohq/database';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { getSyncsByProviderConfigAndSyncName } from '../sync.service.js';
+import {
+    getNangoConfigIdAndLocationFromId,
+    getSyncAndActionConfigByParams,
+    increment,
+    getSyncAndActionConfigsBySyncNameAndConfigId
+} from './config.service.js';
 import connectionService from '../../connection.service.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
 import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType } from '../../../models/Sync.js';
-import type { IncomingFlowConfig, IncomingPreBuiltFlowConfig, NangoModel, PostConnectionScriptByProvider } from '@nangohq/types';
+import type { IncomingFlowConfig, IncomingFlowConfigUpgrade, IncomingPreBuiltFlowConfig, NangoModel, PostConnectionScriptByProvider } from '@nangohq/types';
 import { postConnectionScriptService } from '../post-connection.service.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
-import { env } from '@nangohq/utils';
+import { env, Err, Ok } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 import { nangoConfigFile } from '../../nango-config.service.js';
-import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { Environment } from '../../../models/Environment.js';
 import type { Account } from '../../../models/Admin.js';
@@ -198,6 +204,162 @@ export async function deploy({
                 level: 'error'
             },
             'deploy_type:custom'
+        );
+
+        throw new NangoError('error_creating_sync_config');
+    }
+}
+
+export async function upgradePreBuilt({
+    environment,
+    account,
+    flowConfig,
+    logContextGetter
+}: {
+    environment: Environment;
+    account: Account;
+    flowConfig: IncomingFlowConfigUpgrade;
+    logContextGetter: LogContextGetter;
+}): Promise<Result<boolean | null>> {
+    const logCtx = await logContextGetter.create(
+        { operation: { type: 'deploy', action: 'prebuilt' }, message: 'Upgrading pre-built flow' },
+        { account, environment }
+    );
+
+    const syncConfig = await getNangoConfigIdAndLocationFromId(Number(flowConfig.id));
+
+    if (!syncConfig) {
+        const error = new NangoError('unknown_sync_config', { syncConfigId: flowConfig.id });
+
+        return Err(error);
+    }
+
+    const config = await configService.getById(syncConfig.nango_config_id);
+
+    if (!config) {
+        const error = new NangoError('unknown_provider_config');
+
+        return Err(error);
+    }
+
+    const { syncName: name, type, model_schema: model_schema_string, is_public, upgrade_version: version } = flowConfig;
+    const { unique_key: provider_config_key, provider } = config;
+
+    const file_location = (await remoteFileService.copy(
+        `${provider}/dist`,
+        `${name}-${provider}.js`,
+        `${env}/account/${account.id}/environment/${environment.id}/config/${syncConfig.nango_config_id}/${name}-v${version}.js`,
+        environment.id,
+        `${name}-${provider_config_key}.js`
+    )) as string;
+
+    if (!file_location) {
+        await logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: name, version });
+        await logCtx.failed();
+
+        throw new NangoError('file_upload_error');
+    }
+
+    await remoteFileService.copy(
+        provider,
+        `${type}s/${name}.ts`,
+        `${env}/account/${account.id}/environment/${environment.id}/config/${syncConfig.nango_config_id}/${name}.ts`,
+        environment.id,
+        `${name}.ts`
+    );
+
+    const created_at = new Date();
+
+    const model_schema = typeof model_schema_string === 'string' ? JSON.parse(model_schema_string) : model_schema_string;
+
+    const flowData: SyncConfig = {
+        created_at,
+        sync_name: name,
+        sync_type: flowConfig.sync_type,
+        runs: flowConfig.runs,
+        models: flowConfig.models,
+        metadata: flowConfig.metadata || {},
+        nango_config_id: syncConfig.nango_config_id,
+        file_location,
+        version,
+        active: true,
+        model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
+        environment_id: environment.id,
+        deleted: false,
+        type,
+        auto_start: flowConfig.auto_start === false ? false : true,
+        pre_built: true,
+        is_public,
+        enabled: true,
+        webhook_subscriptions: flowConfig.webhookSubscriptions || []
+    } as SyncConfig;
+
+    try {
+        const [syncId] = await db.knex.from<SyncConfig>(TABLE).insert(flowData).returning('id');
+
+        const endpoints: SyncEndpoint[] = [];
+        if (flowConfig.endpoints) {
+            flowConfig.endpoints.forEach((endpoint, endpointIndex) => {
+                const method = Object.keys(endpoint)[0] as HTTP_VERB;
+                const path = endpoint[method] as string;
+                const res: SyncEndpoint = {
+                    sync_config_id: syncId?.id as number,
+                    method,
+                    path
+                };
+                const model = flowData.models[endpointIndex] as string;
+                if (model) {
+                    res.model = model;
+                }
+                endpoints.push(res);
+            });
+        }
+
+        if (endpoints.length > 0) {
+            await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+        }
+
+        await db.knex.from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', [flowConfig.id]);
+
+        await logCtx.info('Successfully deployed', { nameOfType, configs: name });
+        await logCtx.success();
+
+        await telemetry.log(
+            LogTypes.SYNC_DEPLOY_SUCCESS,
+            `Successfully upgraded the ${flowConfig.type} (${name}).`,
+            LogActionEnum.SYNC_DEPLOY,
+            {
+                environmentId: String(environment.id),
+                syncName: name,
+                accountId: String(account.id),
+                integrations: provider,
+                preBuilt: 'true',
+                is_public: 'true'
+            },
+            `deploy_type:public.template`
+        );
+
+        return Ok(true);
+    } catch (e) {
+        const content = `Failed to deploy the ${flowConfig.type} ${flowConfig.syncName}.`;
+
+        await logCtx.error('Failed to upgrade', { type: flowConfig.type, config: flowConfig.syncName, error: e });
+        await logCtx.failed();
+
+        await telemetry.log(
+            LogTypes.SYNC_DEPLOY_FAILURE,
+            content,
+            LogActionEnum.SYNC_DEPLOY,
+            {
+                environmentId: String(environment.id),
+                syncName: flowConfig.syncName,
+                accountId: String(account.id),
+                integration: provider,
+                preBuilt: 'true',
+                is_public: 'true',
+                level: 'error'
+            },
+            `deploy_type:public.template`
         );
 
         throw new NangoError('error_creating_sync_config');

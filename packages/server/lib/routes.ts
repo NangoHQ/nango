@@ -49,6 +49,7 @@ import {
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { setMetadata } from './controllers/connection/setMetadata.js';
 import { updateMetadata } from './controllers/connection/updateMetadata.js';
+import { upgradePreBuilt } from './controllers/v1/flow/upgrade/preBuilt.js';
 import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
@@ -215,6 +216,7 @@ web.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncControl
 web.route('/api/v1/sync/:syncId/frequency').put(webAuth, syncController.updateFrequency.bind(syncController));
 web.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
 web.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
+web.route('/api/v1/flow/upgrade/pre-built').post(webAuth, upgradePreBuilt);
 web.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
 web.route('/api/v1/flow/:id/disable').patch(webAuth, flowController.disableFlow.bind(flowController));
 web.route('/api/v1/flow/:id/enable').patch(webAuth, flowController.enableFlow.bind(flowController));

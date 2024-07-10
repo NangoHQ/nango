@@ -61,3 +61,11 @@ export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     sync_type?: SyncTypeLiteral | undefined;
     webhookSubscriptions?: string[] | undefined;
 }
+
+export interface IncomingFlowConfigUpgrade extends IncomingFlowConfig {
+    id: string;
+    upgrade_version: string;
+    last_deployed: string;
+    is_public: true;
+    pre_built: true;
+}

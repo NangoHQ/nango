@@ -59,6 +59,22 @@ const separateFlows = (flows: NangoSyncConfig[]): FlowConfigs => {
     );
 };
 
+const findPotentialUpgrades = (enabledFlows: NangoSyncConfig[], publicFlows: NangoSyncConfig[]) => {
+    return enabledFlows.map((flow) => {
+        const publicFlow = publicFlows.find((publicFlow) => publicFlow.name === flow.name);
+        if (!publicFlow) {
+            return flow;
+        }
+        if (publicFlow && publicFlow.version !== flow.version) {
+            return {
+                ...flow,
+                upgrade_version: publicFlow.version
+            };
+        }
+        return flow;
+    });
+};
+
 const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: StandardNangoConfig) => {
     const { syncs: publicSyncs, actions: publicActions } = publicFlows;
     const { syncs, actions } = allFlows;
@@ -91,7 +107,10 @@ const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: 
     const filteredActions = filterFlows(publicActions, enabledActions, disabledActions);
 
     const disabledFlows = { syncs: filteredSyncs.concat(disabledSyncs), actions: filteredActions.concat(disabledActions) };
-    const flows = { syncs: enabledSyncs, actions: enabledActions };
+    const flows = {
+        syncs: findPotentialUpgrades(enabledSyncs, publicSyncs),
+        actions: findPotentialUpgrades(enabledActions, publicActions)
+    };
 
     return { disabledFlows, flows };
 };
