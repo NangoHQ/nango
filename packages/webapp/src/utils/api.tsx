@@ -616,7 +616,7 @@ export function useRequestPasswordResetAPI() {
     return async (email: string) => {
         try {
             const res = await apiFetch(`/api/v1/account/forgot-password`, {
-                method: 'PUT',
+                method: 'POST',
                 body: JSON.stringify({ email: email })
             });
 

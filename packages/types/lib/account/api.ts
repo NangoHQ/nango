@@ -108,3 +108,28 @@ export type Signin = Endpoint<{
         user: WebUser;
     };
 }>;
+
+export type PostForgotPassword = Endpoint<{
+    Method: 'PUT';
+    Path: '/api/v1/account/forgot-password';
+    Body: {
+        email: string;
+    };
+    Error: ApiError<'user_not_found'>;
+    Success: {
+        success: true;
+    };
+}>;
+
+export type PutResetPassword = Endpoint<{
+    Method: 'PUT';
+    Path: '/api/v1/account/reset-password';
+    Body: {
+        token: string;
+        password: string;
+    };
+    Error: ApiError<'user_not_found'> | ApiError<'invalid_token'>;
+    Success: {
+        success: true;
+    };
+}>;

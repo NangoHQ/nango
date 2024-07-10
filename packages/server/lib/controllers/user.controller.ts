@@ -1,6 +1,6 @@
 import { getUserFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
-import EmailClient from '../clients/email.client.js';
+import { EmailClient } from '../clients/email.client.js';
 import { isCloud, isEnterprise, basePublicUrl } from '@nangohq/utils';
 import { errorManager, userService } from '@nangohq/shared';
 import type { RequestLocals } from '../utils/express.js';
