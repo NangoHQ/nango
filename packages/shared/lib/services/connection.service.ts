@@ -919,17 +919,8 @@ class ConnectionService {
                 });
 
                 return { success: true, error: null, response: { refreshed: shouldRefresh, credentials: newCredentials } };
-            } catch (err: any) {
-                const errorMessage = err.message || 'Unknown error';
-                const errorDetails = {
-                    message: errorMessage,
-                    name: err.name || 'Error',
-                    stack: err.stack || 'No stack trace'
-                };
-
-                const errorString = JSON.stringify(errorDetails);
-
-                await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${errorString}`, LogActionEnum.AUTH, {
+            } catch (err) {
+                await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     connectionId,
                     providerConfigKey,
@@ -937,7 +928,7 @@ class ConnectionService {
                     level: 'error'
                 });
 
-                const error = new NangoError('refresh_token_external_error', errorDetails);
+                const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
 
                 return { success: false, error, response: null };
             } finally {
@@ -1207,12 +1198,8 @@ class ConnectionService {
             );
 
             return { success: true, error: null, response: tokenResponse.data };
-        } catch (e: any) {
-            const errorPayload = {
-                message: e.message || 'Unknown error',
-                name: e.name || 'Error'
-            };
-            const error = new NangoError('refresh_token_external_error', errorPayload);
+        } catch (err) {
+            const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
             return { success: false, error, response: null };
         }
     }
