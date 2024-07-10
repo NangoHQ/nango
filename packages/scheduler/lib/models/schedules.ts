@@ -235,6 +235,7 @@ export async function search(
 
 export async function hardDeleteOlderThanNDays(db: knex.Knex, days: number): Promise<Result<DbSchedule[]>> {
     try {
+        // NOTE: only deleting one schedule at a time to avoid massive cascading deletes of tasks
         const deleted = await db
             .from<DbSchedule>(SCHEDULES_TABLE)
             .where(
@@ -245,7 +246,7 @@ export async function hardDeleteOlderThanNDays(db: knex.Knex, days: number): Pro
                     FROM ${SCHEDULES_TABLE}
                     WHERE "deleted_at" < NOW() - INTERVAL '${days} days'
                     ORDER BY "id" ASC
-                    LIMIT 1000
+                    LIMIT 1
                   ))`)
             )
             .del()
