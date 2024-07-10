@@ -55,6 +55,7 @@ import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmati
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { tbaAuthorization } from './controllers/auth/tba.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
+import { putTeam } from './controllers/v1/team/putTeam.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
 
@@ -172,7 +173,7 @@ if (MANAGED_AUTH_ENABLED) {
 
 web.route('/api/v1/meta').get(webAuth, environmentController.meta.bind(environmentController));
 web.route('/api/v1/team').get(webAuth, getTeam);
-web.route('/api/v1/team').put(webAuth, accountController.editAccount.bind(accountController));
+web.route('/api/v1/team').put(webAuth, putTeam);
 web.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
 web.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));

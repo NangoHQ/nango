@@ -4,7 +4,7 @@ import { Language, Steps, actionName, endpointAction } from './utils';
 import Button from '../../components/ui/button/Button';
 import { Bloc, Tab } from './Bloc';
 import { cn } from '../../utils/utils';
-import CopyButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { CheckCircledIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { curlSnippet, nodeActionSnippet } from '../../utils/language-snippets';
@@ -128,7 +128,7 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
                             cURL
                         </Tab>
                     </div>
-                    <CopyButton dark text={snippet} />
+                    <CopyButton text={snippet} />
                 </div>
                 <Prism noCopy language="typescript" className="p-3 transparent-code bg-black" colorScheme="dark">
                     {snippet}

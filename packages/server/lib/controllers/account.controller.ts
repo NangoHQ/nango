@@ -10,24 +10,6 @@ export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud;
 export const AUTH_ADMIN_SWITCH_MS = 600 * 1000;
 
 class AccountController {
-    async editAccount(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { account } = res.locals;
-
-            const name = req.body['name'];
-
-            if (!name) {
-                res.status(400).send({ error: 'Account name cannot be empty.' });
-                return;
-            }
-
-            await accountService.editAccount(name, account.id);
-            res.status(200).send({ name });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async editCustomer(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const { is_capped, account_uuid: accountUUID } = req.body;

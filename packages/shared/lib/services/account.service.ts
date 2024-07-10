@@ -20,16 +20,8 @@ class AccountService {
         }
     }
 
-    async editAccount(name: string, id: number): Promise<void> {
-        try {
-            await db.knex.update({ name, updated_at: new Date() }).from<DBTeam>(`_nango_accounts`).where({ id });
-        } catch (e) {
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.DATABASE,
-                accountId: id
-            });
-        }
+    async editAccount({ name, id }: { name: string; id: number }): Promise<void> {
+        await db.knex.update({ name, updated_at: new Date() }).from<DBTeam>(`_nango_accounts`).where({ id });
     }
 
     async getAccountByUUID(uuid: string): Promise<DBTeam | null> {

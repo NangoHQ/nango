@@ -717,27 +717,6 @@ export function useGetAccountAPI(env: string) {
     };
 }
 
-export function useEditAccountNameAPI(env: string) {
-    const signout = useSignout();
-
-    return async (name: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/team?env=${env}`, {
-                method: 'PUT',
-                body: JSON.stringify({ name })
-            });
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useGetUserAPI() {
     const signout = useSignout();
 

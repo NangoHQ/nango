@@ -27,6 +27,7 @@ module.exports = {
 
                 // From Figma
                 'green-base': '#84D65A',
+                'green-dark': '#2B641E',
                 'blue-base': '#509AF8',
                 'red-base': '#EF665B',
                 'yellow-base': '#F7C752',
@@ -39,7 +40,8 @@ module.exports = {
                 'dark-500': '#71717A',
                 'dark-600': '#27272A',
                 'dark-700': '#18181B',
-                'dark-800': '#09090B'
+                'dark-800': '#09090B',
+                'text-light': '#A9ACB3'
             },
             width: {
                 largebox: '1200px',

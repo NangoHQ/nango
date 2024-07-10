@@ -17,7 +17,8 @@ export const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-5
             black: 'bg-black text-white hover:bg-hover-gray',
             active: 'bg-active-gray text-white',
             hover: 'hover:bg-hover-gray text-white',
-            zinc: 'bg-active-gray hover:bg-neutral-800 text-gray-400 border border-neutral-700'
+            zinc: 'bg-active-gray hover:bg-neutral-800 text-gray-400 border border-neutral-700',
+            icon: 'bg-transparent text-text-light-gray hover:text-white focus:text-white'
         },
         size: {
             xs: 'h-8 py-1 px-3',

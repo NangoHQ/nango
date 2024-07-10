@@ -4,7 +4,7 @@ import Nango, { AuthError } from '@nangohq/frontend';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { Steps } from './utils';
 import Button from '../../components/ui/button/Button';
-import CopyButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 import { Bloc, Tab } from './Bloc';
 import { CheckCircledIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
 import { apiFetch } from '../../utils/api';
@@ -77,7 +77,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
             <div className="border bg-zinc-900 border-zinc-900 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
                     <Tab>Frontend</Tab>
-                    <CopyButton dark text={snippet} />
+                    <CopyButton text={snippet} />
                 </div>
                 <Prism noCopy language="typescript" className="p-3 transparent-code bg-black font-['Roboto Mono']" colorScheme="dark">
                     {snippet}

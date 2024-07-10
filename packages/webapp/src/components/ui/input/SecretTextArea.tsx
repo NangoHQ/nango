@@ -2,7 +2,7 @@ import type { ChangeEvent, TextareaHTMLAttributes } from 'react';
 import { forwardRef, useCallback, useState } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
-import CopyButton from '../button/CopyButton';
+import { CopyButton } from '../button/CopyButton';
 
 interface SecretTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     copy?: boolean;
@@ -59,7 +59,7 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(func
                 <span onClick={toggleSecretVisibility} className="rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
                     {isSecretVisible ? <EyeSlashIcon className="w-4 h-4 ml-1" /> : <EyeIcon className="w-4 h-4 ml-1" />}
                 </span>
-                {copy && <CopyButton text={value as string} dark />}
+                {copy && <CopyButton text={value as string} />}
             </span>
         </div>
     );

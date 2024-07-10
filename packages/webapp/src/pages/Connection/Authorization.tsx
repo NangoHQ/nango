@@ -6,7 +6,7 @@ import PrismPlus from '../../components/ui/prism/PrismPlus';
 import type { Connection } from '@nangohq/types';
 import { formatDateToShortUSFormat } from '../../utils/utils';
 import SecretInput from '../../components/ui/input/SecretInput';
-import CopyButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
 
 interface AuthorizationProps {
@@ -35,7 +35,7 @@ export default function Authorization(props: AuthorizationProps) {
                     <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
                     <div className="flex items-center gap-2">
                         <span className="text-white break-all">{connection.connection_id}</span>
-                        <CopyButton text={connection.connection_id} dark />
+                        <CopyButton text={connection.connection_id} />
                     </div>
                 </div>
                 {connection.created_at && (

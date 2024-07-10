@@ -33,7 +33,10 @@ export const MessageRow: React.FC<{ row: Row<SearchMessagesData> }> = ({ row }) 
             <DrawerContent>
                 <div className={`w-[834px] relative h-screen select-text`}>
                     <div className="absolute top-[26px] left-4">
-                        <DrawerClose title="Close" className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white">
+                        <DrawerClose
+                            title="Close"
+                            className="w-10 h-10 flex items-center justify-center text-text-light-gray hover:text-white focus:text-white"
+                        >
                             <ArrowLeftIcon />
                         </DrawerClose>
                     </div>
