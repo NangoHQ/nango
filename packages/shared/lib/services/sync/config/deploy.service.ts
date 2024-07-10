@@ -97,12 +97,19 @@ export async function deploy({
 
         idsToMarkAsInactive.push(...response.idsToMarkAsInactive);
         syncConfigs.push(response.syncConfig);
-        deployResults.push({
+        const deployResult: SyncDeploymentResult = {
             name: flow.syncName,
             models: flow.models,
+            version: response.syncConfig.version as string,
             providerConfigKey: flow.providerConfigKey,
             type: flow.type
-        });
+        };
+
+        if (response.syncConfig.version) {
+            deployResult.version = response.syncConfig.version;
+        }
+
+        deployResults.push(deployResult);
     }
 
     if (syncConfigs.length === 0) {
