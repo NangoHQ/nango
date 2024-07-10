@@ -861,6 +861,7 @@ class ConnectionService {
         const connectionId = oldConnection.connection_id;
         const credentials = oldConnection.credentials as OAuth2Credentials;
         const providerConfigKey = oldConnection.provider_config_key;
+        const environmentId = oldConnection.environment_id;
 
         const shouldRefresh = await this.shouldRefreshCredentials(oldConnection, credentials, providerConfig, template, instantRefresh);
 
@@ -881,18 +882,70 @@ class ConnectionService {
             try {
                 const ttlInMs = 10000;
                 const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
-                const { tries } = await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
 
                 let freshConnection = oldConnection;
-                if (tries > 0) {
-                    // In this case, an other refresh was running so we want to be sure we have a brand new refresh_token
-                    // Ultimately, this can also mean this refresh is now useless and we could return, but since we are not sure we proceed again
-                    const res = await this.getConnection(connectionId, providerConfig.unique_key, oldConnection.environment_id);
-                    if (res.error || !res.response) {
-                        const error = new NangoError('unknown_connection');
-                        return { success: false, error, response: null };
+                try {
+                    const { tries } = await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
+                    if (tries > 0) {
+                        // Another refresh was running so we check if the credentials were refreshed
+                        // If yes, we return the new credentials
+                        // If not, we proceed with the refresh
+                        const { success, error, response: connection } = await this.getConnection(connectionId, providerConfig.unique_key, environmentId);
+                        if (success && connection) {
+                            const shouldRefresh = await this.shouldRefreshCredentials(
+                                connection,
+                                connection.credentials as OAuth2Credentials,
+                                providerConfig,
+                                template,
+                                false
+                            );
+                            if (!shouldRefresh) {
+                                return {
+                                    success: true,
+                                    error: null,
+                                    response: {
+                                        refreshed: true,
+                                        credentials: connection.credentials as
+                                            | OAuth2Credentials
+                                            | AppCredentials
+                                            | AppStoreCredentials
+                                            | OAuth2ClientCredentials
+                                    }
+                                };
+                            }
+                            freshConnection = connection;
+                        } else {
+                            throw error;
+                        }
                     }
-                    freshConnection = res.response;
+                } catch (err) {
+                    // lock acquisition might have timed out
+                    // but refresh might have been successfully performed by another execution
+                    // while we were waiting for the lock
+                    // so we check if the credentials were refreshed
+                    // if yes, we return the new credentials
+                    // if not, we actually fail the refresh
+                    const { success, response: connection } = await this.getConnection(connectionId, providerConfig.unique_key, environmentId);
+                    if (success && connection) {
+                        const shouldRefresh = await this.shouldRefreshCredentials(
+                            connection,
+                            connection.credentials as OAuth2Credentials,
+                            providerConfig,
+                            template,
+                            false
+                        );
+                        if (!shouldRefresh) {
+                            return {
+                                success: true,
+                                error: null,
+                                response: {
+                                    refreshed: true,
+                                    credentials: connection.credentials as OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials
+                                }
+                            };
+                        }
+                    }
+                    throw err;
                 }
 
                 const { success, error, response: newCredentials } = await this.getNewCredentials(freshConnection, providerConfig, template);
