@@ -249,7 +249,7 @@ export async function upgradePreBuilt({
         return Err(error);
     }
 
-    const { syncName: name, type, model_schema, is_public, upgrade_version: version } = flowConfig;
+    const { syncName: name, type, model_schema: model_schema_string, is_public, upgrade_version: version } = flowConfig;
     const { unique_key: provider_config_key, provider } = config;
 
     const file_location = (await remoteFileService.copy(
@@ -276,6 +276,8 @@ export async function upgradePreBuilt({
     );
 
     const created_at = new Date();
+
+    const model_schema = typeof model_schema_string === 'string' ? JSON.parse(model_schema_string) : model_schema_string;
 
     const flowData: SyncConfig = {
         created_at,
