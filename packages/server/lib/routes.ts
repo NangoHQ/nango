@@ -49,7 +49,7 @@ import {
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { setMetadata } from './controllers/connection/setMetadata.js';
 import { updateMetadata } from './controllers/connection/updateMetadata.js';
-import { putUpgradePreBuilt } from './controllers/v1/flow/upgrade/postPreBuilt.js';
+import { putUpgradePreBuilt } from './controllers/v1/flow/upgrade/putPreBuilt.js';
 import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';

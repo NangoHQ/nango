@@ -144,7 +144,7 @@ export default function FlowPage(props: FlowPageProps) {
         };
 
         const response = await apiFetch(`/api/v1/flow/download?env=${env}`, {
-            method: 'PUT',
+            method: 'POST',
             body: JSON.stringify(flowInfo)
         });
 
@@ -289,7 +289,7 @@ export default function FlowPage(props: FlowPageProps) {
         };
 
         const response = await apiFetch(`/api/v1/flow/upgrade/pre-built?env=${env}`, {
-            method: 'POST',
+            method: 'PUT',
             body: JSON.stringify(upgradeFlow)
         });
 
