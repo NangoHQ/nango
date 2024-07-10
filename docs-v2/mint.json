@@ -280,6 +280,7 @@
                         "integrations/integration-templates/kustomer",
                         "integrations/integration-templates/lever",
                         "integrations/integration-templates/linear",
+                        "integrations/integration-templates/luma",
                         "integrations/integration-templates/sharepoint-online",
                         "integrations/integration-templates/microsoft-active-directory",
                         "integrations/integration-templates/next-cloud",
