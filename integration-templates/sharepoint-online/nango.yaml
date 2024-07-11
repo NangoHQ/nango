@@ -4,7 +4,7 @@ integrations:
             list-sites:
                 description: |
                     This action will be used to display a list of sites to the end-user, who will pick the ones he wants to sync.
-                endpoint: POST /sharepoint/list-sites
+                endpoint: GET /sharepoint/list-sites
                 scopes:
                     - Sites.ReadWrite.All
                     - offline_access

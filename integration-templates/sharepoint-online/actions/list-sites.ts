@@ -7,10 +7,9 @@ import { toSite } from '../mappers/to-site.js';
  * updates the SharePoint metadata with the sites to sync, and returns the mapped sites.
  *
  * @param nango An instance of NangoAction for handling listing of sites.
- * @param _input Optional input parameter (not typically used for this specific action).
  * @returns An array of Site objects representing SharePoint sites
  */
-export default async function runAction(nango: NangoAction, _input?: void): Promise<Site[]> {
+export default async function runAction(nango: NangoAction): Promise<Site[]> {
     const response = await nango.get<{ value: SharePointSite[] }>({
         endpoint: 'v1.0/sites',
         params: {

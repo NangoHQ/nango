@@ -49,8 +49,7 @@ async function getSiteIdToLists(nango: NangoSync, sitesToSync: Site[]): Promise<
         };
         // Paginate through lists and filter documentlibraries
         for await (const lists of nango.paginate(config)) {
-            const documentLibraries = lists.filter((list: any) => list.list.template === 'documentLibrary');
-            siteIdToLists[siteId] = documentLibraries.map((l: any) => l.id);
+            siteIdToLists[siteId] = lists.filter((list: any) => list.list.template === 'documentLibrary').map((l: any) => l.id);
         }
     }
 
