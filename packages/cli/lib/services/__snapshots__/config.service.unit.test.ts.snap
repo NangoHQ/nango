@@ -18,6 +18,7 @@ exports[`load > should parse a nango.yaml file that is version 1 as expected 1`]
           "usedModels": [
             "Anonymous_demogithubintegration_sync_githubwriteaction_output",
           ],
+          "version": "",
         },
       ],
       "postConnectionScripts": [],
@@ -40,6 +41,7 @@ exports[`load > should parse a nango.yaml file that is version 1 as expected 1`]
           "usedModels": [
             "GithubIssue",
           ],
+          "version": "",
           "webhookSubscriptions": [],
         },
       ],
@@ -168,6 +170,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "usedModels": [
             "GithubIssueAction",
           ],
+          "version": "",
         },
         {
           "description": "Creates a GitHub issue.",
@@ -188,6 +191,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
             "GithubIssue",
             "GithubCreateIssueInput",
           ],
+          "version": "",
         },
         {
           "description": "Deletes a GitHub issue.",
@@ -206,6 +210,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "usedModels": [
             "Anonymous_demogithubintegration_action_githubdeleteissue_output",
           ],
+          "version": "",
         },
       ],
       "postConnectionScripts": [],
@@ -234,6 +239,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "usedModels": [
             "GithubIssue",
           ],
+          "version": "",
           "webhookSubscriptions": [
             "issue.creation",
           ],
@@ -261,6 +267,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "usedModels": [
             "GithubIssue2",
           ],
+          "version": "",
           "webhookSubscriptions": [],
         },
         {
@@ -289,6 +296,7 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
             "GithubIssue3",
             "GithubPR",
           ],
+          "version": "",
           "webhookSubscriptions": [],
         },
       ],

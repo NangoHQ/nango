@@ -171,6 +171,7 @@ export interface Flow {
     is_public: boolean;
     pre_built: boolean;
     version?: string;
+    upgrade_version?: string;
     last_deployed?: string;
     input?: NangoSyncModel;
     description: string;

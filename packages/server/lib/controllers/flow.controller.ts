@@ -2,7 +2,6 @@ import type { Request, Response, NextFunction } from 'express';
 import type { FlowDownloadBody } from '@nangohq/shared';
 import {
     flowService,
-    accountService,
     connectionService,
     errorManager,
     configService,
@@ -87,9 +86,8 @@ class FlowController {
                 return;
             }
 
-            const { environment } = res.locals;
+            const { environment, account } = res.locals;
             const environmentId = environment.id;
-            const accountId = res.locals['account'].id;
 
             // config is an array for compatibility purposes, it will only ever have one item
             const [firstConfig] = config;
@@ -102,13 +100,6 @@ class FlowController {
 
             if (!providerLookup) {
                 errorManager.errRes(res, 'provider_not_on_account');
-                return;
-            }
-
-            const account = await accountService.getAccountById(accountId);
-
-            if (!account) {
-                errorManager.errRes(res, 'unknown_account');
                 return;
             }
 

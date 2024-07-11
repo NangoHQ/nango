@@ -9,6 +9,8 @@ export const stagingUrl: string = 'https://api-staging.nango.dev';
 export const prodUrl: string = 'https://api.nango.dev';
 
 export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
+export const githubRepo = 'https://github.com/NangoHQ/nango';
+export const githubIntegrationTemplates = `${githubRepo}/tree/master/integration-templates`;
 
 export const AUTH_ENABLED = isCloud() || isEnterprise() || isLocal();
 export const MANAGED_AUTH_ENABLED = isCloud() || isLocal();
