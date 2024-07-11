@@ -705,7 +705,8 @@ class ConnectionService {
 
         if (connection?.credentials?.type === 'OAUTH2' || connection?.credentials?.type === 'APP' || connection?.credentials?.type === 'OAUTH2_CC') {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
-                oldConnection: connection,
+                connectionId: connection.connection_id,
+                environmentId: environment.id,
                 providerConfig: config,
                 template: template as ProviderTemplateOAuth2,
                 environment_id: environment.id,
@@ -846,81 +847,94 @@ class ConnectionService {
     }
 
     private async refreshCredentialsIfNeeded({
-        oldConnection,
+        connectionId,
+        environmentId,
         providerConfig,
         template,
         environment_id,
         instantRefresh = false
     }: {
-        oldConnection: Connection;
+        connectionId: string;
+        environmentId: number;
         providerConfig: ProviderConfig;
         template: ProviderTemplateOAuth2;
         environment_id: number;
         instantRefresh?: boolean;
     }): Promise<ServiceResponse<{ refreshed: boolean; credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials }>> {
-        const connectionId = oldConnection.connection_id;
-        const credentials = oldConnection.credentials as OAuth2Credentials;
-        const providerConfigKey = oldConnection.provider_config_key;
+        const providerConfigKey = providerConfig.unique_key;
 
-        const shouldRefresh = await this.shouldRefreshCredentials(oldConnection, credentials, providerConfig, template, instantRefresh);
+        // fetch connection and return credentials if they are fresh
+        const getConnectionAndFreshCredentials = async (): Promise<{
+            connection: Connection;
+            freshCredentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | null;
+        }> => {
+            const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
 
-        if (shouldRefresh) {
+            if (!success || !connection) {
+                throw error;
+            }
+
+            const shouldRefresh = await this.shouldRefreshCredentials(
+                connection,
+                connection.credentials as OAuth2Credentials,
+                providerConfig,
+                template,
+                instantRefresh
+            );
+
+            return {
+                connection,
+                freshCredentials: shouldRefresh
+                    ? null
+                    : (connection.credentials as OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials)
+            };
+        };
+
+        // We must ensure that only one refresh is running at a time
+        // Using a simple redis entry as a lock with a TTL to ensure it is always released.
+        // NOTES:
+        // - This is not a distributed lock and will not work in a multi-redis environment.
+        // - It could also be unsafe in case of a Redis crash.
+        const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
+        try {
+            const ttlInMs = 10000;
+            const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
+
+            let connectionToRefresh: Connection;
+            try {
+                await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
+                // Another refresh was running so we check if the credentials were refreshed
+                // If yes, we return the new credentials
+                // If not, we proceed with the refresh
+                const { connection, freshCredentials } = await getConnectionAndFreshCredentials();
+                if (freshCredentials) {
+                    return { success: true, error: null, response: { refreshed: false, credentials: freshCredentials } };
+                }
+                connectionToRefresh = connection;
+            } catch (err) {
+                // lock acquisition might have timed out
+                // but refresh might have been successfully performed by another execution
+                // while we were waiting for the lock
+                // so we check if the credentials were refreshed
+                // if yes, we return the new credentials
+                // if not, we actually fail the refresh
+                const { freshCredentials } = await getConnectionAndFreshCredentials();
+                if (freshCredentials) {
+                    return { success: true, error: null, response: { refreshed: false, credentials: freshCredentials } };
+                }
+                throw err;
+            }
+
             await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_START, 'Token refresh is being started', LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey,
                 provider: providerConfig.provider
             });
-            // We must ensure that only one refresh is running at a time across all instances.
-            // Using a simple redis entry as a lock with a TTL to ensure it is always released.
-            // NOTES:
-            // - This is not a distributed lock and will not work in a multi-redis environment.
-            // - It could also be unsafe in case of a Redis crash.
-            // We are using this for now as it is a simple solution that should work for most cases.
-            const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
-            try {
-                const ttlInMs = 10000;
-                const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
-                const { tries } = await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
 
-                let freshConnection = oldConnection;
-                if (tries > 0) {
-                    // In this case, an other refresh was running so we want to be sure we have a brand new refresh_token
-                    // Ultimately, this can also mean this refresh is now useless and we could return, but since we are not sure we proceed again
-                    const res = await this.getConnection(connectionId, providerConfig.unique_key, oldConnection.environment_id);
-                    if (res.error || !res.response) {
-                        const error = new NangoError('unknown_connection');
-                        return { success: false, error, response: null };
-                    }
-                    freshConnection = res.response;
-                }
-
-                const { success, error, response: newCredentials } = await this.getNewCredentials(freshConnection, providerConfig, template);
-                if (!success || !newCredentials) {
-                    await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${error?.message}`, LogActionEnum.AUTH, {
-                        environmentId: String(environment_id),
-                        connectionId,
-                        providerConfigKey,
-                        provider: providerConfig.provider,
-                        level: 'error'
-                    });
-
-                    return { success, error, response: null };
-                }
-
-                freshConnection.credentials = newCredentials;
-                await this.updateConnection(freshConnection);
-
-                await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
-                    environmentId: String(environment_id),
-                    connectionId,
-                    providerConfigKey,
-                    provider: providerConfig.provider
-                });
-
-                return { success: true, error: null, response: { refreshed: shouldRefresh, credentials: newCredentials } };
-            } catch (err) {
-                await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
+            const { success, error, response: newCredentials } = await this.getNewCredentials(connectionToRefresh, providerConfig, template);
+            if (!success || !newCredentials) {
+                await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${error?.message}`, LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
                     connectionId,
                     providerConfigKey,
@@ -928,15 +942,35 @@ class ConnectionService {
                     level: 'error'
                 });
 
-                const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
-
-                return { success: false, error, response: null };
-            } finally {
-                await this.locking.release(lockKey);
+                return { success, error, response: null };
             }
-        }
 
-        return { success: true, error: null, response: { refreshed: shouldRefresh, credentials } };
+            connectionToRefresh.credentials = newCredentials;
+            await this.updateConnection(connectionToRefresh);
+
+            await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
+                connectionId,
+                providerConfigKey,
+                provider: providerConfig.provider
+            });
+
+            return { success: true, error: null, response: { refreshed: true, credentials: newCredentials } };
+        } catch (err) {
+            await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
+                connectionId,
+                providerConfigKey,
+                provider: providerConfig.provider,
+                level: 'error'
+            });
+
+            const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
+
+            return { success: false, error, response: null };
+        } finally {
+            await this.locking.release(lockKey);
+        }
     }
 
     public async getAppStoreCredentials(
