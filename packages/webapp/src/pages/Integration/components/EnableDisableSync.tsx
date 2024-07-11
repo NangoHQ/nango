@@ -269,7 +269,7 @@ export default function EnableDisableSync({
                 modalCancelLink={modalCancelButtonLink}
             />
             <div className="flex">
-                {showSpinner && (!('version' in flow) || flow.version === null) && modalShowSpinner && (
+                {showSpinner && modalShowSpinner && (
                     <span className="mr-1">
                         <Spinner size={1} />
                     </span>

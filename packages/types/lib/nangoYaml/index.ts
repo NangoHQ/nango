@@ -17,6 +17,7 @@ export interface NangoYamlV1Integration {
     runs?: string;
     track_deletes?: boolean;
     auto_start?: boolean;
+    version?: string;
 }
 
 // --------------
@@ -43,6 +44,7 @@ export interface NangoYamlV2IntegrationSync {
     scopes?: string | string[];
     input?: string;
     'webhook-subscriptions'?: string | string[];
+    version?: string;
 }
 export interface NangoYamlV2IntegrationAction {
     endpoint: string;
@@ -50,6 +52,7 @@ export interface NangoYamlV2IntegrationAction {
     description?: string;
     scopes?: string | string[];
     input?: string;
+    version?: string;
 }
 
 // ---- Model
@@ -93,6 +96,7 @@ export interface ParsedNangoSync {
     output: string[] | null;
     usedModels: string[];
     webhookSubscriptions: string[];
+    version: string;
 }
 
 export interface ParsedNangoAction {
@@ -104,6 +108,7 @@ export interface ParsedNangoAction {
     endpoint: NangoSyncEndpoint | null;
     scopes: string[];
     usedModels: string[];
+    version: string;
 }
 
 export type LayoutMode = 'root' | 'nested';
