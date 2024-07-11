@@ -320,7 +320,7 @@ export default function FlowPage(props: FlowPageProps) {
                     {flow?.sync_type && (
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Type</span>
-                            <div className="text-white">{flow?.sync_type === 'FULL' ? 'Full Refresh' : 'Incremental'}</div>
+                            <div className="text-white">{flow?.sync_type.toUpperCase() === 'FULL' ? 'Full Refresh' : 'Incremental'}</div>
                         </div>
                     )}
                 </div>
@@ -439,7 +439,7 @@ export default function FlowPage(props: FlowPageProps) {
                             <div className="flex">
                                 <div className="flex flex-col">
                                     <span className="text-gray-400 text-xs uppercase mb-1">Auto Starts</span>
-                                    <div className="text-white">No</div>
+                                    <div className="text-white">Yes</div>
                                 </div>
                             </div>
                         ) : (
