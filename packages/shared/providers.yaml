@@ -406,6 +406,16 @@ calendly:
     token_response_metadata:
         - owner
     docs: https://docs.nango.dev/integrations/all/calendly
+canny:
+    categories:
+        - feedback
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://canny.io/api/v1
+        data:
+            apiKey: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/canny
 certn:
     categories:
         - legal
