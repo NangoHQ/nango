@@ -132,7 +132,9 @@ describe(`POST ${endpoint}`, () => {
 
             isSuccess(res.json);
 
-            expect(res.json).toStrictEqual<typeof res.json>([{ models: ['Output'], name: 'test', providerConfigKey: 'unauthenticated', type: 'sync' }]);
+            expect(res.json).toStrictEqual<typeof res.json>([
+                { models: ['Output'], name: 'test', providerConfigKey: 'unauthenticated', type: 'sync', version: '1' }
+            ]);
             expect(res.res.status).toBe(200);
 
             // Check that everything was inserted in DB

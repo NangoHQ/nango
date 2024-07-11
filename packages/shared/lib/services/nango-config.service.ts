@@ -214,16 +214,12 @@ const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputMo
     return { success: true, error: null, response: inputModel };
 };
 
-const isEnabled = (script: NangoIntegrationDataV2, isPublic: boolean | null, preBuilt: boolean | null): boolean => {
+const isEnabled = (script: NangoIntegrationDataV2): boolean => {
     if (script.enabled !== undefined) {
         return script.enabled;
     }
 
-    if ((isPublic || preBuilt) && !script.version) {
-        return false;
-    }
-
-    return true;
+    return false;
 };
 
 export function convertV2ConfigObject(config: NangoConfigV2, showMessages = false, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[]> {
@@ -443,12 +439,12 @@ function buildSyncs({
         const is_public = isPublic !== undefined ? isPublic : sync.is_public === true;
         const pre_built = isPublic !== undefined ? isPublic : sync.pre_built === true;
 
-        const enabled = isEnabled(sync, is_public, pre_built);
+        const enabled = isEnabled(sync);
         const syncObject: NangoSyncConfig = {
             name: syncName,
             type: 'sync',
             models: models || [],
-            sync_type: sync.sync_type?.toUpperCase() === SyncType.INCREMENTAL ? SyncType.INCREMENTAL : SyncType.FULL,
+            sync_type: sync.sync_type?.toUpperCase() === SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
             runs,
             track_deletes: sync.track_deletes || false,
             auto_start: sync.auto_start === false ? false : true,
@@ -569,7 +565,7 @@ function buildActions({
         const is_public = isPublic !== undefined ? isPublic : action.is_public === true;
         const pre_built = isPublic !== undefined ? isPublic : action.pre_built === true;
 
-        const enabled = isEnabled(action, is_public, pre_built);
+        const enabled = isEnabled(action);
 
         const actionObject: NangoSyncConfig = {
             name: actionName,

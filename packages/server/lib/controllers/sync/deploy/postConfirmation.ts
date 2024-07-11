@@ -38,46 +38,45 @@ export const nangoModel = z
         isAnon: z.boolean().optional()
     })
     .strict();
-export const flowConfigs = z.array(
-    z
-        .object({
-            type: z.enum(['action', 'sync']),
-            models: z.array(z.string().min(1).max(255)),
-            runs: z.string(),
-            auto_start: z.boolean().optional().default(false),
-            attributes: z.object({}).optional(),
-            metadata: z
-                .object({
-                    scopes: z.array(z.string().max(255)).optional(),
-                    description: z.string().max(2000).optional()
-                })
-                .strict()
-                .optional(),
-            model_schema: z.union([z.string(), z.array(nangoModel)]),
-            input: z.union([z.string().max(255), z.any()]).optional(),
-            endpoints: z
-                .array(
-                    z
-                        .object({
-                            GET: z.string().optional(),
-                            POST: z.string().optional(),
-                            PATCH: z.string().optional(),
-                            PUT: z.string().optional(),
-                            DELETE: z.string().optional()
-                        })
-                        .strict()
-                )
-                .optional(),
-            syncName: z.string(),
-            providerConfigKey: z.string(),
-            fileBody,
-            version: z.string().optional(),
-            track_deletes: z.boolean().optional().default(false),
-            sync_type: z.enum(['incremental', 'full']).optional(),
-            webhookSubscriptions: z.array(z.string().max(255)).optional()
-        })
-        .strict()
-);
+export const flowConfig = z
+    .object({
+        type: z.enum(['action', 'sync']),
+        models: z.array(z.string().min(1).max(255)),
+        runs: z.string(),
+        auto_start: z.boolean().optional().default(false),
+        attributes: z.object({}).optional(),
+        metadata: z
+            .object({
+                scopes: z.array(z.string().max(255)).optional(),
+                description: z.string().max(2000).optional()
+            })
+            .strict()
+            .optional(),
+        model_schema: z.union([z.string(), z.array(nangoModel)]),
+        input: z.union([z.string().max(255), z.any()]).optional(),
+        endpoints: z
+            .array(
+                z
+                    .object({
+                        GET: z.string().optional(),
+                        POST: z.string().optional(),
+                        PATCH: z.string().optional(),
+                        PUT: z.string().optional(),
+                        DELETE: z.string().optional()
+                    })
+                    .strict()
+            )
+            .optional(),
+        syncName: z.string(),
+        providerConfigKey: z.string(),
+        fileBody,
+        version: z.string().optional(),
+        track_deletes: z.boolean().optional().default(false),
+        sync_type: z.enum(['incremental', 'full']).optional(),
+        webhookSubscriptions: z.array(z.string().max(255)).optional()
+    })
+    .strict();
+export const flowConfigs = z.array(flowConfig);
 export const postConnectionScriptsByProvider = z.array(
     z
         .object({

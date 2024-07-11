@@ -1,12 +1,14 @@
 import { toast } from 'react-toastify';
 import useSWR from 'swr';
-import { Loading, useModal } from '@geist-ui/core';
+import { Loading } from '@geist-ui/core';
 import { useEffect, useState } from 'react';
 import { CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircledIcon } from '@radix-ui/react-icons';
 import { Prism } from '@mantine/prism';
 import type { EnvironmentAndAccount } from '@nangohq/server';
 
 import { useUpdateSyncFrequency, requestErrorToast, apiFetch } from '../../utils/api';
+import type { ButtonVariants } from '../../components/ui/button/Button';
 import Button from '../../components/ui/button/Button';
 import { CopyButton } from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
@@ -14,14 +16,14 @@ import type { FlowConfiguration, EndpointResponse } from './Show';
 import { Tabs, SubTabs } from './Show';
 import type { IntegrationConfig, Flow, Connection } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
-import ActionModal from '../../components/ui/ActionModal';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '../../components/ui/Dialog';
 import Info from '../../components/ui/Info';
-import { formatDateToShortUSFormat } from '../../utils/utils';
+import { formatDateToShortUSFormat, githubIntegrationTemplates } from '../../utils/utils';
 import EnableDisableSync from './components/EnableDisableSync';
 import { autoStartSnippet, setMetadataSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
 import { getSyncResponse } from '../../utils/scripts';
-import type { NangoModel } from '@nangohq/types';
+import type { SyncTypeLiteral, IncomingFlowConfigUpgrade, NangoModel } from '@nangohq/types';
 
 interface FlowPageProps {
     environment: EnvironmentAndAccount['environment'];
@@ -45,13 +47,13 @@ export default function FlowPage(props: FlowPageProps) {
     const [isDownloading, setIsDownloading] = useState(false);
     const [isEnabling, setIsEnabling] = useState(false);
     const updateSyncFrequency = useUpdateSyncFrequency(env);
-    const { setVisible, bindings } = useModal();
 
+    const [modalVisible, setModalVisible] = useState(false);
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState<string | React.ReactNode>('');
-    const [modalAction, setModalAction] = useState<(() => void) | null>(null);
-    const [modalShowSpinner, setModalShowSpinner] = useState(false);
-    const [modalTitleColor] = useState('text-white');
+    const [modalAction, setModalAction] = useState<(() => Promise<void>) | null>(null);
+    const [modalConfirmationButton, setModalConfirmationButton] = useState<ButtonVariants>('black');
+    const [modalSpinner, setModalSpinner] = useState(false);
 
     const [showFrequencyEditMenu, setShowFrequencyEditMenu] = useState(false);
     const [frequencyEdit, setFrequencyEdit] = useState('');
@@ -61,6 +63,73 @@ export default function FlowPage(props: FlowPageProps) {
             requestErrorToast();
         }
     }, [error]);
+
+    /*
+     * If the flow is enabled then we need to make sure to assign
+     * the updated ID to the flow object. This covers the scenario of a user
+     * enabled a flow, then disables it
+     */
+    useEffect(() => {
+        if (!endpoints.allFlows) {
+            return;
+        }
+
+        const { syncs, actions } = endpoints.allFlows;
+
+        if (flow?.type === 'sync') {
+            const sync = syncs.find((sync: Flow) => sync.name === flow.name);
+            if (sync) {
+                setFlow({
+                    ...flow,
+                    id: sync.id,
+                    enabled: sync.enabled,
+                    version: sync.version,
+                    upgrade_version: sync.upgrade_version,
+                    last_deployed: sync.last_deployed
+                });
+            }
+        } else {
+            const action = actions.find((action: Flow) => action.name === flow?.name);
+            if (action) {
+                setFlow({
+                    ...(flow as Flow),
+                    id: action.id,
+                    enabled: action.enabled,
+                    version: action.version,
+                    upgrade_version: action.upgrade_version,
+                    last_deployed: action.last_deployed
+                });
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(endpoints), setFlow]);
+
+    const onScriptUprade = (flow: Flow) => {
+        const { version: currentVersion, upgrade_version } = flow;
+        setModalTitle('Upgrade with caution');
+        setModalContent(
+            <>
+                You are about to upgrade from version {currentVersion} to{' '}
+                <a
+                    className="underline"
+                    target="_blank"
+                    rel="noreferrer"
+                    href={`${githubIntegrationTemplates}/${integration.provider}/${flow.type}s/${flow.name}.ts`}
+                >
+                    {upgrade_version}
+                </a>
+                . The new integration will replace the old as soon as you upgrade. Major version changes indicate incompatible API modifications, possibly
+                requiring changes to your code.
+            </>
+        );
+        setModalConfirmationButton('danger');
+        setModalVisible(true);
+        setModalAction(() => async () => {
+            setModalSpinner(true);
+            await confirmVersionUpgrade();
+            setModalSpinner(false);
+        });
+    };
 
     const downloadFlow = async () => {
         setIsDownloading(true);
@@ -105,17 +174,17 @@ export default function FlowPage(props: FlowPageProps) {
     };
 
     const editFrequency = () => {
-        if (!flow?.version) {
+        if (!flow?.enabled) {
             setModalTitle('Cannot edit sync frequency');
             setModalContent('The sync frequency cannot be edited unless the sync is enabled.');
-            setVisible(true);
+            setModalVisible(true);
             return;
         }
 
         if (!flow.is_public) {
             setModalTitle('Cannot edit frequency for custom syncs');
             setModalContent('If you want to edit the frequency of this sync, edit it in your `nango.yaml` configuration file.');
-            setVisible(true);
+            setModalVisible(true);
             return;
         }
 
@@ -152,36 +221,93 @@ export default function FlowPage(props: FlowPageProps) {
                 break;
         }
 
+        setModalConfirmationButton('primary');
+
         if (unit === 'minutes' && parseInt(frequencyWithoutEvery) < 5) {
             setModalTitle('Invalid frequency');
             setModalContent('The minimum frequency is 5 minutes.');
-            setVisible(true);
+            setModalVisible(true);
             return;
         }
 
         if (unit === '') {
             setModalTitle('Invalid frequency unit');
             setModalContent(`The unit "${frequencyUnit}" is not a valid time unit. Valid units are minutes, hours, and days.`);
-            setVisible(true);
+            setModalVisible(true);
             return;
         }
 
         setModalTitle('Edit sync frequency?');
         setModalContent('This will affect potential many connections. Increased frequencies can increase your billing.');
-        setVisible(true);
+        setModalVisible(true);
 
         setModalAction(() => async () => {
-            setModalShowSpinner(true);
+            setModalSpinner(true);
             await updateSyncFrequency(flow?.id as number, frequencyWithoutEvery);
-            setModalShowSpinner(false);
+            setModalSpinner(false);
             setShowFrequencyEditMenu(false);
-            setVisible(false);
+            setModalVisible(false);
             reload();
             setFlow({
                 ...flow,
                 runs: `every ${frequencyWithoutEvery}`
             } as Flow);
         });
+    };
+
+    const confirmVersionUpgrade = async () => {
+        setModalSpinner(true);
+        if (!flow || !flow.id || !flow.upgrade_version) {
+            toast.error('Unable to upgrade the script.', {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
+            return;
+        }
+        const upgradeFlow: IncomingFlowConfigUpgrade = {
+            id: flow.id.toString(),
+            syncName: flow.name,
+            providerConfigKey: integration.unique_key,
+            fileBody: {
+                js: '',
+                ts: ''
+            },
+            upgrade_version: flow.upgrade_version,
+            last_deployed: flow.last_deployed || '',
+            metadata: {
+                description: flow.description || '',
+                scopes: flow.scopes || []
+            },
+            endpoints: flow.endpoints,
+            is_public: true,
+            type: flow.type,
+            pre_built: true,
+            sync_type: flow.sync_type?.toLowerCase() as SyncTypeLiteral,
+            runs: flow.runs || '',
+            models: flow.models.map((model) => model.name),
+            model_schema: JSON.stringify(flow.models),
+            webhookSubscriptions: flow.webhookSubscriptions
+        };
+
+        const response = await apiFetch(`/api/v1/flow/upgrade/pre-built?env=${env}`, {
+            method: 'PUT',
+            body: JSON.stringify(upgradeFlow)
+        });
+
+        if (response.status !== 200) {
+            const error = await response.json();
+            toast.error(error.error.message, {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
+            return;
+        }
+
+        toast.success('Script upgraded successfully', {
+            position: toast.POSITION.BOTTOM_CENTER
+        });
+
+        setModalSpinner(false);
+        setModalVisible(false);
+        reload();
     };
 
     if (error) {
@@ -197,17 +323,33 @@ export default function FlowPage(props: FlowPageProps) {
         setSubTab(SubTabs.Reference);
     };
 
+    const onClickModalButton = async () => {
+        setModalSpinner(true);
+        if (modalAction) {
+            await modalAction();
+        }
+        setModalSpinner(false);
+    };
+
     return (
         <>
-            <ActionModal
-                bindings={bindings}
-                modalTitle={modalTitle}
-                modalContent={modalContent}
-                modalAction={modalAction}
-                modalShowSpinner={modalShowSpinner}
-                modalTitleColor={modalTitleColor}
-                setVisible={setVisible}
-            />
+            <Dialog open={modalVisible} onOpenChange={setModalVisible}>
+                <DialogContent>
+                    <DialogTitle>{modalTitle}</DialogTitle>
+                    <DialogDescription>{modalContent}</DialogDescription>
+
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button className="!text-text-light-gray" variant="zombieGray">
+                                Cancel
+                            </Button>
+                        </DialogClose>
+                        <Button type="submit" variant={modalConfirmationButton} disabled={modalSpinner} onClick={onClickModalButton} isLoading={modalSpinner}>
+                            Upgrade
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             <div className="mx-auto space-y-10 text-sm">
                 <div className="flex justify-between">
                     <div className="flex">
@@ -258,7 +400,7 @@ export default function FlowPage(props: FlowPageProps) {
                         </Info>
                     </div>
                 )}
-                {flow?.description && (
+                {flow.description && (
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Description</span>
                         <div className="text-white">{flow?.description}</div>
@@ -284,19 +426,53 @@ export default function FlowPage(props: FlowPageProps) {
                                         <Spinner size={1} />
                                     </span>
                                 )}
+                                {flow.is_public && (
+                                    <div className="flex items-center">
+                                        <span className="ml-2 text-white">
+                                            Template version:{' '}
+                                            <a
+                                                className="underline"
+                                                rel="noreferrer"
+                                                href={`${githubIntegrationTemplates}/${integration.provider}/${flow.type}s/${flow.name}.ts`}
+                                                target="_blank"
+                                            >
+                                                v{flow.version || '0.0.1'}
+                                            </a>
+                                        </span>
+                                        {flow.upgrade_version ? (
+                                            <span className="flex items-center text-white mx-1">
+                                                {' '}
+                                                (latest: <span className="underline ml-1">v{flow.upgrade_version}</span>)
+                                                <Button
+                                                    variant="black"
+                                                    onClick={() => onScriptUprade(flow)}
+                                                    size="sm"
+                                                    className="ml-2 rounded-full h-6 px-2 bg-zinc-800 text-zinc-200"
+                                                >
+                                                    Upgrade Template
+                                                </Button>
+                                            </span>
+                                        ) : (
+                                            <span className="flex ml-2 gap-x-1 text-green-base">
+                                                <CheckCircledIcon className="flex h-5 w-5" />
+                                                Template up-to-date
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                             </span>
                         )}
                     </div>
                     <div className="flex flex-col w-1/2">
                         <span className="text-gray-400 text-xs uppercase mb-1">Endpoints</span>
-                        {flow?.endpoints.map((endpoint, index) => (
+                        {flow.endpoints.map((endpoint, index) => (
                             <div key={index} onClick={routeToReference} className="flex flex-col space-y-2 cursor-pointer">
                                 <EndpointLabel endpoint={endpoint} type={flow.type} />
                             </div>
                         ))}
                     </div>
                 </div>
-                {(flow?.version || flow?.last_deployed) && (
+                {!flow.is_public && (flow.version || flow.last_deployed) && (
                     <div className="flex">
                         {flow?.version && (
                             <div className="flex flex-col w-1/2">
@@ -320,7 +496,7 @@ export default function FlowPage(props: FlowPageProps) {
                     {flow?.sync_type && (
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Type</span>
-                            <div className="text-white">{flow?.sync_type === 'FULL' ? 'Full Refresh' : 'Incremental'}</div>
+                            <div className="text-white">{flow?.sync_type.toUpperCase() === 'FULL' ? 'Full Refresh' : 'Incremental'}</div>
                         </div>
                     )}
                 </div>
@@ -438,7 +614,7 @@ export default function FlowPage(props: FlowPageProps) {
                             <div className="flex">
                                 <div className="flex flex-col">
                                     <span className="text-gray-400 text-xs uppercase mb-1">Auto Starts</span>
-                                    <div className="text-white">No</div>
+                                    <div className="text-white">Yes</div>
                                 </div>
                             </div>
                         ) : (
