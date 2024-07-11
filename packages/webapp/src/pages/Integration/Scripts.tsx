@@ -20,8 +20,8 @@ interface ScriptProps {
 
 export default function Scripts(props: ScriptProps) {
     const { integration, endpoints, reload, setFlow, setSubTab, setFlowConfig } = props;
-    const syncs = [...(endpoints?.allFlows?.syncs || []), ...(endpoints?.disabledFlows?.syncs || [])];
-    const actions = [...(endpoints?.allFlows?.actions || []), ...(endpoints?.disabledFlows?.actions || [])];
+    const syncs = [...(endpoints?.allFlows?.syncs || []), ...(endpoints?.disabledFlows?.syncs || [])].sort((a, b) => a.name.localeCompare(b.name));
+    const actions = [...(endpoints?.allFlows?.actions || []), ...(endpoints?.disabledFlows?.actions || [])].sort((a, b) => a.name.localeCompare(b.name));
     const hasScripts = syncs.length || actions.length;
 
     const routeToScript = (flow: Flow) => {
