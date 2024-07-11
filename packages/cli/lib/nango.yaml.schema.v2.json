@@ -51,9 +51,23 @@
                                         }
                                     },
                                     "version": {
-                                        "type": "string",
+                                        "oneOf": [
+                                            {
+                                                "type": "integer",
+                                                "errorMessage": {
+                                                    "_": " "
+                                                }
+                                            },
+                                            {
+                                                "type": "string",
+                                                "pattern": "^(\\d+|\\d+\\.\\d+\\.\\d+)$",
+                                                "errorMessage": {
+                                                    "_": " "
+                                                }
+                                            }
+                                        ],
                                         "errorMessage": {
-                                            "type": "version must be a string."
+                                            "_": "version must be an interger, string or a semver string. Example: \"10\", \"1.0.0\", or 10"
                                         }
                                     },
                                     "runs": {
@@ -166,9 +180,23 @@
                                         }
                                     },
                                     "version": {
-                                        "type": "string",
+                                        "oneOf": [
+                                            {
+                                                "type": "integer",
+                                                "errorMessage": {
+                                                    "_": " "
+                                                }
+                                            },
+                                            {
+                                                "type": "string",
+                                                "pattern": "^(\\d+|\\d+\\.\\d+\\.\\d+)$",
+                                                "errorMessage": {
+                                                    "_": " "
+                                                }
+                                            }
+                                        ],
                                         "errorMessage": {
-                                            "type": "version must be a string."
+                                            "_": "version must be an interger, string or a semver string. Example: \"10\", \"1.0.0\", or 10"
                                         }
                                     },
                                     "endpoint": {

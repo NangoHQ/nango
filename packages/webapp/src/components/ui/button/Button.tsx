@@ -4,7 +4,7 @@ import { cva } from 'class-variance-authority';
 import { forwardRef } from 'react';
 import { cn } from '../../../utils/utils';
 
-export type ButtonVariants = 'primary' | 'secondary' | 'success' | 'danger' | 'zombie' | 'zombieGray' | 'yellow' | 'black' | 'active' | 'hover' | 'zinc';
+export type ButtonVariants = VariantProps<typeof buttonStyles>['variant'];
 
 export const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 rounded text-sm', {
     variants: {

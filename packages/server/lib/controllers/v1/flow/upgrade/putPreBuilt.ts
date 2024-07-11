@@ -10,8 +10,8 @@ const validation = flowConfig.extend({
     id: z.string(),
     upgrade_version: z.string(),
     last_deployed: z.string(),
-    is_public: z.boolean(),
-    pre_built: z.boolean()
+    is_public: z.literal(true),
+    pre_built: z.literal(true)
 });
 
 export const putUpgradePreBuilt = asyncWrapper<UpgradePreBuiltFlow>(async (req, res) => {
@@ -30,7 +30,7 @@ export const putUpgradePreBuilt = asyncWrapper<UpgradePreBuiltFlow>(async (req, 
         return;
     }
 
-    const flowConfig: IncomingFlowConfigUpgrade = val.data as IncomingFlowConfigUpgrade;
+    const flowConfig: IncomingFlowConfigUpgrade = val.data;
     const { environment, account } = res.locals;
 
     const result = await upgradePrebuiltFlow({
