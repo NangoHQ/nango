@@ -448,7 +448,7 @@ function buildSyncs({
             name: syncName,
             type: 'sync',
             models: models || [],
-            sync_type: sync.sync_type?.toUpperCase() === SyncType.INCREMENTAL ? SyncType.INCREMENTAL : SyncType.FULL,
+            sync_type: sync.sync_type?.toUpperCase() === SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
             runs,
             track_deletes: sync.track_deletes || false,
             auto_start: sync.auto_start === false ? false : true,
