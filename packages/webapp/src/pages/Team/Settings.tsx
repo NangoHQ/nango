@@ -6,11 +6,12 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { TeamInfo } from './Info';
 import { TeamUsers } from './Users';
+import { AddTeamMember } from './AddTeamMember';
 
 export const TeamSettings: React.FC = () => {
     const env = useStore((state) => state.env);
 
-    const { error, loading } = useTeam(env);
+    const { error, team, loading } = useTeam(env);
 
     if (loading) {
         return (
@@ -42,7 +43,10 @@ export const TeamSettings: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
-            <h2 className="text-3xl font-semibold text-white mb-16">Team Settings</h2>
+            <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-semibold text-white mb-16">Team Settings</h2>
+                <AddTeamMember team={team!} />
+            </div>
             <div className="flex flex-col gap-12">
                 <TeamInfo />
                 <TeamUsers />

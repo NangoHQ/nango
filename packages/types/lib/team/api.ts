@@ -30,3 +30,13 @@ export type PutTeam = Endpoint<{
         data: DBTeam;
     };
 }>;
+
+export type PostInvite = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/team/invite';
+    Querystring: { env: string };
+    Body: { emails: string[] };
+    Success: {
+        data: { invited: string[] };
+    };
+}>;

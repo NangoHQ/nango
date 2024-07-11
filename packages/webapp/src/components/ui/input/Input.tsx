@@ -6,6 +6,18 @@ import { cva } from 'class-variance-authority';
 import { cn } from '../../../utils/utils';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
+export const wrapperStyles = cva('', {
+    variants: {
+        variant: {
+            empty: '',
+            flat: 'bg-active-gray',
+            border: 'bg-active-gray border-border-gray-400'
+        }
+    },
+    defaultVariants: {
+        variant: 'empty'
+    }
+});
 export const inputStyles = cva('', {
     variants: {
         inputSize: {
@@ -13,15 +25,10 @@ export const inputStyles = cva('', {
             sm: 'text-sm px-3 py-[7px] placeholder-gray-400',
             md: 'text-sm px-3 py-[10px] placeholder-gray-400',
             lg: 'text-sm px-3 py-[13px] placeholder-gray-400'
-        },
-        variant: {
-            empty: '',
-            main: 'bg-active-gray'
         }
     },
     defaultVariants: {
-        inputSize: 'sm',
-        variant: 'empty'
+        inputSize: 'md'
     }
 });
 
@@ -30,12 +37,14 @@ const Input = forwardRef<
     InputProps & {
         before?: React.ReactNode;
         after?: React.ReactNode;
-    } & VariantProps<typeof inputStyles>
+    } & VariantProps<typeof inputStyles> &
+        VariantProps<typeof wrapperStyles>
 >(({ className, type, before, after, inputSize, variant, ...props }, ref) => {
     return (
         <div
             className={cn(
-                'relative flex items-center bg-transparent w-full rounded border border-zinc-900 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                'relative flex items-center bg-transparent w-full rounded border border-dark-800 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                wrapperStyles({ variant }),
                 className
             )}
         >
@@ -45,7 +54,7 @@ const Input = forwardRef<
                 ref={ref}
                 className={cn(
                     'bg-transparent border-0 h-full w-full text-white file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none',
-                    inputStyles({ inputSize, variant }),
+                    inputStyles({ inputSize }),
                     before && 'pl-8',
                     after && 'pr-8'
                 )}

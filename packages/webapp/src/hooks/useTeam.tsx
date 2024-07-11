@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import { apiFetch, requestErrorToast, swrFetcher } from '../utils/api';
-import type { GetTeam, PutTeam } from '@nangohq/types';
+import type { GetTeam, PostInvite, PutTeam } from '@nangohq/types';
 
 export function useTeam(env: string) {
     const { data, error, mutate } = useSWR<GetTeam['Success'], GetTeam['Errors']>(`/api/v1/team?env=${env}`, swrFetcher);
@@ -28,6 +28,22 @@ export async function apiPutTeam(env: string, body: PutTeam['Body']) {
         return {
             res,
             json: (await res.json()) as PutTeam['Reply']
+        };
+    } catch {
+        requestErrorToast();
+    }
+}
+
+export async function apiPostInvite(env: string, body: PostInvite['Body']) {
+    try {
+        const res = await apiFetch(`/api/v1/team/invite?env=${env}`, {
+            method: 'POST',
+            body: JSON.stringify(body)
+        });
+
+        return {
+            res,
+            json: (await res.json()) as PostInvite['Reply']
         };
     } catch {
         requestErrorToast();

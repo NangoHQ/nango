@@ -6,7 +6,6 @@ import type { User } from '../models/Admin.js';
 import type { DBInvitation, DBTeam } from '@nangohq/types';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
-const INVITE_EMAIL_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
 
 class UserService {
     async getUserById(id: number): Promise<User | null> {
@@ -168,37 +167,6 @@ class UserService {
 
     async verifyUserEmail(id: number) {
         return db.knex.from<User>(`_nango_users`).where({ id }).update({ email_verified: true, email_verification_token: null });
-    }
-
-    async inviteUser(email: string, name: string, accountId: number, inviter_id: number) {
-        const token = uuid.v4();
-        const expires_at = new Date(new Date().getTime() + INVITE_EMAIL_EXPIRATION);
-
-        const result = await db.knex
-            .from<DBInvitation>(`_nango_invited_users`)
-            .insert({
-                email,
-                name,
-                account_id: accountId,
-                invited_by: inviter_id,
-                token,
-                expires_at
-            })
-            .returning('*');
-
-        if (!result || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0];
-    }
-
-    async getInvitedUsersByAccountId(accountId: number): Promise<DBInvitation[]> {
-        const date = new Date();
-
-        const result = await db.knex.select('*').from<DBInvitation>(`_nango_invited_users`).where({ account_id: accountId }).whereRaw('expires_at > ?', date);
-
-        return result || [];
     }
 
     async getInvitedUserByToken(token: string): Promise<DBInvitation | null> {

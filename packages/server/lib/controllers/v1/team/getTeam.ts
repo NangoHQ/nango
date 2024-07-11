@@ -2,7 +2,7 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { GetTeam, WebUser } from '@nangohq/types';
 import { NANGO_ADMIN_UUID } from '../../account.controller.js';
-import { userService } from '@nangohq/shared';
+import { listInvitations, userService } from '@nangohq/shared';
 
 export const getTeam = asyncWrapper<GetTeam>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -14,7 +14,7 @@ export const getTeam = asyncWrapper<GetTeam>(async (req, res) => {
     const { account } = res.locals;
 
     const users = await userService.getUsersByAccountId(account.id);
-    const invitedUsers = await userService.getInvitedUsersByAccountId(account.id);
+    const invitedUsers = await listInvitations({ accountId: account.id });
 
     const usersFormatted: WebUser[] = users.map((teamUser) => {
         return {

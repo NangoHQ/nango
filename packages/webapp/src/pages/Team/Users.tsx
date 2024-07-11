@@ -89,7 +89,7 @@ export const TeamUsers: React.FC = () => {
                             return (
                                 <Table.Row key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
-                                        <Table.Cell bordered className="text-white" key={cell.id}>
+                                        <Table.Cell bordered className="text-white h-14" key={cell.id}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </Table.Cell>
                                     ))}

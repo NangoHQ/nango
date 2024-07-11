@@ -36,7 +36,7 @@ export const TeamInfo: React.FC = () => {
             <h3 className="font-semibold text-sm text-white">Team Name</h3>
             <Input
                 ref={ref}
-                variant={'main'}
+                variant={'flat'}
                 inputSize={'lg'}
                 value={name}
                 onChange={(e) => setName(e.target.value)}

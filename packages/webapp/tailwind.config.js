@@ -17,7 +17,6 @@ module.exports = {
                 'bg-cta-green': '#75E270',
                 'text-cta-green1': '#224421',
                 'border-gray': '#333333',
-                'border-gray-400': '#323439',
                 'border-blue': '#1489DF',
                 'text-blue': '#1489DF',
                 'text-light-blue': '#76C5FF',
@@ -41,6 +40,7 @@ module.exports = {
                 'dark-600': '#27272A',
                 'dark-700': '#18181B',
                 'dark-800': '#09090B',
+                'border-gray-400': '#323439',
                 'text-light': '#A9ACB3'
             },
             width: {
