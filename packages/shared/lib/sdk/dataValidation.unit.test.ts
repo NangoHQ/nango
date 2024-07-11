@@ -1,14 +1,19 @@
-import { describe, expect, it } from 'vitest';
-import { validateData } from './dataValidation.js';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { clearValidationCache, validateData } from './dataValidation.js';
 
 describe('validateData', () => {
+    beforeEach(() => {
+        clearValidationCache();
+    });
+
     it('should skip if no json schema ', () => {
-        const val = validateData({ input: { foo: 'bar' }, modelName: 'Test', jsonSchema: undefined });
+        const val = validateData({ version: '1', input: { foo: 'bar' }, modelName: 'Test', jsonSchema: undefined });
         expect(val).toStrictEqual(true);
     });
 
     it('should return true if no error', () => {
         const val = validateData({
+            version: '1',
             input: { foo: 'bar' },
             modelName: 'Test',
             jsonSchema: { definitions: { Test: { type: 'object', properties: { foo: { type: 'string' } } } } }
@@ -18,6 +23,7 @@ describe('validateData', () => {
 
     it('should return an error', () => {
         const val = validateData({
+            version: '1',
             input: { foo: 'bar' },
             modelName: 'Test',
             jsonSchema: {
@@ -31,6 +37,7 @@ describe('validateData', () => {
 
     it('should support ref', () => {
         const val = validateData({
+            version: '1',
             input: { ref: { id: 'bar' } },
             modelName: 'Test1',
             jsonSchema: {
@@ -45,6 +52,7 @@ describe('validateData', () => {
 
     it('should support ref error', () => {
         const val = validateData({
+            version: '1',
             input: { ref: { id: 1 } },
             modelName: 'Test1',
             jsonSchema: {
@@ -67,6 +75,7 @@ describe('validateData', () => {
 
     it('should not throw if invalid json schema', () => {
         const val = validateData({
+            version: '1',
             input: { foo: 'bar' },
             modelName: 'Test',
             jsonSchema: {
@@ -79,6 +88,7 @@ describe('validateData', () => {
 
     it('should support exotic format', () => {
         const val = validateData({
+            version: '1',
             input: { foo: 'bar' },
             modelName: 'Test',
             jsonSchema: {
@@ -90,6 +100,7 @@ describe('validateData', () => {
 
     it('should handle empty input with model', () => {
         const val = validateData({
+            version: '1',
             input: undefined,
             modelName: 'Test',
             jsonSchema: {
@@ -111,6 +122,7 @@ describe('validateData', () => {
 
     it('should handle unexpected input', () => {
         const val = validateData({
+            version: '1',
             input: '1',
             modelName: undefined,
             jsonSchema: { definitions: {} }
@@ -128,6 +140,7 @@ describe('validateData', () => {
 
     it('should handle unknown modelName', () => {
         const val = validateData({
+            version: '1',
             input: '1',
             modelName: 'Test',
             jsonSchema: { definitions: {} }
