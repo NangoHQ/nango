@@ -863,7 +863,11 @@ class ConnectionService {
     }): Promise<ServiceResponse<{ refreshed: boolean; credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials }>> {
         const providerConfigKey = providerConfig.unique_key;
 
-        const getConnection = async (): Promise<{ connection: Connection; shouldRefresh: boolean }> => {
+        // fetch connection and return credentials if they are fresh
+        const getConnectionAndFreshCredentials = async (): Promise<{
+            connection: Connection;
+            freshCredentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | null;
+        }> => {
             const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success || !connection) {
@@ -878,60 +882,35 @@ class ConnectionService {
                 instantRefresh
             );
 
-            return { connection, shouldRefresh };
+            return {
+                connection,
+                freshCredentials: shouldRefresh
+                    ? null
+                    : (connection.credentials as OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials)
+            };
         };
 
-        // Check if the credentials need to be refreshed
-        // If not, return the current credentials as they are still valid
-        const { connection, shouldRefresh } = await getConnection();
-        if (!shouldRefresh) {
-            return {
-                success: true,
-                error: null,
-                response: {
-                    refreshed: false,
-                    credentials: connection.credentials as OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials
-                }
-            };
-        }
-
-        await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_START, 'Token refresh is being started', LogActionEnum.AUTH, {
-            environmentId: String(environment_id),
-            connectionId,
-            providerConfigKey,
-            provider: providerConfig.provider
-        });
         // We must ensure that only one refresh is running at a time
         // Using a simple redis entry as a lock with a TTL to ensure it is always released.
         // NOTES:
         // - This is not a distributed lock and will not work in a multi-redis environment.
         // - It could also be unsafe in case of a Redis crash.
-        // We are using this for now as it is a simple solution that should work for most cases.
         const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
         try {
             const ttlInMs = 10000;
             const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
 
-            let connectionToRefresh = connection;
+            let connectionToRefresh: Connection;
             try {
-                const { tries } = await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
-                if (tries > 0) {
-                    // Another refresh was running so we check if the credentials were refreshed
-                    // If yes, we return the new credentials
-                    // If not, we proceed with the refresh
-                    const { connection, shouldRefresh } = await getConnection();
-                    if (!shouldRefresh) {
-                        return {
-                            success: true,
-                            error: null,
-                            response: {
-                                refreshed: false,
-                                credentials: connection.credentials as OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials
-                            }
-                        };
-                    }
-                    connectionToRefresh = connection;
+                await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
+                // Another refresh was running so we check if the credentials were refreshed
+                // If yes, we return the new credentials
+                // If not, we proceed with the refresh
+                const { connection, freshCredentials } = await getConnectionAndFreshCredentials();
+                if (freshCredentials) {
+                    return { success: true, error: null, response: { refreshed: false, credentials: freshCredentials } };
                 }
+                connectionToRefresh = connection;
             } catch (err) {
                 // lock acquisition might have timed out
                 // but refresh might have been successfully performed by another execution
@@ -939,19 +918,19 @@ class ConnectionService {
                 // so we check if the credentials were refreshed
                 // if yes, we return the new credentials
                 // if not, we actually fail the refresh
-                const { connection, shouldRefresh } = await getConnection();
-                if (!shouldRefresh) {
-                    return {
-                        success: true,
-                        error: null,
-                        response: {
-                            refreshed: false,
-                            credentials: connection.credentials as OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials
-                        }
-                    };
+                const { freshCredentials } = await getConnectionAndFreshCredentials();
+                if (freshCredentials) {
+                    return { success: true, error: null, response: { refreshed: false, credentials: freshCredentials } };
                 }
                 throw err;
             }
+
+            await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_START, 'Token refresh is being started', LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
+                connectionId,
+                providerConfigKey,
+                provider: providerConfig.provider
+            });
 
             const { success, error, response: newCredentials } = await this.getNewCredentials(connectionToRefresh, providerConfig, template);
             if (!success || !newCredentials) {
