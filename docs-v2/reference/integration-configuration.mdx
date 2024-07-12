@@ -221,11 +221,12 @@ Types not listed here are not supported. If you think we are missing something, 
 
 ### Arrays
 
-Your can use array types if the `[]` notation:
+Your can use array types like this:
 ```yaml nango.yaml
 models:
   Folder:
     files: string[]
+    tickets: any[]
 ```
 
 ### Type & string unions
@@ -330,6 +331,19 @@ models:
   Task:
     name?: string
 ```
+
+### Unsupported syntax
+
+A non-exhaustive list of unsupported syntax:
+```yaml nango.yaml
+models:
+  Task:
+    # Empty array
+    name: []
+    # Typescript utility types
+    user: Pick<User>
+```
+
 
 # Deploying your configuration
 

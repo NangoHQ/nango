@@ -232,3 +232,27 @@ export async function search(
         return Err(new Error(`Error searching schedules: ${stringifyError(err)}`));
     }
 }
+
+export async function hardDeleteOlderThanNDays(db: knex.Knex, days: number): Promise<Result<DbSchedule[]>> {
+    try {
+        // NOTE: only deleting one schedule at a time to avoid massive cascading deletes of tasks
+        const deleted = await db
+            .from<DbSchedule>(SCHEDULES_TABLE)
+            .where(
+                'id',
+                '=',
+                db.raw(`ANY(ARRAY(
+                    SELECT "id"
+                    FROM ${SCHEDULES_TABLE}
+                    WHERE "deleted_at" < NOW() - INTERVAL '${days} days'
+                    ORDER BY "id" ASC
+                    LIMIT 1
+                  ))`)
+            )
+            .del()
+            .returning('*');
+        return Ok(deleted);
+    } catch (err: unknown) {
+        return Err(new Error(`Error hard deleting schedules older than ${days} days: ${stringifyError(err)}`));
+    }
+}

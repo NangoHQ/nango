@@ -321,6 +321,13 @@ describe('parse', () => {
                 }
             });
         });
+
+        it('should throw on empty array type', () => {
+            const parser = new ModelsParser({ raw: { Test: { user: '[]' } } });
+            parser.parseAll();
+
+            expect(parser.errors).toStrictEqual([new ParserErrorTypeSyntax({ value: '[]', path: ['Test', 'user'] })]);
+        });
     });
 
     describe('typescript any', () => {

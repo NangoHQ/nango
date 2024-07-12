@@ -59,6 +59,7 @@ jobs:
                     nango compile
 
                     cp -r dist/ $wd/$dir/
+                    cp -r .nango/ $wd/$dir/
 
                     cd -
                     rm -rf /tmp/nango-temp
