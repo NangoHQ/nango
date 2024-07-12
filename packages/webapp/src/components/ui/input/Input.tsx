@@ -8,9 +8,9 @@ export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 export const inputStyles = cva('', {
     variants: {
         size: {
-            xs: 'text-sm ',
-            sm: 'text-sm ',
-            md: 'text-sm',
+            xs: 'text-sm px-3 py-[4px] placeholder-gray-400',
+            sm: 'text-sm px-3 py-[7px] placeholder-gray-400',
+            md: 'text-sm px-3 py-[10px] placeholder-gray-400',
             lg: 'text-sm px-3 py-[13px] placeholder-gray-400'
         }
     },
