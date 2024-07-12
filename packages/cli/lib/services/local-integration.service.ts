@@ -64,6 +64,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 if (isAction) {
                     // Validate action input against json schema
                     const valInput = validateData({
+                        version: nangoProps.syncConfig.version || '1',
                         input: input,
                         modelName: nangoProps.syncConfig.input,
                         jsonSchema: nangoProps.syncConfig.models_json_schema
@@ -84,6 +85,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     // Validate action output against json schema
                     const modelNameOutput = nangoProps.syncConfig.models.length > 0 ? nangoProps.syncConfig.models[0] : undefined;
                     const valOutput = validateData({
+                        version: nangoProps.syncConfig.version || '1',
                         input: output,
                         modelName: modelNameOutput,
                         jsonSchema: nangoProps.syncConfig.models_json_schema
