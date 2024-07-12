@@ -340,6 +340,7 @@
                 "integrations/all/cloudentity",
                 "integrations/all/coda",
                 "integrations/all/confluence",
+                "integrations/all/contentful",
                 "integrations/all/contentstack",
                 "integrations/all/coros",
                 "integrations/all/datev",
