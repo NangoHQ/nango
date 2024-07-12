@@ -332,6 +332,19 @@ models:
     name?: string
 ```
 
+### Unsupported syntax
+
+A non-exhaustive list of unsupported syntax:
+```yaml nango.yaml
+models:
+  Task:
+    # Empty array
+    name: []
+    # Typescript utility types
+    user: Pick<User>
+```
+
+
 # Deploying your configuration
 
 Changes to your integration configuration become active once you deploy them to a Nango environment using the `nango deploy` CLI command.
