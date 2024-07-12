@@ -79,6 +79,26 @@ describe('parse', () => {
                 Test2: { name: 'Test2', fields: [{ name: 'name', value: null, tsType: true, array: false, optional: false }] }
             });
         });
+
+        it('should handle duplicate field (ordered)', () => {
+            const parser = new ModelsParser({ raw: { Test: { __extends: 'TestBase', id: 'string' }, TestBase: { id: 'number' } } });
+            parser.parseAll();
+
+            expect(Object.fromEntries(parser.parsed)).toStrictEqual({
+                Test: { name: 'Test', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] },
+                TestBase: { name: 'TestBase', fields: [{ name: 'id', value: 'number', tsType: true, array: false, optional: false }] }
+            });
+        });
+
+        it('should handle duplicate field (unordered)', () => {
+            const parser = new ModelsParser({ raw: { Test: { id: 'string', __extends: 'TestBase' }, TestBase: { id: 'number' } } });
+            parser.parseAll();
+
+            expect(Object.fromEntries(parser.parsed)).toStrictEqual({
+                Test: { name: 'Test', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] },
+                TestBase: { name: 'TestBase', fields: [{ name: 'id', value: 'number', tsType: true, array: false, optional: false }] }
+            });
+        });
     });
 
     describe('object literal', () => {
