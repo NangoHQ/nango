@@ -75,7 +75,7 @@ export class ModelsParser {
     }
 
     parseFields({ fields, stack }: { fields: NangoYamlModelFields; stack: Set<string> }): NangoModelField[] {
-        const parsed: NangoModelField[] = [];
+        const parsed = new Map<string, NangoModelField>();
         let dynamicField: NangoModelField | null = null;
 
         for (const [nameTmp, value] of Object.entries(fields)) {
@@ -98,10 +98,14 @@ export class ModelsParser {
                     // Merge parent
                     const extendedFields = this.parsed.get(trimmed)!;
                     for (const field of extendedFields.fields) {
+                        if (parsed.has(field.name)) {
+                            // field already exists
+                            continue;
+                        }
                         if (field.dynamic) {
                             dynamicField = field;
                         } else {
-                            parsed.push(field);
+                            parsed.set(field.name, field);
                         }
                     }
                 }
@@ -123,13 +127,13 @@ export class ModelsParser {
                     continue;
                 }
 
-                parsed.push({ name, value: acc, array: true, optional });
+                parsed.set(name, { name, value: acc, array: true, optional });
                 continue;
             }
 
             // Standard data types that requires no change
             if (typeof value === 'boolean' || typeof value === 'number' || value === null || value === undefined) {
-                parsed.push({ name, value, tsType: true });
+                parsed.set(name, { name, value, tsType: true });
                 continue;
             }
 
@@ -143,7 +147,7 @@ export class ModelsParser {
                     continue;
                 }
 
-                parsed.push({ name, value: acc, optional });
+                parsed.set(name, { name, value: acc, optional });
                 continue;
             }
 
@@ -158,7 +162,7 @@ export class ModelsParser {
                     continue;
                 }
 
-                parsed.push({ name, value: acc[0]!.value, union: true, optional });
+                parsed.set(name, { name, value: acc[0]!.value, union: true, optional });
                 continue;
             }
 
@@ -169,40 +173,47 @@ export class ModelsParser {
             const isArray = value.endsWith('[]');
             const valueClean = isArray ? value.substring(0, value.length - 2) : value;
 
+            // empty array
+            if (valueClean === '') {
+                this.errors.push(new ParserErrorTypeSyntax({ value, path: [parent, name] }));
+                parsed.set(name, { name, value: valueClean, array: isArray, optional });
+                continue;
+            }
+
             const alias = getPotentialTypeAlias(valueClean);
             if (alias) {
-                parsed.push({ name, value: alias, tsType: true, array: isArray, optional });
+                parsed.set(name, { name, value: alias, tsType: true, array: isArray, optional });
                 continue;
             }
 
             const native = getNativeDataType(valueClean);
             if (!(native instanceof Error)) {
-                parsed.push({ name, value: native, tsType: true, array: isArray, optional });
+                parsed.set(name, { name, value: native, tsType: true, array: isArray, optional });
                 continue;
             }
 
             if (isDisallowedType(valueClean)) {
                 this.errors.push(new ParserErrorTypeSyntax({ value: valueClean, path: [parent, name] }));
-                parsed.push({ name, value: valueClean, array: isArray, optional });
+                parsed.set(name, { name, value: valueClean, array: isArray, optional });
                 continue;
             }
 
             // Model name
             const isModel = this.ifModelParse({ name: valueClean, stack });
             if (isModel) {
-                parsed.push({ name, value: valueClean, model: true, optional, array: isArray });
+                parsed.set(name, { name, value: valueClean, model: true, optional, array: isArray });
                 continue;
             }
 
             // Literal string
-            parsed.push({ name, value: valueClean, array: isArray, optional });
+            parsed.set(name, { name, value: valueClean, array: isArray, optional });
         }
 
         if (dynamicField) {
-            parsed.push(dynamicField);
+            parsed.set(dynamicField.name, dynamicField);
         }
 
-        return parsed;
+        return Array.from(parsed.values());
     }
 }
 

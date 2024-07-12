@@ -50,6 +50,26 @@
                                             "type": "auto_start must be a boolean."
                                         }
                                     },
+                                    "version": {
+                                        "oneOf": [
+                                            {
+                                                "type": "integer",
+                                                "errorMessage": {
+                                                    "_": " "
+                                                }
+                                            },
+                                            {
+                                                "type": "string",
+                                                "pattern": "^(\\d+|\\d+\\.\\d+\\.\\d+)$",
+                                                "errorMessage": {
+                                                    "_": " "
+                                                }
+                                            }
+                                        ],
+                                        "errorMessage": {
+                                            "_": "version must be an interger, string or a semver string. Example: \"10\", \"1.0.0\", or 10"
+                                        }
+                                    },
                                     "runs": {
                                         "type": "string",
                                         "errorMessage": {
@@ -157,6 +177,26 @@
                                         "type": "string",
                                         "errorMessage": {
                                             "type": "description must be a string."
+                                        }
+                                    },
+                                    "version": {
+                                        "oneOf": [
+                                            {
+                                                "type": "integer",
+                                                "errorMessage": {
+                                                    "_": " "
+                                                }
+                                            },
+                                            {
+                                                "type": "string",
+                                                "pattern": "^(\\d+|\\d+\\.\\d+\\.\\d+)$",
+                                                "errorMessage": {
+                                                    "_": " "
+                                                }
+                                            }
+                                        ],
+                                        "errorMessage": {
+                                            "_": "version must be an interger, string or a semver string. Example: \"10\", \"1.0.0\", or 10"
                                         }
                                     },
                                     "endpoint": {

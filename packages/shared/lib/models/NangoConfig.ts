@@ -134,6 +134,7 @@ export interface NangoSyncConfig {
     webhookSubscriptions?: string[];
     enabled?: boolean;
     json_schema: JSONSchema7 | null;
+    upgrade_version?: boolean;
 
     layout_mode: LayoutMode;
 }

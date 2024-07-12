@@ -838,7 +838,12 @@ export class NangoSync extends NangoAction {
 
         // Validate records
         for (const record of results) {
-            const validation = validateData({ input: JSON.parse(JSON.stringify(record)), jsonSchema: this.syncConfig!.models_json_schema, modelName: model });
+            const validation = validateData({
+                version: this.syncConfig?.version || '1',
+                input: JSON.parse(JSON.stringify(record)),
+                jsonSchema: this.syncConfig!.models_json_schema,
+                modelName: model
+            });
             if (validation === true) {
                 continue;
             }

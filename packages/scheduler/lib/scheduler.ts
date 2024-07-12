@@ -10,10 +10,12 @@ import { SchedulingWorker } from './workers/scheduling/scheduling.worker.js';
 import type { DatabaseClient } from './db/client.js';
 import { logger } from './utils/logger.js';
 import { uuidv7 } from 'uuidv7';
+import { CleanupWorker } from './workers/cleanup/cleanup.worker.js';
 
 export class Scheduler {
     private monitor: MonitorWorker | null = null;
     private scheduling: SchedulingWorker | null = null;
+    private cleanup: CleanupWorker | null = null;
     private onCallbacks: Record<TaskState, (task: Task) => void>;
     private dbClient: DatabaseClient;
 
@@ -63,8 +65,9 @@ export class Scheduler {
                     this.onCallbacks[task.state](task);
                 }
             });
-            // TODO: ensure there is only one instance of the scheduler
             this.scheduling.start();
+            this.cleanup = new CleanupWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
+            this.cleanup.start();
         } else {
             throw new Error('Scheduler must be instantiated in the main thread');
         }
@@ -73,6 +76,7 @@ export class Scheduler {
     stop(): void {
         this.monitor?.stop();
         this.scheduling?.stop();
+        this.cleanup?.stop();
     }
 
     /**

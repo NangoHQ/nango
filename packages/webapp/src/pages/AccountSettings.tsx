@@ -37,10 +37,10 @@ export default function AccountSettings() {
 
             if (res?.status === 200) {
                 const {
-                    data: { account, users, invitedUsers }
+                    data: { account, users, invitedUsers, isAdminTeam }
                 } = await res.json();
                 setAccountName(account['name']);
-                setIsAdmin(account['is_admin']);
+                setIsAdmin(isAdminTeam);
                 setMembers(users);
                 setInvitedMembers(invitedUsers);
             }

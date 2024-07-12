@@ -45,7 +45,8 @@ export class NangoYamlParserV1 extends NangoYamlParser {
                         input: null, // Input was never allowed in v1
                         output: modelOutput && modelOutput.length > 0 ? modelOutput.map((m) => m.name) : null,
                         scopes: [], // Scopes was never allowed in v1
-                        usedModels: []
+                        usedModels: [],
+                        version: syncOrAction.version || ''
                     });
                 } else {
                     const modelOutput = this.getModelForOutput({
@@ -71,7 +72,8 @@ export class NangoYamlParserV1 extends NangoYamlParser {
                         auto_start: syncOrAction.auto_start === false ? false : true,
                         usedModels: modelOutput.map((m) => m.name),
                         sync_type: 'incremental',
-                        webhookSubscriptions: []
+                        webhookSubscriptions: [],
+                        version: syncOrAction.version || ''
                     });
                 }
             }

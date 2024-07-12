@@ -70,6 +70,16 @@ class ConfigService {
         }
     }
 
+    async getById(id: number): Promise<ProviderConfig | null> {
+        const result = await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).first();
+
+        if (!result) {
+            return null;
+        }
+
+        return encryptionManager.decryptProviderConfig(result);
+    }
+
     async getProviderName(providerConfigKey: string): Promise<string | null> {
         const result = await db.knex.select('provider').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, deleted: false });
 

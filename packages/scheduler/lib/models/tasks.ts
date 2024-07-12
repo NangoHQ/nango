@@ -5,6 +5,7 @@ import { Ok, Err, stringifyError } from '@nangohq/utils';
 import { taskStates } from '../types.js';
 import type { TaskState, Task, TaskTerminalState, TaskNonTerminalState } from '../types.js';
 import { uuidv7 } from 'uuidv7';
+import { SCHEDULES_TABLE } from './schedules.js';
 
 export const TASKS_TABLE = 'tasks';
 
@@ -303,5 +304,38 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
         return Ok(tasks.map(DbTask.from));
     } catch (err: unknown) {
         return Err(new Error(`Error expiring tasks: ${stringifyError(err)}`));
+    }
+}
+
+export async function hardDeleteOlderThanNDays(db: knex.Knex, days: number): Promise<Result<Task[]>> {
+    try {
+        // Delete terminated tasks where lastStateTransitionAt is older than N days
+        // unless it is the most recent task for an given schedule
+        const tasks = await db
+            .from<DbTask>(TASKS_TABLE)
+            .where(
+                'id',
+                '=',
+                // schedules.id is null if the task is not associated with a schedule (ie: actions)
+                // or if the task is not the last task for its associated schedule
+                db.raw(`ANY(ARRAY(
+                    SELECT ${TASKS_TABLE}.id
+                    FROM ${TASKS_TABLE}
+                    LEFT JOIN ${SCHEDULES_TABLE} ON ${SCHEDULES_TABLE}.last_scheduled_task_id = ${TASKS_TABLE}.id
+                    WHERE ${TASKS_TABLE}.terminated = true
+                    AND ${TASKS_TABLE}.starts_after < NOW() - INTERVAL '${days} days'
+                    AND ${SCHEDULES_TABLE}.id IS NULL
+                    ORDER BY ${TASKS_TABLE}.id ASC
+                    LIMIT 1000
+                  ))`)
+            )
+            .del()
+            .returning('*');
+        if (!tasks?.[0]) {
+            return Ok([]);
+        }
+        return Ok(tasks.map(DbTask.from));
+    } catch (err: unknown) {
+        return Err(new Error(`Error hard deleting tasks older than ${days} days: ${stringifyError(err)}`));
     }
 }
