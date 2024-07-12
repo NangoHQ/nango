@@ -169,6 +169,13 @@ export class ModelsParser {
             const isArray = value.endsWith('[]');
             const valueClean = isArray ? value.substring(0, value.length - 2) : value;
 
+            // empty array
+            if (valueClean === '') {
+                this.errors.push(new ParserErrorTypeSyntax({ value, path: [parent, name] }));
+                parsed.push({ name, value: valueClean, array: isArray, optional });
+                continue;
+            }
+
             const alias = getPotentialTypeAlias(valueClean);
             if (alias) {
                 parsed.push({ name, value: alias, tsType: true, array: isArray, optional });
