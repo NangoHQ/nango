@@ -330,8 +330,6 @@ export class SyncRunService {
                     `${syncName}-${this.nangoConnection.environment_id}-${this.nangoConnection.provider_config_key}-${this.nangoConnection.connection_id}`,
                 activityLogId: this.activityLogId as unknown as number,
                 nangoProps,
-                integrationData: { fileLocation: this.syncConfig.file_location },
-                environmentId: this.nangoConnection.environment_id,
                 writeToDb: this.writeToDb,
                 isInvokedImmediately: this.isInvokedImmediately,
                 isWebhook: this.isWebhook,
