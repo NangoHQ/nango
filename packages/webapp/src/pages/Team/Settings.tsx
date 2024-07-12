@@ -4,9 +4,10 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { useTeam } from '../../hooks/useTeam';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { TeamInfo } from './Info';
-import { TeamUsers } from './Users';
-import { AddTeamMember } from './AddTeamMember';
+import { TeamInfo } from './components/Info';
+import { TeamUsers } from './components/Users';
+import { AddTeamMember } from './components/AddTeamMember';
+import { Admin } from './components/Admin';
 
 export const TeamSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -50,6 +51,7 @@ export const TeamSettings: React.FC = () => {
             <div className="flex flex-col gap-12">
                 <TeamInfo />
                 <TeamUsers />
+                <Admin />
             </div>
         </DashboardLayout>
     );

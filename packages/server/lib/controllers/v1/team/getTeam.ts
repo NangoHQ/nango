@@ -33,7 +33,13 @@ export const getTeam = asyncWrapper<GetTeam>(async (req, res) => {
                 updated_at: account.updated_at.toISOString()
             },
             users: usersFormatted,
-            invitedUsers,
+            invitedUsers: invitedUsers.map((invitation) => {
+                return {
+                    ...invitation,
+                    created_at: account.created_at.toISOString(),
+                    updated_at: account.updated_at.toISOString()
+                };
+            }),
             isAdminTeam: account.uuid === NANGO_ADMIN_UUID
         }
     });

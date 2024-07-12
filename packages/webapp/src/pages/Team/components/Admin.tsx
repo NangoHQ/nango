@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import Button from '../../components/ui/button/Button';
-import { useStore } from '../../store';
-import { apiFetch } from '../../utils/api';
+import Button from '../../../components/ui/button/Button';
+import { useStore } from '../../../store';
+import { apiFetch } from '../../../utils/api';
 
 export const Admin: React.FC = () => {
     const env = useStore((state) => state.env);

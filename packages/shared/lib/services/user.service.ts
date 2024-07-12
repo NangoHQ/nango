@@ -3,7 +3,7 @@ import * as uuid from 'uuid';
 import type { Result } from '@nangohq/utils';
 import { isEnterprise, Ok, Err } from '@nangohq/utils';
 import type { User } from '../models/Admin.js';
-import type { DBInvitation, DBTeam } from '@nangohq/types';
+import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 
@@ -199,6 +199,13 @@ class UserService {
         const result = await db.knex.from<DBInvitation>(`_nango_invited_users`).where({ token }).update({ accepted: true });
 
         return result;
+    }
+
+    async update({ id, ...data }: { id: number } & Omit<Partial<DBUser>, 'id'>): Promise<number> {
+        return await db.knex
+            .from<DBUser>(`_nango_users`)
+            .update({ ...data, updated_at: new Date() })
+            .where({ id });
     }
 }
 

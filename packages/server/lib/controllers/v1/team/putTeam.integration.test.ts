@@ -5,7 +5,7 @@ import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '
 
 const route = '/api/v1/team';
 let api: Awaited<ReturnType<typeof runServer>>;
-describe(`GET ${route}`, () => {
+describe(`PUT ${route}`, () => {
     beforeAll(async () => {
         await multipleMigrations();
         api = await runServer();
@@ -15,7 +15,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch(route, { query: { env: 'dev' } });
+        const res = await api.fetch(route, { method: 'PUT', query: { env: 'dev' }, body: { name: '' } });
 
         shouldBeProtected(res);
     });
@@ -31,36 +31,40 @@ describe(`GET ${route}`, () => {
         shouldRequireQueryEnv(res);
     });
 
-    it('should get team', async () => {
-        const { env, user, account } = await seeders.seedAccountEnvAndUser();
+    it('should validate body', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(route, {
+            method: 'PUT',
+            query: { env: 'dev' },
+            token: env.secret_key,
+            // @ts-expect-error on purpose
+            body: { name: 1 }
+        });
+
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_body',
+                errors: [{ code: 'invalid_type', message: 'Expected string, received number', path: ['name'] }]
+            }
+        });
+        expect(res.res.status).toBe(400);
+    });
+
+    it('should put team name', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(route, {
+            method: 'PUT',
             query: { env: 'dev' },
-            token: env.secret_key
+            token: env.secret_key,
+            body: { name: 'hello' }
         });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
+        expect(res.json).toMatchObject({
             data: {
-                invitedUsers: [],
-                isAdminTeam: false,
-                account: {
-                    id: account.id,
-                    is_capped: true,
-                    name: account.name,
-                    created_at: expect.toBeIsoDate(),
-                    updated_at: expect.toBeIsoDate(),
-                    uuid: account.uuid
-                },
-                users: [
-                    {
-                        accountId: account.id,
-                        email: user.email,
-                        id: user.id,
-                        name: user.name
-                    }
-                ]
+                name: 'hello'
             }
         });
     });

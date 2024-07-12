@@ -1,5 +1,5 @@
 import type { Merge } from 'type-fest';
-import type { ApiTimestamps, Endpoint } from '../api';
+import type { ApiError, ApiTimestamps, Endpoint } from '../api';
 import type { DBInvitation } from '../invitations/db';
 import type { WebUser } from '../user/api';
 import type { DBTeam } from './db';
@@ -18,7 +18,7 @@ export type GetTeam = Endpoint<{
     };
 }>;
 
-export type ApiInvitation = Omit<DBInvitation, 'token'>;
+export type ApiInvitation = Merge<Omit<DBInvitation, 'token'>, ApiTimestamps>;
 export type ApiTeam = Merge<DBTeam, ApiTimestamps>;
 
 export type PutTeam = Endpoint<{
@@ -31,12 +31,13 @@ export type PutTeam = Endpoint<{
     };
 }>;
 
-export type PostInvite = Endpoint<{
-    Method: 'POST';
-    Path: '/api/v1/team/invite';
+export type DeleteTeamUser = Endpoint<{
+    Method: 'DELETE';
+    Path: '/api/v1/team/users/:id';
     Querystring: { env: string };
-    Body: { emails: string[] };
+    Params: { id: number };
+    Error: ApiError<'user_not_found'>;
     Success: {
-        data: { invited: string[] };
+        data: { success: true };
     };
 }>;

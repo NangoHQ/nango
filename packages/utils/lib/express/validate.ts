@@ -45,7 +45,7 @@ export function zodErrorToHTTP(error: z.ZodError): ValidationError[] {
 /**
  * Enforce empty request body
  */
-export function requireEmptyBody(req: Request) {
+export function requireEmptyBody(req: Request<any>) {
     if (!req.body) {
         return;
     }
@@ -61,7 +61,7 @@ export function requireEmptyBody(req: Request) {
 /**
  * Enforce empty request query string
  */
-export function requireEmptyQuery(req: Request, { withEnv }: { withEnv: boolean } = { withEnv: false }) {
+export function requireEmptyQuery(req: Request<any>, { withEnv }: { withEnv: boolean } = { withEnv: false }) {
     const val = z
         .object(withEnv ? { env: z.string().max(250).min(1) } : {})
         .strict()

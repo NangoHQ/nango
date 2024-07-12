@@ -5,7 +5,7 @@ import * as uuid from 'uuid';
 
 const INVITE_EMAIL_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
 
-export async function expirePreviousInvitations({ email, accountId, trx }: { email: string; accountId: number; trx: Knex.Transaction }) {
+export async function expirePreviousInvitations({ email, accountId, trx }: { email: string; accountId: number; trx: Knex }) {
     const result = await trx
         .from<DBInvitation>(`_nango_invited_users`)
         .where({
@@ -31,7 +31,7 @@ export async function inviteEmail({
     name: string;
     accountId: number;
     invitedByUserId: number;
-    trx: Knex.Transaction;
+    trx: Knex;
 }) {
     const token = uuid.v4();
     const expires_at = new Date(new Date().getTime() + INVITE_EMAIL_EXPIRATION);

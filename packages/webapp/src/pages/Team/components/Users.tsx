@@ -1,9 +1,11 @@
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { ApiInvitation, WebUser } from '@nangohq/types';
-import { useTeam } from '../../hooks/useTeam';
-import { useStore } from '../../store';
-import * as Table from '../../components/ui/Table';
+import { useTeam } from '../../../hooks/useTeam';
+import { useStore } from '../../../store';
+import * as Table from '../../../components/ui/Table';
+import { InvitationAction, UserAction } from './Actions';
+import { Tag } from '../../../components/ui/label/Tag';
 
 export const columns: ColumnDef<WebUser | ApiInvitation>[] = [
     {
@@ -30,18 +32,20 @@ export const columns: ColumnDef<WebUser | ApiInvitation>[] = [
             if (!('created_at' in row.original)) {
                 return null;
             }
-            return 'invited';
+
+            return <Tag bgClassName="bg-yellow-base-35 text-yellow-base">invited</Tag>;
         }
     },
     {
         accessorKey: 'id',
         header: '',
-        size: 100,
+        size: 50,
         cell: ({ row }) => {
             if (!('created_at' in row.original)) {
-                return 'member';
+                return <UserAction user={row.original} />;
             }
-            return 'invited';
+
+            return <InvitationAction invitation={row.original} />;
         }
     }
 ];

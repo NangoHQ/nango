@@ -9,9 +9,10 @@ export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 export const wrapperStyles = cva('', {
     variants: {
         variant: {
-            empty: '',
-            flat: 'bg-active-gray',
-            border: 'bg-active-gray border-border-gray-400'
+            empty: 'border-dark-800',
+            flat: 'bg-active-gray border-dark-800',
+            border: 'bg-active-gray border-border-gray-400',
+            black: 'bg-pure-black border-border-gray-400'
         }
     },
     defaultVariants: {
@@ -43,7 +44,7 @@ const Input = forwardRef<
     return (
         <div
             className={cn(
-                'relative flex items-center bg-transparent w-full rounded border border-dark-800 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                'relative flex items-center bg-transparent w-full rounded border  text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 wrapperStyles({ variant }),
                 className
             )}
