@@ -9,6 +9,7 @@ integrations:
                     - Sites.ReadWrite.All
                     - offline_access
                 output: SharePointMetadata
+                version: 1.0.0
         syncs:
             file-sync:
                 description: |
@@ -22,6 +23,7 @@ integrations:
                 input: SharePointMetadata
                 auto_start: false
                 output: FileMetadata
+                version: 1.0.0
 models:
     FileMetadata:
         id: string

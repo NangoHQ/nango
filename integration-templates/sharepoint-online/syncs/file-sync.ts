@@ -81,10 +81,12 @@ async function processListItems(nango: NangoSync, siteId: string, listId: string
 
     // Paginate through list items and sync each file metadata
     for await (const listItems of nango.paginate(config)) {
+        const allMetadata = [];
         for (const item of listItems) {
-            const file = await fetchDriveItemDetails(nango, siteId, listId, item.id);
-            await nango.batchSave<FileMetadata>([file], 'FileMetadata');
+            const metadata = await fetchDriveItemDetails(nango, siteId, listId, item.id);
+            allMetadata.push(metadata);
         }
+        await nango.batchSave<FileMetadata>(allMetadata, 'FileMetadata');
     }
 }
 
