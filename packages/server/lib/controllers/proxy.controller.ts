@@ -334,8 +334,8 @@ class ProxyController {
                 headers,
                 decompress
             };
-            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-                requestConfig.data = data || {};
+            if (data && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+                requestConfig.data = data;
             }
             const responseStream: AxiosResponse = await backOff(
                 () => {

@@ -36,12 +36,12 @@ export function httpRetryStrategy(error: unknown, _attemptNumber: number): boole
         return false;
     }
 
-    if (!error.response || !error.status) {
-        return false;
-    }
-
     if (error.code && handledCode.includes(error.code)) {
         return true;
+    }
+
+    if (!error.response || !error.status) {
+        return false;
     }
 
     if (error.status >= 499) {

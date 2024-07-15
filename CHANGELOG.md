@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.41.1] - 2024-07-12
+
+### Added
+
+- *(internal-integration-templates)* [nan-1343] allow integration templates to be run from the repo (#2473) by @khaliqgant
+- *(integrations)* Add support for zoominfo (#2469) by @hassan254-prog
+- *(oauth2)* Add coros provider to list of clientProviders (#2476) by @hassan254-prog
+- *(integrations)* Add support for Coros (#2449) by @henrymgarrett
+- *(integrations)* Add support for listmonk (#2480) by @samuelandert
+- *(account)* Check password strength (#2483) by @bodinsamuel
+- *(integration-templates)* [nan-1350] internal template versioning process (#2491) by @khaliqgant
+- *(integration-templates)* Add luma integration template (#2490) by @hassan254-prog
+
+### Changed
+
+- Data validation (#2468) by @bodinsamuel
+- *(CLI)* Protect against sync model renaming destructive consequences (#2475) by @TBonnin
+- *(deps-dev)* Bump fast-loops from 1.1.3 to 1.1.4 (#2492) by @dependabot[bot]
+- *(scheduler)* Cleanup tasks and schedules (#2485) by @TBonnin
+
+### Fixed
+
+- *(ui)* Toggle was not in sync with actual state (#2472) by @bodinsamuel
+- *(integration-templates)* [nan-1328] remove auto start false (#2479) by @khaliqgant
+- Handle big payload across the stack (#2474) by @bodinsamuel
+- *(slack-notifications)* [nan-1164] add lock check for remove failing connection (#2482) by @khaliqgant
+- Slow connection page (#2481) by @TBonnin
+- *(validation)* Change default to false (#2487) by @bodinsamuel
+- *(auth)* Do not display refresh button if not possible (#2484) by @bodinsamuel
+- *(auth)* Stop leaking stack and credentials when erroring (#2489) by @bodinsamuel
+- *(types)* Correct Timestamps, move env and account (#2486) by @bodinsamuel
+- *(webapp)* [nan-1356] fix UI for syncs (#2498) by @khaliqgant
+- *(webapp)* [nan-1295] stable ordering of syncs and actions (#2497) by @khaliqgant
+- Token refresh locking logic (#2494) by @TBonnin
+- *(integration-templates)* [nan-1366] add .nango dir and fix path (#2500) by @khaliqgant
+- *(nango-yaml)* Disallow empty array (#2501) by @bodinsamuel
+- *(validation)* Cache ajv compilation (#2502) by @bodinsamuel
+- *(ui)* Reup Admin, fix input size (#2503) by @bodinsamuel
+- Retry strategy (#2505) by @TBonnin
+- *(nango-yaml)* Handle fields duplicated by extends (#2504) by @bodinsamuel
+
 ## [v0.41.0] - 2024-07-05
 
 ### Added
@@ -1538,6 +1579,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.41.1]: https://github.com/NangoHQ/nango/compare/v0.41.0..v0.41.1
 [v0.41.0]: https://github.com/NangoHQ/nango/compare/v0.40.10..v0.41.0
 [v0.40.10]: https://github.com/NangoHQ/nango/compare/v0.40.9..v0.40.10
 [v0.40.9]: https://github.com/NangoHQ/nango/compare/v0.40.8..v0.40.9
