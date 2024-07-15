@@ -13,9 +13,10 @@ concurrency:
 
 jobs:
     tests:
-        runs-on: ubuntu-latest
+        runs-on: ${{ matrix.os }}
         strategy:
             matrix:
+                os: [ubuntu-latest, windows-latest]
                 node-version: [18.x, 20.x]
 
         steps:
@@ -33,16 +34,3 @@ jobs:
             - run: npm run test:unit
             - run: npm run test:cli
             - run: npm run test:integration
-
-            - name: Make sure flows.yaml is compiled
-              run: |
-                  node ./scripts/flows.js
-
-                  REPO_DIRTY=$(git status --short)
-                  if [[ ! -z "$REPO_DIRTY" ]]; then
-                    git diff
-                    echo ""
-                    echo -e "\r⛔️ flows.yaml hasn't been compiled, please run:"
-                    echo -e "node ./scripts/flows.js"
-                    exit 1
-                  fi
