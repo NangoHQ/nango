@@ -1,3 +1,4 @@
+import getPort, { portNumbers } from 'get-port';
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
 import type { ChildProcess } from 'child_process';
@@ -32,7 +33,7 @@ export class LocalRunner implements Runner {
 
     static async getOrStart(runnerId: string): Promise<LocalRunner> {
         try {
-            const port = Math.floor(Math.random() * 1000) + 11000; // random port between 11000 and 12000;
+            const port = await getPort({ port: portNumbers(11000, 12000) });
             let nodePath = '';
             try {
                 nodePath = execSync('which node', { encoding: 'utf-8' }).trim();
@@ -45,6 +46,7 @@ export class LocalRunner implements Runner {
             const cmd = nodePath;
             const runnerLocation = nangoRunnerPath;
             const cmdOptions = [runnerLocation, port.toString(), runnerId];
+
             logger.info(`[Runner] Starting runner with command: ${cmd} ${cmdOptions.join(' ')} `);
 
             const childProcess = spawn(cmd, cmdOptions, {
