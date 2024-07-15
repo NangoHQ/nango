@@ -51,6 +51,7 @@ export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
         return;
     }
 
+    // TODO: destroy this user session to avoid desync
     // TODO: last user removed from a team should (soft) delete the team
 
     res.status(200).send({

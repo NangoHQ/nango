@@ -36,7 +36,7 @@ export async function apiPutTeam(env: string, body: PutTeam['Body']) {
 
 export async function apiPostInvite(env: string, body: PostInvite['Body']) {
     try {
-        const res = await apiFetch(`/api/v1/team/invite?env=${env}`, {
+        const res = await apiFetch(`/api/v1/invite?env=${env}`, {
             method: 'POST',
             body: JSON.stringify(body)
         });
@@ -52,7 +52,7 @@ export async function apiPostInvite(env: string, body: PostInvite['Body']) {
 
 export async function apiDeleteInvite(env: string, body: DeleteInvite['Body']) {
     try {
-        const res = await apiFetch(`/api/v1/team/invite?env=${env}`, {
+        const res = await apiFetch(`/api/v1/invite?env=${env}`, {
             method: 'DELETE',
             body: JSON.stringify(body)
         });

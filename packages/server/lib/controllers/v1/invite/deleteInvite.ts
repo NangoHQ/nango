@@ -1,4 +1,4 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { DeleteInvite } from '@nangohq/types';
 import { expirePreviousInvitations } from '@nangohq/shared';
