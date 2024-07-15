@@ -73,7 +73,7 @@ export async function acceptInvitation(token: string) {
 }
 
 export async function getInvitation(token: string): Promise<DBInvitation | null> {
-    const date = new Date();
+    const now = new Date();
 
     if (isEnterprise && process.env['NANGO_ADMIN_INVITE_TOKEN'] === token) {
         return {
@@ -83,17 +83,19 @@ export async function getInvitation(token: string): Promise<DBInvitation | null>
             account_id: 0,
             invited_by: 0,
             token: '',
-            expires_at: new Date(),
+            expires_at: now,
             accepted: true,
-            created_at: new Date(),
-            updated_at: new Date()
+            created_at: now,
+            updated_at: now
         };
     }
-    const result = await db.knex.select('*').from<DBInvitation>(`_nango_invited_users`).where({ token, accepted: false }).whereRaw('expires_at > ?', date);
 
-    if (!result || result.length == 0 || result[0] == null) {
-        return null;
-    }
+    const result = await db.knex
+        .select('*')
+        .from<DBInvitation>(`_nango_invited_users`)
+        .where({ token, accepted: false })
+        .whereRaw('expires_at > ?', now)
+        .first();
 
-    return result[0];
+    return result || null;
 }
