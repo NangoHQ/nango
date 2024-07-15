@@ -69,7 +69,7 @@ export const AddTeamMember: React.FC<{ team: ApiTeam }> = ({ team }) => {
 
         if (update) {
             if (update.res.status === 200) {
-                toast({ title: 'Invited successfully', variant: 'success' });
+                toast({ title: `Added successfully to ${team.name}'s team`, variant: 'success' });
                 setOpen(false);
                 setEmails([{ value: '' }]);
                 void mutate();
