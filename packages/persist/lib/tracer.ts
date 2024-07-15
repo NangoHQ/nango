@@ -10,3 +10,6 @@ tracer.use('elasticsearch', {
     service: 'nango-elasticsearch'
 });
 tracer.use('express');
+tracer.use('dns', {
+    enabled: false
+});

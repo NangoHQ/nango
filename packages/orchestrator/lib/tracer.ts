@@ -7,3 +7,6 @@ tracer.use('pg', {
     service: (params: { database: string }) => `postgres-${params.database}`
 });
 tracer.use('express');
+tracer.use('dns', {
+    enabled: false
+});
