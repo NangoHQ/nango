@@ -1,7 +1,6 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
-import { metrics, retry } from '@nangohq/utils';
-import type { Pool } from 'tarn';
+import { retry } from '@nangohq/utils';
 import { defaultSchema, getDbConfig } from './getConfig.js';
 
 export class KnexDatabase {
@@ -10,41 +9,6 @@ export class KnexDatabase {
     constructor({ timeoutMs } = { timeoutMs: 60000 }) {
         const dbConfig = getDbConfig({ timeoutMs });
         this.knex = knex(dbConfig);
-    }
-
-    /**
-     * Not enabled by default because shared is imported by everything
-     */
-    enableMetrics() {
-        if (process.env['CI']) {
-            return;
-        }
-
-        const pool = this.knex.client.pool as Pool<any>;
-        const acquisitionMap = new Map<number, number>();
-
-        setInterval(() => {
-            metrics.gauge(metrics.Types.DB_POOL_USED, pool.numUsed());
-            metrics.gauge(metrics.Types.DB_POOL_FREE, pool.numFree());
-            metrics.gauge(metrics.Types.DB_POOL_WAITING, pool.numPendingAcquires());
-        }, 1000);
-        setInterval(() => {
-            // We want to avoid storing orphan too long, it's alright if we loose some metrics
-            acquisitionMap.clear();
-        }, 60000);
-
-        pool.on('acquireRequest', (evtId) => {
-            acquisitionMap.set(evtId, Date.now());
-        });
-        pool.on('acquireSuccess', (evtId) => {
-            const evt = acquisitionMap.get(evtId);
-            if (!evt) {
-                return;
-            }
-
-            metrics.duration(metrics.Types.DB_POOL_ACQUISITION_DURATION, Date.now() - evt);
-            acquisitionMap.delete(evtId);
-        });
     }
 
     async migrate(directory: string): Promise<any> {
