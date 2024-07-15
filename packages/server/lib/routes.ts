@@ -56,8 +56,12 @@ import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmati
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { tbaAuthorization } from './controllers/auth/tba.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
+import { putTeam } from './controllers/v1/team/putTeam.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
+import { postInvite } from './controllers/v1/invite/postInvite.js';
+import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
+import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
 
 export const router = express.Router();
 
@@ -173,7 +177,10 @@ if (MANAGED_AUTH_ENABLED) {
 
 web.route('/api/v1/meta').get(webAuth, environmentController.meta.bind(environmentController));
 web.route('/api/v1/team').get(webAuth, getTeam);
-web.route('/api/v1/team').put(webAuth, accountController.editAccount.bind(accountController));
+web.route('/api/v1/team').put(webAuth, putTeam);
+web.route('/api/v1/team/users/:id').delete(webAuth, deleteTeamUser);
+web.route('/api/v1/invite').post(webAuth, postInvite);
+web.route('/api/v1/invite').delete(webAuth, deleteInvite);
 web.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
 web.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
@@ -211,7 +218,6 @@ web.route('/api/v1/user').get(webAuth, userController.getUser.bind(userControlle
 web.route('/api/v1/user/name').put(webAuth, userController.editName.bind(userController));
 web.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));
 web.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.bind(userController));
-web.route('/api/v1/users/invite').post(webAuth, userController.invite.bind(userController));
 
 web.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));

@@ -12,7 +12,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { ProviderTag } from './components/ProviderTag';
 import { Prism } from '@mantine/prism';
 import { useInterval } from 'react-use';
-import ClipboardButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
@@ -76,9 +76,9 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         <div className="py-8 px-6 flex flex-col gap-5 h-screen">
             <header className="flex gap-2 flex-col border-b border-b-gray-400 pb-5">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-semibold text-white ">Operation Details</h3>
-                    <div className="mr-8">
-                        <ClipboardButton text={window.location.href} icontype="link" dark />
+                    <h3 className="text-xl font-semibold text-white">Operation Details</h3>
+                    <div className="mr-9">
+                        <CopyButton text={window.location.href} iconType="link" />
                     </div>
                 </div>
                 <div className="flex gap-3 items-center">

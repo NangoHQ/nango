@@ -20,16 +20,8 @@ class AccountService {
         }
     }
 
-    async editAccount(name: string, id: number): Promise<void> {
-        try {
-            await db.knex.update({ name, updated_at: new Date() }).from<DBTeam>(`_nango_accounts`).where({ id });
-        } catch (e) {
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.DATABASE,
-                accountId: id
-            });
-        }
+    async editAccount({ name, id }: { name: string; id: number }): Promise<void> {
+        await db.knex.update({ name, updated_at: new Date() }).from<DBTeam>(`_nango_accounts`).where({ id });
     }
 
     async getAccountByUUID(uuid: string): Promise<DBTeam | null> {
@@ -88,13 +80,13 @@ class AccountService {
 
     /**
      * Create Account
-     * @desc create a new account and assign to the default environmenets
+     * @desc create a new account and assign to the default environments
      */
     async createAccount(name: string): Promise<DBTeam | null> {
-        const result: void | Pick<DBTeam, 'id'> = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name: name }, ['id']);
+        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
 
-        if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-            await environmentService.createDefaultEnvironments(result[0]['id']);
+        if (result[0]?.id) {
+            await environmentService.createDefaultEnvironments(result[0].id);
 
             return result[0];
         }

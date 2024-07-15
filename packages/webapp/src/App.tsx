@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { AUTH_ENABLED, isCloud, isLocal } from './utils/utils';
 import { fetcher } from './utils/api';
 import { useStore } from './store';
+import { Toaster } from './components/ui/toast/Toaster';
 
 import Signup from './pages/Account/Signup';
 import InviteSignup from './pages/Account/InviteSignup';
@@ -27,13 +28,13 @@ import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
 import { EmailVerified } from './pages/Account/EmailVerified';
 import AuthLink from './pages/AuthLink';
-import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
 import { LogsSearch } from './pages/Logs/Search';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { SentryRoutes } from './utils/sentry';
+import { TeamSettings } from './pages/Team/Settings';
 
 const theme = createTheme({
     fontFamily: 'Inter'
@@ -88,7 +89,8 @@ const App = () => {
                             <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
                             {AUTH_ENABLED && (
                                 <>
-                                    <Route path="/:env/account-settings" element={<AccountSettings />} />
+                                    <Route path="/:env/account-settings" element={<Navigate to="/team-settings" />} />
+                                    <Route path="/:env/team-settings" element={<TeamSettings />} />
                                     <Route path="/:env/user-settings" element={<UserSettings />} />
                                 </>
                             )}
@@ -112,6 +114,7 @@ const App = () => {
                 </SWRConfig>
                 <ToastContainer />
             </TooltipProvider>
+            <Toaster />
         </MantineProvider>
     );
 };

@@ -5,7 +5,7 @@ import Button from '../../components/ui/button/Button';
 import { useEffect, useMemo, useState } from 'react';
 import { curlSnippet, nodeSyncSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
-import CopyButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
 import { Bloc, Tab } from './Bloc';
 import { cn } from '../../utils/utils';
@@ -175,7 +175,7 @@ export const FetchBloc: React.FC<{
                             cURL
                         </Tab>
                     </div>
-                    <CopyButton dark text={snippet} />
+                    <CopyButton text={snippet} />
                 </div>
                 <Prism noCopy language="typescript" className="p-3 transparent-code bg-black" colorScheme="dark">
                     {snippet}

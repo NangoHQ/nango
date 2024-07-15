@@ -12,7 +12,6 @@ import GoogleButton from '../../components/ui/button/Auth/Google';
 export default function InviteSignup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [loaded, setLoaded] = useState(false);
-    const [invitedName, setName] = useState('');
     const [invitedEmail, setEmail] = useState('');
     const [invitedAccountID, setAccountID] = useState<number>();
     const navigate = useNavigate();
@@ -28,8 +27,7 @@ export default function InviteSignup() {
 
             if (res?.status === 200) {
                 const invitee = await res.json();
-                const { name, email, account_id } = invitee;
-                setName(name);
+                const { email, account_id } = invitee;
                 setEmail(email);
                 setAccountID(Number(account_id));
             } else {
@@ -95,7 +93,6 @@ export default function InviteSignup() {
                                         name="name"
                                         type="text"
                                         autoComplete="name"
-                                        defaultValue={invitedName}
                                         required
                                         placeholder="Name"
                                         minLength={1}

@@ -12,6 +12,7 @@ const VALID_PATHS = [
     'environment-settings',
     'user-settings',
     'account-settings',
+    'team-settings',
     'logs'
 ];
 

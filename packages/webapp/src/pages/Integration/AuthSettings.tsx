@@ -12,7 +12,7 @@ import ActionModal from '../../components/ui/ActionModal';
 import SecretInput from '../../components/ui/input/SecretInput';
 import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { formatDateToShortUSFormat, defaultCallback } from '../../utils/utils';
-import CopyButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
 
 import { useStore } from '../../store';
@@ -285,7 +285,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         </div>
                         <span className="flex items-center gap-2">
                             <span className="text-white">{environment.callback_url || defaultCallback()}</span>
-                            <CopyButton text={environment.callback_url || defaultCallback()} dark />
+                            <CopyButton text={environment.callback_url || defaultCallback()} />
                         </span>
                     </div>
                 </div>
@@ -310,7 +310,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         </div>
                         <span className="flex items-center gap-2">
                             <span className="text-white">{environment.callback_url.replace('oauth/callback', 'app-auth/connect')}</span>
-                            <CopyButton text={environment.callback_url.replace('oauth/callback', 'app-auth/connect')} dark />
+                            <CopyButton text={environment.callback_url.replace('oauth/callback', 'app-auth/connect')} />
                         </span>
                     </div>
                 </div>
@@ -335,7 +335,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                         </div>
                         <div className="flex text-white items-center gap-2">
                             <span className="text-white">{`${environment.webhook_receive_url}/${integrationId}`}</span>
-                            <CopyButton text={`${environment.webhook_receive_url}/${integrationId}`} dark />
+                            <CopyButton text={`${environment.webhook_receive_url}/${integrationId}`} />
                         </div>
                     </div>
                     {(integration?.auth_mode === 'APP' || integration?.auth_mode === 'CUSTOM') && integration?.webhook_secret && (
@@ -357,7 +357,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                             </div>
                             <div className="flex text-white items-center gap-2">
                                 <span className="text-white">{integration?.webhook_secret}</span>
-                                <CopyButton text={integration?.webhook_secret} dark />
+                                <CopyButton text={integration?.webhook_secret} />
                             </div>
                         </div>
                     )}
@@ -499,8 +499,8 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     minLength={1}
                                     className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                 />
-                                <span className="absolute right-0.5 top-1 flex items-center">
-                                    <CopyButton text={integration?.client_id} dark className="relative -ml-6" />
+                                <span className="absolute right-0.5 top-0 flex items-center">
+                                    <CopyButton text={integration?.client_id} className="relative -ml-6" />
                                 </span>
                             </div>
                         </div>

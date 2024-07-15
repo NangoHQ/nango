@@ -20,7 +20,11 @@ function uriParamsReplacer(tpl: string, data: Record<string, any>) {
  * Type safe API fetch
  */
 export function apiFetch(baseUrl: string) {
-    return async function apiFetch<TPath extends APIEndpoints['Path'], TEndpoint extends APIEndpointsPickerWithPath<TPath>>(
+    return async function apiFetch<
+        TPath extends APIEndpoints['Path'],
+        TMethod extends APIEndpointsPickerWithPath<TPath>['Method'],
+        TEndpoint extends APIEndpointsPicker<TMethod, TPath>
+    >(
         path: TPath,
         {
             method,
@@ -28,11 +32,11 @@ export function apiFetch(baseUrl: string) {
             token,
             body,
             params
-        }: { token?: string } & (TEndpoint['Method'] extends 'GET' ? { method?: TEndpoint['Method'] } : { method: TEndpoint['Method'] }) &
+        }: { token?: string } & (TMethod extends 'GET' ? { method?: TMethod } : { method: TMethod }) &
             (TEndpoint['Querystring'] extends never ? { query?: never } : { query: TEndpoint['Querystring'] }) &
             (TEndpoint['Body'] extends never ? { body?: never } : { body: TEndpoint['Body'] }) &
             (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] })
-    ): Promise<{ res: Response; json: APIEndpointsPicker<TEndpoint['Method'], TPath>['Reply'] }> {
+    ): Promise<{ res: Response; json: APIEndpointsPicker<TMethod, TPath>['Reply'] }> {
         const search = new URLSearchParams(query);
         const url = new URL(`${baseUrl}${path}?${search.toString()}`);
         const headers = new Headers();

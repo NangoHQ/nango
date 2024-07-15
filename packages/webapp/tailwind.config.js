@@ -17,7 +17,6 @@ module.exports = {
                 'bg-cta-green': '#75E270',
                 'text-cta-green1': '#224421',
                 'border-gray': '#333333',
-                'border-gray-400': '#323439',
                 'border-blue': '#1489DF',
                 'text-blue': '#1489DF',
                 'text-light-blue': '#76C5FF',
@@ -27,9 +26,13 @@ module.exports = {
 
                 // From Figma
                 'green-base': '#84D65A',
+                'green-dark': '#2B641E',
                 'blue-base': '#509AF8',
                 'red-base': '#EF665B',
+                'red-dark': '#71192F',
+                'red-base-35': 'rgba(57, 58, 55, 0.16)',
                 'yellow-base': '#F7C752',
+                'yellow-base-35': 'rgba(247, 199, 82, 0.35)',
                 'alert-red': '#EF665B',
                 'dark-0': '#FFFFFF',
                 'dark-100': '#F4F4F5',
@@ -39,7 +42,9 @@ module.exports = {
                 'dark-500': '#71717A',
                 'dark-600': '#27272A',
                 'dark-700': '#18181B',
-                'dark-800': '#09090B'
+                'dark-800': '#09090B',
+                'border-gray-400': '#323439',
+                'text-light': '#A9ACB3'
             },
             width: {
                 largebox: '1200px',

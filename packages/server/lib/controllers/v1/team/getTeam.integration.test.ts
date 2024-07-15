@@ -5,7 +5,7 @@ import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '
 
 const route = '/api/v1/team';
 let api: Awaited<ReturnType<typeof runServer>>;
-describe('GET /logs/operations/:operationId', () => {
+describe(`GET ${route}`, () => {
     beforeAll(async () => {
         await multipleMigrations();
         api = await runServer();
@@ -15,7 +15,7 @@ describe('GET /logs/operations/:operationId', () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch(route, { query: { env: 'dev' } });
+        const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' } });
 
         shouldBeProtected(res);
     });
@@ -35,6 +35,7 @@ describe('GET /logs/operations/:operationId', () => {
         const { env, user, account } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(route, {
+            method: 'GET',
             query: { env: 'dev' },
             token: env.secret_key
         });
