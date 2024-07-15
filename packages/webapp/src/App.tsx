@@ -28,13 +28,13 @@ import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
 import { EmailVerified } from './pages/Account/EmailVerified';
 import AuthLink from './pages/AuthLink';
-import UserSettings from './pages/UserSettings';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
 import { LogsSearch } from './pages/Logs/Search';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { SentryRoutes } from './utils/sentry';
 import { TeamSettings } from './pages/Team/Settings';
+import { UserSettings } from './pages/User/Setings';
 
 const theme = createTheme({
     fontFamily: 'Inter'

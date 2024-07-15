@@ -62,6 +62,8 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postInvite } from './controllers/v1/invite/postInvite.js';
 import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
+import { getUser } from './controllers/v1/user/getUser.js';
+import { patchUser } from './controllers/v1/user/patchUser.js';
 
 export const router = express.Router();
 
@@ -214,8 +216,8 @@ web.route('/api/v1/connection/:connectionId').get(webAuth, getConnectionWeb);
 web.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
 web.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 
-web.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
-web.route('/api/v1/user/name').put(webAuth, userController.editName.bind(userController));
+web.route('/api/v1/user').get(webAuth, getUser);
+web.route('/api/v1/user').patch(webAuth, patchUser);
 web.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));
 web.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.bind(userController));
 

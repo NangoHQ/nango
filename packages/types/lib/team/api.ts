@@ -1,7 +1,7 @@
 import type { Merge } from 'type-fest';
 import type { ApiError, ApiTimestamps, Endpoint } from '../api';
 import type { DBInvitation } from '../invitations/db';
-import type { WebUser } from '../user/api';
+import type { ApiUser } from '../user/api';
 import type { DBTeam } from './db';
 
 export type GetTeam = Endpoint<{
@@ -11,7 +11,7 @@ export type GetTeam = Endpoint<{
     Success: {
         data: {
             account: ApiTeam;
-            users: WebUser[];
+            users: ApiUser[];
             invitedUsers: ApiInvitation[];
             isAdminTeam: boolean;
         };

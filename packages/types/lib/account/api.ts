@@ -1,5 +1,5 @@
 import type { ApiError, Endpoint } from '../api';
-import type { WebUser } from '../user/api';
+import type { ApiUser } from '../user/api';
 
 export type Signup = Endpoint<{
     Method: 'POST';
@@ -37,7 +37,7 @@ export type SignupWithToken = Endpoint<{
         | ApiError<'error_logging_in'>
         | ApiError<'invalid_account_id'>;
     Success: {
-        user: WebUser;
+        user: ApiUser;
     };
 }>;
 
@@ -49,7 +49,7 @@ export type ValidateEmailAndLogin = Endpoint<{
     };
     Error: ApiError<'error_logging_in'> | ApiError<'error_validating_user'> | ApiError<'token_expired'> | ApiError<'error_refreshing_token'>;
     Success: {
-        user: WebUser;
+        user: ApiUser;
     };
 }>;
 
@@ -105,7 +105,7 @@ export type Signin = Endpoint<{
     };
     Error: ApiError<'email_not_verified'> | ApiError<'unauthorized'>;
     Success: {
-        user: WebUser;
+        user: ApiUser;
     };
 }>;
 
