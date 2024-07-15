@@ -69,6 +69,7 @@ integrations:
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
                 endpoint: POST /xero/invoices
+                version: 0.0.2
             update-invoice:
                 description: |
                     Updates one or more invoices in Xero. To delete an invoice
