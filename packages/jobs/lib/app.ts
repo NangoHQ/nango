@@ -5,7 +5,6 @@ import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
-import db from '@nangohq/database';
 import { envs } from './env.js';
 
 const logger = getLogger('Jobs');
@@ -18,8 +17,6 @@ try {
     const processor = new Processor(orchestratorUrl);
 
     processor.start();
-
-    db.enableMetrics();
 
     // Register recurring tasks
     cronAutoIdleDemo();

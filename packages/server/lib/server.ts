@@ -5,7 +5,6 @@ import express from 'express';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import http from 'node:http';
-import db from '@nangohq/database';
 import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getServerPort, getWebsocketsPath } from '@nangohq/shared';
 import { getLogger, requestLoggerMiddleware } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
@@ -39,8 +38,6 @@ const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
 wss.on('connection', async (ws: WebSocket) => {
     await publisher.subscribe(ws);
 });
-
-db.enableMetrics();
 
 // Set to 'false' to disable migration at startup. Appropriate when you
 // have multiple replicas of the service running and you do not want them
