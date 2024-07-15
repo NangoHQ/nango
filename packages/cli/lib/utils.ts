@@ -271,23 +271,18 @@ export function getUserAgent(): string {
     return `nango-cli/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})`;
 }
 
-export function getNangoRootPath(debug = false) {
+export function getNangoRootPath(debug = false): string {
     const packagePath = getPackagePath(debug);
-    if (!packagePath) {
-        if (debug) {
-            printDebug('Could not find nango cli root path locally');
-        }
-        return null;
-    }
+    const rootPath = path.resolve(packagePath, '..');
 
     if (debug) {
-        printDebug(`Found the nango cli root path at ${path.resolve(packagePath, '..')}`);
+        printDebug(`Found the nango cli root path at ${rootPath}`);
     }
 
-    return path.resolve(packagePath, '..');
+    return rootPath;
 }
 
-function getPackagePath(debug = false) {
+function getPackagePath(debug = false): string {
     if (process.env['CI'] || process.env['VITEST']) {
         return path.join(__dirname);
     }
@@ -336,4 +331,16 @@ export async function parseSecretKey(environment: string, debug = false): Promis
             process.exit(1);
         }
     }
+}
+
+/**
+ * Convert Windows backslash paths to slash paths.
+ * From https://github.com/sindresorhus/slash/blob/main/index.js
+ */
+export function slash(path: string) {
+    const isExtendedLengthPath = path.startsWith('\\\\?\\');
+    if (isExtendedLengthPath) {
+        return path;
+    }
+    return path.replace(/\\/g, '/');
 }

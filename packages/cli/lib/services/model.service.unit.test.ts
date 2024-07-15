@@ -1,3 +1,4 @@
+import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -172,10 +173,10 @@ describe('fieldToTypescript', () => {
 describe('generate exports', () => {
     describe('json', () => {
         it('should export to JSON', () => {
-            const folderTS = `/tmp/cli-exports-json`;
+            const folderTS = path.join(os.tmpdir(), 'cli-exports-json');
             fs.rmSync(folderTS, { recursive: true, force: true });
             fs.mkdirSync(folderTS, { recursive: true });
-            const pathTS = path.join(`/tmp/cli-exports-json`, 'schema.ts');
+            const pathTS = path.join(folderTS, 'schema.ts');
             fs.writeFileSync(pathTS, `export interface Test { id: string; name: number[]; }`);
 
             const res = getExportToJSON({ pathTS });

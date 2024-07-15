@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import path from 'path';
 import { build } from 'tsup';
 
-import { getNangoRootPath, printDebug } from '../utils.js';
+import { getNangoRootPath, printDebug, slash } from '../utils.js';
 import { loadYamlAndGenerate } from './model.service.js';
 import parserService from './parser.service.js';
 import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangohq/types';
@@ -26,7 +26,7 @@ export async function compileAllFiles({
     providerConfigKey?: string;
     type?: ScriptFileType;
 }): Promise<boolean> {
-    const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
+    const tsconfig = fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
     const distDir = path.join(fullPath, 'dist');
     if (!fs.existsSync(distDir)) {
@@ -220,8 +220,8 @@ async function compile({
     }
 
     await build({
-        entryPoints: [file.inputPath],
-        tsconfig: path.join(getNangoRootPath()!, 'tsconfig.dev.json'),
+        entryPoints: [slash(file.inputPath)], // tsup needs posix paths
+        tsconfig: path.join(getNangoRootPath(), 'tsconfig.dev.json'),
         skipNodeModulesBundle: true,
         silent: !debug,
         outDir: path.join(fullPath, 'dist'),
@@ -250,7 +250,7 @@ export function getFileToCompile({ fullPath, filePath }: { fullPath: string; fil
     const baseName = path.basename(filePath, '.ts');
     return {
         inputPath: filePath,
-        outputPath: path.join(fullPath, '/dist/', `${baseName}.js`),
+        outputPath: path.join(fullPath, 'dist', `${baseName}.js`),
         baseName
     };
 }
@@ -295,7 +295,7 @@ export function listFilesToCompile({
 
         files = [path.join(fullPath, scriptDirectory || '', `${scriptName}.ts`)];
     } else {
-        files = glob.sync(`${fullPath}/*.ts`);
+        files = globFiles(fullPath, '*.ts');
 
         // models.ts is the one expected file
         if (files.length === 1 && debug) {
@@ -307,21 +307,20 @@ export function listFilesToCompile({
             const actionPath = `${integration.providerConfigKey}/actions`;
             const postConnectionPath = `${integration.providerConfigKey}/post-connection-scripts`;
 
-            files = [
-                ...files,
-                ...glob.sync(`${fullPath}/${syncPath}/*.ts`),
-                ...glob.sync(`${fullPath}/${actionPath}/*.ts`),
-                ...glob.sync(`${fullPath}/${postConnectionPath}/*.ts`)
-            ];
+            const syncFiles = globFiles(fullPath, syncPath, '*.ts');
+            const actionFiles = globFiles(fullPath, actionPath, '*.ts');
+            const postFiles = globFiles(fullPath, postConnectionPath, '*.ts');
+
+            files = [...files, ...syncFiles, ...actionFiles, ...postFiles];
 
             if (debug) {
-                if (glob.sync(`${fullPath}/${syncPath}/*.ts`).length > 0) {
+                if (syncFiles.length > 0) {
                     printDebug(`Found nested sync files in ${syncPath}`);
                 }
-                if (glob.sync(`${fullPath}/${actionPath}/*.ts`).length > 0) {
+                if (actionFiles.length > 0) {
                     printDebug(`Found nested action files in ${actionPath}`);
                 }
-                if (glob.sync(`${fullPath}/${postConnectionPath}/*.ts`).length > 0) {
+                if (postFiles.length > 0) {
                     printDebug(`Found nested post connection script files in ${postConnectionPath}`);
                 }
             }
@@ -331,4 +330,9 @@ export function listFilesToCompile({
     return files.map((filePath) => {
         return getFileToCompile({ fullPath, filePath });
     });
+}
+
+function globFiles(...args: string[]): string[] {
+    // glob.sync needs posix paths for input, so use slash fn
+    return glob.sync(slash(path.join(...args)));
 }
