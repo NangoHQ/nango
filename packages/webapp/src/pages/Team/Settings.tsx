@@ -16,7 +16,7 @@ export const TeamSettings: React.FC = () => {
 
     if (loading) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Logs}>
+            <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
                 <h2 className="text-3xl font-semibold text-white mb-16">Team Settings</h2>
                 <div className="flex flex-col gap-4">
                     <Skeleton className="w-[250px]" />
@@ -28,7 +28,7 @@ export const TeamSettings: React.FC = () => {
 
     if (error) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Logs}>
+            <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
                 <h2 className="text-3xl font-semibold text-white mb-16">Team Settings</h2>
                 <Info color={'red'} classNames="text-xs" size={20}>
                     An error occurred, refresh your page or reach out to the support.{' '}
