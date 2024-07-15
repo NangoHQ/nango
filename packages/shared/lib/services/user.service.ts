@@ -1,9 +1,9 @@
 import db from '@nangohq/database';
 import * as uuid from 'uuid';
 import type { Result } from '@nangohq/utils';
-import { isEnterprise, Ok, Err } from '@nangohq/utils';
+import { Ok, Err } from '@nangohq/utils';
 import type { User } from '../models/Admin.js';
-import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
+import type { DBTeam, DBUser } from '@nangohq/types';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 
@@ -167,38 +167,6 @@ class UserService {
 
     async verifyUserEmail(id: number) {
         return db.knex.from<User>(`_nango_users`).where({ id }).update({ email_verified: true, email_verification_token: null });
-    }
-
-    async getInvitedUserByToken(token: string): Promise<DBInvitation | null> {
-        const date = new Date();
-
-        if (isEnterprise && process.env['NANGO_ADMIN_INVITE_TOKEN'] === token) {
-            return {
-                id: 1,
-                email: '',
-                name: '',
-                account_id: 0,
-                invited_by: 0,
-                token: '',
-                expires_at: new Date(),
-                accepted: true,
-                created_at: new Date(),
-                updated_at: new Date()
-            };
-        }
-        const result = await db.knex.select('*').from<DBInvitation>(`_nango_invited_users`).where({ token }).whereRaw('expires_at > ?', date);
-
-        if (!result || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0];
-    }
-
-    async markAcceptedInvite(token: string) {
-        const result = await db.knex.from<DBInvitation>(`_nango_invited_users`).where({ token }).update({ accepted: true });
-
-        return result;
     }
 
     async update({ id, ...data }: { id: number } & Omit<Partial<DBUser>, 'id'>): Promise<number> {

@@ -3,7 +3,7 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import crypto from 'crypto';
 import util from 'util';
 import { getLogger, isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { analytics, AnalyticsTypes, userService, accountService } from '@nangohq/shared';
+import { analytics, AnalyticsTypes, userService, accountService, acceptInvitation, getInvitation } from '@nangohq/shared';
 import type { WebUser, SignupWithToken } from '@nangohq/types';
 
 const logger = getLogger('Server.SignupWithToken');
@@ -42,7 +42,7 @@ export const signupWithToken = asyncWrapper<SignupWithToken>(async (req, res) =>
         return;
     }
 
-    const validToken = await userService.getInvitedUserByToken(token);
+    const validToken = await getInvitation(token);
 
     if (!validToken) {
         res.status(400).send({ error: { code: 'invalid_invite_token', message: 'The token used was found to be invalid.' } });
@@ -64,7 +64,7 @@ export const signupWithToken = asyncWrapper<SignupWithToken>(async (req, res) =>
 
     void analytics.track(AnalyticsTypes.ACCOUNT_JOINED, account.id, {}, isCloud ? { email } : {});
 
-    await userService.markAcceptedInvite(token);
+    await acceptInvitation(token);
 
     req.login(user, function (err) {
         if (err) {

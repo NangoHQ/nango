@@ -45,10 +45,10 @@ export const TeamSettings: React.FC = () => {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-semibold text-white mb-16">Team Settings</h2>
+                <h2 className="text-3xl font-semibold text-white">Team Settings</h2>
                 <AddTeamMember team={team!} />
             </div>
-            <div className="flex flex-col gap-12">
+            <div className="flex flex-col gap-12 mt-16">
                 <TeamInfo />
                 <TeamUsers />
                 <Admin />
