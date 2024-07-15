@@ -69,9 +69,7 @@ export async function listInvitations({ accountId }: { accountId: number }): Pro
 }
 
 export async function acceptInvitation(token: string) {
-    const result = await db.knex.from<DBInvitation>(`_nango_invited_users`).where({ token }).update({ accepted: true, expires_at: new Date() });
-
-    return result;
+    return await db.knex.from<DBInvitation>(`_nango_invited_users`).where({ token }).update({ accepted: true, expires_at: new Date() });
 }
 
 export async function getInvitation(token: string): Promise<DBInvitation | null> {

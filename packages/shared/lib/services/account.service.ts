@@ -85,8 +85,8 @@ class AccountService {
     async createAccount(name: string): Promise<DBTeam | null> {
         const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
 
-        if (Array.isArray(result) && result.length === 1 && result[0]) {
-            await environmentService.createDefaultEnvironments(result[0]['id']);
+        if (result[0]?.id) {
+            await environmentService.createDefaultEnvironments(result[0].id);
 
             return result[0];
         }

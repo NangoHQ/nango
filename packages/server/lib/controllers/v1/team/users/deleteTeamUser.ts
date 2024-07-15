@@ -45,8 +45,8 @@ export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
         return;
     }
 
-    const removed = await userService.update({ id: user.id, account_id: newTeam.id });
-    if (removed <= 0) {
+    const updated = await userService.update({ id: user.id, account_id: newTeam.id });
+    if (updated <= 0) {
         res.status(500).send({ error: { code: 'server_error' } });
         return;
     }
