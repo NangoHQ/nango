@@ -1,5 +1,5 @@
+import type { ApiUser } from '@nangohq/types';
 import { usePostHog } from 'posthog-js/react';
-import type { User } from './user';
 
 export function useAnalyticsTrack() {
     const posthog = usePostHog();
@@ -12,7 +12,7 @@ export function useAnalyticsTrack() {
 export function useAnalyticsIdentify() {
     const posthog = usePostHog();
 
-    return (user: User) => {
+    return (user: ApiUser) => {
         posthog?.identify(user.email, {
             email: user.email,
             name: user.name,

@@ -113,23 +113,6 @@ export interface OAuth2ClientCredentials {
     client_secret: string;
 }
 
-export interface User {
-    id: number;
-    email: string;
-    name: string;
-    suspended: boolean;
-    currentUser?: boolean;
-}
-
-export interface InvitedUser {
-    id: number;
-    email: string;
-    name: string;
-    expires_at: string;
-    token: string;
-    accepted: boolean;
-}
-
 export interface PreBuiltFlow {
     provider: string;
     type: string;
@@ -186,39 +169,6 @@ export interface Flow {
     models: NangoSyncModel[] | NangoModel[];
     nango_yaml_version: 'v1' | 'v2';
     webhookSubscriptions: string[];
-}
-
-export interface Environment {
-    id: number;
-    name: string;
-    account_id: number;
-    secret_key: string;
-    public_key: string;
-    secret_key_iv: string | null;
-    secret_key_tag: string | null;
-    callback_url: string;
-    webhook_url: string;
-    webhook_url_secondary: string | null;
-    webhook_receive_url: string;
-    hmac_enabled: boolean;
-    hmac_key: string;
-    created_at: string;
-    updated_at: string;
-    pending_secret_key: string | null;
-    pending_secret_key_iv: string | null;
-    pending_secret_key_tag: string | null;
-    pending_public_key: string | null;
-    always_send_webhook: boolean;
-    slack_notifications: boolean;
-    websockets_path: string;
-    secret_key_rotatable?: boolean;
-    env_variables: { id?: number; name: string; value: string }[];
-    host: string;
-    uuid: string;
-    email: string;
-    send_auth_webhook: boolean;
-    public_key_rotatable?: boolean;
-    hmac_digest?: string | null;
 }
 
 export interface IntegrationConfig {

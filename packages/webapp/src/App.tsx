@@ -34,7 +34,7 @@ import { LogsSearch } from './pages/Logs/Search';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { SentryRoutes } from './utils/sentry';
 import { TeamSettings } from './pages/Team/Settings';
-import { UserSettings } from './pages/User/Setings';
+import { UserSettings } from './pages/User/Settings';
 
 const theme = createTheme({
     fontFamily: 'Inter'
