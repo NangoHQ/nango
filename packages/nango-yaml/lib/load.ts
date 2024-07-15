@@ -14,7 +14,7 @@ import { nangoConfigFile } from './constant.js';
  * Load nango.yaml
  */
 export function loadNangoYaml({ fullPath }: { fullPath: string }): NangoYamlParser {
-    const location = path.resolve(`${fullPath}/${nangoConfigFile}`);
+    const location = path.resolve(fullPath, nangoConfigFile);
     try {
         const content = fs.readFileSync(location, 'utf8');
         const raw = yaml.load(content) as NangoYaml;

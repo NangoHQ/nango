@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import Ajv from 'ajv';
 import addErrors from 'ajv-errors';
 import chalk from 'chalk';
@@ -100,7 +101,7 @@ export function validateYaml(yaml: any): ValidationMessage[] {
     const version = determineVersion(yaml);
     const validationFile = version === 'v1' ? 'nango.yaml.schema.v1.json' : 'nango.yaml.schema.v2.json';
 
-    const schema = fs.readFileSync(`${getNangoRootPath()}/lib/${validationFile}`, 'utf8');
+    const schema = fs.readFileSync(path.join(getNangoRootPath(), 'lib', validationFile), 'utf8');
     const validate = ajv.compile(JSON.parse(schema));
 
     if (validate(yaml)) {

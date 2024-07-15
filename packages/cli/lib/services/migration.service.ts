@@ -22,7 +22,8 @@ export const v1toV2Migration = (loadLocation: string): void => {
         return;
     }
 
-    exec(`node ${getNangoRootPath()}/scripts/v1-v2.js ./${nangoConfigFile}`, (error) => {
+    const scriptFile = path.join(getNangoRootPath(), 'scripts/v1-v2.js');
+    exec(`node ${scriptFile} ./${nangoConfigFile}`, (error) => {
         if (error) {
             console.log(chalk.red(`There was an issue migrating your nango.yaml to v2.`));
             console.error(error);
@@ -87,7 +88,7 @@ export const directoryMigration = async (loadLocation: string, debug?: boolean):
     }
 
     for (const [providerConfigKey, integration] of Object.entries(response.parsed.integrations)) {
-        const integrationPath = `${loadLocation}/${providerConfigKey}`;
+        const integrationPath = path.join(loadLocation, providerConfigKey);
         await createDirectory(integrationPath, debug);
 
         if (integration.syncs) {

@@ -54,9 +54,9 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
                 });
                 const stripped = rendered.replace(/^\s+/, '');
 
-                if (!fs.existsSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`)) {
-                    fs.mkdirSync(`${fullPath}/${providerConfigKey}/${type}s`, { recursive: true });
-                    fs.writeFileSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
+                if (!fs.existsSync(path.resolve(fullPath, `${providerConfigKey}/${type}s/${name}.ts`))) {
+                    fs.mkdirSync(path.resolve(fullPath, `${providerConfigKey}/${type}s`), { recursive: true });
+                    fs.writeFileSync(path.resolve(fullPath, `${providerConfigKey}/${type}s/${name}.ts`), stripped);
                     if (debug) {
                         printDebug(`Created ${name}.ts file`);
                     }
@@ -81,7 +81,7 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
                 process.exit(1);
             }
 
-            if (fs.existsSync(`${fullPath}/${name}.ts`) || fs.existsSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`)) {
+            if (fs.existsSync(path.resolve(fullPath, `${name}.ts`)) || fs.existsSync(path.resolve(fullPath, `${providerConfigKey}/${type}s/${name}.ts`))) {
                 if (debug) {
                     printDebug(`${name}.ts file already exists, so will not overwrite it.`);
                 }
@@ -119,10 +119,10 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
             const stripped = rendered.replace(/^\s+/, '');
 
             if (layoutMode === 'root') {
-                fs.writeFileSync(`${fullPath}/${name}.ts`, stripped);
+                fs.writeFileSync(path.resolve(fullPath, `${name}.ts`), stripped);
             } else {
-                fs.mkdirSync(`${fullPath}/${providerConfigKey}/${type}s`, { recursive: true });
-                fs.writeFileSync(`${fullPath}/${providerConfigKey}/${type}s/${name}.ts`, stripped);
+                fs.mkdirSync(path.resolve(fullPath, `${providerConfigKey}/${type}s`), { recursive: true });
+                fs.writeFileSync(path.resolve(fullPath, `${providerConfigKey}/${type}s/${name}.ts`), stripped);
             }
             if (debug) {
                 console.log(chalk.green(`Created ${name}.ts file`));
@@ -203,7 +203,7 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
 }
 
 export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
-    const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
+    const tsconfig = fs.readFileSync(path.resolve(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
     const res = loadYamlAndGenerate({ fullPath, debug });
     if (!res.success) {
         console.log(chalk.red(res.error?.message));
@@ -284,7 +284,7 @@ export function configWatch({ fullPath, debug = false }: { fullPath: string; deb
 let child: ChildProcess | undefined;
 process.on('SIGINT', () => {
     if (child) {
-        const dockerDown = spawn('docker', ['compose', '-f', `${getNangoRootPath()}/docker/docker-compose.yaml`, '--project-directory', '.', 'down'], {
+        const dockerDown = spawn('docker', ['compose', '-f', path.join(getNangoRootPath(), 'docker/docker-compose.yaml'), '--project-directory', '.', 'down'], {
             stdio: 'inherit'
         });
         dockerDown.on('exit', () => {
@@ -303,7 +303,7 @@ process.on('SIGINT', () => {
 export const dockerRun = async (debug = false) => {
     const cwd = process.cwd();
 
-    const args = ['compose', '-f', `${getNangoRootPath()}/docker/docker-compose.yaml`, '--project-directory', '.', 'up', '--build'];
+    const args = ['compose', '-f', path.join(getNangoRootPath(), 'docker/docker-compose.yaml'), '--project-directory', '.', 'up', '--build'];
 
     if (debug) {
         printDebug(`Running docker with args: ${args.join(' ')}`);
