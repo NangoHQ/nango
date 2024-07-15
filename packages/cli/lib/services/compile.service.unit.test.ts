@@ -12,8 +12,8 @@ describe('listFiles', () => {
         expect(files.length).toBeGreaterThan(1);
         expect(files[0]).toStrictEqual({
             baseName: 'verification.service',
-            inputPath: `${thisFolder}/verification.service.ts`,
-            outputPath: `${thisFolder}/dist/verification.service.js`
+            inputPath: path.join(thisFolder, 'verification.service.ts'),
+            outputPath: path.join(thisFolder, 'dist/verification.service.js')
         });
     });
 
@@ -22,8 +22,8 @@ describe('listFiles', () => {
         expect(files.length).toBe(1);
         expect(files[0]).toStrictEqual({
             baseName: 'compile.service',
-            inputPath: `${thisFolder}/compile.service.ts`,
-            outputPath: `${thisFolder}/dist/compile.service.js`
+            inputPath: path.join(thisFolder, 'compile.service.ts'),
+            outputPath: path.join(thisFolder, 'dist/compile.service.js')
         });
     });
 
@@ -33,8 +33,8 @@ describe('listFiles', () => {
         expect(files.length).toBe(1);
         expect(files[0]).toStrictEqual({
             baseName: 'compile.service',
-            inputPath: `${parent}/services/compile.service.ts`,
-            outputPath: `${parent}/dist/compile.service.js`
+            inputPath: path.join(parent, 'services/compile.service.ts'),
+            outputPath: path.join(parent, 'dist/compile.service.js')
         });
     });
 
@@ -43,7 +43,7 @@ describe('listFiles', () => {
         expect(file).toStrictEqual({
             baseName: 'foobar',
             inputPath: 'foobar.ts',
-            outputPath: `${thisFolder}/dist/foobar.js`
+            outputPath: path.join(thisFolder, 'dist/foobar.js')
         });
     });
 });

@@ -1,40 +1,36 @@
-import type { NangoAction, SharePointSiteId } from '../../models';
-import type { SharePointMetadata } from '../types';
+import type { NangoAction, SharePointMetadata } from '../../models';
+import type { SharePointSite } from '../types';
+import { toSite } from '../mappers/to-site.js';
 
-export default async function runAction(nango: NangoAction): Promise<void> {
-    await nango.setMetadata({ sitesToSync: [] });
-
-    const config = {
+/**
+ * Retrieves SharePoint sites using NangoAction, maps them to Site objects,
+ * updates the SharePoint metadata with the sites to sync, and returns the mapped sites.
+ *
+ * @param nango An instance of NangoAction for handling listing of sites.
+ * @returns An array of Site objects representing SharePoint sites
+ */
+export default async function runAction(nango: NangoAction): Promise<SharePointMetadata> {
+    const response = await nango.get<{ value: SharePointSite[] }>({
         endpoint: 'v1.0/sites',
-        paginate: {
-            type: 'link',
-            limit_name_in_request: '$top',
-            response_path: 'value',
-            link_path_in_response_body: '@odata.nextLink',
-            limit: 100
-        },
         params: {
-            search: '*',
-            select: 'id'
+            search: '*'
         },
         retries: 10
-    };
-    const allIds: string[] = [];
+    });
 
-    for await (const sites of nango.paginate<SharePointSiteId>(config)) {
-        const ids: string[] = sites.map(mapSharePointId);
-        allIds.push(...ids);
-    }
+    const { value: sites } = response.data;
+
+    const mappedSites = sites.map(toSite);
 
     let metadata: Partial<SharePointMetadata> = (await nango.getMetadata()) || {};
     metadata = {
-        ...(metadata as SharePointMetadata),
-        sitesToSync: [...(metadata.sitesToSync || []), ...allIds]
+        ...metadata,
+        sitesToSync: mappedSites
     };
 
-    await nango.setMetadata(metadata as SharePointMetadata);
-}
+    await nango.updateMetadata(metadata);
 
-function mapSharePointId(sharePoint: any): string {
-    return sharePoint.id;
+    return {
+        sitesToSync: mappedSites
+    };
 }

@@ -2723,35 +2723,44 @@ integrations:
                 scopes:
                     - Sites.ReadWrite.All
                     - offline_access
-                output: SharePointSiteId
+                output: SharePointMetadata
+                version: 1.0.0
         syncs:
             file-sync:
                 description: >
                     This sync will be used to sync file metadata from SharePoint site
                     based on the ones the user has picked.
-                endpoint: /sharepoint/file-sync
+                endpoint: GET /sharepoint/file-sync
                 sync_type: incremental
-                track_deletes: true
                 runs: every 1 hour
                 scopes:
                     - Sites.ReadWrite.All
                     - offline_access
-                auto_start: true
+                input: SharePointMetadata
+                auto_start: false
                 output: FileMetadata
+                version: 1.0.0
         models:
             FileMetadata:
-                etag: string
                 id: string
+                name: string
+                etag: string
+                cTag: string
                 is_folder: boolean
-                mime_type: string
+                mime_type: string | null
                 path: string
                 raw_source: object
-                updated_at: Date
-                download_url: string
-                created_at: Date
+                updated_at: string
+                download_url: string | null
+                created_at: string
                 blob_size: number
-            SharePointSiteId:
+            Site:
                 id: string
+                name: string
+                createdDateTime: string
+                webUrl: string
+            SharePointMetadata:
+                sitesToSync: Site[]
     slack:
         syncs:
             users:
@@ -3540,6 +3549,7 @@ integrations:
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
                 endpoint: POST /xero/invoices
+                version: 0.0.2
             update-invoice:
                 description: |
                     Updates one or more invoices in Xero. To delete an invoice

@@ -430,19 +430,32 @@ export default function FlowPage(props: FlowPageProps) {
                                     <div className="flex items-center">
                                         <span className="ml-2 text-white">
                                             Template version:{' '}
-                                            <a
-                                                className="underline"
-                                                rel="noreferrer"
-                                                href={`${githubIntegrationTemplates}/${integration.provider}/${flow.type}s/${flow.name}.ts`}
-                                                target="_blank"
-                                            >
-                                                v{flow.version || '0.0.1'}
-                                            </a>
+                                            {flow.upgrade_version ? (
+                                                <span>v{flow.version || '0.0.1'}</span>
+                                            ) : (
+                                                <a
+                                                    className="underline"
+                                                    rel="noreferrer"
+                                                    href={`${githubIntegrationTemplates}/${integration.provider}/${flow.type}s/${flow.name}.ts`}
+                                                    target="_blank"
+                                                >
+                                                    v{flow.version || '0.0.1'}
+                                                </a>
+                                            )}
                                         </span>
                                         {flow.upgrade_version ? (
                                             <span className="flex items-center text-white mx-1">
                                                 {' '}
-                                                (latest: <span className="underline ml-1">v{flow.upgrade_version}</span>)
+                                                (latest:{' '}
+                                                <a
+                                                    target="_blank"
+                                                    href={`${githubIntegrationTemplates}/${integration.provider}/${flow.type}s/${flow.name}.ts`}
+                                                    rel="noreferrer"
+                                                    className="underline ml-1"
+                                                >
+                                                    v{flow.upgrade_version}
+                                                </a>
+                                                )
                                                 <Button
                                                     variant="black"
                                                     onClick={() => onScriptUprade(flow)}

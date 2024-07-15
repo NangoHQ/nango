@@ -13,9 +13,10 @@ concurrency:
 
 jobs:
     tests:
-        runs-on: ubuntu-latest
+        runs-on: ${{ matrix.os }}
         strategy:
             matrix:
+                os: [ubuntu-latest]
                 node-version: [18.x, 20.x]
 
         steps:
