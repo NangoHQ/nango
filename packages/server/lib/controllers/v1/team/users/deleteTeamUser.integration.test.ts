@@ -56,7 +56,7 @@ describe(`DELETE ${route}`, () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         const user2 = await seeders.seedUser(env.account_id);
 
-        const listBefore = await api.fetch('/api/v1/team', { query: { env: 'dev' }, token: env.secret_key });
+        const listBefore = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: env.secret_key });
         isSuccess(listBefore.json);
         expect(listBefore.json.data.users).toHaveLength(2);
 
@@ -75,7 +75,7 @@ describe(`DELETE ${route}`, () => {
             }
         });
 
-        const listAfter = await api.fetch('/api/v1/team', { query: { env: 'dev' }, token: env.secret_key });
+        const listAfter = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: env.secret_key });
         isSuccess(listAfter.json);
         expect(listAfter.json.data.users).toHaveLength(1);
     });

@@ -15,7 +15,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch(route, { query: { env: 'dev' } });
+        const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' } });
 
         shouldBeProtected(res);
     });
@@ -35,6 +35,7 @@ describe(`GET ${route}`, () => {
         const { env, user, account } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(route, {
+            method: 'GET',
             query: { env: 'dev' },
             token: env.secret_key
         });

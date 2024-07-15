@@ -15,7 +15,7 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch(route, { method: 'DELETE', query: { env: 'dev' }, body: { emails: [] } });
+        const res = await api.fetch(route, { method: 'DELETE', query: { env: 'dev' }, body: { email: '' } });
 
         shouldBeProtected(res);
     });
@@ -25,7 +25,7 @@ describe(`DELETE ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'DELETE',
             token: env.secret_key,
-            body: { emails: [] },
+            body: { email: '' },
             // @ts-expect-error missing query on purpose
             query: {}
         });
@@ -58,7 +58,7 @@ describe(`DELETE ${route}`, () => {
         const email = 'foo@example.com';
         await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: user.id, trx: db.knex });
 
-        const listBefore = await api.fetch('/api/v1/team', { query: { env: 'dev' }, token: env.secret_key });
+        const listBefore = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: env.secret_key });
         isSuccess(listBefore.json);
         expect(listBefore.json.data.invitedUsers).toHaveLength(1);
 
@@ -75,7 +75,7 @@ describe(`DELETE ${route}`, () => {
             data: { success: true }
         });
 
-        const listAfter = await api.fetch('/api/v1/team', { query: { env: 'dev' }, token: env.secret_key });
+        const listAfter = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: env.secret_key });
         isSuccess(listAfter.json);
         expect(listAfter.json.data.invitedUsers).toHaveLength(0);
     });
