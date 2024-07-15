@@ -1,4 +1,4 @@
-name: Run Unit & Integration Tests
+name: Run cli tests on Windows
 
 on:
     push:
@@ -8,15 +8,14 @@ on:
     pull_request:
 
 concurrency:
-    group: tests-${{ github.event.pull_request.number || github.ref }}
+    group: tests-windows/${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
 jobs:
     tests:
-        runs-on: ${{ matrix.os }}
+        runs-on: windows-latest
         strategy:
             matrix:
-                os: [ubuntu-latest]
                 node-version: [18.x, 20.x]
 
         steps:
@@ -30,7 +29,7 @@ jobs:
                   cache: 'npm'
                   node-version: ${{ matrix.node-version }}
 
-            - run: npm run build:hosted
-            - run: npm run test:unit
+            - run: npm ci
+            - run: npm run ts-build
             - run: npm run test:cli
-            - run: npm run test:integration
+            - run: npm run test:unit -- packages/cli
