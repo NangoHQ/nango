@@ -1,13 +1,13 @@
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
 import type { ColumnDef } from '@tanstack/react-table';
-import type { ApiInvitation, WebUser } from '@nangohq/types';
+import type { ApiInvitation, ApiUser } from '@nangohq/types';
 import { useTeam } from '../../../hooks/useTeam';
 import { useStore } from '../../../store';
 import * as Table from '../../../components/ui/Table';
 import { InvitationAction, UserAction } from './Actions';
 import { Tag } from '../../../components/ui/label/Tag';
 
-export const columns: ColumnDef<WebUser | ApiInvitation>[] = [
+export const columns: ColumnDef<ApiUser | ApiInvitation>[] = [
     {
         accessorKey: 'name',
         header: 'Name',

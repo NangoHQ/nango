@@ -46,8 +46,6 @@ class IntegrationService implements IntegrationServiceInterface {
         syncId,
         activityLogId,
         nangoProps,
-        integrationData,
-        environmentId,
         writeToDb,
         isInvokedImmediately,
         isWebhook,
@@ -65,9 +63,11 @@ class IntegrationService implements IntegrationServiceInterface {
 
         const logCtx = activityLogId ? logContextGetter.getStateLess({ id: String(activityLogId) }) : null;
         try {
+            const integrationData = { fileLocation: nangoProps.syncConfig.file_location };
+            const environmentId = nangoProps.environmentId;
             const script: string | null =
                 (isCloud || integrationFilesAreRemote) && !optionalLoadLocation
-                    ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
+                    ? await remoteFileService.getFile(integrationData.fileLocation, environmentId)
                     : localFileService.getIntegrationFile(syncName, nangoProps.providerConfigKey, optionalLoadLocation);
 
             if (!script) {

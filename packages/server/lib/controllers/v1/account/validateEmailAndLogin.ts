@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { analytics, userService, AnalyticsTypes, environmentService, createOnboardingProvider } from '@nangohq/shared';
-import type { WebUser, ValidateEmailAndLogin } from '@nangohq/types';
+import type { ValidateEmailAndLogin } from '@nangohq/types';
+import { userToAPI } from '../../../formatters/user.js';
 
 const logger = getLogger('Server.ValidateEmailAndLogin');
 
@@ -57,7 +58,7 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
 
     await userService.verifyUserEmail(userAndAccount.user_id);
 
-    const { user_id, account_id, email } = userAndAccount;
+    const { account_id, email } = userAndAccount;
 
     void analytics.track(AnalyticsTypes.ACCOUNT_CREATED, account_id, {}, { email });
 
@@ -71,20 +72,13 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
         }
     }
 
-    const user: WebUser = {
-        id: user_id,
-        accountId: account_id,
-        email,
-        name: userAndAccount.name
-    };
-
-    req.login(user, function (err) {
+    req.login(userAndAccount, function (err) {
         if (err) {
             logger.error('Error logging in user');
             res.status(500).send({ error: { code: 'error_logging_in', message: 'There was a problem logging in the user. Please reach out to support.' } });
             return;
         }
 
-        res.status(200).send({ user });
+        res.status(200).send({ user: userToAPI(userAndAccount) });
     });
 });

@@ -4,7 +4,8 @@ import crypto from 'crypto';
 import util from 'util';
 import { getLogger, isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { analytics, AnalyticsTypes, userService, accountService, acceptInvitation, getInvitation } from '@nangohq/shared';
-import type { WebUser, SignupWithToken } from '@nangohq/types';
+import type { SignupWithToken } from '@nangohq/types';
+import { userToAPI } from '../../../formatters/user.js';
 
 const logger = getLogger('Server.SignupWithToken');
 
@@ -27,7 +28,6 @@ export const signupWithToken = asyncWrapper<SignupWithToken>(async (req, res) =>
     }
 
     const val = validation.safeParse(req.body);
-
     if (!val.success) {
         res.status(400).send({
             error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }
@@ -36,27 +36,26 @@ export const signupWithToken = asyncWrapper<SignupWithToken>(async (req, res) =>
     }
 
     const { email, password, name, accountId, token } = val.data;
-
     if ((await userService.getUserByEmail(email)) !== null) {
         res.status(400).send({ error: { code: 'user_already_exists', message: 'User with this email already exists' } });
         return;
     }
 
     const validToken = await getInvitation(token);
-
     if (!validToken) {
         res.status(400).send({ error: { code: 'invalid_invite_token', message: 'The token used was found to be invalid.' } });
         return;
     }
+
     const account = await accountService.getAccountById(accountId);
     if (!account) {
         res.status(400).send({ error: { code: 'invalid_account_id', message: 'The account ID provided is invalid.' } });
         return;
     }
+
     const salt = crypto.randomBytes(16).toString('base64');
     const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, salt, 310000, 32, 'sha256')).toString('base64');
     const user = await userService.createUser(email, name, hashedPassword, salt, account.id);
-
     if (!user) {
         res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
         return;
@@ -73,12 +72,6 @@ export const signupWithToken = asyncWrapper<SignupWithToken>(async (req, res) =>
             return;
         }
 
-        const webUser: WebUser = {
-            id: user.id,
-            accountId: user.account_id,
-            email: user.email,
-            name: user.name
-        };
-        res.status(200).send({ user: webUser });
+        res.status(200).send({ user: userToAPI(user) });
     });
 });

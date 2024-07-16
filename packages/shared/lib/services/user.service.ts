@@ -9,17 +9,9 @@ const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 
 class UserService {
     async getUserById(id: number): Promise<User | null> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ id });
+        const result = await db.knex.select<User>('*').from<User>(`_nango_users`).where({ id, suspended: false }).first();
 
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        if (result[0].suspended) {
-            return null;
-        }
-
-        return result[0];
+        return result || null;
     }
 
     async getUserByUuid(uuid: string): Promise<User | null> {
@@ -63,11 +55,7 @@ class UserService {
     }
 
     async getUsersByAccountId(accountId: number): Promise<User[]> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ account_id: accountId });
-
-        if (!result || result.length == 0 || result[0] == null) {
-            return [];
-        }
+        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ account_id: accountId, suspended: false });
 
         return result;
     }
@@ -91,23 +79,15 @@ class UserService {
     }
 
     async getUserByEmail(email: string): Promise<User | null> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ email: email });
+        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ email: email }).first();
 
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0];
+        return result || null;
     }
 
     async getUserByResetPasswordToken(link: string): Promise<User | null> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ reset_password_token: link });
+        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ reset_password_token: link }).first();
 
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0];
+        return result || null;
     }
 
     async createUser(
@@ -148,10 +128,6 @@ class UserService {
         });
     }
 
-    async editUserName(name: string, id: number) {
-        return db.knex.from<User>(`_nango_users`).where({ id }).update({ name, updated_at: new Date() });
-    }
-
     async changePassword(newPassword: string, oldPassword: string, id: number) {
         return db.knex.from<User>(`_nango_users`).where({ id }).update({
             hashed_password: newPassword,
@@ -169,11 +145,13 @@ class UserService {
         return db.knex.from<User>(`_nango_users`).where({ id }).update({ email_verified: true, email_verification_token: null });
     }
 
-    async update({ id, ...data }: { id: number } & Omit<Partial<DBUser>, 'id'>): Promise<number> {
-        return await db.knex
+    async update({ id, ...data }: { id: number } & Omit<Partial<DBUser>, 'id'>): Promise<DBUser | null> {
+        const [up] = await db.knex
             .from<DBUser>(`_nango_users`)
             .update({ ...data, updated_at: new Date() })
-            .where({ id });
+            .where({ id })
+            .returning('*');
+        return up || null;
     }
 }
 

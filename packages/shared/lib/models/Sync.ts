@@ -1,7 +1,6 @@
 import type { JSONSchema7 } from 'json-schema';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoProps } from '../sdk/sync.js';
-import type { NangoIntegrationData } from './NangoConfig.js';
 import type { NangoConfigMetadata, NangoModel, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 
@@ -158,17 +157,20 @@ export interface RunScriptOptions {
     syncConfig?: SyncConfig;
     syncName: string;
     syncId: string;
-    activityLogId: number | undefined;
+    activityLogId?: number | undefined;
     nangoProps: NangoProps;
-    integrationData: Pick<NangoIntegrationData, 'fileLocation'>;
-    environmentId: number;
     writeToDb: boolean;
     isInvokedImmediately: boolean;
     isWebhook: boolean;
     optionalLoadLocation?: string | undefined;
     input?: object | undefined;
 }
-export interface IntegrationServiceInterface {
+
+export interface ScriptExecutorInterface {
     runScript(options: RunScriptOptions): Promise<any>;
+}
+
+// TODO: refactor
+export interface IntegrationServiceInterface extends ScriptExecutorInterface {
     cancelScript(syncId: string, environmentId: number): Promise<void>;
 }

@@ -1,13 +1,13 @@
-import type { Timestamps } from './Generic.js';
+import type { Timestamps } from '../db';
 
-export interface User extends Timestamps {
+export interface DBUser extends Timestamps {
     id: number;
     email: string;
     name: string;
     hashed_password: string;
     salt: string;
     account_id: number;
-    reset_password_token: string | null;
+    reset_password_token: string | undefined;
     suspended: boolean;
     suspended_at: Date;
     email_verified: boolean;

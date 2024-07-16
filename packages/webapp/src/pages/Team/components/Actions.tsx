@@ -2,7 +2,7 @@ import { Cross1Icon } from '@radix-ui/react-icons';
 import Button from '../../../components/ui/button/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger, DialogClose } from '../../../components/ui/Dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
-import type { ApiInvitation, WebUser } from '@nangohq/types';
+import type { ApiInvitation, ApiUser } from '@nangohq/types';
 import { useState } from 'react';
 import { apiDeleteInvite, apiDeleteTeamUser, useTeam } from '../../../hooks/useTeam';
 import { useToast } from '../../../hooks/useToast';
@@ -10,7 +10,7 @@ import { useStore } from '../../../store';
 import { useUser } from '../../../hooks/useUser';
 import { useNavigate } from 'react-router-dom';
 
-export const UserAction: React.FC<{ user: WebUser }> = ({ user }) => {
+export const UserAction: React.FC<{ user: ApiUser }> = ({ user }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const navigate = useNavigate();
