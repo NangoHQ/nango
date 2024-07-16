@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import type {
     NangoConfig,
     NangoConfigV1,
@@ -158,7 +157,7 @@ const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB, singleAl
         const method = singleAllowedMethod ? defaultMethod : (endpoint[0]?.toUpperCase() as HTTP_VERB);
 
         if (singleAllowedMethod && showMessages && endpoint[0]?.toUpperCase() !== defaultMethod) {
-            console.log(chalk.yellow(`A sync only allows for a ${defaultMethod} method. The provided ${endpoint[0]?.toUpperCase()} method will be ignored.`));
+            console.log(`A sync only allows for a ${defaultMethod} method. The provided ${endpoint[0]?.toUpperCase()} method will be ignored.`);
         }
 
         endpoints = [
@@ -168,7 +167,7 @@ const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB, singleAl
         ];
     } else {
         if (showMessages && !singleAllowedMethod) {
-            console.log(chalk.yellow(`No HTTP method provided for endpoint ${endpoint[0]}. Defaulting to ${defaultMethod}.`));
+            console.log(`No HTTP method provided for endpoint ${endpoint[0]}. Defaulting to ${defaultMethod}.`);
         }
         endpoints = [
             {
@@ -417,7 +416,7 @@ function buildSyncs({
         const scopes = sync?.scopes || sync?.metadata?.scopes || [];
 
         if (!sync?.runs && showMessages) {
-            console.log(chalk.yellow(`No runs property found for sync "${syncName}". Defaulting to every day.`));
+            console.log(`No runs property found for sync "${syncName}". Defaulting to every day.`);
         }
 
         const runs = sync?.runs || 'every day';

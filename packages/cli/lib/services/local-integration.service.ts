@@ -1,10 +1,10 @@
 import type { IntegrationServiceInterface, RunScriptOptions, RunnerOutput } from '@nangohq/shared';
 import { ActionError, NangoError, formatScriptError, NangoSync, localFileService, validateData } from '@nangohq/shared';
-import * as vm from 'vm';
-import * as url from 'url';
-import * as crypto from 'crypto';
+import * as vm from 'node:vm';
+import * as url from 'node:url';
+import * as crypto from 'node:crypto';
 import * as zod from 'zod';
-import { Buffer } from 'buffer';
+import { Buffer } from 'node:buffer';
 
 class IntegrationService implements IntegrationServiceInterface {
     async cancelScript() {
