@@ -21,6 +21,7 @@ const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
+const CONNECTIONS_TABLE = dbNamespace + 'connections';
 
 /**
  * Sync Service
@@ -373,9 +374,14 @@ export const getSyncsBySyncConfigId = async (environmentId: number, syncConfigId
     const results = await schema()
         .select('sync_name', `${TABLE}.id`)
         .from<Sync>(TABLE)
+        // Sync table doesn't have a unique foreign key to sync config
+        // so we need to join on the name
+        // and verify the sync connection environment
         .join(SYNC_CONFIG_TABLE, `${TABLE}.name`, `${SYNC_CONFIG_TABLE}.sync_name`)
+        .join(CONNECTIONS_TABLE, `${CONNECTIONS_TABLE}.id`, `${TABLE}.nango_connection_id`)
         .where({
-            environment_id: environmentId,
+            [`${CONNECTIONS_TABLE}.environment_id`]: environmentId,
+            [`${SYNC_CONFIG_TABLE}.environment_id`]: environmentId,
             [`${SYNC_CONFIG_TABLE}.id`]: syncConfigId,
             [`${TABLE}.deleted`]: false,
             [`${SYNC_CONFIG_TABLE}.deleted`]: false,
