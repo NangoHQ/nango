@@ -39,7 +39,7 @@ export const patchUser = asyncWrapper<PatchUser, never>(async (req, res) => {
     // @ts-expect-error you got to love passport
     req.session.passport.user = userToAPI(updated);
     req.session.save((err) => {
-        if (!err) {
+        if (err) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to update session' } });
             return;
         }

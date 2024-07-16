@@ -9,9 +9,9 @@ const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 
 class UserService {
     async getUserById(id: number): Promise<User | null> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ id }).first();
+        const result = await db.knex.select<User>('*').from<User>(`_nango_users`).where({ id, suspended: false }).first();
 
-        return result && !result.suspended ? result : null;
+        return result || null;
     }
 
     async getUserByUuid(uuid: string): Promise<User | null> {
@@ -55,11 +55,7 @@ class UserService {
     }
 
     async getUsersByAccountId(accountId: number): Promise<User[]> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ account_id: accountId });
-
-        if (!result || result.length == 0 || result[0] == null) {
-            return [];
-        }
+        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ account_id: accountId, suspended: false });
 
         return result;
     }
@@ -150,12 +146,12 @@ class UserService {
     }
 
     async update({ id, ...data }: { id: number } & Omit<Partial<DBUser>, 'id'>): Promise<DBUser | null> {
-        const up = await db.knex
+        const [up] = await db.knex
             .from<DBUser>(`_nango_users`)
             .update({ ...data, updated_at: new Date() })
             .where({ id })
             .returning('*');
-        return up[0] || null;
+        return up || null;
     }
 }
 

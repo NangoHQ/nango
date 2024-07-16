@@ -125,7 +125,7 @@ export const UserSettings: React.FC = () => {
                         disabled={true}
                         after={
                             <div className="flex gap-1 items-center">
-                                <CopyButton text={name} />
+                                <CopyButton text={user!.email} />
                             </div>
                         }
                     />
