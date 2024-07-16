@@ -7,10 +7,10 @@ import { useUser } from '../hooks/useUser';
 import PageNotFound from '../pages/PageNotFound';
 
 export const PrivateRoute: React.FC = () => {
-    const { meta, error, loading } = useMeta();
+    const { meta, error, loading: loadingMeta } = useMeta();
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [ready, setReady] = useState(false);
-    const { user } = useUser(Boolean(meta && ready && !notFoundEnv));
+    const { user, loading: loadingUser } = useUser(Boolean(meta && ready && !notFoundEnv));
     const identify = useAnalyticsIdentify();
 
     const env = useStore((state) => state.env);
@@ -63,7 +63,7 @@ export const PrivateRoute: React.FC = () => {
 
         // it's ready when datastore and path are finally reconciliated
         setReady(true);
-    }, [meta, loading, env, error, setEnv]);
+    }, [meta, loadingMeta, env, error, setEnv]);
 
     useEffect(() => {
         if (user) {
@@ -71,7 +71,7 @@ export const PrivateRoute: React.FC = () => {
         }
     }, [user, identify]);
 
-    if (loading || !ready) {
+    if (loadingMeta || !ready || loadingUser) {
         return null;
     }
 

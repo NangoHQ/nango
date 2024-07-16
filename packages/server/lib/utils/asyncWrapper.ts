@@ -4,13 +4,13 @@ import type { RequestHandler, Request, Response, NextFunction } from 'express';
 import { isAsyncFunction } from 'util/types';
 import type { RequestLocals } from './express.js';
 
-export function asyncWrapper<TEndpoint extends Endpoint<any>>(
+export function asyncWrapper<TEndpoint extends Endpoint<any>, Locals extends Record<string, any> = Required<RequestLocals>>(
     fn: (
         req: Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>,
-        res: Response<TEndpoint['Reply'], Required<RequestLocals>>,
+        res: Response<TEndpoint['Reply'], Locals>,
         next: NextFunction
     ) => Promise<void> | void
-): RequestHandler<any, TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring'], Required<RequestLocals>> {
+): RequestHandler<any, TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring'], Locals> {
     return (req, res, next) => {
         const active = tracer.scope().active();
         active?.setTag('http.route', req.route?.path || req.originalUrl);
