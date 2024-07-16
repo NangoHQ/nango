@@ -34,9 +34,17 @@ async function execute(
         return;
     }
 
+    const template = configService.getTemplate(integration.provider);
+
     const { environment, account } = environmentAndAccountLookup;
 
-    const handler = handlers[`${integration.provider.replace(/-/g, '')}Webhook`];
+    if (!template || !template['webhook_routing_script']) {
+        return;
+    }
+
+    const webhookRoutingScript = template['webhook_routing_script'];
+    const handler = handlers[webhookRoutingScript.replace(/-/g, '')];
+
     if (!handler) {
         return;
     }

@@ -465,6 +465,9 @@ checkr-partner:
         retry:
             at: 'X-Ratelimit-Reset'
         base_url: https://api.checkr.com
+    token_response_metadata:
+        - checkr_account_id
+    webhook_routing_script: checkr-webhook-routing
     post_connection_script: checkr-post-connection
     docs: https://docs.nango.dev/integrations/all/checkr
 checkr-partner-staging:
@@ -480,6 +483,9 @@ checkr-partner-staging:
         retry:
             at: 'X-Ratelimit-Reset'
         base_url: https://api.checkr-staging.com
+    token_response_metadata:
+        - checkr_account_id
+    webhook_routing_script: checkr-webhook-routing
     post_connection_script: checkr-post-connection
     docs: https://docs.nango.dev/integrations/all/checkr
 chorus:
