@@ -44,7 +44,7 @@ npx ts-to-zod .nango/schema.ts schema.zod.ts
 You can use zod models in your scripts too
 </Tip>
 ```typescript
-import { myZodModel } from '../../schema.zod.ts';
+import { myZodModel } from '../../schema.zod.js';
 
 export default async fetchData(nango: Nango) {
   const response = await nango.get({ endpoint: '/tickets' });
