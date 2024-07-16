@@ -10,7 +10,7 @@ import { compileAllFiles } from './compile.service.js';
 import { parse } from './config.service.js';
 import { loadSchemaJson } from './model.service.js';
 import { displayValidationError } from '../utils/errors.js';
-import * as vm from 'vm';
+import * as vm from 'node:vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';

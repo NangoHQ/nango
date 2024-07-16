@@ -1,7 +1,6 @@
 import { PostHog } from 'posthog-node';
 import { localhostUrl, isCloud, isStaging, baseUrl } from '@nangohq/utils';
 import { UserType } from '../utils/utils.js';
-import ip from 'ip';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
 import accountService from '../services/account.service.js';
 import environmentService from '../services/environment.service.js';
@@ -150,7 +149,7 @@ class Analytics {
     public getUserIdWithType(userType: string, accountId: number, baseUrl: string): string {
         switch (userType) {
             case UserType.Local:
-                return `${userType}-${ip.address()}`;
+                return `${userType}-local`;
             case UserType.SelfHosted:
                 return `${userType}-${baseUrl}`;
             case UserType.Cloud:
