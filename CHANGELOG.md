@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.0] - 2024-07-16
+
+### Added
+
+- *(integrations)* Add support for the Canny API (#2499) by @keedyc
+- *(integration-templates)* Improve sharepoint templates (#2495) by @hassan254-prog
+- Refactor Team Settings (#2493) by @bodinsamuel
+
+### Changed
+
+- Remove deprecated get records (#2511) by @bodinsamuel
+
+### Fixed
+
+- *(proxy)* Allow empty body for POST, PUT, PATCH (#2506) by @TBonnin
+- *(datadog)* Enable tcp tracing (#2510) by @bodinsamuel
+- *(db)* Remove unused metrics, reduce pool size (#2509) by @bodinsamuel
+- *(runner)* Get random port safely (#2508) by @bodinsamuel
+- *(cli)* Handle Windows paths (#2312) (#2496) by @bburns
+- *(integration-templates)* Show the link only for the future upgrade not the current integration template (#2512) by @khaliqgant
+
 ## [v0.41.1] - 2024-07-12
 
 ### Added
@@ -1579,6 +1600,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.0]: https://github.com/NangoHQ/nango/compare/v0.41.1..v0.42.0
 [v0.41.1]: https://github.com/NangoHQ/nango/compare/v0.41.0..v0.41.1
 [v0.41.0]: https://github.com/NangoHQ/nango/compare/v0.40.10..v0.41.0
 [v0.40.10]: https://github.com/NangoHQ/nango/compare/v0.40.9..v0.40.10

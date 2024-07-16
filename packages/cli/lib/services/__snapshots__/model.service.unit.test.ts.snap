@@ -231,7 +231,7 @@ export interface NangoProps {
     secretKey: string;
     accountId?: number;
     connectionId: string;
-    environmentId?: number;
+    environmentId: number;
     environmentName?: string;
     activityLogId?: number | string | undefined;
     providerConfigKey: string;
@@ -269,7 +269,7 @@ export declare class NangoAction {
     activityLogId?: number | string | undefined;
     syncId?: string;
     nangoConnectionId?: number;
-    environmentId?: number;
+    environmentId: number;
     environmentName?: string;
     syncJobId?: number;
     dryRun?: boolean;

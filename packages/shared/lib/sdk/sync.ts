@@ -293,7 +293,7 @@ export interface NangoProps {
     secretKey: string;
     accountId?: number;
     connectionId: string;
-    environmentId?: number;
+    environmentId: number;
     environmentName?: string;
     activityLogId?: number | string | undefined;
     providerConfigKey: string;
@@ -338,7 +338,7 @@ export class NangoAction {
     activityLogId?: number | string | undefined;
     syncId?: string;
     nangoConnectionId?: number;
-    environmentId?: number;
+    environmentId: number;
     environmentName?: string;
     syncJobId?: number;
     dryRun?: boolean;
@@ -361,6 +361,7 @@ export class NangoAction {
 
     constructor(config: NangoProps, { persistApi }: { persistApi: AxiosInstance } = { persistApi: defaultPersistApi }) {
         this.connectionId = config.connectionId;
+        this.environmentId = config.environmentId;
         this.providerConfigKey = config.providerConfigKey;
         this.persistApi = persistApi;
         this.runnerFlags = config.runnerFlags;
@@ -385,10 +386,6 @@ export class NangoAction {
 
         if (config.dryRun) {
             this.dryRun = config.dryRun;
-        }
-
-        if (config.environmentId) {
-            this.environmentId = config.environmentId;
         }
 
         if (config.environmentName) {
