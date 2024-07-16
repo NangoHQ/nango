@@ -49,17 +49,20 @@ interface Tracking {
 }
 
 export interface LineItem {
-    ItemCode: string;
     Description: string;
-    Quantity: string;
     UnitAmount: string;
-    TaxType: string;
     TaxAmount: string;
     LineAmount: string;
+    Tracking: Tracking[];
+    Quantity: number;
+    DiscountRate?: number;
+    DiscountEnteredAsPercent?: boolean;
+    DiscountAmount?: number;
+    ItemCode: string;
+    TaxType: string;
     AccountCode: string;
     AccountId: string;
     Item: Item;
-    Tracking: Tracking[];
     LineItemID: string;
 }
 
@@ -76,6 +79,8 @@ export interface Invoice {
     DateString: string;
     DueDateString: string;
     Status: 'AUTHORISED' | 'DRAFT' | 'PAID';
+    Reference: string;
+    Url?: string;
     LineAmountTypes: 'Exclusive' | 'Inclusive' | 'NoTax';
     LineItems: LineItem[];
     SubTotal: string;
