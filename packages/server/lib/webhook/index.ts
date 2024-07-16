@@ -5,4 +5,5 @@ export { default as jiraWebhook } from './jira-webhook-routing.js';
 export { default as linearWebhook } from './linear-webhook-routing.js';
 export { default as salesforceWebhook } from './salesforce-webhook-routing.js';
 export { default as slackWebhook } from './slack-webhook-routing.js';
+export { default as microsoftteamsWebhook } from './microsoft-teams-webhook-routing.js';
 export * from './types.js';

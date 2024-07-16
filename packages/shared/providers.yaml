@@ -1672,6 +1672,8 @@ microsoft-teams:
         - productivity
         - video
     alias: microsoft
+    webhook_routing_script: microsoft-teams-webhook-routing
+    post_connection_script: microsoft-teams-post-connection
     docs: https://docs.nango.dev/integrations/all/microsoft-teams
 microsoft-tenant-specific:
     categories:
