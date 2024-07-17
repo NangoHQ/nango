@@ -15,6 +15,10 @@ export async function fetcher(...args: Parameters<typeof fetch>) {
     return response.json();
 }
 
+export interface SWRError<TError> {
+    json: TError;
+    status: number;
+}
 /**
  * Default SWR fetcher does not throw on HTTP error
  */

@@ -13,7 +13,7 @@ export const isTest = Boolean(process.env['CI'] !== undefined || process.env['VI
 export const isBasicAuthEnabled = !isCloud && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
 export const isHosted = !isCloud && !isLocal && !isEnterprise;
 
-export const AUTH_ENABLED = isCloud || isEnterprise || isTest;
+export const AUTH_ENABLED = isCloud || isEnterprise || isTest || isLocal;
 export const MANAGED_AUTH_ENABLED = isCloud || isLocal;
 
 export const env = isStaging ? NodeEnv.Staging : isProd ? NodeEnv.Prod : NodeEnv.Dev;
