@@ -16,6 +16,10 @@ export function toInvoice(xeroInvoice: XeroInvoice): Invoice {
         fees: xeroInvoice.LineItems.map(toInvoiceItem)
     };
 
+    if (xeroInvoice.Url) {
+        invoice.url = xeroInvoice.Url;
+    }
+
     return invoice;
 }
 
@@ -28,9 +32,17 @@ function toInvoiceItem(xeroInvoiceItem: XeroLineItem): InvoiceFee {
         precise_unit_amount: Number(xeroInvoiceItem.UnitAmount),
         account_code: xeroInvoiceItem.AccountCode,
         account_external_id: xeroInvoiceItem.AccountId,
-        amount_cents: parseFloat(xeroInvoiceItem.LineAmount) * 100, // Amounts in xero are not in cents
-        taxes_amount_cents: parseFloat(xeroInvoiceItem.TaxAmount) * 100 // Amounts in xero are not in cents
+        amount_cents: Math.round(parseFloat(xeroInvoiceItem.LineAmount) * 100),
+        taxes_amount_cents: Math.round(parseFloat(xeroInvoiceItem.TaxAmount) * 100)
     };
+
+    if (xeroInvoiceItem.DiscountRate) {
+        item.discount_rate = xeroInvoiceItem.DiscountRate;
+    }
+
+    if (xeroInvoiceItem.DiscountAmount) {
+        item.discount_amount_cents = Math.round(xeroInvoiceItem.DiscountAmount * 100);
+    }
 
     return item;
 }
@@ -70,6 +82,10 @@ export function toXeroInvoice(invoice: CreateInvoice | Invoice) {
         xeroInvoice['DueDate'] = dueDate.toISOString().split('T')[0];
     }
 
+    if (invoice.url) {
+        xeroInvoice['Url'] = invoice.url;
+    }
+
     for (const item of invoice.fees) {
         const xeroItem: Record<string, any> = {
             Description: item.description,
@@ -93,11 +109,19 @@ export function toXeroInvoice(invoice: CreateInvoice | Invoice) {
         }
 
         if (item.amount_cents) {
-            xeroItem['LineAmount'] = item.amount_cents / 100;
+            xeroItem['LineAmount'] = (item.amount_cents / 100).toFixed(2);
         }
 
         if (item.taxes_amount_cents) {
-            xeroItem['TaxAmount'] = item.taxes_amount_cents / 100;
+            xeroItem['TaxAmount'] = (item.taxes_amount_cents / 100).toFixed(2);
+        }
+
+        if (item.discount_amount_cents) {
+            xeroItem['DiscountAmount'] = (item.discount_amount_cents / 100).toFixed(2);
+        }
+
+        if (item.discount_rate) {
+            xeroItem['DiscountRate'] = item.discount_rate;
         }
 
         xeroInvoice['LineItems'].push(xeroItem);

@@ -340,6 +340,7 @@
                 "integrations/all/cloudentity",
                 "integrations/all/coda",
                 "integrations/all/confluence",
+                "integrations/all/contentful",
                 "integrations/all/contentstack",
                 "integrations/all/coros",
                 "integrations/all/datev",
@@ -574,7 +575,6 @@
                             "group": "Syncs",
                             "pages": [
                                 "reference/api/sync/records-list",
-                                "reference/api/sync/records-get",
                                 "reference/api/sync/trigger",
                                 "reference/api/sync/start",
                                 "reference/api/sync/pause",

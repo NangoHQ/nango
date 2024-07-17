@@ -1,0 +1,33 @@
+---
+title: Contentful
+sidebarTitle: Contentful
+---
+
+API configurations: [`contentful`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [Register an Application](https://app.contentful.com/account/profile/developers/applications)
+-   [OAuth-related docs](https://www.contentful.com/developers/docs/extensibility/oauth/)
+-   [API docs](https://www.contentful.com/developers/docs/references/)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+-   Contentful also supports the authorization code flow as well.
+-   Contentful requires specific subdomain for the various API type this will comprise of the API type and region. i.e `cdn.eu` for the Content Delivery API EU region, `cdn` for the Content Delivery API, or `api.eu` for Content Management API EU region. For more details on this please check the introduction section of each API type.
+-   Different API types enforce different rate limits, for more details on this check the API rate limits section for the various API types. i.e [Content delivery API rate limit](https://www.contentful.com/developers/docs/references/content-delivery-api/#/introduction/api-rate-limits) for Content Delivery API.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/contentful.mdx)</Note>

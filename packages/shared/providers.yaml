@@ -551,6 +551,25 @@ confluence:
         - knowledge-base
     alias: jira
     docs: https://docs.nango.dev/integrations/all/confluence
+contentful:
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: OAUTH2
+    authorization_url: https://be.contentful.com/oauth/authorize
+    token_url: https://be.contentful.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.contentful.com
+        retry:
+            after: X-Contentful-RateLimit-Reset
+    docs: https://docs.nango.dev/integrations/all/contentful
 contentstack:
     categories:
         - cms
@@ -575,6 +594,7 @@ coros:
         grant_type: refresh_token
     proxy:
         base_url: https://open.coros.com
+    docs: https://docs.nango.dev/integrations/all/coros
 coros-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://opentest.coros.com/oauth2/authorize
@@ -590,6 +610,7 @@ coros-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://opentest.coros.com
+    docs: https://docs.nango.dev/integrations/all/coros
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     categories:
