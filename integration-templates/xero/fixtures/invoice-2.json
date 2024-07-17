@@ -1,0 +1,22 @@
+[
+    {
+        "number": "inv_w7i7HRdRFT0wnB",
+        "fees": [
+            {
+                "description": "desc",
+                "units": 2,
+                "precise_unit_amount": 7500,
+                "taxes_amount_cents": 3000,
+                "amount_cents": 1275000,
+                "discount_amount_cents": 10,
+                "discount_rate": 15
+            }
+        ],
+        "external_contact_id": "69559f1c-5b66-4320-826d-892cc34c4934",
+        "issuing_date": "2024-07-15T22:00:00.000Z",
+        "payment_due_date": "2024-08-15T06:16:47.759Z",
+        "type": "ACCREC",
+        "url": "https://local.app.hyperline.dev/invoices/inv_w7i7HRdRFT0wnB",
+        "status": "DRAFT"
+    }
+]
