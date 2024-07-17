@@ -467,8 +467,8 @@ checkr-partner:
         base_url: https://api.checkr.com
     token_response_metadata:
         - checkr_account_id
-    webhook_routing_script: checkr-webhook-routing
-    post_connection_script: checkr-post-connection
+    webhook_routing_script: checkrWebhookRouting
+    post_connection_script: checkrPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr
 checkr-partner-staging:
     categories:
@@ -485,8 +485,8 @@ checkr-partner-staging:
         base_url: https://api.checkr-staging.com
     token_response_metadata:
         - checkr_account_id
-    webhook_routing_script: checkr-webhook-routing
-    post_connection_script: checkr-post-connection
+    webhook_routing_script: checkrWebhookRouting
+    post_connection_script: checkrPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr
 chorus:
     auth_mode: BASIC
@@ -996,7 +996,7 @@ github-app:
     auth_mode: APP
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
     token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
-    webhook_routing_script: github-app-webhook-routing
+    webhook_routing_script: githubAppWebhookRouting
     docs: https://docs.nango.dev/integrations/all/github
 github-app-oauth:
     categories:
@@ -1008,8 +1008,8 @@ github-app-oauth:
     token_url:
         OAUTH2: https://github.com/login/oauth/access_token
         APP: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
-    webhook_routing_script: github-app-oauth-webhook-routing
-    post_connection_script: github-app-oauth-post-connection
+    webhook_routing_script: githubAppOauthWebhookRouting
+    post_connection_script: githubAppOauthPostConnection
     docs: https://docs.nango.dev/integrations/all/github
 gitlab:
     categories:
@@ -1294,8 +1294,8 @@ hubspot:
     token_url: https://api.hubapi.com/oauth/v1/token
     connection_configuration:
         - portalId
-    post_connection_script: hubspot-post-connection
-    webhook_routing_script: hubspot-webhook-routing
+    post_connection_script: hubspotPostConnection
+    webhook_routing_script: hubspotWebhookRouting
     proxy:
         base_url: https://api.hubapi.com
         decompress: true
@@ -1376,8 +1376,8 @@ jira:
             limit_name_in_request: limit
             response_path: results
             link_path_in_response_body: _links.next
-    post_connection_script: jira-post-connection
-    webhook_routing_script: jira-webhook-routing
+    post_connection_script: jiraPostConnection
+    webhook_routing_script: jiraWebhookRouting
     docs: https://docs.nango.dev/integrations/all/jira
 jira-basic:
     categories:
@@ -1560,8 +1560,8 @@ linear:
     proxy:
         base_url: https://api.linear.app
     disable_pkce: true
-    webhook_routing_script: linear-webhook-routing
-    post_connection_script: linear-post-connection
+    webhook_routing_script: linearWebhookRouting
+    post_connection_script: linearPostConnection
     webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/linear
 linkedin:
@@ -2264,8 +2264,8 @@ salesforce:
         - instance_url
     proxy:
         base_url: ${connectionConfig.instance_url}
-    webhook_routing_script: salesforce-webhook-routing
-    post_connection_script: salesforce-post-connection
+    webhook_routing_script: salesforceWebhookRouting
+    post_connection_script: salesforcePostConnection
     docs: https://docs.nango.dev/integrations/all/salesforce
 salesforce-sandbox:
     auth_mode: OAUTH2
@@ -2400,7 +2400,7 @@ slack:
             cursor_path_in_response: response_metadata.next_cursor
             cursor_name_in_request: cursor
             limit_name_in_request: limit
-    webhook_routing_script: slack-webhook-routing
+    webhook_routing_script: slackWebhookRouting
     docs: https://docs.nango.dev/integrations/all/slack
 smartrecruiters-api-key:
     auth_mode: API_KEY
@@ -3069,7 +3069,7 @@ xero:
         - offline_access
     proxy:
         base_url: https://api.xero.com
-    post_connection_script: xero-post-connection
+    post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
 yahoo:
     categories:

@@ -43,7 +43,7 @@ async function execute(
     }
 
     const webhookRoutingScript = template['webhook_routing_script'];
-    const handler = handlers[webhookRoutingScript.replace(/-/g, '')];
+    const handler = handlers[webhookRoutingScript];
 
     if (!handler) {
         return;
