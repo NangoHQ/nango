@@ -20,7 +20,7 @@ mkdir -p $TEMP_DIRECTORY/nango-integrations
 cp -r integration-templates/$INTEGRATION $TEMP_DIRECTORY/nango-integrations
 
 mv $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/nango.yaml $TEMP_DIRECTORY/nango-integrations/nango.yaml
-mv $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/fixtures $TEMP_DIRECTORY/nango-integrations/fixtures
+[ -d $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/fixtures ] && mv $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/fixtures $TEMP_DIRECTORY/nango-integrations/fixtures
 
 pushd $TEMP_DIRECTORY/nango-integrations
 
