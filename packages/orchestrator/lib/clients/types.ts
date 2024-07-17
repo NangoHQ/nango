@@ -27,7 +27,7 @@ interface ActionArgs {
         environment_id: number;
         connection_id: string;
     };
-    activityLogId: string | number;
+    activityLogId: string;
     input: JsonValue;
 }
 interface WebhookArgs {
@@ -39,7 +39,7 @@ interface WebhookArgs {
         provider_config_key: string;
         environment_id: number;
     };
-    activityLogId: string | number;
+    activityLogId: string;
     input: JsonValue;
 }
 
@@ -53,7 +53,7 @@ interface PostConnectionArgs {
     };
     version: string;
     fileLocation: string;
-    activityLogId: string | number;
+    activityLogId: string;
 }
 export type SchedulesReturn = Result<OrchestratorSchedule[]>;
 export type VoidReturn = Result<void, ClientError>;

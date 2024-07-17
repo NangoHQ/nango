@@ -204,7 +204,7 @@ describe('OrchestratorClient', async () => {
                             provider_config_key: 'P',
                             environment_id: 5678
                         },
-                        activityLogId: 9876,
+                        activityLogId: '9876',
                         input: { foo: 'bar' }
                     }
                 });
@@ -235,7 +235,7 @@ describe('OrchestratorClient', async () => {
                             provider_config_key: 'P',
                             environment_id: 5678
                         },
-                        activityLogId: 9876,
+                        activityLogId: '9876',
                         input: { foo: 'bar' }
                     }
                 });
@@ -272,7 +272,7 @@ describe('OrchestratorClient', async () => {
                             provider_config_key: 'P',
                             environment_id: 5678
                         },
-                        activityLogId: 9876,
+                        activityLogId: '9876',
                         input: { foo: 'bar' }
                     }
                 });
@@ -304,7 +304,7 @@ describe('OrchestratorClient', async () => {
                             provider_config_key: 'P',
                             environment_id: 5678
                         },
-                        activityLogId: 9876,
+                        activityLogId: '9876',
                         input: { foo: 'bar' }
                     }
                 });
