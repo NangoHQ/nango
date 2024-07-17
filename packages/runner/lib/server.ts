@@ -29,7 +29,6 @@ interface RunParams {
 interface StartParams {
     taskId: string;
     nangoProps: NangoProps;
-    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     code: string;
     codeParams?: object;
 }
@@ -68,7 +67,7 @@ function runProcedure() {
                 });
                 usage.track(nangoProps);
                 const scriptType: 'sync' | 'action' | 'webhook' = input.isWebhook ? 'webhook' : input.isInvokedImmediately ? 'action' : 'sync';
-                return await exec(nangoProps, scriptType, code, codeParams);
+                return await exec({ ...nangoProps, scriptType }, code, codeParams);
             } finally {
                 usage.untrack(nangoProps);
                 logger.info('Task done');
@@ -80,7 +79,7 @@ function startProcedure() {
     return publicProcedure
         .input((input) => input as StartParams) //TODO: zod
         .mutation(({ input }): boolean => {
-            const { taskId, nangoProps, scriptType, code, codeParams } = input;
+            const { taskId, nangoProps, code, codeParams } = input;
             logger.info('Received task', {
                 taskId: taskId,
                 env: nangoProps.environmentId,
@@ -93,14 +92,13 @@ function startProcedure() {
             // sending the result to the jobs service when done
             setImmediate(async () => {
                 try {
-                    const { error, response } = await exec(nangoProps, scriptType, code, codeParams);
+                    const { error, response: output } = await exec(nangoProps, code, codeParams);
                     await httpFetch({
                         method: 'PUT',
                         url: `${jobsServiceUrl}/task/${taskId}`,
-                        data: superjson.stringify({
-                            scriptType,
-                            error,
-                            output: response
+                        data: JSON.stringify({
+                            nangoProps,
+                            ...(error ? { error } : { output })
                         })
                     });
                 } finally {

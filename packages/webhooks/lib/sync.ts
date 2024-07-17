@@ -80,7 +80,7 @@ export const sendSync = async ({
                 deleted: 0
             },
             modifiedAfter: dayjs(now).toDate().toISOString(),
-            queryTimeStamp: operation !== 'INITIAL' ? (now as unknown as string) : null
+            queryTimeStamp: now as unknown as string // Deprecated
         };
 
         if (responseResults.deleted && responseResults.deleted > 0) {

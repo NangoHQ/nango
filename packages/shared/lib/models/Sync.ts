@@ -13,11 +13,10 @@ export enum SyncStatus {
 }
 
 export enum SyncType {
-    INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL',
+    FULL = 'FULL',
     WEBHOOK = 'WEBHOOK',
     POST_CONNECTION_SCRIPT = 'POST_CONNECTION_SCRIPT',
-    FULL = 'FULL',
     ACTION = 'ACTION'
 }
 
@@ -153,24 +152,12 @@ export interface SyncConfigWithProvider {
     type: ScriptTypeLiteral;
 }
 
+//TODO: still useful???
 export interface RunScriptOptions {
     syncConfig?: SyncConfig;
     syncName: string;
     syncId: string;
-    activityLogId?: string | undefined;
     nangoProps: NangoProps;
-    writeToDb: boolean;
-    isInvokedImmediately: boolean;
-    isWebhook: boolean;
     optionalLoadLocation?: string | undefined;
     input?: object | undefined;
-}
-
-export interface ScriptExecutorInterface {
-    runScript(options: RunScriptOptions): Promise<any>;
-}
-
-// TODO: refactor
-export interface IntegrationServiceInterface extends ScriptExecutorInterface {
-    cancelScript(syncId: string, environmentId: number): Promise<void>;
 }

@@ -299,6 +299,7 @@ export interface DryRunServiceInterface {
 }
 
 export interface NangoProps {
+    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     host?: string;
     secretKey: string;
     accountId?: number;
@@ -307,7 +308,7 @@ export interface NangoProps {
     environmentName?: string;
     activityLogId?: string | undefined;
     providerConfigKey: string;
-    provider?: string;
+    provider: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     nangoConnectionId?: number;
@@ -317,10 +318,12 @@ export interface NangoProps {
     attributes?: object | undefined;
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
-    abortSignal?: AbortSignal;
+    abortSignal?: AbortSignal; //TODO: delete
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
     runnerFlags: RunnerFlags;
+    debug: boolean;
+    startedAt: Date;
 }
 
 export interface EnvironmentVariable {

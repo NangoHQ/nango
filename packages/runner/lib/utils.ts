@@ -16,6 +16,6 @@ export async function httpFetch({ method, url, data }: { method: string; url: st
             logger.error(`Error (status=${res.status}) sending '${data}' to '${url}': ${JSON.stringify(await res.json())}`);
         }
     } catch (err) {
-        logger.error(`Error sending '${data}' to '${url}': ${stringifyError(err)}`);
+        logger.error(`Error: ${method} ${url} with data '${data}': ${stringifyError(err)}`);
     }
 }

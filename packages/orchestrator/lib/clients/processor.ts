@@ -1,16 +1,14 @@
 import type { Result } from '@nangohq/utils';
 import { Err, stringifyError, getLogger } from '@nangohq/utils';
 import type { OrchestratorClient } from './client.js';
-import type { ClientError, OrchestratorTask } from './types.js';
-import type { JsonValue } from 'type-fest';
+import type { OrchestratorTask } from './types.js';
 import PQueue from 'p-queue';
 import type { Tracer } from 'dd-trace';
-import type { ApiError } from '@nangohq/types';
 
 const logger = getLogger('orchestrator.clients.processor');
 
 export class OrchestratorProcessor {
-    private handler: (task: OrchestratorTask) => Promise<Result<JsonValue>>;
+    private handler: (task: OrchestratorTask) => Promise<Result<void>>;
     private groupKey: string;
     private orchestratorClient: OrchestratorClient;
     private queue: PQueue;
@@ -23,7 +21,7 @@ export class OrchestratorProcessor {
         handler,
         opts
     }: {
-        handler: (task: OrchestratorTask) => Promise<Result<JsonValue>>;
+        handler: (task: OrchestratorTask) => Promise<Result<void>>;
         opts: { orchestratorClient: OrchestratorClient; groupKey: string; maxConcurrency: number; checkForTerminatedInterval?: number };
     }) {
         this.stopped = true;
@@ -125,18 +123,10 @@ export class OrchestratorProcessor {
 
                     const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error: res.error });
                     if (setFailed.isErr()) {
-                        throwIfPayloadTooBig(setFailed.error);
                         logger.error(`failed to set task ${task.id} as failed`, setFailed.error);
                         span.setTag('error', setFailed);
                     } else {
                         span.setTag('error', res.error);
-                    }
-                } else {
-                    const setSucceed = await this.orchestratorClient.succeed({ taskId: task.id, output: res.value });
-                    if (setSucceed.isErr()) {
-                        throwIfPayloadTooBig(setSucceed.error);
-                        logger.error(`failed to set task ${task.id} as succeeded`, setSucceed.error);
-                        span.setTag('error', setSucceed);
                     }
                 }
             } catch (err: unknown) {
@@ -167,17 +157,18 @@ export class OrchestratorProcessor {
     }
 }
 
-// We don't have access to NangoError so we have to create a temp error
-class PayloadTooBigError extends Error {
-    type = 'action_output_too_big';
-    override message = 'Output is too big';
-}
-
-function throwIfPayloadTooBig(err: ClientError) {
-    if (err.payload && typeof err.payload === 'object' && 'response' in err.payload && err.payload['response'] && typeof err.payload['response'] === 'object') {
-        const res = err.payload['response'] as unknown as ApiError<string>;
-        if (res.error.code === 'payload_too_big') {
-            throw new PayloadTooBigError();
-        }
-    }
-}
+//TODO:
+// // We don't have access to NangoError so we have to create a temp error
+// class PayloadTooBigError extends Error {
+//     type = 'action_output_too_big';
+//     override message = 'Output is too big';
+// }
+//
+// function throwIfPayloadTooBig(err: ClientError) {
+//     if (err.payload && typeof err.payload === 'object' && 'response' in err.payload && err.payload['response'] && typeof err.payload['response'] === 'object') {
+//         const res = err.payload['response'] as unknown as ApiError<string>;
+//         if (res.error.code === 'payload_too_big') {
+//             throw new PayloadTooBigError();
+//         }
+//     }
+// }

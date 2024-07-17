@@ -8,10 +8,12 @@ describe('Runner client', () => {
     const serverUrl = `http://localhost:${port}`;
     let client: ReturnType<typeof getRunnerClient>;
     const nangoProps: NangoProps = {
+        scriptType: 'sync',
         host: 'http://localhost:3003',
         connectionId: 'connection-id',
         environmentId: 1,
         providerConfigKey: 'provider-config-key',
+        provider: 'provider',
         activityLogId: '1',
         secretKey: 'secret-key',
         nangoConnectionId: 1,
@@ -26,6 +28,8 @@ describe('Runner client', () => {
             messages: []
         },
         syncConfig: {} as SyncConfig,
+        debug: false,
+        startedAt: new Date(),
         runnerFlags: {} as any,
         stubbedMetadata: {}
     };
@@ -52,7 +56,7 @@ describe('Runner client', () => {
     it('should start script', async () => {
         const jsCode = `exports.default = async (nango) => [1, 2, 3]`;
         const taskId = 'task-id';
-        const start = client.start.mutate({ taskId, nangoProps, scriptType: 'sync', code: jsCode });
+        const start = client.start.mutate({ taskId, nangoProps, code: jsCode });
         await expect(start).resolves.toEqual(true);
     });
 });

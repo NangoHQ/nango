@@ -1,7 +1,7 @@
 import promptly from 'promptly';
 import chalk from 'chalk';
 
-import type { NangoConnection, NangoProps, ScriptExecutorInterface, RunScriptOptions, RunnerOutput } from '@nangohq/shared';
+import type { NangoConnection, NangoProps, RunScriptOptions, RunnerOutput } from '@nangohq/shared';
 import type { Metadata, ScriptFileType } from '@nangohq/types';
 import { cloudHost, stagingHost, NangoError, localFileService, validateData, NangoSync, formatScriptError, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
@@ -27,7 +27,7 @@ interface RunArgs extends GlobalOptions {
     optionalProviderConfigKey?: string;
 }
 
-export class DryRunService implements ScriptExecutorInterface {
+export class DryRunService {
     fullPath: string;
     validation: boolean;
     environment?: string;
@@ -278,6 +278,7 @@ export class DryRunService implements ScriptExecutorInterface {
                 updated_at: new Date()
             };
             const nangoProps: NangoProps = {
+                scriptType: syncInfo?.type === 'action' ? 'action' : 'sync',
                 host: process.env['NANGO_HOSTPORT'],
                 connectionId: nangoConnection.connection_id,
                 environmentId: nangoConnection.environment_id,
@@ -293,27 +294,22 @@ export class DryRunService implements ScriptExecutorInterface {
                 stubbedMetadata,
                 syncConfig,
                 dryRunService: new DryRunService({ environment, returnOutput: true, fullPath: this.fullPath, validation: this.validation }),
+                debug,
                 runnerFlags: {
                     validateActionInput: this.validation, // irrelevant for cli
                     validateActionOutput: this.validation, // irrelevant for cli
                     validateSyncRecords: this.validation,
                     validateSyncMetadata: false
-                }
+                },
+                startedAt: new Date()
             };
-            const isAction = syncInfo?.type === 'action';
-            const isWebhook = false;
-            const isInvokedImmediately = Boolean(isAction || isWebhook || isPostConnectionScript);
-
             console.log('---');
             const results = await this.runScript({
+                syncId: nangoProps.syncId as string,
                 syncName,
                 nangoProps,
-                isInvokedImmediately,
-                isWebhook,
-                syncId: nangoProps.syncId as string,
                 optionalLoadLocation: './',
-                input: normalizedInput,
-                writeToDb: false
+                input: normalizedInput
             });
             console.log('---');
 
@@ -389,13 +385,13 @@ export class DryRunService implements ScriptExecutorInterface {
         }
     }
 
-    async runScript({ syncName, nangoProps, isInvokedImmediately, isWebhook, optionalLoadLocation, input }: RunScriptOptions): Promise<RunnerOutput> {
+    async runScript({ syncName, nangoProps, optionalLoadLocation, input }: RunScriptOptions): Promise<RunnerOutput> {
         const nango = new NangoSync(nangoProps);
         try {
             await nango.log(`Executing -> integration:"${nangoProps.provider}" script:"${syncName}"`);
 
             const script: string | null = localFileService.getIntegrationFile(syncName, nangoProps.providerConfigKey, optionalLoadLocation);
-            const isAction = isInvokedImmediately && !isWebhook;
+            const isAction = nangoProps.scriptType == 'action';
 
             if (!script) {
                 const content = `Unable to find script file for "${syncName}"`;
@@ -501,12 +497,7 @@ export class DryRunService implements ScriptExecutorInterface {
                     return { success: false, error: err, response: null };
                 }
 
-                let errorType = 'sync_script_failure';
-                if (isWebhook) {
-                    errorType = 'webhook_script_failure';
-                } else if (isInvokedImmediately) {
-                    errorType = 'action_script_failure';
-                }
+                const errorType = isAction ? 'action_script_failure' : 'sync_script_failure';
 
                 return formatScriptError(err, errorType, syncName);
             }

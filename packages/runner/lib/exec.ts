@@ -12,19 +12,14 @@ import tracer from 'dd-trace';
 import { metrics, stringifyError } from '@nangohq/utils';
 import { logger } from './utils.js';
 
-export async function exec(
-    nangoProps: NangoProps,
-    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script',
-    code: string,
-    codeParams?: object
-): Promise<RunnerOutput> {
+export async function exec(nangoProps: NangoProps, code: string, codeParams?: object): Promise<RunnerOutput> {
     const abortController = new AbortController();
 
-    if (scriptType == 'sync' && nangoProps.syncId) {
+    if (nangoProps.scriptType == 'sync' && nangoProps.syncId) {
         syncAbortControllers.set(nangoProps.syncId, abortController);
     }
 
-    const rawNango = scriptType === 'action' ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+    const rawNango = nangoProps.scriptType === 'action' ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
 
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
 
@@ -71,7 +66,7 @@ export async function exec(
             const context = vm.createContext(sandbox);
             const scriptExports = script.runInContext(context);
 
-            if (scriptType === 'webhook') {
+            if (nangoProps.scriptType === 'webhook') {
                 if (!scriptExports.onWebhookPayloadReceived) {
                     const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
 
@@ -84,7 +79,7 @@ export async function exec(
             if (!scriptExports.default || typeof scriptExports.default !== 'function') {
                 throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
             }
-            if (scriptType === 'action') {
+            if (nangoProps.scriptType === 'action') {
                 let inputParams = codeParams;
                 if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
                     inputParams = undefined;
@@ -134,7 +129,8 @@ export async function exec(
 
                 return output;
             } else {
-                return await scriptExports.default(nango);
+                await scriptExports.default(nango);
+                return { success: true, response: true, error: null };
             }
         } catch (error) {
             if (error instanceof ActionError) {
@@ -151,16 +147,40 @@ export async function exec(
                     response: null
                 };
             } else if (error instanceof NangoError) {
-                throw error;
+                span.setTag('error', error);
+                return {
+                    success: false,
+                    error: {
+                        type: error.type,
+                        payload: error.payload,
+                        status: error.status
+                    },
+                    response: null
+                };
             } else {
+                span.setTag('error', error);
                 if (error instanceof AxiosError && error.response?.data) {
                     const errorResponse = error.response.data.payload || error.response.data;
-                    span.setTag('error', errorResponse);
-                    throw new Error(JSON.stringify(errorResponse));
+                    return {
+                        success: false,
+                        error: {
+                            type: 'http_error',
+                            payload: errorResponse,
+                            status: error.response.status
+                        },
+                        response: null
+                    };
                 }
-
                 span.setTag('error', error);
-                throw new Error(`Error executing code '${stringifyError(error)}'`);
+                return {
+                    success: false,
+                    error: {
+                        type: 'internal_error',
+                        payload: { message: `Error executing code '${stringifyError(error)}'` },
+                        status: 500
+                    },
+                    response: null
+                };
             }
         } finally {
             span.finish();

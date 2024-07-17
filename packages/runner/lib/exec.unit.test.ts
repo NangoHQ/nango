@@ -5,10 +5,12 @@ import type { NangoProps, SyncConfig } from '@nangohq/shared';
 describe('Exec', () => {
     it('execute code', async () => {
         const nangoProps: NangoProps = {
+            scriptType: 'sync',
             host: 'http://localhost:3003',
             connectionId: 'connection-id',
             environmentId: 1,
             providerConfigKey: 'provider-config-key',
+            provider: 'provider',
             activityLogId: '1',
             secretKey: 'secret-key',
             nangoConnectionId: 1,
@@ -23,6 +25,8 @@ describe('Exec', () => {
                 messages: []
             },
             syncConfig: {} as SyncConfig,
+            debug: false,
+            startedAt: new Date(),
             runnerFlags: {} as any,
             stubbedMetadata: {}
         };
@@ -35,7 +39,7 @@ describe('Exec', () => {
         };
         exports.default = f
         `;
-        const res = exec(nangoProps, 'sync', jsCode);
+        const res = exec(nangoProps, jsCode);
         await expect(res).resolves.toEqual([1, 2, 3]);
     });
 });
