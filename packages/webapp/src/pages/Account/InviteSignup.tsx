@@ -6,12 +6,15 @@ import Info from '../../components/ui/Info';
 import Button from '../../components/ui/button/Button';
 import { useState } from 'react';
 import { useToast } from '../../hooks/useToast';
+import { useUser } from '../../hooks/useUser';
+import { SignupForm } from './components/SignupForm';
 
 export const InviteSignup: React.FC = () => {
     const { token } = useParams();
     const { toast } = useToast();
     const navigate = useNavigate();
 
+    const { user: isLogged } = useUser(true, { onError: () => null });
     const { data, error, loading } = useInvite(token);
     const [loadingDecline, setLoadingDecline] = useState(false);
     const [loadingAccept, setLoadingAccept] = useState(false);
@@ -98,14 +101,17 @@ export const InviteSignup: React.FC = () => {
                         </p>{' '}
                         <p>If you accept, you will permanently lose access to your existing team.</p>
                     </div>
-                    <div className="flex gap-2 mt-6 items-center justify-center">
-                        <Button variant={'zinc'} onClick={onDecline} disabled={loadingAccept} isLoading={loadingDecline}>
-                            Cancel
-                        </Button>
-                        <Button variant={'danger'} onClick={onAccept} disabled={loadingDecline} isLoading={loadingAccept}>
-                            Join new team
-                        </Button>
-                    </div>
+                    {isLogged && (
+                        <div className="flex gap-2 mt-6 items-center justify-center">
+                            <Button variant={'zinc'} onClick={onDecline} disabled={loadingAccept} isLoading={loadingDecline}>
+                                Cancel
+                            </Button>
+                            <Button variant={'danger'} onClick={onAccept} disabled={loadingDecline} isLoading={loadingAccept}>
+                                Join new team
+                            </Button>
+                        </div>
+                    )}
+                    <div className="w-80 mx-auto">{!isLogged && <SignupForm invitation={data.invitation} token={token} />}</div>
                 </div>
             </div>
         </DefaultLayout>

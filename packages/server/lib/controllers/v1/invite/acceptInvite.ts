@@ -1,6 +1,6 @@
-import { acceptInvitation, getInvitation, userService } from '@nangohq/shared';
+import { AnalyticsTypes, acceptInvitation, analytics, getInvitation, userService } from '@nangohq/shared';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { z } from 'zod';
 import type { AcceptInvite } from '@nangohq/types';
 import { userToAPI } from '../../../formatters/user.js';
@@ -40,6 +40,8 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
         return;
     }
+
+    void analytics.track(AnalyticsTypes.ACCOUNT_JOINED, invitation.account_id, {}, isCloud ? { email: invitation.email } : {});
 
     // User is stored in session, so we need to update the DB
     // @ts-expect-error you got to love passport

@@ -1,6 +1,6 @@
 import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from './Toast';
 import { useToast } from '../../../hooks/useToast';
-import { CheckCircledIcon } from '@radix-ui/react-icons';
+import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 
 export function Toaster() {
     const { toasts } = useToast();
@@ -15,6 +15,11 @@ export function Toaster() {
                                 {props.variant === 'success' && (
                                     <div className="bg-green-base bg-opacity-35 rounded-full">
                                         <CheckCircledIcon />
+                                    </div>
+                                )}
+                                {props.variant === 'error' && (
+                                    <div className="bg-red-base bg-opacity-35 rounded-full">
+                                        <CrossCircledIcon />
                                     </div>
                                 )}
                             </div>

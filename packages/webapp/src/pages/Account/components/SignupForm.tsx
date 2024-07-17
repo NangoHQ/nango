@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Signup } from '@nangohq/types';
+import type { ApiInvitation, PostSignup } from '@nangohq/types';
 import { Link, useNavigate } from 'react-router-dom';
 import { MANAGED_AUTH_ENABLED } from '../../../utils/utils';
 import { apiFetch, useSignupAPI } from '../../../utils/api';
@@ -8,13 +8,13 @@ import Button from '../../../components/ui/button/Button';
 import { Input } from '../../../components/ui/input/Input';
 import { Password } from './Password';
 
-export default function Signup() {
+export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }> = ({ invitation, token }) => {
     const navigate = useNavigate();
     const signupAPI = useSignupAPI();
 
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [showResendEmail, setShowResendEmail] = useState(false);
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(() => invitation?.email || '');
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [passwordStrength, setPasswordStrength] = useState(false);
@@ -26,15 +26,21 @@ export default function Signup() {
         setShowResendEmail(false);
         setLoading(true);
 
-        const res = await signupAPI(name, email, password);
+        const res = await signupAPI({ name, email, password, token });
 
         if (res?.status === 200) {
-            const response: Signup['Success'] = await res.json();
-            const { uuid } = response;
+            const response: PostSignup['Success'] = await res.json();
+            const {
+                data: { uuid, verified }
+            } = response;
 
-            navigate(`/verify-email/${uuid}`);
+            if (!verified) {
+                navigate(`/verify-email/${uuid}`);
+            } else {
+                navigate('/');
+            }
         } else {
-            const errorResponse: Signup['Errors'] = await res?.json();
+            const errorResponse: PostSignup['Errors'] = await res?.json();
             if (errorResponse.error.code === 'email_not_verified') {
                 setShowResendEmail(true);
             }
@@ -63,7 +69,7 @@ export default function Signup() {
 
     return (
         <>
-            <div className="flex flex-col justify-center w-80 mx-4">
+            <div className="flex flex-col justify-center">
                 <h2 className="mt-4 text-center text-[20px] text-white">Sign up to Nango</h2>
                 <form className="mt-6 flex flex-col gap-6" onSubmit={handleSubmit}>
                     <div className="flex flex-col gap-6">
@@ -93,6 +99,7 @@ export default function Signup() {
                             value={email}
                             required
                             onChange={(e) => setEmail(e.target.value)}
+                            disabled={Boolean(invitation?.email)}
                             className="border-border-gray bg-dark-600"
                         />
 
@@ -147,4 +154,4 @@ export default function Signup() {
             </div>
         </>
     );
-}
+};

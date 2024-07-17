@@ -63,7 +63,10 @@ describe('POST /api/v1/account/signup', () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
-            uuid: expect.any(String)
+            data: {
+                uuid: expect.any(String),
+                verified: false
+            }
         });
     });
 });

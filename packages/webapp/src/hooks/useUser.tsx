@@ -1,9 +1,10 @@
+import type { SWRConfiguration } from 'swr';
 import useSWR from 'swr';
 import { apiFetch, requestErrorToast, swrFetcher } from '../utils/api';
 import type { GetUser, PatchUser } from '@nangohq/types';
 
-export function useUser(enabled: boolean = true) {
-    const { data, error, mutate } = useSWR<GetUser['Success'], GetUser['Errors']>(enabled ? '/api/v1/user' : null, swrFetcher);
+export function useUser(enabled: boolean = true, options?: SWRConfiguration) {
+    const { data, error, mutate } = useSWR<GetUser['Success'], GetUser['Errors']>(enabled ? '/api/v1/user' : null, swrFetcher, options);
 
     const loading = !data && !error;
 
