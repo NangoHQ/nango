@@ -92,7 +92,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
         }
 
         const postConnectionScript = template['post_connection_script'];
-        const handler = handlers[postConnectionScript.replace(/-/g, '')];
+        const handler = handlers[postConnectionScript];
 
         if (handler) {
             logCtx = await logContextGetter.create(
