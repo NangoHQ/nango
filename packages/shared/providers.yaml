@@ -2659,12 +2659,23 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+tableau:
+    categories:
+        - analytics
+    auth_mode: TABLEAU
+    token_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}/auth/signin
+    proxy:
+        headers:
+            Accept: application/json
+            Content-Type: application/json
+        base_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}
+    docs: https://docs.nango.dev/integrations/all/tableau
 teamtailor:
     categories:
         - ats
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.extension}.teamtailor.com
+        base_url: https://${connectionConfig.extension}.teamtailor.com/${connectionConfig.version}/
         retry:
             after: 'X-Rate-Limit-Reset'
         headers:

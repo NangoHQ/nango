@@ -4,7 +4,7 @@ import * as crypto from 'node:crypto';
 import { axiosInstance as axios, getLogger, SIGNATURE_METHOD } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
+import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
@@ -104,6 +104,12 @@ class ProxyService {
                 }
                 break;
             case 'OAUTH2_CC':
+                {
+                    const credentials = connection.credentials;
+                    token = credentials.token;
+                }
+                break;
+            case 'TABLEAU':
                 {
                     const credentials = connection.credentials;
                     token = credentials.token;
@@ -416,6 +422,14 @@ class ProxyService {
                     };
                 }
                 break;
+            case 'TABLEAU':
+                {
+                    const token = config.token as TableauCredentials;
+                    headers = {
+                        'X-tableau-Auth': token
+                    };
+                }
+                break;
             case 'API_KEY':
                 headers = {};
                 break;
@@ -441,6 +455,7 @@ class ProxyService {
                         case 'BASIC':
                         case 'API_KEY':
                         case 'OAUTH2_CC':
+                        case 'TABLEAU':
                             if (value.includes('connectionConfig')) {
                                 value = value.replace(/connectionConfig\./g, '');
                                 tokenPair = config.connection.connection_config;

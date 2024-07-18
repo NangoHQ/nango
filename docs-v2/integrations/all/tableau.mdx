@@ -1,0 +1,33 @@
+---
+title: Tableau
+sidebarTitle: Tableau
+---
+
+API configuration: [`tableau`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (Tableau)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [How to generate your Personal Access Token](https://help.tableau.com/current/pro/desktop/en-us/useracct.htm#create-and-revoke-personal-access-tokens)
+-   [Auth related docs](https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_concepts_auth.htm#make-a-sign-in-request-with-a-personal-access-token)
+-   [API endpoints](https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api.htm)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- When creating a new Nango connection, please supply your Token name as your PAT NAME, Token secret as your PAT SECRET, and the content URL, which is the value that appears after `/site/` in the browser address bar for Tableau Cloud. This field is left blank if you are using Tableau Server.
+- You will also need to provide the [version](https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_concepts_versions.htm) and [server](https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_concepts_auth.htm#the-sign-in-uri) name.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tableau.mdx)</Note>

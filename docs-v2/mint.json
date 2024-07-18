@@ -483,6 +483,7 @@
                 "integrations/all/stripe-app",
                 "integrations/all/stripe-express",
                 "integrations/all/survey-monkey",
+                "integrations/all/tableau",
                 "integrations/all/teamtailor",
                 "integrations/all/teamwork",
                 "integrations/all/tiktok-accounts",

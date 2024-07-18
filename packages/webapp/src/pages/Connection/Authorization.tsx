@@ -128,6 +128,24 @@ export default function Authorization(props: AuthorizationProps) {
                     />
                 </div>
             )}
+            {connection.credentials.type === 'TABLEAU' && connection.credentials.pat_name && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">PAT NAME</span>
+                    <SecretInput disabled defaultValue={connection.credentials.pat_name} copy={true} />
+                </div>
+            )}
+            {connection.credentials.type === 'TABLEAU' && connection.credentials.pat_secret && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">PAT SECRET</span>
+                    <SecretInput disabled defaultValue={connection.credentials.pat_secret} copy={true} />
+                </div>
+            )}
+            {connection.credentials.type === 'TABLEAU' && connection.credentials.content_url && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">CONTENT URL</span>
+                    <SecretInput disabled defaultValue={connection.credentials.content_url} copy={true} />
+                </div>
+            )}
             {connection.credentials && 'token' in connection.credentials && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Token</span>

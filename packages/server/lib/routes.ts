@@ -54,6 +54,7 @@ import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { tbaAuthorization } from './controllers/auth/tba.js';
+import { tableauAuthorization } from './controllers/auth/tableau.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -111,6 +112,7 @@ router.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuth
 router.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
 router.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
 router.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, tbaAuthorization);
+router.route('/auth/tableau/:providerConfigKey').post(apiPublicAuth, tableauAuthorization);
 router.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
 
 // API Admin routes

@@ -145,6 +145,7 @@ export interface AuthModes {
     App: 'APP';
     None: 'NONE';
     TBA: 'TBA';
+    Tableau: 'TABLEAU';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 
@@ -218,6 +219,14 @@ interface TbaCredentials {
         client_secret?: string;
     };
 }
+interface TableauCredentials extends CredentialsCommon {
+    type: AuthModes['Tableau'];
+    pat_name: string;
+    pat_secret: string;
+    content_url?: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
 interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
@@ -234,6 +243,7 @@ type AuthCredentials =
     | AppStoreCredentials
     | UnauthCredentials
     | TbaCredentials
+    | TableauCredentials
     | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
@@ -542,6 +552,7 @@ export class NangoAction {
         | UnauthCredentials
         | CustomCredentials
         | TbaCredentials
+        | TableauCredentials
     > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
