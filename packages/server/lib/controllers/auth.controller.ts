@@ -71,28 +71,6 @@ class AuthController {
         }
     }
 
-    async invitation(req: Request, res: Response<any, never>, next: NextFunction) {
-        try {
-            const token = req.query['token'] as string;
-
-            if (!token) {
-                res.status(400).send({ error: 'Token is missing' });
-                return;
-            }
-
-            const invitee = await getInvitation(token);
-
-            if (!invitee) {
-                errorManager.errRes(res, 'duplicate_account');
-                return;
-            }
-
-            res.status(200).send(invitee);
-        } catch (error) {
-            next(error);
-        }
-    }
-
     getManagedLogin(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
             const provider = req.query['provider'] as string;

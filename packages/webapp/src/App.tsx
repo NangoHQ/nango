@@ -10,8 +10,8 @@ import { fetcher } from './utils/api';
 import { useStore } from './store';
 import { Toaster } from './components/ui/toast/Toaster';
 
-import Signup from './pages/Account/Signup';
-import InviteSignup from './pages/Account/InviteSignup';
+import { Signup } from './pages/Account/Signup';
+import { InviteSignup } from './pages/Account/InviteSignup';
 import Signin from './pages/Account/Signin';
 import { InteractiveDemo } from './pages/InteractiveDemo';
 import IntegrationList from './pages/Integration/List';

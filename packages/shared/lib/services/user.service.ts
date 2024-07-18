@@ -60,6 +60,16 @@ class UserService {
         return result;
     }
 
+    async countUsers(accountId: number): Promise<number> {
+        const result = await db.knex
+            .select(db.knex.raw('COUNT(id) as total'))
+            .from<User>(`_nango_users`)
+            .where({ account_id: accountId, suspended: false })
+            .first();
+
+        return result.total || 0;
+    }
+
     async getAnUserByAccountId(accountId: number): Promise<User | null> {
         const result = await db.knex
             .select('*')

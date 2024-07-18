@@ -1,6 +1,7 @@
 import type { GetOperation, SearchFilters, SearchMessages, SearchOperations } from '@nangohq/types';
 import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
+import type { SWRError } from '../utils/api';
 import { apiFetch, swrFetcher } from '../utils/api';
 import { slidePeriod } from '../utils/logs';
 
@@ -78,7 +79,10 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'],
 }
 
 export function useGetOperation(env: string, params: GetOperation['Params']) {
-    const { data, error, mutate } = useSWR<GetOperation['Success']>(`/api/v1/logs/operations/${params.operationId}?env=${env}`, swrFetcher);
+    const { data, error, mutate } = useSWR<GetOperation['Success'], SWRError<GetOperation['Errors']>>(
+        `/api/v1/logs/operations/${params.operationId}?env=${env}`,
+        swrFetcher
+    );
 
     const loading = !data && !error;
 

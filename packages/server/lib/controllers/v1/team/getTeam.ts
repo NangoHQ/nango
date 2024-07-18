@@ -4,6 +4,8 @@ import type { GetTeam } from '@nangohq/types';
 import { NANGO_ADMIN_UUID } from '../../account.controller.js';
 import { listInvitations, userService } from '@nangohq/shared';
 import { userToAPI } from '../../../formatters/user.js';
+import { invitationToApi } from '../../../formatters/invitation.js';
+import { teamToApi } from '../../../formatters/team.js';
 
 export const getTeam = asyncWrapper<GetTeam>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -21,19 +23,9 @@ export const getTeam = asyncWrapper<GetTeam>(async (req, res) => {
 
     res.status(200).send({
         data: {
-            account: {
-                ...account,
-                created_at: account.created_at.toISOString(),
-                updated_at: account.updated_at.toISOString()
-            },
+            account: teamToApi(account),
             users: usersFormatted,
-            invitedUsers: invitedUsers.map((invitation) => {
-                return {
-                    ...invitation,
-                    created_at: account.created_at.toISOString(),
-                    updated_at: account.updated_at.toISOString()
-                };
-            }),
+            invitedUsers: invitedUsers.map(invitationToApi),
             isAdminTeam: account.uuid === NANGO_ADMIN_UUID
         }
     });

@@ -4,10 +4,11 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import type { ApiTeam } from '@nangohq/types';
 import { useState } from 'react';
 import { Input } from '../../../components/ui/input/Input';
-import { apiPostInvite, useTeam } from '../../../hooks/useTeam';
+import { useTeam } from '../../../hooks/useTeam';
 import { useStore } from '../../../store';
 import { useToast } from '../../../hooks/useToast';
 import { cn } from '../../../utils/utils';
+import { apiPostInvite } from '../../../hooks/useInvite';
 
 const emailReg = /(.+)?<(.+[@].+)>/;
 const invalidChar = /['()&=\\/;,?`$*$€^¨°<>]/;
