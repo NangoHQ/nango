@@ -1,4 +1,4 @@
-import type { GetOperation, SearchFilters, SearchMessages, SearchOperations } from '@nangohq/types';
+import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from '@nangohq/types';
 import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
 import { apiFetch, swrFetcher } from '../utils/api';
@@ -195,4 +195,41 @@ export function useSearchFilters(enabled: boolean, env: string, body: SearchFilt
     }
 
     return { data, error, loading, trigger };
+}
+
+export function usePostInsights(env: string, body: PostInsights['Body']) {
+    const [loading, setLoading] = useState<boolean>(false);
+    const [data, setData] = useState<PostInsights['Success']>();
+    const [error, setError] = useState<PostInsights['Errors']>();
+
+    async function fetchData() {
+        setLoading(true);
+        try {
+            const res = await apiFetch(`/api/v1/logs/insights?env=${env}`, {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+            if (res.status !== 200) {
+                setData(undefined);
+                setError((await res.json()) as PostInsights['Errors']);
+                return;
+            }
+
+            setError(undefined);
+            setData((await res.json()) as PostInsights['Success']);
+        } catch (err) {
+            setData(undefined);
+            setError(err as any);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        if (!loading) {
+            void fetchData();
+        }
+    }, [env, body.type]);
+
+    return { data: data?.data, error, loading };
 }
