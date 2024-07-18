@@ -2,9 +2,7 @@ import os from 'os';
 import fs from 'fs';
 import type { NangoProps } from '@nangohq/shared';
 import * as superjson from 'superjson';
-import { fetch } from 'undici';
-import { stringifyError } from '@nangohq/utils';
-import { logger } from './utils.js';
+import { httpFetch, logger } from './utils.js';
 
 const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
 
@@ -78,7 +76,7 @@ export class RunnerMonitor {
             if (!environmentId || !activityLogId) {
                 continue;
             }
-            await httpSend({
+            await httpFetch({
                 method: 'post',
                 url: `${this.persistServiceUrl}/environment/${environmentId}/log`,
                 data: JSON.stringify({
@@ -97,7 +95,7 @@ export class RunnerMonitor {
                 const idleTimeMs = Date.now() - this.lastIdleTrackingDate;
                 if (idleTimeMs > this.idleMaxDurationMs) {
                     logger.info(`Runner '${this.runnerId}' idle for more than ${this.idleMaxDurationMs}ms`);
-                    await httpSend({
+                    await httpFetch({
                         method: 'post',
                         url: `${this.jobsServiceUrl}/idle`,
                         data: superjson.stringify({
@@ -129,22 +127,4 @@ function getTotalMemoryInBytes(): number {
     // process.constrainedMemory() is supposed to return the memory limit of the container but it doesn't work on Render
     // so we need to use a workaround to get the memory limit of the container on Render
     return process.constrainedMemory() || getRenderTotalMemoryInBytes() || os.totalmem();
-}
-
-async function httpSend({ method, url, data }: { method: string; url: string; data: string }): Promise<void> {
-    try {
-        const res = await fetch(url, {
-            method: method,
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: data
-        });
-        if (res.status > 299) {
-            logger.error(`Error (status=${res.status}) sending '${data}' to '${url}': ${JSON.stringify(await res.json())}`);
-        }
-    } catch (err) {
-        logger.error(`Error sending '${data}' to '${url}': ${stringifyError(err)}`);
-    }
 }
