@@ -8,7 +8,7 @@ const Table = forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement
 Table.displayName = 'Table';
 
 const Header = forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn('text-white', className)} {...props} />
+    <thead ref={ref} className={cn('text-text-light-gray [&>tr]:hover:text-text-light-gray', className)} {...props} />
 ));
 Header.displayName = 'Header';
 

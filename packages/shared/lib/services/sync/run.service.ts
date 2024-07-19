@@ -75,7 +75,7 @@ export type SyncRunConfig = {
 } & (
     | {
           writeToDb: true;
-          activityLogId: string | number;
+          activityLogId: string;
           logCtx: LogContext;
           slackService: SlackService;
           sendSyncWebhook: (params: SendSyncParams) => Promise<void>;
@@ -115,7 +115,7 @@ export class SyncRunService {
 
     syncId?: string;
     syncJobId?: number;
-    activityLogId?: string | number;
+    activityLogId?: string;
     provider?: string;
     loadLocation?: string;
     debug?: boolean;
@@ -328,10 +328,8 @@ export class SyncRunService {
                 syncId:
                     (this.syncId as string) ||
                     `${syncName}-${this.nangoConnection.environment_id}-${this.nangoConnection.provider_config_key}-${this.nangoConnection.connection_id}`,
-                activityLogId: this.activityLogId as unknown as number,
+                activityLogId: this.activityLogId as unknown as string,
                 nangoProps,
-                integrationData: { fileLocation: this.syncConfig.file_location },
-                environmentId: this.nangoConnection.environment_id,
                 writeToDb: this.writeToDb,
                 isInvokedImmediately: this.isInvokedImmediately,
                 isWebhook: this.isWebhook,

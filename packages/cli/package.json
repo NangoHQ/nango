@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.41.1",
+    "version": "0.42.0",
     "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
@@ -24,13 +24,12 @@
         "@babel/parser": "^7.22.5",
         "@babel/traverse": "^7.22.5",
         "@babel/types": "^7.22.5",
-        "@nangohq/nango-yaml": "^0.41.1",
-        "@nangohq/shared": "^0.41.1",
+        "@nangohq/nango-yaml": "^0.42.0",
+        "@nangohq/shared": "^0.42.0",
         "@swc/core": "^1.5.25",
         "ajv": "^8.12.0",
         "ajv-errors": "^3.0.0",
-        "axios": "^1.2.0",
-        "byots": "^5.0.0-dev.20221103.1.34",
+        "axios": "^1.3.4",
         "chalk": "^5.3.0",
         "chokidar": "^3.5.3",
         "commander": "^10.0.1",
@@ -42,7 +41,6 @@
         "glob": "^10.3.10",
         "import-meta-resolve": "^4.1.0",
         "js-yaml": "^4.1.0",
-        "memfs": "^3.5.1",
         "npm-package-arg": "^10.1.0",
         "promptly": "^3.2.0",
         "semver": "^7.5.2",
@@ -50,14 +48,13 @@
         "ts-node": "^10.9.1",
         "tsup": "^8.1.0",
         "typescript": "^5.3.3",
-        "vm": "^0.1.0",
         "zod": "^3.22.4"
     },
     "devDependencies": {
         "@babel/core": "^7.22.1",
         "@babel/preset-env": "^7.22.4",
         "@babel/preset-typescript": "^7.21.5",
-        "@nangohq/types": "^0.41.1",
+        "@nangohq/types": "^0.42.0",
         "@types/babel__traverse": "^7.20.1",
         "@types/babel-traverse": "^6.25.7",
         "@types/commander": "^2.12.2",
@@ -72,10 +69,7 @@
         "esbuild": "^0.17.19",
         "json-schema": "0.4.0",
         "strip-ansi": "7.1.0",
-        "vitest": "1.6.0",
-        "webpack": "^5.85.1",
-        "webpack-cli": "^5.1.3",
-        "webpack-node-externals": "^3.0.0"
+        "vitest": "1.6.0"
     },
     "engines": {
         "node": ">=18.0"

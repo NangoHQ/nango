@@ -3,37 +3,35 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import crypto from 'crypto';
 import util from 'util';
 import { sendVerificationEmail } from '../../../helpers/email.js';
-import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { userService, accountService } from '@nangohq/shared';
-import type { Signup } from '@nangohq/types';
-
-const logger = getLogger('Server.Signup');
+import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { userService, accountService, getInvitation, analytics, AnalyticsTypes, acceptInvitation } from '@nangohq/shared';
+import type { DBTeam, PostSignup } from '@nangohq/types';
 
 export const passwordSchema = z
     .string()
     .min(8)
     .max(64)
     .refine((value) => {
-        return value.match(/[a-z]+/) && value.match(/[A-Z]+/) && value.match(/[0-9]/) && value.match(/[^a-zA-Z0-9]/);
-    }, 'Password should be least 8 characters with lowercase, uppercase, a number and a special character');
+        return value.match(/[A-Z]+/) && value.match(/[0-9]/) && value.match(/[^a-zA-Z0-9]/);
+    }, 'Password should be least 8 characters with uppercase, a number and a special character');
+
 const validation = z
     .object({
         email: z.string().email(),
         password: passwordSchema,
-        name: z.string()
+        name: z.string(),
+        token: z.string().uuid().optional()
     })
     .strict();
 
-export const signup = asyncWrapper<Signup>(async (req, res) => {
+export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
-
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;
     }
 
     const val = validation.safeParse(req.body);
-
     if (!val.success) {
         res.status(400).send({
             error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }
@@ -41,10 +39,10 @@ export const signup = asyncWrapper<Signup>(async (req, res) => {
         return;
     }
 
-    const { email, password, name } = val.data;
+    const { email, password, name, token }: PostSignup['Body'] = val.data;
 
     const existingUser = await userService.getUserByEmail(email);
-    if (existingUser !== null) {
+    if (existingUser) {
         if (!existingUser.email_verified) {
             res.status(400).send({
                 error: {
@@ -63,30 +61,64 @@ export const signup = asyncWrapper<Signup>(async (req, res) => {
         return;
     }
 
-    const account = await accountService.createAccount(`${name}'s Organization`);
+    let account: DBTeam | null;
+    if (token) {
+        // Invitation signup
+        const validToken = await getInvitation(token);
+        if (!validToken) {
+            res.status(400).send({ error: { code: 'invalid_invite_token', message: 'The token used was found to be invalid.' } });
+            return;
+        }
 
-    if (!account) {
-        logger.error('Error creating account');
-        res.status(500).send({ error: { code: 'error_creating_account', message: 'There was a problem creating the account. Please reach out to support.' } });
-        return;
+        account = await accountService.getAccountById(validToken.account_id);
+        if (!account) {
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to get team' } });
+            return;
+        }
+        void analytics.track(AnalyticsTypes.ACCOUNT_JOINED, account.id, {}, isCloud ? { email } : {});
+
+        await acceptInvitation(token);
+    } else {
+        // Regular account
+        account = await accountService.createAccount(`${name}'s Organization`);
+        if (!account) {
+            res.status(500).send({
+                error: { code: 'error_creating_account', message: 'There was a problem creating the account. Please reach out to support.' }
+            });
+            return;
+        }
     }
 
+    // Create user
     const salt = crypto.randomBytes(16).toString('base64');
     const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, salt, 310000, 32, 'sha256')).toString('base64');
     const user = await userService.createUser(email, name, hashedPassword, salt, account.id, false);
-
     if (!user) {
-        logger.error('Error creating user');
         res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
         return;
     }
 
-    if (!user.email_verification_token) {
-        res.status(400).send({ error: { code: 'email_already_verified', message: 'Email address was already verified, please login.' } });
+    // Ask for email validation if not coming from an invitation
+    if (!token) {
+        if (!user.email_verification_token) {
+            res.status(400).send({ error: { code: 'email_already_verified', message: 'Email address was already verified, please login.' } });
+            return;
+        }
+
+        sendVerificationEmail(email, name, user.email_verification_token);
+
+        // We don't login because we want to enforce email validation
+        res.status(200).send({ data: { uuid: user.uuid, verified: false } });
         return;
     }
 
-    sendVerificationEmail(email, name, user.email_verification_token);
+    // Login directly if we are coming from an invitation
+    req.login(user, function (err) {
+        if (err) {
+            res.status(500).send({ error: { code: 'server_error', message: 'There was a problem logging in the user. Please reach out to support.' } });
+            return;
+        }
 
-    res.status(200).send({ uuid: user.uuid });
+        res.status(200).send({ data: { uuid: user.uuid, verified: true } });
+    });
 });

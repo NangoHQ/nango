@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { basePublicUrl, getLogger, Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { getWorkOSClient } from '../clients/workos.client.js';
-import { userService, accountService, errorManager, NangoError } from '@nangohq/shared';
+import { userService, accountService, errorManager, NangoError, getInvitation, acceptInvitation } from '@nangohq/shared';
 
 export interface WebUser {
     id: number;
@@ -46,9 +46,9 @@ const createAccountIfNotInvited = async (name: string, state?: string): Promise<
 
     if (parsedState.isOk()) {
         const { accountId, token } = parsedState.value;
-        const validToken = await userService.getInvitedUserByToken(token);
+        const validToken = await getInvitation(token);
         if (validToken) {
-            await userService.markAcceptedInvite(token);
+            await acceptInvitation(token);
         }
         return accountId;
     }
@@ -68,28 +68,6 @@ class AuthController {
             });
         } catch (err) {
             next(err);
-        }
-    }
-
-    async invitation(req: Request, res: Response<any, never>, next: NextFunction) {
-        try {
-            const token = req.query['token'] as string;
-
-            if (!token) {
-                res.status(400).send({ error: 'Token is missing' });
-                return;
-            }
-
-            const invitee = await userService.getInvitedUserByToken(token);
-
-            if (!invitee) {
-                errorManager.errRes(res, 'duplicate_account');
-                return;
-            }
-
-            res.status(200).send(invitee);
-        } catch (error) {
-            next(error);
         }
     }
 

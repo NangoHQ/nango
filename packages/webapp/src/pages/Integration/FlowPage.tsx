@@ -10,7 +10,7 @@ import type { EnvironmentAndAccount } from '@nangohq/server';
 import { useUpdateSyncFrequency, requestErrorToast, apiFetch } from '../../utils/api';
 import type { ButtonVariants } from '../../components/ui/button/Button';
 import Button from '../../components/ui/button/Button';
-import CopyButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
 import type { FlowConfiguration, EndpointResponse } from './Show';
 import { Tabs, SubTabs } from './Show';
@@ -604,7 +604,6 @@ export default function FlowPage(props: FlowPageProps) {
                                                                     </Button>
                                                                 </div>
                                                                 <CopyButton
-                                                                    dark
                                                                     text={setMetadataSnippet(environment.secret_key, integration.unique_key, flow.input)}
                                                                 />
                                                             </div>
@@ -659,7 +658,6 @@ export default function FlowPage(props: FlowPageProps) {
                                                                     </Button>
                                                                 </div>
                                                                 <CopyButton
-                                                                    dark
                                                                     text={autoStartSnippet(environment.secret_key, integration.unique_key, flow?.name)}
                                                                 />
                                                             </div>

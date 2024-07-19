@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { getUserFromSession } from '../../../utils/utils.js';
-import type { WebUser, Signin } from '@nangohq/types';
+import type { PostSignin } from '@nangohq/types';
+import { userToAPI } from '../../../formatters/user.js';
 
 const validation = z
     .object({
@@ -11,7 +12,7 @@ const validation = z
     })
     .strict();
 
-export const signin = asyncWrapper<Signin>(async (req, res) => {
+export const signin = asyncWrapper<PostSignin>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
 
     if (emptyQuery) {
@@ -20,7 +21,6 @@ export const signin = asyncWrapper<Signin>(async (req, res) => {
     }
 
     const val = validation.safeParse(req.body);
-
     if (!val.success) {
         res.status(400).send({
             error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }
@@ -47,12 +47,5 @@ export const signin = asyncWrapper<Signin>(async (req, res) => {
         return;
     }
 
-    const webUser: WebUser = {
-        id: user.id,
-        accountId: user.account_id,
-        email: user.email,
-        name: user.name
-    };
-
-    res.status(200).send({ user: webUser });
+    res.status(200).send({ user: userToAPI(user) });
 });

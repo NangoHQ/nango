@@ -24,7 +24,7 @@ export enum LeftNavBarItems {
     Connections,
     EnvironmentSettings,
     Syncs,
-    AccountSettings,
+    TeamSettings,
     UserSettings,
     InteractiveDemo,
     Logs
@@ -199,8 +199,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                             <span>Profile</span>
                                         </li>
                                         <li
-                                            className={`flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.AccountSettings ? 'text-white bg-active-gray' : ''}`}
-                                            onClick={() => navigate(`/${env}/account-settings`)}
+                                            className={`flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.TeamSettings ? 'text-white bg-active-gray' : ''}`}
+                                            onClick={() => navigate(`/${env}/team-settings`)}
                                         >
                                             <UserGroupIcon className="h-5 w-5 mr-2" />
                                             <span>Team</span>

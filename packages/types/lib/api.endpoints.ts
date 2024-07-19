@@ -3,13 +3,21 @@ import type { GetOperation, SearchFilters, SearchMessages, SearchOperations } fr
 import type { GetOnboardingStatus } from './onboarding/api';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata';
 import type { PostDeploy, PostDeployConfirmation } from './deploy/api';
-import type { GetTeam } from './team/api';
-import type { PostForgotPassword, PutResetPassword, Signin, Signup } from './account/api';
+import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api';
+import type { PostForgotPassword, PutResetPassword, PostSignin, PostSignup } from './account/api';
+import type { DeleteInvite, PostInvite } from './invitations/api';
+import type { GetUser, PatchUser } from './user/api';
 
 export type APIEndpoints =
-    | Signup
-    | Signin
+    | PostSignup
+    | PostSignin
     | GetTeam
+    | PutTeam
+    | GetUser
+    | PatchUser
+    | PostInvite
+    | DeleteInvite
+    | DeleteTeamUser
     | PostForgotPassword
     | PutResetPassword
     | SearchOperations

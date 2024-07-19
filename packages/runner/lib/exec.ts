@@ -3,7 +3,7 @@ import { AxiosError } from 'axios';
 import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
 import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
-import * as vm from 'vm';
+import * as vm from 'node:vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
@@ -13,20 +13,17 @@ import { logger } from './utils.js';
 
 export async function exec(
     nangoProps: NangoProps,
-    isInvokedImmediately: boolean,
-    isWebhook: boolean,
+    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script',
     code: string,
     codeParams?: object
 ): Promise<RunnerOutput> {
-    const isAction = isInvokedImmediately && !isWebhook;
-
     const abortController = new AbortController();
 
-    if (!isInvokedImmediately && nangoProps.syncId) {
+    if (scriptType == 'sync' && nangoProps.syncId) {
         syncAbortControllers.set(nangoProps.syncId, abortController);
     }
 
-    const rawNango = isAction ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+    const rawNango = scriptType === 'action' ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
 
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
 
@@ -71,7 +68,7 @@ export async function exec(
             const context = vm.createContext(sandbox);
             const scriptExports = script.runInContext(context);
 
-            if (isWebhook) {
+            if (scriptType === 'webhook') {
                 if (!scriptExports.onWebhookPayloadReceived) {
                     const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
 
@@ -84,7 +81,7 @@ export async function exec(
             if (!scriptExports.default || typeof scriptExports.default !== 'function') {
                 throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
             }
-            if (isAction) {
+            if (scriptType === 'action') {
                 let inputParams = codeParams;
                 if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
                     inputParams = undefined;

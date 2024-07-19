@@ -69,7 +69,7 @@ integrations:
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
                 endpoint: POST /xero/invoices
-                version: 0.0.2
+                version: 1.0.0
             update-invoice:
                 description: |
                     Updates one or more invoices in Xero. To delete an invoice
@@ -209,6 +209,7 @@ models:
     BaseInvoice:
         type: ACCPAY | ACCREC
         external_contact_id: string
+        url?: string
     CreateInvoice:
         __extends: BaseInvoice
         fees: CreateInvoiceFee[]
@@ -216,21 +217,22 @@ models:
         payment_due_date?: date | null
         status?: string
         number?: string
-        tax_rate?: number
         currency?: string
         purchase_order?: string | null
-    CreateInvoiceFee:
-        description: string
-        item_id?: string
+    BaseInvoiceFee:
+        account_code?: string
         item_code?: string | null
+        account_external_id?: string | null
+        discount_amount_cents?: number | null
+        discount_rate?: number | null
+    CreateInvoiceFee:
+        __extends: BaseInvoiceFee
+        item_id?: string
+        description: string
         units?: number
         precise_unit_amount?: number | null
-        account_code?: string
-        account_external_id?: string | null
         amount_cents?: number | null
         taxes_amount_cents?: number | null
-        rate?: number | null
-        price?: number | null
     Invoice:
         __extends: BaseInvoice
         id: string
@@ -242,17 +244,13 @@ models:
         purchase_order: string | null
         fees: InvoiceFee[]
     InvoiceFee:
+        __extends: BaseInvoiceFee
         item_id: string
-        item_code?: string | null
         description: string | null
         units: number | null
         precise_unit_amount: number | null
-        account_code?: string
-        account_external_id?: string | null
         amount_cents: number | null
         taxes_amount_cents: number | null
-        rate?: number | null
-        price?: number | null
     FailedInvoice:
         __extends: Invoice
         validation_errors: any[]

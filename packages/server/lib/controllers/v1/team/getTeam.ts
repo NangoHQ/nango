@@ -1,8 +1,11 @@
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetTeam, WebUser } from '@nangohq/types';
+import type { GetTeam } from '@nangohq/types';
 import { NANGO_ADMIN_UUID } from '../../account.controller.js';
-import { userService } from '@nangohq/shared';
+import { listInvitations, userService } from '@nangohq/shared';
+import { userToAPI } from '../../../formatters/user.js';
+import { invitationToApi } from '../../../formatters/invitation.js';
+import { teamToApi } from '../../../formatters/team.js';
 
 export const getTeam = asyncWrapper<GetTeam>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -14,26 +17,15 @@ export const getTeam = asyncWrapper<GetTeam>(async (req, res) => {
     const { account } = res.locals;
 
     const users = await userService.getUsersByAccountId(account.id);
-    const invitedUsers = await userService.getInvitedUsersByAccountId(account.id);
+    const invitedUsers = await listInvitations({ accountId: account.id });
 
-    const usersFormatted: WebUser[] = users.map((teamUser) => {
-        return {
-            id: teamUser.id,
-            accountId: teamUser.account_id,
-            email: teamUser.email,
-            name: teamUser.name
-        };
-    });
+    const usersFormatted = users.map(userToAPI);
 
     res.status(200).send({
         data: {
-            account: {
-                ...account,
-                created_at: account.created_at.toISOString(),
-                updated_at: account.updated_at.toISOString()
-            },
+            account: teamToApi(account),
             users: usersFormatted,
-            invitedUsers,
+            invitedUsers: invitedUsers.map(invitationToApi),
             isAdminTeam: account.uuid === NANGO_ADMIN_UUID
         }
     });

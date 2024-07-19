@@ -3,7 +3,7 @@ import { AdjustmentsHorizontalIcon, ChevronDownIcon, ChevronUpIcon } from '@hero
 import type { EnvironmentAndAccount } from '@nangohq/server';
 import { Prism } from '@mantine/prism';
 import Button from '../../components/ui/button/Button';
-import CopyButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 import Info from '../../components/ui/Info';
 import EndpointLabel from './components/EndpointLabel';
 import type { IntegrationConfig, FlowEndpoint, Flow } from '../../types';
@@ -130,7 +130,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                 cURL
                             </Button>
                         </div>
-                        <CopyButton dark text={syncSnippet} />
+                        <CopyButton text={syncSnippet} />
                     </div>
                     <Prism noCopy language="typescript" className="p-3 transparent-code" colorScheme="dark">
                         {syncSnippet}
@@ -213,7 +213,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                     JSON
                                 </Button>
                             </div>
-                            <CopyButton dark text={jsonResponseSnippet} />
+                            <CopyButton text={jsonResponseSnippet} />
                         </div>
                         <Prism noCopy language="json" className="p-3 transparent-code" colorScheme="dark">
                             {jsonResponseSnippet}
