@@ -1,11 +1,13 @@
 import type { ChartConfig } from '../../../components/ui/Chart';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../../components/ui/Chart';
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
 import { usePostInsights } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import type { InsightsHistogramEntry, PostInsights } from '@nangohq/types';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { useMemo } from 'react';
+import { formatQuantity } from '../../../utils/utils';
+import { addDays, format } from 'date-fns';
 
 // const histogram = [
 //     { date: new Date(Date.now() - 86400000 * 9), success: 9, failure: 9 },
@@ -22,6 +24,7 @@ import { useMemo } from 'react';
 
 interface Entry {
     date: Date;
+    total: number;
     success: number;
     failure: number;
 }
@@ -37,22 +40,24 @@ const chartConfig = {
     }
 } satisfies ChartConfig;
 
-export const InsightChart: React.FC<{ title: string; type: PostInsights['Body']['type'] }> = ({ title, type }) => {
+export const InsightChart: React.FC<{ title: string; desc: string; type: PostInsights['Body']['type'] }> = ({ title, type, desc }) => {
     const env = useStore((state) => state.env);
     const { loading, data } = usePostInsights(env, { type });
 
-    const histogram = useMemo(() => {
+    const { histogram, total } = useMemo(() => {
         if (!data) {
-            return [];
+            return { histogram: [], total: 0 };
         }
 
-        const startDate = new Date(Date.now() - 86400 * 14 * 1000);
-        startDate.setHours(12, 0, 0, 0);
+        let total = 0;
+        let startDate = addDays(new Date(), -14);
         const endDate = new Date();
+
+        // Create date range
         const dates = [];
         while (startDate <= endDate) {
-            dates.push(startDate.toISOString().split('T')[0]);
-            startDate.setDate(startDate.getDate() + 1);
+            dates.push(format(startDate, 'yyyy-MM-dd'));
+            startDate = addDays(startDate, 1);
         }
 
         const tmp: Entry[] = [];
@@ -62,13 +67,18 @@ export const InsightChart: React.FC<{ title: string; type: PostInsights['Body'][
         }
         for (const date of dates) {
             const entry = map.get(date);
-            tmp.push({ date: new Date(date), success: entry?.success || 0, failure: entry?.failure || 0 });
+            total += entry?.total || 0;
+            tmp.push({
+                date: new Date(date),
+                total: entry?.total || 0,
+                success: entry?.success || 0,
+                failure: entry?.failure || 0
+            });
         }
 
-        return tmp;
+        return { histogram: tmp, total };
     }, [data]);
 
-    console.log(type, histogram);
     if (loading) {
         <div className="border border-border-gray rounded-xl p-6">
             <h3 className="text-md text-white">{title}</h3>
@@ -78,8 +88,14 @@ export const InsightChart: React.FC<{ title: string; type: PostInsights['Body'][
 
     return (
         <div className="border border-border-gray rounded-xl p-6">
-            <h3 className="text-md text-white">{title}</h3>
-            <p className="text-text-light-gray text-sm">Last 14 days</p>
+            <div className="flex justify-between items-start">
+                <h3 className="text-md text-white">{title}</h3>
+                <div className="flex flex-col items-end">
+                    <div className="text-white text-md">{total}</div>
+
+                    <p className="text-text-light-gray text-sm">{desc}</p>
+                </div>
+            </div>
             <div className="mt-7">
                 <ChartContainer config={chartConfig} className="h-[190px] w-full">
                     <BarChart data={histogram}>
@@ -98,6 +114,19 @@ export const InsightChart: React.FC<{ title: string; type: PostInsights['Body'][
                                 });
                             }}
                         />
+                        <YAxis
+                            dataKey="total"
+                            interval={'preserveStartEnd'}
+                            tickLine={false}
+                            tickMargin={10}
+                            minTickGap={20}
+                            axisLine={false}
+                            width={30}
+                            amplitude={100}
+                            tickFormatter={(value) => {
+                                return formatQuantity(value);
+                            }}
+                        />
                         <ChartTooltip
                             content={
                                 <ChartTooltipContent
@@ -112,15 +141,11 @@ export const InsightChart: React.FC<{ title: string; type: PostInsights['Body'][
                             }
                             cursor={{ fill: '#4d4d4d45' }}
                         />
-                        <Bar
-                            dataKey="success"
-                            stackId="a"
-                            fill="var(--color-success)"
-                            strokeWidth={0}
-                            animationDuration={250}
-                            animationBegin={0}
-                            radius={[0, 0, 4, 4]}
-                        />
+                        <Bar dataKey="success" stackId="a" fill="var(--color-success)" strokeWidth={0} animationDuration={250} animationBegin={0}>
+                            {histogram.map((entry, index) => (
+                                <Cell key={index} radius={(entry.failure > 0 ? [0, 0, 4, 4] : 4) as unknown as number} />
+                            ))}
+                        </Bar>
                         <Bar
                             dataKey="failure"
                             stackId="a"

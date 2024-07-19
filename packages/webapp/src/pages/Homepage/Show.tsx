@@ -28,10 +28,10 @@ export const Homepage: React.FC = () => {
             <h2 className="text-3xl font-semibold text-white flex gap-4 items-center">Hello, {user.name}!</h2>
 
             <div className="grid gap-8 grid-cols-[repeat(auto-fill,minmax(300px,470px))] mt-8">
-                <InsightChart title="Sync" type="sync" />
-                <InsightChart title="Action" type="action" />
-                <InsightChart title="Proxy" type="proxy" />
-                <InsightChart title="Webhook External" type="webhook_external" />
+                <InsightChart title="Sync" type="sync" desc="Sync executions" />
+                <InsightChart title="Action" type="action" desc="Action executions" />
+                <InsightChart title="Proxy" type="proxy" desc="Proxy requests" />
+                <InsightChart title="Webhook" type="webhook_external" desc="External webhooks received" />
             </div>
         </DashboardLayout>
     );

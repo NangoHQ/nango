@@ -238,7 +238,10 @@ const ChartLegendContent = forwardRef<
                 const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
                 return (
-                    <div key={item.value} className={cn('flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground')}>
+                    <div
+                        key={item.value}
+                        className={cn('flex text-text-light-gray items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground')}
+                    >
                         {itemConfig?.icon && !hideIcon ? (
                             <itemConfig.icon />
                         ) : (
