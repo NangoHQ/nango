@@ -8,7 +8,7 @@ import type { RequestLocals } from '../utils/express.js';
 const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/users/:userId/suspend', '/api/v1/signin'];
+const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/users/:userId/suspend', '/api/v1/signin', '/api/v1/invite/:id'];
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -119,12 +119,8 @@ export class AccessMiddleware {
                 return;
             }
 
-            if (ignoreEnvPaths.includes(req.route.path)) {
-                next();
-                return;
-            }
-
             res.locals['authType'] = 'session';
+
             await fillLocalsFromSession(req, res, next);
         } finally {
             metrics.duration(metrics.Types.AUTH_SESSION, Date.now() - start);
@@ -195,15 +191,16 @@ export class AccessMiddleware {
  * Fill res.locals with common information
  */
 async function fillLocalsFromSession(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
-    if (ignoreEnvPaths.includes(req.route.path)) {
-        next();
-        return;
-    }
-
     try {
         const user = await userService.getUserById(req.user!.id);
         if (!user) {
             res.status(401).send({ error: { code: 'unknown_user' } });
+            return;
+        }
+        res.locals['user'] = req.user!;
+
+        if (ignoreEnvPaths.includes(req.route.path)) {
+            next();
             return;
         }
 
@@ -219,7 +216,6 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             return;
         }
 
-        res.locals['user'] = req.user!;
         res.locals['account'] = result.account;
         res.locals['environment'] = result.environment;
         next();

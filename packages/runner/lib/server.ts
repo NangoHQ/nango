@@ -9,7 +9,7 @@ import { RunnerMonitor } from './monitor.js';
 import { exec } from './exec.js';
 import { cancel } from './cancel.js';
 import superjson from 'superjson';
-import { logger } from './utils.js';
+import { httpFetch, logger } from './utils.js';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -26,10 +26,19 @@ interface RunParams {
     codeParams?: object;
 }
 
+interface StartParams {
+    taskId: string;
+    nangoProps: NangoProps;
+    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
+    code: string;
+    codeParams?: object;
+}
+
 const appRouter = router({
     health: healthProcedure(),
     run: runProcedure(),
-    cancel: cancelProcedure()
+    cancel: cancelProcedure(),
+    start: startProcedure()
 });
 
 export type AppRouter = typeof appRouter;
@@ -58,11 +67,48 @@ function runProcedure() {
                     input: codeParams
                 });
                 usage.track(nangoProps);
-                return await exec(nangoProps, input.isInvokedImmediately, input.isWebhook, code, codeParams);
+                const scriptType: 'sync' | 'action' | 'webhook' = input.isWebhook ? 'webhook' : input.isInvokedImmediately ? 'action' : 'sync';
+                return await exec(nangoProps, scriptType, code, codeParams);
             } finally {
                 usage.untrack(nangoProps);
                 logger.info('Task done');
             }
+        });
+}
+
+function startProcedure() {
+    return publicProcedure
+        .input((input) => input as StartParams) //TODO: zod
+        .mutation(({ input }): boolean => {
+            const { taskId, nangoProps, scriptType, code, codeParams } = input;
+            logger.info('Received task', {
+                taskId: taskId,
+                env: nangoProps.environmentId,
+                connectionId: nangoProps.connectionId,
+                syncId: nangoProps.syncId,
+                input: codeParams
+            });
+            usage.track(nangoProps);
+            // executing in the background and returning immediately
+            // sending the result to the jobs service when done
+            setImmediate(async () => {
+                try {
+                    const { error, response } = await exec(nangoProps, scriptType, code, codeParams);
+                    await httpFetch({
+                        method: 'PUT',
+                        url: `${jobsServiceUrl}/task/${taskId}`,
+                        data: superjson.stringify({
+                            scriptType,
+                            error,
+                            output: response
+                        })
+                    });
+                } finally {
+                    usage.untrack(nangoProps);
+                    logger.info(`Task ${taskId} completed`);
+                }
+            });
+            return true;
         });
 }
 

@@ -48,7 +48,7 @@ describe('POST /api/v1/account/signup', () => {
                 errors: [
                     {
                         code: 'custom',
-                        message: 'Password should be least 8 characters with lowercase, uppercase, a number and a special character',
+                        message: 'Password should be least 8 characters with uppercase, a number and a special character',
                         path: ['password']
                     }
                 ]
@@ -63,7 +63,10 @@ describe('POST /api/v1/account/signup', () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
-            uuid: expect.any(String)
+            data: {
+                uuid: expect.any(String),
+                verified: false
+            }
         });
     });
 });

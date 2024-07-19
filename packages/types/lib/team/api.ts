@@ -27,7 +27,7 @@ export type PutTeam = Endpoint<{
     Querystring: { env: string };
     Body: { name: string };
     Success: {
-        data: DBTeam;
+        data: ApiTeam;
     };
 }>;
 

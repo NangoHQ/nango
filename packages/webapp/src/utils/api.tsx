@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
 import type { RunSyncCommand, PreBuiltFlow } from '../types';
-import type { AuthModeType } from '@nangohq/types';
+import type { AuthModeType, PostSignup } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
     return await fetch(input, {
@@ -15,6 +15,10 @@ export async function fetcher(...args: Parameters<typeof fetch>) {
     return response.json();
 }
 
+export interface SWRError<TError> {
+    json: TError;
+    status: number;
+}
 /**
  * Default SWR fetcher does not throw on HTTP error
  */
@@ -47,11 +51,11 @@ export function useLogoutAPI() {
 }
 
 export function useSignupAPI() {
-    return async (name: string, email: string, password: string) => {
+    return async (body: PostSignup['Body']) => {
         try {
             const options = {
                 method: 'POST',
-                body: JSON.stringify({ name: name, email: email, password: password })
+                body: JSON.stringify(body)
             };
 
             return apiFetch('/api/v1/account/signup', options);
