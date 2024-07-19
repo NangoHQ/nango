@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.1] - 2024-07-19
+
+### Added
+
+- Refactor User Settings (#2513) by @bodinsamuel
+- *(integrations)* Add support for contentful (#2515) by @hassan254-prog
+- *(webhooks)* [nan-1432] add checkr webhook forwarding possibility (#2516) by @khaliqgant
+- Add start endpoint to runner (#2524) by @TBonnin
+- Invitation UI (#2520) by @bodinsamuel
+- *(cli)* [nan-1309] add .gitignore to ignore dist and .env file (#2527) by @khaliqgant
+
+### Changed
+
+- Dryrun should not depend on run.service (#2507) by @TBonnin
+- *(deps)* Manual upgrade (#2514) by @bodinsamuel
+
+### Fixed
+
+- Update sync frequency (#2518) by @TBonnin
+- *(xero-integration-template)* [nan-1438] xero updates to match the API better (#2519) by @khaliqgant
+- *(documentation)* [nan-1349] update docs (#2517) by @khaliqgant
+- *(cli)* [nan-1457] auto confirm for dry run (#2528) by @khaliqgant
+- *(logs)* Remove support for number (#2523) by @bodinsamuel
+- *(ui)* Feedback on profile/team/invitation (#2530) by @bodinsamuel
+- *(integration-templates)* Fix location of upload (#2529) by @khaliqgant
+
 ## [v0.42.0] - 2024-07-16
 
 ### Added
@@ -1600,6 +1626,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.1]: https://github.com/NangoHQ/nango/compare/v0.42.0..v0.42.1
 [v0.42.0]: https://github.com/NangoHQ/nango/compare/v0.41.1..v0.42.0
 [v0.41.1]: https://github.com/NangoHQ/nango/compare/v0.41.0..v0.41.1
 [v0.41.0]: https://github.com/NangoHQ/nango/compare/v0.40.10..v0.41.0
