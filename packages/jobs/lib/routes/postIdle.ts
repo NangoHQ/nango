@@ -27,16 +27,14 @@ const validate = validateRequest<PostIdle>({
             .parse(data)
 });
 
-const handler = () => {
-    return async (req: EndpointRequest<PostIdle>, res: EndpointResponse<PostIdle>) => {
-        try {
-            logger.info(`[runner ${req.body.runnerId}]: idle for ${req.body.idleTimeMs}ms. Suspending...`);
-            await suspendRunner(req.body.runnerId);
-            return res.status(201).json({ status: 'ok' });
-        } catch (err: unknown) {
-            return res.status(500).json({ error: { code: 'idle_failed', message: err instanceof Error ? err.message : 'failed to suspend runner' } });
-        }
-    };
+const handler = async (req: EndpointRequest<PostIdle>, res: EndpointResponse<PostIdle>) => {
+    try {
+        logger.info(`[runner ${req.body.runnerId}]: idle for ${req.body.idleTimeMs}ms. Suspending...`);
+        await suspendRunner(req.body.runnerId);
+        return res.status(201).json({ status: 'ok' });
+    } catch (err: unknown) {
+        return res.status(500).json({ error: { code: 'idle_failed', message: err instanceof Error ? err.message : 'failed to suspend runner' } });
+    }
 };
 
 export const routeHandler: RouteHandler<PostIdle> = {

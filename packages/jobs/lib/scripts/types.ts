@@ -1,31 +1,31 @@
 import type { NangoConnection, SyncConfig, SyncType } from '@nangohq/shared';
 import type { JsonValue } from 'type-fest';
 
-interface ScriptPropsCommon {
+interface StartScriptPropsCommon {
     taskId: string;
     nangoConnection: NangoConnection;
     syncConfig: SyncConfig;
     provider: string;
     debug?: boolean | undefined;
 }
-export type SyncScriptProps = {
+export type StartSyncScriptProps = {
     scriptType: 'sync';
     syncId: string;
     syncJobId: number;
     syncType: SyncType.INCREMENTAL | SyncType.FULL;
-} & ScriptPropsCommon;
+} & StartScriptPropsCommon;
 
-export type ActionScriptProps = {
+export type StartActionScriptProps = {
     scriptType: 'action';
     input: JsonValue;
-} & ScriptPropsCommon;
+} & StartScriptPropsCommon;
 
-export type WebhookScriptProps = {
+export type StartWebhookScriptProps = {
     scriptType: 'webhook';
-} & ScriptPropsCommon;
+} & StartScriptPropsCommon;
 
-export type PostConnectionScriptProps = {
+export type StartPostConnectionScriptProps = {
     scriptType: 'post-connection-script';
-} & ScriptPropsCommon;
+} & StartScriptPropsCommon;
 
-export type ScriptProps = SyncScriptProps | ActionScriptProps | WebhookScriptProps | PostConnectionScriptProps;
+export type StartScriptProps = StartSyncScriptProps | StartActionScriptProps | StartWebhookScriptProps | StartPostConnectionScriptProps;

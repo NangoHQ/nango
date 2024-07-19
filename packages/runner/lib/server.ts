@@ -95,7 +95,7 @@ function startProcedure() {
                     const { error, response: output } = await exec(nangoProps, code, codeParams);
                     await httpFetch({
                         method: 'PUT',
-                        url: `${jobsServiceUrl}/task/${taskId}`,
+                        url: `${jobsServiceUrl}/tasks/${taskId}`,
                         data: JSON.stringify({
                             nangoProps,
                             ...(error ? { error } : { output })

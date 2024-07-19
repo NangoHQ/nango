@@ -5,7 +5,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '@nangohq/shared';
 import { localFileService, remoteFileService } from '@nangohq/shared';
 import { getOrStartRunner, getRunnerId } from '../../runner/runner.js';
-import type { ScriptProps } from '../types.js';
+import type { StartScriptProps } from '../types.js';
 
 export async function startScript({
     scriptProps,
@@ -13,14 +13,14 @@ export async function startScript({
     input,
     logCtx
 }: {
-    scriptProps: ScriptProps;
+    scriptProps: StartScriptProps;
     nangoProps: NangoProps;
     input?: object | undefined;
     logCtx: LogContext;
 }): Promise<Result<void>> {
     const span = tracer
         .startSpan('runScript')
-        .setTag('accountId', nangoProps.accountId)
+        .setTag('accountId', nangoProps.teamId)
         .setTag('environmentId', nangoProps.environmentId)
         .setTag('connectionId', nangoProps.connectionId)
         .setTag('providerConfigKey', nangoProps.providerConfigKey)
@@ -41,12 +41,12 @@ export async function startScript({
             return Err('Unable to find integration file');
         }
 
-        if (nangoProps.accountId == null) {
-            return Err(`No accountId provided (instead ${nangoProps.accountId})`);
+        if (nangoProps.teamId == null) {
+            return Err(`No teamId provided (instead ${nangoProps.teamId})`);
         }
 
         // a runner per account in prod only
-        const runnerId = isProd ? getRunnerId(`${nangoProps.accountId}`) : getRunnerId('default');
+        const runnerId = isProd ? getRunnerId(`${nangoProps.teamId}`) : getRunnerId('default');
         // fallback to default runner if account runner isn't ready yet
         const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
 

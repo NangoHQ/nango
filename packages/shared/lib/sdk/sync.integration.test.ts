@@ -39,7 +39,8 @@ describe('Connection service integration tests', () => {
             const nangoProps: NangoProps = {
                 scriptType: 'sync',
                 host: 'http://localhost:3003',
-                accountId: environment.account_id,
+                teamId: environment.account_id,
+                teamName: 'team',
                 connectionId: String(establishedConnection.connection_id),
                 environmentId: environment.id,
                 environmentName: environment.name,

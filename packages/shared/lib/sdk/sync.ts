@@ -302,7 +302,8 @@ export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     host?: string;
     secretKey: string;
-    accountId?: number;
+    teamId?: number;
+    teamName?: string;
     connectionId: string;
     environmentId: number;
     environmentName?: string;

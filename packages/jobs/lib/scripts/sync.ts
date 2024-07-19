@@ -23,13 +23,13 @@ import type { Result } from '@nangohq/utils';
 import type { DBEnvironment, DBTeam, ErrorPayload, NangoConnection, SyncResult } from '@nangohq/types';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import { bigQueryClient, slackService } from '../clients.js';
-import type { SyncScriptProps } from './types.js';
+import type { StartSyncScriptProps } from './types.js';
 import { startScript } from './operations/start.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 
-export async function startSync(props: SyncScriptProps & { logCtx: LogContext }): Promise<Result<void>> {
+export async function startSync(props: StartSyncScriptProps & { logCtx: LogContext }): Promise<Result<void>> {
     const teamAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: props.nangoConnection.environment_id });
     if (!teamAndEnv) {
         const message = `No environment was found for ${props.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
@@ -64,7 +64,8 @@ export async function startSync(props: SyncScriptProps & { logCtx: LogContext })
         const nangoProps: NangoProps = {
             scriptType: 'sync',
             host: getApiUrl(),
-            accountId: team.id,
+            teamId: team.id,
+            teamName: team.name,
             connectionId: props.nangoConnection.connection_id,
             environmentId: props.nangoConnection.environment_id,
             environmentName: environment.name,
@@ -85,8 +86,7 @@ export async function startSync(props: SyncScriptProps & { logCtx: LogContext })
         };
 
         if (props.debug) {
-            const content = `Last sync date is ${lastSyncDate}`;
-            await props.logCtx.debug(content);
+            await props.logCtx.debug(`Last sync date is ${lastSyncDate}`);
         }
 
         metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: team.id });
@@ -150,22 +150,6 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
             environment_id: nangoProps.environmentId,
             provider_config_key: nangoProps.providerConfigKey
         };
-        const teamAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
-        if (!teamAndEnv) {
-            const message = `No environment was found for ${nangoProps.environmentId}. The sync cannot continue without a valid environment`;
-            await onFailure({
-                context: toContext(nangoProps),
-                message,
-                models: nangoProps.syncConfig.models,
-                runTime,
-                error: {
-                    type: 'no_environment',
-                    description: message
-                }
-            });
-            return;
-        }
-        const { account: team, environment } = teamAndEnv;
         for (const model of nangoProps.syncConfig.models) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
@@ -232,35 +216,36 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
                 ? `The result was ${resultMessageParts.join(', ')}.`
                 : 'The external API returned did not return any new or updated data so nothing was inserted or updated.';
 
-            const content = `${successMessage} ${resultMessage}`;
-
-            const results: SyncResult = {
-                added,
-                updated,
-                deleted
-            };
+            const fullMessage = `${successMessage} ${resultMessage}`;
 
             const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
             if (webhookSettings) {
-                void sendSyncWebhook({
-                    connection: connection,
-                    environment: environment,
-                    webhookSettings,
-                    syncName: nangoProps.syncConfig.sync_name,
-                    model,
-                    now: nangoProps.startedAt,
-                    success: true,
-                    responseResults: results,
-                    operation: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
-                    logCtx
-                });
+                const environment = await environmentService.getById(nangoProps.environmentId);
+                if (environment) {
+                    void sendSyncWebhook({
+                        connection: connection,
+                        environment: environment,
+                        webhookSettings,
+                        syncName: nangoProps.syncConfig.sync_name,
+                        model,
+                        now: nangoProps.startedAt,
+                        success: true,
+                        responseResults: {
+                            added,
+                            updated,
+                            deleted
+                        },
+                        operation: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+                        logCtx
+                    });
+                }
             }
 
-            await logCtx.info(content);
+            await logCtx.info(fullMessage);
 
             await telemetry.log(
                 LogTypes.SYNC_SUCCESS,
-                content,
+                fullMessage,
                 LogActionEnum.SYNC,
                 {
                     model,
@@ -307,8 +292,8 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
             executionType: 'sync',
             connectionId: nangoProps.connectionId,
             internalConnectionId: nangoProps.nangoConnectionId,
-            accountId: nangoProps.accountId,
-            accountName: team.name,
+            accountId: nangoProps.teamId,
+            accountName: nangoProps.teamName || 'unknown',
             scriptName: nangoProps.syncConfig.sync_name,
             scriptType: nangoProps.syncConfig.type,
             environmentId: nangoProps.environmentId,
