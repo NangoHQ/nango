@@ -3,6 +3,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { PutTeam } from '@nangohq/types';
 import { accountService } from '@nangohq/shared';
 import { z } from 'zod';
+import { teamToApi } from '../../../formatters/team.js';
 
 const validation = z
     .object({
@@ -31,9 +32,9 @@ export const putTeam = asyncWrapper<PutTeam>(async (req, res) => {
     await accountService.editAccount({ id: account.id, ...body });
 
     res.status(200).send({
-        data: {
+        data: teamToApi({
             ...account,
             ...body
-        }
+        })
     });
 });

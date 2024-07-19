@@ -1,43 +1,27 @@
 import type { ApiError, Endpoint } from '../api';
 import type { ApiUser } from '../user/api';
 
-export type Signup = Endpoint<{
+export type PostSignup = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/account/signup';
     Body: {
         email: string;
         name: string;
         password: string;
+        token?: string | undefined;
     };
     Error:
         | ApiError<'email_already_verified'>
         | ApiError<'error_creating_user'>
         | ApiError<'user_already_exists'>
         | ApiError<'error_creating_account'>
+        | ApiError<'invalid_invite_token'>
         | ApiError<'email_not_verified'>;
     Success: {
-        uuid: string;
-    };
-}>;
-
-export type SignupWithToken = Endpoint<{
-    Method: 'POST';
-    Path: '/api/v1/account/signup/token';
-    Body: {
-        email: string;
-        name: string;
-        password: string;
-        token: string;
-        accountId: number;
-    };
-    Error:
-        | ApiError<'error_creating_user'>
-        | ApiError<'user_already_exists'>
-        | ApiError<'invalid_invite_token'>
-        | ApiError<'error_logging_in'>
-        | ApiError<'invalid_account_id'>;
-    Success: {
-        user: ApiUser;
+        data: {
+            uuid: string;
+            verified: boolean;
+        };
     };
 }>;
 
@@ -96,7 +80,7 @@ export type GetEmailByExpiredToken = Endpoint<{
     };
 }>;
 
-export type Signin = Endpoint<{
+export type PostSignin = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/account/signin';
     Body: {

@@ -1,182 +1,119 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-
-import type { SignupWithToken } from '@nangohq/types';
-import { apiFetch, useInviteSignupAPI } from '../../utils/api';
-import { useAnalyticsTrack } from '../../utils/analytics';
-import { MANAGED_AUTH_ENABLED, isEnterprise } from '../../utils/utils';
-import { useSignin } from '../../utils/user';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { apiAcceptInvite, apiDeclineInvite, useInvite } from '../../hooks/useInvite';
 import DefaultLayout from '../../layout/DefaultLayout';
-import GoogleButton from '../../components/ui/button/Auth/Google';
+import { Skeleton } from '../../components/ui/Skeleton';
+import Info from '../../components/ui/Info';
+import Button from '../../components/ui/button/Button';
+import { useState } from 'react';
+import { useToast } from '../../hooks/useToast';
+import { useUser } from '../../hooks/useUser';
+import { SignupForm } from './components/SignupForm';
 
-export default function InviteSignup() {
-    const [serverErrorMessage, setServerErrorMessage] = useState('');
-    const [loaded, setLoaded] = useState(false);
-    const [invitedEmail, setEmail] = useState('');
-    const [invitedAccountID, setAccountID] = useState<number>();
-    const navigate = useNavigate();
-    const getInvitee = useInviteSignupAPI();
-    const signin = useSignin();
-    const analyticsTrack = useAnalyticsTrack();
-
+export const InviteSignup: React.FC = () => {
     const { token } = useParams();
+    const { toast } = useToast();
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        const getInvite = async () => {
-            const res = await getInvitee(token as string);
+    const { user: isLogged } = useUser(true, { onError: () => null });
+    const { data, error, loading } = useInvite(token);
+    const [loadingDecline, setLoadingDecline] = useState(false);
+    const [loadingAccept, setLoadingAccept] = useState(false);
 
-            if (res?.status === 200) {
-                const invitee = await res.json();
-                const { email, account_id } = invitee;
-                setEmail(email);
-                setAccountID(Number(account_id));
-            } else {
-                isEnterprise() ? navigate('/signin') : navigate('/signup');
-            }
-        };
+    const onAccept = async () => {
+        setLoadingAccept(true);
 
-        if (!loaded) {
-            setLoaded(true);
-            getInvite();
-        }
-    }, [navigate, getInvitee, token, loaded, setLoaded]);
-
-    const handleSubmit = async (e: React.SyntheticEvent) => {
-        e.preventDefault();
-        setServerErrorMessage('');
-
-        const target = e.target as typeof e.target & {
-            name: { value: string };
-            email: { value: string };
-            password: { value: string };
-        };
-
-        const res = await apiFetch(`/api/v1/account/signup/token`, {
-            method: 'POST',
-            body: JSON.stringify({
-                name: target.name.value,
-                email: target.email.value,
-                password: target.password.value,
-                accountId: invitedAccountID,
-                token
-            })
-        });
-
-        if (res?.status === 200) {
-            const data = await res.json();
-            const user: SignupWithToken['Success']['user'] = data['user'];
-            analyticsTrack('web:account_signup', {
-                user_id: user.id,
-                email: user.email,
-                name: user.name,
-                accountId: user.accountId
-            });
-            signin(user);
+        const accepted = await apiAcceptInvite(token!);
+        if (accepted && accepted.res.status === 200) {
+            toast({ title: `You joined the team`, variant: 'success' });
             navigate('/');
-        } else if (res != null) {
-            const errorMessage = (await res.json()).error.message || 'Unknown error';
-            setServerErrorMessage(errorMessage);
+        } else {
+            toast({ title: 'An unexpected error occurred', variant: 'error' });
         }
+        setLoadingAccept(false);
+    };
+    const onDecline = async () => {
+        setLoadingDecline(true);
+
+        const declined = await apiDeclineInvite(token!);
+        if (declined && declined.res.status === 200) {
+            toast({ title: `You declined the invitation`, variant: 'success' });
+            navigate('/');
+        } else {
+            toast({ title: 'An unexpected error occurred', variant: 'error' });
+        }
+        setLoadingDecline(false);
     };
 
-    return (
-        <>
+    if (loading) {
+        return (
             <DefaultLayout>
                 <div className="flex flex-col justify-center">
-                    <div className="flex flex-col justify-center w-80 mx-4">
-                        <h2 className="mt-2 text-center text-3xl font-semibold tracking-tight text-white">Sign up</h2>
-                        <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
-                            <div>
-                                <div className="mt-1">
-                                    <input
-                                        id="name"
-                                        name="name"
-                                        type="text"
-                                        autoComplete="name"
-                                        required
-                                        placeholder="Name"
-                                        minLength={1}
-                                        maxLength={100}
-                                        className="border-border-gray bg-dark-600 placeholder-dark-500 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-sm focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="mt-1">
-                                    <input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        autoComplete="email"
-                                        defaultValue={invitedEmail}
-                                        placeholder="Email"
-                                        required
-                                        readOnly={!isEnterprise()}
-                                        className={`${isEnterprise() ? '' : 'cursor-not-allowed outline-none border-transparent focus:border-transparent focus:ring-0 border-none '}bg-bg-black text-text-light-gray block h-11 focus:outline-none w-full appearance-none rounded-md px-3 py-2 text-[14px] shadow-sm`}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="mt-1">
-                                    <input
-                                        id="password"
-                                        name="password"
-                                        type="password"
-                                        placeholder="Password"
-                                        autoComplete="current-password"
-                                        required
-                                        minLength={8}
-                                        maxLength={50}
-                                        className="border-border-gray bg-dark-600 placeholder-dark-500 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-sm focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid">
-                                <button
-                                    type="submit"
-                                    className="bg-white flex h-11 justify-center rounded-md border px-4 pt-3 text-[14px] text-black shadow hover:border-2 active:ring-2 active:ring-offset-2"
-                                >
-                                    Sign up
-                                </button>
-                                {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
-                            </div>
-                        </form>
-                        {MANAGED_AUTH_ENABLED && (
-                            <>
-                                <div className="flex items-center justify-center my-4 text-xs">
-                                    <div className="border-t border-gray-600 flex-grow mr-7"></div>
-                                    <span className="text-dark-500">or continue with</span>
-                                    <div className="border-t border-gray-600 flex-grow ml-7"></div>
-                                </div>
-                                <GoogleButton
-                                    text="Sign up with Google"
-                                    invitedAccountID={invitedAccountID}
-                                    token={token}
-                                    setServerErrorMessage={setServerErrorMessage}
-                                />
-                            </>
-                        )}
-                    </div>
-                    <div className="grid w-full">
-                        <div className="mt-8 flex text-xs">
-                            <p className="text-dark-500">
-                                By signing in, you agree to our
-                                <a href="https://www.nango.dev/terms" target="_blank" rel="noreferrer" className="text-white ml-1">
-                                    Terms of Service
-                                </a>
-                                <span className="text-dark-500 ml-1">and</span>
-                                <a href="https://www.nango.dev/privacy-policy" target="_blank" rel="noreferrer" className="text-white ml-1">
-                                    Privacy Policy
-                                </a>
-                                <span className="text-dark-500">.</span>
-                            </p>
-                        </div>
+                    <div className="flex flex-col justify-center w-80 mt-4">
+                        <Skeleton className="w-100%" />
                     </div>
                 </div>
             </DefaultLayout>
-        </>
+        );
+    }
+
+    if (error) {
+        return (
+            <DefaultLayout>
+                <div className="flex flex-col justify-center">
+                    <div className="flex flex-col justify-center w-80 mt-4">
+                        {error.error.code === 'not_found' ? (
+                            <div className="flex flex-col items-center gap-4">
+                                <Info color={'blue'} classNames="text-xs" size={20}>
+                                    This invitation does not exists or is expired
+                                </Info>
+                                <Link to={'/signup'}>
+                                    <Button>Go back to signup</Button>
+                                </Link>
+                            </div>
+                        ) : (
+                            <Info color={'red'} classNames="text-xs" size={20}>
+                                An error occurred, refresh your page or reach out to the support.{' '}
+                                {error.error.code === 'generic_error_support' && (
+                                    <>
+                                        (id: <span className="select-all">{error.error.payload}</span>)
+                                    </>
+                                )}
+                            </Info>
+                        )}
+                    </div>
+                </div>
+            </DefaultLayout>
+        );
+    }
+    if (!data) {
+        return null;
+    }
+
+    return (
+        <DefaultLayout>
+            <div className="flex flex-col justify-center">
+                <div className="flex flex-col justify-center mx-4 gap-4">
+                    <h2 className="text-3xl font-semibold text-white text-center">Join a team</h2>
+                    <div className="text-text-light-gray text-sm text-center">
+                        <p>
+                            {data.invitedBy.name} has invited you to transfer to a new team: <strong className="text-white">{data.newTeam.name}</strong> (
+                            {data.newTeamUsers} {data.newTeamUsers > 1 ? 'members' : 'member'})
+                        </p>{' '}
+                        <p>If you accept, you will permanently lose access to your existing team.</p>
+                    </div>
+                    {isLogged && (
+                        <div className="flex gap-2 mt-6 items-center justify-center">
+                            <Button variant={'zinc'} onClick={onDecline} disabled={loadingAccept} isLoading={loadingDecline}>
+                                Cancel
+                            </Button>
+                            <Button variant={'danger'} onClick={onAccept} disabled={loadingDecline} isLoading={loadingAccept}>
+                                Join new team
+                            </Button>
+                        </div>
+                    )}
+                    <div className="w-80 mx-auto">{!isLogged && <SignupForm invitation={data.invitation} token={token} />}</div>
+                </div>
+            </div>
+        </DefaultLayout>
     );
-}
+};
