@@ -270,6 +270,11 @@ export class NangoError extends Error {
                 this.message = `Missing param 'provider'.`;
                 break;
 
+            case 'no_environment':
+                this.status = 404;
+                this.message = `No environment found: ${this.payload}`;
+                break;
+
             case 'no_syncs_found':
                 this.status = 400;
                 this.message = `No syncs found given the inputs.`;
@@ -613,6 +618,11 @@ export class NangoError extends Error {
                 this.message = 'Action output is too big';
                 break;
 
+            case 'sync_job_update_failure':
+                this.status = 500;
+                this.message = `The sync job results could not be updated: ${this.payload}`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
@@ -642,7 +652,7 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
         errorMessage = String(err);
     }
 
-    const content = `The script failed to execute for ${scriptName} with the following error: ${errorMessage}`;
+    const content = `Script for '${scriptName}' failed to execute with error: ${errorMessage}`;
 
     const status = err?.response?.status || 500;
     const error = new NangoError(errorType, content, status);

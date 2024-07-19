@@ -16,11 +16,12 @@ import {
     errorNotificationService,
     SyncType,
     updateSyncJobResult,
-    setLastSyncDate
+    setLastSyncDate,
+    NangoError
 } from '@nangohq/shared';
-import { Err, metrics, stringifyError } from '@nangohq/utils';
+import { Err, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { DBEnvironment, DBTeam, ErrorPayload, NangoConnection, SyncResult } from '@nangohq/types';
+import type { DBEnvironment, DBTeam, NangoConnection, SyncResult } from '@nangohq/types';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import { bigQueryClient, slackService } from '../clients.js';
 import type { StartSyncScriptProps } from './types.js';
@@ -47,13 +48,9 @@ export async function startSync(props: StartSyncScriptProps & { logCtx: LogConte
                 activityLogId: props.logCtx.id,
                 debug: props.debug || false
             },
-            message,
             models: ['n/a'],
             runTime: 0,
-            error: {
-                type: 'no_environment',
-                description: message
-            }
+            error: new NangoError('no_environment', { environmentId: props.nangoConnection.environment_id })
         });
         return Err(message);
     }
@@ -102,7 +99,7 @@ export async function startSync(props: StartSyncScriptProps & { logCtx: LogConte
         }
         return res;
     } catch (err) {
-        const message = `Failed to run sync script: ${err}`;
+        const error = new NangoError('sync_script_failure', { error: err });
         await onFailure({
             context: {
                 environmentId: props.nangoConnection.environment_id,
@@ -119,15 +116,11 @@ export async function startSync(props: StartSyncScriptProps & { logCtx: LogConte
                 team,
                 environment
             },
-            message,
             runTime: 0,
             models: props.syncConfig.models,
-            error: {
-                type: 'script_failure',
-                description: message
-            }
+            error
         });
-        return Err(message);
+        return Err(error);
     }
 }
 
@@ -171,16 +164,11 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
 
             const syncResult = await updateSyncJobResult(nangoProps.syncJobId, updatedResults, model);
             if (!syncResult) {
-                const message = `The sync job ${nangoProps.syncJobId} could not be updated with the results for model ${model}.`;
                 await onFailure({
                     context: toContext(nangoProps),
                     models: [model],
-                    message,
                     runTime,
-                    error: {
-                        type: 'sync_job_update_failure',
-                        description: message
-                    }
+                    error: new NangoError('sync_job_update_failure', { syncJobId: nangoProps.syncJobId, model })
                 });
                 return;
             }
@@ -310,35 +298,18 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
     } catch (err) {
         await handleSyncError({
             nangoProps,
-            error: {
-                type: 'script_error',
-                payload: { error: stringifyError(err, { pretty: true }) },
-                status: 500
-            }
+            error: new NangoError('sync_script_failure', { error: err })
         });
     }
 }
 
-export async function handleSyncError({
-    nangoProps,
-    error
-}: {
-    nangoProps: NangoProps;
-    error: { type: string; payload: Record<string, unknown>; status: number };
-}): Promise<void> {
-    const version = nangoProps.syncConfig.version ? ` version: ${nangoProps.syncConfig.version}` : '';
-    const message = `The ${nangoProps.syncConfig.sync_type} sync "${nangoProps.syncConfig.sync_name}"${version} sync did not complete successfully: ${JSON.stringify(error.payload)}`; //TODO: payload?????????
+export async function handleSyncError({ nangoProps, error }: { nangoProps: NangoProps; error: NangoError }): Promise<void> {
     await onFailure({
         context: toContext(nangoProps),
         models: nangoProps.syncConfig.models,
-        message,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
-        error: {
-            type: 'script_error',
-            description: message
-        }
+        error
     });
-    // TODO: logging????????
 }
 
 interface ScriptContext {
@@ -377,16 +348,14 @@ async function onFailure({
     context,
     models,
     runTime,
-    message,
     isCancel,
     error
 }: {
     context: ScriptContext;
     models: string[];
     runTime: number;
-    message: string;
     isCancel?: true;
-    error: ErrorPayload;
+    error: NangoError;
 }) {
     if (context.team && context.environment) {
         void bigQueryClient.insert({
@@ -402,7 +371,7 @@ async function onFailure({
             providerConfigKey: context.providerConfigKey,
             status: 'failed',
             syncId: context.syncId,
-            content: message,
+            content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now()
         });
@@ -443,7 +412,10 @@ async function onFailure({
             syncName: context.syncName,
             model: models.join(','),
             success: false,
-            error,
+            error: {
+                type: 'script_error',
+                description: error.message
+            },
             now: context.lastSyncDate,
             operation: context.syncType,
             logCtx: logCtx
@@ -452,14 +424,14 @@ async function onFailure({
 
     await updateSyncJobStatus(context.syncJobId, SyncStatus.STOPPED);
 
-    await logCtx.error(message);
+    await logCtx.error(error.message, { error });
     if (isCancel) {
         await logCtx.cancel();
     } else {
         await logCtx.failed();
     }
 
-    errorManager.report(message, {
+    errorManager.report(error.message, {
         environmentId: context.environmentId,
         source: ErrorSourceEnum.CUSTOMER,
         operation: LogActionEnum.SYNC,
@@ -475,7 +447,7 @@ async function onFailure({
 
     await telemetry.log(
         LogTypes.SYNC_FAILURE,
-        message,
+        error.message,
         LogActionEnum.SYNC,
         {
             environmentId: String(context.environmentId),

@@ -2,6 +2,7 @@ import { handleSyncError, handleSyncOutput } from '../sync.js';
 import { orchestratorClient } from '../../clients.js';
 import type { JsonValue } from 'type-fest';
 import { logger } from '../../logger.js';
+import { formatScriptError } from '@nangohq/shared';
 import type { NangoProps } from '@nangohq/shared';
 
 export async function handleOutput({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
@@ -32,11 +33,16 @@ export async function handleError({
 }: {
     taskId: string;
     nangoProps: NangoProps;
-    error: { type: string; payload: Record<string, unknown>; status: number };
+    error: {
+        type: string;
+        payload: Record<string, unknown>;
+        status: number;
+    };
 }): Promise<void> {
+    const { error: formattedError } = formatScriptError(error.payload, `${nangoProps.scriptType}_script_failure`, nangoProps.syncConfig.sync_name);
     switch (nangoProps.scriptType) {
         case 'sync':
-            await handleSyncError({ nangoProps, error });
+            await handleSyncError({ nangoProps, error: formattedError });
             break;
         case 'action':
             // TODO

@@ -89,7 +89,7 @@ const validate = validateRequest<PutTask>({
                 error: z
                     .object({
                         type: z.string(),
-                        payload: z.record(z.string(), z.unknown()),
+                        payload: z.record(z.string(), z.any()),
                         status: z.number()
                     })
                     .optional(),
@@ -107,7 +107,7 @@ const handler = async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutT
         return;
     }
     if (error) {
-        await handleError({ taskId, nangoProps, error: error });
+        await handleError({ taskId, nangoProps, error });
     } else if (output) {
         await handleOutput({ taskId, nangoProps, output: output });
     } else {
