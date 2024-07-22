@@ -70,7 +70,7 @@ export const TeamInfo: React.FC = () => {
                 <div className="flex justify-end gap-1 items-center">
                     <Button
                         size={'sm'}
-                        variant={'zombie'}
+                        variant={'zinc'}
                         onClick={() => {
                             setName(team.name);
                             setEdit(false);

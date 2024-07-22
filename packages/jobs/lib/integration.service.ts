@@ -8,7 +8,7 @@ import { logContextGetter } from '@nangohq/logs';
 
 interface ScriptObject {
     runner: Runner;
-    activityLogId: number | undefined;
+    activityLogId: string | undefined;
     cancelled?: boolean;
 }
 

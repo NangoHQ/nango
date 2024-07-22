@@ -974,6 +974,18 @@ front:
             response_path: _results
             link_path_in_response_body: _pagination.next
     docs: https://docs.nango.dev/integrations/all/front
+gainsight-cc:
+    categories:
+        - support
+        - crm
+    auth_mode: OAUTH2_CC
+    token_url: https://api2-${connectionConfig.region}.insided.com/oauth2/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api2-${connectionConfig.region}.insided.com
+    docs: https://docs.nango.dev/integrations/all/gainsight-cc
 garmin:
     categories:
         - sports

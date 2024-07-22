@@ -9,7 +9,7 @@ describe('Exec', () => {
             connectionId: 'connection-id',
             environmentId: 1,
             providerConfigKey: 'provider-config-key',
-            activityLogId: 1,
+            activityLogId: '1',
             secretKey: 'secret-key',
             nangoConnectionId: 1,
             syncId: 'sync-id',

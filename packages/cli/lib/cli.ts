@@ -199,6 +199,23 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
         }
     }
 
+    const gitIgnoreFileLocation = path.resolve(fullPath, '.gitignore');
+    if (!fs.existsSync(gitIgnoreFileLocation)) {
+        if (debug) {
+            printDebug(`Creating the .gitignore file at ${gitIgnoreFileLocation}`);
+        }
+        fs.writeFileSync(
+            gitIgnoreFileLocation,
+            `dist
+.env
+`
+        );
+    } else {
+        if (debug) {
+            printDebug(`.gitignore file already exists at ${gitIgnoreFileLocation} so not creating a new one`);
+        }
+    }
+
     generate({ debug, fullPath });
 }
 
