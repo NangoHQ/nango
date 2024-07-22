@@ -27,7 +27,7 @@ import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
-import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest, isLocal, basePublicUrl } from '@nangohq/utils';
+import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest, isLocal, basePublicUrl, baseUrl } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { getConnection as getConnectionWeb } from './controllers/v1/connection/get.js';
@@ -178,7 +178,7 @@ setupAuth(web);
 const webCorsHandler = cors({
     maxAge: 600,
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length',
-    origin: isLocal ? '*' : basePublicUrl.replace(/https?:\/\//, '')
+    origin: isLocal ? '*' : [basePublicUrl, baseUrl]
 });
 web.use(webCorsHandler);
 web.options('*', webCorsHandler); // Pre-flight
