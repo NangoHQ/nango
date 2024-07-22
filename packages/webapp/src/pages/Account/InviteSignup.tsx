@@ -98,7 +98,7 @@ export const InviteSignup: React.FC = () => {
                 <div className="flex flex-col justify-center">
                     <div className="flex flex-col justify-center mt-4 gap-4">
                         <Info size={20} color="orange" classNames="text-xs">
-                            This invitation was sent to a different email. Please use the correct account or logout
+                            This invitation was sent to a different email. Please logout and use the correct account
                         </Info>
 
                         <div className="flex gap-2 justify-center">
