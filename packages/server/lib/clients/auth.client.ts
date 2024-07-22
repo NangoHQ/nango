@@ -11,7 +11,6 @@ import crypto from 'crypto';
 import util from 'util';
 import cookieParser from 'cookie-parser';
 import connectSessionKnex from 'connect-session-knex';
-import { userToAPI } from '../formatters/user.js';
 
 const KnexSessionStore = connectSessionKnex(session);
 
@@ -103,9 +102,9 @@ export function setupAuth(app: express.Router) {
         );
     }
 
-    passport.serializeUser(function (user: Express.User, cb) {
+    passport.serializeUser(function (user: any, cb) {
         process.nextTick(function () {
-            cb(null, userToAPI(user));
+            cb(null, { id: user.id, email: user.email, name: user.name, account_id: user.account_id } as Express.User);
         });
     });
 

@@ -20,3 +20,7 @@ export const env = isStaging ? NodeEnv.Staging : isProd ? NodeEnv.Prod : NodeEnv
 
 export const useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
 export const integrationFilesAreRemote = isEnterprise && useS3;
+
+export const flagHasScripts = isLocal || isEnterprise || isCloud || isTest;
+export const flagHasAuth = isCloud || isEnterprise || isTest || process.env['FLAG_AUTH_ENABLED'] === 'true';
+export const flagHasManagedAuth = isCloud || isLocal || process.env['FLAG_MANAGED_AUTH_ENABLED'] === 'true';

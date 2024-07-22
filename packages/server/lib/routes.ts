@@ -67,6 +67,7 @@ import { postInsights } from './controllers/v1/logs/postInsights.js';
 import { getInvite } from './controllers/v1/invite/getInvite.js';
 import { declineInvite } from './controllers/v1/invite/declineInvite.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
+import { getMeta } from './controllers/v1/meta/getMeta.js';
 
 export const router = express.Router();
 
@@ -178,7 +179,7 @@ if (MANAGED_AUTH_ENABLED) {
     web.route('/api/v1/login/callback').get(rateLimiterMiddleware, authController.loginCallback.bind(authController));
 }
 
-web.route('/api/v1/meta').get(webAuth, environmentController.meta.bind(environmentController));
+web.route('/api/v1/meta').get(webAuth, getMeta);
 web.route('/api/v1/team').get(webAuth, getTeam);
 web.route('/api/v1/team').put(webAuth, putTeam);
 web.route('/api/v1/team/users/:id').delete(webAuth, deleteTeamUser);

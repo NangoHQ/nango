@@ -9,19 +9,6 @@ import { useMemo } from 'react';
 import { formatQuantity } from '../../../utils/utils';
 import { addDays, format } from 'date-fns';
 
-// const histogram = [
-//     { date: new Date(Date.now() - 86400000 * 9), success: 9, failure: 9 },
-//     { date: new Date(Date.now() - 86400000 * 8), success: 8, failure: 8 },
-//     { date: new Date(Date.now() - 86400000 * 7), success: 7, failure: 7 },
-//     { date: new Date(Date.now() - 86400000 * 6), success: 6, failure: 6 },
-//     { date: new Date(Date.now() - 86400000 * 5), success: 5, failure: 5 },
-//     { date: new Date(Date.now() - 86400000 * 4), success: 4, failure: 4 },
-//     { date: new Date(Date.now() - 86400000 * 3), success: 3, failure: 3 },
-//     { date: new Date(Date.now() - 86400000 * 2), success: 2, failure: 2 },
-//     { date: new Date(Date.now() - 86400000), success: 1, failure: 1 },
-//     { date: new Date(), success: 10, failure: 0 }
-// ];
-
 interface Entry {
     date: Date;
     total: number;
@@ -40,7 +27,12 @@ const chartConfig = {
     }
 } satisfies ChartConfig;
 
-export const InsightChart: React.FC<{ title: string; desc: string; type: PostInsights['Body']['type'] }> = ({ title, type, desc }) => {
+export const InsightChart: React.FC<{ title: string; desc: string; type: PostInsights['Body']['type']; help: React.ReactNode }> = ({
+    title,
+    type,
+    desc,
+    help
+}) => {
     const env = useStore((state) => state.env);
     const { loading, data } = usePostInsights(env, { type });
 
@@ -80,10 +72,23 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
     }, [data]);
 
     if (loading) {
-        <div className="border border-border-gray rounded-xl p-6">
-            <h3 className="text-md text-white">{title}</h3>
-            <Skeleton style={{ width: '50%' }} />
-        </div>;
+        return (
+            <div className="border border-border-gray rounded-xl p-6">
+                <h3 className="text-md text-white">{title}</h3>
+                <div className="h-[190px] w-full  flex items-center justify-center">
+                    <Skeleton style={{ width: '50%' }} />
+                </div>
+            </div>
+        );
+    }
+
+    if (total === 0) {
+        return (
+            <div className="border border-border-gray rounded-xl p-6">
+                <h3 className="text-md text-white">{title}</h3>
+                <div className="h-[190px] w-full text-text-light-gray text-sm flex items-center justify-center">{help}</div>
+            </div>
+        );
     }
 
     return (
