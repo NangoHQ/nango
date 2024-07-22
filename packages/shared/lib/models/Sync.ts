@@ -157,7 +157,7 @@ export interface RunScriptOptions {
     syncConfig?: SyncConfig;
     syncName: string;
     syncId: string;
-    activityLogId?: number | undefined;
+    activityLogId?: string | undefined;
     nangoProps: NangoProps;
     writeToDb: boolean;
     isInvokedImmediately: boolean;

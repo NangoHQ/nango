@@ -5,7 +5,6 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { Input } from '../../components/ui/input/Input';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { CopyButton } from '../../components/ui/button/CopyButton';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useToast } from '../../hooks/useToast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/Tooltip';
@@ -74,7 +73,6 @@ export const UserSettings: React.FC = () => {
                         disabled={!edit}
                         after={
                             <div className="flex gap-1 items-center">
-                                <CopyButton text={name} />
                                 {!edit && (
                                     <Tooltip delayDuration={0}>
                                         <TooltipTrigger asChild>
@@ -101,7 +99,7 @@ export const UserSettings: React.FC = () => {
                         <div className="flex justify-end gap-1 items-center">
                             <Button
                                 size={'sm'}
-                                variant={'zombie'}
+                                variant={'zinc'}
                                 onClick={() => {
                                     setName(user!.name);
                                     setEdit(false);
@@ -117,18 +115,7 @@ export const UserSettings: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-5">
                     <h3 className="font-semibold text-sm text-white">Email</h3>
-                    <Input
-                        ref={ref}
-                        variant={'flat'}
-                        inputSize={'lg'}
-                        value={user!.email}
-                        disabled={true}
-                        after={
-                            <div className="flex gap-1 items-center">
-                                <CopyButton text={user!.email} />
-                            </div>
-                        }
-                    />
+                    <p className="text-white text-sm">{user!.email}</p>
                 </div>
             </div>
         </DashboardLayout>

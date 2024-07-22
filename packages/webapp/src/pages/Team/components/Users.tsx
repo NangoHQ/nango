@@ -13,6 +13,10 @@ export const columns: ColumnDef<ApiUser | ApiInvitation>[] = [
         header: 'Name',
         size: 180,
         cell: ({ row }) => {
+            if ('created_at' in row.original) {
+                return '-';
+            }
+
             return <div className="truncate text-sm">{row.original.name || '-'}</div>;
         }
     },

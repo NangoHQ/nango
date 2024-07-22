@@ -93,21 +93,21 @@ export const InviteSignup: React.FC = () => {
         <DefaultLayout>
             <div className="flex flex-col justify-center">
                 <div className="flex flex-col justify-center mx-4 gap-4">
-                    <h2 className="text-3xl font-semibold text-white text-center">Join a team</h2>
+                    <h2 className="text-3xl font-semibold text-white text-center">{isLogged ? 'Request to join a different team' : 'Join a team'}</h2>
                     <div className="text-text-light-gray text-sm text-center">
                         <p>
                             {data.invitedBy.name} has invited you to transfer to a new team: <strong className="text-white">{data.newTeam.name}</strong> (
                             {data.newTeamUsers} {data.newTeamUsers > 1 ? 'members' : 'member'})
                         </p>{' '}
-                        <p>If you accept, you will permanently lose access to your existing team.</p>
+                        {isLogged && <p>If you accept, you will permanently lose access to your existing team.</p>}
                     </div>
                     {isLogged && (
                         <div className="flex gap-2 mt-6 items-center justify-center">
                             <Button variant={'zinc'} onClick={onDecline} disabled={loadingAccept} isLoading={loadingDecline}>
-                                Cancel
+                                Decline
                             </Button>
                             <Button variant={'danger'} onClick={onAccept} disabled={loadingDecline} isLoading={loadingAccept}>
-                                Join new team
+                                Join a different team
                             </Button>
                         </div>
                     )}

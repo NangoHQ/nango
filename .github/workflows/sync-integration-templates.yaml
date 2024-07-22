@@ -34,7 +34,7 @@ jobs:
 
                       rm -rf /tmp/nango-temp
 
-                      aws s3 sync $integration s3://${{ secrets.AWS_BUCKET_NAME }}/$integration/
+                      aws s3 sync $integration s3://${{ secrets.AWS_BUCKET_NAME }}/integration-templates/$integration/
                   done
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
