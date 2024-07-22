@@ -42,6 +42,10 @@ export const UserAction: React.FC<{ user: ApiUser }> = ({ user }) => {
         setLoading(false);
     };
 
+    if (me?.email === user.email) {
+        return null;
+    }
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <Tooltip>
