@@ -43,7 +43,7 @@ class ProxyController {
             const isSync = (req.get('Nango-Is-Sync') as string) === 'true';
             const isDryRun = (req.get('Nango-Is-Dry-Run') as string) === 'true';
             const retryOn = req.get('Retry-On') ? (req.get('Retry-On') as string).split(',').map(Number) : null;
-            const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
+            const existingActivityLogId = req.get('Nango-Activity-Log-Id') as string;
 
             if (!isSync) {
                 metrics.increment(metrics.Types.PROXY, 1, { accountId: account.id });

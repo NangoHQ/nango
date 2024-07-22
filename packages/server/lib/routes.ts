@@ -41,7 +41,6 @@ import {
     resendVerificationEmailByUuid,
     resendVerificationEmailByEmail,
     signup,
-    signupWithToken,
     signin,
     validateEmailAndLogin,
     getEmailByExpiredToken
@@ -64,6 +63,9 @@ import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
 import { getUser } from './controllers/v1/user/getUser.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
+import { getInvite } from './controllers/v1/invite/getInvite.js';
+import { declineInvite } from './controllers/v1/invite/declineInvite.js';
+import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
 
 export const router = express.Router();
 
@@ -158,8 +160,6 @@ setupAuth(web);
 // Webapp routes (no auth).
 if (AUTH_ENABLED) {
     web.route('/api/v1/account/signup').post(rateLimiterMiddleware, signup);
-    web.route('/api/v1/account/signup/token').post(rateLimiterMiddleware, signupWithToken);
-    web.route('/api/v1/account/signup/invite').get(rateLimiterMiddleware, authController.invitation.bind(authController));
     web.route('/api/v1/account/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
     web.route('/api/v1/account/signin').post(rateLimiterMiddleware, passport.authenticate('local'), signin);
     web.route('/api/v1/account/forgot-password').post(rateLimiterMiddleware, postForgotPassword);
@@ -183,6 +183,9 @@ web.route('/api/v1/team').put(webAuth, putTeam);
 web.route('/api/v1/team/users/:id').delete(webAuth, deleteTeamUser);
 web.route('/api/v1/invite').post(webAuth, postInvite);
 web.route('/api/v1/invite').delete(webAuth, deleteInvite);
+web.route('/api/v1/invite/:id').get(rateLimiterMiddleware, getInvite);
+web.route('/api/v1/invite/:id').post(webAuth, acceptInvite);
+web.route('/api/v1/invite/:id').delete(webAuth, declineInvite);
 web.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
 web.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
@@ -255,7 +258,7 @@ if (!isCloud && !isEnterprise) {
 // -------
 // 404
 web.use('/api/*', (_req: Request, res: Response) => {
-    res.status(404).json({ error: { code: 'not_found' } });
+    res.status(404).json({ error: { code: 'not_found', message: 'endpoint not found' } });
 });
 
 router.use(web);
