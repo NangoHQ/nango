@@ -6,6 +6,11 @@ export default async function runAction(nango: NangoAction, input: Invoice[]): P
     const tenant_id = await getTenantId(nango);
 
     // Validate the invoices:
+    if (!input || !input.length) {
+        throw new nango.ActionError<ActionErrorResponse>({
+            message: `You must pass an array of invoices! Received: ${JSON.stringify(input)}`
+        });
+    }
 
     // 1) Invoice id is required
     const invalidInvoices = input.filter((x: any) => !x.id);
