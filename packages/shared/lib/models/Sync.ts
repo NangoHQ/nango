@@ -52,6 +52,7 @@ export interface Job extends TimestampsAndDeleted {
     sync_id: string;
     job_id: string;
     run_id?: string | null;
+    log_id?: string | null;
     result?: SyncResultByModel;
     sync_config_id?: number;
 }

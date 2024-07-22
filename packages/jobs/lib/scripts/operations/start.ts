@@ -1,19 +1,18 @@
 import type { Result } from '@nangohq/utils';
-import { Err, Ok, integrationFilesAreRemote, isCloud, isProd, stringifyError } from '@nangohq/utils';
+import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '@nangohq/shared';
 import { localFileService, remoteFileService } from '@nangohq/shared';
-import { getOrStartRunner, getRunnerId } from '../../runner/runner.js';
-import type { StartScriptProps } from '../types.js';
+import { getRunner } from './utils/getRunner.js';
 
 export async function startScript({
-    scriptProps,
+    taskId,
     nangoProps,
     input,
     logCtx
 }: {
-    scriptProps: StartScriptProps;
+    taskId: string;
     nangoProps: NangoProps;
     input?: object | undefined;
     logCtx: LogContext;
@@ -25,7 +24,7 @@ export async function startScript({
         .setTag('connectionId', nangoProps.connectionId)
         .setTag('providerConfigKey', nangoProps.providerConfigKey)
         .setTag('syncId', nangoProps.syncId)
-        .setTag('syncName', scriptProps.syncConfig.sync_name);
+        .setTag('syncName', nangoProps.syncConfig.sync_name);
 
     try {
         const integrationData = { fileLocation: nangoProps.syncConfig.file_location };
@@ -33,25 +32,24 @@ export async function startScript({
         const script: string | null =
             isCloud || integrationFilesAreRemote
                 ? await remoteFileService.getFile(integrationData.fileLocation, environmentId)
-                : localFileService.getIntegrationFile(scriptProps.syncConfig.sync_name, nangoProps.providerConfigKey);
+                : localFileService.getIntegrationFile(nangoProps.syncConfig.sync_name, nangoProps.providerConfigKey);
 
         if (!script) {
-            const content = `Unable to find integration file for ${scriptProps.syncConfig.sync_name}`;
+            const content = `Unable to find integration file for ${nangoProps.syncConfig.sync_name}`;
             await logCtx.error(content);
             return Err('Unable to find integration file');
         }
-
         if (nangoProps.teamId == null) {
             return Err(`No teamId provided (instead ${nangoProps.teamId})`);
         }
 
-        // a runner per account in prod only
-        const runnerId = isProd ? getRunnerId(`${nangoProps.teamId}`) : getRunnerId('default');
-        // fallback to default runner if account runner isn't ready yet
-        const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+        const runner = await getRunner(nangoProps.teamId);
+        if (runner.isErr()) {
+            return Err(runner.error);
+        }
 
-        const res = await runner.client.start.mutate({
-            taskId: scriptProps.taskId,
+        const res = await runner.value.client.start.mutate({
+            taskId: taskId,
             nangoProps,
             code: script,
             codeParams: input as object
@@ -64,7 +62,7 @@ export async function startScript({
         return Ok(undefined);
     } catch (err) {
         span.setTag('error', err);
-        const errMessage = `Error starting integration '${scriptProps.syncConfig.sync_name}': ${stringifyError(err, { pretty: true })}`;
+        const errMessage = `Error starting integration '${nangoProps.syncConfig.sync_name}': ${stringifyError(err, { pretty: true })}`;
         await logCtx.error(errMessage, { error: err });
         return Err(errMessage);
     } finally {

@@ -1,5 +1,5 @@
 import type { Result } from '@nangohq/utils';
-import { Err, stringifyError, getLogger } from '@nangohq/utils';
+import { stringifyError, getLogger } from '@nangohq/utils';
 import type { OrchestratorClient } from './client.js';
 import type { OrchestratorTask } from './types.js';
 import PQueue from 'p-queue';
@@ -13,9 +13,7 @@ export class OrchestratorProcessor {
     private orchestratorClient: OrchestratorClient;
     private queue: PQueue;
     private stopped: boolean;
-    private abortControllers: Map<string, AbortController>;
     private terminatedTimer: NodeJS.Timeout | null = null;
-    private checkForTerminatedInterval: number;
 
     constructor({
         handler,
@@ -29,15 +27,10 @@ export class OrchestratorProcessor {
         this.groupKey = opts.groupKey;
         this.orchestratorClient = opts.orchestratorClient;
         this.queue = new PQueue({ concurrency: opts.maxConcurrency });
-        this.abortControllers = new Map();
-        this.checkForTerminatedInterval = opts.checkForTerminatedInterval || 1000;
     }
 
     public start(ctx: { tracer: Tracer }) {
         this.stopped = false;
-        this.terminatedTimer = setInterval(async () => {
-            await this.checkForTerminatedTasks();
-        }, this.checkForTerminatedInterval); // checking for cancelled/expired doesn't require to be very responsive so we can do it on an interval
         void this.processingLoop(ctx);
     }
 
@@ -46,30 +39,6 @@ export class OrchestratorProcessor {
         if (this.terminatedTimer) {
             clearInterval(this.terminatedTimer);
         }
-    }
-
-    private async checkForTerminatedTasks() {
-        if (this.stopped || this.abortControllers.size <= 0) {
-            return;
-        }
-        const ids = Array.from(this.abortControllers.keys());
-        const search = await this.orchestratorClient.searchTasks({ ids });
-        if (search.isErr()) {
-            return Err(search.error);
-        }
-        for (const task of search.value) {
-            // if task is already in a terminal state, invoke the abort signal
-            if (['FAILED', 'EXPIRED', 'CANCELLED', 'SUCCEEDED'].includes(task.state)) {
-                const abortController = this.abortControllers.get(task.id);
-                if (abortController) {
-                    if (!abortController.signal.aborted) {
-                        abortController.abort();
-                    }
-                    this.abortControllers.delete(task.id);
-                }
-            }
-        }
-        return;
     }
 
     private async processingLoop(ctx: { tracer: Tracer }) {
@@ -100,7 +69,6 @@ export class OrchestratorProcessor {
 
     private async processTask(task: OrchestratorTask, ctx: { tracer: Tracer }): Promise<void> {
         let heartbeat: NodeJS.Timeout;
-        this.abortControllers.set(task.id, task.abortController);
         await this.queue.add(async () => {
             const active = ctx.tracer.scope().active();
             const span = ctx.tracer.startSpan('processor.process.task', {
@@ -108,19 +76,9 @@ export class OrchestratorProcessor {
                 tags: { 'task.id': task.id }
             });
             try {
-                if (task.abortController.signal.aborted) {
-                    // task was aborted while waiting in the queue
-                    logger.info(`task ${task.id} was aborted before processing started`);
-                    return;
-                }
                 heartbeat = this.heartbeat(task);
                 const res = await this.handler(task);
                 if (res.isErr()) {
-                    if (task.abortController.signal.aborted) {
-                        // task was aborted. No need to set it as failed
-                        return;
-                    }
-
                     const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error: res.error });
                     if (setFailed.isErr()) {
                         logger.error(`failed to set task ${task.id} as failed`, setFailed.error);
@@ -140,7 +98,6 @@ export class OrchestratorProcessor {
                     span.setTag('error', error);
                 }
             } finally {
-                this.abortControllers.delete(task.id);
                 clearInterval(heartbeat);
                 span.finish();
             }

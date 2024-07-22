@@ -1,24 +1,32 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { AxiosError } from 'axios';
 import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
+import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'node:vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
-import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
 import { metrics, stringifyError } from '@nangohq/utils';
 import { logger } from './utils.js';
 
 export async function exec(
     nangoProps: NangoProps,
+    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script',
     code: string,
-    codeParams?: object,
-    abortController: AbortController = new AbortController()
+    codeParams?: object
 ): Promise<RunnerOutput> {
-    const rawNango = nangoProps.scriptType === 'action' ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+    const abortController = new AbortController();
+
+    if (scriptType == 'sync' && nangoProps.syncId) {
+        syncAbortControllers.set(nangoProps.syncId, abortController);
+    }
+
+    const rawNango = scriptType === 'action' ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
+
     nango.abortSignal = abortController.signal;
 
     const wrappedCode = `
@@ -49,8 +57,6 @@ export async function exec(
                             return crypto;
                         case 'zod':
                             return zod;
-                        case 'botbuilder':
-                            return botbuilder;
                         default:
                             throw new Error(`Module '${moduleName}' is not allowed`);
                     }
@@ -62,7 +68,7 @@ export async function exec(
             const context = vm.createContext(sandbox);
             const scriptExports = script.runInContext(context);
 
-            if (nangoProps.scriptType === 'webhook') {
+            if (scriptType === 'webhook') {
                 if (!scriptExports.onWebhookPayloadReceived) {
                     const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
 
@@ -75,7 +81,7 @@ export async function exec(
             if (!scriptExports.default || typeof scriptExports.default !== 'function') {
                 throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
             }
-            if (nangoProps.scriptType === 'action') {
+            if (scriptType === 'action') {
                 let inputParams = codeParams;
                 if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
                     inputParams = undefined;
@@ -125,8 +131,7 @@ export async function exec(
 
                 return output;
             } else {
-                await scriptExports.default(nango);
-                return { success: true, response: true, error: null };
+                return await scriptExports.default(nango);
             }
         } catch (error) {
             if (error instanceof ActionError) {
@@ -143,40 +148,16 @@ export async function exec(
                     response: null
                 };
             } else if (error instanceof NangoError) {
-                span.setTag('error', error);
-                return {
-                    success: false,
-                    error: {
-                        type: error.type,
-                        payload: error.payload,
-                        status: error.status
-                    },
-                    response: null
-                };
+                throw error;
             } else {
-                span.setTag('error', error);
                 if (error instanceof AxiosError && error.response?.data) {
                     const errorResponse = error.response.data.payload || error.response.data;
-                    return {
-                        success: false,
-                        error: {
-                            type: 'http_error',
-                            payload: errorResponse,
-                            status: error.response.status
-                        },
-                        response: null
-                    };
+                    span.setTag('error', errorResponse);
+                    throw new Error(JSON.stringify(errorResponse));
                 }
+
                 span.setTag('error', error);
-                return {
-                    success: false,
-                    error: {
-                        type: 'internal_error',
-                        payload: { message: `Error executing code '${stringifyError(error)}'` },
-                        status: 500
-                    },
-                    response: null
-                };
+                throw new Error(`Error executing code '${stringifyError(error)}'`);
             }
         } finally {
             span.finish();

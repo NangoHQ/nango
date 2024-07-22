@@ -13,21 +13,17 @@ export const createSyncJob = async (
     status: SyncStatus,
     job_id: string,
     nangoConnection: NangoConnection | null,
-    run_id?: string
+    run_id?: string,
+    log_id?: string
 ): Promise<Pick<SyncJob, 'id'> | null> => {
-    let job: { sync_id: string; type: SyncType; status: SyncStatus; job_id: string; run_id?: string } = {
+    const job: { sync_id: string; type: SyncType; status: SyncStatus; job_id: string; run_id?: string } = {
         sync_id,
         type,
         status,
-        job_id
+        job_id,
+        ...(run_id ? { run_id } : {}),
+        ...(log_id ? { log_id: log_id } : {})
     };
-
-    if (run_id) {
-        job = {
-            ...job,
-            run_id
-        };
-    }
 
     try {
         const syncJob = await schema().from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('id');
@@ -142,7 +138,7 @@ export const addSyncConfigToJob = async (id: number, sync_config_id: number): Pr
     });
 };
 
-export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, 'id' | 'job_id' | 'run_id'> | null> => {
+export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, 'id' | 'job_id' | 'run_id' | 'log_id'> | null> => {
     const result = await schema()
         .from<SyncJob>(SYNC_JOB_TABLE)
         .where({

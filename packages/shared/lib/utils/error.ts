@@ -270,11 +270,6 @@ export class NangoError extends Error {
                 this.message = `Missing param 'provider'.`;
                 break;
 
-            case 'no_environment':
-                this.status = 404;
-                this.message = `No environment found: ${this.payload}`;
-                break;
-
             case 'no_syncs_found':
                 this.status = 400;
                 this.message = `No syncs found given the inputs.`;

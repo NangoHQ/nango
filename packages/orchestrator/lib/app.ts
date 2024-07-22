@@ -1,12 +1,12 @@
 import './tracer.js';
-import { getLogger, metrics, stringifyError } from '@nangohq/utils';
+import { metrics, stringifyError } from '@nangohq/utils';
 import { getServer } from './server.js';
 import { envs } from './env.js';
 import type { Task } from '@nangohq/scheduler';
 import { Scheduler, DatabaseClient, stringifyTask } from '@nangohq/scheduler';
 import { EventsHandler } from './events.js';
-
-const logger = getLogger('Orchestrator');
+import { scheduleAbortTask } from './abort.js';
+import { logger } from './utils.js';
 
 const databaseSchema = envs.ORCHESTRATOR_DATABASE_SCHEMA;
 const databaseUrl =
@@ -18,33 +18,35 @@ try {
     const dbClient = new DatabaseClient({ url: databaseUrl, schema: databaseSchema });
     await dbClient.migrate();
 
-    // TODO: add logic to update syncs and syncs jobs in the database
     const eventsHandler = new EventsHandler({
-        CREATED: (task: Task) => {
+        CREATED: (_scheduler: Scheduler, task: Task) => {
             logger.info(`Task created: ${stringifyTask(task)}`);
             metrics.increment(metrics.Types.ORCH_TASKS_CREATED);
         },
-        STARTED: (task: Task) => {
+        STARTED: (_scheduler: Scheduler, task: Task) => {
             logger.info(`Task started: ${stringifyTask(task)}`);
             metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
         },
-        SUCCEEDED: (task: Task) => {
+        SUCCEEDED: (_scheduler: Scheduler, task: Task) => {
             logger.info(`Task succeeded: ${stringifyTask(task)}`);
             metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
         },
-        FAILED: (task: Task) => {
+        FAILED: (_scheduler: Scheduler, task: Task) => {
             logger.error(`Task failed: ${stringifyTask(task)}`);
             metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
         },
-        EXPIRED: (task: Task) => {
+        EXPIRED: async (scheduler: Scheduler, task: Task) => {
             logger.error(`Task expired: ${stringifyTask(task)}`);
             metrics.increment(metrics.Types.ORCH_TASKS_EXPIRED);
+            await scheduleAbortTask({ scheduler, task });
         },
-        CANCELLED: (task: Task) => {
+        CANCELLED: async (scheduler: Scheduler, task: Task) => {
             logger.info(`Task cancelled: ${stringifyTask(task)}`);
             metrics.increment(metrics.Types.ORCH_TASKS_CANCELLED);
+            await scheduleAbortTask({ scheduler, task });
         }
     });
+
     const scheduler = new Scheduler({
         dbClient,
         on: eventsHandler.onCallbacks

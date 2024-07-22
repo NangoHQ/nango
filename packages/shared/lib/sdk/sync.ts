@@ -319,7 +319,7 @@ export interface NangoProps {
     attributes?: object | undefined;
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
-    abortSignal?: AbortSignal; //TODO: delete
+    abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
     runnerFlags: RunnerFlags;

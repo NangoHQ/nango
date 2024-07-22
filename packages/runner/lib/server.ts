@@ -7,9 +7,12 @@ import { getJobsUrl, getPersistAPIUrl } from '@nangohq/shared';
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { RunnerMonitor } from './monitor.js';
 import { exec } from './exec.js';
+import { exec as execLegacy } from './exec.legacy.js';
 import { cancel } from './cancel.js';
+import { abort } from './abort.js';
 import superjson from 'superjson';
 import { httpFetch, logger } from './utils.js';
+import { abortControllers } from './state.js';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -36,7 +39,8 @@ interface StartParams {
 const appRouter = router({
     health: healthProcedure(),
     run: runProcedure(),
-    cancel: cancelProcedure(),
+    cancel: cancelProcedureLegacy(), //TODO: remove once refactoring of jobs is deployed
+    abort: abortProcedure(),
     start: startProcedure()
 });
 
@@ -67,7 +71,7 @@ function runProcedure() {
                 });
                 usage.track(nangoProps);
                 const scriptType: 'sync' | 'action' | 'webhook' = input.isWebhook ? 'webhook' : input.isInvokedImmediately ? 'action' : 'sync';
-                return await exec({ ...nangoProps, scriptType }, code, codeParams);
+                return await execLegacy(nangoProps, scriptType, code, codeParams);
             } finally {
                 usage.untrack(nangoProps);
                 logger.info('Task done');
@@ -77,7 +81,7 @@ function runProcedure() {
 
 function startProcedure() {
     return publicProcedure
-        .input((input) => input as StartParams) //TODO: zod
+        .input((input) => input as StartParams)
         .mutation(({ input }): boolean => {
             const { taskId, nangoProps, code, codeParams } = input;
             logger.info('Received task', {
@@ -92,7 +96,11 @@ function startProcedure() {
             // sending the result to the jobs service when done
             setImmediate(async () => {
                 try {
-                    const { error, response: output } = await exec(nangoProps, code, codeParams);
+                    const abortController = new AbortController();
+                    if (nangoProps.scriptType == 'sync' && nangoProps.activityLogId) {
+                        abortControllers.set(taskId, abortController);
+                    }
+                    const { error, response: output } = await exec(nangoProps, code, codeParams, abortController);
                     await httpFetch({
                         method: 'PUT',
                         url: `${jobsServiceUrl}/tasks/${taskId}`,
@@ -102,6 +110,7 @@ function startProcedure() {
                         })
                     });
                 } finally {
+                    abortControllers.delete(taskId);
                     usage.untrack(nangoProps);
                     logger.info(`Task ${taskId} completed`);
                 }
@@ -110,12 +119,21 @@ function startProcedure() {
         });
 }
 
-function cancelProcedure() {
+function cancelProcedureLegacy() {
     return publicProcedure
         .input((input) => input as { syncId: string })
         .mutation(({ input }) => {
             logger.info('Received cancel', { input });
             return cancel(input.syncId);
+        });
+}
+
+function abortProcedure() {
+    return publicProcedure
+        .input((input) => input as { taskId: string })
+        .mutation(({ input }) => {
+            logger.info('Received cancel', { input });
+            return abort(input.taskId);
         });
 }
 

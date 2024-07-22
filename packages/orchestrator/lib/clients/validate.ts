@@ -1,7 +1,7 @@
 import { taskStates } from '@nangohq/scheduler';
 import type { Schedule, Task } from '@nangohq/scheduler';
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
-import { TaskAction, TaskWebhook, TaskPostConnection, TaskSync } from './types.js';
+import { TaskAction, TaskWebhook, TaskPostConnection, TaskSync, TaskSyncAbort } from './types.js';
 import { z } from 'zod';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -18,6 +18,19 @@ export const commonSchemaArgsFields = {
 
 export const syncArgsSchema = z.object({
     type: z.literal('sync'),
+    syncId: z.string().min(1),
+    syncName: z.string().min(1),
+    debug: z.boolean(),
+    ...commonSchemaArgsFields
+});
+
+export const syncAbortArgsSchema = z.object({
+    type: z.literal('abort'),
+    abortedTask: z.object({
+        id: z.string().uuid(),
+        state: z.enum(taskStates)
+    }),
+    reason: z.string().min(1),
     syncId: z.string().min(1),
     syncName: z.string().min(1),
     debug: z.boolean(),
@@ -59,6 +72,10 @@ const syncSchema = z.object({
     ...commonSchemaFields,
     payload: syncArgsSchema
 });
+const syncAbortchema = z.object({
+    ...commonSchemaFields,
+    payload: syncAbortArgsSchema
+});
 const actionSchema = z.object({
     ...commonSchemaFields,
     payload: actionArgsSchema
@@ -84,7 +101,26 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 syncId: sync.data.payload.syncId,
                 syncName: sync.data.payload.syncName,
                 connection: sync.data.payload.connection,
+                groupKey: sync.data.groupKey,
                 debug: sync.data.payload.debug
+            })
+        );
+    }
+    const syncCancel = syncAbortchema.safeParse(task);
+    if (syncCancel.success) {
+        return Ok(
+            TaskSyncAbort({
+                id: syncCancel.data.id,
+                abortedTask: syncCancel.data.payload.abortedTask,
+                state: syncCancel.data.state,
+                name: syncCancel.data.name,
+                attempt: syncCancel.data.retryCount + 1,
+                syncId: syncCancel.data.payload.syncId,
+                syncName: syncCancel.data.payload.syncName,
+                connection: syncCancel.data.payload.connection,
+                groupKey: syncCancel.data.groupKey,
+                reason: syncCancel.data.payload.reason,
+                debug: syncCancel.data.payload.debug
             })
         );
     }
@@ -99,6 +135,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 actionName: action.data.payload.actionName,
                 connection: action.data.payload.connection,
                 activityLogId: action.data.payload.activityLogId,
+                groupKey: action.data.groupKey,
                 input: action.data.payload.input
             })
         );
@@ -115,6 +152,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 parentSyncName: webhook.data.payload.parentSyncName,
                 connection: webhook.data.payload.connection,
                 activityLogId: webhook.data.payload.activityLogId,
+                groupKey: webhook.data.groupKey,
                 input: webhook.data.payload.input
             })
         );
@@ -130,12 +168,15 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 postConnectionName: postConnection.data.payload.postConnectionName,
                 version: postConnection.data.payload.version,
                 connection: postConnection.data.payload.connection,
+                groupKey: postConnection.data.groupKey,
                 fileLocation: postConnection.data.payload.fileLocation,
                 activityLogId: postConnection.data.payload.activityLogId
             })
         );
     }
-    return Err(`Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || postConnection.error)}`);
+    return Err(
+        `Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || postConnection.error || syncCancel.error)}`
+    );
 }
 
 export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedule> {
