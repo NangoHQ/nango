@@ -20,7 +20,7 @@ export function securityMiddleware(app: Router): void {
             directives: {
                 defaultSrc: ["'self'", '*.nango.dev'],
                 childSrc: "'self'",
-                connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://sentry.io', 'https://*.nango.dev', 'https://*.posthog.com'],
+                connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://*.sentry.io', 'https://*.nango.dev', 'https://*.posthog.com'],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com'],
                 imgSrc: ["'self'", 'data:', 'https://*.nango.dev', 'https://*.google-analytics.com', 'https://*.googleapis.com', 'https://*.posthog.com'],
