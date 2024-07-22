@@ -29,12 +29,16 @@ export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
         return;
     }
 
-    const { account } = res.locals;
+    const { account, user: me } = res.locals;
     const params: DeleteTeamUser['Params'] = val.data;
 
     const user = await userService.getUserById(params.id);
     if (!user || user.account_id !== account.id) {
         res.status(400).send({ error: { code: 'user_not_found' } });
+        return;
+    }
+    if (user.email === me.email) {
+        res.status(400).send({ error: { code: 'forbidden_self_delete', message: "You can't remove yourself from a team" } });
         return;
     }
 
