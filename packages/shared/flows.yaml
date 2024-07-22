@@ -3560,6 +3560,7 @@ integrations:
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
                 endpoint: PUT /xero/invoices
+                version: 0.0.2
             create-credit-note:
                 description: |
                     Creates one or more credit notes in Xero.
