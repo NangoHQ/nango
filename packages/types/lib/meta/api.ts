@@ -13,10 +13,6 @@ export type GetMeta = Endpoint<{
             baseUrl: string;
             debugMode: boolean;
             onboardingComplete: boolean;
-            features: {
-                logs: boolean;
-                scripts: boolean;
-            };
         };
     };
 }>;
