@@ -1,8 +1,8 @@
-import type { NangoAction, ProxyConfiguration, InvoiceActionResponse, Invoice, FailedInvoice, ActionErrorResponse } from '../../models';
+import type { NangoAction, ProxyConfiguration, InvoiceActionResponse, UpdateInvoice, FailedInvoice, ActionErrorResponse } from '../../models';
 import { getTenantId } from '../helpers/get-tenant-id.js';
 import { toInvoice, toXeroInvoice } from '../mappers/to-invoice.js';
 
-export default async function runAction(nango: NangoAction, input: Invoice[]): Promise<InvoiceActionResponse> {
+export default async function runAction(nango: NangoAction, input: UpdateInvoice[]): Promise<InvoiceActionResponse> {
     const tenant_id = await getTenantId(nango);
 
     // Validate the invoices:
