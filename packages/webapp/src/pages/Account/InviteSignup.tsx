@@ -8,11 +8,14 @@ import { useState } from 'react';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import { SignupForm } from './components/SignupForm';
+import { useSignout } from '../../utils/user';
+import { ExitIcon } from '@radix-ui/react-icons';
 
 export const InviteSignup: React.FC = () => {
     const { token } = useParams();
     const { toast } = useToast();
     const navigate = useNavigate();
+    const signout = useSignout();
 
     const { user: isLogged } = useUser(true, { onError: () => null });
     const { data, error, loading } = useInvite(token);
@@ -67,7 +70,7 @@ export const InviteSignup: React.FC = () => {
                                     This invitation does not exists or is expired
                                 </Info>
                                 <Link to={'/signup'}>
-                                    <Button>Go back to signup</Button>
+                                    <Button>Back to signup</Button>
                                 </Link>
                             </div>
                         ) : (
@@ -87,6 +90,30 @@ export const InviteSignup: React.FC = () => {
     }
     if (!data) {
         return null;
+    }
+
+    if (isLogged && isLogged.email !== data.invitation.email) {
+        return (
+            <DefaultLayout>
+                <div className="flex flex-col justify-center">
+                    <div className="flex flex-col justify-center mt-4 gap-4">
+                        <Info size={20} color="orange" classNames="text-xs">
+                            This invitation was sent to a different email. Please logout and use the correct account
+                        </Info>
+
+                        <div className="flex gap-2 justify-center">
+                            <Link to="/">
+                                <Button variant={'zinc'}>Back to home</Button>
+                            </Link>
+                            <Button onClick={async () => await signout()}>
+                                <ExitIcon className="h-5 w-5 mr-2" />
+                                <span>Log Out</span>
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </DefaultLayout>
+        );
     }
 
     return (
