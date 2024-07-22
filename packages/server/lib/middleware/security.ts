@@ -1,7 +1,11 @@
+import { basePublicUrl } from '@nangohq/utils';
 import type { Router } from 'express';
 import helmet from 'helmet';
 
 export function securityMiddleware(app: Router): void {
+    const host = basePublicUrl;
+    const reportOnly = process.env['CSP_REPORT_ONLY'];
+
     app.use(helmet.xssFilter());
     app.use(helmet.noSniff());
     app.use(helmet.ieNoOpen());
@@ -16,14 +20,14 @@ export function securityMiddleware(app: Router): void {
     app.use(
         // == "Content-Security-Policy"
         helmet.contentSecurityPolicy({
-            reportOnly: false,
+            reportOnly: reportOnly === 'true' || typeof reportOnly === 'undefined',
             directives: {
-                defaultSrc: ["'self'", '*.nango.dev'],
+                defaultSrc: ["'self'", host],
                 childSrc: "'self'",
-                connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://*.sentry.io', 'https://*.nango.dev', 'https://*.posthog.com'],
+                connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://*.sentry.io', host, 'https://*.posthog.com'],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com'],
-                imgSrc: ["'self'", 'data:', 'https://*.nango.dev', 'https://*.google-analytics.com', 'https://*.googleapis.com', 'https://*.posthog.com'],
+                imgSrc: ["'self'", 'data:', host, 'https://*.google-analytics.com', 'https://*.googleapis.com', 'https://*.posthog.com'],
                 manifestSrc: "'self'",
                 mediaSrc: "'self'",
                 objectSrc: "'self'",
@@ -31,14 +35,14 @@ export function securityMiddleware(app: Router): void {
                     "'self'",
                     "'unsafe-eval'",
                     "'unsafe-inline'",
-                    'https://*.nango.dev',
+                    host,
                     'https://*.google-analytics.com',
                     'https://*.googleapis.com',
                     'https://apis.google.com',
                     'https://*.posthog.com'
                 ],
-                styleSrc: ['blob:', "'self'", "'unsafe-inline'", 'https://*.googleapis.com', 'https://*.nango.dev'],
-                workerSrc: ['blob:', "'self'", 'https://*.nango.dev', 'https://*.googleapis.com', 'https://*.posthog.com']
+                styleSrc: ['blob:', "'self'", "'unsafe-inline'", 'https://*.googleapis.com', host],
+                workerSrc: ['blob:', "'self'", host, 'https://*.googleapis.com', 'https://*.posthog.com']
             }
         })
     );
