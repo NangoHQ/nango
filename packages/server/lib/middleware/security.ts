@@ -21,7 +21,7 @@ export function securityMiddleware(app: Router): void {
                 defaultSrc: ["'self'", '*.nango.dev'],
                 childSrc: "'self'",
                 connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://sentry.io', 'https://*.nango.dev', 'https://*.posthog.com'],
-                fontSrc: ["'self'"],
+                fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com'],
                 imgSrc: ["'self'", 'data:', 'https://*.nango.dev', 'https://*.google-analytics.com', 'https://*.googleapis.com', 'https://*.posthog.com'],
                 manifestSrc: "'self'",
@@ -38,8 +38,7 @@ export function securityMiddleware(app: Router): void {
                     'https://*.posthog.com'
                 ],
                 styleSrc: ['blob:', "'self'", "'unsafe-inline'", 'https://*.googleapis.com', 'https://*.nango.dev'],
-                workerSrc: ['blob:', "'self'", 'https://*.nango.dev', 'https://*.googleapis.com', 'https://*.posthog.com'],
-                prefetchSrc: "'self'"
+                workerSrc: ['blob:', "'self'", 'https://*.nango.dev', 'https://*.googleapis.com', 'https://*.posthog.com']
             }
         })
     );
