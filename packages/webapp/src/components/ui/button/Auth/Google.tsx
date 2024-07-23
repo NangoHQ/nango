@@ -1,3 +1,4 @@
+import type { PostManagedSignup } from '@nangohq/types';
 import { apiFetch } from '../../../../utils/api';
 
 interface Props {
@@ -7,33 +8,20 @@ interface Props {
     token?: string;
 }
 
-interface PostBody {
-    method: string;
-    body?: string;
-}
-
-export default function GoogleButton({ text, setServerErrorMessage, invitedAccountID, token }: Props) {
+export default function GoogleButton({ text, setServerErrorMessage, token }: Props) {
     const googleLogin = async () => {
-        const postBody: PostBody = {
-            method: 'POST'
-        };
-
-        if (invitedAccountID !== null && invitedAccountID !== undefined && token) {
-            postBody.body = JSON.stringify({
-                accountId: invitedAccountID
-            });
-        }
-        const endpoint = token ? `/api/v1/managed/signup/${token}?provider=GoogleOAuth` : '/api/v1/managed/signup?provider=GoogleOAuth';
-
-        const res = await apiFetch(endpoint, postBody);
+        const res = await apiFetch(`/api/v1/account/managed/signup`, {
+            method: 'POST',
+            body: JSON.stringify({ provider: 'GoogleOAuth', token })
+        });
 
         if (res.status === 200) {
-            const data = await res.json();
-            const { url } = data;
-            window.location = url;
+            const data = (await res.json()) as PostManagedSignup['Success'];
+            const { url } = data.data;
+            window.location.href = url;
         } else if (res != null) {
-            const errorMessage = (await res.json()).error;
-            setServerErrorMessage(errorMessage);
+            const error = ((await res.json()) as PostManagedSignup['Errors']).error;
+            setServerErrorMessage(error.code);
         }
     };
     return (

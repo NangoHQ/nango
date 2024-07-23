@@ -974,6 +974,18 @@ front:
             response_path: _results
             link_path_in_response_body: _pagination.next
     docs: https://docs.nango.dev/integrations/all/front
+gainsight-cc:
+    categories:
+        - support
+        - crm
+    auth_mode: OAUTH2_CC
+    token_url: https://api2-${connectionConfig.region}.insided.com/oauth2/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api2-${connectionConfig.region}.insided.com
+    docs: https://docs.nango.dev/integrations/all/gainsight-cc
 garmin:
     categories:
         - sports
@@ -1437,6 +1449,8 @@ jotform:
 helpscout-docs:
     auth_mode: BASIC
     proxy:
+        retry:
+            after: 'X-RateLimit-Reset'
         base_url: https://docsapi.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 helpscout-mailbox:
@@ -1450,6 +1464,8 @@ helpscout-mailbox:
     refresh_params:
         grant_type: refresh_token
     proxy:
+        retry:
+            after: 'X-RateLimit-Retry-After'
         base_url: https://api.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 keap:
