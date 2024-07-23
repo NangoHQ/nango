@@ -30,8 +30,8 @@
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/types": "file:../types",
-        "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/utils": "file:../utils",
+        "@nangohq/webhooks": "file:../webhooks",
         "@workos-inc/node": "^6.2.0",
         "axios": "^1.3.4",
         "body-parser": "1.20.2",
@@ -44,6 +44,7 @@
         "express": "^4.19.2",
         "express-session": "^1.17.3",
         "form-data": "^4.0.0",
+        "helmet": "7.1.0",
         "jsonwebtoken": "^9.0.2",
         "lodash-es": "^4.17.21",
         "mailgun.js": "^8.2.1",
@@ -79,8 +80,8 @@
         "@types/ws": "^8.5.4",
         "get-port": "7.1.0",
         "nodemon": "^3.0.1",
-        "typescript": "5.3.3",
         "type-fest": "4.14.0",
+        "typescript": "5.3.3",
         "vitest": "1.6.0"
     }
 }

@@ -27,7 +27,7 @@ import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
-import { isCloud, isEnterprise, flagHasAuth, isBasicAuthEnabled, isTest, flagHasManagedAuth } from '@nangohq/utils';
+import { isCloud, isEnterprise, isBasicAuthEnabled, isTest, isLocal, basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { getConnection as getConnectionWeb } from './controllers/v1/connection/get.js';
@@ -66,11 +66,14 @@ import { patchUser } from './controllers/v1/user/patchUser.js';
 import { getInvite } from './controllers/v1/invite/getInvite.js';
 import { declineInvite } from './controllers/v1/invite/declineInvite.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
+import { securityMiddlewares } from './middleware/security.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 
 export const router = express.Router();
+
+router.use(...securityMiddlewares());
 
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
@@ -95,70 +98,94 @@ router.use(
     })
 );
 router.use(bodyParser.raw({ type: 'text/xml' }));
-router.use(cors());
 router.use(express.urlencoded({ extended: true }));
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+// -------
 // API routes (no/public auth).
 router.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
 
-router.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
-router.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
-router.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
-router.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
-router.route('/oauth2/auth/:providerConfigKey').post(apiPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
-router.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
-router.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
-router.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
-router.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, tbaAuthorization);
-router.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
+// -------
+// Public API routes
+const publicAPI = express.Router();
+const publicAPICorsHandler = cors({
+    maxAge: 600,
+    exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, X-Nango-Signature, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
+    allowedHeaders: 'Nango-Activity-Log-Id, Nango-Is-Dry-Run, Nango-Is-Sync, Provider-Config-Key, Connection-Id',
+    origin: '*'
+});
+publicAPI.use(publicAPICorsHandler);
+publicAPI.options('*', publicAPICorsHandler); // Pre-flight
+
+publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
+publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
+publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
+publicAPI.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
+publicAPI.route('/oauth2/auth/:providerConfigKey').post(apiPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
+publicAPI.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
+publicAPI.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
+publicAPI.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
+publicAPI.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, tbaAuthorization);
+publicAPI.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
 
 // API Admin routes
-router.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
-router.route('/admin/customer').patch(adminAuth, accountController.editCustomer.bind(accountController));
+publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
+publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustomer.bind(accountController));
 
 // API routes (API key auth).
-router.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
-router.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
-router.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));
-router.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
-router.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
-router.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
-router.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteProviderConfig.bind(configController));
-router.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
-router.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
-router.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
-router.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
-router.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadataLegacy.bind(connectionController));
-router.route('/connection/metadata').post(apiAuth, setMetadata);
-router.route('/connection/metadata').patch(apiAuth, updateMetadata);
-router.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
-router.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
-router.route('/sync/deploy').post(apiAuth, postDeploy);
-router.route('/sync/deploy/confirmation').post(apiAuth, postDeployConfirmation);
-router.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
-router.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
-router.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
-router.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
-router.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
-router.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
-router.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
-router.route('/sync/:syncId').delete(apiAuth, syncController.deleteSync.bind(syncController));
-router.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
-router.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
-router.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bind(flowController));
-router.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
+publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
+publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
+publicAPI.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));
+publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
+publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
+publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
+publicAPI.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteProviderConfig.bind(configController));
+publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
+publicAPI.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
+publicAPI.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
+publicAPI.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
+publicAPI.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadataLegacy.bind(connectionController));
+publicAPI.route('/connection/metadata').post(apiAuth, setMetadata);
+publicAPI.route('/connection/metadata').patch(apiAuth, updateMetadata);
+publicAPI.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
+publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
+publicAPI.route('/sync/deploy').post(apiAuth, postDeploy);
+publicAPI.route('/sync/deploy/confirmation').post(apiAuth, postDeployConfirmation);
+publicAPI.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
+publicAPI.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
+publicAPI.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
+publicAPI.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
+publicAPI.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
+publicAPI.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
+publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
+publicAPI.route('/sync/:syncId').delete(apiAuth, syncController.deleteSync.bind(syncController));
+publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
+publicAPI.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
+publicAPI.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bind(flowController));
+publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
-router.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
+publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
 
-router.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
+publicAPI.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
 
+router.use(publicAPI);
+
+// -------
 // Webapp routes (session auth).
 const web = express.Router();
 setupAuth(web);
+
+const webCorsHandler = cors({
+    maxAge: 600,
+    exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie',
+    origin: isLocal ? '*' : [basePublicUrl, baseUrl],
+    credentials: true
+});
+web.use(webCorsHandler);
+web.options('*', webCorsHandler); // Pre-flight
 
 // Webapp routes (no auth).
 if (flagHasAuth) {
