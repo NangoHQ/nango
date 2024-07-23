@@ -114,7 +114,8 @@ const publicAPI = express.Router();
 const publicAPICorsHandler = cors({
     maxAge: 600,
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, X-Nango-Signature, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
-    allowedHeaders: 'Nango-Activity-Log-Id, Nango-Is-Dry-Run, Nango-Is-Sync, Provider-Config-Key, Connection-Id',
+    allowedHeaders:
+        'Authorization, Content-Type, Accept, Origin, X-Requested-With, Nango-Activity-Log-Id, Nango-Is-Dry-Run, Nango-Is-Sync, Provider-Config-Key, Connection-Id',
     origin: '*'
 });
 publicAPI.use(publicAPICorsHandler);
