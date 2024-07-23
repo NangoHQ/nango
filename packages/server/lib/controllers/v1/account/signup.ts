@@ -80,7 +80,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         await acceptInvitation(token);
     } else {
         // Regular account
-        account = await accountService.createAccount(`${name}'s Organization`);
+        account = await accountService.createAccount(`${name}'s Team`);
         if (!account) {
             res.status(500).send({
                 error: { code: 'error_creating_account', message: 'There was a problem creating the account. Please reach out to support.' }

@@ -4,7 +4,7 @@ import { BasicStrategy } from 'passport-http';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
-import { AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/utils';
+import { flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
 import { database } from '@nangohq/database';
 import { dirname, userService } from '@nangohq/shared';
 import crypto from 'crypto';
@@ -32,7 +32,7 @@ export function setupAuth(app: express.Router) {
             store: sessionStore,
             name: 'nango_session',
             unset: 'destroy',
-            cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, secure: false },
+            cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, secure: true, path: '/', sameSite: 'none', httpOnly: true },
             rolling: true
         })
     );
@@ -40,7 +40,7 @@ export function setupAuth(app: express.Router) {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    if (AUTH_ENABLED) {
+    if (flagHasAuth) {
         passport.use(
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, async function (

@@ -1,7 +1,6 @@
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { baseUrl, flagHasScripts, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { NANGO_VERSION, environmentService, getOnboardingProgress } from '@nangohq/shared';
-import { envs } from '@nangohq/logs';
 import type { GetMeta } from '@nangohq/types';
 
 export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
@@ -25,11 +24,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             version: NANGO_VERSION,
             baseUrl,
             debugMode: req.session.debugMode === true,
-            onboardingComplete: onboarding?.complete || false,
-            features: {
-                logs: envs.NANGO_LOGS_ENABLED,
-                scripts: flagHasScripts
-            }
+            onboardingComplete: onboarding?.complete || false
         }
     });
 });

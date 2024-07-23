@@ -30,5 +30,6 @@ Each user has a Help Scout Docs API key, which is used to authenticate the Docs 
 
 - For Help Scout Docs Basic Auth, you will need to pass your `API key` as the username and a dummy password like `X` as the password. Each API key is associated with a Help Scout user.
 - For Help Scout Mailbox, access tokens expires after every 172800 seconds which is equivalent to 2 days, you can use `nango.getConnection()` to generate a new set of tokens.
+- Both `helpscout-docs` and `helpscout-mailbox` enforce different rate limits based on your current plan. For more details, please check the rate limiting guidelines for [HelpScout Docs](https://developer.helpscout.com/docs-api/#rate-limiting) and [HelpScout Mailbox](https://developer.helpscout.com/mailbox-api/overview/rate-limiting/).
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/helpscout.mdx)</Note>

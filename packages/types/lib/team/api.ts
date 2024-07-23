@@ -36,7 +36,7 @@ export type DeleteTeamUser = Endpoint<{
     Path: '/api/v1/team/users/:id';
     Querystring: { env: string };
     Params: { id: number };
-    Error: ApiError<'user_not_found'>;
+    Error: ApiError<'user_not_found'> | ApiError<'forbidden_self_delete'>;
     Success: {
         data: { success: true };
     };

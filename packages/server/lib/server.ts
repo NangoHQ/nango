@@ -20,6 +20,8 @@ const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
 
 const app = express();
+app.disable('x-powered-by');
+app.set('trust proxy', 1);
 
 // Log all requests
 if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {

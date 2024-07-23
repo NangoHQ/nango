@@ -3556,10 +3556,11 @@ integrations:
                     that is in DRAFT or SUBMITTED set the status to DELETED. If an
                     invoice has been AUTHORISED it can't be deleted but you can set
                     the status to VOIDED.
-                input: Invoice[]
+                input: UpdateInvoice[]
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
                 endpoint: PUT /xero/invoices
+                version: 1.0.0
             create-credit-note:
                 description: |
                     Creates one or more credit notes in Xero.
@@ -3762,6 +3763,18 @@ integrations:
                 currency: string
                 purchase_order: string | null
                 fees: InvoiceFee[]
+            UpdateInvoice:
+                type?: ACCPAY | ACCREC
+                external_contact_id?: string
+                url?: string
+                id: string
+                issuing_date?: string | null
+                payment_due_date?: string | null
+                status?: string
+                number?: string
+                currency?: string
+                purchase_order?: string | null
+                fees?: UpdateInvoiceFee[]
             InvoiceFee:
                 account_code?: string
                 item_code?: string | null
@@ -3774,6 +3787,18 @@ integrations:
                 precise_unit_amount: number | null
                 amount_cents: number | null
                 taxes_amount_cents: number | null
+            UpdateInvoiceFee:
+                account_code?: string
+                item_code?: string | null
+                account_external_id?: string | null
+                discount_amount_cents?: number | null
+                discount_rate?: number | null
+                item_id?: string
+                description?: string | null
+                units?: number | null
+                precise_unit_amount?: number | null
+                amount_cents?: number | null
+                taxes_amount_cents?: number | null
             FailedInvoice:
                 type: ACCPAY | ACCREC
                 external_contact_id: string

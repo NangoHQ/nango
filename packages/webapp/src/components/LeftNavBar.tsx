@@ -175,9 +175,9 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     >
                         <div className="flex items-center">
                             <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
-                                {me.email.slice(0, 1).toUpperCase()}
+                                {me?.email.slice(0, 1).toUpperCase()}
                             </div>
-                            <span className="items-center w-32 text-gray-400 justify-center text-left text-sm truncate">{me.email}</span>
+                            <span className="items-center w-32 text-gray-400 justify-center text-left text-sm truncate">{me?.email}</span>
                         </div>
                         <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />
                         {(isCloud() || isEnterprise() || isLocal()) && showUserSettings && (
