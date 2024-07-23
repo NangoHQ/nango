@@ -24,13 +24,7 @@ const validation = z
     })
     .strict();
 
-const disabled = true;
 export const signup = asyncWrapper<PostSignup>(async (req, res) => {
-    if (disabled) {
-        res.status(400).send({ error: { code: 'server_error' } });
-        return;
-    }
-
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
