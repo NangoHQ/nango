@@ -15,7 +15,6 @@ const validation = z
 
 export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
-
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;
@@ -32,7 +31,7 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
 
     const { token } = val.data;
 
-    const tokenResponse = await userService.getUserAndAccountByToken(token);
+    const tokenResponse = await userService.getUserByToken(token);
 
     if (tokenResponse.isErr()) {
         const error = tokenResponse.error;
@@ -54,11 +53,11 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
         return;
     }
 
-    const userAndAccount = tokenResponse.value;
+    const user = tokenResponse.value;
 
-    await userService.verifyUserEmail(userAndAccount.user_id);
+    await userService.verifyUserEmail(user.id);
 
-    const { account_id, email } = userAndAccount;
+    const { account_id, email } = user;
 
     void analytics.track(AnalyticsTypes.ACCOUNT_CREATED, account_id, {}, { email });
 
@@ -72,13 +71,13 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
         }
     }
 
-    req.login(userAndAccount, function (err) {
+    req.login(user, function (err) {
         if (err) {
             logger.error('Error logging in user');
             res.status(500).send({ error: { code: 'error_logging_in', message: 'There was a problem logging in the user. Please reach out to support.' } });
             return;
         }
 
-        res.status(200).send({ user: userToAPI(userAndAccount) });
+        res.status(200).send({ user: userToAPI(user) });
     });
 });

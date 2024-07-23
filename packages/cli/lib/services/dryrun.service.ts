@@ -368,9 +368,9 @@ export class DryRunService implements ScriptExecutorInterface {
 
                 while (index < logMessages.messages.length) {
                     const remaining = logMessages.messages.length - index;
-                    const confirmation = await promptly.confirm(
-                        `There are ${remaining} logs messages remaining. Would you like to see the next 10 log messages? (y/n)`
-                    );
+                    const confirmation = options.autoConfirm
+                        ? true
+                        : await promptly.confirm(`There are ${remaining} logs messages remaining. Would you like to see the next 10 log messages? (y/n)`);
                     if (confirmation) {
                         displayBatch();
                     } else {

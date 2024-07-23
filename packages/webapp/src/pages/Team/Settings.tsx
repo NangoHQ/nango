@@ -12,7 +12,7 @@ import { Admin } from './components/Admin';
 export const TeamSettings: React.FC = () => {
     const env = useStore((state) => state.env);
 
-    const { error, team, loading } = useTeam(env);
+    const { error, team, isAdminTeam, loading } = useTeam(env);
 
     if (loading) {
         return (
@@ -51,7 +51,7 @@ export const TeamSettings: React.FC = () => {
             <div className="flex flex-col gap-12 mt-16">
                 <TeamInfo />
                 <TeamUsers />
-                <Admin />
+                {isAdminTeam && <Admin />}
             </div>
         </DashboardLayout>
     );

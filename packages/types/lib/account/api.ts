@@ -117,3 +117,32 @@ export type PutResetPassword = Endpoint<{
         success: true;
     };
 }>;
+
+export type PostManagedSignup = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/account/managed/signup';
+    Body: {
+        provider: 'GoogleOAuth';
+        token?: string | undefined;
+    };
+    Success: {
+        data: {
+            url: string;
+        };
+    };
+}>;
+
+export type GetManagedCallback = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/login/callback';
+    Querystring: {
+        code: string;
+        state?: string | undefined;
+    };
+    Error: ApiError<'error_creating_user'> | ApiError<'user_already_exists'> | ApiError<'error_creating_account'>;
+    Success: {
+        data: {
+            url: string;
+        };
+    };
+}>;
