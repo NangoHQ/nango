@@ -4,7 +4,7 @@ import { BasicStrategy } from 'passport-http';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
-import { flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
+import { baseUrl, flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
 import { database } from '@nangohq/database';
 import { dirname, userService } from '@nangohq/shared';
 import crypto from 'crypto';
@@ -32,7 +32,7 @@ export function setupAuth(app: express.Router) {
             store: sessionStore,
             name: 'nango_session',
             unset: 'destroy',
-            cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, secure: true, sameSite: 'none', httpOnly: true },
+            cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, secure: true, sameSite: 'none', httpOnly: true, domain: `.${new URL(baseUrl).host}` },
             rolling: true
         })
     );
