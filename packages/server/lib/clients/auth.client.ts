@@ -32,7 +32,7 @@ export function setupAuth(app: express.Router) {
             store: sessionStore,
             name: 'nango_session',
             unset: 'destroy',
-            cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, secure: true, path: '/', sameSite: 'none', httpOnly: true, domain: `.${new URL(baseUrl).host}` },
+            cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, secure: true, path: '/', sameSite: 'none', httpOnly: true, domain: new URL(baseUrl).host },
             rolling: true
         })
     );
