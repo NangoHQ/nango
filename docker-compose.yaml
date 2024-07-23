@@ -31,6 +31,7 @@ services:
             - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX}
             - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
             - SERVER_PORT=${SERVER_PORT}
+            - CSP_REPORT_ONLY=true
             - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
             - NANGO_DASHBOARD_USERNAME=${NANGO_DASHBOARD_USERNAME}
             - NANGO_DASHBOARD_PASSWORD=${NANGO_DASHBOARD_PASSWORD}
