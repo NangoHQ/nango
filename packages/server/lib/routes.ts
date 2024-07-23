@@ -103,17 +103,29 @@ router.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
 
-router.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
-router.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
-router.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
-router.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
-router.route('/oauth2/auth/:providerConfigKey').post(apiPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
-router.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
-router.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
-router.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
-router.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, tbaAuthorization);
-router.route('/auth/tableau/:providerConfigKey').post(apiPublicAuth, tableauAuthorization);
-router.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
+// -------
+// Public API routes
+const publicAPI = express.Router();
+const publicAPICorsHandler = cors({
+    maxAge: 600,
+    exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, X-Nango-Signature, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
+    allowedHeaders: 'Nango-Activity-Log-Id, Nango-Is-Dry-Run, Nango-Is-Sync, Provider-Config-Key, Connection-Id',
+    origin: '*'
+});
+publicAPI.use(publicAPICorsHandler);
+publicAPI.options('*', publicAPICorsHandler); // Pre-flight
+
+publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
+publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
+publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
+publicAPI.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
+publicAPI.route('/oauth2/auth/:providerConfigKey').post(apiPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
+publicAPI.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
+publicAPI.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
+publicAPI.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
+publicAPI.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, tbaAuthorization);
+publicAPI.route('/auth/tableau/:providerConfigKey').post(apiPublicAuth, tableauAuthorization);
+publicAPI.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
 
 // API Admin routes
 router.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
