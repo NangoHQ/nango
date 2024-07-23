@@ -92,7 +92,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
             accountId = invitation.account_id;
         } else {
             // Regular signup
-            const account = await accountService.createAccount(`${name}'s Organization`);
+            const account = await accountService.createAccount(`${name}'s Team`);
             if (!account) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
