@@ -1,27 +1,24 @@
 import { basePublicUrl, baseUrl } from '@nangohq/utils';
-import type { Router } from 'express';
+import type { RequestHandler } from 'express';
 import helmet from 'helmet';
 
-export function securityMiddleware(app: Router): void {
+export function securityMiddlewares(): RequestHandler[] {
     const hostPublic = basePublicUrl;
     const hostApi = baseUrl;
     const reportOnly = process.env['CSP_REPORT_ONLY'];
 
-    app.use(helmet.xssFilter());
-    app.use(helmet.noSniff());
-    app.use(helmet.ieNoOpen());
-    app.use(helmet.frameguard({ action: 'sameorigin' }));
-    app.use(helmet.dnsPrefetchControl());
-    app.use(
+    return [
+        helmet.xssFilter(),
+        helmet.noSniff(),
+        helmet.ieNoOpen(),
+        helmet.frameguard({ action: 'sameorigin' }),
+        helmet.dnsPrefetchControl(),
         helmet.hsts({
             maxAge: 5184000
-        })
-    );
-
-    app.use(
+        }),
         // == "Content-Security-Policy"
         helmet.contentSecurityPolicy({
-            reportOnly: reportOnly === 'true' || typeof reportOnly === 'undefined',
+            reportOnly: reportOnly !== 'false',
             directives: {
                 defaultSrc: ["'self'", hostPublic, hostApi],
                 childSrc: "'self'",
@@ -47,5 +44,5 @@ export function securityMiddleware(app: Router): void {
                 workerSrc: ['blob:', "'self'", hostPublic, hostApi, 'https://*.googleapis.com', 'https://*.posthog.com']
             }
         })
-    );
+    ];
 }

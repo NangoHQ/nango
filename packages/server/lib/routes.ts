@@ -66,14 +66,14 @@ import { patchUser } from './controllers/v1/user/patchUser.js';
 import { getInvite } from './controllers/v1/invite/getInvite.js';
 import { declineInvite } from './controllers/v1/invite/declineInvite.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
-import { securityMiddleware } from './middleware/security.js';
+import { securityMiddlewares } from './middleware/security.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 
 export const router = express.Router();
 
-securityMiddleware(router);
+router.use(...securityMiddlewares());
 
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
