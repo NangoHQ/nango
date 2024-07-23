@@ -2,7 +2,7 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 
 export const logger = getLogger('Runner');
 
-export async function httpFetch({ method, url, data }: { method: string; url: string; data: string }): Promise<void> {
+export async function httpFetch({ method, url, data = undefined }: { method: string; url: string; data?: string }): Promise<void> {
     try {
         const res = await fetch(url, {
             method: method,
@@ -10,7 +10,7 @@ export async function httpFetch({ method, url, data }: { method: string; url: st
                 Accept: 'application/json',
                 'Content-Type': 'application/json'
             },
-            body: data
+            ...(data && { body: data })
         });
         if (res.status > 299) {
             let resp;
@@ -21,7 +21,6 @@ export async function httpFetch({ method, url, data }: { method: string; url: st
             }
             logger.error(`Error: ${method} ${url}: status=${res.status}, response=${JSON.stringify(resp)}`);
         }
-        logger.info(`Success: ${method} ${url}: status=${res.status}`);
     } catch (err) {
         logger.error(`Error: ${method} ${url}: ${stringifyError(err)}`);
     }

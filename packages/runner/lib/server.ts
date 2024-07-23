@@ -52,6 +52,7 @@ function healthProcedure() {
     });
 }
 
+const heartbeatIntervalMs = 30_000;
 const runnerId = process.env['RUNNER_ID'] || '';
 const jobsServiceUrl = process.env['NOTIFY_IDLE_ENDPOINT']?.replace(/\/idle$/, '') || getJobsUrl(); // TODO: remove legacy NOTIFY_IDLE_ENDPOINT once all runners are updated with JOBS_SERVICE_URL env var
 const persistServiceUrl = getPersistAPIUrl();
@@ -95,12 +96,20 @@ function startProcedure() {
             // executing in the background and returning immediately
             // sending the result to the jobs service when done
             setImmediate(async () => {
+                const heartbeat = setInterval(async () => {
+                    await httpFetch({
+                        method: 'POST',
+                        url: `${jobsServiceUrl}/tasks/${taskId}/heartbeat`
+                    });
+                }, heartbeatIntervalMs);
                 try {
                     const abortController = new AbortController();
                     if (nangoProps.scriptType == 'sync' && nangoProps.activityLogId) {
                         abortControllers.set(taskId, abortController);
                     }
+
                     const { error, response: output } = await exec(nangoProps, code, codeParams, abortController);
+
                     await httpFetch({
                         method: 'PUT',
                         url: `${jobsServiceUrl}/tasks/${taskId}`,
@@ -110,6 +119,7 @@ function startProcedure() {
                         })
                     });
                 } finally {
+                    clearInterval(heartbeat);
                     abortControllers.delete(taskId);
                     usage.untrack(nangoProps);
                     logger.info(`Task ${taskId} completed`);

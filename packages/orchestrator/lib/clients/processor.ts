@@ -68,7 +68,6 @@ export class OrchestratorProcessor {
     }
 
     private async processTask(task: OrchestratorTask, ctx: { tracer: Tracer }): Promise<void> {
-        let heartbeat: NodeJS.Timeout;
         await this.queue.add(async () => {
             const active = ctx.tracer.scope().active();
             const span = ctx.tracer.startSpan('processor.process.task', {
@@ -76,7 +75,6 @@ export class OrchestratorProcessor {
                 tags: { 'task.id': task.id }
             });
             try {
-                heartbeat = this.heartbeat(task);
                 const res = await this.handler(task);
                 if (res.isErr()) {
                     const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error: res.error });
@@ -98,20 +96,9 @@ export class OrchestratorProcessor {
                     span.setTag('error', error);
                 }
             } finally {
-                clearInterval(heartbeat);
                 span.finish();
             }
         });
-    }
-
-    // TODO: move heartbeat to runner
-    private heartbeat(task: OrchestratorTask): NodeJS.Timeout {
-        return setInterval(async () => {
-            const res = await this.orchestratorClient.heartbeat({ taskId: task.id });
-            if (res.isErr()) {
-                logger.error(`failed to send heartbeat for task ${task.id}`, res.error);
-            }
-        }, 300_000);
     }
 }
 
