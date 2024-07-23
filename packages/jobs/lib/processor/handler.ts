@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 import type { OrchestratorTask } from '@nangohq/nango-orchestrator';
-import { Err, metrics } from '@nangohq/utils';
+import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { startSync, abortSync } from '../scripts/sync.js';
 import { startAction } from '../scripts/action.js';
@@ -20,7 +20,7 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
                 metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - start);
             }
             span.finish();
-            return res;
+            return res.isErr() ? Err(res.error) : Ok(undefined);
         });
     }
     if (task.isSyncAbort()) {

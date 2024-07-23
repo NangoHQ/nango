@@ -36,7 +36,7 @@ import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import { abortScript } from './operations/abort.js';
 import { logger } from '../logger.js';
 
-export async function startSync(task: TaskSync): Promise<Result<void>> {
+export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
     let logCtx: LogContext | undefined;
     let account: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
@@ -54,7 +54,7 @@ export async function startSync(task: TaskSync): Promise<Result<void>> {
 
         syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
         syncConfig = await getSyncConfigRaw({
-            environmentId: providerConfig.environment_id,
+            environmentId: task.connection.environment_id,
             config_id: providerConfig.id!,
             name: task.syncName,
             isAction: false
@@ -130,7 +130,7 @@ export async function startSync(task: TaskSync): Promise<Result<void>> {
 
         metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: account.id });
 
-        const res = await startScript({
+        const res = await startScriptFn({
             taskId: task.id,
             nangoProps,
             logCtx: logCtx
@@ -139,7 +139,7 @@ export async function startSync(task: TaskSync): Promise<Result<void>> {
         if (res.isErr()) {
             throw res.error;
         }
-        return res;
+        return Ok(nangoProps);
     } catch (err) {
         const error = new NangoError('sync_script_failure', { error: err });
         await onFailure({

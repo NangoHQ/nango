@@ -104,6 +104,7 @@ export class OrchestratorProcessor {
         });
     }
 
+    // TODO: move heartbeat to runner
     private heartbeat(task: OrchestratorTask): NodeJS.Timeout {
         return setInterval(async () => {
             const res = await this.orchestratorClient.heartbeat({ taskId: task.id });
