@@ -1449,6 +1449,8 @@ jotform:
 helpscout-docs:
     auth_mode: BASIC
     proxy:
+        retry:
+            after: 'X-RateLimit-Reset'
         base_url: https://docsapi.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 helpscout-mailbox:
@@ -1462,6 +1464,8 @@ helpscout-mailbox:
     refresh_params:
         grant_type: refresh_token
     proxy:
+        retry:
+            after: 'X-RateLimit-Retry-After'
         base_url: https://api.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 keap:
