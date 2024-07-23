@@ -27,7 +27,7 @@ import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
-import { isCloud, isEnterprise, AUTH_ENABLED, MANAGED_AUTH_ENABLED, isBasicAuthEnabled, isTest } from '@nangohq/utils';
+import { isCloud, isEnterprise, flagHasAuth, isBasicAuthEnabled, isTest, flagHasManagedAuth } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import { getConnection as getConnectionWeb } from './controllers/v1/connection/get.js';
@@ -66,13 +66,16 @@ import { patchUser } from './controllers/v1/user/patchUser.js';
 import { getInvite } from './controllers/v1/invite/getInvite.js';
 import { declineInvite } from './controllers/v1/invite/declineInvite.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
+import { getMeta } from './controllers/v1/meta/getMeta.js';
+import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
+import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 
 export const router = express.Router();
 
 const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), authCheck, rateLimiterMiddleware];
-let webAuth = AUTH_ENABLED
+let webAuth = flagHasAuth
     ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
     : isBasicAuthEnabled
       ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
@@ -158,7 +161,7 @@ const web = express.Router();
 setupAuth(web);
 
 // Webapp routes (no auth).
-if (AUTH_ENABLED) {
+if (flagHasAuth) {
     web.route('/api/v1/account/signup').post(rateLimiterMiddleware, signup);
     web.route('/api/v1/account/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
     web.route('/api/v1/account/signin').post(rateLimiterMiddleware, passport.authenticate('local'), signin);
@@ -171,13 +174,14 @@ if (AUTH_ENABLED) {
     web.route('/api/v1/account/verify/code').post(rateLimiterMiddleware, validateEmailAndLogin);
 }
 
-if (MANAGED_AUTH_ENABLED) {
-    web.route('/api/v1/managed/signup').post(rateLimiterMiddleware, authController.getManagedLogin.bind(authController));
-    web.route('/api/v1/managed/signup/:token').post(rateLimiterMiddleware, authController.getManagedLoginWithInvite.bind(authController));
-    web.route('/api/v1/login/callback').get(rateLimiterMiddleware, authController.loginCallback.bind(authController));
+if (flagHasManagedAuth) {
+    web.route('/api/v1/account/managed/signup').post(rateLimiterMiddleware, postManagedSignup);
+    web.route('/api/v1/account/managed/callback').get(rateLimiterMiddleware, getManagedCallback);
+    // TODO: drop this one
+    web.route('/api/v1/login/callback').get(rateLimiterMiddleware, getManagedCallback);
 }
 
-web.route('/api/v1/meta').get(webAuth, environmentController.meta.bind(environmentController));
+web.route('/api/v1/meta').get(webAuth, getMeta);
 web.route('/api/v1/team').get(webAuth, getTeam);
 web.route('/api/v1/team').put(webAuth, putTeam);
 web.route('/api/v1/team/users/:id').delete(webAuth, deleteTeamUser);

@@ -14,7 +14,6 @@ interface State {
     setEnv: (value: string) => void;
     setEnvs: (envs: Env[]) => void;
     setBaseUrl: (value: string) => void;
-    setEmail: (value: string) => void;
     setShowInteractiveDemo: (value: boolean) => void;
     setDebugMode: (value: boolean) => void;
 }
@@ -41,10 +40,6 @@ export const useStore = create<State>((set, get) => ({
 
     setBaseUrl: (value) => {
         set({ baseUrl: value });
-    },
-
-    setEmail: (value) => {
-        set({ email: value });
     },
 
     setShowInteractiveDemo: (value) => {

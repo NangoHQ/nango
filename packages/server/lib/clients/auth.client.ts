@@ -4,14 +4,13 @@ import { BasicStrategy } from 'passport-http';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
-import { AUTH_ENABLED, isBasicAuthEnabled } from '@nangohq/utils';
+import { flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
 import { database } from '@nangohq/database';
 import { dirname, userService } from '@nangohq/shared';
 import crypto from 'crypto';
 import util from 'util';
 import cookieParser from 'cookie-parser';
 import connectSessionKnex from 'connect-session-knex';
-import { userToAPI } from '../formatters/user.js';
 
 const KnexSessionStore = connectSessionKnex(session);
 
@@ -41,7 +40,7 @@ export function setupAuth(app: express.Router) {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    if (AUTH_ENABLED) {
+    if (flagHasAuth) {
         passport.use(
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, async function (
@@ -103,9 +102,9 @@ export function setupAuth(app: express.Router) {
         );
     }
 
-    passport.serializeUser(function (user: Express.User, cb) {
+    passport.serializeUser(function (user: any, cb) {
         process.nextTick(function () {
-            cb(null, userToAPI(user));
+            cb(null, { id: user.id, email: user.email, name: user.name, account_id: user.account_id } as Express.User);
         });
     });
 

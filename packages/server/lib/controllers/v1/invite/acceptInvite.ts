@@ -3,7 +3,6 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { z } from 'zod';
 import type { AcceptInvite } from '@nangohq/types';
-import { userToAPI } from '../../../formatters/user.js';
 
 const validation = z
     .object({
@@ -45,7 +44,7 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
 
     // User is stored in session, so we need to update the DB
     // @ts-expect-error you got to love passport
-    req.session.passport.user = userToAPI(updated);
+    req.session.passport.user = updated;
     req.session.save((err) => {
         if (err) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to update session' } });
