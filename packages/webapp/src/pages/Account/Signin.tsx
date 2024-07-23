@@ -4,10 +4,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch, useSigninAPI } from '../../utils/api';
 import { useSignin } from '../../utils/user';
 import type { ApiUser, PostSignin } from '@nangohq/types';
-import { MANAGED_AUTH_ENABLED } from '../../utils/utils';
 import DefaultLayout from '../../layout/DefaultLayout';
 import GoogleButton from '../../components/ui/button/Auth/Google';
 import Button from '../../components/ui/button/Button';
+import { globalEnv } from '../../utils/env';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -127,7 +127,7 @@ export default function Signin() {
                                 )}
                             </div>
 
-                            {MANAGED_AUTH_ENABLED && (
+                            {globalEnv.features.managedAuth && (
                                 <>
                                     <div className="flex items-center justify-center my-4 text-xs">
                                         <div className="border-t border-gray-600 flex-grow mr-7"></div>

@@ -15,6 +15,6 @@ declare global {
 
 declare global {
     interface Window {
-        _env?: WindowEnv;
+        _env: WindowEnv;
     }
 }

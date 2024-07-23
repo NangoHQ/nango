@@ -1,1 +1,1 @@
-export const env = { ...(window._env || {}) };
+export const globalEnv = { ...window._env };
