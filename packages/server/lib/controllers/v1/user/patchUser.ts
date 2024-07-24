@@ -37,7 +37,7 @@ export const patchUser = asyncWrapper<PatchUser, never>(async (req, res) => {
 
     // User is stored in session, so we need to update the DB
     // @ts-expect-error you got to love passport
-    req.session.passport.user = userToAPI(updated);
+    req.session.passport.user = updated;
     req.session.save((err) => {
         if (err) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to update session' } });

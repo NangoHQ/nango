@@ -73,3 +73,23 @@ export type SearchFilters = Endpoint<{
     };
 }>;
 export type SearchFiltersData = SearchMessages['Success']['data'][0];
+
+export type PostInsights = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/logs/insights';
+    Querystring: { env: string };
+    Body: {
+        type: 'action' | 'sync' | 'proxy' | 'webhook_external';
+    };
+    Success: {
+        data: {
+            histogram: InsightsHistogramEntry[];
+        };
+    };
+}>;
+export interface InsightsHistogramEntry {
+    key: string;
+    total: number;
+    success: number;
+    failure: number;
+}

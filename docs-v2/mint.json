@@ -373,6 +373,7 @@
                 "integrations/all/freshservice",
                 "integrations/all/front",
                 "integrations/all/garmin",
+                "integrations/all/gainsight-cc",
                 "integrations/all/guru",
                 "integrations/all/github",
                 "integrations/all/gitlab",

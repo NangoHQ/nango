@@ -6,7 +6,8 @@ import type { AuthModeType, PostSignup } from '@nangohq/types';
 export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
     return await fetch(input, {
         ...init,
-        headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) }
+        headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+        credentials: 'include' // For cookies
     });
 }
 
