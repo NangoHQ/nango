@@ -413,7 +413,7 @@ canny:
     proxy:
         base_url: https://canny.io/api/v1
         query:
-            api_key: ${apiKey}
+            apiKey: ${apiKey}
         verification:
             method: POST
             endpoint: /boards/list

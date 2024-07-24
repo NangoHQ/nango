@@ -160,12 +160,7 @@
                         },
                         "query": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "api_key": {
-                                    "type": "string"
-                                }
-                            }
+                            "additionalProperties": true
                         },
                         "retry": {
                             "type": "object",
