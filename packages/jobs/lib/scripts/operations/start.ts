@@ -5,6 +5,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '@nangohq/shared';
 import { localFileService, remoteFileService } from '@nangohq/shared';
 import { getRunner } from './utils/getRunner.js';
+import type { JsonValue } from 'type-fest';
 
 export async function startScript({
     taskId,
@@ -14,7 +15,7 @@ export async function startScript({
 }: {
     taskId: string;
     nangoProps: NangoProps;
-    input?: object | undefined;
+    input?: JsonValue | undefined;
     logCtx: LogContext;
 }): Promise<Result<void>> {
     const span = tracer

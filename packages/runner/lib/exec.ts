@@ -123,7 +123,7 @@ export async function exec(
                     }
                 }
 
-                return output;
+                return { success: true, response: output, error: null };
             } else {
                 await scriptExports.default(nango);
                 return { success: true, response: true, error: null };

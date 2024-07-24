@@ -38,7 +38,7 @@ import { logger } from '../logger.js';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
     let logCtx: LogContext | undefined;
-    let account: DBTeam | undefined;
+    let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let syncJob: Pick<Job, 'id'> | null = null;
     let lastSyncDate: Date | null = null;
@@ -66,15 +66,15 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
-            throw new Error(`Account and environment not found. TaskId: ${task.id}`);
+            throw new Error(`Account and environment not found`);
         }
-        account = accountAndEnv.account;
+        team = accountAndEnv.account;
         environment = accountAndEnv.environment;
 
         logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
             {
-                account,
+                account: team,
                 environment,
                 integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                 connection: { id: task.connection.id, name: task.connection.connection_id },
@@ -103,8 +103,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         const nangoProps: NangoProps = {
             scriptType: 'sync',
             host: getApiUrl(),
-            teamId: account.id,
-            teamName: account.name,
+            teamId: team.id,
+            teamName: team.name,
             connectionId: task.connection.connection_id,
             environmentId: task.connection.environment_id,
             environmentName: environment.name,
@@ -128,7 +128,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             await logCtx.debug(`Last sync date is ${lastSyncDate}`);
         }
 
-        metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: account.id });
+        metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: team.id });
 
         const res = await startScriptFn({
             taskId: task.id,
@@ -143,21 +143,16 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
     } catch (err) {
         const error = new NangoError('sync_script_failure', { error: err });
         await onFailure({
-            context: {
-                environmentId: task.connection.environment_id,
-                nangoConnectionId: task.connection.id,
-                connectionId: task.connection.connection_id,
-                providerConfigKey: task.connection.provider_config_key,
-                provider: providerConfig?.provider || 'unknown',
-                syncId: task.syncId,
-                syncName: syncConfig?.sync_name || 'unknown',
-                syncType: syncType,
-                syncJobId: syncJob?.id || -1,
-                activityLogId: logCtx?.id || 'unknown',
-                debug: task.debug,
-                team: account,
-                environment
-            },
+            connection: task.connection,
+            provider: providerConfig?.provider || 'unknown',
+            syncId: task.syncId,
+            syncName: syncConfig?.sync_name || 'unknown',
+            syncType: syncType,
+            syncJobId: syncJob?.id || -1,
+            activityLogId: logCtx?.id || 'unknown',
+            debug: task.debug,
+            team: team,
+            environment,
             runTime: 0,
             models: syncConfig?.models || [],
             error
@@ -169,7 +164,16 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     const runTime = (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000;
+    let team: DBTeam | undefined;
+    let environment: DBEnvironment | undefined;
     try {
+        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+        if (!accountAndEnv) {
+            throw new Error(`Account and environment not found`);
+        }
+        team = accountAndEnv.account;
+        environment = accountAndEnv.environment;
+
         if (!nangoProps.syncJobId) {
             throw new Error('syncJobId is required to update sync status');
         }
@@ -207,7 +211,16 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
             const syncResult = await updateSyncJobResult(nangoProps.syncJobId, updatedResults, model);
             if (!syncResult) {
                 await onFailure({
-                    context: toContext(nangoProps),
+                    team,
+                    environment,
+                    connection,
+                    provider: nangoProps.provider,
+                    syncId: nangoProps.syncId,
+                    syncName: nangoProps.syncConfig.sync_name,
+                    syncType: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+                    syncJobId: nangoProps.syncJobId,
+                    debug: nangoProps.debug,
+                    activityLogId: nangoProps.activityLogId!,
                     models: [model],
                     runTime,
                     error: new NangoError('sync_job_update_failure', { syncJobId: nangoProps.syncJobId, model })
@@ -331,23 +344,62 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
             providerConfigKey: nangoProps.providerConfigKey,
             status: 'success',
             syncId: nangoProps.syncId,
-            content: `The ${nangoProps.syncConfig.sync_type} sync "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
+            content: `The sync "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
             runTimeInSeconds: runTime,
             createdAt: Date.now()
         });
 
         await logCtx.success();
     } catch (err) {
-        await handleSyncError({
-            nangoProps,
+        await onFailure({
+            team,
+            environment,
+            connection: {
+                id: nangoProps.nangoConnectionId!,
+                connection_id: nangoProps.connectionId,
+                environment_id: nangoProps.environmentId,
+                provider_config_key: nangoProps.providerConfigKey
+            },
+            provider: nangoProps.provider,
+            syncId: nangoProps.syncId!,
+            syncName: nangoProps.syncConfig.sync_name,
+            syncType: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+            syncJobId: nangoProps.syncJobId!,
+            activityLogId: nangoProps.activityLogId!,
+            debug: nangoProps.debug,
+            models: nangoProps.syncConfig.models,
+            runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
+            failureSource: ErrorSourceEnum.CUSTOMER,
+            isCancel: false,
             error: new NangoError('sync_script_failure', { error: err })
         });
     }
 }
 
 export async function handleSyncError({ nangoProps, error }: { nangoProps: NangoProps; error: NangoError }): Promise<void> {
+    let team: DBTeam | undefined;
+    let environment: DBEnvironment | undefined;
+    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    if (accountAndEnv) {
+        team = accountAndEnv.account;
+        environment = accountAndEnv.environment;
+    }
     await onFailure({
-        context: toContext(nangoProps),
+        team,
+        environment,
+        connection: {
+            id: nangoProps.nangoConnectionId!,
+            connection_id: nangoProps.connectionId,
+            environment_id: nangoProps.environmentId,
+            provider_config_key: nangoProps.providerConfigKey
+        },
+        provider: nangoProps.provider,
+        syncId: nangoProps.syncId!,
+        syncName: nangoProps.syncConfig.sync_name,
+        syncType: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+        syncJobId: nangoProps.syncJobId!,
+        activityLogId: nangoProps.activityLogId!,
+        debug: nangoProps.debug,
         models: nangoProps.syncConfig.models,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         failureSource: ErrorSourceEnum.CUSTOMER,
@@ -360,7 +412,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
     try {
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
-            throw new Error(`Account and environment not found. TaskId: ${task.id}`);
+            throw new Error(`Account and environment not found`);
         }
         const { account: team, environment } = accountAndEnv;
 
@@ -391,21 +443,21 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
 
         const isCancel = task.abortedTask.state === 'CANCELLED';
         await onFailure({
-            context: {
-                environmentId: task.connection.environment_id,
-                nangoConnectionId: task.connection.id,
-                connectionId: task.connection.connection_id,
-                providerConfigKey: task.connection.provider_config_key,
-                provider: providerConfig.provider,
-                syncId: task.syncId,
-                syncName: syncConfig.sync_name,
-                syncType: syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
-                syncJobId: syncJob.id,
-                activityLogId: syncJob.log_id!,
-                debug: task.debug,
-                team,
-                environment
+            connection: {
+                id: task.connection.id,
+                connection_id: task.connection.connection_id,
+                environment_id: task.connection.environment_id,
+                provider_config_key: task.connection.provider_config_key
             },
+            provider: providerConfig.provider,
+            syncId: task.syncId,
+            syncName: syncConfig.sync_name,
+            syncType: syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+            syncJobId: syncJob.id,
+            activityLogId: syncJob.log_id!,
+            debug: task.debug,
+            team,
+            environment,
             models: [],
             isCancel,
             failureSource: ErrorSourceEnum.CUSTOMER,
@@ -428,86 +480,100 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
 }
 
 async function onFailure({
-    context,
+    team,
+    environment,
+    connection,
+    provider,
+    syncId,
+    syncName,
+    syncType,
+    syncJobId,
+    lastSyncDate,
+    activityLogId,
+    debug,
     models,
     runTime,
     isCancel,
     failureSource,
     error
 }: {
-    context: ScriptContext;
+    team?: DBTeam | undefined;
+    environment?: DBEnvironment | undefined;
+    connection: NangoConnection;
+    provider: string;
+    syncId: string;
+    syncName: string;
+    syncType: SyncType.INCREMENTAL | SyncType.FULL;
+    syncJobId: number;
+    lastSyncDate?: Date | undefined;
+    activityLogId: string;
+    debug: boolean;
     models: string[];
     runTime: number;
     isCancel?: boolean;
     failureSource?: ErrorSourceEnum;
     error: NangoError;
-}) {
-    if (context.team && context.environment) {
+}): Promise<void> {
+    if (team && environment) {
         void bigQueryClient.insert({
             executionType: 'sync',
-            connectionId: context.connectionId,
-            internalConnectionId: context.nangoConnectionId,
-            accountId: context.team.id,
-            accountName: context.team.name,
-            scriptName: context.syncName,
+            connectionId: connection.connection_id,
+            internalConnectionId: connection.id,
+            accountId: team.id,
+            accountName: team.name,
+            scriptName: syncName,
             scriptType: 'sync',
-            environmentId: context.environmentId,
-            environmentName: context.environment.name,
-            providerConfigKey: context.providerConfigKey,
+            environmentId: environment.id,
+            environmentName: environment.name,
+            providerConfigKey: connection.provider_config_key,
             status: 'failed',
-            syncId: context.syncId,
+            syncId: syncId,
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now()
         });
     }
 
-    const connection: NangoConnection = {
-        id: context.nangoConnectionId,
-        connection_id: context.connectionId,
-        environment_id: context.environmentId,
-        provider_config_key: context.providerConfigKey
-    };
-    const logCtx = await logContextGetter.get({ id: context.activityLogId });
+    const logCtx = await logContextGetter.get({ id: activityLogId });
     try {
-        await slackService.reportFailure(connection, context.syncName, 'sync', logCtx.id, context.environmentId, context.provider);
+        await slackService.reportFailure(connection, syncName, 'sync', logCtx.id, connection.environment_id, provider);
     } catch {
         errorManager.report('slack notification service reported a failure', {
-            environmentId: context.environmentId,
+            environmentId: connection.environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.SYNC,
             metadata: {
-                syncName: context.syncName,
+                syncName: syncName,
                 connectionDetails: connection,
-                syncId: context.syncId,
-                syncJobId: context.syncJobId,
-                syncType: context.syncType,
-                debug: context.debug
+                syncId: syncId,
+                syncJobId: syncJobId,
+                syncType: syncType,
+                debug: debug
             }
         });
     }
 
-    if (context.environment) {
-        const webhookSettings = await externalWebhookService.get(context.environment.id);
+    if (environment) {
+        const webhookSettings = await externalWebhookService.get(environment.id);
 
         void sendSyncWebhook({
             connection: connection,
-            environment: context.environment,
+            environment: environment,
             webhookSettings,
-            syncName: context.syncName,
+            syncName: syncName,
             model: models.join(','),
             success: false,
             error: {
                 type: 'script_error',
                 description: error.message
             },
-            now: context.lastSyncDate,
-            operation: context.syncType,
+            now: lastSyncDate,
+            operation: syncType,
             logCtx: logCtx
         });
     }
 
-    await updateSyncJobStatus(context.syncJobId, SyncStatus.STOPPED);
+    await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
 
     await logCtx.error(error.message, { error });
     if (isCancel) {
@@ -517,16 +583,16 @@ async function onFailure({
     }
 
     errorManager.report(error.message, {
-        environmentId: context.environmentId,
+        environmentId: connection.environment_id,
         source: failureSource || ErrorSourceEnum.PLATFORM,
         operation: LogActionEnum.SYNC,
         metadata: {
-            syncName: context.syncName,
+            syncName: syncName,
             connectionDetails: connection,
-            syncId: context.syncId,
-            syncJobId: context.syncJobId,
+            syncId: syncId,
+            syncJobId: syncJobId,
             syncType: 'sync',
-            debug: context.debug
+            debug: debug
         }
     });
 
@@ -535,59 +601,26 @@ async function onFailure({
         error.message,
         LogActionEnum.SYNC,
         {
-            environmentId: String(context.environmentId),
-            syncName: context.syncName,
+            environmentId: String(connection.environment_id),
+            syncName: syncName,
             connectionDetails: JSON.stringify(connection),
-            connectionId: context.connectionId,
-            providerConfigKey: context.providerConfigKey,
-            syncId: context.syncId,
-            syncJobId: String(context.syncJobId),
-            syncType: context.syncType,
-            debug: String(context.debug),
+            connectionId: connection.connection_id,
+            providerConfigKey: connection.provider_config_key,
+            syncId: syncId,
+            syncJobId: String(syncJobId),
+            syncType: syncType,
+            debug: String(debug),
             level: 'error'
         },
-        `syncId:${context.syncId}`
+        `syncId:${syncId}`
     );
 
     await errorNotificationService.sync.create({
         action: 'run',
         type: 'sync',
-        sync_id: context.syncId,
-        connection_id: context.nangoConnectionId,
+        sync_id: syncId,
+        connection_id: connection.id!,
         log_id: logCtx.id,
         active: true
     });
-}
-
-// TODO: is ScriptContext needed. Can we use NangoProps instead
-interface ScriptContext {
-    environmentId: number;
-    connectionId: string;
-    nangoConnectionId: number;
-    providerConfigKey: string;
-    provider: string;
-    syncId: string;
-    syncName: string;
-    syncType: SyncType.INCREMENTAL | SyncType.FULL;
-    syncJobId: number;
-    lastSyncDate?: Date | undefined;
-    activityLogId: string;
-    debug: boolean;
-    team?: DBTeam | undefined;
-    environment?: DBEnvironment | undefined;
-}
-function toContext(nangoProps: NangoProps): ScriptContext {
-    return {
-        environmentId: nangoProps.environmentId,
-        nangoConnectionId: nangoProps.nangoConnectionId!,
-        connectionId: nangoProps.connectionId,
-        providerConfigKey: nangoProps.providerConfigKey,
-        provider: nangoProps.provider,
-        syncId: nangoProps.syncId!,
-        syncName: nangoProps.syncConfig.sync_name,
-        syncType: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
-        syncJobId: nangoProps.syncJobId!,
-        activityLogId: String(nangoProps.activityLogId),
-        debug: nangoProps.debug
-    };
 }

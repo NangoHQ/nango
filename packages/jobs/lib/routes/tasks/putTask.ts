@@ -24,7 +24,7 @@ type PutTask = Endpoint<{
                   status: number;
               }
             | undefined;
-        output?: JsonValue | undefined;
+        output: JsonValue;
     };
     Error: ApiError<'put_task_failed'>;
     Success: never;
@@ -68,8 +68,8 @@ const validate = validateRequest<PutTask>({
                                 updated_at: z.coerce.date()
                             })
                             .passthrough(),
-                        syncId: z.string().uuid(),
-                        syncJobId: z.number(),
+                        syncId: z.string().uuid().optional(),
+                        syncJobId: z.number().optional(),
                         activityLogId: z.string().min(1),
                         secretKey: z.string().min(1),
                         debug: z.boolean(),
@@ -93,7 +93,7 @@ const validate = validateRequest<PutTask>({
                         status: z.number()
                     })
                     .optional(),
-                output: jsonSchema.optional()
+                output: jsonSchema.default(null)
             })
             .parse(data),
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
@@ -108,10 +108,8 @@ const handler = async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutT
     }
     if (error) {
         await handleError({ taskId, nangoProps, error });
-    } else if (output) {
-        await handleOutput({ taskId, nangoProps, output: output });
     } else {
-        res.status(400).json({ error: { code: 'put_task_failed', message: `missing output or error: error='${error}' output='${output}'` } });
+        await handleOutput({ taskId, nangoProps, output: output });
     }
     res.status(201).send();
     return;

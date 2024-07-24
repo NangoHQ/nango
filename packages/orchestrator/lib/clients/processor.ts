@@ -101,19 +101,3 @@ export class OrchestratorProcessor {
         });
     }
 }
-
-//TODO:
-// // We don't have access to NangoError so we have to create a temp error
-// class PayloadTooBigError extends Error {
-//     type = 'action_output_too_big';
-//     override message = 'Output is too big';
-// }
-//
-// function throwIfPayloadTooBig(err: ClientError) {
-//     if (err.payload && typeof err.payload === 'object' && 'response' in err.payload && err.payload['response'] && typeof err.payload['response'] === 'object') {
-//         const res = err.payload['response'] as unknown as ApiError<string>;
-//         if (res.error.code === 'payload_too_big') {
-//             throw new PayloadTooBigError();
-//         }
-//     }
-// }
