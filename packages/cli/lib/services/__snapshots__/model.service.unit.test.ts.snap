@@ -236,15 +236,17 @@ export interface DryRunServiceInterface {
     run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
 }
 export interface NangoProps {
+    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     host?: string;
     secretKey: string;
-    accountId?: number;
+    teamId?: number;
+    teamName?: string;
     connectionId: string;
     environmentId: number;
     environmentName?: string;
     activityLogId?: string | undefined;
     providerConfigKey: string;
-    provider?: string;
+    provider: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     nangoConnectionId?: number;
@@ -265,6 +267,8 @@ export interface NangoProps {
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
     runnerFlags: RunnerFlags;
+    debug: boolean;
+    startedAt: Date;
 }
 export interface EnvironmentVariable {
     name: string;
