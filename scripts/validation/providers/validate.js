@@ -24,7 +24,7 @@ console.log('parsed providers', Object.keys(providersJson));
 console.log('validating');
 if (validator(providersJson)) {
     console.log('✅ done');
-    return;
+    process.exit(0);
 }
 
 console.error('error', validator.errors);
