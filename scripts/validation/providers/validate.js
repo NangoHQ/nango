@@ -1,9 +1,11 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const path = require('node:path');
-const fs = require('node:fs');
-const jsYaml = require('js-yaml');
-const Ajv = require('ajv');
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import jsYaml from 'js-yaml';
+import Ajv from 'ajv';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 console.log('Validate');
 const pathSchema = path.join(__dirname, 'schema.json');
 const pathProviders = path.join(__dirname, '../../../packages/shared/providers.yaml');
