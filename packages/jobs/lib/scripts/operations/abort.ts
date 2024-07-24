@@ -9,7 +9,7 @@ export async function abortScript({ taskId, teamId }: { taskId: string; teamId: 
     }
     const isAborted = await runner.value.client.abort.mutate({ taskId });
     if (!isAborted) {
-        return Err(`Error aborting script for task: ${taskId}: error`);
+        return Err(`Error aborting script for task: ${taskId}`);
     }
     return Ok(undefined);
 }

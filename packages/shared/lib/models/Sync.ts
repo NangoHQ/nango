@@ -1,6 +1,5 @@
 import type { JSONSchema7 } from 'json-schema';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
-import type { NangoProps } from '../sdk/sync.js';
 import type { NangoConfigMetadata, NangoModel, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 
@@ -151,14 +150,4 @@ export interface SyncConfigWithProvider {
     provider_config_key: string;
     unique_key: string;
     type: ScriptTypeLiteral;
-}
-
-//TODO: still useful???
-export interface RunScriptOptions {
-    syncConfig?: SyncConfig;
-    syncName: string;
-    syncId: string;
-    nangoProps: NangoProps;
-    optionalLoadLocation?: string | undefined;
-    input?: object | undefined;
 }

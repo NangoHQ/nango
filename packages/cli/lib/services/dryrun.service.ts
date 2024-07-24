@@ -1,7 +1,7 @@
 import promptly from 'promptly';
 import chalk from 'chalk';
 
-import type { NangoConnection, NangoProps, RunScriptOptions, RunnerOutput } from '@nangohq/shared';
+import type { NangoConnection, NangoProps, RunnerOutput } from '@nangohq/shared';
 import type { Metadata, ScriptFileType } from '@nangohq/types';
 import { cloudHost, stagingHost, NangoError, localFileService, validateData, NangoSync, formatScriptError, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
@@ -305,7 +305,6 @@ export class DryRunService {
             };
             console.log('---');
             const results = await this.runScript({
-                syncId: nangoProps.syncId as string,
                 syncName,
                 nangoProps,
                 optionalLoadLocation: './',
@@ -385,7 +384,17 @@ export class DryRunService {
         }
     }
 
-    async runScript({ syncName, nangoProps, optionalLoadLocation, input }: RunScriptOptions): Promise<RunnerOutput> {
+    async runScript({
+        syncName,
+        nangoProps,
+        optionalLoadLocation,
+        input
+    }: {
+        syncName: string;
+        nangoProps: NangoProps;
+        optionalLoadLocation: string;
+        input: object;
+    }): Promise<RunnerOutput> {
         const nango = new NangoSync(nangoProps);
         try {
             await nango.log(`Executing -> integration:"${nangoProps.provider}" script:"${syncName}"`);
