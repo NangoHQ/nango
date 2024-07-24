@@ -5,6 +5,8 @@ import helmet from 'helmet';
 export function securityMiddlewares(): RequestHandler[] {
     const hostPublic = basePublicUrl;
     const hostApi = baseUrl;
+    const hostWs = new URL(hostApi);
+    hostWs.protocol = hostApi.startsWith('https') ? 'wss' : 'ws';
     const reportOnly = process.env['CSP_REPORT_ONLY'];
 
     return [
@@ -22,7 +24,7 @@ export function securityMiddlewares(): RequestHandler[] {
             directives: {
                 defaultSrc: ["'self'", hostPublic, hostApi],
                 childSrc: "'self'",
-                connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://*.sentry.io', hostPublic, hostApi, 'https://*.posthog.com'],
+                connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://*.sentry.io', hostPublic, hostApi, hostWs.href, 'https://*.posthog.com'],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com'],
                 imgSrc: ["'self'", 'data:', hostPublic, hostApi, 'https://*.google-analytics.com', 'https://*.googleapis.com', 'https://*.posthog.com'],
