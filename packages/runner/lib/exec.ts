@@ -7,6 +7,7 @@ import * as vm from 'node:vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
+import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
 import { metrics, stringifyError } from '@nangohq/utils';
 import { logger } from './utils.js';
@@ -57,6 +58,8 @@ export async function exec(
                             return crypto;
                         case 'zod':
                             return zod;
+                        case 'botbuilder':
+                            return botbuilder;
                         default:
                             throw new Error(`Module '${moduleName}' is not allowed`);
                     }
