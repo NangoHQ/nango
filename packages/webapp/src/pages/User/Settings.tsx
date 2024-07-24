@@ -22,7 +22,7 @@ export const UserSettings: React.FC = () => {
         const update = await apiPatchUser({ name });
 
         if (!update || update.res.status === 200) {
-            toast({ title: 'Profile updated successfully', variant: 'success' });
+            toast({ title: 'You have successfully updated your profile', variant: 'success' });
             setEdit(false);
             void mutate();
         }
@@ -66,7 +66,7 @@ export const UserSettings: React.FC = () => {
                     <h3 className="font-semibold text-sm text-white">Display Name</h3>
                     <Input
                         ref={ref}
-                        variant={'flat'}
+                        variant={edit ? 'border' : 'flat'}
                         inputSize={'lg'}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -96,10 +96,10 @@ export const UserSettings: React.FC = () => {
                         }
                     />
                     {edit && (
-                        <div className="flex justify-end gap-1 items-center">
+                        <div className="flex justify-end gap-2 items-center">
                             <Button
-                                size={'sm'}
-                                variant={'zinc'}
+                                size={'md'}
+                                variant={'emptyFaded'}
                                 onClick={() => {
                                     setName(user!.name);
                                     setEdit(false);
@@ -107,7 +107,7 @@ export const UserSettings: React.FC = () => {
                             >
                                 Cancel
                             </Button>
-                            <Button size={'sm'} onClick={onSave}>
+                            <Button size={'md'} onClick={onSave}>
                                 Save
                             </Button>
                         </div>
