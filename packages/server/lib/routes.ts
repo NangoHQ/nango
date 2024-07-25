@@ -71,6 +71,7 @@ import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getEnvJs } from './controllers/v1/getEnvJs.js';
+import { getListIntegrations } from './controllers/config/getListIntegrations.js';
 
 export const router = express.Router();
 
@@ -141,7 +142,7 @@ publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustom
 // API routes (API key auth).
 publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
-publicAPI.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));
+publicAPI.route('/config').get(apiAuth, getListIntegrations);
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));

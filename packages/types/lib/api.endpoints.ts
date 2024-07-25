@@ -7,6 +7,7 @@ import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api';
 import type { PostForgotPassword, PutResetPassword, PostSignin, PostSignup } from './account/api';
 import type { DeleteInvite, PostInvite } from './invitations/api';
 import type { GetUser, PatchUser } from './user/api';
+import type { GetListIntegrations } from './integration/api';
 
 export type APIEndpoints =
     | PostSignup
@@ -28,7 +29,8 @@ export type APIEndpoints =
     | SetMetadata
     | UpdateMetadata
     | PostDeploy
-    | PostDeployConfirmation;
+    | PostDeployConfirmation
+    | GetListIntegrations;
 
 /**
  * Automatically narrow endpoints type with Method + Path
