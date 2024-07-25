@@ -92,7 +92,7 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
     }
 
     return (
-        <div className="border border-border-gray rounded-xl p-6">
+        <div className="border border-border-gray rounded-xl p-6 transition-colors hover:bg-active-gray">
             <div className="flex justify-between items-start">
                 <h3 className="text-md text-white">{title}</h3>
                 <div className="flex flex-col items-end">
@@ -103,21 +103,22 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
             </div>
             <div className="mt-7">
                 <ChartContainer config={chartConfig} className="h-[190px] w-full">
-                    <BarChart data={histogram}>
+                    <BarChart data={histogram} syncId={'anyId'}>
                         <CartesianGrid vertical={false} stroke="#323439" />
                         <XAxis
                             dataKey="date"
-                            interval={'preserveStartEnd'}
-                            tickLine={false}
-                            tickMargin={10}
-                            minTickGap={20}
+                            type="category"
                             axisLine={false}
-                            tickFormatter={(value) => {
-                                return value.toLocaleDateString('en-US', {
+                            tickLine={false}
+                            interval="preserveStartEnd"
+                            ticks={[histogram[0].date.getTime(), histogram[7].date.getTime(), histogram[histogram.length - 1].date.getTime()]}
+                            tickFormatter={(value: number) => {
+                                return new Date(value).toLocaleDateString('en-US', {
                                     month: 'short',
                                     day: 'numeric'
                                 });
                             }}
+                            tickMargin={10}
                         />
                         <YAxis
                             dataKey="total"
@@ -125,6 +126,7 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
                             tickLine={false}
                             tickMargin={10}
                             minTickGap={20}
+                            tickCount={3}
                             axisLine={false}
                             width={30}
                             amplitude={100}
@@ -133,6 +135,7 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
                             }}
                         />
                         <ChartTooltip
+                            offset={20}
                             content={
                                 <ChartTooltipContent
                                     labelFormatter={(_, pl) => {

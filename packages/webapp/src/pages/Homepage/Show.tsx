@@ -4,6 +4,7 @@ import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { InsightChart } from './components/InsightChart';
 import { useMeta } from '../../hooks/useMeta';
+import { globalEnv } from '../../utils/env';
 
 export const Homepage: React.FC = () => {
     const { meta } = useMeta();
@@ -13,7 +14,7 @@ export const Homepage: React.FC = () => {
         return null;
     }
 
-    if (!meta.features.logs) {
+    if (!globalEnv.features.logs) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Homepage}>
                 <div className="flex justify-between items-center">
@@ -48,7 +49,7 @@ export const Homepage: React.FC = () => {
             </div>
 
             <div className="grid gap-8 grid-cols-[repeat(auto-fill,minmax(300px,470px))] mt-8">
-                {meta.features.scripts && (
+                {globalEnv.features.scripts && (
                     <InsightChart
                         title="Sync"
                         type="sync"
@@ -63,7 +64,7 @@ export const Homepage: React.FC = () => {
                         }
                     />
                 )}
-                {meta.features.scripts && (
+                {globalEnv.features.scripts && (
                     <InsightChart
                         title="Action"
                         type="action"
@@ -91,19 +92,21 @@ export const Homepage: React.FC = () => {
                         </div>
                     }
                 />
-                <InsightChart
-                    title="Webhook"
-                    type="webhook_external"
-                    desc="External webhooks received"
-                    help={
-                        <div>
-                            No external webhook received in the last 14 days.{' '}
-                            <Link to="https://docs.nango.dev/integrate/guides/receive-webhooks-from-an-api" className="underline text-white">
-                                Learn more
-                            </Link>
-                        </div>
-                    }
-                />
+                {globalEnv.features.scripts && (
+                    <InsightChart
+                        title="Webhook"
+                        type="webhook_external"
+                        desc="External webhooks received"
+                        help={
+                            <div>
+                                No external webhook received in the last 14 days.{' '}
+                                <Link to="https://docs.nango.dev/integrate/guides/receive-webhooks-from-an-api" className="underline text-white">
+                                    Learn more
+                                </Link>
+                            </div>
+                        }
+                    />
+                )}
             </div>
         </DashboardLayout>
     );
