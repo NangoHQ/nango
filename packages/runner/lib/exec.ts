@@ -17,7 +17,7 @@ export async function exec(
     codeParams?: object,
     abortController: AbortController = new AbortController()
 ): Promise<RunnerOutput> {
-    const rawNango = nangoProps.scriptType === 'action' ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+    const rawNango = nangoProps.scriptType === 'sync' ? new NangoSync(nangoProps) : new NangoAction(nangoProps);
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
     nango.abortSignal = abortController.signal;
 
@@ -69,7 +69,8 @@ export async function exec(
                     throw new Error(content);
                 }
 
-                return await scriptExports.onWebhookPayloadReceived(nango, codeParams);
+                const output = await scriptExports.onWebhookPayloadReceived(nango, codeParams);
+                return { success: true, response: output, error: null };
             }
 
             if (!scriptExports.default || typeof scriptExports.default !== 'function') {
@@ -161,7 +162,7 @@ export async function exec(
                         success: false,
                         error: {
                             type: 'http_error',
-                            payload: errorResponse,
+                            payload: typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse,
                             status: error.response.status
                         },
                         response: null

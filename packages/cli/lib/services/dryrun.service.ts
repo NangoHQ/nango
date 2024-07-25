@@ -278,7 +278,7 @@ export class DryRunService {
                 updated_at: new Date()
             };
             const nangoProps: NangoProps = {
-                scriptType: syncInfo?.type === 'action' ? 'action' : 'sync',
+                scriptType: syncInfo?.type || 'sync',
                 host: process.env['NANGO_HOSTPORT'],
                 connectionId: nangoConnection.connection_id,
                 environmentId: nangoConnection.environment_id,
@@ -400,7 +400,7 @@ export class DryRunService {
             await nango.log(`Executing -> integration:"${nangoProps.provider}" script:"${syncName}"`);
 
             const script: string | null = localFileService.getIntegrationFile(syncName, nangoProps.providerConfigKey, optionalLoadLocation);
-            const isAction = nangoProps.scriptType == 'action';
+            const isAction = nangoProps.scriptType === 'action';
 
             if (!script) {
                 const content = `Unable to find script file for "${syncName}"`;

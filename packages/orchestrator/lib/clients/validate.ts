@@ -106,21 +106,21 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
             })
         );
     }
-    const syncCancel = syncAbortchema.safeParse(task);
-    if (syncCancel.success) {
+    const syncAbort = syncAbortchema.safeParse(task);
+    if (syncAbort.success) {
         return Ok(
             TaskSyncAbort({
-                id: syncCancel.data.id,
-                abortedTask: syncCancel.data.payload.abortedTask,
-                state: syncCancel.data.state,
-                name: syncCancel.data.name,
-                attempt: syncCancel.data.retryCount + 1,
-                syncId: syncCancel.data.payload.syncId,
-                syncName: syncCancel.data.payload.syncName,
-                connection: syncCancel.data.payload.connection,
-                groupKey: syncCancel.data.groupKey,
-                reason: syncCancel.data.payload.reason,
-                debug: syncCancel.data.payload.debug
+                id: syncAbort.data.id,
+                abortedTask: syncAbort.data.payload.abortedTask,
+                state: syncAbort.data.state,
+                name: syncAbort.data.name,
+                attempt: syncAbort.data.retryCount + 1,
+                syncId: syncAbort.data.payload.syncId,
+                syncName: syncAbort.data.payload.syncName,
+                connection: syncAbort.data.payload.connection,
+                groupKey: syncAbort.data.groupKey,
+                reason: syncAbort.data.payload.reason,
+                debug: syncAbort.data.payload.debug
             })
         );
     }
@@ -175,7 +175,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
         );
     }
     return Err(
-        `Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || postConnection.error || syncCancel.error)}`
+        `Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || postConnection.error || syncAbort.error)}`
     );
 }
 

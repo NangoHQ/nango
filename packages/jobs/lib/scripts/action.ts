@@ -82,7 +82,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
 
         return Ok(undefined);
     } catch (err) {
-        const error = new NangoError('action_script_failure', { error: err });
+        const error = new NangoError('action_script_failure', { error: err instanceof Error ? err.message : err });
         await onFailure({
             connection: {
                 id: task.connection.id,

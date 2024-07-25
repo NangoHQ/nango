@@ -5,33 +5,33 @@ import type { Result } from '@nangohq/utils';
 import { logger } from './utils.js';
 
 export async function scheduleAbortTask({ scheduler, task }: { scheduler: Scheduler; task: Task }): Promise<Result<Task | undefined>> {
-    const cancelled = validateTask(task);
-    if (cancelled.isOk()) {
-        if (cancelled.value.isSync()) {
-            const reason = cancelled.value.state === 'EXPIRED' ? 'Expired execution' : 'Execution was cancelled';
-            const cancelTask = await scheduler.immediate({
-                name: `abort:${cancelled.value.name}`,
+    const aborted = validateTask(task);
+    if (aborted.isOk()) {
+        if (aborted.value.isSync()) {
+            const reason = aborted.value.state === 'EXPIRED' ? 'Expired execution' : 'Execution was cancelled';
+            const abortTask = await scheduler.immediate({
+                name: `abort:${aborted.value.name}`,
                 payload: {
                     type: 'abort',
                     abortedTask: {
-                        id: cancelled.value.id,
-                        state: cancelled.value.state
+                        id: aborted.value.id,
+                        state: aborted.value.state
                     },
                     reason,
-                    syncId: cancelled.value.syncId,
-                    syncName: cancelled.value.syncName,
-                    debug: cancelled.value.debug,
-                    connection: cancelled.value.connection
+                    syncId: aborted.value.syncId,
+                    syncName: aborted.value.syncName,
+                    debug: aborted.value.debug,
+                    connection: aborted.value.connection
                 },
-                groupKey: cancelled.value.groupKey,
+                groupKey: aborted.value.groupKey,
                 retryMax: 0,
                 retryCount: 0,
                 createdToStartedTimeoutSecs: 60,
                 startedToCompletedTimeoutSecs: 60,
                 heartbeatTimeoutSecs: 60
             });
-            if (cancelTask.isErr()) {
-                logger.error(`Failed to create cancel task: ${stringifyError(cancelTask.error)}`);
+            if (abortTask.isErr()) {
+                logger.error(`Failed to create abort task: ${stringifyError(abortTask.error)}`);
             }
         }
     }

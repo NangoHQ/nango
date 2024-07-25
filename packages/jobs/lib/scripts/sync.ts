@@ -52,7 +52,6 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             throw new Error(`Provider config not found for connection: ${task.connection}. TaskId: ${task.id}`);
         }
 
-        syncType = lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
         syncConfig = await getSyncConfigRaw({
             environmentId: task.connection.environment_id,
             config_id: providerConfig.id!,
@@ -70,6 +69,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         }
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
+
+        syncType = syncConfig.sync_type === SyncType.INCREMENTAL && lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
 
         logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
@@ -141,7 +142,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         }
         return Ok(nangoProps);
     } catch (err) {
-        const error = new NangoError('sync_script_failure', { error: err });
+        const error = new NangoError('sync_script_failure', { error: err instanceof Error ? err.message : err });
         await onFailure({
             connection: task.connection,
             provider: providerConfig?.provider || 'unknown',
@@ -164,6 +165,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     const runTime = (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000;
+    const syncType = nangoProps.syncConfig.sync_type === SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL;
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     try {
@@ -217,7 +219,7 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
                     provider: nangoProps.provider,
                     syncId: nangoProps.syncId,
                     syncName: nangoProps.syncConfig.sync_name,
-                    syncType: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+                    syncType,
                     syncJobId: nangoProps.syncJobId,
                     debug: nangoProps.debug,
                     activityLogId: nangoProps.activityLogId!,
@@ -278,7 +280,7 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
                             updated,
                             deleted
                         },
-                        operation: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+                        operation: syncType,
                         logCtx
                     });
                 }
@@ -302,7 +304,7 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
                     providerConfigKey: nangoProps.providerConfigKey,
                     syncId: nangoProps.syncId,
                     syncJobId: String(nangoProps.syncJobId),
-                    syncType: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+                    syncType: nangoProps.syncConfig.sync_type!,
                     totalRunTime: `${runTime} seconds`,
                     debug: String(nangoProps.debug)
                 },
@@ -363,7 +365,7 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
             provider: nangoProps.provider,
             syncId: nangoProps.syncId!,
             syncName: nangoProps.syncConfig.sync_name,
-            syncType: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+            syncType,
             syncJobId: nangoProps.syncJobId!,
             activityLogId: nangoProps.activityLogId!,
             debug: nangoProps.debug,
@@ -371,7 +373,7 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
             runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
             failureSource: ErrorSourceEnum.CUSTOMER,
             isCancel: false,
-            error: new NangoError('sync_script_failure', { error: err })
+            error: new NangoError('sync_script_failure', { error: err instanceof Error ? err.message : err })
         });
     }
 }
@@ -396,7 +398,7 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
         provider: nangoProps.provider,
         syncId: nangoProps.syncId!,
         syncName: nangoProps.syncConfig.sync_name,
-        syncType: nangoProps.syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+        syncType: nangoProps.syncConfig.sync_type!,
         syncJobId: nangoProps.syncJobId!,
         activityLogId: nangoProps.activityLogId!,
         debug: nangoProps.debug,
@@ -452,7 +454,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             provider: providerConfig.provider,
             syncId: task.syncId,
             syncName: syncConfig.sync_name,
-            syncType: syncConfig.sync_type == SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL,
+            syncType: syncConfig.sync_type!,
             syncJobId: syncJob.id,
             activityLogId: syncJob.log_id!,
             debug: task.debug,
@@ -503,7 +505,7 @@ async function onFailure({
     provider: string;
     syncId: string;
     syncName: string;
-    syncType: SyncType.INCREMENTAL | SyncType.FULL;
+    syncType: SyncType;
     syncJobId: number;
     lastSyncDate?: Date | undefined;
     activityLogId: string;
@@ -568,7 +570,7 @@ async function onFailure({
                 description: error.message
             },
             now: lastSyncDate,
-            operation: syncType,
+            operation: syncType === SyncType.INCREMENTAL ? SyncType.INCREMENTAL : SyncType.FULL,
             logCtx: logCtx
         });
     }

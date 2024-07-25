@@ -34,7 +34,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
         const syncConfig = await getSyncConfigRaw({
             environmentId: providerConfig.environment_id,
             config_id: providerConfig.id!,
-            name: task.webhookName,
+            name: task.parentSyncName,
             isAction: false
         });
         if (!syncConfig) {
@@ -79,7 +79,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
 
         return Ok(undefined);
     } catch (err) {
-        const error = new NangoError('webhook_script_failure', { error: err });
+        const error = new NangoError('webhook_script_failure', { error: err instanceof Error ? err.message : err });
         await onFailure({
             connection: {
                 id: task.connection.id,

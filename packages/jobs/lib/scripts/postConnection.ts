@@ -79,7 +79,7 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
 
         return Ok(undefined);
     } catch (err) {
-        const error = new NangoError('post_connection_script_failure', { error: err });
+        const error = new NangoError('post_connection_script_failure', { error: err instanceof Error ? err.message : err });
         await onFailure({
             connection: {
                 id: task.connection.id,
