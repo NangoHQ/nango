@@ -56,7 +56,7 @@ export const Homepage: React.FC = () => {
                         desc="Sync executions"
                         help={
                             <div>
-                                No sync execution in the last 14 days.{' '}
+                                No sync executions in the last 14 days.{' '}
                                 <Link to="https://docs.nango.dev/integrate/guides/sync-data-from-an-api" className="underline text-white">
                                     Learn more
                                 </Link>
@@ -71,7 +71,7 @@ export const Homepage: React.FC = () => {
                         desc="Action executions"
                         help={
                             <div>
-                                No action execution in the last 14 days.{' '}
+                                No action executions in the last 14 days.{' '}
                                 <Link to="https://docs.nango.dev/integrate/guides/perform-workflows-with-an-api" className="underline text-white">
                                     Learn more
                                 </Link>
