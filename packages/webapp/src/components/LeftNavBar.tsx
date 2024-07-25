@@ -154,7 +154,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 <Link
                                     key={item.value}
                                     to={item.link}
-                                    className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                    className={`relative flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
                                         props.selectedItem === item.value ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                     }`}
                                 >
