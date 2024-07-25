@@ -5,7 +5,6 @@ import { MantineProvider, createTheme } from '@mantine/core';
 import { useSignout } from './utils/user';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { AUTH_ENABLED, isCloud, isLocal } from './utils/utils';
 import { fetcher } from './utils/api';
 import { useStore } from './store';
 import { Toaster } from './components/ui/toast/Toaster';
@@ -35,6 +34,7 @@ import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { SentryRoutes } from './utils/sentry';
 import { TeamSettings } from './pages/Team/Settings';
 import { UserSettings } from './pages/User/Settings';
+import { globalEnv } from './utils/env';
 
 const theme = createTheme({
     fontFamily: 'Inter'
@@ -47,7 +47,7 @@ const App = () => {
     const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
 
     useEffect(() => {
-        setShowInteractiveDemo(env === 'dev' && (isCloud() || isLocal()));
+        setShowInteractiveDemo(env === 'dev' && globalEnv.features.interactiveDemo);
     }, [env, setShowInteractiveDemo]);
 
     return (
@@ -87,17 +87,13 @@ const App = () => {
                             <Route path="/:env/logs" element={<LogsSearch />} />
                             <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
                             <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
-                            {AUTH_ENABLED && (
-                                <>
-                                    <Route path="/:env/account-settings" element={<Navigate to="/team-settings" />} />
-                                    <Route path="/:env/team-settings" element={<TeamSettings />} />
-                                    <Route path="/:env/user-settings" element={<UserSettings />} />
-                                </>
-                            )}
+                            <Route path="/:env/account-settings" element={<Navigate to="/team-settings" />} />
+                            <Route path="/:env/team-settings" element={<TeamSettings />} />
+                            <Route path="/:env/user-settings" element={<UserSettings />} />
                         </Route>
                         <Route path="/auth-link" element={<AuthLink />} />
                         {true && <Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
-                        {AUTH_ENABLED && (
+                        {globalEnv.features.auth && (
                             <>
                                 <Route path="/signin" element={<Signin />} />
                                 <Route path="/signup/:token" element={<InviteSignup />} />
@@ -108,7 +104,7 @@ const App = () => {
                                 <Route path="/signup/verification/:token" element={<EmailVerified />} />
                             </>
                         )}
-                        {(isCloud() || isLocal()) && <Route path="/signup" element={<Signup />} />}
+                        {globalEnv.features.auth && <Route path="/signup" element={<Signup />} />}
                         <Route path="*" element={<NotFound />} />
                     </SentryRoutes>
                 </SWRConfig>
