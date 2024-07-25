@@ -205,7 +205,7 @@ export function usePostInsights(env: string, body: PostInsights['Body']) {
     const { data, error, mutate } = useSWR<PostInsights['Success'], SWRError<PostInsights['Errors']>>(
         [`/api/v1/logs/insights?env=${env}`, body],
         ([url, body]) => swrFetcher(url, { method: 'POST', body: JSON.stringify(body) }),
-        { refreshInterval: 30 * 1000, revalidateIfStale: false, revalidateOnMount: true }
+        { refreshInterval: 60 * 1000, revalidateIfStale: false, revalidateOnMount: true }
     );
 
     const loading = !data && !error;
