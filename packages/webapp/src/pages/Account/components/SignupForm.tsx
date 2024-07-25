@@ -115,7 +115,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                         <Button
                             type="submit"
                             size={'lg'}
-                            className="justify-center"
+                            className="justify-center disabled:bg-dark-700"
                             disabled={!name || !email || !password || !passwordStrength}
                             isLoading={loading}
                         >
