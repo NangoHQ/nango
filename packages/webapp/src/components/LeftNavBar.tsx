@@ -12,13 +12,13 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { useStore } from '../store';
-import { isLocal, isCloud, isEnterprise } from '../utils/utils';
 import { useMeta } from '../hooks/useMeta';
 import { useSignout } from '../utils/user';
 import { HomeIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useEnvironment } from '../hooks/useEnvironment';
 import { useConnections } from '../hooks/useConnections';
 import { useUser } from '../hooks/useUser';
+import { globalEnv } from '../utils/env';
 
 export enum LeftNavBarItems {
     Homepage,
@@ -180,8 +180,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <span className="items-center w-32 text-gray-400 justify-center text-left text-sm truncate">{me?.email}</span>
                         </div>
                         <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />
-                        {(isCloud() || isEnterprise() || isLocal()) && showUserSettings && (
-                            <div className="absolute -top-[140px] text-sm left-0 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded">
+                        {globalEnv.features.auth && showUserSettings && (
+                            <div className="absolute bottom-[45px] text-sm left-0 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded">
                                 <ul className="text-gray-400 space-y-1 p-0.5 px-1">
                                     <li
                                         className={`flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'text-white bg-active-gray' : ''}`}

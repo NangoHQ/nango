@@ -1,5 +1,6 @@
 import { SentryErrorBoundary } from './utils/sentry';
 
+import './utils/env';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
