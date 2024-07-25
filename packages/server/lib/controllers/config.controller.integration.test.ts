@@ -70,6 +70,42 @@ describe('Should verify the config controller HTTP API calls', () => {
         expect(sendMock).toHaveBeenCalledWith({ error: { message: err.message, code: err.type, payload: err.payload } });
     });
 
+    it('CREATE a provider config successfully', async () => {
+        const result = await db.knex.select('*').from('_nango_environments');
+        const req: any = {
+            body: {
+                provider_config_key: 'test',
+                provider: 'notion',
+                oauth_client_id: 'abc',
+                oauth_client_secret: 'def',
+                oauth_scopes: 'abc,def'
+            },
+            headers: {
+                Authorization: `Bearer ${result[0].secret_key}`
+            }
+        };
+        const res = {
+            status: (_code: number) => {
+                return {
+                    send: (data: any) => {
+                        return data;
+                    }
+                };
+            },
+            locals
+        } as unknown as Response;
+        const statusSpy = vi.spyOn(res, 'status');
+        const next = () => {
+            return;
+        };
+        await configController.createProviderConfig(req as unknown as Request, res as unknown as Response<any, Required<RequestLocals>>, next as NextFunction);
+        expect(statusSpy).toHaveBeenCalledWith(200);
+        const config = await configService.getProviderConfig('test', 1);
+        expect(config).toBeDefined();
+        expect(config?.unique_key).toBe('test');
+        expect(config?.oauth_scopes).toBe('abc,def');
+    });
+
     it('UPDATE and then GET a provider config successfully', async () => {
         const result = await db.knex.select('*').from('_nango_environments');
         const req: any = {
