@@ -202,38 +202,18 @@ export function useSearchFilters(enabled: boolean, env: string, body: SearchFilt
 }
 
 export function usePostInsights(env: string, body: PostInsights['Body']) {
-    const [loading, setLoading] = useState<boolean>(false);
-    const [data, setData] = useState<PostInsights['Success']>();
-    const [error, setError] = useState<PostInsights['Errors']>();
+    const { data, error, mutate } = useSWR<PostInsights['Success'], SWRError<PostInsights['Errors']>>(
+        [`/api/v1/logs/insights?env=${env}`, body],
+        ([url, body]) => swrFetcher(url, { method: 'POST', body: JSON.stringify(body) }),
+        { refreshInterval: 30 * 1000, revalidateIfStale: false, revalidateOnMount: true }
+    );
 
-    async function fetchData() {
-        setLoading(true);
-        try {
-            const res = await apiFetch(`/api/v1/logs/insights?env=${env}`, {
-                method: 'POST',
-                body: JSON.stringify(body)
-            });
-            if (res.status !== 200) {
-                setData(undefined);
-                setError((await res.json()) as PostInsights['Errors']);
-                return;
-            }
+    const loading = !data && !error;
 
-            setError(undefined);
-            setData((await res.json()) as PostInsights['Success']);
-        } catch (err) {
-            setData(undefined);
-            setError(err as any);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        if (!loading) {
-            void fetchData();
-        }
-    }, [env, body.type]);
-
-    return { data: data?.data, error, loading };
+    return {
+        loading,
+        error: error?.json,
+        data: data?.data,
+        mutate
+    };
 }
