@@ -12,15 +12,8 @@ export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-
 export const githubRepo = 'https://github.com/NangoHQ/nango';
 export const githubIntegrationTemplates = `${githubRepo}/tree/master/integration-templates`;
 
-export const AUTH_ENABLED = isCloud() || isEnterprise() || isLocal();
-export const MANAGED_AUTH_ENABLED = isCloud() || isLocal();
-
 export function isHosted() {
     return process.env.REACT_APP_ENV === 'hosted';
-}
-
-export function isEnterprise() {
-    return process.env.REACT_APP_ENV === 'enterprise';
 }
 
 export function isStaging() {
@@ -29,14 +22,6 @@ export function isStaging() {
 
 export function isProd() {
     return process.env.REACT_APP_ENV === 'production';
-}
-
-export function isCloud() {
-    return isProd() || isStaging();
-}
-
-export function isLocal() {
-    return window.location.href.includes('localhost');
 }
 
 export function baseUrl() {

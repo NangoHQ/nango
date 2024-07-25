@@ -70,6 +70,7 @@ import { securityMiddlewares } from './middleware/security.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
+import { getEnvJs } from './controllers/v1/getEnvJs.js';
 
 export const router = express.Router();
 
@@ -107,6 +108,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
+router.get('/env.js', getEnvJs);
 
 // -------
 // Public API routes
@@ -300,7 +302,7 @@ router.use(web);
 const webappBuildPath = '../../../webapp/build';
 const staticSite = express.Router();
 staticSite.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
-staticSite.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
+staticSite.use(express.static(path.join(dirname(), webappBuildPath), { cacheControl: true, maxAge: '1h' }));
 staticSite.get('*', (_, res) => {
     const fp = path.join(dirname(), webappBuildPath, 'index.html');
     res.sendFile(fp, { headers: { 'Cache-Control': 'no-cache, private' } });

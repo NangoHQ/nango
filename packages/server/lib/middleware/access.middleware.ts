@@ -129,20 +129,26 @@ export class AccessMiddleware {
     }
 
     async noAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        res.locals['authType'] = 'none';
         if (!req.isAuthenticated()) {
             const user = await userService.getUserById(process.env['LOCAL_NANGO_USER_ID'] ? parseInt(process.env['LOCAL_NANGO_USER_ID']) : 0);
+            if (!user) {
+                res.status(500).send({ error: { code: 'server_error', message: 'failed to find user in no-auth mode' } });
+                return;
+            }
 
-            req.login(user!, function (err) {
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            req.login(user, async function (err) {
                 if (err) {
-                    return next(err);
+                    res.status(500).send({ error: { code: 'server_error', message: 'failed to no-auth' } });
+                    return;
                 }
 
-                next();
+                await fillLocalsFromSession(req, res, next);
             });
             return;
         }
 
-        res.locals['authType'] = 'none';
         await fillLocalsFromSession(req, res, next);
     }
 
