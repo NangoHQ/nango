@@ -4,7 +4,7 @@ import axios from 'axios';
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
     const response = await nango.proxy({
-        endpoint: '/v1.0/me',
+        endpoint: '/v1.0/organization',
         method: 'GET',
         connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key
@@ -14,7 +14,7 @@ export default async function execute(nango: Nango) {
         return;
     }
 
-    const { id } = response.data;
+    const [{ id }] = response.data.value;
 
-    await nango.updateConnectionConfig({ userId: id });
+    await nango.updateConnectionConfig({ tenantId: id });
 }
