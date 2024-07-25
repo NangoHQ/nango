@@ -90,7 +90,7 @@ export const InvitationAction: React.FC<{ invitation: ApiInvitation }> = ({ invi
         const update = await apiDeleteInvite(env, { email: invitation.email });
 
         if (!update || update.res.status === 200) {
-            toast({ title: `${invitation.email}'s invitation has successfully been revoked`, variant: 'success' });
+            toast({ title: `${invitation.email}'s invitation has been revoked`, variant: 'success' });
             setOpen(false);
             void mutate();
         }

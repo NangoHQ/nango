@@ -15,7 +15,7 @@ import {
     apiFetch
 } from '../../utils/api';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { isCloud, isHosted, defaultCallback } from '../../utils/utils';
+import { isHosted, defaultCallback } from '../../utils/utils';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import SecretInput from '../../components/ui/input/SecretInput';
@@ -25,6 +25,7 @@ import { useEnvironment } from '../../hooks/useEnvironment';
 import { connectSlack } from '../../utils/slack-connection';
 import WebhookCheckboxes from './WebhookCheckboxes';
 import type { WebhookSettings as CheckboxState } from '@nangohq/types';
+import { globalEnv } from '../../utils/env';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -669,7 +670,7 @@ export const EnvironmentSettings: React.FC = () => {
                                             </button>
                                         </div>
                                         <p className="mt-2 text-sm text-red-700">
-                                            {isCloud() ? (
+                                            {globalEnv.isCloud ? (
                                                 <>
                                                     Customizing the callback URL requires that you set up a 308 redirect from the custom callback URL to
                                                     https://api.nango.dev/oauth/callback.

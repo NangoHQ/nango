@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import type { ApiInvitation, PostSignup } from '@nangohq/types';
 import { Link, useNavigate } from 'react-router-dom';
-import { MANAGED_AUTH_ENABLED } from '../../../utils/utils';
 import { apiFetch, useSignupAPI } from '../../../utils/api';
 import GoogleButton from '../../../components/ui/button/Auth/Google';
 import Button from '../../../components/ui/button/Button';
 import { Input } from '../../../components/ui/input/Input';
 import { Password } from './Password';
+import { globalEnv } from '../../../utils/env';
 
 export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }> = ({ invitation, token }) => {
     const navigate = useNavigate();
@@ -115,7 +115,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                         <Button
                             type="submit"
                             size={'lg'}
-                            className="justify-center"
+                            className="justify-center disabled:bg-dark-700"
                             disabled={!name || !email || !password || !passwordStrength}
                             isLoading={loading}
                         >
@@ -133,7 +133,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                         )}
                     </div>
                 </form>
-                {MANAGED_AUTH_ENABLED && (
+                {globalEnv.features.managedAuth && (
                     <>
                         <div className="flex items-center justify-center my-4 text-xs">
                             <div className="border-t border-gray-600 flex-grow mr-7"></div>
