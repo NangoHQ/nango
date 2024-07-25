@@ -101,7 +101,12 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         }
 
         // Create a user
-        user = await userService.createUser(authorizedUser.email, name, '', '', accountId);
+        user = await userService.createUser({
+            email: authorizedUser.email,
+            name,
+            account_id: accountId,
+            email_verified: true
+        });
         if (!user) {
             res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
             return;
