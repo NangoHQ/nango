@@ -63,16 +63,21 @@ export const InviteSignup: React.FC = () => {
         return (
             <DefaultLayout>
                 <div className="flex flex-col justify-center">
-                    <div className="flex flex-col justify-center w-80 mt-4">
+                    <div className="flex flex-col justify-center items-center w-80 mt-4 gap-8">
                         {error.error.code === 'not_found' ? (
-                            <div className="flex flex-col items-center gap-4">
-                                <Info color={'blue'} classNames="text-xs" size={20}>
-                                    This invitation does not exists or is expired
-                                </Info>
-                                <Link to={'/signup'}>
-                                    <Button>Back to signup</Button>
-                                </Link>
-                            </div>
+                            <>
+                                <div>
+                                    <h2 className="text-3xl font-semibold text-white text-center">Invitation Error</h2>
+                                    <div className="text-text-light-gray text-sm">This invitation no longer exists or is expired.</div>
+                                </div>
+                                <div className="w-full">
+                                    <Link to={'/signup'}>
+                                        <Button className="w-full justify-center" size={'lg'}>
+                                            Back to signup
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </>
                         ) : (
                             <Info color={'red'} classNames="text-xs" size={20}>
                                 An error occurred, refresh your page or reach out to the support.{' '}
@@ -96,14 +101,17 @@ export const InviteSignup: React.FC = () => {
         return (
             <DefaultLayout>
                 <div className="flex flex-col justify-center">
-                    <div className="flex flex-col justify-center mt-4 gap-4">
-                        <Info size={20} color="orange" classNames="text-xs">
-                            This invitation was sent to a different email. Please logout and use the correct account
-                        </Info>
+                    <div className="flex flex-col justify-center items-center w-80 mt-4 gap-8">
+                        <div>
+                            <h2 className="text-3xl font-semibold text-white text-center">Invitation Error</h2>
+                            <div className="text-text-light-gray text-sm text-center">
+                                This invitation was sent to a different email. Please logout and use the correct account
+                            </div>
+                        </div>
 
                         <div className="flex gap-2 justify-center">
                             <Link to="/">
-                                <Button variant={'zinc'}>Back to home</Button>
+                                <Button variant={'emptyFaded'}>Back to home</Button>
                             </Link>
                             <Button onClick={async () => await signout()}>
                                 <ExitIcon className="h-5 w-5 mr-2" />

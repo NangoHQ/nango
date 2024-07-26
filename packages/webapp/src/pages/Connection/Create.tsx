@@ -50,6 +50,9 @@ export default function IntegrationCreate() {
     const [oAuthClientId, setOAuthClientId] = useState('');
     const [tokenId, setTokenId] = useState('');
     const [tokenSecret, setTokenSecret] = useState('');
+    const [patName, setpatName] = useState('');
+    const [patSecret, setpatSecret] = useState('');
+    const [contentUrl, setContentUrl] = useState('');
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
@@ -185,6 +188,14 @@ export default function IntegrationCreate() {
                 ...credentials,
                 token_id: tokenId,
                 token_secret: tokenSecret
+            };
+        }
+
+        if (authMode === 'TABLEAU') {
+            credentials = {
+                pat_name: patName,
+                pat_secret: patSecret,
+                content_url: contentUrl
             };
         }
 
@@ -389,6 +400,19 @@ export default function IntegrationCreate() {
             }
         }
 
+        let tableauCredentialsString = '';
+        if (integration?.authMode === 'TABLEAU') {
+            if (patName && patSecret && contentUrl) {
+                tableauCredentialsString = `
+    credentials: {
+        pat_name: '${patName}',
+        pat_secret: '${patSecret}',
+        content_url: '${contentUrl}'
+    }
+  `;
+            }
+        }
+
         let oauth2ClientCredentialsString = '';
 
         if (integration?.authMode === 'OAUTH2_CC') {
@@ -432,6 +456,7 @@ export default function IntegrationCreate() {
             !appStoreAuthString &&
             !oauthCredentialsString &&
             !oauth2ClientCredentialsString &&
+            !tableauCredentialsString &&
             !tbaCredentialsString
                 ? ''
                 : ', { ' +
@@ -444,6 +469,7 @@ export default function IntegrationCreate() {
                       appStoreAuthString,
                       oauthCredentialsString,
                       oauth2ClientCredentialsString,
+                      tableauCredentialsString,
                       tbaCredentialsString
                   ]
                       .filter(Boolean)
@@ -682,6 +708,52 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             placeholder="Token secret"
                                             optionalvalue={tokenSecret}
                                             setoptionalvalue={setTokenSecret}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {integration?.authMode === 'TABLEAU' && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="pat_name" className="text-text-light-gray block text-sm font-semibold">
+                                            PAT Name
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="pat_name"
+                                            name="pat_name"
+                                            placeholder="PAT Name"
+                                            optionalvalue={patName}
+                                            setoptionalvalue={setpatName}
+                                        />
+                                    </div>
+                                    <div className="mt-4">
+                                        <label htmlFor="pat_secret" className="text-text-light-gray block text-sm font-semibold">
+                                            PAT Secret
+                                        </label>
+                                        <SecretInput
+                                            copy={true}
+                                            id="pat_secret"
+                                            name="pat_secret"
+                                            placeholder="PAT Secret"
+                                            optionalvalue={patSecret}
+                                            setoptionalvalue={setpatSecret}
+                                        />
+                                    </div>
+                                    <div className="mt-4">
+                                        <label htmlFor="content_url" className="text-text-light-gray block text-sm font-semibold">
+                                            Conent Url
+                                        </label>
+                                        <SecretInput
+                                            copy={true}
+                                            id="content_url"
+                                            name="content_url"
+                                            placeholder="Conent Url"
+                                            value={contentUrl}
+                                            setoptionalvalue={setContentUrl}
                                         />
                                     </div>
                                 </div>

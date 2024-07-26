@@ -95,14 +95,21 @@ class UserService {
         return result || null;
     }
 
-    async createUser(
-        email: string,
-        name: string,
-        hashed_password: string,
-        salt: string,
-        account_id: number,
-        email_verified: boolean = true
-    ): Promise<User | null> {
+    async createUser({
+        email,
+        name,
+        hashed_password = '',
+        salt = '',
+        account_id,
+        email_verified
+    }: {
+        email: string;
+        name: string;
+        hashed_password?: string;
+        salt?: string;
+        account_id: number;
+        email_verified: boolean;
+    }): Promise<User | null> {
         const expires_at = new Date(new Date().getTime() + VERIFICATION_EMAIL_EXPIRATION);
         const result: Pick<User, 'id'>[] = await db.knex
             .from<User>('_nango_users')

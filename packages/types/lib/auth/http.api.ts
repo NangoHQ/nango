@@ -28,3 +28,30 @@ export type TbaAuthorization = Endpoint<{
         connectionId: string;
     };
 }>;
+
+export type TableauAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        pat_name: string;
+        pat_secret: string;
+        content_url?: string;
+    };
+    QueryParams: {
+        connectionId: string;
+        connectionConfig: ConnectionConfig;
+    };
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/tableau';
+    Error:
+        | ApiError<'invalid_body'>
+        | ApiError<'invalid_query_params'>
+        | ApiError<'unknown_provider_config'>
+        | ApiError<'invalid_auth_mode'>
+        | ApiError<'invalid_credentials'>;
+    Success: {
+        providerConfigKey: string;
+        connectionId: string;
+    };
+}>;

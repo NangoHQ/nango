@@ -43,7 +43,9 @@ export const CopyButton: React.FC<ClipboardButtonProps> = ({ text, iconType = 'c
                     {iconType === 'link' ? <Link2Icon className={cn(`h-4`, className)} /> : <CopyIcon className={cn(`h-4 w-4`, className)} />}
                 </Button>
             </TooltipTrigger>
-            <TooltipContent sideOffset={10}>{tooltipText}</TooltipContent>
+            <TooltipContent sideOffset={10} className="text-white">
+                {tooltipText}
+            </TooltipContent>
         </Tooltip>
     );
 };

@@ -16,6 +16,7 @@ export enum AnalyticsTypes {
     API_CONNECTION_INSERTED = 'server:api_key_connection_inserted',
     API_CONNECTION_UPDATED = 'server:api_key_connection_updated',
     TBA_CONNECTION_INSERTED = 'server:tba_connection_inserted',
+    TABLEAU_CONNECTION_INSERTED = 'server:tableau_connection_inserted',
     CONFIG_CREATED = 'server:config_created',
     CONNECTION_INSERTED = 'server:connection_inserted',
     CONNECTION_LIST_FETCHED = 'server:connection_list_fetched',

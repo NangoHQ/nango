@@ -21,7 +21,7 @@
                 },
                 "auth_mode": {
                     "type": "string",
-                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA"]
+                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU"]
                 },
                 "authorization_method": {
                     "type": "string",
