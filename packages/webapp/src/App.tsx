@@ -27,13 +27,14 @@ import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
 import { EmailVerified } from './pages/Account/EmailVerified';
 import AuthLink from './pages/AuthLink';
-import { Homepage } from './pages/Homepage';
+import { Homepage } from './pages/Homepage/Show';
 import { NotFound } from './pages/NotFound';
 import { LogsSearch } from './pages/Logs/Search';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { SentryRoutes } from './utils/sentry';
 import { TeamSettings } from './pages/Team/Settings';
 import { UserSettings } from './pages/User/Settings';
+import { Root } from './pages/Root';
 import { globalEnv } from './utils/env';
 
 const theme = createTheme({
@@ -69,8 +70,9 @@ const App = () => {
                     }}
                 >
                     <SentryRoutes>
-                        <Route path="/" element={<Homepage />} />
+                        <Route path="/" element={<Root />} />
                         <Route element={<PrivateRoute />} key={env}>
+                            <Route path="/:env" element={<Homepage />} />
                             {showInteractiveDemo && (
                                 <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
                                     <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />

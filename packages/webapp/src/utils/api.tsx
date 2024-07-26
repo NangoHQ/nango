@@ -23,8 +23,8 @@ export interface SWRError<TError> {
 /**
  * Default SWR fetcher does not throw on HTTP error
  */
-export async function swrFetcher<TBody>(url: string): Promise<TBody> {
-    const res = await apiFetch(url);
+export async function swrFetcher<TBody>(url: string, req?: RequestInit | undefined): Promise<TBody> {
+    const res = await apiFetch(url, req);
 
     if (!res.ok) {
         throw { json: await res.json(), status: res.status };
