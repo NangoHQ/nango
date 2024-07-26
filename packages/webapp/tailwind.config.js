@@ -9,7 +9,7 @@ module.exports = {
         extend: {
             colors: {
                 'bg-black': '#0E1014',
-                'pure-black': '#05050a',
+                'pure-black': '#05050A',
                 'active-gray': '#161720',
                 'hover-gray': '#1D1F28',
                 'text-light-gray': '#A9A9A9',
@@ -25,12 +25,14 @@ module.exports = {
                 white: '#FFFFFF',
 
                 // From Figma
+                'green-light': '#EDFBD8',
+                'green-base-35': 'rgba(132, 214, 90, 0.35)',
                 'green-base': '#84D65A',
                 'green-dark': '#2B641E',
                 'blue-base': '#509AF8',
                 'red-base': '#EF665B',
                 'red-dark': '#71192F',
-                'red-base-35': 'rgba(57, 58, 55, 0.16)',
+                'red-base-35': 'rgba(239, 102, 91, 0.35)',
                 'yellow-base': '#F7C752',
                 'yellow-base-35': 'rgba(247, 199, 82, 0.35)',
                 'alert-red': '#EF665B',
@@ -44,7 +46,8 @@ module.exports = {
                 'dark-700': '#18181B',
                 'dark-800': '#09090B',
                 'border-gray-400': '#323439',
-                'text-light': '#A9ACB3'
+                'text-light': '#A9ACB3',
+                ring: '#A9ACB3'
             },
             width: {
                 largebox: '1200px',
