@@ -96,18 +96,14 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
 
 export function parseTableauTokenExpirationDate(timeStr: string): Date | undefined {
     // sample estimatedTimeToExpire: "estimatedTimeToExpiration": "177:05:38"
-    const [daysStr, hoursStr, minutesStr] = timeStr.split(':');
+    const [days, hours, minutes] = timeStr.split(':').map(Number);
 
-    const days = Number(daysStr);
-    const hours = Number(hoursStr);
-    const minutes = Number(minutesStr);
-
-    if (isNaN(days) || isNaN(hours) || isNaN(minutes)) {
-        return;
+    if (days && hours && minutes) {
+        const milliseconds = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
+        return new Date(Date.now() + milliseconds);
     }
 
-    const millisecondsToAdd = (days * 24 * 60 * 60 + hours * 60 * 60 + minutes * 60) * 1000;
-    return new Date(Date.now() + millisecondsToAdd);
+    return undefined;
 }
 
 export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
