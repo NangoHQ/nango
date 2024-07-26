@@ -12,6 +12,7 @@ import type {
     CustomCredentials,
     OAuth2ClientCredentials,
     TbaCredentials,
+    TableauCredentials,
     UnauthCredentials
 } from '@nangohq/types';
 import type {
@@ -253,6 +254,7 @@ export class Nango {
         | UnauthCredentials
         | CustomCredentials
         | TbaCredentials
+        | TableauCredentials
     > {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 
