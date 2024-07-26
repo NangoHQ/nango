@@ -683,7 +683,7 @@ export class Nango {
      * @param input - An optional input data for the action
      * @returns A promise that resolves with an object containing the response data from the triggered action
      */
-    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<object> {
+    public async triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out> {
         const url = `${this.serverUrl}/action/trigger`;
 
         const headers = {
