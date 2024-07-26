@@ -70,7 +70,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
             env,
             connections: connection?.connection_id,
             syncs: sync.name,
-            day: new Date(sync.latest_sync?.updated_at)
+            day: sync.latest_sync?.updated_at ? new Date(sync.latest_sync.updated_at) : null
         });
     }, [env, sync.name]);
 

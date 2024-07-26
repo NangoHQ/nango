@@ -15,7 +15,7 @@ export function getLogsUrl(
         if (!val || key === 'env') {
             continue;
         }
-        if (key === 'day') {
+        if (key === 'day' && val) {
             const from = new Date(val);
             from.setHours(0, 0);
             const to = new Date(val);
