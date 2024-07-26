@@ -1,61 +1,313 @@
 {
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
+    "additionalProperties": false,
     "patternProperties": {
         "^[a-z0-9-]+$": {
             "type": "object",
+            "additionalProperties": false,
             "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "auth": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "response_type": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "auth_mode": {
                     "type": "string",
                     "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU"]
                 },
-                "authorization_url": { "type": "string" },
-                "token_url": {
-                    "oneOf": [
-                        { "type": "string" },
-                        {
-                            "type": "object",
-                            "properties": {
-                                "API_KEY": { "type": "string" },
-                                "APP": { "type": "string" },
-                                "APP_STORE": { "type": "string" },
-                                "BASIC": { "type": "string" },
-                                "NONE": { "type": "string" },
-                                "OAUTH1": { "type": "string" },
-                                "OAUTH2": { "type": "string" },
-                                "CUSTOM": { "type": "string" }
-                            },
-                            "additionalProperties": false
-                        }
-                    ]
+                "authorization_method": {
+                    "type": "string",
+                    "enum": ["header"]
                 },
-                "authorization_params": { "type": "object" },
-                "token_params": { "type": "object" },
-                "refresh_params": { "type": "object" },
-                "scope_separator": { "type": "string" },
-                "docs": { "type": "string" },
-                "body_format": { "type": "string" },
+                "authorization_params": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "access_type": {
+                            "type": "string",
+                            "enum": ["offline"]
+                        },
+                        "approval_prompt": {
+                            "type": "string",
+                            "enum": ["auto", "force"]
+                        },
+                        "duration": {
+                            "type": "string",
+                            "enum": ["permanent"]
+                        },
+                        "expiration": {
+                            "type": "string",
+                            "enum": ["never"]
+                        },
+                        "force_verify": {
+                            "type": "boolean"
+                        },
+                        "nonce": {
+                            "type": "string"
+                        },
+                        "prompt": {
+                            "type": "string",
+                            "enum": ["consent"]
+                        },
+                        "response_mode": {
+                            "type": "string"
+                        },
+                        "response_type": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "authorization_url": {
+                    "type": "string"
+                },
+                "authorization_url_replacements": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "body_format": {
+                    "type": "string"
+                },
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "connection_configuration": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "decode_url": {
+                    "type": "boolean"
+                },
+                "default_scopes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "disable_pkce": {
+                    "type": "boolean"
+                },
+                "docs": {
+                    "type": "string"
+                },
+                "post_connection_script": {
+                    "type": "string"
+                },
                 "proxy": {
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
-                        "base_url": { "type": "string" },
-                        "paginate": { "type": "object" },
+                        "base_url": {
+                            "type": "string"
+                        },
+                        "decompress": {
+                            "type": "boolean"
+                        },
                         "headers": {
                             "type": "object",
+                            "additionalProperties": false,
                             "patternProperties": {
-                                "^[a-zA-Z0-9-]+$": { "type": "string" }
+                                "^[a-zA-Z0-9-]+$": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "paginate": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "cursor_name_in_request": {
+                                    "type": "string"
+                                },
+                                "cursor_path_in_response": {
+                                    "type": "string"
+                                },
+                                "limit_name_in_request": {
+                                    "type": "string"
+                                },
+                                "link_rel_in_response_header": {
+                                    "type": "string"
+                                },
+                                "link_path_in_response_body": {
+                                    "type": "string"
+                                },
+                                "offset_name_in_request": {
+                                    "type": "string"
+                                },
+                                "offset_name_in_response": {
+                                    "type": "string"
+                                },
+                                "response_path": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "enum": ["link", "cursor", "offset"]
+                                }
                             }
                         },
                         "query": {
                             "type": "object",
+                            "additionalProperties": true
+                        },
+                        "retry": {
+                            "type": "object",
+                            "additionalProperties": false,
                             "properties": {
-                                "api_key": { "type": "string" }
+                                "after": {
+                                    "type": "string"
+                                },
+                                "at": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "verification": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "method": {
+                                    "type": "string",
+                                    "enum": ["GET", "POST"]
+                                },
+                                "endpoint": {
+                                    "type": "string"
+                                },
+                                "base_url_override": {
+                                    "type": "string"
+                                },
+                                "headers": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "properties": {
+                                        "^[a-zA-Z0-9-]+$": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
+                },
+                "redirect_uri_metadata": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "refresh_url": {
+                    "type": "string"
+                },
+                "refresh_params": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "grant_type": {
+                            "type": "string",
+                            "enum": ["refresh_token"]
+                        }
+                    }
+                },
+                "request_params": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[a-zA-Z0-9-]+$": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "request_url": {
+                    "type": "string"
+                },
+                "scope_separator": {
+                    "type": "string"
+                },
+                "signature_method": {
+                    "type": "string",
+                    "enum": ["HMAC-SHA1", "PLAINTEXT"]
+                },
+                "token_expiration_buffer": {
+                    "type": "number"
+                },
+                "token_params": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "grant_type": {
+                            "type": "string",
+                            "enum": ["authorization_code", "client_credentials"]
+                        },
+                        "request": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "token_request_auth_method": {
+                    "type": "string",
+                    "enum": ["basic", "custom"]
+                },
+                "token_response_metadata": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "token_url": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "API_KEY": {
+                                    "type": "string"
+                                },
+                                "APP": {
+                                    "type": "string"
+                                },
+                                "APP_STORE": {
+                                    "type": "string"
+                                },
+                                "BASIC": {
+                                    "type": "string"
+                                },
+                                "NONE": {
+                                    "type": "string"
+                                },
+                                "OAUTH1": {
+                                    "type": "string"
+                                },
+                                "OAUTH2": {
+                                    "type": "string"
+                                },
+                                "CUSTOM": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "webhook_user_defined_secret": {
+                    "type": "boolean"
+                },
+                "webhook_routing_script": {
+                    "type": "string"
                 }
-            },
-            "additionalProperties": true
+            }
         }
-    },
-    "additionalProperties": false
+    }
 }
