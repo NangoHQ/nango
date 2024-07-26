@@ -11,6 +11,7 @@ export interface AuthModes {
     App: 'APP';
     None: 'NONE';
     TBA: 'TBA';
+    Tableau: 'TABLEAU';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -132,6 +133,15 @@ export interface TbaCredentials {
     };
 }
 
+export interface TableauCredentials extends CredentialsCommon {
+    type: AuthModes['Tableau'];
+    pat_name: string;
+    pat_secret: string;
+    content_url?: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
+
 export type UnauthCredentials = Record<string, never>;
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;
@@ -154,4 +164,5 @@ export type AllAuthCredentials =
     | AppStoreCredentials
     | UnauthCredentials
     | CustomCredentials
-    | TbaCredentials;
+    | TbaCredentials
+    | TableauCredentials;

@@ -259,6 +259,19 @@ export default class Nango {
             return { params: tbaCredentials } as unknown as ConnectionConfig;
         }
 
+        if ('pat_name' in credentials && 'pat_secret' in credentials) {
+            const tableauCredentials: TableauCredentials = {
+                pat_name: credentials.pat_name as string,
+                pat_secret: credentials.pat_secret as string
+            };
+
+            if ('content_url' in credentials) {
+                tableauCredentials['content_url'] = credentials.content_url as string;
+            }
+
+            return { params: tableauCredentials } as unknown as ConnectionConfig;
+        }
+
         return { params };
     }
 
@@ -365,6 +378,27 @@ export default class Nango {
             return res.json();
         }
 
+        if ('pat_name' in credentials && 'pat_secret' in credentials) {
+            const tableauCredentials = credentials as unknown as TableauCredentials;
+
+            const url = this.hostBaseUrl + `/auth/tableau/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(tableauCredentials)
+            });
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+                throw new AuthError(errorResponse.error, errorResponse.type);
+            }
+
+            return res.json();
+        }
+
         if ('client_id' in credentials && 'client_secret' in credentials) {
             const oauthCredentials = credentials as unknown as OAuth2ClientCredentials;
 
@@ -457,7 +491,7 @@ interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
-    credentials?: OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials | TBACredentials;
+    credentials?: OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials | TBACredentials | TableauCredentials;
 }
 
 interface OAuthCredentialsOverride {
@@ -486,6 +520,12 @@ interface TBACredentials {
     token_secret: string;
     oauth_client_id_override?: string;
     oauth_client_secret_override?: string;
+}
+
+interface TableauCredentials {
+    pat_name: string;
+    pat_secret: string;
+    content_url?: string;
 }
 
 interface OAuth2ClientCredentials {

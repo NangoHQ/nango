@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     SquaresPlusIcon,
@@ -14,14 +14,15 @@ import {
 import { useStore } from '../store';
 import { useMeta } from '../hooks/useMeta';
 import { useSignout } from '../utils/user';
-import { RocketIcon } from '@radix-ui/react-icons';
+import { HomeIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useEnvironment } from '../hooks/useEnvironment';
 import { useConnections } from '../hooks/useConnections';
 import { useUser } from '../hooks/useUser';
 import { globalEnv } from '../utils/env';
 
 export enum LeftNavBarItems {
-    Integrations = 0,
+    Homepage,
+    Integrations,
     Connections,
     EnvironmentSettings,
     Syncs,
@@ -33,6 +34,12 @@ export enum LeftNavBarItems {
 
 export interface LeftNavBarProps {
     selectedItem: LeftNavBarItems;
+}
+interface MenuItem {
+    name: string;
+    value: LeftNavBarItems;
+    icon: React.FC<{ className?: string }>;
+    link: string;
 }
 
 const navTextColor = 'text-gray-400';
@@ -65,6 +72,25 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         };
     }, [showUserSettings]);
 
+    const items = useMemo(() => {
+        const list: MenuItem[] = [{ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` }];
+        if (meta && showInteractiveDemo && !meta.onboardingComplete) {
+            list.push({ name: 'Interactive Demo', icon: RocketIcon, value: LeftNavBarItems.InteractiveDemo, link: `/dev/interactive-demo` });
+        }
+
+        list.push({ name: 'Integrations', icon: SquaresPlusIcon, value: LeftNavBarItems.Integrations, link: `/dev/integrations` });
+        list.push({ name: 'Connections', icon: LinkIcon, value: LeftNavBarItems.Connections, link: `/dev/connections` });
+        list.push({ name: 'Logs', icon: QueueListIcon, value: LeftNavBarItems.Logs, link: `/dev/logs` });
+        list.push({
+            name: 'Environment Settings',
+            icon: AdjustmentsHorizontalIcon,
+            value: LeftNavBarItems.EnvironmentSettings,
+            link: `/dev/environment-settings`
+        });
+
+        return list;
+    }, [env, showInteractiveDemo, meta]);
+
     const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newEnv = e.target.value;
         setEnv(newEnv);
@@ -86,7 +112,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         navigate(newPath);
     };
 
-    if (!meta) {
+    if (!meta || !me) {
         return null;
     }
 
@@ -121,59 +147,25 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             </select>
                         </div>
                     )}
-                    <div className="space-y-1">
-                        {showInteractiveDemo && !meta.onboardingComplete && (
-                            <Link
-                                to="/dev/interactive-demo"
-                                className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                    props.selectedItem === LeftNavBarItems.InteractiveDemo ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
-                                }`}
-                            >
-                                <RocketIcon />
-                                <p>Interactive Demo</p>
-                            </Link>
-                        )}
-                        <Link
-                            to={`/${env}/integrations`}
-                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                props.selectedItem === LeftNavBarItems.Integrations ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
-                            }`}
-                        >
-                            <SquaresPlusIcon
-                                className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Integrations ? 'text-white' : 'text-gray-400'}`}
-                            />
-                            <p>Integrations</p>
-                        </Link>
-                        <Link
-                            to={`/${env}/connections`}
-                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md relative text-sm ${navTextColor} ${
-                                props.selectedItem === LeftNavBarItems.Connections ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
-                            }`}
-                        >
-                            <LinkIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Connections ? 'text-white' : 'text-gray-400'}`} />
-                            {errorNotifications > 0 && <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>}
-                            <p>Connections</p>
-                        </Link>
-                        <Link
-                            to={`/${env}/logs`}
-                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                props.selectedItem === LeftNavBarItems.Logs ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
-                            }`}
-                        >
-                            <QueueListIcon className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.Logs ? 'text-white' : 'text-gray-400'}`} />
-                            <p className="flex gap-4 items-center">Logs</p>
-                        </Link>
-                        <Link
-                            to={`/${env}/environment-settings`}
-                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                props.selectedItem === LeftNavBarItems.EnvironmentSettings ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
-                            }`}
-                        >
-                            <AdjustmentsHorizontalIcon
-                                className={`flex h-5 w-5 ${props.selectedItem === LeftNavBarItems.EnvironmentSettings ? 'text-white' : 'text-gray-400'}`}
-                            />
-                            <p>Environment Settings</p>
-                        </Link>
+                    <div className="flex flex-col gap-1">
+                        {items.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                                <Link
+                                    key={item.value}
+                                    to={item.link}
+                                    className={`relative flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                        props.selectedItem === item.value ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
+                                    }`}
+                                >
+                                    <Icon className="w-[18px] h-[18px]" />
+                                    {item.name === 'Connections' && errorNotifications > 0 && (
+                                        <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                    )}
+                                    <p>{item.name}</p>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
                 <div>
