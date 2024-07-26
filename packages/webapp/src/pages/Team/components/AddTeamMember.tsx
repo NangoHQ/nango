@@ -69,8 +69,8 @@ export const AddTeamMember: React.FC<{ team: ApiTeam }> = ({ team }) => {
         const update = await apiPostInvite(env, { emails: emails.map((email) => email.value).filter(Boolean) });
 
         if (update) {
-            if (update.res.status === 200) {
-                toast({ title: `Added successfully to ${team.name}'s team`, variant: 'success' });
+            if (update.res.status === 200 && 'data' in update.json) {
+                toast({ title: `${update.json.data.invited.length} new members have successfully been added to ${team.name}'s team`, variant: 'success' });
                 setOpen(false);
                 setEmails([{ value: '' }]);
                 void mutate();

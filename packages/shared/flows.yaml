@@ -2725,6 +2725,17 @@ integrations:
                     - offline_access
                 output: SharePointMetadata
                 version: 1.0.0
+            fetch-file:
+                description: >
+                    This action will be used to fetch the latest file download_url which
+                    can be used to download the actual file.
+                endpoint: GET /sharepoint/fetch-file
+                scopes:
+                    - Sites.ReadWrite.All
+                    - offline_access
+                output: FetchFile
+                input: FetchFileInput
+                version: 1.0.0
         syncs:
             file-sync:
                 description: >
@@ -2761,6 +2772,12 @@ integrations:
                 webUrl: string
             SharePointMetadata:
                 sitesToSync: Site[]
+            FetchFileInput:
+                siteId: string
+                itemId: string
+            FetchFile:
+                id: string
+                download_url: string | null
     slack:
         syncs:
             users:

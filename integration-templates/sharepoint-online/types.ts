@@ -225,3 +225,9 @@ export interface DriveItem {
     webDavUrl?: string;
     webUrl?: string;
 }
+
+export interface SharepointFetchFile {
+    '@odata.context': string;
+    id: string;
+    '@microsoft.graph.downloadUrl'?: string;
+}

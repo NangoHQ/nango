@@ -339,7 +339,7 @@ export declare class NangoAction {
     getEnvironmentVariables(): Promise<EnvironmentVariable[] | null>;
     getFlowAttributes<A = object>(): A | null;
     paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void>;
-    triggerAction<T = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<T>;
+    triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out>;
     triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;
     private sendLogToPersist;
 }
