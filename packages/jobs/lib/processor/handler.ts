@@ -2,10 +2,10 @@ import tracer from 'dd-trace';
 import type { OrchestratorTask } from '@nangohq/nango-orchestrator';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import { startSync, abortSync } from '../scripts/sync.js';
-import { startAction } from '../scripts/action.js';
-import { startWebhook } from '../scripts/webhook.js';
-import { startPostConnection } from '../scripts/postConnection.js';
+import { startSync, abortSync } from '../execution/sync.js';
+import { startAction } from '../execution/action.js';
+import { startWebhook } from '../execution/webhook.js';
+import { startPostConnection } from '../execution/postConnection.js';
 
 export async function handler(task: OrchestratorTask): Promise<Result<void>> {
     if (task.isSync()) {

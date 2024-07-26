@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
-import { handleError, handleOutput } from '../../scripts/operations/output.js';
+import { handleError, handleOutput } from '../../execution/operations/output.js';
 import type { JsonValue } from 'type-fest';
 import type { NangoProps } from '@nangohq/shared';
 
