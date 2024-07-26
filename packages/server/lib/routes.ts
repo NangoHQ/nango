@@ -63,13 +63,15 @@ import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
 import { getUser } from './controllers/v1/user/getUser.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
+import { postInsights } from './controllers/v1/logs/postInsights.js';
 import { getInvite } from './controllers/v1/invite/getInvite.js';
 import { declineInvite } from './controllers/v1/invite/declineInvite.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
-import { securityMiddlewares } from './middleware/security.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
+import { securityMiddlewares } from './middleware/security.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
+import { getEnvJs } from './controllers/v1/getEnvJs.js';
 
 export const router = express.Router();
 
@@ -107,6 +109,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
+router.get('/env.js', getEnvJs);
 
 // -------
 // Public API routes
@@ -114,7 +117,8 @@ const publicAPI = express.Router();
 const publicAPICorsHandler = cors({
     maxAge: 600,
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, X-Nango-Signature, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
-    allowedHeaders: 'Nango-Activity-Log-Id, Nango-Is-Dry-Run, Nango-Is-Sync, Provider-Config-Key, Connection-Id',
+    allowedHeaders:
+        'Authorization, Content-Type, Accept, Origin, X-Requested-With, Nango-Activity-Log-Id, Nango-Is-Dry-Run, Nango-Is-Sync, Provider-Config-Key, Connection-Id',
     origin: '*'
 });
 publicAPI.use(publicAPICorsHandler);
@@ -278,6 +282,7 @@ web.route('/api/v1/logs/operations').post(webAuth, searchOperations);
 web.route('/api/v1/logs/messages').post(webAuth, searchMessages);
 web.route('/api/v1/logs/filters').post(webAuth, searchFilters);
 web.route('/api/v1/logs/operations/:operationId').get(webAuth, getOperation);
+web.route('/api/v1/logs/insights').post(webAuth, postInsights);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {
@@ -299,7 +304,7 @@ router.use(web);
 const webappBuildPath = '../../../webapp/build';
 const staticSite = express.Router();
 staticSite.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
-staticSite.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
+staticSite.use(express.static(path.join(dirname(), webappBuildPath), { cacheControl: true, maxAge: '1h' }));
 staticSite.get('*', (_, res) => {
     const fp = path.join(dirname(), webappBuildPath, 'index.html');
     res.sendFile(fp, { headers: { 'Cache-Control': 'no-cache, private' } });

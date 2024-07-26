@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import { useEffect } from 'react';
 
-export const Homepage: React.FC = () => {
+export const Root: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -21,7 +21,7 @@ export const Homepage: React.FC = () => {
             return;
         }
 
-        navigate(`/${env}/integrations`);
+        navigate(`/${env}/`);
     }, [meta, location, env, navigate, showInteractiveDemo]);
 
     return null;
