@@ -14,7 +14,6 @@ import * as vm from 'node:vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
-import * as botbuilder from 'botbuilder';
 import { Buffer } from 'buffer';
 
 interface RunArgs extends GlobalOptions {
@@ -425,7 +424,7 @@ export class DryRunService implements ScriptExecutorInterface {
                             case 'zod':
                                 return zod;
                             case 'botbuilder':
-                                return botbuilder;
+                                throw new Error('Module "botbuilder" is not allowed. Please test the integration using the Nango dashboard');
                             default:
                                 throw new Error(`Module '${moduleName}' is not allowed`);
                         }
