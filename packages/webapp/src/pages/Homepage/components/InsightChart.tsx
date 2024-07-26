@@ -1,6 +1,6 @@
 import type { ChartConfig } from '../../../components/ui/Chart';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../../components/ui/Chart';
-import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, Rectangle, XAxis, YAxis } from 'recharts';
 import { usePostInsights } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import type { InsightsHistogramEntry, PostInsights } from '@nangohq/types';
@@ -8,6 +8,8 @@ import { Skeleton } from '../../../components/ui/Skeleton';
 import { useMemo } from 'react';
 import { formatQuantity } from '../../../utils/utils';
 import { addDays, format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { getLogsUrl } from '../../../utils/logs';
 
 interface Entry {
     date: Date;
@@ -27,6 +29,27 @@ const chartConfig = {
     }
 } satisfies ChartConfig;
 
+const Cursor: React.FC<any> = ({ x, y, width, height, filter, payload }) => {
+    const navigate = useNavigate();
+    const env = useStore((state) => state.env);
+
+    return (
+        <Rectangle
+            fill="#4d4d4d45"
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            style={{ cursor: 'pointer' }}
+            onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(getLogsUrl({ env, types: filter, day: payload[0].payload.date }));
+            }}
+        />
+    );
+};
+
 export const InsightChart: React.FC<{ title: string; desc: string; type: PostInsights['Body']['type']; help: React.ReactNode }> = ({
     title,
     type,
@@ -34,6 +57,7 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
     help
 }) => {
     const env = useStore((state) => state.env);
+    const navigate = useNavigate();
     const { loading, data } = usePostInsights(env, { type });
 
     const { histogram, total } = useMemo(() => {
@@ -92,7 +116,12 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
     }
 
     return (
-        <div className="border border-border-gray rounded-xl p-6 transition-colors hover:bg-active-gray">
+        <div
+            className="border border-border-gray rounded-xl p-6 transition-colors hover:bg-active-gray"
+            onClick={() => {
+                navigate(getLogsUrl({ env, types: type }));
+            }}
+        >
             <div className="flex justify-between items-start">
                 <h3 className="text-md text-white">{title}</h3>
                 <div className="flex flex-col items-end">
@@ -147,12 +176,14 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
                                     }}
                                 />
                             }
-                            cursor={{ fill: '#4d4d4d45' }}
+                            cursor={<Cursor filter={type} />}
                         />
                         <Bar dataKey="success" stackId="a" fill="var(--color-success)" strokeWidth={0} animationDuration={250} animationBegin={0}>
-                            {histogram.map((entry, index) => (
-                                <Cell key={index} radius={(entry.failure > 0 ? [0, 0, 4, 4] : 4) as unknown as number} />
-                            ))}
+                            {histogram.map((entry, index) => {
+                                return (
+                                    <Cell key={index} radius={(entry.failure > 0 ? [0, 0, 4, 4] : 4) as unknown as number} style={{ pointerEvents: 'none' }} />
+                                );
+                            })}
                         </Bar>
                         <Bar
                             dataKey="failure"
@@ -162,7 +193,13 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
                             animationDuration={250}
                             animationBegin={0}
                             radius={[4, 4, 0, 0]}
-                        />
+                        >
+                            {histogram.map((entry, index) => {
+                                return (
+                                    <Cell key={index} radius={(entry.success > 0 ? [4, 4, 0, 0] : 4) as unknown as number} style={{ pointerEvents: 'none' }} />
+                                );
+                            })}
+                        </Bar>
                     </BarChart>
                 </ChartContainer>
             </div>
