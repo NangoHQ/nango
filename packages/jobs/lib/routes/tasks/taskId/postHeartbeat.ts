@@ -27,6 +27,7 @@ const handler = async (req: EndpointRequest<PostHeartbeat>, res: EndpointRespons
     const heartbeat = await orchestratorClient.heartbeat({ taskId });
     if (heartbeat.isErr()) {
         res.status(400).json({ error: { code: 'heartbeat_failed', message: `heartbeat failed: taskId=${taskId} error='${heartbeat.error}'` } });
+        return;
     }
     res.status(201).send();
     return;

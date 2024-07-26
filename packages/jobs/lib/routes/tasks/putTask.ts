@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
-import { handleError, handleOutput } from '../../execution/operations/output.js';
+import { handleError, handleSuccess } from '../../execution/operations/output.js';
 import type { JsonValue } from 'type-fest';
 import type { NangoProps } from '@nangohq/shared';
 
@@ -20,7 +20,7 @@ type PutTask = Endpoint<{
         error?:
             | {
                   type: string;
-                  payload: Record<string, unknown>;
+                  payload: Record<string, unknown>; //TODO: can be an array?
                   status: number;
               }
             | undefined;
@@ -32,59 +32,62 @@ type PutTask = Endpoint<{
 
 const jsonLiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() => z.union([jsonLiteralSchema, z.array(jsonSchema), z.record(jsonSchema)]));
+const nangoPropsSchema = z
+    .object({
+        scriptType: z.enum(['action', 'webhook', 'sync', 'post-connection-script']),
+        connectionId: z.string().min(1),
+        environmentId: z.number(),
+        environmentName: z.string().min(1),
+        providerConfigKey: z.string().min(1),
+        provider: z.string().min(1),
+        team: z.object({
+            id: z.number(),
+            name: z.string().min(1)
+        }),
+        syncConfig: z
+            .object({
+                sync_name: z.string().min(1),
+                type: z.enum(['sync', 'action']),
+                environment_id: z.number(),
+                models: z.array(z.string()),
+                file_location: z.string(),
+                nango_config_id: z.number(),
+                active: z.boolean(),
+                runs: z.string(),
+                track_deletes: z.boolean(),
+                auto_start: z.boolean(),
+                enabled: z.boolean(),
+                webhook_subscriptions: z.array(z.string()).or(z.null()),
+                model_schema: z.array(z.any()),
+                models_json_schema: z.any(),
+                created_at: z.coerce.date(),
+                updated_at: z.coerce.date()
+            })
+            .passthrough(),
+        syncId: z.string().uuid().optional(),
+        syncJobId: z.number().optional(),
+        activityLogId: z.string().min(1),
+        secretKey: z.string().min(1),
+        debug: z.boolean(),
+        startedAt: z.coerce.date(),
+        runnerFlags: z
+            .object({
+                validateActionInput: z.boolean().default(false),
+                validateActionOutput: z.boolean().default(false),
+                validateWebhookInput: z.boolean().default(false),
+                validateWebhookOutput: z.boolean().default(false),
+                validateSyncRecords: z.boolean().default(false),
+                validateSyncMetadata: z.boolean().default(false)
+            })
+            .passthrough()
+    })
+    .passthrough();
 
 const validate = validateRequest<PutTask>({
     parseBody: (data) =>
         z
             .object({
-                nangoProps: z
-                    .object({
-                        scriptType: z.enum(['action', 'webhook', 'sync', 'post-connection-script']),
-                        connectionId: z.string().min(1),
-                        environmentId: z.number(),
-                        environmentName: z.string().min(1),
-                        providerConfigKey: z.string().min(1),
-                        provider: z.string().min(1),
-                        teamId: z.number(),
-                        teamName: z.string().min(1),
-                        syncConfig: z
-                            .object({
-                                sync_name: z.string().min(1),
-                                type: z.enum(['sync', 'action']),
-                                environment_id: z.number(),
-                                models: z.array(z.string()),
-                                file_location: z.string(),
-                                nango_config_id: z.number(),
-                                active: z.boolean(),
-                                runs: z.string(),
-                                track_deletes: z.boolean(),
-                                auto_start: z.boolean(),
-                                enabled: z.boolean(),
-                                webhook_subscriptions: z.array(z.string()).or(z.null()),
-                                model_schema: z.array(z.any()),
-                                models_json_schema: z.any(),
-                                created_at: z.coerce.date(),
-                                updated_at: z.coerce.date()
-                            })
-                            .passthrough(),
-                        syncId: z.string().uuid().optional(),
-                        syncJobId: z.number().optional(),
-                        activityLogId: z.string().min(1),
-                        secretKey: z.string().min(1),
-                        debug: z.boolean(),
-                        startedAt: z.coerce.date(),
-                        runnerFlags: z
-                            .object({
-                                validateActionInput: z.boolean().default(false),
-                                validateActionOutput: z.boolean().default(false),
-                                validateWebhookInput: z.boolean().default(false),
-                                validateWebhookOutput: z.boolean().default(false),
-                                validateSyncRecords: z.boolean().default(false),
-                                validateSyncMetadata: z.boolean().default(false)
-                            })
-                            .passthrough()
-                    })
-                    .passthrough(),
+                nangoProps: nangoPropsSchema,
                 error: z
                     .object({
                         type: z.string(),
@@ -108,9 +111,9 @@ const handler = async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutT
     if (error) {
         await handleError({ taskId, nangoProps, error });
     } else {
-        await handleOutput({ taskId, nangoProps, output: output });
+        await handleSuccess({ taskId, nangoProps, output: output });
     }
-    res.status(201).send();
+    res.status(204).send();
     return;
 };
 

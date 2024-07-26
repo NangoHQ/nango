@@ -46,8 +46,10 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
         const nangoProps: NangoProps = {
             scriptType: 'webhook',
             host: getApiUrl(),
-            teamId: account.id,
-            teamName: account.name,
+            team: {
+                id: account.id,
+                name: account.name
+            },
             connectionId: task.connection.connection_id,
             environmentId: task.connection.environment_id,
             environmentName: environment.name,
@@ -100,14 +102,14 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     }
 }
 
-export async function handleWebhookOutput({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
+export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const content = `The webhook "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
     void bigQueryClient.insert({
         executionType: 'webhook',
         connectionId: nangoProps.connectionId,
         internalConnectionId: nangoProps.nangoConnectionId,
-        accountId: nangoProps.teamId,
-        accountName: nangoProps.teamName || 'unknown',
+        accountId: nangoProps.team?.id,
+        accountName: nangoProps.team?.name || 'unknown',
         scriptName: nangoProps.syncConfig.sync_name,
         scriptType: nangoProps.syncConfig.type,
         environmentId: nangoProps.environmentId,
@@ -138,7 +140,7 @@ export async function handleWebhookError({ nangoProps, error }: { nangoProps: Na
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
-        ...(nangoProps.teamId && nangoProps.teamName ? { team: { id: nangoProps.teamId, name: nangoProps.teamName } } : {})
+        ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {})
     });
 }
 

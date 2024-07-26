@@ -21,8 +21,10 @@ const nangoProps: NangoProps = {
     connectionId: 'connection-1',
     dryRun: false,
     activityLogId: '1',
-    teamId: 1,
-    teamName: 'team',
+    team: {
+        id: 1,
+        name: 'team'
+    },
     environmentId: 1,
     environmentName: 'test-env',
     lastSyncDate: new Date(),

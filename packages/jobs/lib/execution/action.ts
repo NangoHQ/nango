@@ -50,8 +50,10 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         const nangoProps: NangoProps = {
             scriptType: 'action',
             host: getApiUrl(),
-            teamId: account.id,
-            teamName: account.name,
+            team: {
+                id: account.id,
+                name: account.name
+            },
             connectionId: task.connection.connection_id,
             environmentId: task.connection.environment_id,
             environmentName: environment.name,
@@ -102,7 +104,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         return Err(error);
     }
 }
-export async function handleActionOutput({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
+export async function handleActionSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     const content = `${nangoProps.syncConfig.sync_name} action was run successfully and results are being sent synchronously.`;
 
@@ -127,8 +129,8 @@ export async function handleActionOutput({ nangoProps }: { nangoProps: NangoProp
         executionType: 'action',
         connectionId: nangoProps.connectionId,
         internalConnectionId: nangoProps.nangoConnectionId,
-        accountId: nangoProps.teamId,
-        accountName: nangoProps.teamName || 'unknown',
+        accountId: nangoProps.team?.id,
+        accountName: nangoProps.team?.name || 'unknown',
         scriptName: nangoProps.syncConfig.sync_name,
         scriptType: nangoProps.syncConfig.type,
         environmentId: nangoProps.environmentId,
@@ -157,7 +159,7 @@ export async function handleActionError({ nangoProps, error }: { nangoProps: Nan
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
-        ...(nangoProps.teamId && nangoProps.teamName ? { team: { id: nangoProps.teamId, name: nangoProps.teamName } } : {})
+        ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {})
     });
 }
 

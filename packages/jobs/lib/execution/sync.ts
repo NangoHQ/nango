@@ -104,8 +104,10 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         const nangoProps: NangoProps = {
             scriptType: 'sync',
             host: getApiUrl(),
-            teamId: team.id,
-            teamName: team.name,
+            team: {
+                id: team.id,
+                name: team.name
+            },
             connectionId: task.connection.connection_id,
             environmentId: task.connection.environment_id,
             environmentName: environment.name,
@@ -162,7 +164,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
     }
 }
 
-export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
+export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     const runTime = (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000;
     const syncType = nangoProps.syncConfig.sync_type === SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL;
@@ -337,8 +339,8 @@ export async function handleSyncOutput({ nangoProps }: { nangoProps: NangoProps 
             executionType: 'sync',
             connectionId: nangoProps.connectionId,
             internalConnectionId: nangoProps.nangoConnectionId,
-            accountId: nangoProps.teamId,
-            accountName: nangoProps.teamName || 'unknown',
+            accountId: nangoProps.team?.id,
+            accountName: nangoProps.team?.name || 'unknown',
             scriptName: nangoProps.syncConfig.sync_name,
             scriptType: nangoProps.syncConfig.type,
             environmentId: nangoProps.environmentId,

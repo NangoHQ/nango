@@ -14,6 +14,7 @@ import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
 import { stringifyAndTruncateLog } from './utils.js';
+import type { DBTeam } from '@nangohq/types';
 
 const logger = getLogger('SDK');
 
@@ -302,8 +303,7 @@ export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     host?: string;
     secretKey: string;
-    teamId?: number;
-    teamName?: string;
+    team?: Pick<DBTeam, 'id' | 'name'>;
     connectionId: string;
     environmentId: number;
     environmentName?: string;

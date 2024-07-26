@@ -39,7 +39,7 @@ export async function exec(
     `;
 
     return await tracer.trace<Promise<RunnerOutput>>(SpanTypes.RUNNER_EXEC, async (span) => {
-        span.setTag('accountId', nangoProps.teamId)
+        span.setTag('accountId', nangoProps.team?.id)
             .setTag('environmentId', nangoProps.environmentId)
             .setTag('connectionId', nangoProps.connectionId)
             .setTag('providerConfigKey', nangoProps.providerConfigKey)

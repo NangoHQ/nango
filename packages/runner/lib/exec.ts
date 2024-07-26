@@ -31,7 +31,7 @@ export async function exec(
     `;
 
     return await tracer.trace<Promise<RunnerOutput>>(SpanTypes.RUNNER_EXEC, async (span) => {
-        span.setTag('accountId', nangoProps.teamId)
+        span.setTag('accountId', nangoProps.team?.id)
             .setTag('environmentId', nangoProps.environmentId)
             .setTag('connectionId', nangoProps.connectionId)
             .setTag('providerConfigKey', nangoProps.providerConfigKey)
@@ -138,7 +138,7 @@ export async function exec(
                     success: false,
                     error: {
                         type,
-                        payload: payload || {},
+                        payload: Array.isArray(payload) || (typeof payload !== 'object' && payload !== null) ? { message: payload } : payload || {}, // TODO: fix ActionError so payload is always an object
                         status: 500
                     },
                     response: null

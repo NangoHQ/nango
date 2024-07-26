@@ -20,7 +20,7 @@ export async function startScript({
 }): Promise<Result<void>> {
     const span = tracer
         .startSpan('runScript')
-        .setTag('accountId', nangoProps.teamId)
+        .setTag('accountId', nangoProps.team?.id)
         .setTag('environmentId', nangoProps.environmentId)
         .setTag('connectionId', nangoProps.connectionId)
         .setTag('providerConfigKey', nangoProps.providerConfigKey)
@@ -40,11 +40,11 @@ export async function startScript({
             await logCtx.error(content);
             return Err('Unable to find integration file');
         }
-        if (nangoProps.teamId == null) {
-            return Err(`No teamId provided (instead ${nangoProps.teamId})`);
+        if (!nangoProps.team) {
+            return Err(`No team provided (instead ${nangoProps.team})`);
         }
 
-        const runner = await getRunner(nangoProps.teamId);
+        const runner = await getRunner(nangoProps.team.id);
         if (runner.isErr()) {
             return Err(runner.error);
         }

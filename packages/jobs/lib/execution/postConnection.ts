@@ -49,8 +49,10 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
         const nangoProps: NangoProps = {
             scriptType: 'post-connection-script',
             host: getApiUrl(),
-            teamId: account.id,
-            teamName: account.name,
+            team: {
+                id: account.id,
+                name: account.name
+            },
             connectionId: task.connection.connection_id,
             environmentId: task.connection.environment_id,
             environmentName: environment.name,
@@ -99,14 +101,14 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
     }
 }
 
-export async function handlePostConnectionOutput({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
+export async function handlePostConnectionSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const content = `Webhook "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
     void bigQueryClient.insert({
         executionType: 'post-connection-script',
         connectionId: nangoProps.connectionId,
         internalConnectionId: nangoProps.nangoConnectionId,
-        accountId: nangoProps.teamId,
-        accountName: nangoProps.teamName || 'unknown',
+        accountId: nangoProps.team?.id,
+        accountName: nangoProps.team?.name || 'unknown',
         scriptName: nangoProps.syncConfig.sync_name,
         scriptType: nangoProps.syncConfig.type,
         environmentId: nangoProps.environmentId,
@@ -137,7 +139,7 @@ export async function handlePostConnectionError({ nangoProps, error }: { nangoPr
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
-        ...(nangoProps.teamId && nangoProps.teamName ? { team: { id: nangoProps.teamId, name: nangoProps.teamName } } : {})
+        ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {})
     });
 }
 

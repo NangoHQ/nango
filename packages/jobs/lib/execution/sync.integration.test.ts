@@ -3,7 +3,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { envs } from '@nangohq/logs';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
-import { handleSyncOutput, startSync } from './sync.js';
+import { handleSyncSuccess, startSync } from './sync.js';
 import type { TaskSync } from '@nangohq/nango-orchestrator';
 import type { Connection, Sync, SyncResult, Job as SyncJob, SyncConfig } from '@nangohq/shared';
 import { isSyncJobRunning, seeders, getLatestSyncJob, updateSyncJobResult } from '@nangohq/shared';
@@ -240,7 +240,7 @@ const runJob = async (
     };
     await updateSyncJobResult(syncJob.id, updatedResults, model);
 
-    await handleSyncOutput({ nangoProps: nangoProps.value });
+    await handleSyncSuccess({ nangoProps: nangoProps.value });
 
     const latestSyncJob = await getLatestSyncJob(sync.id);
     if (!latestSyncJob) {
