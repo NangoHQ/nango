@@ -423,6 +423,8 @@ export class DryRunService implements ScriptExecutorInterface {
                                 return crypto;
                             case 'zod':
                                 return zod;
+                            case 'botbuilder':
+                                throw new Error('Module "botbuilder" is not allowed. Please test the integration using the Nango dashboard');
                             default:
                                 throw new Error(`Module '${moduleName}' is not allowed`);
                         }

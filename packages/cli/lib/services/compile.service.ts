@@ -11,7 +11,7 @@ import parserService from './parser.service.js';
 import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangohq/types';
 import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
-const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto'];
+const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto', 'botbuilder'];
 
 export async function compileAllFiles({
     debug,
