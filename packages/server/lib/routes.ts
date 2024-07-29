@@ -54,6 +54,7 @@ import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { tbaAuthorization } from './controllers/auth/tba.js';
+import { tableauAuthorization } from './controllers/auth/tableau.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -63,11 +64,12 @@ import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
 import { getUser } from './controllers/v1/user/getUser.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
+import { postInsights } from './controllers/v1/logs/postInsights.js';
 import { getInvite } from './controllers/v1/invite/getInvite.js';
 import { declineInvite } from './controllers/v1/invite/declineInvite.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
-import { securityMiddlewares } from './middleware/security.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
+import { securityMiddlewares } from './middleware/security.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getEnvJs } from './controllers/v1/getEnvJs.js';
@@ -133,6 +135,7 @@ publicAPI.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiA
 publicAPI.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
 publicAPI.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
 publicAPI.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, tbaAuthorization);
+publicAPI.route('/auth/tableau/:providerConfigKey').post(apiPublicAuth, tableauAuthorization);
 publicAPI.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
 
 // API Admin routes
@@ -282,6 +285,7 @@ web.route('/api/v1/logs/operations').post(webAuth, searchOperations);
 web.route('/api/v1/logs/messages').post(webAuth, searchMessages);
 web.route('/api/v1/logs/filters').post(webAuth, searchFilters);
 web.route('/api/v1/logs/operations/:operationId').get(webAuth, getOperation);
+web.route('/api/v1/logs/insights').post(webAuth, postInsights);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

@@ -1,5 +1,5 @@
 import type { EndpointMethod } from './api';
-import type { GetOperation, SearchFilters, SearchMessages, SearchOperations } from './logs/api';
+import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api';
 import type { GetOnboardingStatus } from './onboarding/api';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata';
 import type { PostDeploy, PostDeployConfirmation } from './deploy/api';
@@ -19,6 +19,7 @@ export type APIEndpoints =
     | PostInvite
     | DeleteInvite
     | DeleteTeamUser
+    | PostInsights
     | PostForgotPassword
     | PutResetPassword
     | SearchOperations

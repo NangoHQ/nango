@@ -4,7 +4,7 @@ import type { Job } from '../models/Sync.js';
 import { SyncType, SyncStatus } from '../models/Sync.js';
 
 export const createSyncJobSeeds = async (syncId: string): Promise<Job> => {
-    return (await jobService.createSyncJob(syncId, SyncType.INITIAL, SyncStatus.RUNNING, '', null)) as Job;
+    return (await jobService.createSyncJob(syncId, SyncType.FULL, SyncStatus.RUNNING, '', null)) as Job;
 };
 
 export const deleteAllSyncJobSeeds = async (): Promise<void> => {

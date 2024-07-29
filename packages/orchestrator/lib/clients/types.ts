@@ -19,6 +19,13 @@ interface SyncArgs {
         connection_id: string;
     };
 }
+interface AbortArgs {
+    abortedTask: {
+        id: string;
+        state: TaskState;
+    };
+    reason: string;
+}
 interface ActionArgs {
     actionName: string;
     connection: {
@@ -72,11 +79,12 @@ export interface OrchestratorSchedule {
     nextDueDate: Date | null;
 }
 
-export type OrchestratorTask = TaskSync | TaskAction | TaskWebhook | TaskPostConnection;
+export type OrchestratorTask = TaskSync | TaskSyncAbort | TaskAction | TaskWebhook | TaskPostConnection;
 
 interface TaskCommonFields {
     id: string;
     name: string;
+    groupKey: string;
     state: TaskState;
     attempt: number;
 }
@@ -85,7 +93,7 @@ interface TaskCommon extends TaskCommonFields {
     isWebhook(this: OrchestratorTask): this is TaskWebhook;
     isAction(this: OrchestratorTask): this is TaskAction;
     isPostConnection(this: OrchestratorTask): this is TaskPostConnection;
-    abortController: AbortController;
+    isSyncAbort(this: OrchestratorTask): this is TaskSyncAbort;
 }
 
 export interface TaskSync extends TaskCommon, SyncArgs {}
@@ -99,11 +107,34 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         syncName: props.syncName,
         debug: props.debug,
         connection: props.connection,
-        abortController: new AbortController(),
+        groupKey: props.groupKey,
         isSync: () => true,
         isWebhook: () => false,
         isAction: () => false,
-        isPostConnection: () => false
+        isPostConnection: () => false,
+        isSyncAbort: () => false
+    };
+}
+
+export interface TaskSyncAbort extends TaskCommon, SyncArgs, AbortArgs {}
+export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): TaskSyncAbort {
+    return {
+        id: props.id,
+        abortedTask: props.abortedTask,
+        name: props.name,
+        state: props.state,
+        attempt: props.attempt,
+        syncId: props.syncId,
+        syncName: props.syncName,
+        debug: props.debug,
+        connection: props.connection,
+        groupKey: props.groupKey,
+        reason: props.reason,
+        isSync: () => false,
+        isWebhook: () => false,
+        isAction: () => false,
+        isPostConnection: () => false,
+        isSyncAbort: () => true
     };
 }
 
@@ -118,11 +149,12 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         connection: props.connection,
         activityLogId: props.activityLogId,
         input: props.input,
-        abortController: new AbortController(),
+        groupKey: props.groupKey,
         isSync: () => false,
         isWebhook: () => false,
         isAction: () => true,
-        isPostConnection: () => false
+        isPostConnection: () => false,
+        isSyncAbort: () => false
     };
 }
 
@@ -138,11 +170,12 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         connection: props.connection,
         activityLogId: props.activityLogId,
         input: props.input,
-        abortController: new AbortController(),
+        groupKey: props.groupKey,
         isSync: () => false,
         isWebhook: () => true,
         isAction: () => false,
-        isPostConnection: () => false
+        isPostConnection: () => false,
+        isSyncAbort: () => false
     };
 }
 
@@ -158,11 +191,12 @@ export function TaskPostConnection(props: TaskCommonFields & PostConnectionArgs)
         connection: props.connection,
         fileLocation: props.fileLocation,
         activityLogId: props.activityLogId,
-        abortController: new AbortController(),
+        groupKey: props.groupKey,
         isSync: () => false,
         isWebhook: () => false,
         isAction: () => false,
-        isPostConnection: () => true
+        isPostConnection: () => true,
+        isSyncAbort: () => false
     };
 }
 

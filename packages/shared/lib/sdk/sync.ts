@@ -14,6 +14,7 @@ import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
 import { stringifyAndTruncateLog } from './utils.js';
+import type { DBTeam } from '@nangohq/types';
 
 const logger = getLogger('SDK');
 
@@ -145,6 +146,7 @@ export interface AuthModes {
     App: 'APP';
     None: 'NONE';
     TBA: 'TBA';
+    Tableau: 'TABLEAU';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 
@@ -218,6 +220,14 @@ interface TbaCredentials {
         client_secret?: string;
     };
 }
+interface TableauCredentials extends CredentialsCommon {
+    type: AuthModes['Tableau'];
+    pat_name: string;
+    pat_secret: string;
+    content_url?: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
 interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
@@ -234,6 +244,7 @@ type AuthCredentials =
     | AppStoreCredentials
     | UnauthCredentials
     | TbaCredentials
+    | TableauCredentials
     | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
@@ -289,15 +300,16 @@ export interface DryRunServiceInterface {
 }
 
 export interface NangoProps {
+    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     host?: string;
     secretKey: string;
-    accountId?: number;
+    team?: Pick<DBTeam, 'id' | 'name'>;
     connectionId: string;
     environmentId: number;
     environmentName?: string;
     activityLogId?: string | undefined;
     providerConfigKey: string;
-    provider?: string;
+    provider: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     nangoConnectionId?: number;
@@ -311,6 +323,8 @@ export interface NangoProps {
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
     runnerFlags: RunnerFlags;
+    debug: boolean;
+    startedAt: Date;
 }
 
 export interface EnvironmentVariable {
@@ -542,6 +556,7 @@ export class NangoAction {
         | UnauthCredentials
         | CustomCredentials
         | TbaCredentials
+        | TableauCredentials
     > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
@@ -729,7 +744,7 @@ export class NangoAction {
     }
 
     public async triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out> {
-        return (await this.nango.triggerAction(providerConfigKey, connectionId, actionName, input)) as Out;
+        return await this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
     }
 
     public async triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string> {

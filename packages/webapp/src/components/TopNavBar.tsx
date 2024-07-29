@@ -1,15 +1,15 @@
 import { ChatBubbleBottomCenterIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
-import { useStore } from '../store';
 import { useMemo } from 'react';
 import { useSignout } from '../utils/user';
 import Info from './ui/Info';
+import { useUser } from '../hooks/useUser';
 
 export default function NavBar() {
     const signout = useSignout();
-    const email = useStore((state) => state.email);
+    const { user: me } = useUser();
     const isHNDemo = useMemo(() => {
-        return Boolean(email.match(/demo-[a-z0-9]+@example.com/));
-    }, [email]);
+        return Boolean(me?.email.match(/demo-[a-z0-9]+@example.com/));
+    }, [me?.email]);
 
     const onCreateAccount = () => {
         signout();

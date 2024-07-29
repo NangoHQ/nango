@@ -72,7 +72,7 @@ export const InviteSignup: React.FC = () => {
                                 </div>
                                 <div className="w-full">
                                     <Link to={'/signup'}>
-                                        <Button className="w-full" size={'lg'}>
+                                        <Button className="w-full justify-center" size={'lg'}>
                                             Back to signup
                                         </Button>
                                     </Link>
