@@ -1,7 +1,6 @@
 import type { NangoAction, BamboohrCreateEmployee, BamboohrCreateEmployeeResponse } from '../../models';
 
 export default async function runAction(nango: NangoAction, input: BamboohrCreateEmployee): Promise<BamboohrCreateEmployeeResponse> {
-    console.log(input);
     // Input validation on only required fields
     if (!input.firstName && !input.lastName) {
         throw new nango.ActionError({
