@@ -1,5 +1,5 @@
 import type { NangoSync, Event } from '../../models';
-import type { LumaEvent } from '../types';
+import type { LumaEvent } from '../../types';
 import { toEvent } from '../mappers/to-event.js';
 
 /**
