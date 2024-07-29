@@ -42,7 +42,6 @@ jobs:
                         cd "$dir"
                         mkdir -p nango-integrations/$dir
                         mv nango.yaml nango-integrations/
-                        [ -f *.ts ] && mv *.ts nango-integrations/
                         find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations/$dir {} +
                         cd nango-integrations
                         NANGO_CLI_UPGRADE_MODE=ignore nango compile
