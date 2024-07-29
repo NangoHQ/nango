@@ -1,4 +1,4 @@
-import type { LumaEvent } from '../types';
+import type { LumaEvent } from '../../types';
 import type { Event } from '../../models';
 /**
  * Converts a LumaEvent object to a slim Event object.
