@@ -2711,6 +2711,17 @@ teamwork:
     proxy:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://docs.nango.dev/integrations/all/teamwork
+ticktick:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://ticktick.com/oauth/authorize
+    token_url: https://ticktick.com/oauth/token
+    scope_separator: ' '
+    proxy:
+        base_url: https://api.ticktick.com
+    docs: https://docs.nango.dev/integrations/all/ticktick
 tiktok-accounts:
     categories:
         - social
