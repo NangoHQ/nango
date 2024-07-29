@@ -751,6 +751,13 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+e-conomic:
+    categories:
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        base_url: https://restapi.e-conomic.com
+    docs: https://docs.nango.dev/integrations/all/e-conomic
 egnyte:
     categories:
         - storage
