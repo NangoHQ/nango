@@ -1,42 +1,28 @@
-import { initTRPC } from '@trpc/server';
-import { createHTTPServer } from '@trpc/server/adapters/standalone';
-import superjson from 'superjson';
-import { z } from 'zod';
-import { suspendRunner } from './runner/runner.js';
-import { getLogger } from '@nangohq/utils';
+import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { routeHandler as getHealthHandler } from './routes/getHealth.js';
+import { routeHandler as postIdleHandler } from './routes/postIdle.js';
+import { routeHandler as putTaskHandler } from './routes/tasks/putTask.js';
+import { routeHandler as postHeartbeatHandler } from './routes/tasks/taskId/postHeartbeat.js';
+import { getLogger, createRoute, requestLoggerMiddleware } from '@nangohq/utils';
+import type { ResDefaultErrors } from '@nangohq/types';
 
-const logger = getLogger('Jobs');
+const logger = getLogger('Jobs.server');
 
-export const t = initTRPC.create({
-    transformer: superjson
-});
+export const server = express();
 
-const router = t.router;
-const publicProcedure = t.procedure;
-// TODO: add logging middleware
+server.use(express.json({ limit: '10mb' }));
 
-const appRouter = router({
-    health: healthProcedure(),
-    idle: idleProcedure()
-});
-
-export type AppRouter = typeof appRouter;
-
-export const server = createHTTPServer({
-    router: appRouter
-});
-
-function healthProcedure() {
-    return publicProcedure.query(() => {
-        return { status: 'ok' };
-    });
+// Log all requests
+if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
+    server.use(requestLoggerMiddleware({ logger }));
 }
 
-function idleProcedure() {
-    return publicProcedure.input(z.object({ runnerId: z.string().min(1), idleTimeMs: z.number() })).mutation(async ({ input }) => {
-        const { runnerId, idleTimeMs } = input;
-        logger.info(`[runner ${runnerId}]: idle for ${idleTimeMs}ms. Suspending...`);
-        await suspendRunner(runnerId);
-        return { status: 'ok' };
-    });
-}
+createRoute(server, getHealthHandler);
+createRoute(server, postIdleHandler);
+createRoute(server, putTaskHandler);
+createRoute(server, postHeartbeatHandler);
+
+server.use((err: any, _req: Request, res: Response<ResDefaultErrors>, _next: NextFunction) => {
+    res.status(500).send({ error: { code: 'server_error', message: err.message } });
+});

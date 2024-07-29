@@ -7,9 +7,12 @@ import { getJobsUrl, getPersistAPIUrl } from '@nangohq/shared';
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { RunnerMonitor } from './monitor.js';
 import { exec } from './exec.js';
+import { exec as execLegacy } from './exec.legacy.js';
 import { cancel } from './cancel.js';
+import { abort } from './abort.js';
 import superjson from 'superjson';
 import { httpFetch, logger } from './utils.js';
+import { abortControllers } from './state.js';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -29,7 +32,6 @@ interface RunParams {
 interface StartParams {
     taskId: string;
     nangoProps: NangoProps;
-    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     code: string;
     codeParams?: object;
 }
@@ -37,7 +39,8 @@ interface StartParams {
 const appRouter = router({
     health: healthProcedure(),
     run: runProcedure(),
-    cancel: cancelProcedure(),
+    cancel: cancelProcedureLegacy(), //TODO: remove once refactoring of jobs is deployed
+    abort: abortProcedure(),
     start: startProcedure()
 });
 
@@ -49,6 +52,7 @@ function healthProcedure() {
     });
 }
 
+const heartbeatIntervalMs = 30_000;
 const runnerId = process.env['RUNNER_ID'] || '';
 const jobsServiceUrl = process.env['NOTIFY_IDLE_ENDPOINT']?.replace(/\/idle$/, '') || getJobsUrl(); // TODO: remove legacy NOTIFY_IDLE_ENDPOINT once all runners are updated with JOBS_SERVICE_URL env var
 const persistServiceUrl = getPersistAPIUrl();
@@ -68,7 +72,7 @@ function runProcedure() {
                 });
                 usage.track(nangoProps);
                 const scriptType: 'sync' | 'action' | 'webhook' = input.isWebhook ? 'webhook' : input.isInvokedImmediately ? 'action' : 'sync';
-                return await exec(nangoProps, scriptType, code, codeParams);
+                return await execLegacy(nangoProps, scriptType, code, codeParams);
             } finally {
                 usage.untrack(nangoProps);
                 logger.info('Task done');
@@ -78,9 +82,9 @@ function runProcedure() {
 
 function startProcedure() {
     return publicProcedure
-        .input((input) => input as StartParams) //TODO: zod
+        .input((input) => input as StartParams)
         .mutation(({ input }): boolean => {
-            const { taskId, nangoProps, scriptType, code, codeParams } = input;
+            const { taskId, nangoProps, code, codeParams } = input;
             logger.info('Received task', {
                 taskId: taskId,
                 env: nangoProps.environmentId,
@@ -92,18 +96,31 @@ function startProcedure() {
             // executing in the background and returning immediately
             // sending the result to the jobs service when done
             setImmediate(async () => {
+                const heartbeat = setInterval(async () => {
+                    await httpFetch({
+                        method: 'POST',
+                        url: `${jobsServiceUrl}/tasks/${taskId}/heartbeat`
+                    });
+                }, heartbeatIntervalMs);
                 try {
-                    const { error, response } = await exec(nangoProps, scriptType, code, codeParams);
+                    const abortController = new AbortController();
+                    if (nangoProps.scriptType == 'sync' && nangoProps.activityLogId) {
+                        abortControllers.set(taskId, abortController);
+                    }
+
+                    const { error, response: output } = await exec(nangoProps, code, codeParams, abortController);
+
                     await httpFetch({
                         method: 'PUT',
-                        url: `${jobsServiceUrl}/task/${taskId}`,
-                        data: superjson.stringify({
-                            scriptType,
-                            error,
-                            output: response
+                        url: `${jobsServiceUrl}/tasks/${taskId}`,
+                        data: JSON.stringify({
+                            nangoProps,
+                            ...(error ? { error } : { output })
                         })
                     });
                 } finally {
+                    clearInterval(heartbeat);
+                    abortControllers.delete(taskId);
                     usage.untrack(nangoProps);
                     logger.info(`Task ${taskId} completed`);
                 }
@@ -112,12 +129,21 @@ function startProcedure() {
         });
 }
 
-function cancelProcedure() {
+function cancelProcedureLegacy() {
     return publicProcedure
         .input((input) => input as { syncId: string })
         .mutation(({ input }) => {
             logger.info('Received cancel', { input });
             return cancel(input.syncId);
+        });
+}
+
+function abortProcedure() {
+    return publicProcedure
+        .input((input) => input as { taskId: string })
+        .mutation(({ input }) => {
+            logger.info('Received cancel', { input });
+            return abort(input.taskId);
         });
 }
 

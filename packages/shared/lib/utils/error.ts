@@ -522,6 +522,10 @@ export class NangoError extends Error {
                 this.message = `The webhook script failed with an error: ${this.payload}`;
                 break;
 
+            case 'post_connection_script_failure':
+                this.message = `The post-connection script failed with an error: ${this.payload}`;
+                break;
+
             case 'pass_through_error':
                 this.status = 400;
                 this.message = `${this.payload}`;
@@ -608,9 +612,14 @@ export class NangoError extends Error {
                 this.message = 'Failed to validate a record in batchSave';
                 break;
 
-            case 'action_output_too_big':
+            case 'script_output_too_big':
                 this.status = 400;
-                this.message = 'Action output is too big';
+                this.message = 'Script output is too big';
+                break;
+
+            case 'sync_job_update_failure':
+                this.status = 500;
+                this.message = `The sync job results could not be updated: ${this.payload}`;
                 break;
 
             default:
@@ -642,7 +651,7 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
         errorMessage = String(err);
     }
 
-    const content = `The script failed to execute for ${scriptName} with the following error: ${errorMessage}`;
+    const content = `Script for '${scriptName}' failed to execute with error: ${errorMessage}`;
 
     const status = err?.response?.status || 500;
     const error = new NangoError(errorType, content, status);

@@ -5,7 +5,7 @@ import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 import type { TaskType } from '../../types.js';
-import { syncArgsSchema, actionArgsSchema, postConnectionArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
+import { syncArgsSchema, actionArgsSchema, postConnectionArgsSchema, webhookArgsSchema, syncAbortArgsSchema } from '../../clients/validate.js';
 
 const path = '/v1/immediate';
 const method = 'POST';
@@ -35,7 +35,8 @@ const validate = validateRequest<PostImmediate>({
     parseBody: (data: any) => {
         function argsSchema(data: any) {
             if ('args' in data && 'type' in data.args) {
-                switch (data.args.type) {
+                const taskType = data.args.type as TaskType;
+                switch (taskType) {
                     case 'sync':
                         return syncArgsSchema;
                     case 'action':
@@ -44,11 +45,15 @@ const validate = validateRequest<PostImmediate>({
                         return webhookArgsSchema;
                     case 'post-connection-script':
                         return postConnectionArgsSchema;
+                    case 'abort':
+                        return syncAbortArgsSchema;
                     default:
-                        throw new Error(`Invalid task type: '${data.args.type}'`);
+                        ((_exhaustiveCheck: never) => {
+                            z.never();
+                        })(taskType);
                 }
             }
-            throw new Error('Missing task type');
+            return z.never();
         }
         return z
             .object({

@@ -12,7 +12,7 @@ const logger = getLogger('Jobs');
 try {
     const port = envs.NANGO_JOBS_PORT;
     const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;
-    server.listen(port);
+    const srv = server.listen(port);
     logger.info(`🚀 service ready at http://localhost:${port}`);
     const processor = new Processor(orchestratorUrl);
 
@@ -20,13 +20,13 @@ try {
 
     // Register recurring tasks
     cronAutoIdleDemo();
-    deleteSyncsData({ orchestratorUrl });
+    deleteSyncsData();
     timeoutLogsOperations();
 
     // handle SIGTERM
     process.on('SIGTERM', () => {
         processor.stop();
-        server.server.close(() => {
+        srv.close(() => {
             process.exit(0);
         });
     });
