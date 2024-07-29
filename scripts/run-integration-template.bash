@@ -39,11 +39,11 @@ mkdir -p $TEMP_DIRECTORY/nango-integrations
 cp -r integration-templates/$INTEGRATION $TEMP_DIRECTORY/nango-integrations
 
 mv $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/nango.yaml $TEMP_DIRECTORY/nango-integrations/nango.yaml
-mv $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/*.ts $TEMP_DIRECTORY/nango-integrations
+[ -f $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/*.ts ] && mv $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/*.ts $TEMP_DIRECTORY/nango-integrations
 [ -d $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/fixtures ] && mv $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/fixtures $TEMP_DIRECTORY/nango-integrations/fixtures
 
 pushd $TEMP_DIRECTORY/nango-integrations
 
-NANGO_SECRET_KEY_DEV=$NANGO_SECRET_KEY_DEV NANGO_HOSTPORT=$NANGO_HOSTPORT npx nango $@
+NANGO_SECRET_KEY_DEV=$NANGO_SECRET_KEY_DEV NANGO_HOSTPORT=$NANGO_HOSTPORT npx nango "$@"
 popd
 rm -rf $TEMP_DIRECTORY

@@ -371,20 +371,39 @@ integrations:
                 description: |
                     Action to create a new employee
                 output: BamboohrCreateEmployeeResponse
-                input: BamboohrEmployee
+                input: BamboohrCreateEmployee
                 endpoint: POST /bamboohr/create-employee
+                version: 1.0.0
+            update-employee:
+                endpoint: PUT /bamboohr/employee
+                input: BamboohrUpdateEmployee
+                output: BamboohrResponseStatus
+                description: Update an existing employee in the system
+            fetch-fields:
+                endpoint: GET /bamboohr/fields
+                output: BamboohrField[]
+                description: Introspection to retrieve available fields
         models:
+            BamboohrField:
+                id: string
+                type: string
+                name: string
+                alias?: string
+                options?: Option[]
+            Option:
+                id: number
+                name: string
             BamboohrEmployee:
                 id: string
                 employeeNumber: string
                 firstName: string
                 lastName: string
-                dateOfBirth: date
+                dateOfBirth: string
                 address1: string
                 bestEmail: string
                 workEmail: string
                 jobTitle: string
-                hireDate: date
+                hireDate: string
                 supervisorId: string
                 supervisor: string
                 createdByUserId: string
@@ -404,7 +423,69 @@ integrations:
                 ssn: string
                 workPhone: string
                 homePhone: string
+            BamboohrCreateEmployee:
+                firstName: string
+                lastName: string
+                employeeNumber?: string
+                dateOfBirth?: string
+                address1?: string
+                bestEmail?: string
+                workEmail?: string
+                jobTitle?: string
+                hireDate?: string
+                supervisorId?: string
+                supervisor?: string
+                createdByUserId?: string
+                department?: string
+                division?: string
+                employmentHistoryStatus?: string
+                gender?: string
+                country?: string
+                city?: string
+                location?: string
+                state?: string
+                maritalStatus?: string
+                exempt?: string
+                payRate?: string
+                payType?: string
+                payPer?: string
+                ssn?: string
+                workPhone?: string
+                homePhone?: string
+            BamboohrUpdateEmployee:
+                id: string
+                firstName?: string
+                lastName?: string
+                employeeNumber?: string
+                dateOfBirth?: string
+                address1?: string
+                bestEmail?: string
+                workEmail?: string
+                jobTitle?: string
+                hireDate?: string
+                supervisorId?: string
+                supervisor?: string
+                createdByUserId?: string
+                department?: string
+                division?: string
+                employmentHistoryStatus?: string
+                gender?: string
+                country?: string
+                city?: string
+                location?: string
+                state?: string
+                maritalStatus?: string
+                exempt?: string
+                payRate?: string
+                payType?: string
+                payPer?: string
+                ssn?: string
+                workPhone?: string
+                homePhone?: string
             BamboohrCreateEmployeeResponse:
+                status: string
+                id: string
+            BamboohrResponseStatus:
                 status: string
     calendly:
         syncs:
