@@ -20,7 +20,7 @@ type PutTask = Endpoint<{
         error?:
             | {
                   type: string;
-                  payload: Record<string, unknown>; //TODO: can be an array?
+                  payload: Record<string, unknown>;
                   status: number;
               }
             | undefined;
@@ -91,7 +91,7 @@ const validate = validateRequest<PutTask>({
                 error: z
                     .object({
                         type: z.string(),
-                        payload: z.record(z.string(), z.any()),
+                        payload: z.record(z.string(), z.unknown()).or(z.unknown().transform((v) => ({ message: v }))),
                         status: z.number()
                     })
                     .optional(),
