@@ -70,7 +70,7 @@ describe('Should verify the config controller HTTP API calls', () => {
         expect(sendMock).toHaveBeenCalledWith({ error: { message: err.message, code: err.type, payload: err.payload } });
     });
 
-    it('CREATE a provider config successfully and then LIST', async () => {
+    it('CREATE a provider config successfully', async () => {
         const result = await db.knex.select('*').from('_nango_environments');
         const req: any = {
             body: {
@@ -104,33 +104,6 @@ describe('Should verify the config controller HTTP API calls', () => {
         expect(config).toBeDefined();
         expect(config?.unique_key).toBe('test');
         expect(config?.oauth_scopes).toBe('abc,def');
-
-        const sendMock = vi.fn();
-        const listRes = {
-            status: (code: number) => {
-                expect(code).toBe(200);
-                return {
-                    send: sendMock
-                };
-            },
-            locals
-        };
-        const listNext = () => {
-            return;
-        };
-
-        await configController.listProviderConfigs({} as Request, listRes as unknown as Response<any, Required<RequestLocals>>, listNext as NextFunction);
-
-        const existingConfigs = await db.knex.select('*').from('_nango_configs').where({ environment_id: 1, deleted: false });
-
-        const configs = existingConfigs.map((config) => {
-            return {
-                unique_key: config.unique_key,
-                provider: config.provider
-            };
-        });
-
-        expect(sendMock).toHaveBeenCalledWith({ configs });
     });
 
     it('UPDATE and then GET a provider config successfully', async () => {

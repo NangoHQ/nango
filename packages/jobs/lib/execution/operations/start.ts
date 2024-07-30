@@ -53,7 +53,7 @@ export async function startScript({
             taskId: taskId,
             nangoProps,
             code: script,
-            codeParams: input as object
+            codeParams: (input as object) || {}
         });
 
         if (!res) {

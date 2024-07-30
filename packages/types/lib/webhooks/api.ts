@@ -1,5 +1,5 @@
 import type { AuthOperationType, AuthModeType } from '../auth/api.js';
-import type { SyncResult, SyncType } from '../scripts/syncs/api.js';
+import type { SyncResult } from '../scripts/syncs/api.js';
 import type { ErrorPayload } from '../api.js';
 
 export type WebhookTypes = 'sync' | 'auth' | 'forward';
@@ -19,7 +19,7 @@ export interface NangoSyncWebhookBodyBase extends NangoWebhookBase {
     providerConfigKey: string;
     syncName: string;
     model: string;
-    syncType: SyncType;
+    syncType: 'INCREMENTAL' | 'INITIAL';
 }
 
 export interface NangoSyncWebhookBodySuccess extends NangoSyncWebhookBodyBase {

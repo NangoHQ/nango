@@ -137,7 +137,7 @@ class ConfigService {
     async listProviderConfigs(environment_id: number): Promise<ProviderConfig[]> {
         return (await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id, deleted: false }))
             .map((config) => encryptionManager.decryptProviderConfig(config))
-            .filter((config) => config != null) as ProviderConfig[];
+            .filter(Boolean) as ProviderConfig[];
     }
 
     async listProviderConfigsByProvider(environment_id: number, provider: string): Promise<ProviderConfig[]> {
