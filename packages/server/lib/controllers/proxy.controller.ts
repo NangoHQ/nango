@@ -67,7 +67,7 @@ class ProxyController {
                 providerConfigKey,
                 connectionId,
                 retries: retries ? Number(retries) : 0,
-                data: req.body,
+                data: req.rawBody,
                 headers,
                 baseUrlOverride,
                 decompress: decompress === 'true' ? true : false,
@@ -334,8 +334,7 @@ class ProxyController {
                 headers,
                 decompress
             };
-            const nonEmpty = (v: unknown) => v != null && v !== '' && (typeof v !== 'object' || Object.keys(v).length > 0);
-            if (nonEmpty(data) && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+            if (data && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
                 requestConfig.data = data;
             }
             const responseStream: AxiosResponse = await backOff(
