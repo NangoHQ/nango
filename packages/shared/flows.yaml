@@ -371,20 +371,39 @@ integrations:
                 description: |
                     Action to create a new employee
                 output: BamboohrCreateEmployeeResponse
-                input: BamboohrEmployee
+                input: BamboohrCreateEmployee
                 endpoint: POST /bamboohr/create-employee
+                version: 1.0.0
+            update-employee:
+                endpoint: PUT /bamboohr/employee
+                input: BamboohrUpdateEmployee
+                output: BamboohrResponseStatus
+                description: Update an existing employee in the system
+            fetch-fields:
+                endpoint: GET /bamboohr/fields
+                output: BamboohrField[]
+                description: Introspection to retrieve available fields
         models:
+            BamboohrField:
+                id: string
+                type: string
+                name: string
+                alias?: string
+                options?: Option[]
+            Option:
+                id: number
+                name: string
             BamboohrEmployee:
                 id: string
                 employeeNumber: string
                 firstName: string
                 lastName: string
-                dateOfBirth: date
+                dateOfBirth: string
                 address1: string
                 bestEmail: string
                 workEmail: string
                 jobTitle: string
-                hireDate: date
+                hireDate: string
                 supervisorId: string
                 supervisor: string
                 createdByUserId: string
@@ -404,7 +423,69 @@ integrations:
                 ssn: string
                 workPhone: string
                 homePhone: string
+            BamboohrCreateEmployee:
+                firstName: string
+                lastName: string
+                employeeNumber?: string
+                dateOfBirth?: string
+                address1?: string
+                bestEmail?: string
+                workEmail?: string
+                jobTitle?: string
+                hireDate?: string
+                supervisorId?: string
+                supervisor?: string
+                createdByUserId?: string
+                department?: string
+                division?: string
+                employmentHistoryStatus?: string
+                gender?: string
+                country?: string
+                city?: string
+                location?: string
+                state?: string
+                maritalStatus?: string
+                exempt?: string
+                payRate?: string
+                payType?: string
+                payPer?: string
+                ssn?: string
+                workPhone?: string
+                homePhone?: string
+            BamboohrUpdateEmployee:
+                id: string
+                firstName?: string
+                lastName?: string
+                employeeNumber?: string
+                dateOfBirth?: string
+                address1?: string
+                bestEmail?: string
+                workEmail?: string
+                jobTitle?: string
+                hireDate?: string
+                supervisorId?: string
+                supervisor?: string
+                createdByUserId?: string
+                department?: string
+                division?: string
+                employmentHistoryStatus?: string
+                gender?: string
+                country?: string
+                city?: string
+                location?: string
+                state?: string
+                maritalStatus?: string
+                exempt?: string
+                payRate?: string
+                payType?: string
+                payPer?: string
+                ssn?: string
+                workPhone?: string
+                homePhone?: string
             BamboohrCreateEmployeeResponse:
+                status: string
+                id: string
+            BamboohrResponseStatus:
                 status: string
     calendly:
         syncs:
@@ -2625,6 +2706,18 @@ integrations:
                 label: integer
                 cc_email: string
     salesforce:
+        actions:
+            fetch-fields:
+                description: >
+                    Fetch available task fields. If the input is not specified then it
+                    defaults back to "Task"
+
+                    Data Validation: Parses all incoming data with Zod. Does not fail on
+                    parsing error will instead log parse error and return result.
+                scopes: offline_access,api
+                input: SalesforceEntity
+                output: SalesforceFieldSchema
+                endpoint: GET /salesforce/fetch-fields
         syncs:
             accounts:
                 runs: every hour
@@ -2713,6 +2806,31 @@ integrations:
                     created_date: string
                     created_by: string
                 last_modified_date: string
+            SalesforceEntity:
+                name: string
+            SalesforceFieldSchema:
+                fields: Field[]
+                childRelationships: ChildField[]
+            NestedFieldSchema:
+                fields: Field[]
+            Field:
+                name: string
+                label: string
+                type: string
+                referenceTo: string[]
+                relationshipName: string | null
+            ChildField:
+                object: string
+                relationshipName: string | null
+                field: string
+            ActionResponseError:
+                message: string
+                details?: ActionResponseErrorDetails
+            ActionResponseErrorDetails:
+                message: string
+                method: string
+                url: string
+                code: string
     sharepoint-online:
         actions:
             list-sites:

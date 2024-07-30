@@ -1,5 +1,14 @@
 integrations:
     salesforce:
+        actions:
+            fetch-fields:
+                description: |
+                    Fetch available task fields. If the input is not specified then it defaults back to "Task"
+                    Data Validation: Parses all incoming data with Zod. Does not fail on parsing error will instead log parse error and return result.
+                scopes: offline_access,api
+                input: SalesforceEntity
+                output: SalesforceFieldSchema
+                endpoint: GET /salesforce/fetch-fields
         syncs:
             accounts:
                 runs: every hour
@@ -88,3 +97,28 @@ models:
             created_date: string
             created_by: string
         last_modified_date: string
+    SalesforceEntity:
+        name: string
+    SalesforceFieldSchema:
+        __extends: NestedFieldSchema
+        childRelationships: ChildField[]
+    NestedFieldSchema:
+        fields: Field[]
+    Field:
+        name: string
+        label: string
+        type: string
+        referenceTo: string[]
+        relationshipName: string | null
+    ChildField:
+        object: string
+        relationshipName: string | null
+        field: string
+    ActionResponseError:
+        message: string
+        details?: ActionResponseErrorDetails
+    ActionResponseErrorDetails:
+        message: string
+        method: string
+        url: string
+        code: string
