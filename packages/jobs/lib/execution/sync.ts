@@ -70,7 +70,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
 
-        syncType = syncConfig.sync_type === SyncType.INCREMENTAL && lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
+        syncType = syncConfig.sync_type?.toLowerCase() === SyncType.INCREMENTAL.toLowerCase() && lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
 
         logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
