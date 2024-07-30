@@ -1,12 +1,13 @@
 import type { NangoAction, BamboohrResponseStatus, BamboohrUpdateEmployee } from '../../models';
 
 export default async function runAction(nango: NangoAction, input: BamboohrUpdateEmployee): Promise<BamboohrResponseStatus> {
+    if (!input.id) {
+        throw new nango.ActionError({
+            message: 'id is a required field'
+        });
+    }
+
     try {
-        if (!input.id) {
-            throw new nango.ActionError({
-                message: 'id is a required field'
-            });
-        }
         const { id, ...postData } = input;
 
         const response = await nango.post({
