@@ -841,6 +841,11 @@ exact-online:
     refresh_params:
         grant_type: refresh_token
     token_expiration_buffer: 30
+    proxy:
+        base_url: https://start.exactonline.${connectionConfig.extension}/
+        paginate:
+            type: link
+            link_path_in_response_body: d.__next
     docs: https://docs.nango.dev/integrations/all/exact-online
 exist:
     categories:

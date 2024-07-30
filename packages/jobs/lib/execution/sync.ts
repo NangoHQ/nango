@@ -70,7 +70,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
 
-        syncType = syncConfig.sync_type === SyncType.INCREMENTAL && lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
+        syncType = syncConfig.sync_type?.toLowerCase() === SyncType.INCREMENTAL.toLowerCase() && lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
 
         logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
@@ -353,6 +353,9 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             createdAt: Date.now()
         });
 
+        metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
+        metrics.increment(metrics.Types.SYNC_SUCCESS);
+
         await logCtx.success();
     } catch (err) {
         await onFailure({
@@ -627,4 +630,6 @@ async function onFailure({
         log_id: logCtx.id,
         active: true
     });
+
+    metrics.increment(metrics.Types.SYNC_FAILURE);
 }
