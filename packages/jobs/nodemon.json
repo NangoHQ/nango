@@ -1,12 +1,13 @@
 {
     "watch": [
-        "lib",
+        "dist",
         "../shared/dist",
         "../utils/dist",
         "../records/dist",
         "../data-ingestion/dist",
         "../logs/dist",
         "../orchestrator/dist",
+        "../runner/dist",
         "../webhooks/dist",
         "../../.env"
     ],

@@ -8,7 +8,7 @@ import * as crypto from 'crypto';
 import * as zod from 'zod';
 import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
-import { metrics, stringifyError } from '@nangohq/utils';
+import { errorToObject, metrics } from '@nangohq/utils';
 import { logger } from './utils.js';
 
 export async function exec(
@@ -39,7 +39,7 @@ export async function exec(
 
         try {
             const script = new vm.Script(wrappedCode);
-            const sandbox = {
+            const sandbox: vm.Context = {
                 console,
                 require: (moduleName: string) => {
                     switch (moduleName) {
@@ -56,7 +56,8 @@ export async function exec(
                     }
                 },
                 Buffer,
-                setTimeout
+                setTimeout,
+                Error
             };
 
             const context = vm.createContext(sandbox);
@@ -143,7 +144,9 @@ export async function exec(
                     },
                     response: null
                 };
-            } else if (error instanceof NangoError) {
+            }
+
+            if (error instanceof NangoError) {
                 span.setTag('error', error);
                 return {
                     success: false,
@@ -154,9 +157,9 @@ export async function exec(
                     },
                     response: null
                 };
-            } else {
+            } else if (error instanceof AxiosError) {
                 span.setTag('error', error);
-                if (error instanceof AxiosError && error.response?.data) {
+                if (error.response?.data) {
                     const errorResponse = error.response.data.payload || error.response.data;
                     return {
                         success: false,
@@ -167,13 +170,38 @@ export async function exec(
                         },
                         response: null
                     };
+                } else {
+                    const tmp = errorToObject(error);
+                    return {
+                        success: false,
+                        error: {
+                            type: 'http_error',
+                            payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message || 'no message' },
+                            status: 500
+                        },
+                        response: null
+                    };
                 }
-                span.setTag('error', error);
+            } else if (error instanceof Error) {
+                const tmp = errorToObject(error);
+                span.setTag('error', tmp);
                 return {
                     success: false,
                     error: {
-                        type: 'internal_error',
-                        payload: { message: `Error executing code '${stringifyError(error)}'` },
+                        type: 'script_internal_error',
+                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message || 'no message' },
+                        status: 500
+                    },
+                    response: null
+                };
+            } else {
+                const tmp = errorToObject(!error || typeof error !== 'object' ? new Error(JSON.stringify(error)) : error);
+                span.setTag('error', tmp);
+                return {
+                    success: false,
+                    error: {
+                        type: 'script_internal_error',
+                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message || 'no message' },
                         status: 500
                     },
                     response: null

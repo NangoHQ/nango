@@ -622,6 +622,21 @@ export class NangoError extends Error {
                 this.message = `The sync job results could not be updated: ${this.payload}`;
                 break;
 
+            case 'invalid_error':
+                this.status = 500;
+                this.message = `An invalid error of type: ${typeof this.payload}`;
+                break;
+
+            case 'http_error':
+                this.status = 500;
+                this.message = `An error occurred during an HTTP call`;
+                break;
+
+            case 'script_internal_error':
+                this.status = 500;
+                this.message = `An internal error occurred during the script execution`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
@@ -645,7 +660,7 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
         }
     } else if (err.message) {
         errorMessage = err.message;
-    } else if (typeof err === 'object' && Object.keys(err as object).length > 0) {
+    } else if (err && typeof err === 'object' && Object.keys(err as object).length > 0) {
         errorMessage = stringifyError(err, { pretty: true, stack: true });
     } else {
         errorMessage = String(err);
