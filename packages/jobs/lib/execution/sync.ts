@@ -187,6 +187,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
         if (!nangoProps.nangoConnectionId) {
             throw new Error('connectionId is required to update sync status');
         }
+        const lastSyncDate = await getLastSyncDate(nangoProps.syncId);
         const connection: NangoConnection = {
             id: nangoProps.nangoConnectionId,
             connection_id: nangoProps.connectionId,
@@ -282,7 +283,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                             updated,
                             deleted
                         },
-                        operation: syncType,
+                        operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL,
                         logCtx
                     });
                 }
