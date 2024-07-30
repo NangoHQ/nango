@@ -99,7 +99,7 @@ export const Homepage: React.FC = () => {
                         desc="External webhooks received"
                         help={
                             <div>
-                                No external webhook received in the last 14 days.{' '}
+                                No external webhooks received in the last 14 days.{' '}
                                 <Link to="https://docs.nango.dev/integrate/guides/receive-webhooks-from-an-api" className="underline text-white">
                                     Learn more
                                 </Link>
