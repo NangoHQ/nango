@@ -30,12 +30,12 @@ API configuration: [`e-conomic`](https://nango.dev/providers.yaml)
 - E-conomic in Nango uses `Basic` auth mode to access different endpoints. Provide your `YOUR_PRIVATE_TOKEN` as the Username value and `YOUR_AGREEMENT_GRANT_TOKEN` as the Password value.
 - After creating a connection, you can use the Basic credentials as follows;
 ```js
+const connection = await nango.getConnection();
 let headers: { [key: string]: string } = {};
 if ('username' in connection.credentials && 'password' in connection.credentials) {
     headers = {
         'X-AppSecretToken': connection.credentials.username,
-        'X-AgreementGrantToken': connection.credentials.password,
-        'Content-Type': 'application/json'
+        'X-AgreementGrantToken': connection.credentials.password
     };
 } else {
     throw new nango.ActionError({

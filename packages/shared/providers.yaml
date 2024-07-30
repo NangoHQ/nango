@@ -757,6 +757,8 @@ e-conomic:
     auth_mode: BASIC
     proxy:
         base_url: https://restapi.e-conomic.com
+        headers:
+            Content-Type: application/json
     docs: https://docs.nango.dev/integrations/all/e-conomic
 egnyte:
     categories:
