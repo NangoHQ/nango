@@ -353,6 +353,9 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             createdAt: Date.now()
         });
 
+        metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
+        metrics.increment(metrics.Types.SYNC_SUCCESS);
+
         await logCtx.success();
     } catch (err) {
         await onFailure({
@@ -627,4 +630,6 @@ async function onFailure({
         log_id: logCtx.id,
         active: true
     });
+
+    metrics.increment(metrics.Types.SYNC_FAILURE);
 }
