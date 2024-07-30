@@ -38,8 +38,13 @@ export default async function runAction(nango: NangoAction, input: BamboohrCreat
             status: response.statusText
         };
     } catch (error: any) {
+        const messageHeader = error.response?.headers['x-bamboohr-error-message'];
+        const errorMessage = messageHeader || error.response?.data || error.message;
+
         throw new nango.ActionError({
-            message: `Error in runAction: ${error.message}`
+            message: `Failed to create employee`,
+            status: error.response.status,
+            error: errorMessage || undefined
         });
     }
 }

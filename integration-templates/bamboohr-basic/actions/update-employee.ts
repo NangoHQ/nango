@@ -19,12 +19,13 @@ export default async function runAction(nango: NangoAction, input: BamboohrUpdat
             status: response.statusText
         };
     } catch (error: any) {
-        const messageHeader = error.response.headers['x-bamboohr-error-message'];
+        const messageHeader = error.response?.headers['x-bamboohr-error-message'];
+        const errorMessage = messageHeader || error.response?.data || error.message;
 
         throw new nango.ActionError({
             message: `Failed to update employee`,
             status: error.response.status,
-            error: messageHeader || error.response.data || error.message
+            error: errorMessage || undefined
         });
     }
 }
