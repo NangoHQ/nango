@@ -575,7 +575,7 @@ async function onFailure({
                 description: error.message
             },
             now: lastSyncDate,
-            operation: syncType === SyncType.INCREMENTAL ? SyncType.INCREMENTAL : SyncType.FULL,
+            operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL,
             logCtx: logCtx
         });
     }
