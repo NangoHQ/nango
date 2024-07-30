@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 import type { OrchestratorTask } from '@nangohq/nango-orchestrator';
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { startSync, abortSync } from '../execution/sync.js';
 import { startAction } from '../execution/action.js';
@@ -11,14 +11,7 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
     if (task.isSync()) {
         const span = tracer.startSpan('jobs.handler.sync');
         return await tracer.scope().activate(span, async () => {
-            const start = Date.now();
             const res = await startSync(task);
-            if (res.isErr()) {
-                metrics.increment(metrics.Types.SYNC_FAILURE);
-            } else {
-                metrics.increment(metrics.Types.SYNC_SUCCESS);
-                metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - start);
-            }
             span.finish();
             return res.isErr() ? Err(res.error) : Ok(undefined);
         });
