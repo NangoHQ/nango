@@ -926,6 +926,31 @@ fireflies:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/fireflies
+fiserv:
+    categories:
+        - banking
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://cert.api.fiservapps.com/fts-apim/oauth2/v2
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostUrl}
+    docs: https://docs.nango.dev/integrations/all/fiserv
+fiserv-api-key:
+    categories:
+        - banking
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://prod.emea.api.fiservapps.com
+        headers:
+            API-Key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /sandbox/exp/v1/authorisations
+    docs: https://docs.nango.dev/integrations/all/fiserv
 fitbit:
     categories:
         - sports
