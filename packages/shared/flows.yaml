@@ -16,6 +16,126 @@ integrations:
                 name: string
                 company: string
                 email: string
+    anrok:
+        actions:
+            create-ephemeral-transaction:
+                description: |
+                    Creates an ephemeral transaction in Anrok.
+                input: Transaction
+                output: TransactionActionResponse
+                endpoint: POST /ephmeral-transaction
+            create-or-update-transaction:
+                description: |
+                    Creates or updates a transaction in Anrok.
+                input: Transaction[]
+                output: TransactionActionResponse
+                endpoint: POST /transaction
+            void-transaction:
+                description: |
+                    Voids a transaction in Anrok.
+                input: TransactionToDelete[]
+                output: TransactionDeletionActionResponse
+                endpoint: POST /transaction/voide
+            negate-transaction:
+                description: |
+                    Creates a negation in Anrok.
+                input: TransactionToNegate[]
+                output: TransactionNegationActionResponse
+                endpoint: POST /transaction/negate
+        models:
+            AnrokAddress:
+                line1: string
+                city: string
+                postalCode: string
+                country: string
+            AnrokLineItems:
+                id: string
+                productExternalId: string
+                amount: number
+            AnrokTaxIds:
+                type: string
+                value: string
+            AnrokTransactionData:
+                id?: string | undefined
+                accountingDate: string
+                currencyCode: string
+                customerId: string
+                customerName: string
+                customerAddress: AnrokAddress
+                lineItems: AnrokLineItems[]
+                customerTaxIds?: AnrokTaxIds[]
+            AnrokContact:
+                external_id: string
+                name: string
+                address_line_1: string
+                city: string
+                zip: string
+                country: string
+                taxable: boolean
+                tax_number: string
+            BaseTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+            Transaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+            TransactionFee:
+                item_id: string
+                item_code: string | null
+                amount_cents: number | null
+            TaxBreakdown:
+                name?: string
+                rate?: string
+                tax_amount?: number
+                type?: string | null
+                reason?: string
+            FailedTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+                validation_errors: any[]
+            SuccessTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+                sub_total_excluding_taxes?: number
+                taxes_amount_cents?: number
+            TransactionActionResponse:
+                succeeded: SuccessTransaction[]
+                failed: FailedTransaction[]
+            TransactionToNegate:
+                id: string
+                voided_id: string
+            TransactionToDelete:
+                id: string
+            TransactionNegationActionResponse:
+                succeeded: TransactionToNegate[]
+                failed: FailedTransactionToNegate[]
+            TransactionDeletionActionResponse:
+                succeeded: TransactionToDelete[]
+                failed: FailedTransactionToDelete[]
+            FailedTransactionToDelete:
+                id: string
+                validation_errors: any[]
+            FailedTransactionToNegate:
+                id: string
+                voided_id: string
+                validation_errors: any[]
+            TransactionFeeWithTaxBreakdown:
+                item_id: string
+                item_code: string | null
+                amount_cents: number | null
+                tax_amount_cents: number
+                tax_breakdown: TaxBreakdown[]
     asana:
         syncs:
             tasks:
