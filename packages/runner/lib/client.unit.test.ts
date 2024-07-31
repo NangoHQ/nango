@@ -44,15 +44,6 @@ describe('Runner client', () => {
         expect(result).toEqual({ status: 'ok' });
     });
 
-    it('should run script', async () => {
-        const jsCode = `exports.default = async (nango) => [1, 2, 3]`;
-        const isInvokedImmediately = false;
-        const isWebhook = false;
-
-        const run = client.run.mutate({ nangoProps, isInvokedImmediately, isWebhook, code: jsCode });
-        await expect(run).resolves.toEqual([1, 2, 3]);
-    });
-
     it('should start script', async () => {
         const jsCode = `exports.default = async (nango) => [1, 2, 3]`;
         const taskId = 'task-id';
