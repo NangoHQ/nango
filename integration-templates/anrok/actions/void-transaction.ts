@@ -16,10 +16,7 @@ export default async function runAction(nango: NangoAction, rawInput: Transactio
                 data: {}
             })
             .then(() => {
-                const successTransaction = {
-                    ...transaction
-                };
-                response.succeeded.push(successTransaction);
+                response.succeeded.push(transaction);
             })
             .catch((error) => {
                 response.failed.push({

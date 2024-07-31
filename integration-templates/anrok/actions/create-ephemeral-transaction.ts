@@ -31,11 +31,12 @@ export default async function runAction(nango: NangoAction, rawInput: Transactio
         };
 
         if (transaction.contact.taxable && transaction.contact.tax_number) {
-            anrokTransaction.customerTaxIds = [];
-            anrokTransaction.customerTaxIds.push({
-                type: 'genericVatNumber',
-                value: transaction.contact.tax_number
-            });
+            anrokTransaction.customerTaxIds = [
+                {
+                    type: 'genericVatNumber',
+                    value: transaction.contact.tax_number
+                }
+            ];
         }
 
         await nango
