@@ -9,7 +9,7 @@ import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration } from '@nangohq/shared';
-import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService } from '@nangohq/shared';
+import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
 import { metrics, getLogger, axiosInstance as axios } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
@@ -62,12 +62,15 @@ class ProxyController {
 
             const headers = parseHeaders(req);
 
+            const rawBodyFlag = await featureFlags.isEnabled('proxy:rawbody', 'global', false);
+            const data = rawBodyFlag ? req.rawBody : req.body;
+
             const externalConfig: UserProvidedProxyConfiguration = {
                 endpoint,
                 providerConfigKey,
                 connectionId,
                 retries: retries ? Number(retries) : 0,
-                data: req.body,
+                data,
                 headers,
                 baseUrlOverride,
                 decompress: decompress === 'true' ? true : false,

@@ -350,6 +350,7 @@
                 "integrations/all/discord",
                 "integrations/all/dropbox",
                 "integrations/all/docusign",
+                "integrations/all/e-conomic",
                 "integrations/all/egnyte",
                 "integrations/all/entrata",
                 "integrations/all/envoy",
