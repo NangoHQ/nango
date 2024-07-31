@@ -1516,7 +1516,7 @@ klaviyo:
         base_url: https://a.klaviyo.com
         headers:
             Authorization: Klaviyo-API-Key ${apiKey}
-            revision: ${connectionConfig.revisionHeader}
+            revision: '2024-07-15'
         verification:
             method: GET
             endpoint: /api/accounts
@@ -1540,7 +1540,7 @@ klaviyo-oauth:
     proxy:
         base_url: https://a.klaviyo.com
         headers:
-            revision: ${connectionConfig.revisionHeader}
+            revision: '2024-07-15'
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/klaviyo
