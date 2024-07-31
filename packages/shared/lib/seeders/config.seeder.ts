@@ -25,8 +25,8 @@ export const createConfigSeeds = async (env: DBEnvironment): Promise<void> => {
     } as ProviderConfig);
 };
 
-export const createConfigSeed = async (env: DBEnvironment, unique_key: string, provider: string): Promise<void> => {
-    await configService.createProviderConfig({
+export const createConfigSeed = async (env: DBEnvironment, unique_key: string, provider: string): Promise<void | Pick<ProviderConfig, 'id'>[]> => {
+    return configService.createProviderConfig({
         unique_key,
         provider,
         environment_id: env.id

@@ -14,19 +14,27 @@ import type { AxiosResponse } from 'axios';
 import { NangoError } from '../utils/error.js';
 
 const nangoProps: NangoProps = {
+    scriptType: 'sync',
     secretKey: '***',
     providerConfigKey: 'github',
+    provider: 'github',
     connectionId: 'connection-1',
     dryRun: false,
     activityLogId: '1',
-    accountId: 1,
+    team: {
+        id: 1,
+        name: 'team'
+    },
     environmentId: 1,
+    environmentName: 'test-env',
     lastSyncDate: new Date(),
     syncConfig: {} as SyncConfig,
     syncId: '1',
     syncJobId: 1,
     nangoConnectionId: 1,
-    runnerFlags: {} as any
+    debug: false,
+    runnerFlags: {} as any,
+    startedAt: new Date()
 };
 
 describe('cache', () => {

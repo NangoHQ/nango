@@ -423,7 +423,6 @@ certn:
         - legal
     auth_mode: API_KEY
     proxy:
-        alias: certn
         base_url: https://api.certn.co
         headers:
             Authorization: Bearer ${apiKey}
@@ -534,7 +533,6 @@ close:
         - offline_access
     proxy:
         base_url: https://api.close.com/api
-        docs: https://developer.close.com/
     docs: https://docs.nango.dev/integrations/all/close
 coda:
     categories:
@@ -621,7 +619,7 @@ datev:
     authorization_url: https://login.datev.de/openid/authorize
     token_url: https://api.datev.de/token
     token_request_auth_method: basic
-    scope_seprator: ' '
+    scope_separator: ' '
     default_scopes:
         - openid
     authorization_params:
@@ -852,6 +850,11 @@ exact-online:
     refresh_params:
         grant_type: refresh_token
     token_expiration_buffer: 30
+    proxy:
+        base_url: https://start.exactonline.${connectionConfig.extension}/
+        paginate:
+            type: link
+            link_path_in_response_body: d.__next
     docs: https://docs.nango.dev/integrations/all/exact-online
 exist:
     categories:
@@ -1724,6 +1727,8 @@ microsoft-teams:
         - productivity
         - video
     alias: microsoft
+    webhook_routing_script: microsoftTeamsWebhookRouting
+    post_connection_script: microsoftTeamsPostConnection
     docs: https://docs.nango.dev/integrations/all/microsoft-teams
 microsoft-tenant-specific:
     categories:
@@ -2172,7 +2177,7 @@ productboard:
     auth_mode: OAUTH2
     authorization_url: https://app.productboard.com/oauth2/authorize
     token_url: https://app.productboard.com/oauth2/token
-    scope_seprator: ' '
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -2350,7 +2355,7 @@ servicem8:
     token_url: https://go.servicem8.com/oauth/access_token
     proxy:
         base_url: https://api.servicem8.com
-    scope_seprator: ' '
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -2375,6 +2380,7 @@ signnow:
     docs: https://docs.nango.dev/integrations/all/signnow
 signnow-sandbox:
     categories:
+        - legal
     auth_mode: OAUTH2
     authorization_url: https://app-eval.signnow.com/authorize
     token_url: https://api-eval.signnow.com/oauth2/token
@@ -2684,6 +2690,17 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+tableau:
+    categories:
+        - analytics
+    auth_mode: TABLEAU
+    token_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}/auth/signin
+    proxy:
+        headers:
+            Accept: application/json
+            Content-Type: application/json
+        base_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}
+    docs: https://docs.nango.dev/integrations/all/tableau
 teamtailor:
     categories:
         - ats
@@ -2708,6 +2725,17 @@ teamwork:
     proxy:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://docs.nango.dev/integrations/all/teamwork
+ticktick:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://ticktick.com/oauth/authorize
+    token_url: https://ticktick.com/oauth/token
+    scope_separator: ' '
+    proxy:
+        base_url: https://api.ticktick.com
+    docs: https://docs.nango.dev/integrations/all/ticktick
 tiktok-accounts:
     categories:
         - social
@@ -2887,7 +2915,7 @@ twinfield:
         nonce: AnotherRandomStringTwinfield
     refresh_params:
         grant_type: refresh_token
-    scope_seprator: ' '
+    scope_separator: ' '
     default_scopes:
         - openid
         - twf.user
@@ -2952,7 +2980,7 @@ vimeo:
     authorization_url: https://api.vimeo.com/oauth/authorize
     token_url: https://api.vimeo.com/oauth/access_token
     token_request_auth_method: basic
-    scope_seprator: ' '
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:

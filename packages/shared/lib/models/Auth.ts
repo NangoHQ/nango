@@ -58,7 +58,7 @@ export interface ApiKeyCredentials {
     apiKey: string;
 }
 
-export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials | TbaCredentials;
+export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials | TbaCredentials | TableauCredentials;
 
 export interface AppCredentials {
     type?: 'APP';
@@ -121,6 +121,15 @@ export interface TbaCredentials {
         client_id?: string;
         client_secret?: string;
     };
+}
+
+export interface TableauCredentials extends CredentialsCommon {
+    type: 'TABLEAU';
+    pat_name: string;
+    pat_secret: string;
+    content_url?: string;
+    token?: string;
+    expires_at?: Date | undefined;
 }
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;
