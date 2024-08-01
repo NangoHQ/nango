@@ -749,6 +749,15 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+e-conomic:
+    categories:
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        base_url: https://restapi.e-conomic.com
+        headers:
+            Content-Type: application/json
+    docs: https://docs.nango.dev/integrations/all/e-conomic
 egnyte:
     categories:
         - storage
@@ -1507,7 +1516,7 @@ klaviyo:
         base_url: https://a.klaviyo.com
         headers:
             Authorization: Klaviyo-API-Key ${apiKey}
-            revision: ${connectionConfig.revisionHeader}
+            revision: '2024-07-15'
         verification:
             method: GET
             endpoint: /api/accounts
@@ -1531,7 +1540,7 @@ klaviyo-oauth:
     proxy:
         base_url: https://a.klaviyo.com
         headers:
-            revision: ${connectionConfig.revisionHeader}
+            revision: '2024-07-15'
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/klaviyo

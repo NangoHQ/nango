@@ -1,0 +1,21 @@
+{
+    "issuing_date": "2024-07-03",
+    "currency": "USD",
+    "contact": {
+        "external_id": "sync-1-test-1",
+        "name": "sync-1-test-1",
+        "address_line_1": "12 Main Street",
+        "city": "New York",
+        "zip": "90013",
+        "country": "usa",
+        "taxable": true,
+        "tax_number": "US86894827773"
+    },
+    "fees": [
+        {
+            "item_id": "sync-1",
+            "item_code": "default",
+            "amount_cents": 2000
+        }
+    ]
+}
