@@ -852,6 +852,8 @@ exact-online:
     token_expiration_buffer: 30
     proxy:
         base_url: https://start.exactonline.${connectionConfig.extension}/
+        headers:
+            Accept: application/json
         paginate:
             type: link
             link_path_in_response_body: d.__next
