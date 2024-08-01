@@ -117,7 +117,6 @@ describe('Exec', () => {
         const res = await exec(nangoProps, jsCode);
         expect(res.error).toEqual({
             payload: {
-                message: 'no message',
                 name: 'Error'
             },
             status: 500,
@@ -146,7 +145,7 @@ describe('Exec', () => {
                 code: 'ECONNREFUSED'
             },
             status: 500,
-            type: 'http_error'
+            type: 'script_http_error'
         });
         expect(res.success).toEqual(false);
     });

@@ -622,12 +622,12 @@ export class NangoError extends Error {
                 this.message = `The sync job results could not be updated: ${this.payload}`;
                 break;
 
-            case 'invalid_error':
+            case 'script_invalid_error':
                 this.status = 500;
                 this.message = `An invalid error of type: ${typeof this.payload}`;
                 break;
 
-            case 'http_error':
+            case 'script_http_error':
                 this.status = 500;
                 this.message = `An error occurred during an HTTP call`;
                 break;

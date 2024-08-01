@@ -1,12 +1,12 @@
 import { NangoError, deserializeNangoError } from '@nangohq/shared';
 import { stringifyError } from '@nangohq/utils';
 
-export function getFormattedScriptError({ err, defaultErrorType, scriptName }: { err: unknown; defaultErrorType: string; scriptName: string }) {
+export function toNangoError({ err, defaultErrorType, scriptName }: { err: unknown; defaultErrorType: string; scriptName: string }): NangoError {
     if (typeof err !== 'object') {
-        return new NangoError('invalid_error', err);
+        return new NangoError('script_invalid_error', err);
     }
     if (!err) {
-        return new NangoError('invalid_error', null as any);
+        return new NangoError('script_invalid_error', null as any);
     }
 
     const tmp = deserializeNangoError(err);

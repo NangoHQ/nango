@@ -9,7 +9,7 @@ import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
 import { handlePostConnectionError, handlePostConnectionSuccess } from '../postConnection.js';
 import type { ApiError } from '@nangohq/types';
 import type { ClientError } from '@nangohq/nango-orchestrator';
-import { getFormattedScriptError } from './utils/errors.js';
+import { toNangoError } from './utils/errors.js';
 
 export async function handleSuccess({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
     switch (nangoProps.scriptType) {
@@ -46,7 +46,7 @@ export async function handleError({
         status: number;
     };
 }): Promise<void> {
-    const formattedError = getFormattedScriptError({
+    const formattedError = toNangoError({
         err: error,
         defaultErrorType: `${nangoProps.scriptType}_script_failure`,
         scriptName: nangoProps.syncConfig.sync_name

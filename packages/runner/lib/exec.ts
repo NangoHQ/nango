@@ -164,7 +164,7 @@ export async function exec(
                     return {
                         success: false,
                         error: {
-                            type: 'http_error',
+                            type: 'script_http_error',
                             payload: typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse,
                             status: error.response.status
                         },
@@ -175,8 +175,8 @@ export async function exec(
                     return {
                         success: false,
                         error: {
-                            type: 'http_error',
-                            payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message || 'no message' },
+                            type: 'script_http_error',
+                            payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
                             status: 500
                         },
                         response: null
@@ -189,7 +189,7 @@ export async function exec(
                     success: false,
                     error: {
                         type: 'script_internal_error',
-                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message || 'no message' },
+                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
                         status: 500
                     },
                     response: null
@@ -201,7 +201,7 @@ export async function exec(
                     success: false,
                     error: {
                         type: 'script_internal_error',
-                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message || 'no message' },
+                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
                         status: 500
                     },
                     response: null
