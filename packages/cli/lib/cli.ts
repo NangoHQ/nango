@@ -220,7 +220,6 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
 }
 
 export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
-    const tsconfig = fs.readFileSync(path.resolve(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
     const res = loadYamlAndGenerate({ fullPath, debug });
     if (!res.success) {
         console.log(chalk.red(res.error?.message));
@@ -258,7 +257,7 @@ export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?
         if (filePath === nangoConfigFile) {
             return;
         }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, parsed, debug });
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), parsed, debug });
     });
 
     watcher.on('unlink', (filePath: string) => {
@@ -282,7 +281,7 @@ export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?
             await compileAllFiles({ fullPath, debug });
             return;
         }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, parsed, debug });
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), parsed, debug });
     });
 }
 

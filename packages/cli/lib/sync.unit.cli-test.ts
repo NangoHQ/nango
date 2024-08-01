@@ -6,7 +6,6 @@ import stripAnsi from 'strip-ansi';
 import { init, generate } from './cli.js';
 import { exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
-import { getNangoRootPath } from './utils.js';
 import parserService from './services/parser.service.js';
 import { copyDirectoryAndContents, removeVersion, fixturesPath, getTestDirectory } from './tests/helpers.js';
 import { parse } from './services/config.service.js';
@@ -488,7 +487,6 @@ describe('generate function tests', () => {
 
         await copyDirectoryAndContents(join(fixturesPath, `nango-yaml/v2/${name}/github`), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
-        const tsconfig = fs.readFileSync(join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
         const { response } = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
         expect(response?.parsed).not.toBeNull();
@@ -496,7 +494,6 @@ describe('generate function tests', () => {
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            tsconfig,
             parsed: response!.parsed!,
             debug: false
         });
@@ -510,7 +507,6 @@ describe('generate function tests', () => {
 
         await copyDirectoryAndContents(join(fixturesPath, `nango-yaml/v2/${name}/github`), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
-        const tsconfig = fs.readFileSync(join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
         const { response } = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
         expect(response).not.toBeNull();
@@ -518,7 +514,6 @@ describe('generate function tests', () => {
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            tsconfig,
             parsed: response!.parsed!,
             debug: false
         });
@@ -533,7 +528,6 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, `nango-yaml/v2/${name}/github`), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/github/actions/welcomer.ts`), join(dir, 'welcomer.ts'));
-        const tsconfig = fs.readFileSync(join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
         const { response } = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
         expect(response).not.toBeNull();
@@ -541,7 +535,6 @@ describe('generate function tests', () => {
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            tsconfig,
             parsed: response!.parsed!,
             debug: false
         });

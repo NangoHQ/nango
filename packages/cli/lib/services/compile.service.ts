@@ -83,15 +83,15 @@ export async function compileSingleFile({
     fullPath,
     file,
     parsed,
-    tsconfig,
     debug = false
 }: {
     fullPath: string;
     file: ListedFile;
-    tsconfig: string;
     parsed: NangoYamlParsed;
     debug: boolean;
 }) {
+    const tsconfig = fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
+
     try {
         const compiler = tsNode.create({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
@@ -265,7 +265,7 @@ export function resolveTsFileLocation({
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
-}) {
+}): string {
     const nestedPath = path.resolve(fullPath, providerConfigKey, type, `${scriptName}.ts`);
     if (fs.existsSync(nestedPath)) {
         return fs.realpathSync(path.resolve(nestedPath, '../'));

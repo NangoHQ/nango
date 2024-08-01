@@ -15,7 +15,7 @@ import type {
     PostDeployConfirmation
 } from '@nangohq/types';
 import { stagingHost, cloudHost } from '@nangohq/shared';
-import { compileAllFiles, resolveTsFileLocation } from './compile.service.js';
+import { compileSingleFile, compileAllFiles, resolveTsFileLocation, getFileToCompile } from './compile.service.js';
 
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
@@ -132,7 +132,35 @@ class DeployService {
 
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
-        const successfulCompile = await compileAllFiles({ fullPath, debug });
+        let successfulCompile = false;
+
+        if (singleDeployMode) {
+            const scriptName: string = String(optionalSyncName || optionalActionName);
+            const type = optionalSyncName ? 'syncs' : 'actions';
+            const providerConfigKey = response.parsed.integrations.find((integration) => {
+                if (optionalSyncName) {
+                    return integration.syncs.find((sync) => sync.name === scriptName);
+                } else {
+                    return integration.actions.find((action) => action.name === scriptName);
+                }
+            })?.providerConfigKey;
+
+            if (providerConfigKey) {
+                const parentFilePath = resolveTsFileLocation({ fullPath, scriptName, providerConfigKey, type });
+                successfulCompile = await compileSingleFile({
+                    fullPath,
+                    file: getFileToCompile({
+                        fullPath,
+                        filePath: path.join(parentFilePath, `${scriptName}.ts`)
+                    }),
+                    parsed: response.parsed,
+                    debug
+                });
+            }
+        } else {
+            successfulCompile = await compileAllFiles({ fullPath, debug });
+        }
+
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exit(1);
@@ -297,7 +325,7 @@ class DeployService {
             }
 
             for (const sync of integration.syncs) {
-                if (optionalSyncName && optionalSyncName !== sync.name) {
+                if (optionalActionName || (optionalSyncName && optionalSyncName !== sync.name)) {
                     continue;
                 }
 
@@ -341,7 +369,7 @@ class DeployService {
             }
 
             for (const action of integration.actions) {
-                if (optionalActionName && optionalActionName !== action.name) {
+                if (optionalSyncName || (optionalActionName && optionalActionName !== action.name)) {
                     continue;
                 }
 
