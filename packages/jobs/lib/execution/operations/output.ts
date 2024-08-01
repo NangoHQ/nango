@@ -75,16 +75,20 @@ export async function handleError({
 }
 
 async function handlePayloadTooBigError({ taskId, error, nangoProps }: { taskId: string; error: ClientError; nangoProps: NangoProps }): Promise<void> {
-    if (
-        error.payload &&
-        typeof error.payload === 'object' &&
-        'response' in error.payload &&
-        error.payload['response'] &&
-        typeof error.payload['response'] === 'object'
-    ) {
-        const res = error.payload['response'] as unknown as ApiError<string>;
-        if (res.error.code === 'payload_too_big') {
-            await orchestratorClient.failed({ taskId, error: new NangoError('script_output_too_big', { syncId: nangoProps.syncId }) });
+    try {
+        if (
+            error.payload &&
+            typeof error.payload === 'object' &&
+            'response' in error.payload &&
+            error.payload['response'] &&
+            typeof error.payload['response'] === 'object'
+        ) {
+            const res = error.payload['response'] as unknown as ApiError<string>;
+            if (res.error.code === 'payload_too_big') {
+                await orchestratorClient.failed({ taskId, error: new NangoError('script_output_too_big', { syncId: nangoProps.syncId }) });
+            }
         }
+    } catch (err: unknown) {
+        logger.error(`failed to handle payload too big error for task ${taskId}`, err);
     }
 }
