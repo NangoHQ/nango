@@ -2865,6 +2865,23 @@ todoist:
     proxy:
         base_url: https://api.todoist.com
     docs: https://docs.nango.dev/integrations/all/todoist
+tumblr:
+    categories:
+        - social
+        - communication
+    auth_mode: OAUTH2
+    authorization_url: https://www.tumblr.com/oauth2/authorize
+    token_url: https://api.tumblr.com/v2/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.tumblr.com/v2
+    docs: https://docs.nango.dev/integrations/all/tumblr
 twitch:
     categories:
         - gaming
