@@ -492,6 +492,15 @@ chorus:
     proxy:
         base_url: https://chorus.ai
     docs: https://docs.nango.dev/integrations/all/chorus
+circle-so:
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.circle.so
+        headers:
+            Authorization: Token ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/circle-so
 clari-copilot:
     auth_mode: API_KEY
     proxy:
