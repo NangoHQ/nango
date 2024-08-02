@@ -1,34 +1,36 @@
 import './tracer.js';
-import { Temporal } from './temporal.js';
+import { Processor } from './processor/processor.js';
 import { server } from './server.js';
 import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
-import { deleteOldActivityLogs } from './crons/deleteOldActivities.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
-import { logger } from '@nangohq/shared';
+import { getLogger, stringifyError } from '@nangohq/utils';
+import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
+import { envs } from './env.js';
+
+const logger = getLogger('Jobs');
 
 try {
-    const port = parseInt(process.env['NANGO_JOBS_PORT'] || '') || 3005;
-    server.listen(port);
-    logger.info(`🚀 Jobs service ready at http://localhost:${port}`);
-    const temporalNs = process.env['TEMPORAL_NAMESPACE'] || 'default';
-    const temporal = new Temporal(temporalNs);
+    const port = envs.NANGO_JOBS_PORT;
+    const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;
+    const srv = server.listen(port);
+    logger.info(`🚀 service ready at http://localhost:${port}`);
+    const processor = new Processor(orchestratorUrl);
 
-    // This promise never resolve
-    void temporal.start();
+    processor.start();
 
     // Register recurring tasks
     cronAutoIdleDemo();
-    deleteOldActivityLogs();
     deleteSyncsData();
+    timeoutLogsOperations();
 
     // handle SIGTERM
     process.on('SIGTERM', () => {
-        temporal.stop();
-        server.server.close(() => {
+        processor.stop();
+        srv.close(() => {
             process.exit(0);
         });
     });
 } catch (err) {
-    logger.error(`[JOBS]: ${JSON.stringify(err)}`);
+    logger.error(stringifyError(err));
     process.exit(1);
 }

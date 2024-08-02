@@ -1,33 +1,36 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
-import _ from 'lodash';
-import { useNavigate } from 'react-router';
+import debounce from 'lodash/debounce';
+import { useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 
 import { useGetIntegrationDetailsAPI, useGetProvidersAPI, useCreateEmptyIntegrationAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { AuthModes } from '../../types';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { useStore } from '../../store';
+import { useSWRConfig } from 'swr';
+import type { AuthModeType } from '@nangohq/types';
 
 interface Provider {
     name: string;
     defaultScopes: string[];
-    authMode: AuthModes;
+    authMode: AuthModeType;
     categories?: string[];
     docs?: string;
 }
 
 export default function Create() {
+    const { mutate } = useSWRConfig();
+    const env = useStore((state) => state.env);
+
     const [loaded, setLoaded] = useState(false);
     const [initialProviders, setInitialProviders] = useState<Provider[] | null>(null);
     const [providers, setProviders] = useState<Provider[] | null>(null);
-    const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI();
-    const getProvidersAPI = useGetProvidersAPI();
-    const createIntegrationAPI = useCreateEmptyIntegrationAPI();
+    const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI(env);
+    const getProvidersAPI = useGetProvidersAPI(env);
+    const createIntegrationAPI = useCreateEmptyIntegrationAPI(env);
     const navigate = useNavigate();
-    const env = useStore((state) => state.cookieValue);
 
     useEffect(() => {
         const getProviders = async () => {
@@ -52,11 +55,12 @@ export default function Create() {
         if (res?.status === 200) {
             toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
             const data = await res.json();
+            void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integration'), undefined);
             navigate(`/${env}/integration/${data.config.unique_key}#auth`);
         }
     };
 
-    const showDocs = (e: React.MouseEvent<SVGSVGElement, MouseEvent>, provider: Provider) => {
+    const showDocs = (e: React.MouseEvent<SVGSVGElement>, provider: Provider) => {
         e.stopPropagation();
         const documentationUrl = provider.docs ?? `https://docs.nango.dev/integrations/all/${provider.name}`;
         window.open(documentationUrl, '_blank');
@@ -79,7 +83,7 @@ export default function Create() {
         [initialProviders]
     );
 
-    const debouncedFilterProviders = useMemo(() => _.debounce(filterProviders, 300), [filterProviders]);
+    const debouncedFilterProviders = useMemo(() => debounce(filterProviders, 300), [filterProviders]);
 
     const handleInputChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {

@@ -4,9 +4,10 @@ import Nango, { AuthError } from '@nangohq/frontend';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { Steps } from './utils';
 import Button from '../../components/ui/button/Button';
-import CopyButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 import { Bloc, Tab } from './Bloc';
 import { CheckCircledIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
+import { apiFetch } from '../../utils/api';
 
 export const AuthorizeBloc: React.FC<{
     step: Steps;
@@ -26,9 +27,8 @@ export const AuthorizeBloc: React.FC<{
 
         try {
             // Setup the onboarding process
-            const res = await fetch(`/api/v1/onboarding`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+            const res = await apiFetch(`/api/v1/onboarding?env=dev`, {
+                method: 'POST'
             });
 
             if (res.status !== 201) {
@@ -43,6 +43,7 @@ export const AuthorizeBloc: React.FC<{
             idTmp = json.id;
             setId(idTmp);
         } catch (err) {
+            analyticsTrack('web:demo:authorize_error');
             setError(err instanceof Error ? `error: ${err.message}` : 'An unexpected error occurred');
             return;
         }
@@ -53,8 +54,10 @@ export const AuthorizeBloc: React.FC<{
             await nango.auth(providerConfigKey, connectionId);
 
             setError(null);
+            analyticsTrack('web:demo:authorize_success');
             void onProgress(idTmp);
         } catch (err: unknown) {
+            analyticsTrack('web:demo:authorize_error');
             setError(err instanceof AuthError ? `${err.type} error: ${err.message}` : 'An unexpected error occurred');
         }
     };
@@ -74,7 +77,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
             <div className="border bg-zinc-900 border-zinc-900 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
                     <Tab>Frontend</Tab>
-                    <CopyButton dark text={snippet} />
+                    <CopyButton text={snippet} />
                 </div>
                 <Prism noCopy language="typescript" className="p-3 transparent-code bg-black font-['Roboto Mono']" colorScheme="dark">
                     {snippet}

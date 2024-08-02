@@ -1,14 +1,14 @@
 import { expect, describe, it } from 'vitest';
-import proxyController from './proxy.controller.js';
+import { parseHeaders } from './proxy.controller.js';
+import type { Request } from 'express';
 
 describe('Proxy Controller Construct URL Tests', () => {
     it('Should parse headers that starts with Nango-Proxy or nango-proxy', () => {
-        const req: any = {
+        const req: Pick<Request, 'rawHeaders'> = {
             rawHeaders: ['Nango-Proxy-Test-Header', 'TestValue', 'nango-proxy-another-header', 'AnotherValue', 'Irrelevant-Header', 'IrrelevantValue']
         };
 
-        // @ts-expect-error
-        const parsedHeaders = proxyController.parseHeaders(req);
+        const parsedHeaders = parseHeaders(req);
 
         expect(parsedHeaders).toEqual({
             'Test-Header': 'TestValue',
@@ -17,21 +17,19 @@ describe('Proxy Controller Construct URL Tests', () => {
     });
 
     it('Should return an empty object when there are no Nango-Proxy or nango-proxy headers', () => {
-        const req: any = {
+        const req: Pick<Request, 'rawHeaders'> = {
             rawHeaders: ['Irrelevant-Header-One', 'IrrelevantValueOne', 'Irrelevant-Header-Two', 'IrrelevantValueTwo']
         };
 
-        // @ts-expect-error
-        const parsedHeaders = proxyController.parseHeaders(req);
+        const parsedHeaders = parseHeaders(req);
 
         expect(parsedHeaders).toEqual({});
     });
 
     it('Should handle the case when rawHeaders is not an array or empty', () => {
-        const req: any = {};
+        const req = {};
 
-        // @ts-expect-error
-        const parsedHeaders = proxyController.parseHeaders(req);
+        const parsedHeaders = parseHeaders(req as Pick<Request, 'rawHeaders'>);
 
         expect(parsedHeaders).toEqual({});
     });

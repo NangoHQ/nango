@@ -1,11 +1,11 @@
 ---
 title: 'Edit connection metadata'
-openapi: 'PATCH /connection/{connectionId}/metadata'
+openapi: 'PATCH /connection/metadata'
 ---
 
 ## Update _connection metadata_
 
-Nango uses the request body as the new metadata (it must be a JSON object). Note that this overrides any existing metadata.
+Nango uses the request body as the new metadata (it must be a JSON object). Note that this overrides specified properties, not the entire metadata. The connection_id must be passed in the body as well. Note that the connection_id can be a single string or an array of strings.
 
 ## Fetching _connection metadata_
 

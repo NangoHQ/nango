@@ -3,14 +3,15 @@ import { ChevronDown, ChevronRight } from '@geist-ui/icons';
 import { Language, Steps, endpointSync, model } from './utils';
 import Button from '../../components/ui/button/Button';
 import { useEffect, useMemo, useState } from 'react';
-import { curlSnippet, nodeSnippet } from '../../utils/language-snippets';
+import { curlSnippet, nodeSyncSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
-import CopyButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
 import { Bloc, Tab } from './Bloc';
 import { cn } from '../../utils/utils';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { CheckCircledIcon, InfoCircledIcon } from '@radix-ui/react-icons';
+import { apiFetch } from '../../utils/api';
 
 type Interval = ReturnType<typeof setInterval>;
 
@@ -33,7 +34,7 @@ export const FetchBloc: React.FC<{
 
     const snippet = useMemo<string>(() => {
         if (language === Language.Node) {
-            return nodeSnippet(model, secretKey, connectionId, providerConfigKey);
+            return nodeSyncSnippet({ modelName: model, secretKey, connectionId, providerConfigKey });
         } else if (language === Language.cURL) {
             return curlSnippet(baseUrl, endpointSync, secretKey, connectionId, providerConfigKey);
         }
@@ -51,11 +52,10 @@ export const FetchBloc: React.FC<{
     const fetchRecords = async () => {
         const params = { model };
 
-        const res = await fetch(`/records?${new URLSearchParams(params).toString()}`, {
+        const res = await apiFetch(`/records?${new URLSearchParams(params).toString()}`, {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${secretKey}`,
-                'Content-Type': 'application/json',
                 'Provider-Config-Key': providerConfigKey,
                 'Connection-Id': connectionId
             }
@@ -65,17 +65,20 @@ export const FetchBloc: React.FC<{
             const json = (await res.json()) as { message?: string };
             setError(json.message ? json.message : 'An unexpected error occurred, please retry');
             analyticsTrack('web:demo:fetch_error');
+            setPollingInterval(undefined);
             return;
         }
 
         const fetchedRecords = (await res.json()) as { records: Record<string, unknown>[] };
         if (fetchedRecords.records.length <= 0) {
             setError('An unexpected error occurred, please retry');
+            setPollingInterval(undefined);
             return;
         }
 
         setError(null);
         onProgress(fetchedRecords.records);
+        setPollingInterval(undefined);
     };
 
     const startPolling = () => {
@@ -86,9 +89,8 @@ export const FetchBloc: React.FC<{
         analyticsTrack('web:demo:fetch');
 
         async function poll() {
-            const res = await fetch(`/api/v1/onboarding/sync-status`, {
+            const res = await apiFetch(`/api/v1/onboarding/sync-status?env=dev`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ connectionId })
             });
 
@@ -106,8 +108,8 @@ export const FetchBloc: React.FC<{
             const data = (await res.json()) as { jobStatus: string };
 
             if (data.jobStatus === 'SUCCESS') {
+                analyticsTrack('web:demo:fetch_success');
                 clearInterval(pollingInterval);
-                setPollingInterval(undefined);
                 void fetchRecords();
             }
         }
@@ -153,7 +155,7 @@ export const FetchBloc: React.FC<{
         >
             <div className="border bg-zinc-900 border-zinc-900 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
-                    <div className="space-x-4">
+                    <div className="flex gap-4">
                         <Tab
                             variant={language === Language.Node ? 'black' : 'zombie'}
                             className={cn('cursor-default', language !== Language.Node && 'cursor-pointer bg-zinc-900 pointer-events-auto')}
@@ -173,7 +175,7 @@ export const FetchBloc: React.FC<{
                             cURL
                         </Tab>
                     </div>
-                    <CopyButton dark text={snippet} />
+                    <CopyButton text={snippet} />
                 </div>
                 <Prism noCopy language="typescript" className="p-3 transparent-code bg-black" colorScheme="dark">
                     {snippet}

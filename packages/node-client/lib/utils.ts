@@ -1,5 +1,13 @@
-import type { ProxyConfiguration, GetRecordsRequestConfig } from './types.js';
+import os from 'os';
 
+import type { ProxyConfiguration, GetRecordsRequestConfig } from './types.js';
+import { NANGO_VERSION } from './version.js';
+
+/**
+ * Validates the configuration for a proxy call
+ * @param config - Configuration object for the proxy call
+ * @throws If required parameters are missing in the configuration
+ */
 export const validateProxyConfiguration = (config: ProxyConfiguration) => {
     const requiredParams: (keyof ProxyConfiguration)[] = ['endpoint', 'providerConfigKey', 'connectionId'];
 
@@ -10,6 +18,11 @@ export const validateProxyConfiguration = (config: ProxyConfiguration) => {
     });
 };
 
+/**
+ * Validates the configuration for fetching sync records
+ * @param config - Configuration object for fetching sync records
+ * @throws If required parameters are missing in the configuration
+ */
 export const validateSyncRecordConfiguration = (config: GetRecordsRequestConfig) => {
     const requiredParams: (keyof GetRecordsRequestConfig)[] = ['model', 'providerConfigKey', 'connectionId'];
 
@@ -19,3 +32,11 @@ export const validateSyncRecordConfiguration = (config: GetRecordsRequestConfig)
         }
     });
 };
+
+export function getUserAgent(userAgent?: string): string {
+    const nodeVersion = process.versions.node;
+
+    const osName = os.platform().replace(' ', '_');
+    const osVersion = os.release().replace(' ', '_');
+    return `nango-node-client/${NANGO_VERSION} (${osName}/${osVersion}; node.js/${nodeVersion})${userAgent ? `; ${userAgent}` : ''}`;
+}

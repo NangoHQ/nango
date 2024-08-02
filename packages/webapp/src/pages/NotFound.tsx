@@ -8,10 +8,12 @@ const VALID_PATHS = [
     'integrations',
     'syncs',
     'connections',
-    'activity',
     'project-settings',
+    'environment-settings',
     'user-settings',
-    'account-settings'
+    'account-settings',
+    'team-settings',
+    'logs'
 ];
 
 export const NotFound: React.FC = () => {
@@ -19,7 +21,7 @@ export const NotFound: React.FC = () => {
     const navigate = useNavigate();
 
     const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
-    const env = useStore((state) => state.cookieValue);
+    const env = useStore((state) => state.env);
 
     useEffect(() => {
         const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -29,7 +31,7 @@ export const NotFound: React.FC = () => {
             return;
         }
 
-        navigate(`/${env}/integrations`);
+        navigate(`/${env}/`);
     }, [location, env, navigate, showInteractiveDemo]);
 
     return null;

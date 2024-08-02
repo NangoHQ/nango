@@ -1,15 +1,18 @@
-import type { Config as ProviderConfig, Template as ProviderTemplate, TemplateAlias as ProviderTemplateAlias } from '../models/Provider.js';
+import type { Config as ProviderConfig, TemplateAlias as ProviderTemplateAlias } from '../models/Provider.js';
 import type { Connection } from '../models/Connection.js';
-import db from '../db/database.js';
+import type { Template as ProviderTemplate } from '@nangohq/types';
+import db from '@nangohq/database';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
-import { isCloud, dirname } from '../utils/utils.js';
+import { isCloud, nanoid } from '@nangohq/utils';
+import { dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import syncOrchestrator from './sync/orchestrator.service.js';
+import syncManager from './sync/manager.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
+import type { Orchestrator } from '../clients/orchestrator.js';
 
 class ConfigService {
     templates: Record<string, ProviderTemplate> | null;
@@ -44,11 +47,11 @@ class ConfigService {
             }
 
             for (const key in fileEntries) {
-                const entry = fileEntries[key] as ProviderTemplateAlias;
+                const entry = fileEntries[key] as ProviderTemplateAlias | undefined;
 
                 if (entry?.alias) {
                     let hasOverrides = false;
-                    let templateOverrides;
+                    let templateOverrides: ProviderTemplateAlias;
                     if (Object.keys(fileEntries[key] as ProviderTemplate).length > 0) {
                         const { alias, ...overrides } = entry;
                         hasOverrides = true;
@@ -56,7 +59,7 @@ class ConfigService {
                     }
                     const aliasData = fileEntries[entry.alias] as ProviderTemplate;
                     if (hasOverrides) {
-                        fileEntries[key] = { ...aliasData, ...templateOverrides };
+                        fileEntries[key] = { ...aliasData, ...templateOverrides! };
                     }
                 }
             }
@@ -65,6 +68,16 @@ class ConfigService {
         } catch (_) {
             return null;
         }
+    }
+
+    async getById(id: number): Promise<ProviderConfig | null> {
+        const result = await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).first();
+
+        if (!result) {
+            return null;
+        }
+
+        return encryptionManager.decryptProviderConfig(result);
     }
 
     async getProviderName(providerConfigKey: string): Promise<string | null> {
@@ -108,29 +121,23 @@ class ConfigService {
     }
 
     async getProviderConfig(providerConfigKey: string, environment_id: number): Promise<ProviderConfig | null> {
-        if (!providerConfigKey) {
-            throw new NangoError('missing_provider_config');
-        }
-        if (environment_id === null || environment_id === undefined) {
-            throw new NangoError('missing_environment_id');
-        }
-
         const result = await db.knex
             .select('*')
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: providerConfigKey, environment_id, deleted: false });
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
+            .first();
 
-        if (result == null || result.length == 0 || result[0] == null) {
+        if (!result) {
             return null;
         }
 
-        return encryptionManager.decryptProviderConfig(result[0]);
+        return encryptionManager.decryptProviderConfig(result);
     }
 
     async listProviderConfigs(environment_id: number): Promise<ProviderConfig[]> {
         return (await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id, deleted: false }))
             .map((config) => encryptionManager.decryptProviderConfig(config))
-            .filter((config) => config != null) as ProviderConfig[];
+            .filter(Boolean) as ProviderConfig[];
     }
 
     async listProviderConfigsByProvider(environment_id: number, provider: string): Promise<ProviderConfig[]> {
@@ -150,11 +157,15 @@ class ConfigService {
     }
 
     async createEmptyProviderConfig(provider: string, environment_id: number): Promise<Pick<ProviderConfig, 'id' | 'unique_key'>> {
-        const existingProviders = await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ provider, environment_id, deleted: false });
+        const exists = await db.knex
+            .count<{ count: string }>('*')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ provider, environment_id, deleted: false })
+            .first();
 
         const config = {
             environment_id,
-            unique_key: existingProviders.length === 0 ? provider : `${provider}-${existingProviders.length + 1}`,
+            unique_key: exists?.count === '0' ? provider : `${provider}-${nanoid(4).toLocaleLowerCase()}`,
             provider
         };
 
@@ -167,7 +178,7 @@ class ConfigService {
         return { id: id[0]?.id, unique_key: config.unique_key } as Pick<ProviderConfig, 'id' | 'unique_key'>;
     }
 
-    async deleteProviderConfig(providerConfigKey: string, environment_id: number): Promise<number> {
+    async deleteProviderConfig(providerConfigKey: string, environment_id: number, orchestrator: Orchestrator): Promise<number> {
         const idResult = (
             await db.knex.select('id').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, environment_id, deleted: false })
         )[0];
@@ -178,9 +189,9 @@ class ConfigService {
 
         const { id } = idResult;
 
-        await syncOrchestrator.deleteSyncsByProviderConfig(environment_id, providerConfigKey);
+        await syncManager.deleteSyncsByProviderConfig(environment_id, providerConfigKey, orchestrator);
 
-        if (isCloud()) {
+        if (isCloud) {
             const config = await this.getProviderConfig(providerConfigKey, environment_id);
             await deleteSyncFilesForConfig(config?.id as number, environment_id);
         }

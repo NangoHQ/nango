@@ -1,38 +1,4 @@
-export interface ActivityResponse {
-    id: number;
-    level: 'info' | 'debug' | 'error' | 'warn';
-    action:
-        | 'account'
-        | 'oauth'
-        | 'auth'
-        | 'proxy'
-        | 'token'
-        | 'sync'
-        | 'sync deploy'
-        | 'sync init'
-        | 'pause sync'
-        | 'full sync'
-        | 'restart sync'
-        | 'trigger sync'
-        | 'trigger full sync'
-        | 'cancel sync'
-        | 'action'
-        | 'webhook';
-    success: boolean;
-    timestamp: number;
-    start: number;
-    end: number;
-    message: string;
-    messages: Record<string, any>[];
-    connection_id: string;
-    provider_config_key: string;
-    provider: string;
-    method: string;
-    endpoint?: string;
-    operation_name?: string;
-}
-
-export type ActivityMessageResponse = Record<number, Record<string, any>[]>;
+import type { ActiveLogIds, NangoModel, SyncTypeLiteral, AuthModeType, NangoSyncEndpoint } from '@nangohq/types';
 
 export type SyncResult = Record<string, Result>;
 
@@ -76,26 +42,23 @@ export interface SyncResponse {
     frequency_override: string | null;
     futureActionTimes: number[];
     offset: number;
-    schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
-    models: string[];
+    schedule_status: 'STARTED' | 'PAUSED' | 'DELETED';
+    models: string | string[];
     schedule_id: string;
     status: 'SUCCESS' | 'RUNNING' | 'STOPPED' | 'PAUSED' | 'ERROR';
+    sync_type: SyncTypeLiteral;
     latest_sync: {
         created_at: string;
         updated_at: string;
         type: 'INITIAL' | 'INCREMENTAL';
         status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
-        activity_log_id: number | null;
         result: SyncResult;
         job_id: string;
         sync_config_id: number;
         version: string;
         models: string[];
     };
-    thirty_day_timestamps: {
-        created_at: string;
-        updated_at: string;
-    }[];
+    active_logs: ActiveLogIds | null;
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL' | 'CANCEL';
@@ -108,20 +71,9 @@ export const UserFacingSyncCommand = {
     CANCEL: 'cancelled'
 };
 
-export enum AuthModes {
-    OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2',
-    Basic = 'BASIC',
-    ApiKey = 'API_KEY',
-    AppStore = 'APP_STORE',
-    App = 'APP',
-    Custom = 'CUSTOM',
-    None = 'NONE'
-}
-
 export interface Connection {
     id: number;
-    connectionId: string;
+    connection_id: string;
     provider: string;
     providerConfigKey: string;
     creationDate: string;
@@ -134,35 +86,31 @@ export interface Connection {
     oauthToken: string | null;
     oauthTokenSecret: string | null;
     rawCredentials: object;
-    credentials: BasicApiCredentials | ApiKeyCredentials | null;
+    credentials: BasicApiCredentials | ApiKeyCredentials | OAuthOverride | OAuth2ClientCredentials | null;
 }
 
 export interface BasicApiCredentials {
-    [key: string]: string;
     username: string;
     password: string;
 }
 
 export interface ApiKeyCredentials {
-    [key: string]: string;
     apiKey: string;
 }
 
-export interface User {
-    id: number;
-    email: string;
-    name: string;
-    suspended: boolean;
-    currentUser?: boolean;
+export interface OAuthOverride {
+    config_override: {
+        client_id: string;
+        client_secret: string;
+    };
 }
 
-export interface InvitedUser {
-    id: number;
-    email: string;
-    name: string;
-    expires_at: string;
+export interface OAuth2ClientCredentials {
     token: string;
-    accepted: boolean;
+    access_token: string;
+    expires_at: string;
+    client_id: string;
+    client_secret: string;
 }
 
 export interface PreBuiltFlow {
@@ -196,21 +144,17 @@ export interface NangoSyncModel {
     fields: NangoSyncModelField[];
 }
 
-export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
-
-export type NangoSyncEndpoint = {
-    [key in HTTP_VERB]?: string;
-};
-
 export interface Flow {
     id?: number;
     attributes: Record<string, unknown>;
     endpoints: NangoSyncEndpoint[];
     scopes: string[];
+    enabled: boolean;
     sync_type?: 'FULL' | 'INCREMENTAL';
     is_public: boolean;
     pre_built: boolean;
     version?: string;
+    upgrade_version?: string;
     last_deployed?: string;
     input?: NangoSyncModel;
     description: string;
@@ -222,41 +166,9 @@ export interface Flow {
     track_deletes: boolean;
     auto_start?: boolean;
     endpoint?: string;
-    models: NangoSyncModel[];
+    models: NangoSyncModel[] | NangoModel[];
     nango_yaml_version: 'v1' | 'v2';
     webhookSubscriptions: string[];
-}
-
-export interface Account {
-    id: number;
-    name: string;
-    account_id: number;
-    secret_key: string;
-    public_key: string;
-    secret_key_iv: string | null;
-    secret_key_tag: string | null;
-    callback_url: string;
-    webhook_url: string;
-    webhook_receive_url: string;
-    hmac_enabled: boolean;
-    hmac_key: string;
-    created_at: string;
-    updated_at: string;
-    pending_secret_key: string | null;
-    pending_secret_key_iv: string | null;
-    pending_secret_key_tag: string | null;
-    pending_public_key: string | null;
-    always_send_webhook: boolean;
-    slack_notifications: boolean;
-    websockets_path: string;
-    secret_key_rotatable: boolean;
-    env_variables: { id?: number; name: string; value: string }[];
-    host: string;
-    uuid: string;
-    email: string;
-    send_auth_webhook: boolean;
-    public_key_rotatable?: boolean;
-    hmac_digest?: string | null;
 }
 
 export interface IntegrationConfig {
@@ -268,20 +180,11 @@ export interface IntegrationConfig {
     has_webhook: boolean;
     has_webhook_user_defined_secret?: boolean;
     scopes: string;
-    auth_mode: AuthModes;
+    auth_mode: AuthModeType;
     created_at: string;
     webhook_secret?: string;
     custom?: Record<string, string>;
     connection_count: number;
     connections: Connection[];
     docs: string;
-}
-
-export interface OnboardingStatus {
-    id: number;
-    progress: number;
-    records: Record<string, unknown>[] | null;
-    provider: boolean;
-    connection: boolean;
-    sync: boolean;
 }

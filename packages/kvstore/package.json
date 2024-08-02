@@ -1,0 +1,26 @@
+{
+    "name": "@nangohq/kvstore",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.js",
+    "private": true,
+    "scripts": {
+        "build": "rimraf ./dist && tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/logs"
+    },
+    "dependencies": {
+        "@nangohq/utils": "file:../utils",
+        "redis": "4.6.13"
+    },
+    "devDependencies": {
+        "vitest": "1.6.0"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

@@ -20,7 +20,7 @@ SERVER_PORT=<PORT>
 
 The resulting callback URL for OAuth will be `<INSTANCE-URL>/oauth/callback`.
 
-<Note>You can customize the callback URL by updating "Callback URL" field in the "Project Settings" tab in the Nango admin.</Note>
+<Note>You can customize the callback URL by updating "Callback URL" field in the "Environment Settings" tab in the Nango admin.</Note>
 
 <Note>
     If you are using a custom domain, you should change the `NANGO_SERVER_URL` server environment variable accordingly (in the `.env` file or directly on
@@ -46,6 +46,13 @@ NANGO_DB_PORT=<REPLACE>
 NANGO_DB_NAME=<REPLACE>
 NANGO_DB_SSL=true
 ```
+
+Records saved by syncs can be persisted in a dedicated database. If you opt in for this setup, set the `RECORDS_DATABASE_URL` env var. Ex:
+```
+RECORDS_DATABASE_URL=postgresql://user:password@host:port/dbname
+```
+Special characters in the RECORDS_DATABASE_URL should be URL encoded.
+If not specified, the records will be stored in the main database.
 
 <Tip>
 Deploying with Render or Heroku automatically generates a persistent database
@@ -74,11 +81,16 @@ NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
 ### Encrypt sensitive data[](#encrypt-sensitive-data 'Direct link to Encrypt sensitive data')
 
 You can enforce encryption of sensitive data (tokens, secret key, app secret)
-using the AES-GCM encryption algorithm. To do so, set the following environment
-variable to a randomly generated 256-bit base64-encoded key:
+using the AES-GCM encryption algorithm. To do so, generate a 256-bit base64-encoded key:
 
 ```
-NANGO_ENCRYPTION_KEY=<ADD-BASE64-256BIT-KEY>
+openssl rand -base64 32
+```
+
+And set the `NANGO_ENCRYPTION_KEY` environment variable to the generated key:
+
+```
+NANGO_ENCRYPTION_KEY=<BASE64-256BIT-KEY>
 ```
 
 Once you restart the Nango server, the encryption of the database will happen
@@ -87,7 +99,7 @@ encryption key once you have set it.
 
 ### Custom websockets path[](#custom-websockets-path 'Direct link to Custom websockets path')
 
-The Nango server serves websockets from the `/` path by default for use by `@nangohq/frontend` during the login flow. 
+The Nango server serves websockets from the `/` path by default for use by `@nangohq/frontend` during the login flow.
 If you want more isolation between websockets and the dashboard (also served from `/`), then you can set the `NANGO_SERVER_WEBSOCKETS_PATH` environment variable to serve websockets from a different path:
 
 ```
@@ -112,3 +124,25 @@ actions and do not track sensitive information.
 
 You can disable telemetry by setting the env var `TELEMETRY=false` (in the
 `.env` file or directly on Heroku/Render).
+
+## Logs[](#logs 'Direct link to Logs')
+
+We use Elasticsearch to store Nango's execution logs and power the logs UI.
+To limit the requirements to self-host, this stack is optional and up to the developper to setup.
+
+If you want to enable logs, you will need to:
+- Host an Elasticsearch cluster
+- Update your environment variables, with `NANGO_LOGS_ENABLED=true` and add the appropriate values in `NANGO_LOGS_ES_*`
+
+### Hosting
+
+To host an Elasticsearch cluster you have multiple solutions:
+
+- Locally: uncomment the service inside `docker-compose.yml` ([GitHub](https://github.com/NangoHQ/nango/blob/master/docker-compose.yaml#L63)) and run `docker-compose up`
+- ElasticCloud: minimal installation on Standard tier is about 20€/mo ([elastic.co](https://www.elastic.co/))
+- Render: deploy a free instance ([render.com](https://docs.render.com/deploy-elasticsearch))
+
+### Alternatives
+
+We don't provide alternatives storage for the moment.
+If `NANGO_LOGS_ENABLED` is `false`, all the logs are sent to stdout so you can always find everything in your hosts logs UI.

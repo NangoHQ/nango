@@ -1,0 +1,31 @@
+{
+    "name": "@nangohq/records",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "private": true,
+    "scripts": {
+        "dev:migration:create": "npm run knex -- migrate:make",
+        "dev:migration:run": "npm run knex -- migrate:latest",
+        "knex": "tsx ../../node_modules/knex/bin/cli.js --knexfile lib/db/knexfile.ts",
+        "prod:migration:run": "knex --knexfile dist/db/knexfile.js migrate:latest"
+    },
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/records"
+    },
+    "dependencies": {
+        "@nangohq/utils": "file:../utils",
+        "dayjs": "1.11.10",
+        "knex": "3.1.0",
+        "md5": "2.3.0",
+        "pg": "8.11.3",
+        "uuid": "9.0.1"
+    },
+    "devDependencies": {
+        "@types/md5": "^2.3.2",
+        "vitest": "1.6.0"
+    }
+}

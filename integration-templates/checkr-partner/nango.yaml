@@ -1,0 +1,147 @@
+integrations:
+    checkr-partner:
+        actions:
+            background-check-services:
+                endpoint: GET /background-check/service-list
+                output: CheckrServicesResponse
+                description: Fetch the possible services that Checkr offers for a background check
+            background-check-parameters:
+                endpoint: GET /background-check/service-parameters
+                input: BackgroundCheckParametersInput
+                output: BackgroundCheckParameterResponse
+                description: Fetch the parameters required to trigger a background check
+            trigger-background-check:
+                endpoint: POST /background-check/trigger
+                input: TriggerBackgroundCheckInput
+                output: TriggeredBackgroundCheck
+                description: Trigger a background check
+            create-candidate:
+                endpoint: POST /candidates
+                output: Candidate
+                input: CreateCandidate
+        syncs:
+            background-checks:
+                endpoint: GET /background-checks
+                output: BackgroundCheck
+                runs: every hour
+                sync_type: incremental
+                description: Fetch all the background checks
+models:
+    Timestamps:
+        created_at: string
+        updated_at: string
+    UtilityAnyType:
+        __string: any
+    Location:
+        city?: string
+        country: string
+        state?: string
+    Candidate:
+        id: string
+        object: string
+        uri: string
+        first_name: string
+        middle_name: string | null
+        last_name: string
+        mother_maiden_name: string
+        email: string
+        phone: number
+        zipcode: number
+        dob: string
+        ssn: string
+        driver_license_number: string
+        driver_license_state: string
+        previous_driver_license_number: string
+        previous_driver_license_state: string
+        copy_requested: boolean
+        custom_id: string
+        report_ids: string[]
+        geo_ids: string[]
+        adjudication: string
+        metadata: UtilityAnyType
+    CreateCandidate:
+        __extends: Location
+        first_name: string
+        middle_name?: string
+        no_middle_name?: boolean
+        last_name: string
+        email: string
+        phone: string
+        zipcode: string
+        dob: string
+        ssn: string
+        driver_license_number: string
+        driver_license_state: string
+        work_locations: Location[]
+    BackgroundCheck:
+        id: string
+        status: string
+        service_key: string
+        url: string
+        candidate_id: string
+        created_at: string
+        expires_at?: string | undefined
+    CheckrTriggeredBackgroundCheck:
+        __extends: Timestamps
+        id: string
+        object: string
+        uri: string
+        invitation_url: string
+        status: string
+        completed_at: string | null
+        deleted_at: string | null
+        package: string
+        candidate_id: string
+        report_id: string | null
+        archived: boolean
+        expires_at?: string
+        archived_info:
+            time: string
+            user:
+                email: string
+                id: string
+    BackgroundCheckParametersInput:
+        service_key: string
+    TriggeredBackgroundCheck:
+        __extends: Timestamps
+        applicationId: any
+        url: string
+        status: string
+        completed_at: string | null
+        candidate_id: string
+        service_key: string
+        deleted_at: string | null
+    TriggerBackgroundCheckInput:
+        __extends: Location
+        service_key: string
+        candidate_id: string
+        node?: string
+        tags?: string[]
+    BackgroundCheckParameterResponse:
+        parameters: BackgroundCheckParameters[]
+    BackgroundCheckParameters:
+        key: string
+        type: string
+        title: string
+        description: string
+        required: boolean
+    CheckrServicesResponse:
+        services: CheckrService[]
+    CheckrScreening:
+        type: string
+        subtype: string | null
+    CheckrService:
+        id: string
+        price: number
+        drug_screening_price: number | null
+        enabled_examples: string[]
+        requires_observed_drug_test: boolean
+        object: string
+        apply_url: string
+        created_at: string
+        deleted_at: string | null
+        name: string
+        screenings: CheckrScreening[]
+        slug: string
+        uri: string
+        node?: string

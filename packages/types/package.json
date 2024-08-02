@@ -1,0 +1,24 @@
+{
+    "name": "@nangohq/types",
+    "version": "0.42.2",
+    "description": "Types used in Nango applications",
+    "type": "module",
+    "typings": "dist/index.d.ts",
+    "scripts": {},
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/utils"
+    },
+    "devDependencies": {
+        "@types/json-schema": "7.0.15",
+        "axios": "^1.3.4",
+        "json-schema": "0.4.0",
+        "type-fest": "4.14.0"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "files": [
+        "dist/**/*"
+    ]
+}

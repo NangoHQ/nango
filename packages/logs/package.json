@@ -1,0 +1,30 @@
+{
+    "name": "@nangohq/logs",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.js",
+    "private": true,
+    "scripts": {
+        "build": "rimraf ./dist && tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/logs"
+    },
+    "dependencies": {
+        "@elastic/elasticsearch": "8.13.1",
+        "@nangohq/kvstore": "file:../kvstore",
+        "@nangohq/utils": "file:../utils",
+        "zod": "3.22.4"
+    },
+    "devDependencies": {
+        "@nangohq/types": "file:../types",
+        "type-fest": "4.14.0",
+        "vitest": "1.6.0"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

@@ -1,0 +1,31 @@
+{
+    "name": "@nangohq/nango-orchestrator",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "private": true,
+    "scripts": {
+        "dev": "nodemon"
+    },
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/orchestrator"
+    },
+    "dependencies": {
+        "@nangohq/scheduler": "file:../scheduler",
+        "@nangohq/utils": "file:../utils",
+        "dd-trace": "5.2.0",
+        "express": "4.19.2",
+        "get-port": "7.1.0",
+        "p-queue": "8.0.1",
+        "zod": "3.22.4"
+    },
+    "devDependencies": {
+        "@nangohq/types": "file:../types",
+        "type-fest": "4.14.0",
+        "@types/node": "20.12.2",
+        "vitest": "1.6.0"
+    }
+}

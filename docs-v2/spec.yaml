@@ -363,6 +363,12 @@ paths:
                                 no_expiration:
                                     type: boolean
                                     description: (OAuth2, optional) If the provider gives access tokens that don't expire, pass in `true` to avoid an import validation error.
+                                oauth_client_id_override:
+                                    type: string
+                                    description: (OAuth2, optional) Override the integration's OAuth client id
+                                oauth_client_secret_override:
+                                    type: string
+                                    description: (OAuth2, optional) Override the integration's OAuth client secret
                                 oauth_token:
                                     type: string
                                     description: (OAuth 1, required) The client token to be attached to the connection.
@@ -480,6 +486,130 @@ paths:
                                 properties:
                                     message:
                                         type: string
+    /connection/metadata:
+        post:
+            description: Set custom metadata for the connection or connections. If updating multiple connections pass in an array of connection ids instead of a string.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - metadata
+                                - connection_id
+                                - provider_config_key
+                            properties:
+                                connection_id:
+                                    oneOf:
+                                        - type: string
+                                          example: "connection-123"
+                                          description: The connection ID used to set the metadata on.
+                                        - type: array
+                                          items:
+                                              type: string
+                                              example: "connection-123"
+                                          description: The connection IDs used to set the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID used to create the connection (aka Unique Key).
+                                metadata:
+                                    type: object
+
+            responses:
+                '201':
+                    description: Successfully set the metadata for the connections
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    connection_id:
+                                        oneOf:
+                                            - type: string
+                                              example: "connection-123"
+                                              description: The connection ID used to set the metadata on. Returns an array of connection ids if an array is passed in.
+                                            - type: array
+                                              items:
+                                                  type: string
+                                                  example: "connection-123"
+                                              description: The connection IDs used to set the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                    provider_config_key:
+                                        type: string
+                                        description: The integration ID used to create the connection (aka Unique Key).
+                                    metadata:
+                                        type: object
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+        patch:
+            description: Edit custom metadata for the connection or connections (only overrides specified properties, not the entire metadata). If updating multiple connections pass in an array of connection ids instead of a string.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - metadata
+                                - connection_id
+                                - provider_config_key
+                            properties:
+                                connection_id:
+                                    oneOf:
+                                        - type: string
+                                          example: "connection-123"
+                                          description: The connection ID used to update the metadata on. Accepts an array of connection ids as well
+                                        - type: array
+                                          items:
+                                              type: string
+                                              example: "connection-123"
+                                          description: The connection IDs used to update the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID used to create the connection (aka Unique Key).
+                                metadata:
+                                    type: object
+
+            responses:
+                '200':
+                    description: Successfully updated the metadata for the connections
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    connection_id:
+                                        oneOf:
+                                            - type: string
+                                              example: "connection-123"
+                                              description: The connection ID used to update the metadata on. Returns an array of connection ids if an array is passed in.
+                                            - type: array
+                                              items:
+                                                  type: string
+                                                  example: "connection-123"
+                                              description: The connection IDs used to update the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                    provider_config_key:
+                                        type: string
+                                        description: The integration ID used to create the connection (aka Unique Key).
+                                    metadata:
+                                        type: object
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
     /connection/{connectionId}/metadata:
         post:
             description: Set custom metadata for the connection.
@@ -556,10 +686,10 @@ paths:
 
     /scripts/config:
         get:
-            description: Return the configuration for all scripts
+            description: Return the configuration for all integration scripts
             responses:
                 '200':
-                    description: Successfully returned scripts config
+                    description: Successfully returned integration scripts config
                     content:
                         application/json:
                             schema:
@@ -829,110 +959,7 @@ paths:
                                 properties:
                                     message:
                                         type: string
-    /sync/records:
-        get:
-            description: Returns data synced with Nango Sync
-            parameters:
-                - name: model
-                  in: query
-                  required: true
-                  schema:
-                      type: string
-                  description: The data model to fetch
-                - name: delta
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                  description: Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
-                - name: limit
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                  description: The maximum number of records to return. If not passed, all records are returned.
-                - name: offset
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                  description: The number of records to skip. If not passed, no records are skipped.
-                - name: sort_by
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                      enum: [created_at, updated_at, id]
-                  description: Set how the records are sorted. The default is id. The options are 'created_at', 'updated_at', 'id'.
-                - name: order
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                      enum: [desc, asc]
-                  description: Set the order of results. The default is 'desc'. The options are 'desc' or 'asc'.
-                - name: filter
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                      enum: [added, updated, deleted]
-                  description: Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the delta parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
-                - name: Connection-Id
-                  in: header
-                  required: true
-                  description: The connection ID used to create the connection.
-                  schema:
-                      type: string
-                - name: Provider-Config-Key
-                  in: header
-                  required: true
-                  description: The integration ID used to create the connection (aka Unique Key).
-                  schema:
-                      type: string
 
-            responses:
-                '200':
-                    description: Successfully returned records
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    type: object
-                                    properties:
-                                        your-properties:
-                                            type: string
-                                            description: The data Nango synced in for you
-                                            example: "Your synced data, in the schema you (or Nango) defined in nango.yaml"
-                                        _nango_metadata:
-                                            type: object
-                                            properties:
-                                                deleted_at:
-                                                    type: string
-                                                    nullable: true
-                                                    description: The timestamp at which Nango detected the record as deleted
-                                                last_action:
-                                                    type: string
-                                                    description: The last action seen on this record
-                                                    enum: ["ADDED", "UPDATED", "DELETED"]
-                                                first_seen_at:
-                                                    type: string
-                                                    description: The timestamp at which Nango first saw this record
-                                                    example: "2023-09-18T15:20:35.941305+00:00"
-                                                last_modified_at:
-                                                    type: string
-                                                    description: The timestamp at which Nango last detected a change to this record
-                                                    example: "2023-09-18T15:20:35.941305+00:00"
-                '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
     /sync/trigger:
         post:
             description: Triggers an additional, one-off execution of specified sync(s) (for a given connection or all applicable connections if no connection is specified).
@@ -1142,7 +1169,7 @@ paths:
                                 frequency:
                                     type: string
                                     nullable: true
-                                    description: "The frequency you want to set (ex: 'every hour'). Set null to revert to the default frequency"
+                                    description: "The frequency you want to set (ex: 'every hour'). Set null to revert to the default frequency. Uses the https://github.com/vercel/ms notations. Min frequency: 5 minutes."
             responses:
                 '200':
                     description: Successfully updated the frequency

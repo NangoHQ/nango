@@ -1,10 +1,14 @@
 import './tracer.js';
+import { getLogger } from '@nangohq/utils';
 import { server } from './server.js';
+import { envs } from './env.js';
+
+const logger = getLogger('Persist');
 
 try {
-    const port = parseInt(process.env['NANGO_PERSIST_PORT'] || '') || 3007;
+    const port = envs.NANGO_PERSIST_PORT;
     server.listen(port, () => {
-        console.log(`🚀 Persist API ready at http://localhost:${port}`);
+        logger.info(`🚀 API ready at http://localhost:${port}`);
     });
 } catch (err) {
     console.error(`Persist API error: ${err}`);

@@ -6,13 +6,35 @@
     },
     "references": [
         {
+            "path": "../database"
+        },
+        {
+            "path": "../kvstore"
+        },
+        {
+            "path": "../logs"
+        },
+        {
+            "path": "../webhooks"
+        },
+        {
             "path": "../shared"
         },
         {
             "path": "../runner"
+        },
+        {
+            "path": "../utils"
+        },
+        {
+            "path": "../records"
+        },
+        {
+            "path": "../data-ingestion"
+        },
+        {
+            "path": "../orchestrator"
         }
     ],
-    "include": [
-        "lib/**/*"
-    ]
+    "include": ["lib/**/*"]
 }

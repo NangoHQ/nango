@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Tooltip } from '@geist-ui/core';
-import { Link } from '@geist-ui/icons';
-import { CopyIcon } from '@radix-ui/react-icons';
+import { CopyIcon, Link2Icon } from '@radix-ui/react-icons';
+import type { ClassValue } from 'clsx';
+import { cn } from '../../../utils/utils';
+import Button from './Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../Tooltip';
 
 interface ClipboardButtonProps {
     text: string;
-    icontype?: 'clipboard' | 'link';
+    iconType?: 'clipboard' | 'link';
     textPrompt?: string;
-    dark?: boolean;
-    classNames?: string;
+    className?: ClassValue;
 }
 
-export default function ClipboardButton({ text, icontype = 'clipboard', textPrompt = 'Copy', dark = false, classNames = '' }: ClipboardButtonProps) {
+export const CopyButton: React.FC<ClipboardButtonProps> = ({ text, iconType = 'clipboard', textPrompt = 'Copy', className }) => {
     const [tooltipText, setTooltipText] = useState(textPrompt);
 
     const copyToClipboard = async (e: React.MouseEvent) => {
@@ -36,12 +37,15 @@ export default function ClipboardButton({ text, icontype = 'clipboard', textProm
     }, [tooltipText, textPrompt]);
 
     return (
-        <Tooltip className="text-xs" text={tooltipText} type={`${dark ? 'dark' : 'default'}`}>
-            {icontype === 'link' ? (
-                <Link color="gray" className={`h-4 cursor-pointer ${classNames}`} onClick={copyToClipboard} />
-            ) : (
-                <CopyIcon color="gray" className={`h-4 w-4 cursor-pointer ${classNames}`} onClick={copyToClipboard} />
-            )}
+        <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+                <Button variant={'icon'} onClick={copyToClipboard} size={'sm'}>
+                    {iconType === 'link' ? <Link2Icon className={cn(`h-4`, className)} /> : <CopyIcon className={cn(`h-4 w-4`, className)} />}
+                </Button>
+            </TooltipTrigger>
+            <TooltipContent sideOffset={10} className="text-white">
+                {tooltipText}
+            </TooltipContent>
         </Tooltip>
     );
-}
+};

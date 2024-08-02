@@ -1,26 +1,11 @@
-import type { Request, Response } from 'express';
-import path, { resolve } from 'path';
-import { readFileSync } from 'fs';
+import path from 'path';
 import { fileURLToPath } from 'url';
-import { NangoError } from './error.js';
-import type { User, Account } from '../models/Admin.js';
-import type { Environment } from '../models/Environment.js';
+import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
 import environmentService from '../services/environment.service.js';
-import userService from '../services/user.service.js';
 import type { Connection } from '../models/Connection.js';
-import type { ServiceResponse } from '../models/Generic.js';
+import type { DBEnvironment } from '@nangohq/types';
 
-interface PackageJson {
-    version: string;
-}
-
-const PORT = process.env['SERVER_PORT'] || 3003;
-export const localhostUrl = `http://localhost:${PORT}`;
-export const cloudHost = 'https://api.nango.dev';
-export const stagingHost = 'https://api-staging.nango.dev';
-
-const accountIdLocalsKey = 'nangoAccountId';
-const environmentIdLocalsKey = 'nangoEnvironmentId';
+export { cloudHost, stagingHost };
 
 export enum UserType {
     Local = 'localhost',
@@ -32,63 +17,6 @@ export enum NodeEnv {
     Dev = 'development',
     Staging = 'staging',
     Prod = 'production'
-}
-
-export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
-    primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'null'],
-    aliases: ['String', 'Number', 'Boolean', 'BigInt', 'Symbol', 'Undefined', 'Null', 'bool', 'char', 'integer', 'int', 'date', 'object'],
-    builtInObjects: ['Object', 'Array', 'Function', 'Date', 'RegExp', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Error'],
-    utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick']
-};
-
-export function isJsOrTsType(type: string): boolean {
-    const baseType = type.replace(/\[\]$/, '');
-
-    const simpleTypes = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES).flat();
-    if (simpleTypes.includes(baseType)) {
-        return true;
-    }
-
-    const typesWithGenerics = [...JAVASCRIPT_AND_TYPESCRIPT_TYPES.builtInObjects, ...JAVASCRIPT_AND_TYPESCRIPT_TYPES.utilityTypes];
-    const genericTypeRegex = new RegExp(`^(${typesWithGenerics.join('|')})<.+>$`);
-
-    return genericTypeRegex.test(baseType);
-}
-
-export function getEnv() {
-    if (isStaging()) {
-        return NodeEnv.Staging;
-    } else if (isProd()) {
-        return NodeEnv.Prod;
-    } else {
-        return NodeEnv.Dev;
-    }
-}
-
-export function isLocal() {
-    return getBaseUrl() === localhostUrl;
-}
-
-export function isCloud() {
-    return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
-}
-
-export function isEnterprise() {
-    return process.env['NANGO_ENTERPRISE']?.toLowerCase() === 'true';
-}
-
-export function integrationFilesAreRemote() {
-    const useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
-
-    return isEnterprise() && useS3;
-}
-
-export function isStaging() {
-    return process.env['NODE_ENV'] === NodeEnv.Staging;
-}
-
-export function isHosted() {
-    return !isCloud() && !isLocal() && !isEnterprise();
 }
 
 export function getPort() {
@@ -119,20 +47,8 @@ export function getPersistAPIUrl() {
     return process.env['PERSIST_SERVICE_URL'] || 'http://localhost:3007';
 }
 
-export function isDev() {
-    return process.env['NODE_ENV'] === NodeEnv.Dev;
-}
-
-export function isProd() {
-    return process.env['NODE_ENV'] === NodeEnv.Prod;
-}
-
-export function isTest(): boolean {
-    return Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
-}
-
-export function isBasicAuthEnabled() {
-    return !isCloud() && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
+export function getJobsUrl() {
+    return process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005';
 }
 
 function getServerHost() {
@@ -147,6 +63,10 @@ export function getRedisUrl() {
     return process.env['NANGO_REDIS_URL'] || undefined;
 }
 
+export function getOrchestratorUrl() {
+    return process.env['ORCHESTRATOR_SERVICE_URL'] || `http://localhost:${process.env['NANGO_ORCHESTRATOR_PORT'] || 3008}`;
+}
+
 export function isValidHttpUrl(str: string) {
     try {
         new URL(str);
@@ -156,8 +76,8 @@ export function isValidHttpUrl(str: string) {
     }
 }
 
-export function dirname() {
-    return path.dirname(fileURLToPath(import.meta.url));
+export function dirname(thisFile?: string) {
+    return path.dirname(fileURLToPath(thisFile || import.meta.url));
 }
 
 export function parseTokenExpirationDate(expirationDate: any): Date {
@@ -174,22 +94,22 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
     return new Date(expirationDate);
 }
 
+export function parseTableauTokenExpirationDate(timeStr: string): Date | undefined {
+    // sample estimatedTimeToExpire: "estimatedTimeToExpiration": "177:05:38"
+    const [days, hours, minutes] = timeStr.split(':').map(Number);
+
+    if (days && hours && minutes) {
+        const milliseconds = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
+        return new Date(Date.now() + milliseconds);
+    }
+
+    return undefined;
+}
+
 export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
     const currDate = new Date();
     const dateDiffMs = expireDate.getTime() - currDate.getTime();
     return dateDiffMs < bufferInSeconds * 1000;
-}
-
-export function getBaseUrl() {
-    return process.env['NANGO_SERVER_URL'] || localhostUrl;
-}
-
-export function getBasePublicUrl() {
-    if (process.env['NANGO_SERVER_URL']) {
-        return process.env['NANGO_SERVER_URL'].replace('api.', 'app.');
-    } else {
-        return getBaseUrl();
-    }
 }
 
 /**
@@ -204,11 +124,11 @@ export function getLocalOAuthCallbackUrlBaseUrl() {
 }
 
 export function getApiUrl() {
-    if (isStaging()) {
+    if (isStaging) {
         return stagingHost;
-    } else if (isEnterprise()) {
+    } else if (isEnterprise) {
         return process.env['NANGO_SERVER_URL'] as string;
-    } else if (isProd()) {
+    } else if (isProd) {
         return cloudHost;
     }
     return getServerBaseUrl();
@@ -233,14 +153,14 @@ export async function getOauthCallbackUrl(environmentId?: number) {
     const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
     if (environmentId != null) {
-        const environment: Environment | null = await environmentService.getByAccountIdAndEnvironment(environmentId);
+        const environment: DBEnvironment | null = await environmentService.getById(environmentId);
         return environment?.callback_url || globalCallbackUrl;
     }
 
     return globalCallbackUrl;
 }
 
-export async function getAppCallbackUrl(_environmentId?: number) {
+export function getAppCallbackUrl(_environmentId?: number) {
     const globalAppCallbackUrl = getGlobalAppCallbackUrl();
 
     // TODO add this to settings and make it configurable
@@ -304,7 +224,7 @@ export function connectionCopyWithParsedConnectionConfig(connection: Connection)
 
 export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined): string | undefined {
     // Maps the format that is used in providers.yaml (inherited from oauth), to the format of the Connection model.
-    return baseUrl ? baseUrl.replace('connectionConfig', 'connection_config') : baseUrl;
+    return baseUrl ? baseUrl.replace(/connectionConfig/g, 'connection_config') : baseUrl;
 }
 
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
@@ -315,133 +235,7 @@ export function interpolateIfNeeded(str: string, replacers: Record<string, any>)
     }
 }
 
-export function setAccount(accountId: number, res: Response) {
-    res.locals[accountIdLocalsKey] = accountId;
-}
-
-export function setEnvironmentId(environmentId: number, res: Response) {
-    res.locals[environmentIdLocalsKey] = environmentId;
-}
-
-export function getAccount(res: Response): number {
-    if (res.locals == null || !(accountIdLocalsKey in res.locals)) {
-        throw new NangoError('account_not_set_in_locals');
-    }
-
-    const accountId = res.locals[accountIdLocalsKey];
-
-    if (Number.isInteger(accountId)) {
-        return accountId;
-    } else {
-        throw new NangoError('account_malformed_in_locals');
-    }
-}
-
-export function getEnvironmentId(res: Response): number {
-    if (res.locals === null || !(environmentIdLocalsKey in res.locals)) {
-        throw new NangoError('environment_not_set_in_locals');
-    }
-
-    const environmentId = res.locals[environmentIdLocalsKey];
-
-    if (Number.isInteger(environmentId)) {
-        return environmentId;
-    } else {
-        throw new NangoError('environment_malformed_in_locals');
-    }
-}
-
-export async function getEnvironmentAndAccountId(
-    res: Response,
-    req: Request
-): Promise<ServiceResponse<{ accountId: number; environmentId: number; isWeb: boolean }>> {
-    if (req.user) {
-        const { response: accountInfo, success, error } = await getAccountIdAndEnvironmentIdFromSession(req);
-        if (!success || accountInfo == null) {
-            return { response: null, error, success: false };
-        }
-        const response = { ...accountInfo, isWeb: true };
-
-        return { response, error: null, success: true };
-    } else {
-        const accountId = getAccount(res);
-        const environmentId = getEnvironmentId(res);
-
-        const response = { accountId, environmentId, isWeb: false };
-        return Promise.resolve({ response, error: null, success: true });
-    }
-}
-
-export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Promise<ServiceResponse<{ accountId: number; environmentId: number }>> {
-    const sessionUser = req.user as User;
-    const currentEnvironment = req.cookies['env'] || 'dev';
-
-    if (sessionUser == null) {
-        const error = new NangoError('user_not_found');
-        return { response: null, error, success: false };
-    }
-
-    const user = await userService.getUserById(sessionUser.id);
-
-    if (user == null) {
-        const error = new NangoError('user_not_found');
-        return { response: null, error, success: false };
-    }
-
-    const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
-
-    if (environmentAndAccount == null) {
-        const error = new NangoError('account_not_found');
-        return { response: null, error, success: false };
-    }
-
-    const { account, environment } = environmentAndAccount as { account: Account; environment: Environment };
-
-    const response = { accountId: account.id, environmentId: environment.id };
-
-    return { response, error: null, success: true };
-}
-
-export function isApiAuthenticated(res: Response): boolean {
-    return res.locals != null && accountIdLocalsKey in res.locals && Number.isInteger(res.locals[accountIdLocalsKey]);
-}
-
-export function isUserAuthenticated(req: Request): boolean {
-    const user = req.user as User;
-    return typeof req.isAuthenticated === 'function' && req.isAuthenticated() && user != null && user.id != null;
-}
-
 export function getConnectionConfig(queryParams: any): Record<string, string> {
     const arr = Object.entries(queryParams).filter(([, v]) => typeof v === 'string'); // Filter strings
     return Object.fromEntries(arr) as Record<string, string>;
-}
-
-export function packageJsonFile(): PackageJson {
-    const localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/shared/package.json' : '../shared/package.json';
-    return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
-}
-
-export function safeStringify(obj: any): string {
-    const stringify = (obj: any, indent = 2) => {
-        const cache = new Set();
-        const jsonString = JSON.stringify(
-            obj,
-            (_key, value) => {
-                if (typeof value === 'object' && value !== null) {
-                    if (cache.has(value)) {
-                        return;
-                    }
-                    cache.add(value);
-                }
-                return value;
-            },
-            indent
-        );
-        cache.clear();
-        return jsonString;
-    };
-
-    const content = obj.map((arg: any) => (typeof arg === 'object' ? stringify(arg) : String(arg))).join(' ');
-
-    return content;
 }

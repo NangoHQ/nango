@@ -1,4 +1,5 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosResponse } from 'axios';
+import axios from 'axios';
 
 export class RenderAPI {
     httpClient: AxiosInstance;

@@ -2,13 +2,13 @@ import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
 import { baseUrl } from '../utils/utils';
-import Nango from '@nangohq/frontend';
+import Nango, { AuthError } from '@nangohq/frontend';
 
 export default function AuthLink() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const searchParams = useSearchParams()[0];
 
-    const handleCreate = async (e: React.SyntheticEvent) => {
+    const handleCreate = (e: React.SyntheticEvent) => {
         e.preventDefault();
         setServerErrorMessage('');
 
@@ -64,8 +64,8 @@ export default function AuthLink() {
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
             })
-            .catch((err: { message: string; type: string }) => {
-                setServerErrorMessage(`${err.type} error: ${err.message}`);
+            .catch((err: unknown) => {
+                setServerErrorMessage(err instanceof AuthError ? `${err.type} error: ${err.message}` : 'unknown error');
             });
     };
 

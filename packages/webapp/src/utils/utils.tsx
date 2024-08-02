@@ -1,22 +1,19 @@
-import parser from 'cron-parser';
-import { clsx, type ClassValue } from 'clsx';
+import { clsx } from 'clsx';
+import type { ClassValue } from 'clsx';
+import { format } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
-import type { FlowEndpoint, Flow, SyncResult, NangoSyncModel } from '../types';
+import type { SyncResult } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
 export const prodUrl: string = 'https://api.nango.dev';
 
 export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
-
-export const AUTH_ENABLED = isCloud() || isEnterprise() || isLocal();
+export const githubRepo = 'https://github.com/NangoHQ/nango';
+export const githubIntegrationTemplates = `${githubRepo}/tree/master/integration-templates`;
 
 export function isHosted() {
     return process.env.REACT_APP_ENV === 'hosted';
-}
-
-export function isEnterprise() {
-    return process.env.REACT_APP_ENV === 'enterprise';
 }
 
 export function isStaging() {
@@ -25,14 +22,6 @@ export function isStaging() {
 
 export function isProd() {
     return process.env.REACT_APP_ENV === 'production';
-}
-
-export function isCloud() {
-    return isProd() || isStaging();
-}
-
-export function isLocal() {
-    return window.location.href.includes('localhost');
 }
 
 export function baseUrl() {
@@ -52,47 +41,9 @@ export function defaultCallback() {
     return baseUrl() + '/oauth/callback';
 }
 
-export function formatTimestamp(timestamp: number): string {
-    const date = new Date(timestamp);
-
-    if (isNaN(date.getTime())) {
-        return '';
-    }
-
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-
-    const formattedDate = `${hours}:${minutes}:${seconds} - ${month}/${day}/${year}`;
-
-    return formattedDate;
-}
-
-export function formatTimestampWithTZ(timestamp: number): string {
-    const date = new Date(timestamp);
-    if (isNaN(date.getTime())) {
-        return '';
-    }
-
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
-
-    const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
-
-    return formattedDate;
-}
-
-export function elapsedTime(start: number, end: number): string {
-    const startTime = new Date(start).getTime();
-    const endTime = new Date(end).getTime();
+export function elapsedTime(start: Date | number, end: Date | number): string {
+    const startTime = start instanceof Date ? start.getTime() : new Date(start).getTime();
+    const endTime = end instanceof Date ? end.getTime() : new Date(end).getTime();
 
     if (isNaN(startTime) || isNaN(endTime)) {
         return '';
@@ -144,9 +95,9 @@ export function formatDateToUSFormat(dateString: string): string {
     return formattedDate;
 }
 
-export function parseCron(frequency: string): string {
-    const interval = parser.parseExpression(frequency);
-    return formatDateToUSFormat(interval.next().toISOString());
+export function formatDateToLogFormat(dateString: string): string {
+    const date = new Date(dateString);
+    return format(date, 'MMM dd, HH:mm:ss:SS');
 }
 
 function formatFutureRun(nextRun: number): Date | undefined {
@@ -236,135 +187,57 @@ export function getRunTime(created_at: string, updated_at: string): string {
     return runtime.trim() || '-';
 }
 
-/**
- * Calculate Total Runtime
- * @desc iterate over each timestamp and calculate the total runtime
- * to get the total runtime for the total of array timestamps
- */
-export function calculateTotalRuntime(timestamps: { created_at: string; updated_at: string }[]): string {
-    let totalRuntime = 0;
-
-    timestamps.forEach((timestamp) => {
-        const createdAt = new Date(timestamp.created_at);
-        const updatedAt = new Date(timestamp.updated_at);
-
-        const diffMilliseconds = updatedAt.getTime() - createdAt.getTime();
-
-        totalRuntime += diffMilliseconds;
-    });
-
-    const seconds = Math.floor((totalRuntime / 1000) % 60);
-    const minutes = Math.floor((totalRuntime / (1000 * 60)) % 60);
-    const hours = Math.floor((totalRuntime / (1000 * 60 * 60)) % 24);
-    const days = Math.floor(totalRuntime / (1000 * 60 * 60 * 24));
-
-    let runtime = '';
-    if (days > 0) runtime += `${days}d `;
-    if (hours > 0) runtime += `${hours}h `;
-    if (minutes > 0) runtime += `${minutes}m `;
-    if (seconds > 0) runtime += `${seconds}s`;
-
-    const result = runtime.trim();
-
-    return result === '' ? '-' : result;
-}
-
-export function createExampleForType(type: string): any {
-    if (typeof type !== 'string') {
-        return {};
-    }
-
-    const rawType = type.replace('|', '').replace('null', '').replace('undefined', '').trim();
-
-    switch (rawType) {
-        case 'string':
-            return '<string>';
-        case 'integer':
-            return '<number>';
-        case 'boolean':
-            return '<boolean>';
-        case 'number':
-            return '<number>';
-        case 'object':
-            return '<object>';
-        case 'array':
-            return '<array>';
-        case 'date':
-            return '<date>';
-        default:
-            return '';
-    }
-}
-
-export function generateExampleValueForProperty(model: NangoSyncModel): Record<string, boolean | string | number> {
-    if (!Array.isArray(model.fields)) {
-        return createExampleForType(model.name);
-    }
-    const example = {} as Record<string, boolean | string | number>;
-    for (const field of model.fields) {
-        example[field.name] = createExampleForType(field.type);
-    }
-    return example;
-}
-
-export const parseInput = (flow: Flow) => {
-    let input;
-
-    if (flow?.input && Object.keys(flow?.input).length > 0 && !flow.input.fields) {
-        input = flow.input.name;
-    } else if (flow?.input && Object.keys(flow?.input).length > 0) {
-        const rawInput = {} as Record<string, boolean | string | number>;
-        for (const field of flow.input.fields) {
-            rawInput[field.name] = field.type;
-        }
-        input = rawInput;
-    } else {
-        input = undefined;
-    }
-
-    return input;
-};
-
-export function generateResponseModel(models: NangoSyncModel[], output: string | undefined, isSync: boolean): Record<string, any> {
-    if (!output) {
-        return {};
-    }
-    const model = models.find((model) => model.name === output);
-    const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
-    if (!isSync) {
-        return model?.name?.includes('[]') ? [jsonResponse] : jsonResponse;
-    }
-    const metadata = {
-        _nango_metadata: {
-            deleted_at: '<date| null>',
-            last_action: 'ADDED|UPDATED|DELETED',
-            first_seen_at: '<date>',
-            cursor: '<string>',
-            last_modified_at: '<date>'
-        }
-    };
-    return { ...jsonResponse, ...metadata };
-}
-
-export function getSimpleDate(dateString: string | undefined): string {
-    if (!dateString) return '';
-
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
-}
-
-export function parseEndpoint(endpoint: string | FlowEndpoint): string {
-    if (typeof endpoint === 'string') {
-        return endpoint;
-    }
-
-    return Object.values(endpoint)[0];
-}
-
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
+}
+
+const quantityFormatter = Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1, minimumFractionDigits: 0 });
+export function formatQuantity(quantity: number): string {
+    return quantityFormatter.format(quantity);
+}
+
+export function formatFrequency(frequency: string): string {
+    const unitMap: Record<string, string> = {
+        minutes: 'm',
+        minute: 'm',
+        mins: 'm',
+        min: 'm',
+        hours: 'h',
+        hour: 'h',
+        days: 'd',
+        day: 'd',
+        months: 'mos',
+        month: 'mo',
+        years: 'y',
+        year: 'y'
+    };
+
+    // 1. replace every: every 5 minutes -> 5 minutes
+    frequency = frequency.replace('every', '').trim();
+    // 2. prefix with `1` if no quantity. Ex: every day -> day -> 1day
+    if (!/^\d/.test(frequency)) {
+        frequency = '1' + frequency;
+    }
+    // 3. replace unit by shortname if possible: Ex: 5 minutes -> 5m
+    for (const [unit, abbreviation] of Object.entries(unitMap)) {
+        if (frequency.includes(unit)) {
+            return frequency.replace(unit, abbreviation).replace(/\s/g, '');
+        }
+    }
+
+    return frequency;
+}
+
+// https://stackoverflow.com/a/42186143
+export function stringArrayEqual(prev: string[], next: string[]) {
+    // can't use toSorted yet
+    const a = [...prev].sort();
+    const b = [...next].sort();
+    let i = a.length;
+    while (i--) {
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+    return true;
 }

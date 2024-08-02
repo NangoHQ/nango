@@ -1,0 +1,170 @@
+integrations:
+    unanet:
+        actions:
+            create-lead:
+                endpoint: POST /lead
+                description: Create a lead with with information about the
+                    federal agency, the name, due date, posted date, solicitation number,
+                    naics category or categories, the city, state, country, and description.
+                input: CreateLead
+                output: Lead
+            update-lead:
+                endpoint: PUT /lead
+                description: Update a lead with any changed information about the
+                    federal agency, the name, due date, posted date, solicitation number,
+                    naics category or categories, the city, state, country, and description.
+                output: Lead
+                input: UpdateLead
+            get-leads:
+                endpoint: GET /leads
+                description: Fetch all leads
+                output: Lead[]
+            get-schema:
+                endpoint: GET /schema
+                input: Entity
+                description: Get the schema of any entity. Useful to know the properties
+                    of any object that exists in the system.
+                output: Schema[]
+            get-company:
+                endpoint: GET /company
+                input: Entity
+                output: Company | null
+                description: Retrieve information about a company
+            create-company:
+                endpoint: POST /company
+                input: CreateCompany
+                output: Company
+                description: Create a company in the system
+            create-opportunity:
+                endpoint: POST /opportunity
+                input: Opportunity
+                output: Opportunity
+                description: |
+                    Create an opportunity in the system. Requires a stage that exists
+                    in the system. Use the list-stages action to find the appropriate stage.
+            create-contact:
+                endpoint: POST /contact
+                input: Contact
+                output: Contact
+                description: Create a contact in the system
+            list-stages:
+                endpoint: GET /stages
+                description: |
+                    List all the stages that exist in the system. Use this action to find
+                    the correct stage to be able to create an opportunity.
+                output: Stage
+
+models:
+    Timestamps:
+        createdAt?: string
+        updatedAt?: string
+    Entity:
+        name: string
+    Location:
+        city?: string
+        state?: string
+        country?: string
+        zip?: string
+    Stage:
+        id: number
+        name: string
+        status: string
+    CreateCompany:
+        name: string
+        federalAgency?: FederalAgency
+    Company:
+        name: string
+        externalId: string
+        federalAgency?: FederalAgency
+        shortName: string
+        description: string
+        id?: string
+    Opportunity:
+        __extends: Location
+        name: string
+        description: string
+        id?: string
+        externalId: string
+        dueDate: string
+        federalAgency: FederalAgency
+        stage: string
+        active: boolean
+    Activity:
+        createdAt: string
+        id: string
+        message: string
+    FederalAgency:
+        __extends: Location
+        companyId?: number
+        name: string
+        externalId?: string
+        acronym?: string
+        address1?: string
+        address2?: string
+        address3?: string
+        isHeadquarters?: boolean
+        parentCompanyId?: number
+        parentCompanyName?: string
+        childCount?: number
+        addrLat?: number
+        addrLong?: number
+    Contact:
+        id?: string
+        firstName: string
+        lastName: string
+        federalAgency: FederalAgency
+        position: string
+        emailAddress: string
+        phone: string
+        fax: string
+    BaseLead:
+        federalAgency: FederalAgency
+        name: string
+        dueDate: string
+        postedDate: string
+        solicitationNumber: string
+        naicsCategory: string | string[]
+        city: string
+        state: string
+        country: string
+        description: string
+    CreateLead:
+        __extends: BaseLead
+    UpdateLead:
+        __extends: BaseLead
+        id: string
+    Lead:
+        __extends: BaseLead,Timestamps
+        id: string
+        federalAgency: FederalAgency
+        name: string
+        dueDate: string
+        postedDate: string
+        solicitationNumber: string
+        naicsCategory: string | string[]
+        city: string
+        state: string
+        country: string
+        description: string
+    Schema:
+        PropertyName: string
+        Group: string | null
+        Label: string
+        Description: string | null
+        Enabled: boolean
+        ReadOnly: boolean
+        Required: boolean
+        DefaultValue: string | null
+        DataType: number
+        MaxLength: number | null
+        UnicodeSupported: boolean
+        Searchable: boolean
+        ArrayType: string | null
+        IsPrimaryKey: boolean
+        IsExternalId: boolean
+        ObjectEndpoint: string | null
+        IsHidden: boolean
+        IsIncludedInResponse: boolean
+        SchemaEndpoint: string | null
+        SortOrder: number
+        CustomSort: boolean

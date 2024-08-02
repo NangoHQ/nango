@@ -1,8 +1,7 @@
 tsconfig.tsbuildinfo
 dist/*
-NangoActivity.json
-NangoActivity.json.*
 *-audit.json
 node_modules
 nango-integrations/models.ts
+nango-integrations/.nango
 nango-integrations/dist/*

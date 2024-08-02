@@ -2,10 +2,12 @@ import type { WebSocket } from 'ws';
 import type { RedisClientType } from 'redis';
 import * as uuid from 'uuid';
 import { createClient } from 'redis';
-import logger from '../utils/logger.js';
+import { getLogger } from '@nangohq/utils';
 import type { WSErr } from '../utils/web-socket-error.js';
 import { errorHtml, successHtml } from '../utils/utils.js';
 import { getRedisUrl } from '@nangohq/shared';
+
+const logger = getLogger('Server.Publisher');
 
 const enum MessageType {
     ConnectionAck = 'connection_ack',
@@ -15,7 +17,7 @@ const enum MessageType {
 
 export type WebSocketClientId = string;
 
-class Redis {
+export class Redis {
     // Two redis clients are needed because the same client cannot be used for both publishing and subscribing
     // more at https://redis.io/commands/subscribe/
     private url: string;
@@ -50,7 +52,7 @@ class Redis {
     }
 
     public async subscribe(channel: string, onMessage: (message: string, channel: string) => void) {
-        await this.sub.subscribe(channel, async (message, channel) => {
+        await this.sub.subscribe(channel, (message, channel) => {
             onMessage(message, channel);
         });
     }

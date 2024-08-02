@@ -1,38 +1,34 @@
 integrations:
     github:
         syncs:
-            github-issues:
+            issues:
                 runs: every half hour
                 output: GithubIssue
                 sync_type: full
                 scopes: public_repo
                 description: |
-                    Fetches the Github issues from all a user's repositories.
-                    Details: full sync, doesn't track deletes, metadata is not required.
-                endpoint: /github/issues
-            github-issues-lite:
+                    Fetches Github issues from all a user's repositories
+                endpoint: GET /github/issues
+            issues-lite:
                 runs: every day
                 auto_start: false
                 sync_type: full
                 output: Issue
                 scopes: public_repo
                 description: |
-                    Fetches the Github issues but up to a maximum of 15 for demo
-                    purposes.
-                    Details: limited sync, doesn't track deletes, metadata is not required.
-                endpoint: /github/lite-issues
-            github-list-files:
+                    Fetches Github issues but up to a maximum of 15
+                endpoint: GET /github/issues-lite
+            list-files:
                 runs: every hour
                 description: |
-                    Lists all the files of a Github repo given a specific branch.
-                    Details: doesn't track deletes, metadata is required.
+                    Lists all the files of a Github repo given a specific branch
                 sync_type: incremental
                 auto_start: false
                 input: GithubIssueRepoInput
                 output: GithubRepoFile
-                endpoint: /github/files
+                endpoint: GET /github/list-files
                 scopes: repo
-            github-issues-demo:
+            issues-demo:
                 runs: every 5 minutes
                 auto_start: false
                 sync_type: full
@@ -42,22 +38,21 @@ integrations:
                     Fetches GitHub issues from our showcase repository.
                 endpoint: GET /github/demo-issues
         actions:
-            github-write-file:
+            write-file:
                 scopes: repo
                 input: GithubWriteFileInput
                 output: GithubWriteFileActionResult
-                endpoint: PUT /github/file
+                endpoint: PUT /github/write-file
                 description: |
                     Write content to a particular github file within a repo. If
-                    the file doesn't exist it creates and then writes to it.
-            github-list-repos:
+                    the file doesn't exist it creates and then writes to it
+            list-repos:
                 scopes: read:org
-                endpoint: GET /github/repos
-                output:
-                    - GithubRepo
+                endpoint: GET /github/list-repos
+                output: GithubRepo
                 description: |
                     List github repos from an organization.
-            github-create-demo-issue:
+            create-demo-issue:
                 endpoint: POST /github/create-demo-issue
                 input: GithubCreateIssueInput
                 output: GithubCreateIssueResult

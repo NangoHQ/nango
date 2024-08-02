@@ -35,7 +35,7 @@ These only fetch data that has changed since the last execution, appending it to
 
 Nango leverages the timestamp of the last sync as a cursor for incremental syncs, allowing for precise data retrieval based on modifications since the previous sync execution.
 
-In the case of incremental syncing, the first sync execution is heavier because it fetches all of the historical data (how far back it should go depends on your script logic). This is called an initial sync execution in Nango. Subsequent sync executions should be lighter, particularly if your syncing frequency is high.
+In the case of incremental syncing, the first sync execution is heavier because it fetches all of the historical data (how far back it should go depends on your integration script logic). This is called an initial sync execution in Nango. Subsequent sync executions should be lighter, particularly if your syncing frequency is high.
 
 # Sync webooks
 
@@ -55,7 +55,7 @@ Deletion detection is straightforward—enable it within the integration configu
 
 **For incremental syncs**
 
-This method requires a different approach, as the data is not entirely replaced. The sync script must be adjusted to specifically request information on deleted data from the external API and mark the relevant records as deleted. This capability depends on the external API's ability to return information about deletions. Nango's [integration templates](/understand/concepts/templates) include examples of scripts designed to handle this scenario.
+This method requires a different approach, as the data is not entirely replaced. The sync script must be adjusted to specifically request information on deleted data from the external API and mark the relevant records as deleted. This capability depends on the external API's ability to return information about deletions. Nango's [integration templates](/understand/concepts/templates) include examples of integration scripts designed to handle this scenario.
 
 # Error handling
 Failed sync attempts don't automatically retry but will proceed on the next scheduled execution. You have the option to [manually trigger a new execution](#scheduling-and-execution). 
@@ -67,7 +67,7 @@ Sync executions are driven by [integration scripts](/understand/concepts/scripts
 Sync scripts have the following structure:
 
 ```typescript
-import type { NangoSync, ResponseModel } from './models';
+import type { NangoSync, ResponseModel } from '../../models';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const records: ResponseModel[] = [];
@@ -78,13 +78,13 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
 }
 ```
 
-The `fetchData` function starts on the schedule indicated in your [integration configuration](/understand/concepts/scripts#integration-configuration). The `ResponseModel` is configurable via the integration configuration and is auto-imported into your script.
+The `fetchData` function starts on the schedule indicated in your [integration configuration](/understand/concepts/scripts#integration-configuration). The `ResponseModel` is configurable via the integration configuration and is auto-imported into your integration script.
 
 Unlike actions, the syncs default function doesn't take any input parameters or return anything. Sync inputs are passed via the [connection metadata](/understand/concepts/connections#connection-metadata). And instead of returning data directly like actions, syncs persist records to Nango's cache, calling `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()`. Your application later fetches the records from the cache. 
 
 # API unification
 
-Syncs can have records that conform to a [unified model](/understand/concepts/api-unification), regardless of the specific external API they originate from. This unification simplifies your integration code, enabling you to handle data from various sources in a consistent manner, thus reducing complexity and the potential for errors.
+Syncs can have records that conform to a unified model, regardless of the specific external API they originate from. This unification simplifies your integration code, enabling you to handle data from various sources in a consistent manner, thus reducing complexity and the potential for errors.
 
 # Getting started with syncs
 

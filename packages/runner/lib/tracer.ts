@@ -17,5 +17,6 @@ tracer
         enabled: false
     })
     .use('net', {
-        enabled: false
+        enabled: true,
+        service: 'runner-net'
     });

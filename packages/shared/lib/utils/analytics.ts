@@ -1,30 +1,40 @@
 import { PostHog } from 'posthog-node';
-import { getBaseUrl, localhostUrl, dirname, UserType, isCloud, isStaging } from '../utils/utils.js';
-import ip from 'ip';
+import { localhostUrl, isCloud, isStaging, baseUrl } from '@nangohq/utils';
+import { UserType } from '../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
-import { readFileSync } from 'fs';
-import path from 'path';
 import accountService from '../services/account.service.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
-import type { Account, User } from '../models/Admin.js';
-import { LogActionEnum } from '../models/Activity.js';
+import type { User } from '../models/Admin.js';
+import { LogActionEnum } from '../models/Telemetry.js';
+import { NANGO_VERSION } from '../version.js';
+import type { DBTeam } from '@nangohq/types';
 
 export enum AnalyticsTypes {
     ACCOUNT_CREATED = 'server:account_created',
     ACCOUNT_JOINED = 'server:account_joined',
     API_CONNECTION_INSERTED = 'server:api_key_connection_inserted',
     API_CONNECTION_UPDATED = 'server:api_key_connection_updated',
+    TBA_CONNECTION_INSERTED = 'server:tba_connection_inserted',
+    TABLEAU_CONNECTION_INSERTED = 'server:tableau_connection_inserted',
     CONFIG_CREATED = 'server:config_created',
     CONNECTION_INSERTED = 'server:connection_inserted',
     CONNECTION_LIST_FETCHED = 'server:connection_list_fetched',
     CONNECTION_UPDATED = 'server:connection_updated',
     DEMO_0 = 'demo:step_0',
     DEMO_1 = 'demo:step_1',
+    DEMO_1_ERR = 'demo:step_1:error',
+    DEMO_1_SUCCESS = 'demo:step_1:success',
     DEMO_2 = 'demo:step_2',
+    DEMO_2_ERR = 'demo:step_2:error',
+    DEMO_2_SUCCESS = 'demo:step_2:success',
     DEMO_3 = 'demo:step_3',
     DEMO_4 = 'demo:step_4',
+    DEMO_4_ERR = 'demo:step_4:error',
+    DEMO_4_SUCCESS = 'demo:step_4:success',
     DEMO_5 = 'demo:step_5',
+    DEMO_5_ERR = 'demo:step_5:error',
+    DEMO_5_SUCCESS = 'demo:step_5:success',
     DEMO_6 = 'demo:step_6',
     PRE_API_KEY_AUTH = 'server:pre_api_key_auth',
     PRE_APP_AUTH = 'server:pre_appauth',
@@ -32,6 +42,12 @@ export enum AnalyticsTypes {
     PRE_BASIC_API_KEY_AUTH = 'server:pre_basic_api_key_auth',
     PRE_UNAUTH = 'server:pre_unauth',
     PRE_WS_OAUTH = 'server:pre_ws_oauth',
+    PRE_OAUTH2_CC_AUTH = 'server:pre_oauth2_cc_auth',
+    PRE_TBA_AUTH = 'server:pre_tba_auth',
+    RESOURCE_CAPPED_CONNECTION_CREATED = 'server:resource_capped:connection_creation',
+    RESOURCE_CAPPED_CONNECTION_IMPORTED = 'server:resource_capped:connection_imported',
+    RESOURCE_CAPPED_SCRIPT_ACTIVATE = 'server:resource_capped:script_activate',
+    RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED = 'server:resource_capped:script_deploy_is_disabled',
     SYNC_DEPLOY_SUCCESS = 'sync:deploy_succeeded',
     SYNC_PAUSE = 'sync:command_pause',
     SYNC_RUN = 'sync:command_run',
@@ -49,10 +65,10 @@ class Analytics {
 
     constructor() {
         try {
-            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging()) {
+            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging) {
                 this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
                 this.client.enable();
-                this.packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../../package.json'), 'utf8')).version;
+                this.packageVersion = NANGO_VERSION;
             }
         } catch (e) {
             errorManager.report(e, {
@@ -71,7 +87,6 @@ class Analytics {
             eventProperties = eventProperties || {};
             userProperties = userProperties || {};
 
-            const baseUrl = getBaseUrl();
             const userType = this.getUserType(accountId, baseUrl);
             const userId = this.getUserIdWithType(userType, accountId, baseUrl);
 
@@ -80,12 +95,12 @@ class Analytics {
             eventProperties['user-account'] = userId;
             eventProperties['nango-server-version'] = this.packageVersion || 'unknown';
 
-            if (isCloud() && accountId != null) {
-                const account: Account | null = await accountService.getAccountById(accountId);
+            if (isCloud && accountId != null) {
+                const account: DBTeam | null = await accountService.getAccountById(accountId);
                 if (account !== null && account.id !== undefined) {
-                    const users: User[] | null = await userService.getUsersByAccountId(account.id);
+                    const users: User[] = await userService.getUsersByAccountId(account.id);
 
-                    if (users) {
+                    if (users.length > 0) {
                         userProperties['email'] = users.map((user) => user.email).join(',');
                         userProperties['name'] = users.map((user) => user.name).join(',');
                     }
@@ -117,8 +132,8 @@ class Analytics {
         userProperties?: Record<string | number, any>
     ) {
         const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
-        if (accountId) {
-            this.track(name, accountId, eventProperties, userProperties);
+        if (typeof accountId !== 'undefined' && accountId !== null) {
+            return this.track(name, accountId, eventProperties, userProperties);
         }
     }
 
@@ -135,7 +150,7 @@ class Analytics {
     public getUserIdWithType(userType: string, accountId: number, baseUrl: string): string {
         switch (userType) {
             case UserType.Local:
-                return `${userType}-${ip.address()}`;
+                return `${userType}-local`;
             case UserType.SelfHosted:
                 return `${userType}-${baseUrl}`;
             case UserType.Cloud:

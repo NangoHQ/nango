@@ -1,27 +1,20 @@
 import { schedule } from 'node-cron';
-import {
-    CommandToActivityLog,
-    ErrorSourceEnum,
-    SyncClient,
-    SyncCommand,
-    createActivityLog,
-    createActivityLogMessageAndEnd,
-    errorManager,
-    updateSuccess as updateSuccessActivityLog,
-    updateScheduleStatus,
-    isErr,
-    findPausableDemoSyncs,
-    logger
-} from '@nangohq/shared';
-import { SpanTypes } from '@nangohq/shared';
+import { ErrorSourceEnum, SyncCommand, errorManager, findDemoSyncs, SpanTypes, getOrchestratorUrl, Orchestrator } from '@nangohq/shared';
+import { getLogger } from '@nangohq/utils';
 import tracer from 'dd-trace';
+import { logContextGetter } from '@nangohq/logs';
+import { records as recordsService } from '@nangohq/records';
+import { OrchestratorClient } from '@nangohq/nango-orchestrator';
+
+const logger = getLogger('Jobs');
+const orchestrator = new Orchestrator(new OrchestratorClient({ baseUrl: getOrchestratorUrl() }));
 
 export function cronAutoIdleDemo(): void {
     schedule('1 * * * *', () => {
         const span = tracer.startSpan(SpanTypes.JOBS_IDLE_DEMO);
-        tracer.scope().activate(span, async () => {
+        void tracer.scope().activate(span, async () => {
             try {
-                await exec();
+                await exec({ orchestrator });
             } catch (err: unknown) {
                 const e = new Error('failed_to_auto_idle_demo', { cause: err instanceof Error ? err.message : err });
                 errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
@@ -31,66 +24,53 @@ export function cronAutoIdleDemo(): void {
     });
 }
 
-export async function exec(): Promise<void> {
+export async function exec({ orchestrator }: { orchestrator: Orchestrator }): Promise<void> {
     logger.info('[autoidle] starting');
 
-    const syncs = await findPausableDemoSyncs();
+    const syncs = await findDemoSyncs();
 
-    logger.info(`[autoidle] found ${syncs.length} syncs`);
+    const scheduleProps = syncs.map((sync) => {
+        return { syncId: sync.id, environmentId: sync.environment_id };
+    });
+    const schedules = await orchestrator.searchSchedules(scheduleProps);
+    if (schedules.isErr()) {
+        logger.error(`[autoidle] error getting schedules: ${schedules.error}`);
+        return;
+    }
 
-    const action = CommandToActivityLog['PAUSE'];
     for (const sync of syncs) {
-        const activityLogId = await createActivityLog({
-            level: 'info',
-            success: false,
-            action,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: String(sync.connection_id),
-            provider: sync.provider,
-            provider_config_key: sync.unique_key,
-            environment_id: sync.environment_id,
-            operation_name: sync.name
-        });
-        if (!activityLogId) {
+        const schedule = schedules.value.get(sync.id);
+        if (schedule?.state !== 'STARTED') {
             continue;
         }
-
-        const syncClient = await SyncClient.getInstance();
-        if (!syncClient) {
-            continue;
-        }
+        const logCtx = await logContextGetter.create(
+            { operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
+            {
+                account: { id: sync.account_id, name: sync.account_name },
+                environment: { id: sync.environment_id, name: sync.environment_name },
+                integration: { id: sync.config_id, name: sync.provider_unique_key, provider: sync.provider },
+                connection: { id: sync.connection_unique_id, name: sync.connection_id },
+                syncConfig: { id: sync.sync_config_id, name: sync.name }
+            }
+        );
 
         logger.info(`[autoidle] pausing ${sync.id}`);
 
-        const resTemporal = await syncClient.runSyncCommand(
-            sync.schedule_id,
-            sync.id,
-            SyncCommand.PAUSE,
-            activityLogId,
-            sync.environment_id,
-            sync.unique_key,
-            sync.connection_id,
-            sync.name
-        );
-        if (isErr(resTemporal)) {
-            continue;
-        }
-
-        const resDb = await updateScheduleStatus(sync.schedule_id, SyncCommand.PAUSE, activityLogId, sync.environment_id);
-        if (isErr(resDb)) {
-            continue;
-        }
-
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            environment_id: sync.environment_id,
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `Demo sync was automatically paused after being idle for a day`
+        const res = await orchestrator.runSyncCommand({
+            syncId: sync.id,
+            command: SyncCommand.PAUSE,
+            environmentId: sync.environment_id,
+            logCtx,
+            recordsService,
+            initiator: 'auto_idle_demo'
         });
-        await updateSuccessActivityLog(activityLogId, true);
+        if (res.isErr()) {
+            await logCtx.failed();
+            continue;
+        }
+
+        await logCtx.info('Demo sync was automatically paused after being idle for a day');
+        await logCtx.success();
     }
 
     logger.info(`[autoidle] done`);

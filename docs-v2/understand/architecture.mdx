@@ -14,15 +14,15 @@ The API layer, developed with Node.js, serves as the front door to Nango, handli
 
 **Control Plane Storage**
 
-This component stores configuration data for users, integrations, connections, and scripts. It uses Postgres.
-
-**Temporal**
-
-Temporal manages the scheduling of syncs and acts as a queue for script execution jobs. It's responsible for orchestrating the timing and execution of data synchronization tasks, ensuring that sync scripts run according to their schedules without loss or delay.
+This component stores configuration data for users, integrations, connections, and integration scripts. It uses Postgres.
 
 **Orchestrator Service**
 
-The Orchestrator Service dispatches jobs to runner services. It acts as the central manager that allocates script execution tasks to available runners, balancing load and ensuring efficient processing of integration logic.
+The Orchestrator service manages the scheduling of script executions. It’s responsible for orchestrating the timing and execution of data synchronization tasks, ensuring that sync scripts run according to their schedules without loss or delay.
+
+**Jobs Service**
+
+The Jobs Service dispatches jobs to runner services. It acts as the central manager that allocates integration script execution tasks to available runners, balancing load and ensuring efficient processing of integration logic.
 
 **Runner Services**
 
@@ -34,11 +34,11 @@ This storage component persists the records synced by the runners, conforming to
 
 **Script Storage**
 
-Scripts, whether provided by Nango as [templates](/understand/concepts/templates) or developed by customers ([step-by-step guide](/customize/guides/create-a-custom-integration)), are stored in blob storage. This provides a scalable, secure storage solution that ensures scripts are readily accessible for execution by the runner services.
+Integration scripts, whether provided by Nango as [templates](/understand/concepts/templates) or developed by customers ([step-by-step guide](/customize/guides/create-a-custom-integration)), are stored in blob storage. This provides a scalable, secure storage solution that ensures integration scripts are readily accessible for execution by the runner services.
 
 **Logs Storage**
 
-Logs are critical to have observability over how your scripts are run. Nango automatically generates logs, but you can add custom logs in your scripts as well. Logs are surfaced and searchable in the Nango UI. 
+Logs are critical to have observability over how your integration scripts are run. Nango automatically generates logs, but you can add custom logs in your integration scripts as well. Logs are surfaced and searchable in the Nango UI. 
 
 # Self-hosting
 

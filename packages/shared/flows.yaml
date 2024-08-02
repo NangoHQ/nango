@@ -1,7 +1,7 @@
 integrations:
     algolia:
         actions:
-            algolia-create-contacts:
+            create-contacts:
                 description: |
                     Action to add a single record contact to an index
                 output: AlgoliaContact
@@ -16,52 +16,323 @@ integrations:
                 name: string
                 company: string
                 email: string
+    anrok:
+        actions:
+            create-ephemeral-transaction:
+                description: |
+                    Creates an ephemeral transaction in Anrok.
+                input: Transaction
+                output: TransactionActionResponse
+                endpoint: POST /ephmeral-transaction
+            create-or-update-transaction:
+                description: |
+                    Creates or updates a transaction in Anrok.
+                input: Transaction[]
+                output: TransactionActionResponse
+                endpoint: POST /transaction
+            void-transaction:
+                description: |
+                    Voids a transaction in Anrok.
+                input: TransactionToDelete[]
+                output: TransactionDeletionActionResponse
+                endpoint: POST /transaction/voide
+            negate-transaction:
+                description: |
+                    Creates a negation in Anrok.
+                input: TransactionToNegate[]
+                output: TransactionNegationActionResponse
+                endpoint: POST /transaction/negate
+        models:
+            AnrokAddress:
+                line1: string
+                city: string
+                postalCode: string
+                country: string
+            AnrokLineItems:
+                id: string
+                productExternalId: string
+                amount: number
+            AnrokTaxIds:
+                type: string
+                value: string
+            AnrokTransactionData:
+                id?: string | undefined
+                accountingDate: string
+                currencyCode: string
+                customerId: string
+                customerName: string
+                customerAddress: AnrokAddress
+                lineItems: AnrokLineItems[]
+                customerTaxIds?: AnrokTaxIds[]
+            AnrokContact:
+                external_id: string
+                name: string
+                address_line_1: string
+                city: string
+                zip: string
+                country: string
+                taxable: boolean
+                tax_number: string
+            BaseTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+            Transaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+            TransactionFee:
+                item_id: string
+                item_code: string | null
+                amount_cents: number | null
+            TaxBreakdown:
+                name?: string
+                rate?: string
+                tax_amount?: number
+                type?: string | null
+                reason?: string
+            FailedTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+                validation_errors: any[]
+            SuccessTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+                sub_total_excluding_taxes?: number
+                taxes_amount_cents?: number
+            TransactionActionResponse:
+                succeeded: SuccessTransaction[]
+                failed: FailedTransaction[]
+            TransactionToNegate:
+                id: string
+                voided_id: string
+            TransactionToDelete:
+                id: string
+            TransactionNegationActionResponse:
+                succeeded: TransactionToNegate[]
+                failed: FailedTransactionToNegate[]
+            TransactionDeletionActionResponse:
+                succeeded: TransactionToDelete[]
+                failed: FailedTransactionToDelete[]
+            FailedTransactionToDelete:
+                id: string
+                validation_errors: any[]
+            FailedTransactionToNegate:
+                id: string
+                voided_id: string
+                validation_errors: any[]
+            TransactionFeeWithTaxBreakdown:
+                item_id: string
+                item_code: string | null
+                amount_cents: number | null
+                tax_amount_cents: number
+                tax_breakdown: TaxBreakdown[]
     asana:
         syncs:
-            asana-tasks:
-                runs: every 30min
-                description: |
-                    Continuously fetches Asana tasks. This is just a trivial example:
-                    it will only get tasks from the first project of the first workspace.
-                    Details: full refresh, doesn't support deletes, sync goes to all time,
-                    metadata is not required.
-                scopes: default
-                output: AsanaTask
-                sync_type: full
-                endpoint: /asana/asana-tasks
+            tasks:
+                runs: every hour
+                description: Retrieve all tasks that exist in the workspace
+                output: Task
+                endpoint: GET /ticketing/tasks
+                sync_type: incremental
+            users:
+                runs: every hour
+                description: Retrieve all users that exist in the workspace
+                output: User
+                endpoint: GET /ticketing/users
+                sync_type: incremental
+            workspaces:
+                runs: every hour
+                description: Retrieve all workspaces for a user
+                output: AsanaWorkspace
+                endpoint: GET /ticketing/workspaces
+            projects:
+                runs: every hour
+                description: Retrieves all projects for a user
+                output: AsanaProject
+                endpoint: GET /ticketing/projects
+        actions:
+            fetch-workspaces:
+                description: >-
+                    Fetch the workspaces with a limit (default 10) of a user to allow them
+                    to selection of projects to sync
+                endpoint: GET /ticketing/workspaces/limit
+                output: BaseAsanaModel[]
+                input: Limit
+            fetch-projects:
+                description: >-
+                    Fetch the projects with a limit (default 10) given a workspace of a
+                    user to allow selection when choosing the tasks to sync.
+                endpoint: GET /ticketing/projects/limit
+                output: BaseAsanaModel[]
+                input: AsanaProjectInput
+            create-task:
+                input: CreateAsanaTask
+                endpoint: POST /ticketing/task
+                output: Task
+                description: >
+                    Create a task using Asana specific fields and return a unified model
+                    task. See https://developers.asana.com/reference/createtask for Asana
+                    specific fields
+            update-task:
+                description: Update a task and be able to assign the task to a specific user
+                input: AsanaUpdateTask
+                endpoint: PATCH /ticketing/task
+                output: Task
+            delete-task:
+                input: Id
+                endpoint: DELETE /ticketing/task
+                output: boolean
         models:
-            AsanaTask:
+            Id:
                 id: string
-                project_id: string
+            Timestamps:
+                created_at: string | null
+                modified_at: string | null
+            NangoActionError:
+                type: validation_error | generic_error
+                message: string
+            BaseAsanaModel:
+                gid: string
+                resource_type: string
+                name: string
+            Limit:
+                limit: number | undefined
+            User:
+                created_at: string | null
+                modified_at: string | null
+                id: string
+                name: string
+                email: string | null
+                avatar_url: string | null
+            Task:
+                created_at: string | null
+                modified_at: string | null
+                id: string
+                title: string
+                url: string
+                status: string
+                description: string | null
+                assignee: User | null
+                due_date: string | null
+            AsanaProjectInput:
+                limit: number | undefined
+                workspace: string
+            CreateAsanaTask:
+                name: string
+                workspace: string | undefined
+                parent: string | undefined
+                projects: string[] | undefined
+            AsanaTask:
+                created_at: string | null
+                modified_at: string | null
+                gid: string
+                resource_type: string
                 name: string
                 completed: boolean
-                created_at: date
-                modified_at: date
+                due_date: string | null
+                tags: string[]
+                start_on: string | null
+                due_at: string | null
+                due_on: string | null
+                completed_at: string | null
+                actual_time_minutes: number
+                assignee: AsanaUser | null
+                start_at: string | null
+                num_hearts: number
+                num_likes: number
+                workspace: BaseAsanaModel
+                hearted: boolean
+                hearts: string[]
+                liked: boolean
+                likes: string[]
+                notes: string
+                assignee_status: string
+                followers: BaseAsanaModel[]
+                parent:
+                    gid: string
+                    resource_type: string
+                    name: string
+                    resource_subtype: string
+                permalink_url: string
+            AsanaPhoto:
+                image_1024x1024: string
+                image_128x128: string
+                image_21x21: string
+                image_27x27: string
+                image_36x36: string
+                image_60x60: string
+            AsanaUser:
+                gid: string
+                resource_type: string
+                name: string
+                id: string
+                email: string
+                photo: AsanaPhoto | null
+                workspace: string | undefined
+            AsanaUpdateTask:
+                id: string
+                due_at: string | undefined
+                due_on: string | undefined
+                completed: boolean | undefined
+                notes: string | undefined
+                projects: string[] | undefined
+                assignee: string | undefined
+                parent: string | undefined
+                tags: string[] | undefined
+                workspace: string | undefined
+                name: string | undefined
+            AsanaWorkspace:
+                gid: string
+                resource_type: string
+                name: string
+                id: string
+                is_organization: boolean
+            AsanaProject:
+                gid: string
+                resource_type: string
+                name: string
+                id: string
     ashby:
-        ashby-candidates:
-            runs: every hour
-            returns:
-                - AshbyCandidate
-            description: |
-                Fetch a list of all candidates from your ashby account.
-                Details: Increamental sync, doesn't track deletes, metadata is required.
-        ashby-jobs:
-            runs: every hour
-            returns:
-                - AshbyJob
-            description: |
-                Fetch a list of all jobs from your ashby account.
-                Details: Increamental sync, doesn't track deletes, metadata is required.
-        ashby-create-application:
-            type: action
-            returns: AshbyCreateApplicationResponse
-            description: |
-                Action to consider a candidate for a job.
-        ashby-create-note:
-            type: action
-            returns: AshbyCreateNoteResponse
-            description: |
-                Action to create a note on a candidate.
+        syncs:
+            candidates:
+                runs: every hour
+                output: AshbyCandidate
+                description: |
+                    Fetches a list of all candidates from your ashby account
+                scopes: candidatelastsyncToken
+                sync_type: incremental
+                endpoint: GET /ashby/candidates
+            jobs:
+                runs: every hour
+                output: AshbyJob
+                description: |
+                    Fetches a list of all jobs from your ashby account
+                scopes: jobslastsyncToken
+                sync_type: incremental
+                endpoint: GET /ashby/jobs
+        actions:
+            create-application:
+                output: AshbyCreateApplicationResponse
+                input: AshbyCreateCandidateInput
+                description: |
+                    Action to consider a candidate for a job
+                endpoint: POST /ashby/create-application
+            create-note:
+                output: AshbyCreateNoteResponse
+                input: AshbyCreateNoteInput
+                description: |
+                    Action to create a note on a candidate.
+                endpoint: POST /ashby/create-note
         models:
             AshbyCandidate:
                 id: string
@@ -192,36 +463,67 @@ integrations:
                     firstName: string
                     lastName: string
                     email: string
+            AshbyCreateCandidateInput:
+                candidateId: string
+                jobId: string
+                interviewPlanId: string | undefined
+                interviewStageId: string | undefined
+                sourceId: string | undefined
+                creditedToUserId: string | undefined
+            AshbyCreateNoteInput:
+                candidateId: string
+                note: string | NoteObject
+                sendNotifications: boolean | undefined
+            NoteObject:
+                value: string
+                type: string
     bamboohr-basic:
         syncs:
-            bamboohr-employees:
+            employees:
                 runs: every 6 hours
                 description: |
-                    Fetches employees from bamboohr.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of current employees from bamboohr
                 output: BamboohrEmployee
                 sync_type: incremental
-                endpoint: /bamboohr/employees
-                scopes:
-                    - default
+                endpoint: GET /bamboohr/employees
         actions:
-            bamboohr-create-employee:
+            create-employee:
                 description: |
-                    Action to create a new employee.
+                    Action to create a new employee
                 output: BamboohrCreateEmployeeResponse
-                endpoint: /bamboohr/create-employee
+                input: BamboohrCreateEmployee
+                endpoint: POST /bamboohr/create-employee
+                version: 1.0.0
+            update-employee:
+                endpoint: PUT /bamboohr/employee
+                input: BamboohrUpdateEmployee
+                output: BamboohrResponseStatus
+                description: Update an existing employee in the system
+            fetch-fields:
+                endpoint: GET /bamboohr/fields
+                output: BamboohrField[]
+                description: Introspection to retrieve available fields
         models:
+            BamboohrField:
+                id: string
+                type: string
+                name: string
+                alias?: string
+                options?: Option[]
+            Option:
+                id: number
+                name: string
             BamboohrEmployee:
                 id: string
                 employeeNumber: string
                 firstName: string
                 lastName: string
-                dateOfBirth: date
+                dateOfBirth: string
                 address1: string
                 bestEmail: string
                 workEmail: string
                 jobTitle: string
-                hireDate: date
+                hireDate: string
                 supervisorId: string
                 supervisor: string
                 createdByUserId: string
@@ -241,19 +543,418 @@ integrations:
                 ssn: string
                 workPhone: string
                 homePhone: string
+            BamboohrCreateEmployee:
+                firstName: string
+                lastName: string
+                employeeNumber?: string
+                dateOfBirth?: string
+                address1?: string
+                bestEmail?: string
+                workEmail?: string
+                jobTitle?: string
+                hireDate?: string
+                supervisorId?: string
+                supervisor?: string
+                createdByUserId?: string
+                department?: string
+                division?: string
+                employmentHistoryStatus?: string
+                gender?: string
+                country?: string
+                city?: string
+                location?: string
+                state?: string
+                maritalStatus?: string
+                exempt?: string
+                payRate?: string
+                payType?: string
+                payPer?: string
+                ssn?: string
+                workPhone?: string
+                homePhone?: string
+            BamboohrUpdateEmployee:
+                id: string
+                firstName?: string
+                lastName?: string
+                employeeNumber?: string
+                dateOfBirth?: string
+                address1?: string
+                bestEmail?: string
+                workEmail?: string
+                jobTitle?: string
+                hireDate?: string
+                supervisorId?: string
+                supervisor?: string
+                createdByUserId?: string
+                department?: string
+                division?: string
+                employmentHistoryStatus?: string
+                gender?: string
+                country?: string
+                city?: string
+                location?: string
+                state?: string
+                maritalStatus?: string
+                exempt?: string
+                payRate?: string
+                payType?: string
+                payPer?: string
+                ssn?: string
+                workPhone?: string
+                homePhone?: string
             BamboohrCreateEmployeeResponse:
                 status: string
+                id: string
+            BamboohrResponseStatus:
+                status: string
+    calendly:
+        syncs:
+            events:
+                sync_type: incremental
+                runs: every hour
+                endpoint: GET /events
+                output: Event
+                description: Retrieve all events per a user
+            event-types:
+                sync_type: incremental
+                runs: every hour
+                endpoint: GET /event/types
+                output: EventType
+                description: Retrieve all event types per a user
+            event-invitees:
+                sync_type: incremental
+                runs: every hour
+                endpoint: GET /event/invitees
+                output: EventInvitee
+                description: For all events (active and canceled) retrieve the event invitees
+        models:
+            Event:
+                id: string
+                uri: string
+                name: string | null
+                meeting_notes_plain: string | null
+                meeting_notes_html: string | null
+                status: active | canceled
+                start_time: string
+                end_time: string
+                event_type: string
+                location: EventLocation
+                invitees_counter: InviteesCounter
+                created_at: string
+                updated_at: string
+                event_memberships: EventMembership[]
+                event_guests: EventGuest[]
+                calendar_event: CalendarEvent | null
+                cancellation?: EventCancellation
+            CalendarEvent:
+                kind: string
+                external_id: string
+            EventCancellation:
+                canceled_by: string
+                reason: string | null
+                canceler_type: string
+                created_at: string
+            EventMembership:
+                user: string
+                user_email: string | null
+                user_name: string
+            EventGuest:
+                email: string
+                created_at: string
+                updated_at: string
+            InviteesCounter:
+                total: number
+                active: number
+                limit: number
+            EventLocation:
+                type: string
+                location?: string
+                join_url?: string
+                status: string | null
+                additional_info: string
+            EventTypeLocation:
+                kind: string
+                phone_number: number
+                additional_info: string
+            EventQuestion:
+                name: string
+                type: string
+                position: number
+                enabled: boolean
+                required: boolean
+                answer_choices: string[]
+                include_other: boolean
+            EventProfile:
+                type: string
+                name: string
+                owner: string
+            EventType:
+                id: string
+                uri: string
+                name: string | null
+                active: boolean
+                booking_method: string
+                slug: string | null
+                scheduling_url: string
+                duration: number
+                kind: string
+                pooling_type: string | null
+                type: string
+                color: string
+                created_at: string
+                updated_at: string
+                internal_note: string | null
+                description_plain: string
+                description_html: string
+                profile: Profile | null
+                secret: boolean
+                deleted_at: string | null
+                admin_managed: boolean
+                locations: EventTypeLocation[] | null
+                custom_questions: EventQuestion[]
+                position: number
+            QuestionAndAnswer:
+                answer: string
+                position: string
+                question: string
+            Tracking:
+                utm_campaign: string | null
+                utm_source: string | null
+                utm_medium: string | null
+                utm_content: string | null
+                utm_term: string | null
+                salesforce_uuid: string | null
+            Payment:
+                external_id: string
+                provider: string
+                amount: number
+                currency: string
+                terms: string
+                successful: boolean
+            Reconfirmation:
+                created_at: string
+                confirmed_at: string
+            EventInvitee:
+                id: string
+                cancel_url: string
+                created_at: string
+                email: string
+                event: string
+                name: string
+                first_name: string | null
+                last_name: string | null
+                new_invitee: string | null
+                old_invitee: string | null
+                questions_and_answers: QuestionAndAnswer[]
+                reschedule_url: string
+                rescheduled: boolean
+                status: string
+                text_reminder_number: string | null
+                timezone: string
+                tracking: Tracking
+                updated_at: string
+                uri: string
+                routing_form_submission: string | null
+                payment: Payment | null
+                no_show: string | null
+                reconfirmation: Reconfirmation | null
+                scheduling_method: string | null
+                invitee_scheduled_by: string | null
+    checkr-partner:
+        actions:
+            background-check-services:
+                endpoint: GET /background-check/service-list
+                output: CheckrServicesResponse
+                description: Fetch the possible services that Checkr offers for a background check
+            background-check-parameters:
+                endpoint: GET /background-check/service-parameters
+                input: BackgroundCheckParametersInput
+                output: BackgroundCheckParameterResponse
+                description: Fetch the parameters required to trigger a background check
+            trigger-background-check:
+                endpoint: POST /background-check/trigger
+                input: TriggerBackgroundCheckInput
+                output: TriggeredBackgroundCheck
+                description: Trigger a background check
+            create-candidate:
+                endpoint: POST /candidates
+                output: Candidate
+                input: CreateCandidate
+        syncs:
+            background-checks:
+                endpoint: GET /background-checks
+                output: BackgroundCheck
+                runs: every hour
+                sync_type: incremental
+                description: Fetch all the background checks
+        models:
+            Timestamps:
+                created_at: string
+                updated_at: string
+            UtilityAnyType:
+                __string: any
+            Location:
+                city?: string
+                country: string
+                state?: string
+            Candidate:
+                id: string
+                object: string
+                uri: string
+                first_name: string
+                middle_name: string | null
+                last_name: string
+                mother_maiden_name: string
+                email: string
+                phone: number
+                zipcode: number
+                dob: string
+                ssn: string
+                driver_license_number: string
+                driver_license_state: string
+                previous_driver_license_number: string
+                previous_driver_license_state: string
+                copy_requested: boolean
+                custom_id: string
+                report_ids: string[]
+                geo_ids: string[]
+                adjudication: string
+                metadata: UtilityAnyType
+            CreateCandidate:
+                city?: string
+                country: string
+                state?: string
+                first_name: string
+                middle_name?: string
+                no_middle_name?: boolean
+                last_name: string
+                email: string
+                phone: string
+                zipcode: string
+                dob: string
+                ssn: string
+                driver_license_number: string
+                driver_license_state: string
+                work_locations: Location[]
+            BackgroundCheck:
+                id: string
+                status: string
+                service_key: string
+                url: string
+                candidate_id: string
+                created_at: string
+                expires_at?: string | undefined
+            CheckrTriggeredBackgroundCheck:
+                created_at: string
+                updated_at: string
+                id: string
+                object: string
+                uri: string
+                invitation_url: string
+                status: string
+                completed_at: string | null
+                deleted_at: string | null
+                package: string
+                candidate_id: string
+                report_id: string | null
+                archived: boolean
+                expires_at?: string
+                archived_info:
+                    time: string
+                    user:
+                        email: string
+                        id: string
+            BackgroundCheckParametersInput:
+                service_key: string
+            TriggeredBackgroundCheck:
+                created_at: string
+                updated_at: string
+                applicationId: any
+                url: string
+                status: string
+                completed_at: string | null
+                candidate_id: string
+                service_key: string
+                deleted_at: string | null
+            TriggerBackgroundCheckInput:
+                city?: string
+                country: string
+                state?: string
+                service_key: string
+                candidate_id: string
+                node?: string
+                tags?: string[]
+            BackgroundCheckParameterResponse:
+                parameters: BackgroundCheckParameters[]
+            BackgroundCheckParameters:
+                key: string
+                type: string
+                title: string
+                description: string
+                required: boolean
+            CheckrServicesResponse:
+                services: CheckrService[]
+            CheckrScreening:
+                type: string
+                subtype: string | null
+            CheckrService:
+                id: string
+                price: number
+                drug_screening_price: number | null
+                enabled_examples: string[]
+                requires_observed_drug_test: boolean
+                object: string
+                apply_url: string
+                created_at: string
+                deleted_at: string | null
+                name: string
+                screenings: CheckrScreening[]
+                slug: string
+                uri: string
+                node?: string
+    checkr-partner-staging:
+        syncs:
+            account:
+                runs: every half hour
+                output: CheckrPartnerStagingAccount
+                description: |
+                    Fetches account details for the authenticated account.
+                endpoint: GET /checkr-partner-staging/account
+                sync_type: full
+        models:
+            CheckrPartnerStagingAccount:
+                id: string
+                object: string
+                account_deauthorization: object
+                adverse_action_email: string
+                api_authorized: boolean
+                authorized: boolean
+                available_screenings: array
+                billing_email: string
+                company: object
+                compliance_contact_email: string
+                created_at: date
+                default_compliance_city: string | null
+                default_compliance_state: string | null
+                geos_required: boolean
+                name: string
+                purpose: string
+                segmentation_enabled: boolean
+                support_email: string | null
+                support_phone: string | null
+                technical_contact_email: string
+                uri: string
+                uri_name: string
     clari-copilot:
-        clari-copilot-call:
-            runs: every hour
-            returns:
-                - ClariCopilotCall
-            description: >
-                Fetches calls from your account. For the first sync, it will go back to
-                the past one year.
-
-                Details: incremental sync, doesn't track deletes, metadata is not
-                required.
+        syncs:
+            calls:
+                runs: every hour
+                output: ClariCopilotCall
+                description: >
+                    Fetches a list of calls from your account. For the first sync, it will
+                    go back to the past one year
+                sync_type: incremental
+                endpoint: GET /clari-copilot/call
         models:
             ClariCopilotCall:
                 id: string
@@ -305,16 +1006,22 @@ integrations:
                 competitor_sentiments: []
     confluence:
         syncs:
-            confluence-spaces:
+            spaces:
                 runs: every 4 hours
                 output: ConfluenceSpace
+                description: |
+                    Fetches a list of spaces from confluence
                 sync_type: full
-                endpoint: /confluence/spaces
-            confluence-pages:
+                scopes: read:space:confluence
+                endpoint: GET /confluence/spaces
+            pages:
                 runs: every 4 hours
                 output: ConfluencePage
+                description: |
+                    Fetches a list of pages from confluence
                 sync_type: full
-                endpoint: /confluence/pages
+                scopes: read:page:confluence
+                endpoint: GET /confluence/pages
         models:
             ConfluenceSpace:
                 id: string
@@ -348,21 +1055,27 @@ integrations:
                     atlas_doc_format: object
     evaluagent:
         syncs:
-            evaluagent-users:
+            users:
                 runs: every day
                 output: EvaluAgentUser
+                description: |
+                    Fetches a list of users from evaluagent
                 sync_type: full
-                endpoint: /evaluagent/users
-            evaluagent-groups:
+                endpoint: GET /evaluagent/users
+            groups:
                 runs: every day
                 output: EvaluAgentGroup
+                description: |
+                    Fetches a list of groups from evaluagent
                 sync_type: full
-                endpoint: /evaluagent/groups
-            evaluagent-roles:
+                endpoint: GET /evaluagent/groups
+            roles:
                 runs: every day
                 output: EvaluAgentRole
+                description: |
+                    Fetches a list of roles from evaluagent
                 sync_type: full
-                endpoint: /evaluagent/roles
+                endpoint: GET /evaluagent/roles
         models:
             EvaluAgentGroup:
                 id: string
@@ -385,43 +1098,224 @@ integrations:
                 id: string
                 title: string
                 name: string
+    exact-online:
+        syncs:
+            customers:
+                version: 1.0.0
+                description: |
+                    Fetches all customers in Exact Online
+                runs: every hour
+                output: ExactCustomer
+                sync_type: full
+                auto_start: true
+                endpoint: GET /customers
+                track_deletes: true
+            payments:
+                version: 1.0.0
+                description: |
+                    Fetches all payments in Exact Online
+                runs: every hour
+                output: ExactPayment
+                sync_type: full
+                auto_start: true
+                endpoint: GET /payments
+                track_deletes: true
+        actions:
+            create-customer:
+                version: 1.0.0
+                description: |
+                    Creates a customer in ExactOnline
+                input: ExactCustomerCreateInput
+                output: ExactCustomerCreateOutput
+                endpoint: POST /customers
+            update-customer:
+                version: 1.0.0
+                description: |
+                    Updates a customer in ExactOnline
+                input: ExactCustomerUpdateInput
+                output: ExactCustomerUpdateOutput
+                endpoint: PUT /customers
+            create-invoice:
+                version: 1.0.0
+                description: |
+                    Creates an invoice in ExactOnline
+                input: ExactInvoiceCreateInput
+                output: ExactInvoiceCreateOutput
+                endpoint: POST /invoices
+            update-invoice:
+                version: 1.0.0
+                description: |
+                    Updates an invoice in ExactOnline
+                input: ExactInvoiceUpdateInput
+                output: ExactInvoiceUpdateOutput
+                endpoint: PUT /invoices
+            attach-file-invoice:
+                version: 1.0.0
+                description: |
+                    Uploads a file to ExactOnline and link it to an invoice
+                input: ExactInvoiceAttachFileInput
+                output: ExactInvoiceAttachFileOutput
+                endpoint: POST /invoices/attach-file
+        models:
+            ExactCustomer:
+                id: string
+                division: number | null
+                name: string
+                email: string | null
+                taxNumber: string | null
+                addressLine1: string | null
+                addressLine2: string | null
+                city: string | null
+                zip: string | null
+                country: string | null
+                state: string | null
+                phone: string | null
+            ExactCustomerCreateBase:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+            ExactCustomerCreateInput:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+            ExactCustomerCreateOutput:
+                id: string
+            ExactCustomerUpdateInput:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+                id: string
+                name?: string | null
+            ExactCustomerUpdateOutput:
+                success: boolean
+            ExactPayment:
+                id: string
+                description: string | null
+                division: number | null
+                customerId: string | null
+                amount: number | null
+                createdAt: string | null
+                currency: string | null
+                journal: string | null
+                paymentMethod: string | null
+                paymentReference: string | null
+                status: number | null
+                transactionID: string | null
+            ExactInvoiceLine:
+                itemId: string
+                quantity: number
+                amountNet: number
+                vatCode?: string
+                description?: string
+            ExactInvoiceCreateInput:
+                customerId: string
+                journal: number
+                currency?: EUR
+                description?: string
+                createdAt?: date
+                lines: ExactInvoiceLine[]
+            ExactInvoiceCreateOutput:
+                id: string
+            ExactInvoiceUpdateInput:
+                id: string
+                deliverTo?: string
+                currency?: EUR
+                description?: string
+                createdAt?: date
+            ExactInvoiceUpdateOutput:
+                success: boolean
+            ExactInvoiceAttachFileInput:
+                invoiceId: string
+                customerId: string
+                subject: string
+                filename: string
+                content: string
+            ExactInvoiceAttachFileOutput:
+                success: boolean
+    expensify:
+        actions:
+            list-policies:
+                description: >
+                    Action to fetch a list of policies with some relevant information
+                    about them
+                endpoint: POST /expensify/list-policy
+                input: ExpensifyListPolicyInput
+                output: ExpensifyListPolicyOutput
+        models:
+            ExpensifyListPolicyInput:
+                requestJobDescription: RequestJobDescription
+                inputSettings: InputSettings
+            RequestJobDescription:
+                type: string
+            InputSettings:
+                type: string
+            ExpensifyListPolicyOutput:
+                policyList: array
+    fireflies:
+        actions:
+            add-to-live:
+                output: FirefliesAddtoLiveResponse
+                input: FirefliesAddtoLiveInput
+                description: |
+                    Action to add the Fireflies.ai bot to an ongoing meeting
+                endpoint: POST /fireflies/add-to-live
+        models:
+            FirefliesAddtoLiveInput:
+                query: string
+                variables: object
+            FirefliesAddtoLiveResponse:
+                data: object
     github:
         syncs:
-            github-issues:
+            issues:
                 runs: every half hour
                 output: GithubIssue
                 sync_type: full
                 scopes: public_repo
                 description: |
-                    Fetches the Github issues from all a user's repositories.
-                    Details: full sync, doesn't track deletes, metadata is not required.
-                endpoint: /github/issues
-            github-issues-lite:
+                    Fetches Github issues from all a user's repositories
+                endpoint: GET /github/issues
+            issues-lite:
                 runs: every day
                 auto_start: false
                 sync_type: full
                 output: Issue
                 scopes: public_repo
-                description: >
-                    Fetches the Github issues but up to a maximum of 15 for demo
-
-                    purposes.
-
-                    Details: limited sync, doesn't track deletes, metadata is not
-                    required.
-                endpoint: /github/lite-issues
-            github-list-files:
+                description: |
+                    Fetches Github issues but up to a maximum of 15
+                endpoint: GET /github/issues-lite
+            list-files:
                 runs: every hour
                 description: |
-                    Lists all the files of a Github repo given a specific branch.
-                    Details: doesn't track deletes, metadata is required.
+                    Lists all the files of a Github repo given a specific branch
                 sync_type: incremental
                 auto_start: false
                 input: GithubIssueRepoInput
                 output: GithubRepoFile
-                endpoint: /github/files
+                endpoint: GET /github/list-files
                 scopes: repo
-            github-issues-demo:
+            issues-demo:
                 runs: every 5 minutes
                 auto_start: false
                 sync_type: full
@@ -431,22 +1325,21 @@ integrations:
                     Fetches GitHub issues from our showcase repository.
                 endpoint: GET /github/demo-issues
         actions:
-            github-write-file:
+            write-file:
                 scopes: repo
                 input: GithubWriteFileInput
                 output: GithubWriteFileActionResult
-                endpoint: PUT /github/file
+                endpoint: PUT /github/write-file
                 description: |
                     Write content to a particular github file within a repo. If
-                    the file doesn't exist it creates and then writes to it.
-            github-list-repos:
+                    the file doesn't exist it creates and then writes to it
+            list-repos:
                 scopes: read:org
-                endpoint: GET /github/repos
-                output:
-                    - GithubRepo
+                endpoint: GET /github/list-repos
+                output: GithubRepo
                 description: |
                     List github repos from an organization.
-            github-create-demo-issue:
+            create-demo-issue:
                 endpoint: POST /github/create-demo-issue
                 input: GithubCreateIssueInput
                 output: GithubCreateIssueResult
@@ -515,30 +1408,82 @@ integrations:
             GithubCreateIssueResult:
                 url: string | undefined
                 status: number
+    google:
+        syncs:
+            workspace-org-units:
+                runs: every 6 hours
+                track_deletes: true
+                output: OrganizationalUnit
+                sync_type: full
+                endpoint: GET /google/workspace-org-unit
+                scopes:
+                    - https://www.googleapis.com/auth/admin.directory.orgunit.readonly
+                    - https://www.googleapis.com/auth/admin.directory.user.readonly
+            workspace-users:
+                runs: every hour
+                output: User
+                sync_type: full
+                endpoint: GET /google/workspace-users
+            workspace-user-access-tokens:
+                runs: every hour
+                output: GoogleWorkspaceUserToken
+                sync_type: full
+                endpoint: GET /google/workspace-user-access-tokens
+                scopes:
+                    - https://www.googleapis.com/auth/admin.directory.user.readonly
+                    - https://www.googleapis.com/auth/admin.directory.user.security
+        models:
+            OrganizationalUnit:
+                id: string
+                name: string
+                createdAt: string | null
+                deletedAt: string | null
+                description: string | null
+                path: string | null
+                parentPath: string | null
+                parentId: string | null
+            User:
+                id: string
+                email: string
+                displayName: string | null
+                givenName: string | null
+                familyName: string | null
+                picture: string | null | undefined
+                type: string
+                createdAt: string | null
+                deletedAt: string | null
+                phone:
+                    value: string | null | undefined
+                    type: string | null | undefined
+                organizationId: string | null | undefined
+                organizationPath: string | null | undefined
+                isAdmin: boolean | null
+                department: string | null
+            GoogleWorkspaceUserToken:
+                id: string
+                user_id: string
+                app_name: string
+                anonymous_app: boolean
+                scopes: string
     google-calendar:
         syncs:
-            google-calendar-events:
+            events:
                 description: |
                     Sync calendar events on the primary calendar going back one month and
-                    save the entire object as specified by the Google API.
-                    Details: partial sync, doesn't support deletes, sync goes back one
-                    month, metadata is not required.
+                    save the entire object as specified by the Google API
                 runs: every 5 minutes
                 output: GoogleCalendarEvent
                 sync_type: incremental
-                endpoint: /google-calendar/events
+                endpoint: GET /google-calendar/events
                 scopes: https://www.googleapis.com/auth/calendar.readonly
-            google-calendars:
+            calendars:
                 description: |
-                    Sync the calendars list of the user.
-                    Details: full sync, does support deletes. Sync goes back all time,
-                    metadata not required.
-                    Required scope(s): https://www.googleapis.com/auth/calendar.readonly
+                    Sync the calendars list of the user
                 track_deletes: true
                 runs: every hour
                 output: GoogleCalendar
                 sync_type: full
-                endpoint: /google-calendar/calendars
+                endpoint: GET /google-calendar/calendars
                 scopes: https://www.googleapis.com/auth/calendar.readonly
         models:
             GoogleCalendar:
@@ -696,7 +1641,7 @@ integrations:
                 eventType: string
     google-drive:
         syncs:
-            google-drive-documents:
+            documents:
                 runs: every day
                 track_deletes: true
                 description: |
@@ -714,17 +1659,17 @@ integrations:
                 input: DocumentMetadata
                 output: Document
                 sync_type: full
-                endpoint: /google-drive/documents
+                endpoint: GET /google-drive/documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
-            google-drive-fetch-pdf:
+            fetch-pdf:
                 input: string
                 description: |
                     Fetch PDF data given an ID using a responseStream, chunk the data
                     into a buffer and return a base64 encoded string that can later
                     be converted into a PDF using an external tool.
                 output: string
-                endpoint: /google-drive/fetch-pdf
+                endpoint: POST /google-drive/fetch-pdf
                 scopes: https://www.googleapis.com/auth/drive.readonly
         models:
             DocumentMetadata:
@@ -737,11 +1682,21 @@ integrations:
                 title: string
     google-mail:
         syncs:
-            gmail-emails:
+            emails:
                 runs: every hour
+                description: |
+                    Fetches a list of emails from gmail
                 output: GmailEmail
                 sync_type: incremental
-                endpoint: /google-mail/emails
+                endpoint: GET /google-mail/emails
+        actions:
+            send-email:
+                scopes: send
+                input: GmailEmailInput
+                output: GmailEmailSentOutput
+                endpoint: POST /google-mail/send
+                description: |
+                    Send an Email using Gmail.
         models:
             GmailEmail:
                 id: string
@@ -751,97 +1706,41 @@ integrations:
                 subject: string
                 body: string
                 threadId: string
-    google:
-        syncs:
-            google-workspace-org-unit:
-                runs: every 6 hours
-                track_deletes: true
-                output: OrganizationalUnit
-                sync_type: full
-                endpoint: /google/workspace-org-unit
-                scopes: >-
-                    https://www.googleapis.com/auth/admin.directory.orgunit.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly
-            google-workspace-users:
-                runs: every hour
-                output: User
-                sync_type: full
-                endpoint: /google/workspace-users
-            google-workspace-user-access-tokens:
-                runs: every hour
-                output: GoogleWorkspaceUserToken
-                sync_type: full
-                endpoint: /google/workspace-user-access-tokens
-                scopes: >-
-                    https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/admin.directory.user.security
-        models:
-            OrganizationalUnit:
+            GmailEmailInput:
+                from: string
+                to: string
+                headers: object | undefined
+                subject: string
+                body: string
+            EmailHeader:
+                headerName: string
+                headerValue: string
+            GmailEmailSentOutput:
                 id: string
-                name: string
-                createdAt: string | null
-                deletedAt: string | null
-                description: string | null
-                path: string | null
-                parentPath: string | null
-                parentId: string | null
-            User:
-                id: string
-                email: string
-                displayName: string | null
-                givenName: string | null
-                familyName: string | null
-                picture: string | null | undefined
-                type: string
-                createdAt: string | null
-                deletedAt: string | null
-                phone:
-                    value: string | null | undefined
-                    type: string | null | undefined
-                organizationId: string | null | undefined
-                organizationPath: string | null | undefined
-                isAdmin: boolean | null
-                department: string | null
-            GoogleWorkspaceUserToken:
-                id: string
-                user_id: string
-                app_name: string
-                anonymous_app: boolean
-                scopes: string
-        rawName: google-workspace
+                threadId: string
     greenhouse-basic:
         syncs:
-            greenhouse-applications:
+            applications:
                 runs: every 6 hours
                 description: |
-                    Fetches all organization's applications from greenhouse.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of all organization's applications from greenhouse
                 output: GreenhouseApplication
                 sync_type: incremental
-                endpoint: /greenhouse-basic/applications
-                scopes:
-                    - default
-            greenhouse-candidates:
+                endpoint: GET /greenhouse-basic/applications
+            candidates:
                 runs: every 6 hours
                 description: |
-                    Fetches all organization's candidates from greenhouse.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of all organization's candidates from greenhouse
                 output: GreenhouseCandidate
                 sync_type: incremental
-                endpoint: /greenhouse-basic/candidates
-                scopes:
-                    - default
-            greenhouse-jobs:
+                endpoint: GET /greenhouse-basic/candidates
+            jobs:
                 runs: every 6 hours
                 description: |
-                    Fetches all organization's jobs from greenhouse.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of all organization's jobs from greenhouse
                 output: GreenhouseJob
                 sync_type: incremental
-                endpoint: /greenhouse-basic/jobs
-                scopes:
-                    - default
+                endpoint: GET /greenhouse-basic/jobs
         models:
             GreenhouseApplication:
                 id: string
@@ -968,57 +1867,47 @@ integrations:
                 openings: []
     hackerrank-work:
         syncs:
-            hackerrank-work-interviews:
+            interviews:
                 runs: every 6 hours
                 description: |
-                    Fetches interviews from hackerrank work.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of interviews from hackerrank work
                 output: HackerRankWorkInterview
                 sync_type: incremental
-                endpoint: /hackerrank-work/interviews
-                scopes:
-                    - default
-            hackerrank-work-teams:
+                endpoint: GET /hackerrank-work/interviews
+            teams:
                 runs: every 6 hours
                 description: |
-                    Fetches teams from hackerrank work.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of teams from hackerrank work
                 output: HackerRankWorkTeam
                 sync_type: incremental
-                endpoint: /hackerrank-work/teams
-                scopes:
-                    - default
-            hackerrank-work-tests:
+                endpoint: GET /hackerrank-work/teams
+            tests:
                 runs: every 6 hours
                 description: |
-                    Fetches tests from hackerrank work.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of tests from hackerrank work
                 output: HackerRankWorkTest
                 sync_type: incremental
-                endpoint: /hackerrank-work/tests
-                scopes:
-                    - default
-            hackerrank-work-users:
+                endpoint: GET /hackerrank-work/tests
+            users:
                 runs: every 6 hours
                 description: |
-                    Fetches users from hackerrank work.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of users from hackerrank work
                 output: HackerRankWorkUser
                 sync_type: incremental
-                endpoint: /hackerrank-work/users
-                scopes:
-                    - default
+                endpoint: GET /hackerrank-work/users
         actions:
-            hackerrank-work-create-interview:
+            create-test:
                 description: |
-                    Action to create an interview on hackerrank work.
+                    Action to create a test on hackerrank work
+                input: HackerRankWorkCreateTestInput
+                output: HackerRankWorkTest
+                endpoint: POST /hackerrank-work/create-test
+            create-interview:
+                description: |
+                    Action to create an interview on hackerrank work
                 input: HackerRankWorkCreateInterviewInput
                 output: HackerRankWorkInterview
-                endpoint: /hackerrank-work/create-interview
+                endpoint: POST /hackerrank-work/create-interview
         models:
             HackerRankWorkCreateInterviewInput:
                 id: string
@@ -1043,6 +1932,8 @@ integrations:
                 candidate: CandidateInformation
                 result_url: string
                 report_url: string
+                send_email: boolean
+                interview_metadata: object
             HackerRankWorkInterview:
                 id: string
                 status: string
@@ -1129,16 +2020,45 @@ integrations:
                 teams: []
                 activated: boolean
                 last_activity_time: date
+            HackerRankWorkCreateTestInput:
+                name: string
+                starttime: Date
+                endtime: Date
+                duration: number
+                instructions: string
+                locked: boolean
+                draft: string
+                languages: string[]
+                candidate_details: string[]
+                custom_acknowledge_text: string
+                cutoff_score: number
+                master_password: string
+                hide_compile_test: boolean
+                tags: string[]
+                role_ids: string[]
+                experience: string[]
+                questions: string[]
+                mcq_incorrect_score: number
+                mcq_correct_score: number
+                secure: boolean
+                shuffle_questions: boolean
+                test_admins: string[]
+                hide_template: boolean
+                enable_acknowledgement: boolean
+                enable_proctoring: boolean
+                candidate_tab_switch: boolean
+                track_editor_paste: boolean
+                show_copy_paste_prompt: boolean
+                ide_config: string
     hibob-service-user:
         syncs:
-            hibob-employees:
+            employees:
                 runs: every hour
                 description: |
-                    Returns a list of all active employees.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of all active employees
                 output: HibobEmployee
                 sync_type: full
-                endpoint: /hibob-service-user/hibob-employees
+                endpoint: GET /hibob-service-user/hibob-employees
         models:
             HibobEmployee:
                 id: string
@@ -1165,31 +2085,41 @@ integrations:
                     startDate: date
     hubspot:
         syncs:
-            hubspot-service-tickets:
+            service-tickets:
                 runs: every half hour
+                description: |
+                    Fetches a list of service tickets from Hubspot
                 output: HubspotServiceTicket
                 sync_type: incremental
-                endpoint: /hubspot/service-tickets
-            hubspot-contacts:
+                endpoint: GET /hubspot/service-tickets
+            contacts:
                 runs: every day
+                description: |
+                    Fetches a list of contacts from Hubspot
                 output: HubspotContact
                 sync_type: full
-                endpoint: /hubspot/contacts
-            hubspot-owners:
+                endpoint: GET /hubspot/contacts
+            owners:
                 runs: every day
+                description: |
+                    Fetches a list of owners from Hubspot
                 output: HubspotOwner
                 sync_type: full
-                endpoint: /hubspot/owner
-            hubspot-users:
+                endpoint: GET /hubspot/owner
+            users:
                 runs: every day
+                description: |
+                    Fetches a list of users from Hubspot
                 output: HubspotUser
                 sync_type: full
-                endpoint: /hubspot/user
-            hubspot-knowledge-base:
+                endpoint: GET /hubspot/user
+            knowledge-base:
                 runs: every day
+                description: |
+                    Fetches a list of knowledge base from Hubspot
                 output: HubspotKnowledgeBase
                 sync_type: full
-                endpoint: /hubspot/knowledge-base
+                endpoint: GET /hubspot/knowledge-base
         models:
             HubspotServiceTicket:
                 id: integer
@@ -1233,18 +2163,40 @@ integrations:
                 first_name: string
                 last_name: string
                 email: string
+    instantly:
+        actions:
+            set-campaign-name:
+                output: InstantlySetCampaignNameResponse
+                input: InstantlySetCampaignNameInput
+                description: |
+                    Action to set a campaign name
+                endpoint: POST /instantly/set-campaign-name
+        models:
+            InstantlySetCampaignNameResponse:
+                status: string
+            InstantlySetCampaignNameInput:
+                campaign_id: string
+                name: string
     intercom:
         syncs:
-            intercom-conversations:
+            conversations:
                 runs: every 6 hours
-                output: IntercomConversation
+                description: |
+                    Fetches a list of conversations from Intercom
+                output:
+                    - IntercomConversation
+                    - IntercomConversationMessage
                 sync_type: incremental
-                endpoint: /intercom/conversations
-            intercom-contacts:
+                endpoint:
+                    - GET /intercom/conversations
+                    - GET /intercom/conversations-message
+            contacts:
                 runs: every 6 hours
+                description: |
+                    Fetches a list of contacts from Intercom
                 output: IntercomContact
                 sync_type: full
-                endpoint: /intercom/contacts
+                endpoint: GET /intercom/contacts
         models:
             IntercomContact:
                 id: string
@@ -1284,11 +2236,13 @@ integrations:
                     id: string
     jira:
         syncs:
-            jira-issues:
+            issues:
                 runs: every 5mins
+                description: |
+                    Fetches a list of issues from Jira
                 output: JiraIssue
                 sync_type: incremental
-                endpoint: /jira/issues
+                endpoint: GET /jira/issues
         models:
             JiraIssue:
                 id: integer
@@ -1301,7 +2255,127 @@ integrations:
                 projectName: string
                 createdAt: date
                 updatedAt: date
-    lever:
+    kustomer:
+        syncs:
+            conversations:
+                runs: every 6 hours
+                description: |
+                    Retrieves a paginated list of conversations for the organization
+                output: KustomerConversation
+                sync_type: full
+                endpoint: GET /kustomer/conversations
+                scopes:
+                    - org.user.conversation.read
+                    - org.permission.conversation.read
+        models:
+            KustomerConversation:
+                type: string
+                id: string
+                attributes: object
+                relationships: object
+                links: object
+    lever-basic:
+        actions:
+            create-note:
+                description: |
+                    Action to create a note and add it to a candidate profile in Lever
+                output: LeverOpportunityNote
+                input: LeverCreateNoteInput
+                endpoint: POST /lever/create-note
+                scopes:
+                    - notes:write:admin
+            create-opportunity:
+                description: |
+                    Action to create candidates and opportunities in Lever
+                output: LeverOpportunity
+                input: LeverCreateOpportunityInput
+                endpoint: POST /lever/create-opportunity
+                scopes:
+                    - opportunities:write:admin
+        syncs:
+            opportunities:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all pipeline opportunities for contacts in Lever
+                output: LeverOpportunity
+                sync_type: incremental
+                endpoint: GET /lever/opportunities
+                scopes:
+                    - opportunities:read:admin
+            opportunities-applications:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all applications for a candidate in Lever
+                output: LeverOpportunityApplication
+                sync_type: full
+                endpoint: GET /lever/opportunities-applications
+                scopes:
+                    - applications:read:admin
+            opportunities-feedbacks:
+                runs: every 6 hours
+                description: >
+                    Fetches a list of all feedback forms for a candidate for a specific
+                    Opportunity in lever
+                output: LeverOpportunityFeedback
+                sync_type: full
+                endpoint: GET /lever/opportunities-feedbacks
+                scopes:
+                    - feedback:read:admin
+            opportunities-interviews:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all interviewers for a specific Opportunity in lever
+                output: LeverOpportunityInterview
+                sync_type: full
+                endpoint: GET /lever/opportunities-interviews
+                scopes:
+                    - interviews:read:admin
+            opportunities-notes:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all notes for a specific candidate in lever
+                output: LeverOpportunityNote
+                sync_type: full
+                endpoint: GET /lever/opportunities-notes
+                scopes:
+                    - notes:read:admin
+            opportunities-offers:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all offers for a specific candidate in lever.
+                output: LeverOpportunityOffer
+                sync_type: full
+                endpoint: GET /lever/opportunities-offers
+                scopes:
+                    - offers:write:admin
+            postings:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all postings in Lever
+                output: LeverPosting
+                sync_type: full
+                endpoint: GET /lever/postings
+                scopes:
+                    - postings:read:admin
+            postings-apply:
+                runs: every 6 hours
+                description: >
+                    Fetches a list of all questions included in a posting’s application
+                    form in Lever
+                output: LeverPostingApply
+                sync_type: full
+                endpoint: GET /lever/postings-apply
+                scopes:
+                    - postings:read:admin
+            stage:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all pipeline stages in Lever
+                output: LeverStage
+                sync_type: full
+                endpoint: GET /lever/stage
+                scopes:
+                    - stages:read:admin
         models:
             LeverOpportunity:
                 id: string
@@ -1474,28 +2548,71 @@ integrations:
             LeverStage:
                 id: string
                 text: string
+            LeverCreateNoteInput:
+                opportunityId: string
+                perform_as: string | undefined
+                note_id: string | undefined
+                value: string | undefined
+                secret: boolean | undefined
+                score: number | undefined
+                notifyFollowers: boolean | undefined
+                createdAt: number | undefined
+            PhoneEntry:
+                value: string | undefined
+                type: string | undefined
+            ArchievedEntry:
+                archivedAt: number | undefined
+                reason: string | undefined
+            LeverCreateOpportunityInput:
+                perform_as: string
+                parse: boolean | undefined
+                perform_as_posting_owner: boolean | undefined
+                name: string | undefined
+                headline: string | undefined
+                stage: string | undefined
+                location: string | undefined
+                phones: PhoneEntry[] | undefined
+                emails: string | undefined
+                links: string[] | undefined
+                tags: string[] | undefined
+                sources: string[] | undefined
+                origin: string | undefined
+                owner: string | undefined
+                followers: string[] | undefined
+                postings: string[] | undefined
+                createdAt: number | undefined
+                archived: ArchievedEntry | undefined
+                contact: string[] | undefined
     linear:
         syncs:
-            linear-issues:
+            issues:
                 runs: every 5min
+                description: |
+                    Fetches a list of issues from Linear
                 output: LinearIssue
                 sync_type: incremental
-                endpoint: /linear/issues
-            linear-projects:
+                endpoint: GET /linear/issues
+            projects:
                 runs: every 5min
+                description: |
+                    Fetches a list of projects from Linear
                 output: LinearProject
                 sync_type: incremental
-                endpoint: /linear/projects
-            linear-teams:
+                endpoint: GET /linear/projects
+            teams:
                 runs: every 5min
+                description: |
+                    Fetches a list of teams from Linear
                 output: LinearTeam
                 sync_type: incremental
-                endpoint: /linear/teams
-            linear-roadmaps:
+                endpoint: GET /linear/teams
+            roadmaps:
                 runs: every 5min
+                description: |
+                    Fetches a list of roadmaps from Linear
                 output: LinearRoadmap
                 sync_type: incremental
-                endpoint: /linear/roadmaps
+                endpoint: GET /linear/roadmaps
         models:
             LinearIssue:
                 id: string
@@ -1530,9 +2647,58 @@ integrations:
                 updatedAt: date
                 teamId: string
                 projectIds: string
+    luma:
+        syncs:
+            list-events:
+                description: >
+                    This sync will be used to sync all of the events managed by your
+                    Calendar. See https://docs.lu.ma/reference/calendar-list-events for
+                    more details.
+                endpoint: GET /luma/list-events
+                sync_type: incremental
+                runs: every day
+                output: Event
+        models:
+            Timestamps:
+                created_at: string
+                start_at: string
+                end_at: string
+            Event:
+                created_at: string
+                start_at: string
+                end_at: string
+                id: string
+                cover_url: string
+                name: string
+                description: string
+                description_md: string
+                series_api_id: string | null
+                duration_interval_iso8601: string
+                geo_latitude: string | null
+                geo_longitude: string | null
+                geo_address_json: GeoAddress | null
+                url: string
+                timezone: string
+                event_type: string
+                user_api_id: string
+                visibility: string
+                meeting_url: string | null
+                zoom_meeting_url: string | null
+            GeoAddress:
+                city: string
+                type: string
+                region: string
+                address: string
+                country: string
+                latitude: string
+                place_id: string
+                longitude: string
+                city_state: string
+                description: string
+                full_address: string
     microsoft-teams:
         syncs:
-            microsoft-org-unit:
+            org-units:
                 runs: every 6 hours
                 description: |
                     Continuously fetches groups from either Microsoft 365 or Azure Active
@@ -1541,10 +2707,10 @@ integrations:
                     is not required.
                 output: OrganizationalUnit
                 sync_type: full
-                endpoint: /microsoft-teams/microsoft-org-unit
+                endpoint: GET /microsoft-teams/microsoft-org-unit
                 scopes:
                     - GroupMember.Read.All
-            microsoft-users:
+            users:
                 runs: every hour
                 description: |
                     Continuously fetches users from either Microsoft 365 or Azure Active
@@ -1555,7 +2721,7 @@ integrations:
                     metadata is required.
                 output: User
                 sync_type: full
-                endpoint: /microsoft-teams/microsoft-users
+                endpoint: GET /microsoft-teams/microsoft-users
                 scopes:
                     - User.Read.All
         models:
@@ -1585,19 +2751,15 @@ integrations:
                 organizationPath: string | null | undefined
                 isAdmin: boolean | null
                 department: string | null
-        rawName: microsoft-active-directory
     next-cloud-ocs:
         syncs:
-            next-cloud-users:
+            users:
                 runs: every hour
                 description: |
-                    Fetch all users' details from NextCloud account
-                    Details: full sync, doesn't track deletes, metadata is not required.
-                output: 'N'
+                    Fetches a list of all users' details from NextCloud account
+                output: NextCloudUser
                 sync_type: full
-                endpoint: /next-cloud-ocs/next-cloud-users
-                scopes:
-                    - default
+                endpoint: GET /next-cloud-ocs/next-cloud-users
         models:
             NextCloudUser:
                 enabled: boolean
@@ -1649,34 +2811,26 @@ integrations:
                     setPassword: boolean
     notion:
         syncs:
-            notion-pages:
+            pages:
                 runs: every 6 hours
                 description: |
                     Sync pages, subpages, database entries, entries of
                     sub-databases and retrieve only the text content and ignores
                     images, files and other blocks that do not have
                     a `rich_text` property.
-                    Details: incremental sync, doesn't support deletes, sync goes to all
-                    time, metadata is not required.
-                    Required scope(s): none
                 output: NotionPage
                 sync_type: incremental
-                endpoint: /notion/pages
-                scopes: ''
-            notion-rich-pages:
+                endpoint: GET /notion/pages
+            rich-pages:
                 runs: every 6 hours
                 track_deletes: true
                 description: |
                     Sync pages, subpages, database entries, entries of
                     sub-databases and maps to full markdown. It transforms
                     images, tables, uploaded files, etc into their markdown counterparts.
-                    Details: full sync, tracks deletes, sync goes to all time, metadata is
-                    not required.
-                    Required scope(s): none
                 output: NotionRichPage
                 sync_type: incremental
-                endpoint: /notion/rich-pages
-                scopes: ''
+                endpoint: GET /notion/rich-pages
         models:
             NotionPage:
                 id: string
@@ -1693,44 +2847,40 @@ integrations:
                 last_modified: string
     pipedrive:
         syncs:
-            pipedrive-activities:
+            activities:
                 runs: every hour
                 description: |
-                    Fetches activities from pipedrive.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of activities from pipedrive
                 output: PipeDriveActivity
                 sync_type: incremental
-                endpoint: /pipedrive/activities
+                endpoint: GET /pipedrive/activities
                 scopes:
                     - activities:read
-            pipedrive-deals:
+            deals:
                 runs: every hour
                 description: |
-                    Fetches deals from pipedrive.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of deals from pipedrive
                 output: PipeDriveDeal
                 sync_type: incremental
-                endpoint: /pipedrive/deals
+                endpoint: GET /pipedrive/deals
                 scopes:
                     - deals:read
-            pipedrive-organizations:
+            organizations:
                 runs: every hour
                 description: |
-                    Fetches organizations from pipedrive.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of organizations from pipedrive
                 output: PipeDriveOrganization
                 sync_type: incremental
-                endpoint: /pipedrive/organizations
+                endpoint: GET /pipedrive/organizations
                 scopes:
                     - contacts:read
-            pipedrive-persons:
+            persons:
                 runs: every half hour
                 description: |
-                    Fetches persons from pipedrive.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches persons from pipedrive
                 output: PipeDrivePerson
                 sync_type: incremental
-                endpoint: /pipedrive/persons
+                endpoint: GET /pipedrive/persons
                 scopes:
                     - contacts:read
         models:
@@ -1831,32 +2981,54 @@ integrations:
                 label: integer
                 cc_email: string
     salesforce:
+        actions:
+            fetch-fields:
+                description: >
+                    Fetch available task fields. If the input is not specified then it
+                    defaults back to "Task"
+
+                    Data Validation: Parses all incoming data with Zod. Does not fail on
+                    parsing error will instead log parse error and return result.
+                scopes: offline_access,api
+                input: SalesforceEntity
+                output: SalesforceFieldSchema
+                endpoint: GET /salesforce/fetch-fields
         syncs:
-            salesforce-accounts:
+            accounts:
                 runs: every hour
+                description: |
+                    Fetches a list of accounts from salesforce
                 output: SalesforceAccount
                 sync_type: incremental
-                endpoint: /salesforce/accounts
-            salesforce-contacts:
+                endpoint: GET /salesforce/accounts
+            contacts:
                 runs: every hour
+                description: |
+                    Fetches a list of contacts from salesforce
                 output: SalesforceContact
                 sync_type: incremental
-                endpoint: /salesforce/contacts
-            salesforce-deals:
+                endpoint: GET /salesforce/contacts
+            deals:
                 runs: every hour
+                description: |
+                    Fetches a list of deals from salesforce
                 output: SalesforceDeal
                 sync_type: incremental
-                endpoint: /salesforce/deals
-            salesforce-articles:
+                endpoint: GET /salesforce/deals
+            articles:
                 runs: every day
+                description: |
+                    Fetches a list of articles from salesforce
                 output: SalesforceArticle
                 sync_type: incremental
-                endpoint: /salesforce/articles
-            salesforce-tickets:
+                endpoint: GET /salesforce/articles
+            tickets:
                 runs: every day
+                description: |
+                    Fetches a list of tickets from salesforce
                 output: SalesforceTicket
                 sync_type: incremental
-                endpoint: /salesforce/tickets
+                endpoint: GET /salesforce/tickets
         models:
             SalesforceAccount:
                 id: string
@@ -1909,33 +3081,123 @@ integrations:
                     created_date: string
                     created_by: string
                 last_modified_date: string
+            SalesforceEntity:
+                name: string
+            SalesforceFieldSchema:
+                fields: Field[]
+                childRelationships: ChildField[]
+            NestedFieldSchema:
+                fields: Field[]
+            Field:
+                name: string
+                label: string
+                type: string
+                referenceTo: string[]
+                relationshipName: string | null
+            ChildField:
+                object: string
+                relationshipName: string | null
+                field: string
+            ActionResponseError:
+                message: string
+                details?: ActionResponseErrorDetails
+            ActionResponseErrorDetails:
+                message: string
+                method: string
+                url: string
+                code: string
+    sharepoint-online:
+        actions:
+            list-sites:
+                description: >
+                    This action will be used to display a list of sites to the end-user,
+                    who will pick the ones he wants to sync.
+                endpoint: GET /sharepoint/list-sites
+                scopes:
+                    - Sites.ReadWrite.All
+                    - offline_access
+                output: SharePointMetadata
+                version: 1.0.0
+            fetch-file:
+                description: >
+                    This action will be used to fetch the latest file download_url which
+                    can be used to download the actual file.
+                endpoint: GET /sharepoint/fetch-file
+                scopes:
+                    - Sites.ReadWrite.All
+                    - offline_access
+                output: FetchFile
+                input: FetchFileInput
+                version: 1.0.0
+        syncs:
+            file-sync:
+                description: >
+                    This sync will be used to sync file metadata from SharePoint site
+                    based on the ones the user has picked.
+                endpoint: GET /sharepoint/file-sync
+                sync_type: incremental
+                runs: every 1 hour
+                scopes:
+                    - Sites.ReadWrite.All
+                    - offline_access
+                input: SharePointMetadata
+                auto_start: false
+                output: FileMetadata
+                version: 1.0.0
+        models:
+            FileMetadata:
+                id: string
+                name: string
+                etag: string
+                cTag: string
+                is_folder: boolean
+                mime_type: string | null
+                path: string
+                raw_source: object
+                updated_at: string
+                download_url: string | null
+                created_at: string
+                blob_size: number
+            Site:
+                id: string
+                name: string
+                createdDateTime: string
+                webUrl: string
+            SharePointMetadata:
+                sitesToSync: Site[]
+            FetchFileInput:
+                siteId: string
+                itemId: string
+            FetchFile:
+                id: string
+                download_url: string | null
     slack:
         syncs:
-            slack-users:
+            users:
                 runs: every hour
                 description: |
-                    Syncs information about all Users on the Slack workspace.
+                    Syncs information about all Users on the Slack workspace
                 output: SlackUser
                 sync_type: full
-                endpoint: /slack/users
+                endpoint: GET /slack/users
                 scopes:
                     - users:read
-            slack-channels:
+            channels:
                 runs: every hour
                 description: |
                     Syncs information about all Slack channels. Which channels get synced
-                    (public, private, IMs, group DMs) dependson the scopes. If
+                    (public, private, IMs, group DMs) depends on the scopes. If
                     joinPublicChannels is set to true, the bot will automatically join all
                     public channels as well. Scopes: At least one of channels:read,
                     groups:read, mpim:read, im:read. To also join public channels:
                     channels:join
                 output: SlackChannel
                 sync_type: full
-                endpoint: /slack/channels
+                endpoint: GET /slack/channels
                 scopes:
                     - channels:read
                     - channels:join
-            slack-messages:
+            messages:
                 runs: every hour
                 description: |
                     Syncs Slack messages, thread replies and reactions from messages &
@@ -1944,10 +3206,16 @@ integrations:
                     detection of the channel. For subsequent runs it will sync messages,
                     threads & reactions from the last 10 days. Scopes required:
                     channels:read, and at least one of
-                    channels:history,groups:history,mpim:history,im:history
-                output: SlackMessage
-                sync_type: full
-                endpoint: /slack/messages
+                    channels:history, groups:history, mpim:history, im:history
+                output:
+                    - SlackMessage
+                    - SlackMessageReply
+                    - SlackMessageReaction
+                sync_type: incremental
+                endpoint:
+                    - GET /slack/messages
+                    - GET /slack/messages-reply
+                    - GET /slack/messages-reaction
                 scopes:
                     - channels:read
                     - channels:history
@@ -2040,14 +3308,13 @@ integrations:
                 reaction_name: string
     teamtailor:
         syncs:
-            teamtailor-candidates:
+            candidates:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all candidates from your teamtailor account.
-                    Details: full sync, doesn't track deletes, metadata is not required.
                 output: TeamtailorCandidate
                 sync_type: full
-                endpoint: /teamtailor-candidates/candidates
+                endpoint: GET /teamtailor/candidates
                 scopes:
                     - Admin
         models:
@@ -2126,13 +3393,213 @@ integrations:
                         links:
                             self: string
                             related: string
+    unanet:
+        actions:
+            create-lead:
+                endpoint: POST /lead
+                description: >-
+                    Create a lead with with information about the federal agency, the
+                    name, due date, posted date, solicitation number, naics category or
+                    categories, the city, state, country, and description.
+                input: CreateLead
+                output: Lead
+            update-lead:
+                endpoint: PUT /lead
+                description: >-
+                    Update a lead with any changed information about the federal agency,
+                    the name, due date, posted date, solicitation number, naics category
+                    or categories, the city, state, country, and description.
+                output: Lead
+                input: UpdateLead
+            get-leads:
+                endpoint: GET /leads
+                description: Fetch all leads
+                output: Lead[]
+            get-schema:
+                endpoint: GET /schema
+                input: Entity
+                description: >-
+                    Get the schema of any entity. Useful to know the properties of any
+                    object that exists in the system.
+                output: Schema[]
+            get-company:
+                endpoint: GET /company
+                input: Entity
+                output: Company | null
+                description: Retrieve information about a company
+            create-company:
+                endpoint: POST /company
+                input: CreateCompany
+                output: Company
+                description: Create a company in the system
+            create-opportunity:
+                endpoint: POST /opportunity
+                input: Opportunity
+                output: Opportunity
+                description: >
+                    Create an opportunity in the system. Requires a stage that exists
+
+                    in the system. Use the list-stages action to find the appropriate
+                    stage.
+            create-contact:
+                endpoint: POST /contact
+                input: Contact
+                output: Contact
+                description: Create a contact in the system
+            list-stages:
+                endpoint: GET /stages
+                description: |
+                    List all the stages that exist in the system. Use this action to find
+                    the correct stage to be able to create an opportunity.
+                output: Stage
+        models:
+            Timestamps:
+                createdAt?: string
+                updatedAt?: string
+            Entity:
+                name: string
+            Location:
+                city?: string
+                state?: string
+                country?: string
+                zip?: string
+            Stage:
+                id: number
+                name: string
+                status: string
+            CreateCompany:
+                name: string
+                federalAgency?: FederalAgency
+            Company:
+                name: string
+                externalId: string
+                federalAgency?: FederalAgency
+                shortName: string
+                description: string
+                id?: string
+            Opportunity:
+                city?: string
+                state?: string
+                country?: string
+                zip?: string
+                name: string
+                description: string
+                id?: string
+                externalId: string
+                dueDate: string
+                federalAgency: FederalAgency
+                stage: string
+                active: boolean
+            Activity:
+                createdAt: string
+                id: string
+                message: string
+            FederalAgency:
+                city?: string
+                state?: string
+                country?: string
+                zip?: string
+                companyId?: number
+                name: string
+                externalId?: string
+                acronym?: string
+                address1?: string
+                address2?: string
+                address3?: string
+                isHeadquarters?: boolean
+                parentCompanyId?: number
+                parentCompanyName?: string
+                childCount?: number
+                addrLat?: number
+                addrLong?: number
+            Contact:
+                id?: string
+                firstName: string
+                lastName: string
+                federalAgency: FederalAgency
+                position: string
+                emailAddress: string
+                phone: string
+                fax: string
+            BaseLead:
+                federalAgency: FederalAgency
+                name: string
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
+            CreateLead:
+                federalAgency: FederalAgency
+                name: string
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
+            UpdateLead:
+                federalAgency: FederalAgency
+                name: string
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
+                id: string
+            Lead:
+                createdAt?: string
+                updatedAt?: string
+                federalAgency: FederalAgency
+                name: string
+                dueDate: string
+                postedDate: string
+                solicitationNumber: string
+                naicsCategory: string | string[]
+                city: string
+                state: string
+                country: string
+                description: string
+                id: string
+            Schema:
+                PropertyName: string
+                Group: string | null
+                Label: string
+                Description: string | null
+                Enabled: boolean
+                ReadOnly: boolean
+                Required: boolean
+                DefaultValue: string | null
+                DataType: number
+                MaxLength: number | null
+                UnicodeSupported: boolean
+                Searchable: boolean
+                ArrayType: string | null
+                IsPrimaryKey: boolean
+                IsExternalId: boolean
+                ObjectEndpoint: string | null
+                IsHidden: boolean
+                IsIncludedInResponse: boolean
+                SchemaEndpoint: string | null
+                SortOrder: number
+                CustomSort: boolean
     wildix-pbx:
         syncs:
-            wildix-pbx-colleagues:
+            colleagues:
                 runs: every 1 hour
+                description: |
+                    Fetches a list of users from PBX
                 output: WildixPbxColleague
                 sync_type: full
-                endpoint: /wildix-pbx/colleagues
+                endpoint: GET /wildix-pbx/colleagues
         models:
             WildixPbxColleague:
                 id: string
@@ -2144,85 +3611,85 @@ integrations:
                 language: string
     workable:
         syncs:
-            workable-candidates:
+            candidates:
                 runs: every 6 hours
                 description: |
-                    Fetches candidates from workable.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of candidates from workable
                 output: WorkableCandidate
                 sync_type: incremental
-                endpoint: /workable/candidates
+                endpoint: GET /workable/candidates
                 scopes:
                     - r_candidates
-            workable-candidates-activities:
+            candidates-activities:
                 runs: every 6 hours
                 description: |
-                    Fetches activity stream of the given candidate
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of activity streams of the given candidate
                 output: WorkableCandidateActivity
                 sync_type: full
-                endpoint: /workable/candidates-activities
+                endpoint: GET /workable/candidates-activities
                 scopes:
                     - r_candidates
-            workable-candidates-offer:
+            candidates-offer:
                 runs: every 6 hours
                 description: |
-                    Fetches candidate's latest offer from workable.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches candidate's latest offer from workable
                 output: WorkableCandidateOffer
                 sync_type: full
-                endpoint: /workable/candidates-offer
+                endpoint: GET /workable/candidates-offer
                 scopes:
                     - r_candidates
-            workable-jobs:
+            jobs:
                 runs: every 6 hours
                 description: |
-                    Fetches jobs from workable.
-                    Details: incremental sync, doesn't track deletes, metadata is not
-                    required.
+                    Fetches a list of jobs from workable
                 output: WorkableJob
                 sync_type: incremental
-                endpoint: /workable/jobs
+                endpoint: GET /workable/jobs
                 scopes:
                     - r_jobs
-            workable-jobs-candidates:
+            jobs-candidates:
                 runs: every 6 hours
                 description: |
-                    Fetches candidates for the specified job from workable.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of candidates for the specified job from workable
                 output: WorkableJobsCandidate
                 sync_type: full
-                endpoint: /workable/jobs-candidates
+                endpoint: GET /workable/jobs-candidates
                 scopes:
                     - r_jobs
-            workable-jobs-questions:
+            jobs-questions:
                 runs: every 6 hours
                 description: |
-                    Fetches questions for the specified job from workable.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of questions for the specified job from workable
                 output: WorkableJobQuestion
                 sync_type: full
-                endpoint: /workable/jobs-questions
+                endpoint: GET /workable/jobs-questions
                 scopes:
                     - r_jobs
-            workable-members:
+            members:
                 runs: every 6 hours
                 description: |
-                    Fetches account members from workable.
-                    Details: full sync, doesn't track deletes, metadata is not required.
+                    Fetches a list of account members from workable
                 output: WorkableMember
                 sync_type: full
-                endpoint: /workable/members
+                endpoint: GET /workable/members
                 scopes:
                     - r_jobs
         actions:
-            workable-create-comment:
+            create-candidate:
                 description: |
-                    Action to create a comment on the applicant's timeline.
-                    Scope(s): w_candidates or w_comments
+                    Action to create a candidate at the specified job
+                scopes:
+                    - w_candidates
+                output: WorkableCreateCandidateResponse
+                input: WorkableCreateCandidateInput
+                endpoint: POST /workable/create-candidate
+            create-comment:
+                description: |
+                    Action to create a comment on the applicant's timeline
+                scopes:
+                    - w_candidates or w_comments
                 output: WorkableCreateCommentResponse
-                endpoint: /workable/create-comment
+                endpoint: POST /workable/create-comment
         models:
             WorkableCandidate:
                 id: string
@@ -2358,18 +3825,462 @@ integrations:
                         zip_code: string
             WorkableCreateCommentResponse:
                 id: string
+            WorkableCreateCandidateInput:
+                shortcode: string
+                candidate:
+                    name: string
+                    firstname: string
+                    lastname: string
+                    email: string
+                    headline: string | undefined
+                    summary: string | undefined
+                    address: string | undefined
+                    phone: string | undefined
+                    cover_letter: string | undefined
+                    education_entries: EducationEntry[] | undefined
+                    experience_entries: ExperienceEntry[] | undefined
+                    answers: Answer[] | undefined
+                    skills: string[] | undefined
+                    tags: string[] | undefined
+                    disqualified: boolean | undefined
+                    disqualification_reason: string | undefined
+                    disqualified_at: string | undefined
+                    social_profiles: SocialProfile[] | undefined
+                domain: string | undefined
+                recruiter_key: string | undefined
+            EducationEntry:
+                school: string
+                degree: string | undefined
+                field_of_study: string | undefined
+                start_date: string | undefined
+                end_date: string | undefined
+            ExperienceEntry:
+                title: string
+                summary: string | undefined
+                start_date: string | undefined
+                end_date: string | undefined
+                current: boolean | undefined
+                company: string | undefined
+                industry: string | undefined
+            Answer:
+                question_key: string
+                body: string | undefined
+                choices: string[]
+                checked: boolean | undefined
+                date: string | undefined
+                number: number | undefined
+                file:
+                    name: string
+                    data: string
+            SocialProfile:
+                type: string
+                name: string | undefined
+                username: string | undefined
+                url: string
+            WorkableCreateCommentInput:
+                id: string
+                member_id: string
+                comment:
+                    body: string
+                    policy: string[] | undefined
+                    attachment: Attachment | undefined
+            Attachment:
+                name: string
+                data: string
+    xero:
+        syncs:
+            contacts:
+                description: |
+                    Fetches all Xero contacts.
+                    Details: incremental sync, detects deletes, metadata is not required.
+                runs: every hour
+                output: Contact
+                sync_type: incremental
+                endpoint: GET /xero/contacts
+            accounts:
+                description: >
+                    Fetches all accounts in Xero (chart of accounts). Incremental sync,
+                    detects deletes, metadata is not required.
+                runs: every hour
+                scopes: accounting.settings
+                output: Account
+                sync_type: incremental
+                endpoint: GET /xero/accounts
+            items:
+                description: >
+                    Fetches all items in Xero. Incremental sync, does not detect deletes,
+                    metadata is not
+
+                    required.
+                runs: every hour
+                scopes: accounting.settings
+                output: Item
+                sync_type: incremental
+                endpoint: GET /xero/items
+            invoices:
+                description: |
+                    Fetches all invoices in Xero. Incremental sync.
+                runs: every hour
+                scopes: accounting.transactions
+                output: Invoice
+                sync_type: incremental
+                endpoint: GET /xero/invoices
+            payments:
+                description: |
+                    Fetches all payments in Xero. Incremental sync.
+                runs: every hour
+                scopes: accounting.transactions
+                output: Payment
+                sync_type: incremental
+                endpoint: GET /xero/payments
+        actions:
+            create-contact:
+                description: |
+                    Creates one or multiple contacts in Xero.
+                    Note: Does NOT check if these contacts already exist.
+                input: CreateContact[]
+                scopes: accounting.contacts
+                output: ContactActionResponse
+                endpoint: POST /xero/contacts
+            update-contact:
+                description: >
+                    Updates one or multiple contacts in Xero. Only fields that are passed
+                    in are modified. If a field should not be changed, omit it in the
+                    input. The id field is mandatory.
+                input: Contact[]
+                scopes: accounting.contacts
+                output: ContactActionResponse
+                endpoint: PUT /xero/contacts
+            create-invoice:
+                description: |
+                    Creates one or more invoices in Xero.
+                    Note: Does NOT check if the invoice already exists.
+                input: CreateInvoice[]
+                scopes: accounting.transactions
+                output: InvoiceActionResponse
+                endpoint: POST /xero/invoices
+                version: 1.0.0
+            update-invoice:
+                description: |
+                    Updates one or more invoices in Xero. To delete an invoice
+                    that is in DRAFT or SUBMITTED set the status to DELETED. If an
+                    invoice has been AUTHORISED it can't be deleted but you can set
+                    the status to VOIDED.
+                input: UpdateInvoice[]
+                scopes: accounting.transactions
+                output: InvoiceActionResponse
+                endpoint: PUT /xero/invoices
+                version: 1.0.0
+            create-credit-note:
+                description: |
+                    Creates one or more credit notes in Xero.
+                    Note: Does NOT check if the credit note already exists.
+                input: CreditNote[]
+                scopes: accounting.transactions
+                output: CreditNoteActionResponse
+                endpoint: POST /xero/creditnotes
+            update-credit-note:
+                description: |
+                    Updates one or more credit notes in Xero.
+                input: CreditNote[]
+                scopes: accounting.transactions
+                output: CreditNoteActionResponse
+                endpoint: PUT /xero/creditnotes
+            create-payment:
+                description: |
+                    Creates one or more payments in Xero.
+                    Note: Does NOT check if the payment already exists.
+                scopes: accounting.transactions
+                input: CreatePayment[]
+                output: PaymentActionResponse
+                endpoint: POST /xero/payments
+            create-item:
+                description: |
+                    Creates one or more items in Xero.
+                    Note: Does NOT check if the item already exists.
+                scopes: accounting.settings
+                input: Item[]
+                output: ItemActionResponse
+                endpoint: POST /xero/items
+            update-item:
+                description: |
+                    Updates one or more items in Xero.
+                scopes: accounting.settings
+                input: Item[]
+                output: ItemActionResponse
+                endpoint: PUT /xero/items
+        models:
+            ActionErrorResponse:
+                message: string
+            BaseContact:
+                name: string
+            CreateContact:
+                name: string
+                external_id?: string
+                email?: string
+                tax_number?: string
+                address_line_1?: string
+                address_line_2?: string
+                city?: string
+                zip?: string
+                country?: string
+                state?: string
+                phone?: string
+            Contact:
+                name: string
+                id: string
+                external_id?: string
+                email: string | null
+                tax_number?: string | null
+                address_line_1?: string | null
+                address_line_2?: string | null
+                city: string | null
+                zip: string | null
+                country: string | null
+                state: string | null
+                phone: string | null
+                subsidiary?: string | null
+            FailedContact:
+                name: string
+                id: string
+                external_id?: string
+                email: string | null
+                tax_number?: string | null
+                address_line_1?: string | null
+                address_line_2?: string | null
+                city: string | null
+                zip: string | null
+                country: string | null
+                state: string | null
+                phone: string | null
+                subsidiary?: string | null
+                validation_errors: any[]
+            ContactActionResponse:
+                succeededContacts: Contact[]
+                failedContacts: FailedContact[]
+            Account:
+                id: string
+                code?: string
+                name: string
+                type: string
+                tax_type: string
+                description: string | null
+                class: string
+                bank_account_type: string
+                reporting_code: string
+                reporting_code_name: string
+            Item:
+                id: string
+                item_code: string | null
+                name: string
+                description: string | null
+                account_code: string | null
+            FailedItem:
+                id: string
+                item_code: string | null
+                name: string
+                description: string | null
+                account_code: string | null
+                validation_errors: any[]
+            ItemActionResponse:
+                succeededItems: Item[]
+                failedItems: FailedItem[]
+            BasePayment:
+                date: string | null
+                amount_cents: number
+                external_contact_id?: string
+                account_code?: string
+                account_id?: string
+            CreatePayment:
+                date: string | null
+                amount_cents: number
+                external_contact_id?: string
+                account_code?: string
+                account_id?: string
+                status?: string
+                invoice_id?: string
+                credit_note_id?: string
+            Payment:
+                date: string | null
+                amount_cents: number
+                external_contact_id?: string
+                account_code?: string
+                account_id?: string
+                id: string
+                status: string
+                invoice_id: string | null
+                credit_note_id: string | null
+            FailedPayment:
+                date: string | null
+                amount_cents: number
+                external_contact_id?: string
+                account_code?: string
+                account_id?: string
+                id: string
+                status: string
+                invoice_id: string | null
+                credit_note_id: string | null
+                validation_errors: any[]
+            IdEntity:
+                id: string
+            StatusOutput:
+                status: string
+            PaymentActionResponse:
+                succeededPayment: Payment[]
+                failedPayments: FailedPayment[]
+            BaseInvoice:
+                type: ACCPAY | ACCREC
+                external_contact_id: string
+                url?: string
+            CreateInvoice:
+                type: ACCPAY | ACCREC
+                external_contact_id: string
+                url?: string
+                fees: CreateInvoiceFee[]
+                issuing_date?: date
+                payment_due_date?: date | null
+                status?: string
+                number?: string
+                currency?: string
+                purchase_order?: string | null
+            BaseInvoiceFee:
+                account_code?: string
+                item_code?: string | null
+                account_external_id?: string | null
+                discount_amount_cents?: number | null
+                discount_rate?: number | null
+            CreateInvoiceFee:
+                account_code?: string
+                item_code?: string | null
+                account_external_id?: string | null
+                discount_amount_cents?: number | null
+                discount_rate?: number | null
+                item_id?: string
+                description: string
+                units?: number
+                precise_unit_amount?: number | null
+                amount_cents?: number | null
+                taxes_amount_cents?: number | null
+            Invoice:
+                type: ACCPAY | ACCREC
+                external_contact_id: string
+                url?: string
+                id: string
+                issuing_date: string | null
+                payment_due_date: string | null
+                status: string
+                number?: string
+                currency: string
+                purchase_order: string | null
+                fees: InvoiceFee[]
+            UpdateInvoice:
+                type?: ACCPAY | ACCREC
+                external_contact_id?: string
+                url?: string
+                id: string
+                issuing_date?: string | null
+                payment_due_date?: string | null
+                status?: string
+                number?: string
+                currency?: string
+                purchase_order?: string | null
+                fees?: UpdateInvoiceFee[]
+            InvoiceFee:
+                account_code?: string
+                item_code?: string | null
+                account_external_id?: string | null
+                discount_amount_cents?: number | null
+                discount_rate?: number | null
+                item_id: string
+                description: string | null
+                units: number | null
+                precise_unit_amount: number | null
+                amount_cents: number | null
+                taxes_amount_cents: number | null
+            UpdateInvoiceFee:
+                account_code?: string
+                item_code?: string | null
+                account_external_id?: string | null
+                discount_amount_cents?: number | null
+                discount_rate?: number | null
+                item_id?: string
+                description?: string | null
+                units?: number | null
+                precise_unit_amount?: number | null
+                amount_cents?: number | null
+                taxes_amount_cents?: number | null
+            FailedInvoice:
+                type: ACCPAY | ACCREC
+                external_contact_id: string
+                url?: string
+                id: string
+                issuing_date: string | null
+                payment_due_date: string | null
+                status: string
+                number?: string
+                currency: string
+                purchase_order: string | null
+                fees: InvoiceFee[]
+                validation_errors: any[]
+            InvoiceActionResponse:
+                succeededInvoices: Invoice[]
+                failedInvoices: FailedInvoice[]
+            CreditNote:
+                id: string
+                type: string
+                external_contact_id: string
+                status: string
+                number: string
+                is_taxable: boolean
+                tax_rate_id: string
+                tax_rate: number
+                currency: string
+                reference: string
+                issuing_date: date
+                fees: CreditNoteFee[]
+            CreditNoteFee:
+                item_id: string
+                item_code: string
+                description: string
+                units: number
+                precise_unit_amount: number
+                account_code: string
+                account_external_id: string
+                amount_cents: number
+                taxes_amount_cents: number
+            FailedCreditNote:
+                id: string
+                type: string
+                external_contact_id: string
+                status: string
+                number: string
+                is_taxable: boolean
+                tax_rate_id: string
+                tax_rate: number
+                currency: string
+                reference: string
+                issuing_date: date
+                fees: CreditNoteFee[]
+                validation_errors: any[]
+            CreditNoteActionResponse:
+                succeededCreditNotes: CreditNote[]
+                failedCreditNotes: FailedCreditNote[]
     zendesk:
         syncs:
-            zendesk-tickets:
+            tickets:
                 runs: every 1 hour
+                description: |
+                    Fetches a list of tickets from zendesk
                 output: ZendeskTicket
                 sync_type: full
-                endpoint: /zendesk/tickets
-            zendesk-articles:
+                endpoint: GET /zendesk/tickets
+            articles:
                 runs: every 6 hours
+                description: |
+                    Fetches a list of articles in Help center from zendesk
                 output: ZendeskArticle
                 sync_type: full
-                endpoint: /zendesk/articles
+                endpoint: GET /zendesk/articles
         models:
             ZendeskArticle:
                 title: string
@@ -2456,40 +4367,34 @@ integrations:
                 voice_comment: object
     zoho-crm:
         syncs:
-            zoho-crm-accounts:
+            accounts:
                 runs: every half hour
                 auto_start: false
                 description: |
-                    Fetches accounts from zoho crm.
-                    Details: full sync, doesn't track deletes, metadata is not required.
-                    Scope(s): ZohoCRM.modules.accounts.READ or ZohoCRM.modules.ALL
+                    Fetches a list of accounts from zoho crm
                 output: ZohoCRMAccount
                 sync_type: incremental
-                endpoint: /zoho-crm/accounts
+                endpoint: GET /zoho-crm/accounts
                 scopes:
                     - ZohoCRM.modules.accounts.READ
-            zoho-crm-contacts:
+            contacts:
                 runs: every half hour
                 auto_start: false
                 description: |
-                    Fetches contacts from zoho crm.
-                    Details: full sync, doesn't track deletes, metadata is not required.
-                    Scope(s): ZohoCRM.modules.contacts.READ or ZohoCRM.modules.ALL
+                    Fetches a list of contacts from zoho crm
                 output: ZohoCRMContact
                 sync_type: incremental
-                endpoint: /zoho-crm/contacts
+                endpoint: GET /zoho-crm/contacts
                 scopes:
                     - ZohoCRM.modules.contacts.READ
-            zoho-crm-deals:
+            deals:
                 runs: every half hour
                 auto_start: false
                 description: |
-                    Fetches deals/opportunities from zoho crm.
-                    Details: full sync, doesn't track deletes, metadata is not required.
-                    Scope(s): ZohoCRM.modules.deals.READ or ZohoCRM.modules.ALL
+                    Fetches a list of deals/opportunities from zoho crm
                 output: ZohoCRMDeal
                 sync_type: incremental
-                endpoint: /zoho-crm/deals
+                endpoint: GET /zoho-crm/deals
                 scopes:
                     - ZohoCRM.modules.deals.READ
         models:
@@ -2710,15 +4615,41 @@ integrations:
                 $approval_state: string
     zoho-mail:
         syncs:
-            zoho-mail-tasks:
+            tasks:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all your personal tasks in Zoho mail
                 output: ZohoMailTask
                 sync_type: full
-                endpoint: /zoho-mail/tasks
+                endpoint: GET /zoho-mail/tasks
                 scopes:
                     - ZohoMail.tasks.READ
+            emails:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all your account's emails in Zoho mail
+                output: ZohoMailEmail
+                sync_type: full
+                endpoint: GET /zoho-mail/emails
+                scopes:
+                    - ZohoMail.messages.READ
+        actions:
+            send-email:
+                description: |
+                    An action to send an email in zoho mail
+                output: ZohoMailSendEmailOutput
+                input: ZohoMailSendEmailInput
+                endpoint: POST /zoho-mail/send-email
+                scopes:
+                    - ZohoMail.messages.CREATE
+            add-user:
+                description: |
+                    An action to add a user to the organization in zoho mail
+                output: ZohoMailAddUserOutput
+                input: ZohoMailAddUserInput
+                endpoint: POST /zoho-mail/add-user
+                scopes:
+                    - ZohoMail.organization.accounts.CREATE
         models:
             ZohoMailTask:
                 id: string
@@ -2754,3 +4685,50 @@ integrations:
                 serviceUniqId: number
                 depUniqId: string
                 status: string
+            ZohoMailEmail:
+                id: string
+                summary: string
+                sentDateInGMT: string
+                calendarType: number
+                subject: string
+                messageId: string
+                flagid: string
+                status2: string
+                priority: string
+                hasInline: string
+                toAddress: string
+                folderId: string
+                ccAddress: string
+                hasAttachment: string
+                size: string
+                sender: string
+                receivedTime: string
+                fromAddress: string
+                status: string
+            ZohoMailSendEmailInput:
+                accountId: string
+                fromAddress: string
+                toAddress: string
+                ccAddress: string
+                bccAddress: string
+                subject: string
+                encoding: string
+                mailFormat: string
+                askReceipt: string
+            ZohoMailSendEmailOutput:
+                status: object
+                data: object
+            ZohoMailAddUserInput:
+                zoid: number
+                primaryEmailAddress: string
+                password: string
+                displayName: string
+                role: string
+                country: string
+                language: string
+                timeZone: string
+                oneTimePassword: boolean
+                groupMailList: string[]
+            ZohoMailAddUserOutput:
+                status: object
+                data: object

@@ -1,0 +1,37 @@
+---
+
+title: Egnyte
+sidebarTitle: Egnyte
+
+---
+
+API configuration: [`egnyte`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [Register an Application](https://developers.egnyte.com/member/register)
+-   [OAuth-related docs](https://developers.egnyte.com/docs/read/Public_API_Authentication#Authorization-Code-Flow)
+-   [List of OAuth scopes](https://developers.egnyte.com/docs/read/Public_API_Authentication#OAuth-Scopes)
+-   [Egnyte REST API docs](https://developers.egnyte.com/docs/read/Home)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- Currently Nango supports [public applications](https://developers.egnyte.com/docs/read/Public_API_Authentication#Public-Applications) via [authorization code](https://developers.egnyte.com/docs/read/Public_API_Authentication#auth_code) flow to generate an access token.
+- Egnyte [requires a user specific subdomain](https://developers.egnyte.com/docs/read/Public_API_Authentication#Authorization-Code-Flow) to run OAuth.
+- Until you application has been approved for production use, it will only work on the subdomain registered in your application key's profile.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/egnyte.mdx)</Note>

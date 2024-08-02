@@ -1,0 +1,32 @@
+---
+title: Cloudentity
+sidebarTitle: Cloudentity
+---
+
+API configurations: [`cloudentity`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [How to register an Application](https://cloudentity.com/developers/howtos/applications/connect-application/)
+-   [OAuth related docs](https://cloudentity.com/developers/basics/oauth-grant-types/client-credentials-flow/)
+-   [Cloudentity REST API docs](https://cloudentity.com/developers/)
+-   [List of Oauth scopes](https://cloudentity.com/developers/basics/tokens/access-token/#access-token-scope)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+- After creating a new application, a token URL is generated with the necessary Nango connectionConfig parameters in the following order: `https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/{connectionConfig.tenantID}/${connectionConfig.workspaceID}/oauth2/token`. You will need to add these when creating a new connection.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/cloudentity.mdx)</Note>

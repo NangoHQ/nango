@@ -11,10 +11,11 @@ import { Steps, providerConfigKey } from './utils';
 import { NextBloc } from './NextBloc';
 import { ActionBloc } from './ActionBloc';
 import { WebhookBloc } from './WebhookBloc';
-import { OnboardingStatus } from '../../types';
 import { DeployBloc } from './DeployBloc';
 import Spinner from '../../components/ui/Spinner';
 import { useEnvironment } from '../../hooks/useEnvironment';
+import type { GetOnboardingStatus } from '@nangohq/types';
+import { apiFetch } from '../../utils/api';
 
 export const InteractiveDemo: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
@@ -25,36 +26,31 @@ export const InteractiveDemo: React.FC = () => {
     const [records, setRecords] = useState<Record<string, unknown>[]>([]);
     const analyticsTrack = useAnalyticsTrack();
 
-    const env = useStore((state) => state.cookieValue);
-    const { environment } = useEnvironment();
+    const env = useStore((state) => state.env);
+    const { environmentAndAccount } = useEnvironment(env);
 
     useEffect(() => {
-        if (env !== 'dev') {
-            window.location.href = `/${env}/integrations`;
-        }
-    }, [env]);
-
-    useEffect(() => {
-        if (!environment) {
+        if (!environmentAndAccount) {
             return;
         }
 
-        const email = environment.email;
+        const { email } = environmentAndAccount;
+
         let strippedEmail = email.includes('@') ? email.split('@')[0] : email;
         strippedEmail = strippedEmail.replace(/[^a-zA-Z0-9]/g, '_');
         setConnectionId(strippedEmail);
         setLoaded(true);
-    }, [setLoaded, setConnectionId, environment]);
+    }, [setLoaded, setConnectionId, environmentAndAccount]);
 
     useEffect(() => {
         const getProgress = async () => {
             const params = {
+                env,
                 connection_id: connectionId
             };
 
-            const res = await fetch(`/api/v1/onboarding?${new URLSearchParams(params).toString()}`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+            const res = await apiFetch(`/api/v1/onboarding?${new URLSearchParams(params).toString()}`, {
+                method: 'GET'
             });
 
             setInitialLoad(true);
@@ -63,24 +59,27 @@ export const InteractiveDemo: React.FC = () => {
                 return;
             }
 
-            const { progress, id, records: fetchedRecords } = (await res.json()) as OnboardingStatus;
-            setStep(progress || 0);
-            setOnboardingId(id);
+            const json = (await res.json()) as GetOnboardingStatus['Reply'];
+            if ('error' in json) {
+                return;
+            }
 
-            if (fetchedRecords) {
-                setRecords(fetchedRecords);
+            setStep(json.progress || 0);
+            setOnboardingId(json.id);
+
+            if (json.records) {
+                setRecords(json.records);
             }
         };
 
         if (connectionId) {
             void getProgress();
         }
-    }, [setInitialLoad, connectionId]);
+    }, [setInitialLoad, connectionId, env]);
 
     const updateProgress = async (args: { progress: number }) => {
-        const res = await fetch(`/api/v1/onboarding`, {
+        const res = await apiFetch(`/api/v1/onboarding?env=${env}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ progress: args.progress })
         });
 
@@ -95,7 +94,7 @@ export const InteractiveDemo: React.FC = () => {
         }
 
         void updateProgress({ progress: step });
-    }, [onboardingId, step]);
+    }, [onboardingId, step, env]);
 
     const onAuthorize = (id: number) => {
         setOnboardingId(id);
@@ -142,7 +141,7 @@ export const InteractiveDemo: React.FC = () => {
         setStep(Steps.Start);
     };
 
-    if (!environment) {
+    if (!environmentAndAccount) {
         return null;
     }
 
@@ -162,9 +161,9 @@ export const InteractiveDemo: React.FC = () => {
                             <AuthorizeBloc
                                 step={step}
                                 connectionId={connectionId}
-                                hostUrl={environment.host}
+                                hostUrl={environmentAndAccount.host}
                                 providerConfigKey={providerConfigKey}
-                                publicKey={environment.public_key}
+                                publicKey={environmentAndAccount.environment.public_key}
                                 onProgress={onAuthorize}
                             />
 
@@ -181,7 +180,7 @@ export const InteractiveDemo: React.FC = () => {
                                     step={step}
                                     connectionId={connectionId}
                                     providerConfigKey={providerConfigKey}
-                                    secretKey={environment.secret_key}
+                                    secretKey={environmentAndAccount.environment.secret_key}
                                     records={records}
                                     onProgress={onFetch}
                                 />
@@ -192,7 +191,7 @@ export const InteractiveDemo: React.FC = () => {
                                     step={step}
                                     connectionId={connectionId}
                                     providerConfigKey={providerConfigKey}
-                                    secretKey={environment.secret_key}
+                                    secretKey={environmentAndAccount.environment.secret_key}
                                     onProgress={onActionConfirm}
                                 />
                             </div>

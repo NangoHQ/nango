@@ -1,13 +1,13 @@
-name: "[Release] NPM publish"
+name: '[Release] NPM publish'
 
 on:
     workflow_dispatch:
         inputs:
             version:
                 type: string
-                description: "Version to publish"
+                description: 'Version to publish'
                 required: true
-                default: "0.0.0"
+                default: '0.0.0'
 
 jobs:
     npm-publish:
@@ -16,18 +16,24 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               with:
-                token: ${{ secrets.GH_PAT }}
-            - uses: actions/setup-node@v3
+                  token: ${{ secrets.GH_PAT }}
+                  fetch-depth: 0
+
+            - uses: actions/setup-node@v4
               with:
-                node-version: '18.x'
-                registry-url: 'https://registry.npmjs.org'
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+                  registry-url: 'https://registry.npmjs.org'
+
             - name: Publish npm packages
               env:
-                NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               shell: bash
               run: |
-                bash ./scripts/publish.sh ${{ inputs.version }}
-            - uses: stefanzweifel/git-auto-commit-action@v5
-              with:
-                commit_message: Update npm packages version - ${{ inputs.version }}
-                file_pattern: '*.json'
+                  bash ./scripts/publish.sh ${{ inputs.version }}
+
+            - name: Publish release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  npx zx ./scripts/gitrelease.mjs "${{ inputs.version }}" "${{ github.head_ref || github.ref_name }}"

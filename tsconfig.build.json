@@ -8,16 +8,40 @@
             "path": "packages/frontend"
         },
         {
+            "path": "packages/utils"
+        },
+        {
             "path": "packages/jobs"
+        },
+        {
+            "path": "packages/database"
+        },
+        {
+            "path": "packages/kvstore"
+        },
+        {
+            "path": "packages/logs"
         },
         {
             "path": "packages/node-client"
         },
         {
+            "path": "packages/nango-yaml"
+        },
+        {
             "path": "packages/persist"
         },
         {
+            "path": "packages/records"
+        },
+        {
             "path": "packages/runner"
+        },
+        {
+            "path": "packages/scheduler"
+        },
+        {
+            "path": "packages/orchestrator"
         },
         {
             "path": "packages/server"
@@ -27,6 +51,12 @@
         },
         {
             "path": "packages/webapp"
+        },
+        {
+            "path": "packages/webhooks"
+        },
+        {
+            "path": "packages/data-ingestion"
         }
     ]
 }

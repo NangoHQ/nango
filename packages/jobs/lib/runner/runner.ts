@@ -1,9 +1,12 @@
-import type { KVStore } from '@nangohq/shared/lib/utils/kvstore/KVStore.js';
 import { LocalRunner } from './local.runner.js';
 import { RenderRunner } from './render.runner.js';
 import { RemoteRunner } from './remote.runner.js';
-import { getEnv, getRedisUrl, InMemoryKVStore, RedisKVStore, isEnterprise, logger } from '@nangohq/shared';
+import { isEnterprise, env, getLogger } from '@nangohq/utils';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
+import type { KVStore } from '@nangohq/kvstore';
+import { createKVStore } from '@nangohq/kvstore';
+
+const logger = getLogger('Runner');
 
 export enum RunnerType {
     Local = 'local',
@@ -21,19 +24,19 @@ export interface Runner {
 }
 
 export function getRunnerId(suffix: string): string {
-    return `${getEnv()}-runner-account-${suffix}`;
+    return `${env}-runner-account-${suffix}`;
 }
 
 export async function getOrStartRunner(runnerId: string): Promise<Runner> {
     const waitForRunner = async function (runner: Runner): Promise<void> {
-        const timeoutMs = 5000;
+        const timeoutMs = isEnterprise ? 60000 : 5000;
         let healthCheck = false;
         const startTime = Date.now();
         while (!healthCheck && Date.now() - startTime < timeoutMs) {
             try {
                 await runner.client.health.query();
                 healthCheck = true;
-            } catch (err) {
+            } catch {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
             }
         }
@@ -53,9 +56,7 @@ export async function getOrStartRunner(runnerId: string): Promise<Runner> {
     }
     const isRender = process.env['IS_RENDER'] === 'true';
     let runner: Runner;
-    if (isEnterprise()) {
-        runner = await RemoteRunner.getOrStart(runnerId);
-    } else if (isRender) {
+    if (isRender) {
         runner = await RenderRunner.getOrStart(runnerId);
     } else {
         runner = await LocalRunner.getOrStart(runnerId);
@@ -103,14 +104,14 @@ class RunnerCache {
                 }
             }
             return undefined;
-        } catch (err) {
+        } catch {
             return undefined;
         }
     }
 
     async set(runner: Runner): Promise<void> {
         const ttl = 7 * 24 * 60 * 60 * 1000; // 7 days
-        await this.store.set(this.cacheKey(runner.id), JSON.stringify(runner), true, ttl);
+        await this.store.set(this.cacheKey(runner.id), JSON.stringify(runner), { canOverride: true, ttlInMs: ttl });
     }
 
     async delete(runnerId: string): Promise<void> {
@@ -119,13 +120,6 @@ class RunnerCache {
 }
 
 const runnersCache = await (async () => {
-    let store: KVStore;
-    const url = getRedisUrl();
-    if (url) {
-        store = new RedisKVStore(url);
-        await (store as RedisKVStore).connect();
-    } else {
-        store = new InMemoryKVStore();
-    }
+    const store = await createKVStore();
     return new RunnerCache(store);
 })();

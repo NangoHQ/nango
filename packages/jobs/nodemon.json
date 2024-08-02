@@ -1,7 +1,18 @@
 {
-  "watch": ["lib", "../shared/lib", "../../.env"],
-  "ext": "ts,json",
-  "ignore": ["lib/**/*.spec.ts"],
-  "exec": "tsx -r dotenv/config lib/app.ts dotenv_config_path=./../../.env",
-  "signal": "SIGTERM"
+    "watch": [
+        "dist",
+        "../shared/dist",
+        "../utils/dist",
+        "../records/dist",
+        "../data-ingestion/dist",
+        "../logs/dist",
+        "../orchestrator/dist",
+        "../runner/dist",
+        "../webhooks/dist",
+        "../../.env"
+    ],
+    "ext": "js,ts,json",
+    "ignore": ["lib/**/*.spec.ts"],
+    "exec": "tsx -r dotenv/config lib/app.ts dotenv_config_path=./../../.env",
+    "signal": "SIGTERM"
 }

@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
-import type { HTTP_VERB } from './Generic.js';
-import type { SyncType, SyncConfigType, NangoConfigMetadata } from './Sync.js';
+import type { NangoConfigMetadata, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
+import type { SyncType } from './Sync.js';
+import type { JSONSchema7 } from 'json-schema';
 
 export interface NangoIntegrationDataV1 {
-    type?: SyncConfigType;
+    type?: ScriptTypeLiteral;
     runs: string;
     returns: string[];
-    input?: string;
+    input?: string | undefined;
     track_deletes?: boolean;
     auto_start?: boolean;
     attributes?: object;
@@ -18,6 +19,7 @@ export interface NangoIntegrationDataV1 {
     is_public?: boolean;
     endpoint?: string | string[];
     nango_yaml_version?: string;
+    enabled?: boolean;
 }
 
 export interface NangoIntegrationDataV2 extends NangoIntegrationDataV1 {
@@ -93,7 +95,7 @@ export type NangoModel = NangoModelV1;
 export type NangoIntegrationData = NangoIntegrationDataV1 | NangoIntegrationDataV2;
 export type NangoIntegration = NangoIntegrationV1 | NangoV2Integration;
 
-interface NangoSyncModelField {
+export interface NangoSyncModelField {
     name: string;
     type: string;
 }
@@ -104,13 +106,11 @@ export interface NangoSyncModel {
     fields: NangoSyncModelField[];
 }
 
-export type NangoSyncEndpoint = {
-    [key in HTTP_VERB]?: string;
-};
+export type LayoutMode = 'root' | 'nested';
 
 export interface NangoSyncConfig {
     name: string;
-    type?: SyncConfigType;
+    type?: ScriptTypeLiteral;
     runs: string;
     auto_start?: boolean;
     attributes?: object;
@@ -121,17 +121,22 @@ export interface NangoSyncConfig {
     returns: string[];
     models: NangoSyncModel[];
     endpoints: NangoSyncEndpoint[];
-    is_public?: boolean;
-    pre_built?: boolean;
+    is_public?: boolean | null;
+    pre_built?: boolean | null;
     version?: string | null;
     last_deployed?: string | null;
     id?: number;
 
     // v2 additions
-    input?: NangoSyncModel;
+    input?: NangoSyncModel | undefined;
     sync_type?: SyncType;
     nango_yaml_version?: string;
     webhookSubscriptions?: string[];
+    enabled?: boolean;
+    json_schema: JSONSchema7 | null;
+    upgrade_version?: boolean;
+
+    layout_mode: LayoutMode;
 }
 
 export interface StandardNangoConfig {

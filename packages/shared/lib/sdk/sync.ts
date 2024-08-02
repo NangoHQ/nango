@@ -1,13 +1,22 @@
-import { Nango } from '@nangohq/node';
+import https from 'node:https';
+import { Nango, getUserAgent } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
-import axios from 'axios';
-import { getPersistAPIUrl, safeStringify } from '../utils/utils.js';
-import type { IntegrationWithCreds } from '@nangohq/node/lib/types.js';
+import type { AxiosInstance } from 'axios';
+import axios, { AxiosError } from 'axios';
+import { getPersistAPIUrl } from '../utils/utils.js';
+import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
-import logger from '../logger/console.js';
-import telemetry, { MetricTypes } from '../utils/telemetry.js';
+import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangohq/utils';
+import type { SyncConfig } from '../models/Sync.js';
+import type { RunnerFlags } from '../services/sync/run.utils.js';
+import { validateData } from './dataValidation.js';
+import { NangoError } from '../utils/error.js';
+import { stringifyAndTruncateLog } from './utils.js';
+import type { DBTeam } from '@nangohq/types';
+
+const logger = getLogger('SDK');
 
 /*
  *
@@ -17,7 +26,17 @@ import telemetry, { MetricTypes } from '../utils/telemetry.js';
  * over this file to the cli
  *
  */
+
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
+const logLevelToLogger = {
+    info: 'info',
+    debug: 'debug',
+    error: 'error',
+    warn: 'warning',
+    http: 'info',
+    verbose: 'debug',
+    silly: 'debug'
+} as const;
 
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 
@@ -116,16 +135,20 @@ export interface ProxyConfiguration {
     retryOn?: number[] | null;
 }
 
-enum AuthModes {
-    OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2',
-    Basic = 'BASIC',
-    ApiKey = 'API_KEY',
-    AppStore = 'APP_STORE',
-    App = 'APP',
-    Custom = 'CUSTOM',
-    None = 'NONE'
+export interface AuthModes {
+    OAuth1: 'OAUTH1';
+    OAuth2: 'OAUTH2';
+    OAuth2CC: 'OAUTH2_CC';
+    Basic: 'BASIC';
+    ApiKey: 'API_KEY';
+    AppStore: 'APP_STORE';
+    Custom: 'CUSTOM';
+    App: 'APP';
+    None: 'NONE';
+    TBA: 'TBA';
+    Tableau: 'TABLEAU';
 }
+export type AuthModeType = AuthModes[keyof AuthModes];
 
 interface OAuth1Token {
     oAuthToken: string;
@@ -133,14 +156,14 @@ interface OAuth1Token {
 }
 
 interface AppCredentials {
-    type: AuthModes.App;
+    type: AuthModes['App'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
 }
 
 interface AppStoreCredentials {
-    type?: AuthModes.AppStore;
+    type?: AuthModes['AppStore'];
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
@@ -148,52 +171,94 @@ interface AppStoreCredentials {
 }
 
 interface BasicApiCredentials {
-    type: AuthModes.Basic;
+    type: AuthModes['Basic'];
     username: string;
     password: string;
 }
 
 interface ApiKeyCredentials {
-    type: AuthModes.ApiKey;
+    type: AuthModes['ApiKey'];
     apiKey: string;
 }
 
 interface CredentialsCommon<T = Record<string, any>> {
-    type: AuthModes;
+    type: AuthModeType;
     raw: T;
 }
 
 interface OAuth2Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth2;
+    type: AuthModes['OAuth2'];
     access_token: string;
 
     refresh_token?: string;
     expires_at?: Date | undefined;
 }
 
+interface OAuth2ClientCredentials extends CredentialsCommon {
+    type: AuthModes['OAuth2CC'];
+    token: string;
+
+    expires_at?: Date | undefined;
+
+    client_id: string;
+    client_secret: string;
+}
+
 interface OAuth1Credentials extends CredentialsCommon {
-    type: AuthModes.OAuth1;
+    type: AuthModes['OAuth1'];
     oauth_token: string;
     oauth_token_secret: string;
+}
+
+interface TbaCredentials {
+    type: AuthModes['TBA'];
+    token_id: string;
+    token_secret: string;
+
+    config_override: {
+        client_id?: string;
+        client_secret?: string;
+    };
+}
+interface TableauCredentials extends CredentialsCommon {
+    type: AuthModes['Tableau'];
+    pat_name: string;
+    pat_secret: string;
+    content_url?: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
+interface CustomCredentials extends CredentialsCommon {
+    type: AuthModes['Custom'];
 }
 
 type UnauthCredentials = Record<string, never>;
 
 type AuthCredentials =
     | OAuth2Credentials
+    | OAuth2ClientCredentials
     | OAuth1Credentials
     | BasicApiCredentials
     | ApiKeyCredentials
     | AppCredentials
     | AppStoreCredentials
-    | UnauthCredentials;
+    | UnauthCredentials
+    | TbaCredentials
+    | TableauCredentials
+    | CustomCredentials;
 
-type Metadata = Record<string, string | Record<string, any>>;
+type Metadata = Record<string, unknown>;
+
+interface MetadataChangeResponse {
+    metadata: Metadata;
+    provider_config_key: string;
+    connection_id: string | string[];
+}
 
 interface Connection {
     id?: number;
-    created_at?: Date;
-    updated_at?: Date;
+    created_at: Date;
+    updated_at: Date;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;
@@ -204,11 +269,11 @@ interface Connection {
     credentials: AuthCredentials;
 }
 
-export class ActionError extends Error {
+export class ActionError<T = Record<string, unknown>> extends Error {
     type: string;
     payload?: Record<string, unknown>;
 
-    constructor(payload?: Record<string, unknown>) {
+    constructor(payload?: T) {
         super();
         this.type = 'action_script_runtime_error';
         if (payload) {
@@ -217,15 +282,34 @@ export class ActionError extends Error {
     }
 }
 
+interface RunArgs {
+    sync: string;
+    connectionId: string;
+    lastSyncDate?: string;
+    useServerLastSyncDate?: boolean;
+    input?: object;
+    metadata?: Metadata;
+    autoConfirm: boolean;
+    debug: boolean;
+    optionalEnvironment?: string;
+    optionalProviderConfigKey?: string;
+}
+
+export interface DryRunServiceInterface {
+    run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
+}
+
 export interface NangoProps {
+    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     host?: string;
     secretKey: string;
-    accountId?: number;
-    connectionId?: string;
-    environmentId?: number;
-    activityLogId?: number;
-    providerConfigKey?: string;
-    provider?: string;
+    team?: Pick<DBTeam, 'id' | 'name'>;
+    connectionId: string;
+    environmentId: number;
+    environmentName?: string;
+    activityLogId?: string | undefined;
+    providerConfigKey: string;
+    provider: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     nangoConnectionId?: number;
@@ -233,31 +317,52 @@ export interface NangoProps {
     dryRun?: boolean;
     track_deletes?: boolean;
     attributes?: object | undefined;
-    logMessages?: unknown[] | undefined;
+    logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
+    dryRunService?: DryRunServiceInterface;
+    syncConfig: SyncConfig;
+    runnerFlags: RunnerFlags;
+    debug: boolean;
+    startedAt: Date;
 }
 
-interface EnvironmentVariable {
+export interface EnvironmentVariable {
     name: string;
     value: string;
 }
 
 const MEMOIZED_CONNECTION_TTL = 60000;
 
+export const defaultPersistApi = axios.create({
+    baseURL: getPersistAPIUrl(),
+    httpsAgent: new https.Agent({ keepAlive: true }),
+    headers: {
+        'User-Agent': getUserAgent('sdk')
+    },
+    validateStatus: (_status) => {
+        return true;
+    }
+});
+
 export class NangoAction {
-    private nango: Nango;
+    protected nango: Nango;
     private attributes = {};
-    activityLogId?: number;
+    protected persistApi: AxiosInstance;
+    activityLogId?: string | undefined;
     syncId?: string;
     nangoConnectionId?: number;
-    environmentId?: number;
+    environmentId: number;
+    environmentName?: string;
     syncJobId?: number;
     dryRun?: boolean;
     abortSignal?: AbortSignal;
+    dryRunService?: DryRunServiceInterface;
+    syncConfig?: SyncConfig;
+    runnerFlags: RunnerFlags;
 
-    public connectionId?: string;
-    public providerConfigKey?: string;
+    public connectionId: string;
+    public providerConfigKey: string;
     public provider?: string;
 
     public ActionError = ActionError;
@@ -266,16 +371,20 @@ export class NangoAction {
         string,
         { connection: Connection; timestamp: number }
     >();
+    private memoizedIntegration: IntegrationWithCreds | undefined;
 
-    constructor(config: NangoProps) {
+    constructor(config: NangoProps, { persistApi }: { persistApi: AxiosInstance } = { persistApi: defaultPersistApi }) {
+        this.connectionId = config.connectionId;
+        this.environmentId = config.environmentId;
+        this.providerConfigKey = config.providerConfigKey;
+        this.persistApi = persistApi;
+        this.runnerFlags = config.runnerFlags;
+
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }
 
-        this.nango = new Nango({
-            isSync: true,
-            ...config
-        });
+        this.nango = new Nango({ isSync: true, ...config }, { userAgent: 'sdk' });
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -293,16 +402,8 @@ export class NangoAction {
             this.dryRun = config.dryRun;
         }
 
-        if (config.connectionId) {
-            this.connectionId = config.connectionId;
-        }
-
-        if (config.providerConfigKey) {
-            this.providerConfigKey = config.providerConfigKey;
-        }
-
-        if (config.environmentId) {
-            this.environmentId = config.environmentId;
+        if (config.environmentName) {
+            this.environmentName = config.environmentName;
         }
 
         if (config.provider) {
@@ -315,6 +416,21 @@ export class NangoAction {
 
         if (config.abortSignal) {
             this.abortSignal = config.abortSignal;
+        }
+
+        if (config.dryRunService) {
+            this.dryRunService = config.dryRunService;
+        }
+
+        if (config.syncConfig) {
+            this.syncConfig = config.syncConfig;
+        }
+
+        if (this.dryRun !== true) {
+            if (!this.activityLogId) throw new Error('Parameter activityLogId is required when not in dryRun');
+            if (!this.environmentId) throw new Error('Parameter environmentId is required when not in dryRun');
+            if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required when not in dryRun');
+            if (!this.syncConfig) throw new Error('Parameter syncConfig is required when not in dryRun');
         }
     }
 
@@ -343,7 +459,11 @@ export class NangoAction {
         return {
             ...config,
             providerConfigKey: config.providerConfigKey,
-            connectionId: config.connectionId
+            connectionId: config.connectionId,
+            headers: {
+                ...(config.headers || {}),
+                'user-agent': this.nango.userAgent
+            }
         };
     }
 
@@ -365,31 +485,22 @@ export class NangoAction {
             }
 
             const proxyConfig = this.proxyConfig(config);
-            const { response, activityLogs: activityLogs } = await proxyService.route(proxyConfig, {
-                existingActivityLogId: this.activityLogId as number,
+
+            const { response, logs } = await proxyService.route(proxyConfig, {
+                existingActivityLogId: this.activityLogId as string,
                 connection,
                 provider: this.provider as string
             });
 
-            if (activityLogs) {
-                for (const log of activityLogs) {
-                    if (log.level === 'debug') continue;
-                    await this.log(log.content, { level: log.level });
-                    switch (log.level) {
-                        case 'error':
-                            logger.error(log.content);
-                            break;
-                        case 'warn':
-                            logger.warn(log.content);
-                            break;
-                        case 'info':
-                            logger.info(log.content);
-                            break;
-                        default:
-                            logger.debug(log.content);
+            // We batch save, since we have buffered the createdAt it shouldn't impact order
+            await Promise.all(
+                logs.map(async (log) => {
+                    if (log.level === 'debug') {
+                        return;
                     }
-                }
-            }
+                    await this.sendLogToPersist(log.message, { level: log.level, timestamp: new Date(log.createdAt).getTime() });
+                })
+            );
 
             if (response instanceof Error) {
                 throw response;
@@ -434,9 +545,21 @@ export class NangoAction {
         });
     }
 
-    public async getToken(): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials> {
+    public async getToken(): Promise<
+        | string
+        | OAuth1Token
+        | OAuth2ClientCredentials
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppCredentials
+        | AppStoreCredentials
+        | UnauthCredentials
+        | CustomCredentials
+        | TbaCredentials
+        | TableauCredentials
+    > {
         this.exitSyncIfAborted();
-        return this.nango.getToken(this.providerConfigKey as string, this.connectionId as string);
+        return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
 
     public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection> {
@@ -449,7 +572,7 @@ export class NangoAction {
         const cachedConnection = this.memoizedConnections.get(credentialsPair);
 
         if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
-            const connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
+            const connection = await this.nango.getConnection(providerConfigKey, connectionId);
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
             return connection;
         }
@@ -457,38 +580,57 @@ export class NangoAction {
         return cachedConnection.connection;
     }
 
-    public async setMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         this.exitSyncIfAborted();
-        return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
+        try {
+            return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
+        } finally {
+            this.memoizedConnections.delete(`${this.providerConfigKey}${this.connectionId}`);
+        }
     }
 
-    public async updateMetadata(metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+    public async updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
         this.exitSyncIfAborted();
-        return this.nango.updateMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
+        try {
+            return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
+        } finally {
+            this.memoizedConnections.delete(`${this.providerConfigKey}${this.connectionId}`);
+        }
     }
 
-    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
-        logger.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
-        return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, fieldMapping);
+    /**
+     * @deprecated please use setMetadata instead.
+     */
+    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<object>> {
+        logger.warning('setFieldMapping is deprecated. Please use setMetadata instead.');
+        return this.setMetadata(fieldMapping);
     }
 
     public async getMetadata<T = Metadata>(): Promise<T> {
         this.exitSyncIfAborted();
-        return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
+        return (await this.getConnection(this.providerConfigKey, this.connectionId)).metadata as T;
     }
 
     public async getWebhookURL(): Promise<string | undefined> {
         this.exitSyncIfAborted();
-        const { config: integration } = await this.nango.getIntegration(this.providerConfigKey!, true);
+        if (this.memoizedIntegration) {
+            return this.memoizedIntegration.webhook_url;
+        }
+
+        const { config: integration } = await this.nango.getIntegration(this.providerConfigKey, true);
         if (!integration || !integration.provider) {
             throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
         }
-        return (integration as IntegrationWithCreds).webhook_url;
+        this.memoizedIntegration = integration as IntegrationWithCreds;
+        return this.memoizedIntegration.webhook_url;
     }
 
+    /**
+     * @deprecated please use getMetadata instead.
+     */
     public async getFieldMapping(): Promise<Metadata> {
-        logger.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
-        const metadata = await this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
+        logger.warning('getFieldMapping is deprecated. Please use getMetadata instead.');
+        const metadata = await this.getMetadata();
         return (metadata['fieldMapping'] as Metadata) || {};
     }
 
@@ -496,15 +638,14 @@ export class NangoAction {
      * Log
      * @desc Log a message to the activity log which shows up in the Nango Dashboard
      * note that the last argument can be an object with a level property to specify the log level
-     * example: await nango.log('This is a log message', { level: 'error' })
-     * error = red
-     * warn = orange
-     * info = white
-     * debug = grey
-     * http = green
-     * silly = light green
+     * @example
+     * ```ts
+     * await nango.log('This is a log message', { level: 'error' })
+     * ```
      */
-    public async log(...args: any[]): Promise<void> {
+    public async log(message: any, options?: { level?: LogLevel } | { [key: string]: any; level?: never }): Promise<void>;
+    public async log(message: string, ...args: [any, { level?: LogLevel }]): Promise<void>;
+    public async log(...args: [...any]): Promise<void> {
         this.exitSyncIfAborted();
         if (args.length === 0) {
             return;
@@ -512,8 +653,8 @@ export class NangoAction {
 
         const lastArg = args[args.length - 1];
 
-        const isUserDefinedLevel = (object: UserLogParameters | any): boolean => {
-            return typeof lastArg === 'object' && 'level' in object;
+        const isUserDefinedLevel = (object: UserLogParameters): boolean => {
+            return lastArg && typeof lastArg === 'object' && 'level' in object;
         };
 
         const userDefinedLevel: UserLogParameters | undefined = isUserDefinedLevel(lastArg) ? lastArg : undefined;
@@ -522,33 +663,16 @@ export class NangoAction {
             args.pop();
         }
 
-        const content = safeStringify(args);
+        const level = userDefinedLevel?.level ?? 'info';
 
         if (this.dryRun) {
-            logger.info([...args]);
+            logger[logLevelToLogger[level] ?? 'info'].apply(null, args as any);
             return;
         }
 
-        if (!this.activityLogId) {
-            throw new Error('There is no current activity log stream to log to');
-        }
+        const content = stringifyAndTruncateLog(args, 99_000);
 
-        const response = await persistApi({
-            method: 'POST',
-            url: `/environment/${this.environmentId}/log`,
-            data: {
-                activityLogId: this.activityLogId,
-                level: userDefinedLevel?.level ?? 'info',
-                msg: content
-            }
-        });
-
-        if (response.status > 299) {
-            logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
-            throw new Error(`Cannot save log for activityLogId '${this.activityLogId}'`);
-        }
-
-        return;
+        await this.sendLogToPersist(content, { level, timestamp: Date.now() });
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
@@ -619,15 +743,65 @@ export class NangoAction {
         }
     }
 
-    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<object> {
-        return this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
+    public async triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out> {
+        return await this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
+    }
+
+    public async triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string> {
+        if (this.dryRun && this.dryRunService) {
+            return this.dryRunService.run({
+                sync: syncName,
+                connectionId,
+                autoConfirm: true,
+                debug: false
+            });
+        } else {
+            return this.nango.triggerSync(providerConfigKey, [syncName], connectionId, fullResync);
+        }
+    }
+
+    private async sendLogToPersist(content: string, options: { level: LogLevel; timestamp: number }) {
+        let response: AxiosResponse;
+        try {
+            response = await retryWithBackoff(
+                async () => {
+                    return await this.persistApi({
+                        method: 'POST',
+                        url: `/environment/${this.environmentId}/log`,
+                        headers: {
+                            Authorization: `Bearer ${this.nango.secretKey}`
+                        },
+                        data: {
+                            activityLogId: this.activityLogId,
+                            level: options.level ?? 'info',
+                            timestamp: options.timestamp,
+                            msg: content
+                        }
+                    });
+                },
+                { retry: httpRetryStrategy }
+            );
+        } catch (err) {
+            logger.error('Failed to log to persist, due to an internal error', err instanceof AxiosError ? err.code : err);
+            // We don't want to block a sync because logging failed, so we fail silently until we have a way to report error
+            // TODO: find a way to report that
+            return;
+        }
+
+        if (response.status > 299) {
+            logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
+            throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
+        }
     }
 }
 
 export class NangoSync extends NangoAction {
     lastSyncDate?: Date;
     track_deletes = false;
-    logMessages?: unknown[] | undefined = [];
+    logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined = {
+        counts: { updated: 0, added: 0, deleted: 0 },
+        messages: []
+    };
     stubbedMetadata?: Metadata | undefined = undefined;
 
     private batchSize = 1000;
@@ -650,20 +824,17 @@ export class NangoSync extends NangoAction {
         if (config.stubbedMetadata) {
             this.stubbedMetadata = config.stubbedMetadata;
         }
+        if (!config.dryRun) {
+            if (!this.syncId) throw new Error('Parameter syncId is required when not in dryRun');
+            if (!this.syncJobId) throw new Error('Parameter syncJobId is required when not in dryRun');
+        }
     }
 
     /**
-     * Deprecated, reach out to support
-     */
-    public async setLastSyncDate(): Promise<void> {
-        logger.warn('setLastSyncDate is deprecated. Please contact us if you are using this method.');
-    }
-
-    /**
-     * Deprecated, please use batchSave
+     * @deprecated please use batchSave
      */
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
-        logger.warn('batchSend will be deprecated in future versions. Please use batchSave instead.');
+        logger.warning('batchSend will be deprecated in future versions. Please use batchSave instead.');
         return this.batchSave(results, model);
     }
 
@@ -677,37 +848,82 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        // Validate records
+        for (const record of results) {
+            const validation = validateData({
+                version: this.syncConfig?.version || '1',
+                input: JSON.parse(JSON.stringify(record)),
+                jsonSchema: this.syncConfig!.models_json_schema,
+                modelName: model
+            });
+            if (validation === true) {
+                continue;
+            }
+
+            metrics.increment(metrics.Types.RUNNER_INVALID_SYNCS_RECORDS);
+
+            if (this.dryRun) {
+                await this.log('Invalid action input. Use `--validation` option to see the details', { level: 'warn' });
+            } else {
+                await this.log('Invalid record payload', { data: record, validation, model }, { level: 'warn' });
+            }
+            if (this.runnerFlags?.validateSyncRecords) {
+                throw new NangoError(`invalid_sync_record`, { data: record, validation, model });
+            }
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:`);
-            this.logMessages?.push(...results);
+            this.logMessages?.messages.push(`A batch save call would save the following data to the ${model} model:`);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
+            if (this.logMessages && this.logMessages.counts) {
+                this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
+            }
             return null;
         }
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            const response = await persistApi({
-                method: 'POST',
-                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                data: {
-                    model,
-                    records: batch,
-                    providerConfigKey: this.providerConfigKey,
-                    connectionId: this.connectionId,
-                    activityLogId: this.activityLogId,
-                    lastSyncDate: this.lastSyncDate || new Date(),
-                    trackDeletes: this.track_deletes
-                }
-            });
+            let response: AxiosResponse;
+            try {
+                response = await retryWithBackoff(
+                    () => {
+                        return this.persistApi({
+                            method: 'POST',
+                            url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                            headers: {
+                                Authorization: `Bearer ${this.nango.secretKey}`
+                            },
+                            data: {
+                                model,
+                                records: batch,
+                                providerConfigKey: this.providerConfigKey,
+                                connectionId: this.connectionId,
+                                activityLogId: this.activityLogId
+                            }
+                        });
+                    },
+                    { retry: httpRetryStrategy }
+                );
+            } catch (err) {
+                logger.error('Internal error', err instanceof AxiosError ? err.code : err);
+                throw new Error('Failed to save records due to an internal error', { cause: err });
+            }
+
             if (response.status > 299) {
                 logger.error(
                     `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot save records for sync '${this.syncId}'`);
+
+                if (response.status === 400) {
+                    throw new Error(
+                        `Records invalid format. Please make sure you are sending an array of objects that each contain an 'id' property with type string`
+                    );
+                } else {
+                    throw new Error(`Failed to save records: ${JSON.stringify(response.data)}`);
+                }
             }
         }
         return true;
@@ -722,37 +938,51 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
-        }
-
         if (this.dryRun) {
-            this.logMessages?.push(`A batch delete call would delete the following data:`);
-            this.logMessages?.push(...results);
+            this.logMessages?.messages.push(`A batch delete call would delete the following data:`);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
+            if (this.logMessages && this.logMessages.counts) {
+                this.logMessages.counts.deleted = Number(this.logMessages.counts.deleted) + results.length;
+            }
             return null;
         }
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            const response = await persistApi({
-                method: 'DELETE',
-                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                data: {
-                    model,
-                    records: batch,
-                    providerConfigKey: this.providerConfigKey,
-                    connectionId: this.connectionId,
-                    activityLogId: this.activityLogId,
-                    lastSyncDate: this.lastSyncDate || new Date(),
-                    trackDeletes: this.track_deletes
-                }
-            });
+            let response: AxiosResponse;
+            try {
+                response = await retryWithBackoff(
+                    async () => {
+                        return await this.persistApi({
+                            method: 'DELETE',
+                            url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                            headers: {
+                                Authorization: `Bearer ${this.nango.secretKey}`
+                            },
+                            data: {
+                                model,
+                                records: batch,
+                                providerConfigKey: this.providerConfigKey,
+                                connectionId: this.connectionId,
+                                activityLogId: this.activityLogId
+                            }
+                        });
+                    },
+                    { retry: httpRetryStrategy }
+                );
+            } catch (err) {
+                logger.error('Internal error', err instanceof AxiosError ? err.code : err);
+                throw new Error('Failed to delete records due to an internal error', { cause: err });
+            }
+
             if (response.status > 299) {
                 logger.error(
                     `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot delete records for sync '${this.syncId}'`);
+                throw new Error(`cannot delete records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;
@@ -767,37 +997,51 @@ export class NangoSync extends NangoAction {
             return true;
         }
 
-        if (!this.environmentId || !this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango environment Id, Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
-        }
-
         if (this.dryRun) {
-            this.logMessages?.push(`A batch update call would update the following data to the ${model} model:`);
-            this.logMessages?.push(...results);
+            this.logMessages?.messages.push(`A batch update call would update the following data to the ${model} model:`);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
+            if (this.logMessages && this.logMessages.counts) {
+                this.logMessages.counts.updated = Number(this.logMessages.counts.updated) + results.length;
+            }
             return null;
         }
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            const response = await persistApi({
-                method: 'PUT',
-                url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                data: {
-                    model,
-                    records: batch,
-                    providerConfigKey: this.providerConfigKey,
-                    connectionId: this.connectionId,
-                    activityLogId: this.activityLogId,
-                    lastSyncDate: this.lastSyncDate || new Date(),
-                    trackDeletes: this.track_deletes
-                }
-            });
+            let response: AxiosResponse;
+            try {
+                response = await retryWithBackoff(
+                    async () => {
+                        return await this.persistApi({
+                            method: 'PUT',
+                            url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                            headers: {
+                                Authorization: `Bearer ${this.nango.secretKey}`
+                            },
+                            data: {
+                                model,
+                                records: batch,
+                                providerConfigKey: this.providerConfigKey,
+                                connectionId: this.connectionId,
+                                activityLogId: this.activityLogId
+                            }
+                        });
+                    },
+                    { retry: httpRetryStrategy }
+                );
+            } catch (err) {
+                logger.error('Internal error', err instanceof AxiosError ? err.code : err);
+                throw new Error('Failed to update records due to an internal error', { cause: err });
+            }
+
             if (response.status > 299) {
                 logger.error(
                     `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot update records for sync '${this.syncId}'`);
+                throw new Error(`cannot update records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
             }
         }
         return true;
@@ -813,13 +1057,6 @@ export class NangoSync extends NangoAction {
     }
 }
 
-const persistApi = axios.create({
-    baseURL: getPersistAPIUrl(),
-    validateStatus: (_status) => {
-        return true;
-    }
-});
-
 const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
     'batchDelete',
     'batchSave',
@@ -828,11 +1065,15 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
     'getEnvironmentVariables',
     'getMetadata',
     'proxy',
-    'log'
+    'log',
+    'triggerAction',
+    'triggerSync'
 ];
 
 /* eslint-disable no-inner-declarations */
 /**
+ * @internal
+ *
  * This function will enable tracing on the SDK
  * It has been split from the actual code to avoid making the code too dirty and to easily enable/disable tracing if there is an issue with it
  */
@@ -844,7 +1085,7 @@ export function instrumentSDK(rawNango: NangoAction | NangoSync) {
                 return target[propKey];
             }
 
-            return telemetry.time(`${MetricTypes.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
+            return metrics.time(`${metrics.Types.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
         }
     });
 }
