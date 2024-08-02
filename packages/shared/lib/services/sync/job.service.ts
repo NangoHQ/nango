@@ -2,9 +2,8 @@ import db, { schema, dbNamespace } from '@nangohq/database';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Telemetry.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import type { Job as SyncJob, SyncResultByModel } from '../../models/Sync.js';
-import { SyncStatus, SyncType } from '../../models/Sync.js';
-import { MAX_SYNC_DURATION } from '@nangohq/utils';
+import type { Job as SyncJob, SyncResultByModel, SyncType } from '../../models/Sync.js';
+import { SyncStatus } from '../../models/Sync.js';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 
@@ -14,21 +13,17 @@ export const createSyncJob = async (
     status: SyncStatus,
     job_id: string,
     nangoConnection: NangoConnection | null,
-    run_id?: string
+    run_id?: string,
+    log_id?: string
 ): Promise<Pick<SyncJob, 'id'> | null> => {
-    let job: { sync_id: string; type: SyncType; status: SyncStatus; job_id: string; run_id?: string } = {
+    const job: { sync_id: string; type: SyncType; status: SyncStatus; job_id: string; run_id?: string } = {
         sync_id,
         type,
         status,
-        job_id
+        job_id,
+        ...(run_id ? { run_id } : {}),
+        ...(log_id ? { log_id: log_id } : {})
     };
-
-    if (run_id) {
-        job = {
-            ...job,
-            run_id
-        };
-    }
 
     try {
         const syncJob = await schema().from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('id');
@@ -143,7 +138,7 @@ export const addSyncConfigToJob = async (id: number, sync_config_id: number): Pr
     });
 };
 
-export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, 'id' | 'job_id' | 'run_id'> | null> => {
+export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, 'id' | 'job_id' | 'run_id' | 'log_id'> | null> => {
     const result = await schema()
         .from<SyncJob>(SYNC_JOB_TABLE)
         .where({
@@ -159,27 +154,6 @@ export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, '
     }
 
     return null;
-};
-
-export const isInitialSyncStillRunning = async (sync_id: string): Promise<boolean> => {
-    const result = await schema()
-        .from<SyncJob>(SYNC_JOB_TABLE)
-        .where({
-            sync_id,
-            deleted: false,
-            type: SyncType.INITIAL,
-            status: SyncStatus.RUNNING
-        })
-        .first();
-
-    // if it has been running for more than 24 hours then we should assume it is stuck
-    const moreThan24Hours = result && result.updated_at ? new Date(result.updated_at).getTime() < new Date().getTime() - MAX_SYNC_DURATION : false;
-
-    if (result && !moreThan24Hours) {
-        return true;
-    }
-
-    return false;
 };
 
 export async function softDeleteJobs({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {

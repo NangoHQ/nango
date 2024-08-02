@@ -450,7 +450,12 @@ class ProxyService {
                     let tokenPair;
                     switch (config.template.auth_mode) {
                         case 'OAUTH2':
-                            tokenPair = { accessToken: config.token };
+                            if (value.includes('connectionConfig')) {
+                                value = value.replace(/connectionConfig\./g, '');
+                                tokenPair = config.connection.connection_config;
+                            } else {
+                                tokenPair = { accessToken: config.token };
+                            }
                             break;
                         case 'BASIC':
                         case 'API_KEY':

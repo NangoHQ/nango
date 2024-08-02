@@ -45,6 +45,7 @@ import { Nango } from '@nangohq/node';
 import type { AxiosInstance } from 'axios';
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
+import type { DBTeam } from '@nangohq/types';
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 interface GenericFormData {
@@ -236,15 +237,16 @@ export interface DryRunServiceInterface {
     run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
 }
 export interface NangoProps {
+    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     host?: string;
     secretKey: string;
-    accountId?: number;
+    team?: Pick<DBTeam, 'id' | 'name'>;
     connectionId: string;
     environmentId: number;
     environmentName?: string;
     activityLogId?: string | undefined;
     providerConfigKey: string;
-    provider?: string;
+    provider: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     nangoConnectionId?: number;
@@ -265,6 +267,8 @@ export interface NangoProps {
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
     runnerFlags: RunnerFlags;
+    debug: boolean;
+    startedAt: Date;
 }
 export interface EnvironmentVariable {
     name: string;
