@@ -84,7 +84,7 @@ async function handlePayloadTooBigError({ taskId, error, nangoProps }: { taskId:
             typeof error.payload['response'] === 'object'
         ) {
             const res = error.payload['response'] as unknown as ApiError<string>;
-            if (res.error.code === 'payload_too_big') {
+            if (res.error && res.error.code === 'payload_too_big') {
                 await orchestratorClient.failed({ taskId, error: new NangoError('script_output_too_big', { syncId: nangoProps.syncId }) });
             }
         }
