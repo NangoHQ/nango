@@ -9,7 +9,7 @@ import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration } from '@nangohq/shared';
-import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService } from '@nangohq/shared';
+import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
 import { metrics, getLogger, axiosInstance as axios } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
@@ -62,12 +62,15 @@ class ProxyController {
 
             const headers = parseHeaders(req);
 
+            const rawBodyFlag = await featureFlags.isEnabled('proxy:rawbody', 'global', false);
+            const data = rawBodyFlag ? req.rawBody : req.body;
+
             const externalConfig: UserProvidedProxyConfiguration = {
                 endpoint,
                 providerConfigKey,
                 connectionId,
                 retries: retries ? Number(retries) : 0,
-                data: req.body,
+                data,
                 headers,
                 baseUrlOverride,
                 decompress: decompress === 'true' ? true : false,
@@ -265,10 +268,9 @@ class ProxyController {
                 status
             } = error.toJSON() as any;
 
-            const errorObject = { message, stack, code, status, url, method };
+            await this.reportError(error, url, config, message, logCtx);
 
-            await logCtx.error(`${method.toUpperCase()} request to ${url} failed`, { error });
-            await logCtx.failed();
+            const errorObject = { message, stack, code, status, url, method };
 
             const responseStatus = error.response?.status || 500;
             const responseHeaders = error.response?.headers || {};
@@ -294,8 +296,13 @@ class ProxyController {
             res.writeHead(error.response.status, error.response.headers as OutgoingHttpHeaders);
         }
         if (errorData) {
+            const chunks: Buffer[] = [];
             errorData.pipe(stringify).pipe(res);
             stringify.on('data', (data) => {
+                chunks.push(data);
+            });
+            stringify.on('end', () => {
+                const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : 'unknown error';
                 void this.reportError(error, url, config, data, logCtx);
             });
         } else {
@@ -360,10 +367,10 @@ class ProxyController {
 
     private async reportError(error: AxiosError, url: string, config: ApplicationConstructedProxyConfiguration, errorMessage: string, logCtx: LogContext) {
         const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
-        await logCtx.error('The provider responded back with an error code', {
+        await logCtx.error(`${error.request?.method.toUpperCase()} ${url} failed with status '${error.response?.status}'`, {
             code: error.response?.status,
             url,
-            error: errorMessage,
+            error: new Error(errorMessage),
             requestHeaders: safeHeaders,
             responseHeaders: error.response?.headers
         });

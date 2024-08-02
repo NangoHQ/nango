@@ -307,21 +307,6 @@ class ConfigController {
         }
     }
 
-    /**
-     * CLI
-     */
-
-    async listProviderConfigs(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-            const configs = await configService.listProviderConfigs(environmentId);
-            const results = configs.map((c: ProviderConfig) => ({ unique_key: c.unique_key, provider: c.provider }));
-            res.status(200).send({ configs: results });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async getProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];

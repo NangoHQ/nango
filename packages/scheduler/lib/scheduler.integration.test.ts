@@ -10,12 +10,12 @@ describe('Scheduler', () => {
     const dbClient = getTestDbClient();
     const db = dbClient.db;
     const callbacks = {
-        CREATED: vi.fn((task: Task) => expect(task.state).toBe('CREATED')),
-        STARTED: vi.fn((task: Task) => expect(task.state).toBe('STARTED')),
-        SUCCEEDED: vi.fn((task: Task) => expect(task.state).toBe('SUCCEEDED')),
-        FAILED: vi.fn((task: Task) => expect(task.state).toBe('FAILED')),
-        EXPIRED: vi.fn((task: Task) => expect(task.state).toBe('EXPIRED')),
-        CANCELLED: vi.fn((task: Task) => expect(task.state).toBe('CANCELLED'))
+        CREATED: vi.fn((_scheduler: Scheduler, task: Task) => expect(task.state).toBe('CREATED')),
+        STARTED: vi.fn((_scheduler: Scheduler, task: Task) => expect(task.state).toBe('STARTED')),
+        SUCCEEDED: vi.fn((_scheduler: Scheduler, task: Task) => expect(task.state).toBe('SUCCEEDED')),
+        FAILED: vi.fn((_scheduler: Scheduler, task: Task) => expect(task.state).toBe('FAILED')),
+        EXPIRED: vi.fn((_scheduler: Scheduler, task: Task) => expect(task.state).toBe('EXPIRED')),
+        CANCELLED: vi.fn((_scheduler: Scheduler, task: Task) => expect(task.state).toBe('CANCELLED'))
     };
     const scheduler = new Scheduler({ dbClient, on: callbacks });
 

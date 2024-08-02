@@ -1,0 +1,11 @@
+{
+    "deliverTo": "a58c29d9-ef92-40f1-b817-31b36990898c",
+    "description": "this is a description",
+    "lines": [
+        {
+            "itemId": "61facaed-0389-4183-bf67-ac1c179e1050",
+            "quantity": "2",
+            "amountNet": 150.0
+        }
+    ]
+}

@@ -2,6 +2,55 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.2] - 2024-07-26
+
+### Added
+
+- Refactor User Settings (#2513) by @bodinsamuel
+- *(integrations)* Add support for contentful (#2515) by @hassan254-prog
+- *(webhooks)* [nan-1432] add checkr webhook forwarding possibility (#2516) by @khaliqgant
+- Add start endpoint to runner (#2524) by @TBonnin
+- Invitation UI (#2520) by @bodinsamuel
+- *(cli)* [nan-1309] add .gitignore to ignore dist and .env file (#2527) by @khaliqgant
+- *(db)* Add index for invited_users (#2522) by @bodinsamuel
+- *(integrations)* Add support for gainsight-cc (#2531) by @hassan254-prog
+- *(integrations)* Add helpscout rate limiting (#2534) by @hassan254-prog
+- *(server)* Add CSP, cors (#2532) by @bodinsamuel
+- *(sdk)* [nan-1474] allow generics for input and output for triggerAction (#2542) by @khaliqgant
+- Expose env.js from backend to frontend (#2540) by @bodinsamuel
+- In product metrics (#2541) by @bodinsamuel
+- *(integration-template)* Add sharepoint fetch-file action (#2551) by @hassan254-prog
+- *(tableau-integrations)* Add support for tableau api (#2526) by @hassan254-prog
+- *(integrations)* [nan-1195] teams integration (#2550) by @khaliqgant
+
+### Changed
+
+- Dryrun should not depend on run.service (#2507) by @TBonnin
+- *(deps)* Manual upgrade (#2514) by @bodinsamuel
+
+### Fixed
+
+- Update sync frequency (#2518) by @TBonnin
+- *(xero-integration-template)* [nan-1438] xero updates to match the API better (#2519) by @khaliqgant
+- *(documentation)* [nan-1349] update docs (#2517) by @khaliqgant
+- *(cli)* [nan-1457] auto confirm for dry run (#2528) by @khaliqgant
+- *(logs)* Remove support for number (#2523) by @bodinsamuel
+- *(ui)* Feedback on profile/team/invitation (#2530) by @bodinsamuel
+- *(integration-templates)* Fix location of upload (#2529) by @khaliqgant
+- *(team)* Forbid to remove themselves, handle invitation with wrong account (#2533) by @bodinsamuel
+- *(integration-templates-xero)* Validate update-invoices correctly (#2536) by @khaliqgant
+- *(auth)* Handle invitation with managed auth (#2535) by @bodinsamuel
+- *(auth)* Correct email verification (#2537) by @bodinsamuel
+- *(auth)* Secure cookie and allow subdomains (#2538) by @bodinsamuel
+- *(team)* Update team/invitation wording (#2539) by @bodinsamuel
+- *(cors)* Allow public api to be reached from a frontend (#2543) by @bodinsamuel
+- *(csp)* Allow websockets (#2544) by @bodinsamuel
+- *(signup)* Correctly verify email when using invitation (#2548) by @bodinsamuel
+- *(ui)* Feedback on team/invitation (#2545) by @bodinsamuel
+- *(ui)* Various fix (#2552) by @bodinsamuel
+- *(ci)* Providers validation (#2546) by @bodinsamuel
+- *(sdk)* [nan-1474] type sdk and remove return coercion (#2553) by @khaliqgant
+
 ## [v0.42.0] - 2024-07-16
 
 ### Added
@@ -1600,6 +1649,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.2]: https://github.com/NangoHQ/nango/compare/v0.42.0..v0.42.2
 [v0.42.0]: https://github.com/NangoHQ/nango/compare/v0.41.1..v0.42.0
 [v0.41.1]: https://github.com/NangoHQ/nango/compare/v0.41.0..v0.41.1
 [v0.41.0]: https://github.com/NangoHQ/nango/compare/v0.40.10..v0.41.0

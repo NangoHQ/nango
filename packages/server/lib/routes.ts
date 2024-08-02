@@ -54,6 +54,7 @@ import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { tbaAuthorization } from './controllers/auth/tba.js';
+import { tableauAuthorization } from './controllers/auth/tableau.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -72,6 +73,7 @@ import { securityMiddlewares } from './middleware/security.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getEnvJs } from './controllers/v1/getEnvJs.js';
+import { getListIntegrations } from './controllers/config/getListIntegrations.js';
 
 export const router = express.Router();
 
@@ -133,6 +135,7 @@ publicAPI.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiA
 publicAPI.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
 publicAPI.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
 publicAPI.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, tbaAuthorization);
+publicAPI.route('/auth/tableau/:providerConfigKey').post(apiPublicAuth, tableauAuthorization);
 publicAPI.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
 
 // API Admin routes
@@ -142,7 +145,7 @@ publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustom
 // API routes (API key auth).
 publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
-publicAPI.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));
+publicAPI.route('/config').get(apiAuth, getListIntegrations);
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));

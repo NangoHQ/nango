@@ -45,6 +45,7 @@ import { Nango } from '@nangohq/node';
 import type { AxiosInstance } from 'axios';
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
+import type { DBTeam } from '@nangohq/types';
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 interface GenericFormData {
@@ -123,6 +124,7 @@ export interface AuthModes {
     App: 'APP';
     None: 'NONE';
     TBA: 'TBA';
+    Tableau: 'TABLEAU';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 interface OAuth1Token {
@@ -182,11 +184,19 @@ interface TbaCredentials {
         client_secret?: string;
     };
 }
+interface TableauCredentials extends CredentialsCommon {
+    type: AuthModes['Tableau'];
+    pat_name: string;
+    pat_secret: string;
+    content_url?: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
 interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
 type UnauthCredentials = Record<string, never>;
-type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | CustomCredentials;
+type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | TableauCredentials | CustomCredentials;
 type Metadata = Record<string, unknown>;
 interface MetadataChangeResponse {
     metadata: Metadata;
@@ -227,15 +237,16 @@ export interface DryRunServiceInterface {
     run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
 }
 export interface NangoProps {
+    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     host?: string;
     secretKey: string;
-    accountId?: number;
+    team?: Pick<DBTeam, 'id' | 'name'>;
     connectionId: string;
     environmentId: number;
     environmentName?: string;
     activityLogId?: string | undefined;
     providerConfigKey: string;
-    provider?: string;
+    provider: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     nangoConnectionId?: number;
@@ -256,6 +267,8 @@ export interface NangoProps {
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
     runnerFlags: RunnerFlags;
+    debug: boolean;
+    startedAt: Date;
 }
 export interface EnvironmentVariable {
     name: string;
@@ -295,7 +308,7 @@ export declare class NangoAction {
     put<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
     patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
     delete<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
-    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials>;
+    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials | TableauCredentials>;
     getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection>;
     setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
     updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;

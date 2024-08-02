@@ -92,7 +92,7 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
             });
         }
 
-        return { histogram: tmp, total };
+        return { histogram: tmp, total: formatQuantity(total) };
     }, [data]);
 
     if (loading) {
@@ -106,7 +106,7 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
         );
     }
 
-    if (total === 0) {
+    if (total === '0') {
         return (
             <div className="border border-border-gray rounded-xl p-6">
                 <h3 className="text-md text-white">{title}</h3>
@@ -157,7 +157,7 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
                             minTickGap={20}
                             tickCount={3}
                             axisLine={false}
-                            width={30}
+                            width={39}
                             amplitude={100}
                             tickFormatter={(value) => {
                                 return formatQuantity(value);

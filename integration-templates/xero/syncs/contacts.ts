@@ -19,7 +19,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
 
     await nango.log(`Last sync date - type: ${typeof nango.lastSyncDate} JSON value: ${JSON.stringify(nango.lastSyncDate)}`);
 
-    // If it is an incremential sync, only fetch the changed contacts
+    // If it is an incremental sync, only fetch the changed contacts
     if (nango.lastSyncDate) {
         config.params.includeArchived = 'true';
         config.headers['If-Modified-Since'] = nango.lastSyncDate.toISOString().replace(/\.\d{3}Z$/, ''); // Returns yyyy-mm-ddThh:mm:ss

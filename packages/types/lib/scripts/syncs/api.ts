@@ -4,4 +4,4 @@ export interface SyncResult {
     deleted: number;
 }
 
-export type SyncType = 'INCREMENTAL' | 'INITIAL';
+export type SyncType = 'INCREMENTAL' | 'FULL';

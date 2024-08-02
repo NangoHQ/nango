@@ -1,7 +1,6 @@
 import getPort, { portNumbers } from 'get-port';
 import type { Runner } from './runner.js';
 import { RunnerType } from './runner.js';
-import type { ChildProcess } from 'child_process';
 import { execSync, spawn } from 'child_process';
 import { getRunnerClient } from '@nangohq/nango-runner';
 import { getLogger, stringifyError } from '@nangohq/utils';
@@ -14,13 +13,15 @@ export class LocalRunner implements Runner {
     constructor(
         public readonly id: string,
         public readonly url: string,
-        private readonly childProcess: ChildProcess
+        public readonly pid: number | undefined
     ) {
         this.client = getRunnerClient(this.url);
     }
 
     suspend() {
-        this.childProcess.kill();
+        if (this.pid) {
+            process.kill(this.pid, 'SIGTERM');
+        }
     }
 
     toJSON() {
@@ -28,7 +29,7 @@ export class LocalRunner implements Runner {
     }
 
     static fromJSON(obj: any): LocalRunner {
-        throw new Error(`'fromJSON(${obj})' not implemented`);
+        return new LocalRunner(obj.id, obj.url, obj.pid);
     }
 
     static async getOrStart(runnerId: string): Promise<LocalRunner> {
@@ -78,7 +79,7 @@ export class LocalRunner implements Runner {
                 });
             }
 
-            return Promise.resolve(new LocalRunner(runnerId, `http://localhost:${port}`, childProcess));
+            return Promise.resolve(new LocalRunner(runnerId, `http://localhost:${port}`, childProcess.pid));
         } catch (err) {
             throw new Error(`Unable to get runner ${runnerId}: ${stringifyError(err)}`);
         }

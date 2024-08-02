@@ -15,7 +15,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         }
     };
 
-    // If it is an incremential sync, only fetch the changed accounts
+    // If it is an incremental sync, only fetch the changed accounts
     if (nango.lastSyncDate) {
         config.headers['If-Modified-Since'] = nango.lastSyncDate.toISOString().replace(/\.\d{3}Z$/, ''); // Returns yyyy-mm-ddThh:mm:ss
     }
@@ -28,7 +28,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
     const mappedActiveContacts = activeAccounts.map(mapXeroAccount);
     await nango.batchSave(mappedActiveContacts, 'Account');
 
-    // If it is an incremential refresh, mark archived contacts as deleted
+    // If it is an incremental refresh, mark archived contacts as deleted
     if (nango.lastSyncDate) {
         const archivedAccounts = accounts.filter((x: any) => x.Status === 'ARCHIVED');
         const mappedArchivedAccounts = archivedAccounts.map(mapXeroAccount);

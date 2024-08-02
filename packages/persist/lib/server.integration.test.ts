@@ -289,7 +289,7 @@ const initDb = async () => {
     const sync = await createSync(connectionId, 'sync-test');
     if (!sync?.id) throw new Error('Sync not created');
 
-    const syncJob = (await createSyncJob(sync.id, SyncType.INITIAL, SyncStatus.RUNNING, `job-test`, connection)) as SyncJob;
+    const syncJob = (await createSyncJob(sync.id, SyncType.FULL, SyncStatus.RUNNING, `job-test`, connection)) as SyncJob;
     if (!syncJob) throw new Error('Sync job not created');
 
     return {

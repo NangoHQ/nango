@@ -18,7 +18,7 @@ export default async function fetchData(nango: NangoSync) {
     // Convert the last sync run date into a unix timestamp for easier comparison.
     const lastSyncDateTimestamp = nango.lastSyncDate ? nango.lastSyncDate.getTime() / 1000 : 0;
 
-    // We also define a max sync date for incremential syncs, which is conversations updated in the last X years
+    // We also define a max sync date for incremental syncs, which is conversations updated in the last X years
     const maxYearsToSync = 2;
     const maxSyncDate = new Date();
     maxSyncDate.setFullYear(new Date().getFullYear() - maxYearsToSync);
@@ -56,7 +56,7 @@ export default async function fetchData(nango: NangoSync) {
         const intercomConversationsPage: IntercomConversation[] = [];
         const intercomMessagesPage: IntercomConversationMessage[] = [];
         for (const conversation of resp.data.conversations) {
-            // For incremential syncs: Skip conversations that have not been updated since we last synced
+            // For incremental syncs: Skip conversations that have not been updated since we last synced
             // updated_at is a unix timestamp of the last change to the conversation (e.g. new message from customer, attribute changed)
             if (conversation.updated_at < lastSyncDateTimestamp) {
                 continue;
@@ -153,7 +153,7 @@ export default async function fetchData(nango: NangoSync) {
             finished = true;
         }
 
-        // 2.) We are in an incremential sync and the last conversation on the page is older than our last sync date
+        // 2.) We are in an incremental sync and the last conversation on the page is older than our last sync date
         if (lastSyncDateTimestamp > 0 && lastConversation.updated_at < lastSyncDateTimestamp) {
             finished = true;
         }
