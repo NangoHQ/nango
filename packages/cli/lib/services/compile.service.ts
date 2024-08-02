@@ -232,10 +232,7 @@ async function compile({
             if (fs.existsSync(file.outputPath)) {
                 await fs.promises.rename(file.outputPath, outputPath);
                 console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
-            } else {
-                console.log(chalk.red(`Failed to compile "${file.inputPath}"`));
             }
-            return;
         }
     });
 
