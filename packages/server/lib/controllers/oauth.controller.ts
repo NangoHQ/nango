@@ -353,13 +353,7 @@ class OAuthController {
                 success,
                 error,
                 response: credentials
-            } = await connectionService.getOauthClientCredentials(
-                config.provider,
-                template as ProviderTemplateOAuth2,
-                client_id,
-                client_secret,
-                connectionConfig
-            );
+            } = await connectionService.getOauthClientCredentials(template as ProviderTemplateOAuth2, client_id, client_secret, connectionConfig);
 
             if (!success || !credentials) {
                 await logCtx.error('Error during OAuth2 client credentials creation', { error, provider: config.provider });

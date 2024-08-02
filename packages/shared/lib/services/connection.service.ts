@@ -853,7 +853,7 @@ class ConnectionService {
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, provider?: string): AuthCredentials {
+    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderTemplateOAuth2): AuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
@@ -908,7 +908,8 @@ class ConnectionService {
                     expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
                 } else if (rawCreds['expires_in']) {
                     const expiresIn = Number.parseInt(rawCreds['expires_in'], 10);
-                    expiresAt = new Date(Date.now() + (provider === 'fiserv' ? expiresIn : expiresIn * 1000));
+                    const multiplier = template?.expires_in_unit === 'milliseconds' ? 1 : 1000;
+                    expiresAt = new Date(Date.now() + expiresIn * multiplier);
                 } else {
                     expiresAt = new Date(Date.now() + DEFAULT_EXPIRES_AT_MS);
                 }
@@ -1210,7 +1211,6 @@ class ConnectionService {
     }
 
     public async getOauthClientCredentials(
-        provider: string,
         template: ProviderTemplateOAuth2,
         client_id: string,
         client_secret: string,
@@ -1263,7 +1263,7 @@ class ConnectionService {
                 return { success: false, error: new NangoError('invalid_client_credentials'), response: null };
             }
 
-            const parsedCreds = this.parseRawCredentials(data, 'OAUTH2_CC', provider) as OAuth2ClientCredentials;
+            const parsedCreds = this.parseRawCredentials(data, 'OAUTH2_CC', template) as OAuth2ClientCredentials;
 
             parsedCreds.client_id = client_id;
             parsedCreds.client_secret = client_secret;
@@ -1438,13 +1438,7 @@ class ConnectionService {
                 success,
                 error,
                 response: credentials
-            } = await this.getOauthClientCredentials(
-                providerConfig.provider,
-                template as ProviderTemplateOAuth2,
-                client_id,
-                client_secret,
-                connection.connection_config
-            );
+            } = await this.getOauthClientCredentials(template as ProviderTemplateOAuth2, client_id, client_secret, connection.connection_config);
 
             if (!success || !credentials) {
                 return { success, error, response: null };
