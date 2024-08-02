@@ -83,19 +83,21 @@ export async function compileSingleFile({
     fullPath,
     file,
     parsed,
+    tsconfig,
     debug = false
 }: {
     fullPath: string;
     file: ListedFile;
+    tsconfig?: string;
     parsed: NangoYamlParsed;
     debug: boolean;
 }) {
-    const tsconfig = fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
+    const resolvedTsconfig = tsconfig ?? fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
     try {
         const compiler = tsNode.create({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-            compilerOptions: JSON.parse(tsconfig).compilerOptions
+            compilerOptions: JSON.parse(resolvedTsconfig).compilerOptions
         });
 
         const result = await compile({
