@@ -428,7 +428,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('Should handle Proxy base URL interpolation where connection configuration param is present', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.OAuth2,
+                auth_mode: 'OAUTH2',
                 proxy: {
                     base_url: '${connectionConfig.api_base_url_for_customer} || https://api.gong.io'
                 }
@@ -448,7 +448,7 @@ describe('Proxy service Construct URL Tests', () => {
     it('Should handle Proxy base URL interpolation where connection configuration param is absent', () => {
         const config = {
             template: {
-                auth_mode: AuthModes.OAuth2,
+                auth_mode: 'OAUTH2',
                 proxy: {
                     base_url: '${connectionConfig.api_base_url_for_customer}||https://api.gong.io'
                 }
