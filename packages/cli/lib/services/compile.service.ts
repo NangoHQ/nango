@@ -230,8 +230,10 @@ async function compile({
         outExtension: () => ({ js: '.js' }),
         onSuccess: async () => {
             if (fs.existsSync(file.outputPath)) {
-                await fs.promises.rename(file.outputPath, outputPath);
-                console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
+                try {
+                    await fs.promises.rename(file.outputPath, outputPath);
+                    // eslint-disable-next-line no-empty
+                } catch {}
             }
         }
     });
