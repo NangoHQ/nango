@@ -2991,6 +2991,7 @@ integrations:
                 version: 1.0.0
         models:
             FileMetadata:
+                siteId: string
                 id: string
                 name: string
                 etag: string

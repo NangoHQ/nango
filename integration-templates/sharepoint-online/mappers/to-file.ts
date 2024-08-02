@@ -7,8 +7,9 @@ import type { DriveItem } from '../types';
  * @param file The DriveItem object to convert.
  * @returns FileMetadata object representing file metadata.
  */
-export function toFile(file: DriveItem): FileMetadata {
+export function toFile(file: DriveItem, siteId: string): FileMetadata {
     const fileMetadata: FileMetadata = {
+        siteId: siteId,
         id: file.id,
         etag: file.eTag,
         cTag: file.cTag,
