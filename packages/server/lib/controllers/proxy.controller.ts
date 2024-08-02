@@ -297,8 +297,13 @@ class ProxyController {
             res.writeHead(error.response.status, error.response.headers as OutgoingHttpHeaders);
         }
         if (errorData) {
+            const chunks: Buffer[] = [];
             errorData.pipe(stringify).pipe(res);
             stringify.on('data', (data) => {
+                chunks.push(data);
+            });
+            stringify.on('end', () => {
+                const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : 'no data';
                 void this.reportError(error, url, config, data, logCtx);
             });
         } else {
