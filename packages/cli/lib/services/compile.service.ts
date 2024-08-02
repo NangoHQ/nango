@@ -88,14 +88,16 @@ export async function compileSingleFile({
 }: {
     fullPath: string;
     file: ListedFile;
-    tsconfig: string;
+    tsconfig?: string;
     parsed: NangoYamlParsed;
     debug: boolean;
 }) {
+    const resolvedTsconfig = tsconfig ?? fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
+
     try {
         const compiler = tsNode.create({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-            compilerOptions: JSON.parse(tsconfig).compilerOptions
+            compilerOptions: JSON.parse(resolvedTsconfig).compilerOptions
         });
 
         const result = await compile({
@@ -228,12 +230,11 @@ async function compile({
         outExtension: () => ({ js: '.js' }),
         onSuccess: async () => {
             if (fs.existsSync(file.outputPath)) {
-                await fs.promises.rename(file.outputPath, outputPath);
-                console.log(chalk.green(`Compiled "${file.inputPath}" successfully`));
-            } else {
-                console.log(chalk.red(`Failed to compile "${file.inputPath}"`));
+                try {
+                    await fs.promises.rename(file.outputPath, outputPath);
+                    // eslint-disable-next-line no-empty
+                } catch {}
             }
-            return;
         }
     });
 
@@ -265,7 +266,7 @@ export function resolveTsFileLocation({
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
-}) {
+}): string {
     const nestedPath = path.resolve(fullPath, providerConfigKey, type, `${scriptName}.ts`);
     if (fs.existsSync(nestedPath)) {
         return fs.realpathSync(path.resolve(nestedPath, '../'));
