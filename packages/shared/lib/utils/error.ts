@@ -1,3 +1,5 @@
+import { stringifyError } from '@nangohq/utils';
+
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
@@ -110,7 +112,7 @@ export class NangoError extends Error {
                 this.message = 'The API endpoint could not be found and returned a 404. Please ensure you have the endpoint specified and spelled correctly.';
                 break;
 
-            case 'fobidden':
+            case 'forbidden':
                 this.status = 403;
                 this.message = 'The API endpoint returned back a 403 error. Check the scopes requested to make sure proper access is requested to the API.';
                 break;
@@ -123,6 +125,11 @@ export class NangoError extends Error {
             case 'invalid_oauth_scopes':
                 this.status = 400;
                 this.message = 'The requested OAuth scopes are invalid. OAuth scopes should be comma separated and not an array';
+                break;
+
+            case 'invalid_env':
+                this.status = 400;
+                this.message = "Invalid param 'env'";
                 break;
 
             case 'missing_environment_id':
@@ -245,10 +252,17 @@ export class NangoError extends Error {
 
             case 'action_failure':
                 this.status = 400;
-                this.message = `Failed to perform the action. Please try again.`;
-                if (this.payload) {
-                    this.message += ` Please make sure this value exists in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
-                }
+                this.message = `Failed to perform the action`;
+                break;
+
+            case 'webhook_failure':
+                this.status = 400;
+                this.message = `Failed to perform the webhook`;
+                break;
+
+            case 'post_connection_failure':
+                this.status = 400;
+                this.message = `Failed to perform the post connection script`;
                 break;
 
             case 'missing_provider_template':
@@ -286,6 +300,11 @@ export class NangoError extends Error {
                 this.message = `Missing param 'connection_id'.`;
                 break;
 
+            case 'missing_connection_id':
+                this.status = 400;
+                this.message = `Missing param 'connection_id'.`;
+                break;
+
             case 'invalid_offset':
                 this.status = 400;
                 this.message = 'Invalid offset provided. The offset should be a number.';
@@ -307,7 +326,7 @@ export class NangoError extends Error {
                 break;
 
             case 'unknown_connection':
-                this.status = 400;
+                this.status = 404;
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
                 if (this.payload) {
                     this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
@@ -317,6 +336,11 @@ export class NangoError extends Error {
             case 'refresh_token_external_error':
                 this.status = 400;
                 this.message = `The external API returned an error when trying to refresh the access token. Please try again later.`;
+                break;
+
+            case 'request_token_external_error':
+                this.status = 400;
+                this.message = `The external API returned an error when trying to request for an access token. Please try again later.`;
                 if (this.payload) {
                     this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
                 }
@@ -401,11 +425,6 @@ export class NangoError extends Error {
             case 'missing_id_field':
                 this.status = 400;
                 this.message = `Missing id field in the "${this.payload}" model. Make sure every single element in the array has an id property.`;
-                break;
-
-            case 'failed_to_create_activity_log':
-                this.status = 500;
-                this.message = 'Failed to create the activity log. Please try again.';
                 break;
 
             case 'sync_interval_too_short':
@@ -503,6 +522,10 @@ export class NangoError extends Error {
                 this.message = `The webhook script failed with an error: ${this.payload}`;
                 break;
 
+            case 'post_connection_script_failure':
+                this.message = `The post-connection script failed with an error: ${this.payload}`;
+                break;
+
             case 'pass_through_error':
                 this.status = 400;
                 this.message = `${this.payload}`;
@@ -514,7 +537,7 @@ export class NangoError extends Error {
                 break;
 
             case 'script_cancelled':
-                this.message = 'The script was cancelled successfully';
+                this.message = 'The script was cancelled';
                 break;
 
             case 'run_id_not_found':
@@ -532,10 +555,92 @@ export class NangoError extends Error {
                 this.message = `The parameter ${this.payload['incorrect']} is invalid. Did you mean ${this.payload['correct']}?`;
                 break;
 
+            case 'invalid_provider':
+                this.status = 400;
+                this.message = `The provider is not allowed. Please try again with a valid provider`;
+                break;
+
+            case 'workos_not_configured':
+                this.status = 400;
+                this.message = `WorkOS is not configured. Please reach out to support to obtain valid WorkOS credentials.`;
+                break;
+
+            case 'missing_managed_login_callback_code':
+                this.status = 400;
+                this.message = `Missing param 'code' for the managed login callback.`;
+                break;
+
+            case 'missing_name_for_account_creation':
+                this.status = 400;
+                this.message = `Missing an account name for account login/signup.`;
+                break;
+
+            case 'account_not_found':
+                this.status = 404;
+                this.message = `Missing an account name for account login/signup.`;
+                break;
+
+            case 'resource_capped':
+                this.status = 400;
+                // TODO docs link
+                this.message =
+                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/reference/limits).';
+                break;
+
+            case 'failed_to_parse_nango_yaml':
+                this.status = 400;
+                this.message = `Your nango.yaml contains some errors`;
+                break;
+
+            case 'deploy_missing_json_schema_model':
+                this.status = 400;
+                this.message = String(this.payload);
+                break;
+
+            case 'invalid_action_input':
+                this.status = 400;
+                this.message = 'Failed to validate the input passed to the action';
+                break;
+
+            case 'invalid_action_output':
+                this.status = 400;
+                this.message = 'Failed to validate the output passed to the action';
+                break;
+
+            case 'invalid_sync_record':
+                this.status = 400;
+                this.message = 'Failed to validate a record in batchSave';
+                break;
+
+            case 'script_output_too_big':
+                this.status = 400;
+                this.message = 'Script output is too big';
+                break;
+
+            case 'sync_job_update_failure':
+                this.status = 500;
+                this.message = `The sync job results could not be updated: ${this.payload}`;
+                break;
+
+            case 'script_invalid_error':
+                this.status = 500;
+                this.message = `An invalid error of type: ${typeof this.payload}`;
+                break;
+
+            case 'script_http_error':
+                this.status = 500;
+                this.message = `An error occurred during an HTTP call`;
+                break;
+
+            case 'script_internal_error':
+                this.status = 500;
+                this.message = `An internal error occurred during the script execution`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
-                this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occured`;
+                this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occurred`;
         }
     }
 
@@ -555,16 +660,27 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
         }
     } else if (err.message) {
         errorMessage = err.message;
-    } else if (typeof err === 'object' && Object.keys(err as object).length > 0) {
-        errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+    } else if (err && typeof err === 'object' && Object.keys(err as object).length > 0) {
+        errorMessage = stringifyError(err, { pretty: true, stack: true });
     } else {
         errorMessage = String(err);
     }
 
-    const content = `The script failed to execute for ${scriptName} with the following error: ${errorMessage}`;
+    const content = `Script for '${scriptName}' failed to execute with error: ${errorMessage}`;
 
     const status = err?.response?.status || 500;
     const error = new NangoError(errorType, content, status);
 
     return { success: false, error, response: null };
 };
+
+export function isNangoErrorAsJson(obj: unknown): obj is NangoError {
+    return Boolean(typeof obj === 'object' && obj && 'payload' in obj && 'type' in obj);
+}
+
+export function deserializeNangoError(err: unknown): NangoError | null {
+    if (isNangoErrorAsJson(err)) {
+        return new NangoError(err['type'], err.payload, err.status);
+    }
+    return null;
+}

@@ -1,10 +1,5 @@
-/*
- * Copyright (c) 2022 Nango, all rights reserved.
- */
-
 import oAuth1 from 'oauth';
-import type { Config as ProviderConfig, TemplateOAuth1 as ProviderTemplateOAuth1, Template as ProviderTemplate } from '@nangohq/shared';
-import { AuthModes } from '@nangohq/shared';
+import type { IntegrationConfig, TemplateOAuth1 as ProviderTemplateOAuth1, Template as ProviderTemplate } from '@nangohq/types';
 
 interface OAuth1RequestTokenResult {
     request_token: string;
@@ -21,10 +16,10 @@ interface OAuth1RequestTokenResult {
 // For reference, this is a pretty good graphic on the OAuth 1.0a flow: https://oauth.net/core/1.0/#anchor9
 export class OAuth1Client {
     private client: oAuth1.OAuth;
-    private config: ProviderConfig;
+    private config: IntegrationConfig;
     private authConfig: ProviderTemplateOAuth1;
 
-    constructor(config: ProviderConfig, template: ProviderTemplate, callbackUrl: string) {
+    constructor(config: IntegrationConfig, template: ProviderTemplate, callbackUrl: string) {
         this.config = config;
 
         this.authConfig = template as ProviderTemplateOAuth1;
@@ -32,10 +27,10 @@ export class OAuth1Client {
 
         this.client = new oAuth1.OAuth(
             this.authConfig.request_url,
-            typeof this.authConfig.token_url === 'string' ? this.authConfig.token_url : (this.authConfig.token_url[AuthModes.OAuth1] as string),
+            typeof this.authConfig.token_url === 'string' ? this.authConfig.token_url : (this.authConfig.token_url?.['OAUTH1'] as string),
             this.config.oauth_client_id,
             this.config.oauth_client_secret,
-            '1.0A',
+            '1.0',
             callbackUrl,
             this.authConfig.signature_method,
             undefined,
@@ -58,9 +53,9 @@ export class OAuth1Client {
         const promise = new Promise<OAuth1RequestTokenResult>((resolve, reject) => {
             this.client.getOAuthRequestToken(
                 additionalTokenParams,
-                (error: { statusCode: number; data?: any }, token: any, token_secret: any, parsed_query_string: any) => {
+                (error: { statusCode: number; data?: any } | undefined, token: string, token_secret: string, parsed_query_string: string) => {
                     if (error) {
-                        reject(error);
+                        reject(error as unknown as Error);
                     } else {
                         resolve({
                             request_token: token,
@@ -76,44 +71,35 @@ export class OAuth1Client {
     }
 
     async getOAuthAccessToken(oauth_token: string, oauth_token_secret: string, oauth_token_verifier: string): Promise<any> {
-        let additionalTokenParams = {};
+        let additionalTokenParams: Record<string, any> = {};
         if (this.authConfig.token_params) {
             additionalTokenParams = this.authConfig.token_params;
         }
 
-        const promise = new Promise<any>((resolve, reject) => {
+        const promise = new Promise<Record<string, any>>((resolve, reject) => {
             // This is lifted from https://github.com/ciaranj/node-oauth/blob/master/lib/oauth.js#L456
             // Unfortunately that main method does not expose extra params like the initial token request does ¯\_(ツ)_/¯
 
-            // @ts-expect-error
             additionalTokenParams['oauth_verifier'] = oauth_token_verifier;
 
-            // @ts-expect-error
+            // @ts-expect-error we access private method
             this.client._performSecureRequest(
                 oauth_token,
                 oauth_token_secret,
-                // @ts-expect-error
+                // @ts-expect-error we access private method
                 this.client._clientOptions.accessTokenHttpMethod,
-                // @ts-expect-error
+                // @ts-expect-error we access private method
                 this.client._accessUrl,
                 additionalTokenParams,
                 null,
                 undefined,
-                // @ts-expect-error
-                function (error, data, response) {
-                    if (error) reject(error);
-                    else {
-                        // @ts-expect-error
-                        const queryParams = new URLSearchParams(data);
-
-                        const parsedFull = {};
-                        for (const pair of queryParams) {
-                            // @ts-expect-error
-                            parsedFull[pair[0]] = pair[1];
-                        }
-
-                        resolve(parsedFull);
+                function (error, data, _response) {
+                    if (error) {
+                        reject(error as unknown as Error);
+                        return;
                     }
+
+                    resolve(extractQueryParams(data));
                 }
             );
         });
@@ -121,13 +107,14 @@ export class OAuth1Client {
         return promise;
     }
 
-    getAuthorizationURL(requestToken: OAuth1RequestTokenResult) {
+    getAuthorizationURL(requestToken: OAuth1RequestTokenResult, oAuth1CallbackURL: string) {
         const scopes = this.config.oauth_scopes ? this.config.oauth_scopes.split(',').join(this.authConfig.scope_separator || ' ') : '';
 
-        let additionalAuthParams = {};
+        let additionalAuthParams: Record<string, any> = {};
         if (this.authConfig.authorization_params) {
             additionalAuthParams = this.authConfig.authorization_params;
         }
+        additionalAuthParams['oauth_callback'] = oAuth1CallbackURL;
 
         const queryParams = {
             oauth_token: requestToken.request_token,
@@ -135,8 +122,12 @@ export class OAuth1Client {
             ...additionalAuthParams
         };
 
-        const url = new URL(this.authConfig.authorization_url);
+        const url = new URL(this.authConfig.authorization_url!);
         const params = new URLSearchParams(queryParams);
-        return `${url}?${params.toString()}`;
+        return `${url.href}?${params.toString()}`;
     }
+}
+
+export function extractQueryParams(data: string | Buffer | undefined): Record<string, any> {
+    return Object.fromEntries(new URLSearchParams(typeof data === 'string' ? data : data?.toString()));
 }

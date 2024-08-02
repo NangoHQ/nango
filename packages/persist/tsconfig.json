@@ -4,6 +4,22 @@
         "rootDir": "lib",
         "outDir": "dist"
     },
-    "references": [{ "path": "../shared" }],
+    "references": [
+        {
+            "path": "../database"
+        },
+        {
+            "path": "../logs"
+        },
+        {
+            "path": "../shared"
+        },
+        {
+            "path": "../utils"
+        },
+        {
+            "path": "../records"
+        }
+    ],
     "include": ["lib/**/*"]
 }

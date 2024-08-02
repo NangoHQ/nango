@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Publisher, WebSocketClientId } from './publisher.client';
+import type { WebSocketClientId } from './publisher.client';
+import { Redis, Publisher } from './publisher.client';
 import type { WebSocket } from 'ws';
 import * as uuid from 'uuid';
 
@@ -17,29 +19,32 @@ const mockRes = ({ status }: { status: number }) => {
     return mock;
 };
 
-class MockRedis {
+class MockRedis extends Redis {
     // Caveat: only one subscription per channel is supported
     private subscriptions = new Map<string, (message: string, channel: string) => void>();
+    constructor() {
+        super('');
+    }
 
-    public async publish(channel: string, message: string) {
+    public override async publish(channel: string, message: string) {
         const onMessage = this.subscriptions.get(channel);
         if (onMessage) {
             onMessage(message, channel);
         }
-        return true;
+        return Promise.resolve();
     }
 
-    public async subscribe(channel: string, onMessage: (message: string, channel: string) => void) {
+    public override async subscribe(channel: string, onMessage: (message: string, channel: string) => void) {
         this.subscriptions.set(channel, onMessage);
-        return true;
+        return Promise.resolve();
     }
 
-    public async unsubscribe(channel: string) {
+    public override async unsubscribe(channel: string) {
         this.subscriptions.delete(channel);
-        return true;
+        return Promise.resolve();
     }
 }
-const mockRedis = new MockRedis() as any;
+const mockRedis = new MockRedis();
 
 describe('Publisher', () => {
     let publisher1: Publisher;

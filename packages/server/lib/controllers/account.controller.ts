@@ -1,84 +1,59 @@
 import type { Request, Response, NextFunction } from 'express';
-import { accountService, userService, errorManager, LogLevel, LogActionEnum, createActivityLogAndLogMessage, isEnterprise, isCloud } from '@nangohq/shared';
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { isCloud } from '@nangohq/utils';
+import { accountService, userService } from '@nangohq/shared';
+import type { LogContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
+import type { RequestLocals } from '../utils/express.js';
 
-export const AUTH_ENABLED = isCloud() || isEnterprise();
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
-export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud();
+export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud;
 export const AUTH_ADMIN_SWITCH_MS = 600 * 1000;
 
 class AccountController {
-    async getAccount(req: Request, res: Response, next: NextFunction) {
+    async editCustomer(req: Request, res: Response<any, never>, next: NextFunction) {
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
+            const { is_capped, account_uuid: accountUUID } = req.body;
+
+            if (!accountUUID) {
+                res.status(400).send({ error: 'account_uuid property is required' });
                 return;
             }
-            const { account, user } = response;
 
-            if (account.uuid === NANGO_ADMIN_UUID) {
-                account.is_admin = true;
+            if (is_capped === undefined || is_capped === null) {
+                res.status(400).send({ error: 'is_capped property is required' });
+                return;
             }
 
-            delete account.uuid;
+            const account = await accountService.getAccountByUUID(accountUUID);
 
-            const users = await userService.getUsersByAccountId(account.id);
-            const invitedUsers = await userService.getInvitedUsersByAccountId(account.id);
+            if (!account) {
+                res.status(400).send({ error: 'Account not found' });
+                return;
+            }
 
-            const usersWithCurrentUser = users.map((invitedUser) => {
-                if (invitedUser.email === user.email) {
-                    invitedUser.currentUser = true;
-                }
-                return invitedUser;
-            });
-
-            res.status(200).send({ account, users: usersWithCurrentUser, invitedUsers });
+            await accountService.editCustomer(is_capped, account.id);
+            res.status(200).send({ is_capped, accountUUID });
         } catch (err) {
             next(err);
         }
     }
 
-    async editAccount(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-            const { account } = response;
-
-            const name = req.body['name'];
-
-            if (!name) {
-                res.status(400).send({ error: 'Account name cannot be empty.' });
-                return;
-            }
-
-            await accountService.editAccount(name, account.id);
-            res.status(200).send({ name });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async switchAccount(req: Request<unknown, unknown, { account_uuid?: string; login_reason?: string }>, res: Response, next: NextFunction) {
+    async switchAccount(
+        req: Request<unknown, unknown, { account_uuid?: string; login_reason?: string }>,
+        res: Response<any, Required<RequestLocals>>,
+        next: NextFunction
+    ) {
         if (!AUTH_ADMIN_SWITCH_ENABLED) {
             res.status(400).send('Account switching only allowed in cloud');
 
             return;
         }
 
+        let logCtx: LogContext | undefined;
         try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
+            const { account, environment, user: adminUser } = res.locals;
 
-            const { account } = response;
-
-            if (account?.uuid !== NANGO_ADMIN_UUID) {
+            if (account.uuid !== NANGO_ADMIN_UUID) {
                 res.status(401).send({ message: 'Unauthorized' });
                 return;
             }
@@ -100,7 +75,7 @@ class AccountController {
                 return;
             }
 
-            const result = await accountService.getAccountAndEnvironmentIdByUUID(account_uuid, response.environment.name);
+            const result = await accountService.getAccountAndEnvironmentIdByUUID(account_uuid, environment.name);
 
             if (!result) {
                 res.status(400).send({ message: 'Invalid account_uuid' });
@@ -114,29 +89,20 @@ class AccountController {
                 return;
             }
 
-            const log = {
-                level: 'info' as LogLevel,
-                success: true,
-                action: LogActionEnum.ACCOUNT,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: 'n/a',
-                provider: null,
-                provider_config_key: '',
-                environment_id: response.environment.id
-            };
-
-            await createActivityLogAndLogMessage(log, {
-                level: 'info',
-                environment_id: response.environment.id,
-                timestamp: Date.now(),
-                content: `A Nango admin logged into another account for the following reason: "${login_reason}"`
-            });
+            logCtx = await logContextGetter.create(
+                { operation: { type: 'admin', action: 'impersonation' }, message: 'Admin logged into another account' },
+                {
+                    account,
+                    environment,
+                    meta: { loginReason: login_reason, admin: adminUser.email, impersonating: user.id }
+                }
+            );
+            await logCtx.info('A Nango admin logged into another account');
 
             req.login(user, (err) => {
                 if (err) {
                     next(err);
+                    void logCtx!.failed();
                     return;
                 }
 
@@ -147,13 +113,19 @@ class AccountController {
                 req.session.save((err) => {
                     if (err) {
                         next(err);
+                        void logCtx!.failed();
                         return;
                     }
 
+                    void logCtx!.success();
                     res.status(200).send({ success: true });
                 });
             });
         } catch (err) {
+            if (logCtx) {
+                await logCtx.error('uncaught error', { error: err });
+                await logCtx.failed();
+            }
             next(err);
         }
     }

@@ -1,7 +1,7 @@
 import { forwardRef, useCallback, useState } from 'react';
 import { EyeIcon, EyeSlashIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
-import CopyButton from '../button/CopyButton';
+import { CopyButton } from '../button/CopyButton';
 
 type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
     copy?: boolean;
@@ -45,7 +45,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                 <span onClick={toggleSecretVisibility} className="rounded text-sm text-gray-600 cursor-pointer">
                     {isSecretVisible ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                 </span>
-                {copy && <CopyButton text={(props.value || optionalvalue || defaultValue)?.toString() || ''} dark />}
+                {copy && <CopyButton text={(props.value || optionalvalue || defaultValue)?.toString() || ''} />}
                 {refresh && <ArrowPathIcon className="flex h-4 w-4 cursor-pointer text-gray-500" onClick={refresh} />}
             </span>
         </div>

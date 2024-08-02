@@ -1,0 +1,186 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`mapping > should create one index automatically on log 1`] = `
+{
+  "mappings": {
+    "dynamic": "false",
+    "properties": {
+      "accountId": {
+        "type": "keyword",
+      },
+      "accountName": {
+        "type": "keyword",
+      },
+      "code": {
+        "type": "keyword",
+      },
+      "connectionId": {
+        "type": "keyword",
+      },
+      "connectionName": {
+        "analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+          },
+        },
+        "type": "text",
+      },
+      "createdAt": {
+        "type": "date",
+      },
+      "endedAt": {
+        "type": "date",
+      },
+      "environmentId": {
+        "type": "keyword",
+      },
+      "environmentName": {
+        "type": "keyword",
+      },
+      "error": {
+        "enabled": false,
+        "type": "object",
+      },
+      "expiresAt": {
+        "type": "date",
+      },
+      "id": {
+        "type": "keyword",
+      },
+      "integrationId": {
+        "type": "keyword",
+      },
+      "integrationName": {
+        "analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+          },
+        },
+        "type": "text",
+      },
+      "jobId": {
+        "type": "keyword",
+      },
+      "level": {
+        "type": "keyword",
+      },
+      "message": {
+        "analyzer": "standard",
+        "type": "text",
+      },
+      "meta": {
+        "enabled": false,
+        "type": "object",
+      },
+      "operation": {
+        "properties": {
+          "action": {
+            "type": "keyword",
+          },
+          "type": {
+            "type": "keyword",
+          },
+        },
+      },
+      "parentId": {
+        "type": "keyword",
+      },
+      "providerName": {
+        "type": "keyword",
+      },
+      "request": {
+        "properties": {
+          "headers": {
+            "enabled": false,
+            "type": "object",
+          },
+          "method": {
+            "type": "keyword",
+          },
+          "url": {
+            "type": "keyword",
+          },
+        },
+      },
+      "response": {
+        "properties": {
+          "code": {
+            "type": "integer",
+          },
+          "headers": {
+            "enabled": false,
+            "type": "object",
+          },
+        },
+      },
+      "source": {
+        "type": "keyword",
+      },
+      "startedAt": {
+        "type": "date",
+      },
+      "state": {
+        "type": "keyword",
+      },
+      "syncConfigId": {
+        "type": "keyword",
+      },
+      "syncConfigName": {
+        "analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+          },
+        },
+        "type": "text",
+      },
+      "title": {
+        "type": "keyword",
+      },
+      "type": {
+        "type": "keyword",
+      },
+      "updatedAt": {
+        "type": "date",
+      },
+      "userId": {
+        "type": "keyword",
+      },
+    },
+  },
+}
+`;
+
+exports[`mapping > should create one index automatically on log 2`] = `
+{
+  "analyzer": {
+    "default": {
+      "type": "standard",
+    },
+    "default_search": {
+      "type": "standard",
+    },
+  },
+}
+`;
+
+exports[`mapping > should create one index automatically on log 3`] = `
+{
+  "field": [
+    "createdAt",
+    "id",
+  ],
+  "order": [
+    "desc",
+    "desc",
+  ],
+}
+`;
+
+exports[`mapping > should create one index automatically on log 4`] = `
+{
+  "name": "policy_retention",
+}
+`;

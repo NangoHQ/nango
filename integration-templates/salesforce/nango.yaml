@@ -1,80 +1,124 @@
 integrations:
-  salesforce:
-    syncs:
-      salesforce-accounts:
-        runs: every hour
-        output: SalesforceAccount
-        sync_type: incremental
-        endpoint: /salesforce/accounts
-      salesforce-contacts:
-        runs: every hour
-        output: SalesforceContact
-        sync_type: incremental
-        endpoint: /salesforce/contacts
-      salesforce-deals:
-        runs: every hour
-        output: SalesforceDeal
-        sync_type: incremental
-        endpoint: /salesforce/deals
-      salesforce-articles:
-        runs: every day
-        output: SalesforceArticle
-        sync_type: incremental
-        endpoint: /salesforce/articles
-      salesforce-tickets:
-        runs: every day
-        output: SalesforceTicket
-        sync_type: incremental
-        endpoint: /salesforce/tickets
+    salesforce:
+        actions:
+            fetch-fields:
+                description: |
+                    Fetch available task fields. If the input is not specified then it defaults back to "Task"
+                    Data Validation: Parses all incoming data with Zod. Does not fail on parsing error will instead log parse error and return result.
+                scopes: offline_access,api
+                input: SalesforceEntity
+                output: SalesforceFieldSchema
+                endpoint: GET /salesforce/fetch-fields
+        syncs:
+            accounts:
+                runs: every hour
+                description: |
+                    Fetches a list of accounts from salesforce
+                output: SalesforceAccount
+                sync_type: incremental
+                endpoint: GET /salesforce/accounts
+            contacts:
+                runs: every hour
+                description: |
+                    Fetches a list of contacts from salesforce
+                output: SalesforceContact
+                sync_type: incremental
+                endpoint: GET /salesforce/contacts
+            deals:
+                runs: every hour
+                description: |
+                    Fetches a list of deals from salesforce
+                output: SalesforceDeal
+                sync_type: incremental
+                endpoint: GET /salesforce/deals
+            articles:
+                runs: every day
+                description: |
+                    Fetches a list of articles from salesforce
+                output: SalesforceArticle
+                sync_type: incremental
+                endpoint: GET /salesforce/articles
+            tickets:
+                runs: every day
+                description: |
+                    Fetches a list of tickets from salesforce
+                output: SalesforceTicket
+                sync_type: incremental
+                endpoint: GET /salesforce/tickets
 models:
-  SalesforceAccount:
-    id: string
-    name: string
-    website: string
-    description: string
-    no_employees: number
-    last_modified_date: string
-  SalesforceContact:
-    id: string
-    first_name: string
-    last_name: string
-    email: string
-    account_id: string
-    last_modified_date: string
-  SalesforceDeal:
-    id: string
-    name: string
-    amount: number
-    stage: string
-    account_id: string
-    last_modified_date: string
-  SalesforceArticle:
-    id: string
-    title: string
-    content: string
-    last_modified_date: string
-  SalesforceTicket:
-    id: string
-    case_number: string
-    subject: string | null
-    account_id: string
-    account_name: string | null
-    contact_id: string
-    contact_name: string | null
-    owner_id: string
-    owner_name: string | null
-    priority: string
-    status: string
-    description: string | null
-    type: string
-    created_date: string
-    closed_date: string
-    origin: string
-    is_closed: boolean
-    is_escalated: boolean
-    conversation:
-      id: string
-      body: string
-      created_date: string
-      created_by: string
-    last_modified_date: string
+    SalesforceAccount:
+        id: string
+        name: string
+        website: string
+        description: string
+        no_employees: number
+        last_modified_date: string
+    SalesforceContact:
+        id: string
+        first_name: string
+        last_name: string
+        email: string
+        account_id: string
+        last_modified_date: string
+    SalesforceDeal:
+        id: string
+        name: string
+        amount: number
+        stage: string
+        account_id: string
+        last_modified_date: string
+    SalesforceArticle:
+        id: string
+        title: string
+        content: string
+        last_modified_date: string
+    SalesforceTicket:
+        id: string
+        case_number: string
+        subject: string | null
+        account_id: string
+        account_name: string | null
+        contact_id: string
+        contact_name: string | null
+        owner_id: string
+        owner_name: string | null
+        priority: string
+        status: string
+        description: string | null
+        type: string
+        created_date: string
+        closed_date: string
+        origin: string
+        is_closed: boolean
+        is_escalated: boolean
+        conversation:
+            id: string
+            body: string
+            created_date: string
+            created_by: string
+        last_modified_date: string
+    SalesforceEntity:
+        name: string
+    SalesforceFieldSchema:
+        __extends: NestedFieldSchema
+        childRelationships: ChildField[]
+    NestedFieldSchema:
+        fields: Field[]
+    Field:
+        name: string
+        label: string
+        type: string
+        referenceTo: string[]
+        relationshipName: string | null
+    ChildField:
+        object: string
+        relationshipName: string | null
+        field: string
+    ActionResponseError:
+        message: string
+        details?: ActionResponseErrorDetails
+    ActionResponseErrorDetails:
+        message: string
+        method: string
+        url: string
+        code: string

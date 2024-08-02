@@ -1,37 +1,82 @@
-import { expect, describe, it, beforeAll } from 'vitest';
-import { multipleMigrations } from '../db/database.js';
-import { generateInsertableJson, createRecords } from '../services/sync/data/mocks.js';
-import type { DataRecord } from '../models/Sync.js';
-import { upsert } from '../services/sync/data/data.service.js';
+import { beforeAll, describe, expect, it } from 'vitest';
+import encryptionManager, { EncryptionManager } from './encryption.manager';
+import db, { multipleMigrations } from '@nangohq/database';
+import { seedAccountEnvAndUser } from '../seeders/index.js';
+import environmentService from '../services/environment.service';
 
-describe('Encryption manager tests', () => {
+describe('encryption', () => {
     beforeAll(async () => {
         await multipleMigrations();
     });
 
-    it('Should be able to encrypt and insert 2000 records under 2 seconds', async () => {
-        const environmentName = 'encrypt-records';
+    describe('status', () => {
+        it('should report disabled if no key and no previous key', async () => {
+            const res = await new EncryptionManager('').encryptionStatus();
+            expect(res).toBe('disabled');
+        });
 
-        const records = generateInsertableJson(2000);
-        const { response, meta } = await createRecords(records, environmentName);
-        const { response: formattedResults } = response;
-        const { modelName, nangoConnectionId } = meta;
-        const start = Date.now();
+        it('should report not_started if key and no previous key', async () => {
+            const res = await new EncryptionManager('aHcTnJX5yaDJHF/EJLc6IMFSo2+aiz1hPsTkpsufxa0=').encryptionStatus();
+            expect(res).toBe('not_started');
+        });
 
-        const { error, success } = await upsert(
-            formattedResults as unknown as DataRecord[],
-            '_nango_sync_data_records',
-            'external_id',
-            nangoConnectionId,
-            modelName,
-            1,
-            1
-        );
+        it('should report require_decryption if no key and one previous key', async () => {
+            const res = await new EncryptionManager('').encryptionStatus({ encryption_complete: true, encryption_key_hash: 'erer' });
+            expect(res).toBe('require_decryption');
+        });
 
-        expect(success).toBe(true);
-        expect(error).toBe(undefined);
-        const end = Date.now();
-        const timeTaken = end - start;
-        expect(timeTaken).toBeLessThan(2000);
+        it('should report require_rotation if different keys', async () => {
+            const res = await new EncryptionManager('aHcTnJX5yaDJHF/EJLc6IMFSo2+aiz1hPsTkpsufxa0=').encryptionStatus({
+                encryption_complete: true,
+                encryption_key_hash: 'erer'
+            });
+            expect(res).toBe('require_rotation');
+        });
+
+        it('should report incomplete if same key but not finished', async () => {
+            const res = await new EncryptionManager('aHcTnJX5yaDJHF/EJLc6IMFSo2+aiz1hPsTkpsufxa0=').encryptionStatus({
+                encryption_complete: false,
+                encryption_key_hash: 'sM+EkzNi7o4Crw3cVfg01jBbmSEAfDdmTzYWoxbryvk='
+            });
+            expect(res).toBe('incomplete');
+        });
+
+        it('should report done if same key and complete', async () => {
+            const res = await new EncryptionManager('aHcTnJX5yaDJHF/EJLc6IMFSo2+aiz1hPsTkpsufxa0=').encryptionStatus({
+                encryption_complete: true,
+                encryption_key_hash: 'sM+EkzNi7o4Crw3cVfg01jBbmSEAfDdmTzYWoxbryvk='
+            });
+            expect(res).toBe('done');
+        });
+    });
+
+    describe('encryption', () => {
+        it('should encrypt environment', async () => {
+            // we create a different schema because we have only one DB for all tests
+            db.knex.client.config.searchPath = 'nango_encrypt';
+            db.schema = () => 'nango_encrypt';
+
+            await multipleMigrations();
+
+            // Disable encryption manually since it's set by default
+            // @ts-expect-error Modify the key on the fly
+            encryptionManager.key = '';
+            await db.knex.from(`_nango_db_config`).del();
+
+            const { env } = await seedAccountEnvAndUser();
+            expect(env.secret_key_iv).toBeNull();
+            expect(env.secret_key_hashed).toBe(env.secret_key);
+
+            // Re-enable encryption
+            // @ts-expect-error Modify the key on the fly
+            encryptionManager.key = 'aHcTnJX5yaDJHF/EJLc6IMFSo2+aiz1hPsTkpsufxa0=';
+            await encryptionManager.encryptDatabaseIfNeeded();
+
+            const envAfterEnc = (await environmentService.getRawById(env.id))!;
+            expect(envAfterEnc.secret_key_iv).not.toBeNull();
+            expect(envAfterEnc.secret_key_tag).not.toBeNull();
+            expect(envAfterEnc.secret_key).not.toBe(env.secret_key);
+            expect(envAfterEnc.secret_key_hashed).not.toBe(env.secret_key);
+        });
     });
 });

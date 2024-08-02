@@ -1,0 +1,54 @@
+---
+title: E-conomic
+sidebarTitle: E-conomic
+---
+
+API configuration: [`e-conomic`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (Basic)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [How to generate API credentials](https://www.e-conomic.com/developer/connect)
+-   [API docs](https://www.e-conomic.com/developer/documentation)
+-   [Auth-related docs](https://apis.e-conomic.com/#Accounts..section/Authentication)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+
+## API gotchas
+- E-conomic in Nango uses `Basic` auth mode to access different endpoints. Provide your `YOUR_PRIVATE_TOKEN` as the Username value and `YOUR_AGREEMENT_GRANT_TOKEN` as the Password value.
+- After creating a connection, you can use the Basic credentials as follows;
+```js
+const connection = await nango.getConnection();
+let headers: { [key: string]: string } = {};
+if ('username' in connection.credentials && 'password' in connection.credentials) {
+    headers = {
+        'X-AppSecretToken': connection.credentials.username,
+        'X-AgreementGrantToken': connection.credentials.password
+    };
+} else {
+    throw new nango.ActionError({
+        message: `Basic API credentials are incomplete`
+    });
+}
+
+const resp = await nango.get({
+    endpoint: '/customers',
+    headers: headers
+});
+
+```
+- E-conomic enforces a rate limit of 50,000 API calls per 24 hour period per agreement. For more details check E-conomic [fair use policy](https://www.e-conomic.com/developer/fair-use-policy)
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/e-conomic.mdx)</Note>

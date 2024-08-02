@@ -1,23 +1,19 @@
-import fs from 'fs';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import yaml from 'js-yaml';
+import fs from 'node:fs';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
-import * as tsNode from 'ts-node';
-import glob from 'glob';
 import ejs from 'ejs';
 import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
-import type { NangoConfig } from '@nangohq/shared';
-import { nangoConfigFile, SyncConfigType } from '@nangohq/shared';
-import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
-import configService from './services/config.service.js';
-import modelService from './services/model.service.js';
-import parserService from './services/parser.service.js';
-import { NangoSyncTypesFileLocation, TYPES_FILE_NAME, exampleSyncName } from './constants.js';
+import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, getPkgVersion, printDebug } from './utils.js';
+import { loadYamlAndGenerate } from './services/model.service.js';
+import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
+import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
+import { getLayoutMode } from './utils/layoutMode.js';
+import { getProviderConfigurationFromPath, nangoConfigFile } from '@nangohq/nango-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,64 +24,39 @@ export const version = (debug: boolean) => {
     if (debug) {
         printDebug('Looking up the version first for a local path first then globally');
     }
-    const packageJson = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
+    const version = getPkgVersion();
 
-    console.log(chalk.green('Nango CLI version:'), packageJson.version);
+    console.log(chalk.green('Nango CLI version:'), version);
 };
 
-export const generate = async (debug = false, inParentDirectory = false) => {
-    const dirPrefix = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}` : '.';
+export function generate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/sync.ejs'), 'utf8');
     const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/action.ejs'), 'utf8');
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
     const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
 
-    const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
-    const configData: NangoConfig = yaml.load(configContents) as NangoConfig;
-    const { models, integrations } = configData;
-
-    const interfaceDefinitions = modelService.build(models, integrations, debug);
-
-    if (interfaceDefinitions) {
-        fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
-    }
-
-    if (debug) {
-        printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
-    }
-
-    // insert NangoSync types to the bottom of the file
-    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
-    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
-
-    const { success, error, response: config } = await configService.load(dirPrefix, debug);
-
-    if (!success || !config) {
-        console.log(chalk.red(error?.message));
+    const res = loadYamlAndGenerate({ fullPath, debug });
+    if (!res.success) {
         return;
     }
 
-    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
-    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
-
-    if (debug) {
-        printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
-    }
-
+    const parsed = res.response!;
     const allSyncNames: Record<string, boolean> = {};
 
-    for (const standardConfig of config) {
-        const { syncs, actions, postConnectionScripts } = standardConfig;
+    for (const integration of parsed.integrations) {
+        const { syncs, actions, postConnectionScripts, providerConfigKey } = integration;
 
         if (postConnectionScripts) {
+            const type = 'post-connection-script';
             for (const name of postConnectionScripts) {
                 const rendered = ejs.render(postConnectionTemplateContents, {
                     interfaceFileName: TYPES_FILE_NAME.replace('.ts', '')
                 });
                 const stripped = rendered.replace(/^\s+/, '');
 
-                if (!fs.existsSync(`${dirPrefix}/${name}.ts`)) {
-                    fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
+                if (!fs.existsSync(path.resolve(fullPath, `${providerConfigKey}/${type}s/${name}.ts`))) {
+                    fs.mkdirSync(path.resolve(fullPath, `${providerConfigKey}/${type}s`), { recursive: true });
+                    fs.writeFileSync(path.resolve(fullPath, `${providerConfigKey}/${type}s/${name}.ts`), stripped);
                     if (debug) {
                         printDebug(`Created ${name}.ts file`);
                     }
@@ -98,18 +69,27 @@ export const generate = async (debug = false, inParentDirectory = false) => {
         }
 
         for (const flow of [...syncs, ...actions]) {
-            const { name, type, returns: models } = flow;
-            let { input } = flow;
+            const { name, type, output, input } = flow;
+            const layoutMode = getLayoutMode({ fullPath, providerConfigKey, scriptName: name, type });
+            const uniqueName = layoutMode === 'root' ? name : `${providerConfigKey}-${name}`;
 
-            if (allSyncNames[name] === undefined) {
-                allSyncNames[name] = true;
+            if (allSyncNames[uniqueName] === undefined) {
+                // a sync and an action within the same provider cannot have the same name
+                allSyncNames[uniqueName] = true;
             } else {
-                console.log(chalk.red(`The ${type} name ${name} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
+                console.log(chalk.red(`The ${type} name ${name} is duplicated in the ${nangoConfigFile} file. All sync and action names must be unique.`));
                 process.exit(1);
             }
 
+            if (fs.existsSync(path.resolve(fullPath, `${name}.ts`)) || fs.existsSync(path.resolve(fullPath, `${providerConfigKey}/${type}s/${name}.ts`))) {
+                if (debug) {
+                    printDebug(`${name}.ts file already exists, so will not overwrite it.`);
+                }
+                continue;
+            }
+
             if (debug) {
-                printDebug(`Generating ${name} integration`);
+                printDebug(`Generating ${name} integration in layout mode ${layoutMode}`);
             }
 
             const flowNameCamel = name
@@ -119,99 +99,69 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
             let ejsTemplateContents = '';
 
-            if (name === exampleSyncName && type === SyncConfigType.SYNC) {
+            if (name === exampleSyncName && type === 'sync') {
                 ejsTemplateContents = githubExampleTemplateContents;
             } else {
-                ejsTemplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
+                ejsTemplateContents = type === 'sync' ? syncTemplateContents : actionTemplateContents;
             }
 
-            let interfaceNames: string | string[] = [];
-            let mappings: { name: string; type: string } | { name: string; type: string }[] = [];
-
-            if (typeof models === 'string') {
-                const formattedName = models;
-                interfaceNames = formattedName;
-                mappings = {
-                    name: models,
-                    type: formattedName
-                };
-            } else {
-                if (models && models.length !== 0) {
-                    interfaceNames = models;
-                    mappings = models.map((model) => ({
-                        name: model,
-                        type: model
-                    }));
-                }
-            }
-
-            if (input && Object.keys(input).length === 0) {
-                input = undefined;
-            }
-
+            const models = (output ? [...output, input] : [input]).filter(Boolean);
             const rendered = ejs.render(ejsTemplateContents, {
                 syncName: flowNameCamel,
+                interfacePath: layoutMode === 'root' ? './' : '../../',
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
-                interfaceNames,
-                mappings,
-                inputs: input?.name || input || '',
-                hasWebhook: type === SyncConfigType.SYNC && flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0
+                output: output && output.length > 0 ? output.join(' | ') : null,
+                input: input,
+                modelNames: models.join(', '),
+                hasWebhook: type === 'sync' && flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0
             });
 
             const stripped = rendered.replace(/^\s+/, '');
 
-            if (!fs.existsSync(`${dirPrefix}/${name}.ts`)) {
-                fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
-                if (debug) {
-                    printDebug(`Created ${name}.ts file`);
-                }
+            if (layoutMode === 'root') {
+                fs.writeFileSync(path.resolve(fullPath, `${name}.ts`), stripped);
             } else {
-                if (debug) {
-                    printDebug(`${name}.ts file already exists, so will not overwrite it.`);
-                }
+                fs.mkdirSync(path.resolve(fullPath, `${providerConfigKey}/${type}s`), { recursive: true });
+                fs.writeFileSync(path.resolve(fullPath, `${providerConfigKey}/${type}s/${name}.ts`), stripped);
+            }
+            if (debug) {
+                console.log(chalk.green(`Created ${name}.ts file`));
             }
         }
     }
-};
+}
 
 /**
  * Init
  * If we're not currently in the nango-integrations directory create one
  * and create an example nango.yaml file
  */
-export const init = async (debug = false) => {
+export function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }) {
     const yamlData = fs.readFileSync(path.resolve(__dirname, `./templates/${nangoConfigFile}`), 'utf8');
 
     // if currently in the nango-integrations directory then don't create another one
-    const cwd = process.cwd();
-    const currentDirectorySplit = cwd.split('/');
-    const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
-
-    let dirExists = false;
-    let inParentDirectory = true;
+    const currentDirectory = path.basename(absolutePath);
+    let fullPath: string;
 
     if (currentDirectory === NANGO_INTEGRATIONS_NAME) {
-        dirExists = true;
-        inParentDirectory = false;
         if (debug) {
             printDebug(`Currently in the ${NANGO_INTEGRATIONS_NAME} directory so the directory will not be created`);
         }
+        fullPath = absolutePath;
+    } else {
+        fullPath = path.resolve(absolutePath, NANGO_INTEGRATIONS_NAME);
     }
 
-    if (fs.existsSync(`./${NANGO_INTEGRATIONS_NAME}`)) {
-        dirExists = true;
+    if (fs.existsSync(fullPath)) {
         console.log(chalk.red(`The ${NANGO_INTEGRATIONS_NAME} directory already exists. You should run commands from within this directory`));
-    }
-
-    if (!dirExists) {
+    } else {
         if (debug) {
-            printDebug(`Creating the nango integrations directory at ./${NANGO_INTEGRATIONS_NAME}`);
+            printDebug(`Creating the nango integrations directory at ${absolutePath}`);
         }
-        fs.mkdirSync(`./${NANGO_INTEGRATIONS_NAME}`);
+        fs.mkdirSync(fullPath);
     }
 
-    const configFileLocation = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}/${nangoConfigFile}` : `./${nangoConfigFile}`;
-
+    const configFileLocation = path.resolve(fullPath, nangoConfigFile);
     if (!fs.existsSync(configFileLocation)) {
         if (debug) {
             printDebug(`Creating the ${nangoConfigFile} file at ${configFileLocation}`);
@@ -223,14 +173,14 @@ export const init = async (debug = false) => {
         }
     }
 
-    const envFileLocation = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}/.env` : './.env';
+    const envFileLocation = path.resolve(fullPath, '.env');
     if (!fs.existsSync(envFileLocation)) {
         if (debug) {
             printDebug(`Creating the .env file at ${envFileLocation}`);
         }
         fs.writeFileSync(
             envFileLocation,
-            `# Authenticates the CLI (get the keys in the dashboard's Projects Settings).
+            `# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
 #NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
 #NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 
@@ -249,23 +199,39 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
         }
     }
 
-    await generate(debug, inParentDirectory);
+    const gitIgnoreFileLocation = path.resolve(fullPath, '.gitignore');
+    if (!fs.existsSync(gitIgnoreFileLocation)) {
+        if (debug) {
+            printDebug(`Creating the .gitignore file at ${gitIgnoreFileLocation}`);
+        }
+        fs.writeFileSync(
+            gitIgnoreFileLocation,
+            `dist
+.env
+`
+        );
+    } else {
+        if (debug) {
+            printDebug(`.gitignore file already exists at ${gitIgnoreFileLocation} so not creating a new one`);
+        }
+    }
 
-    console.log(chalk.green(`Nango integrations initialized!`));
-};
+    generate({ debug, fullPath });
+}
 
-export const tscWatch = async (debug = false) => {
-    const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
-    const { success, error, response: config } = await configService.load();
-
-    if (!success || !config) {
-        console.log(chalk.red(error?.message));
+export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
+    const tsconfig = fs.readFileSync(path.resolve(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
+    const res = loadYamlAndGenerate({ fullPath, debug });
+    if (!res.success) {
+        console.log(chalk.red(res.error?.message));
+        if (res.error?.payload) {
+            console.log(res.error.payload);
+        }
         return;
     }
 
-    const modelNames = configService.getModelNames(config);
-
-    const watchPath = [`./*.ts`, `./${nangoConfigFile}`];
+    const parsed = res.response!;
+    const watchPath = ['./**/*.ts', `./${nangoConfigFile}`];
 
     if (debug) {
         printDebug(`Watching ${watchPath.join(', ')}`);
@@ -274,11 +240,12 @@ export const tscWatch = async (debug = false) => {
     const watcher = chokidar.watch(watchPath, {
         ignoreInitial: false,
         ignored: (filePath: string) => {
-            return filePath === TYPES_FILE_NAME;
+            const relativePath = path.relative(__dirname, filePath);
+            return relativePath.includes('node_modules') || path.basename(filePath) === TYPES_FILE_NAME;
         }
     });
 
-    const distDir = './dist';
+    const distDir = path.join(fullPath, 'dist');
 
     if (!fs.existsSync(distDir)) {
         if (debug) {
@@ -287,91 +254,54 @@ export const tscWatch = async (debug = false) => {
         fs.mkdirSync(distDir);
     }
 
-    if (!fs.existsSync(`./${TYPES_FILE_NAME}`)) {
-        if (debug) {
-            printDebug(`Creating ${TYPES_FILE_NAME} file`);
-        }
-        await modelService.createModelFile();
-    }
-
-    watcher.on('add', (filePath: string) => {
+    watcher.on('add', async (filePath: string) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        compileFile(filePath);
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, parsed, debug });
     });
 
     watcher.on('unlink', (filePath: string) => {
         if (filePath === nangoConfigFile) {
             return;
         }
-        const jsFilePath = `./dist/${path.basename(filePath.replace('.ts', '.js'))}`;
+        const providerConfiguration = getProviderConfigurationFromPath({ filePath, parsed });
+        const baseName = path.basename(filePath, '.ts');
+        const fileName = providerConfiguration ? `${baseName}-${providerConfiguration.providerConfigKey}.js` : `${baseName}.js`;
+        const jsFilePath = `./dist/${fileName}`;
 
-        fs.unlinkSync(jsFilePath);
-    });
-
-    watcher.on('change', (filePath: string) => {
-        if (filePath === nangoConfigFile) {
-            // config file changed, re-compile each ts file
-            const integrationFiles = glob.sync(`./*.ts`);
-            for (const file of integrationFiles) {
-                // strip the file to just the last part
-                const strippedFile = file.replace(/^.*[\\\/]/, '');
-                compileFile(strippedFile);
-            }
-            return;
-        }
-        compileFile(filePath);
-    });
-
-    const compiler = tsNode.create({
-        skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-        compilerOptions: JSON.parse(tsconfig).compilerOptions
-    });
-    function compileFile(filePath: string) {
         try {
-            const providerConfiguration = config?.find((config) =>
-                [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
-            );
-            if (!providerConfiguration) {
-                return;
-            }
-            const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
+            fs.unlinkSync(jsFilePath);
+        } catch {
+            console.log(chalk.red(`Error deleting ${jsFilePath}`));
+        }
+    });
 
-            const type = syncConfig?.type || SyncConfigType.SYNC;
-
-            if (!parserService.callsAreUsedCorrectly(filePath, type, modelNames)) {
-                return;
-            }
-            const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
-            const jsFilePath = `./dist/${path.basename(filePath.replace('.ts', '.js'))}`;
-
-            fs.writeFileSync(jsFilePath, result);
-            console.log(chalk.green(`Compiled ${filePath} successfully`));
-        } catch (error) {
-            console.error(`Error compiling ${filePath}:`);
-            console.error(error);
+    watcher.on('change', async (filePath: string) => {
+        if (filePath === nangoConfigFile) {
+            await compileAllFiles({ fullPath, debug });
             return;
         }
-    }
-};
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), parsed, debug });
+    });
+}
 
-export const configWatch = (debug = false) => {
-    const watchPath = `./${nangoConfigFile}`;
+export function configWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
+    const watchPath = path.join(fullPath, nangoConfigFile);
     if (debug) {
         printDebug(`Watching ${watchPath}`);
     }
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
-    watcher.on('change', async () => {
-        await modelService.createModelFile(true);
+    watcher.on('change', () => {
+        loadYamlAndGenerate({ fullPath, debug });
     });
-};
+}
 
 let child: ChildProcess | undefined;
 process.on('SIGINT', () => {
     if (child) {
-        const dockerDown = spawn('docker', ['compose', '-f', `${getNangoRootPath()}/docker/docker-compose.yaml`, '--project-directory', '.', 'down'], {
+        const dockerDown = spawn('docker', ['compose', '-f', path.join(getNangoRootPath(), 'docker/docker-compose.yaml'), '--project-directory', '.', 'down'], {
             stdio: 'inherit'
         });
         dockerDown.on('exit', () => {
@@ -390,7 +320,7 @@ process.on('SIGINT', () => {
 export const dockerRun = async (debug = false) => {
     const cwd = process.cwd();
 
-    const args = ['compose', '-f', `${getNangoRootPath()}/docker/docker-compose.yaml`, '--project-directory', '.', 'up', '--build'];
+    const args = ['compose', '-f', path.join(getNangoRootPath(), 'docker/docker-compose.yaml'), '--project-directory', '.', 'up', '--build'];
 
     if (debug) {
         printDebug(`Running docker with args: ${args.join(' ')}`);

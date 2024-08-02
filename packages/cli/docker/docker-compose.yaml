@@ -1,7 +1,7 @@
 version: '3.9'
 services:
     nango-db:
-        image: postgres
+        image: postgres:16.0-alpine
         container_name: nango-db
         environment:
             POSTGRES_PASSWORD: nango
@@ -17,15 +17,16 @@ services:
     nango-server:
         image: nangohq/nango-server:hosted
         container_name: nango-server
+        platform: linux/amd64
         environment:
-            - TEMPORAL_ADDRESS=temporal:7233
-            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
+            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/database/lib/migrations
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
             - NANGO_DB_HOST=${NANGO_DB_HOST}
             - NANGO_DB_NAME=${NANGO_DB_NAME}
             - NANGO_DB_SSL=${NANGO_DB_SSL}
+            - NANGO_DB_ADDITIONAL_SCHEMAS=${NANGO_DB_ADDITIONAL_SCHEMAS}
             - NANGO_DB_POOL_MIN=${NANGO_DB_POOL_MIN}
             - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX}
             - NANGO_PORT=${NANGO_PORT:-3003}
@@ -36,41 +37,54 @@ services:
             - LOG_LEVEL=${LOG_LEVEL:-info}
             - TELEMETRY=${TELEMETRY}
             - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
+            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
+            - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
         restart: always
         ports:
             - '${NANGO_PORT:-3003}:${NANGO_PORT:-3003}'
         depends_on:
             - nango-db
+            # - nango-elasticsearch
         volumes:
-            - "${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-server/src/packages/shared/dist/lib/nango-integrations"
+            - '${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-server/src/packages/shared/dist/nango-integrations'
         networks:
             - nango
 
     nango-jobs:
         image: nangohq/nango-jobs:production
         container_name: nango-jobs
+        platform: linux/amd64
         restart: always
         ports:
             - '${WORKER_PORT:-3004}:${WORKER_PORT:-3004}'
         environment:
-            - TEMPORAL_ADDRESS=temporal:7233
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
             - NANGO_DB_HOST=${NANGO_DB_HOST}
             - NANGO_DB_NAME=${NANGO_DB_NAME}
             - NANGO_DB_SSL=${NANGO_DB_SSL}
+            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
+            - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
+            - ORCHESTRATOR_SERVICE_URL=${ORCHESTRATOR_SERVICE_URL}
         depends_on:
             - nango-db
-            - temporal
+            # - nango-elasticsearch
         volumes:
-            - "${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-jobs/src/packages/shared/dist/lib/nango-integrations"
+            - '${NANGO_INTEGRATIONS_LOCATION:-./}:/usr/nango-jobs/src/packages/shared/dist/nango-integrations'
         networks:
             - nango
 
     nango-persist:
         image: nangohq/nango-persist:production
         container_name: nango-persist
+        platform: linux/amd64
         restart: always
         ports:
             - '${PERSIST_PORT:-3007}:${PERSIST_PORT:-3007}'
@@ -81,27 +95,41 @@ services:
             - NANGO_DB_HOST=${NANGO_DB_HOST}
             - NANGO_DB_NAME=${NANGO_DB_NAME}
             - NANGO_DB_SSL=${NANGO_DB_SSL}
+            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
+            - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
+            - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
         depends_on:
             - nango-db
+            # - nango-elasticsearch
         networks:
             - nango
 
-    temporal:
-        image: temporalio/auto-setup
-        container_name: temporal
-        depends_on:
-            - nango-db
-        environment:
-            - DB=postgresql
-            - DB_PORT=5432
-            - POSTGRES_USER=nango
-            - POSTGRES_PWD=nango
-            - POSTGRES_SEEDS=nango-db
-            - LOG_LEVEL=error
-        ports:
-            - 7233:7233
-        networks:
-            - nango
+    #
+    # Optional dependency
+    # To load elasticsearch, set NANGO_LOGS_ENABLED=true in nango-server and uncomment this dependency
+    # nango-elasticsearch:
+    #     image: elasticsearch:8.13.0
+    #     container_name: nango-elasticsearch
+    #     ulimits:
+    #         memlock:
+    #             soft: -1
+    #             hard: -1
+    #     volumes:
+    #         - elasticsearch-data1:/usr/share/elasticsearch/data
+    #     ports:
+    #         - 9500:9200
+    #         - 9600:9300
+    #     environment:
+    #         - discovery.type=single-node
+    #         - xpack.security.enabled=false
+    #     networks:
+    #         - nango
 
 networks:
     nango:
+
+volumes:
+    elasticsearch-data1:
+        driver: local

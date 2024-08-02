@@ -1,7 +1,6 @@
-import type { RetryHeaderConfig, CursorPagination, LinkPagination, OffsetPagination } from './Proxy.js';
-import type { AuthModes } from './Auth.js';
+import type { AuthModeType } from '@nangohq/types';
 import type { NangoConnection } from './Connection.js';
-import type { HTTP_VERB, TimestampsAndDeleted } from './Generic.js';
+import type { TimestampsAndDeleted } from './Generic.js';
 import type { SyncConfig, Action } from './Sync.js';
 
 export interface Config extends TimestampsAndDeleted {
@@ -18,43 +17,6 @@ export interface Config extends TimestampsAndDeleted {
     custom?: Record<string, string>;
 }
 
-export type TokenUrlObject = {
-    [K in AuthModes]?: string;
-};
-
-export interface Template {
-    auth_mode: AuthModes;
-    proxy: {
-        base_url: string;
-        headers?: Record<string, string>;
-        query?: {
-            api_key: string;
-        };
-        retry?: RetryHeaderConfig;
-        decompress?: boolean;
-        paginate?: LinkPagination | CursorPagination | OffsetPagination;
-        verification?: {
-            method: HTTP_VERB;
-            endpoint: string;
-        };
-    };
-    authorization_url: string;
-    authorization_params?: Record<string, string>;
-    scope_separator?: string;
-    default_scopes?: string[];
-    token_url: string | TokenUrlObject;
-    token_params?: Record<string, string>;
-    authorization_url_replacements?: Record<string, string>;
-    redirect_uri_metadata?: string[];
-    token_response_metadata?: string[];
-    docs?: string;
-    token_expiration_buffer?: number; // In seconds.
-    webhook_routing_script?: string;
-    webhook_user_defined_secret?: boolean;
-    post_connection_script?: string;
-    categories?: string[];
-}
-
 export interface TemplateAlias {
     alias?: string;
     proxy: {
@@ -66,7 +28,7 @@ export interface IntegrationWithCreds extends Integration {
     client_id: string;
     client_secret: string;
     scopes: string;
-    auth_mode: AuthModes;
+    auth_mode: AuthModeType;
     app_link?: string;
     has_webhook: boolean;
     webhook_url?: string;

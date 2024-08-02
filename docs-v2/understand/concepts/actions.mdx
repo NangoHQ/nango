@@ -13,9 +13,9 @@ Actions shine in scenarios requiring two-way syncing or direct data manipulation
 
 # Main characteristics
 
-### Script-driven 
+### Code-based workflow 
 
-Actions differ significantly from proxies by executing predefined scripts rather than mere individual requests. This allows for complex workflows, involving intricate request orchestration and data transformations, to be executed seamlessly.
+Actions differ significantly from proxies by executing integration scripts rather than mere individual requests. This allows for complex workflows, involving intricate request orchestration and data transformations, to be executed seamlessly.
 
 ### Transient execution
 
@@ -34,7 +34,7 @@ The outcomes of action executions, whether errors or successes, are directly rel
 
 ### Unified modeling
 
-Actions support inputs and outputs that adhere to [unified models](/understand/concepts/api-unification), streamlining the integration process across different external APIs. 
+Actions support inputs and outputs that adhere to unified models, streamlining the integration process across different external APIs. 
 
 **Action vs. the proxy**
 
@@ -50,7 +50,7 @@ Action executions are powered by [integration scripts](/understand/concepts/scri
 Action scripts have the following structure:
 
 ```typescript
-import type { NangoAction, ResponseModel, ParameterModel } from './models';
+import type { NangoAction, ResponseModel, ParameterModel } from '../../models';
 
 export default async function runAction(
     nango: NangoAction, 
@@ -59,10 +59,14 @@ export default async function runAction(
 }
 ```
 
-The `runAction` function kicks off when an action is triggered. It takes inputs from the trigger API/SDK request and returns outputs in the response. The `ParameterModel` and `ResponseModel` are configurable via the [integration configuration](/understand/concepts/scripts#integration-configuration) and are auto-imported into your script.
+The `runAction` function kicks off when an action is triggered. It takes inputs from the trigger API/SDK request and returns outputs in the response. The `ParameterModel` and `ResponseModel` are configurable via the [integration configuration](/understand/concepts/scripts#integration-configuration) and are auto-imported into your integration script.
 
 Actions focus solely on immediate tasks without persisting data to Nango's cache, thus calls to `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()` are not applicable. However, actions can call other actions, enabling complex workflows through the composition of multiple actions.
 
 # Getting started with actions
 
 Check out the actions [step-by-step guide](/integrate/guides/perform-workflows-with-an-api) or refer to the reference ([API](/reference/api/action/trigger) / [SDK](/reference/sdks/node#actions)).
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

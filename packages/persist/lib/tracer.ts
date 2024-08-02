@@ -4,6 +4,12 @@ tracer.init({
     service: 'nango-persist'
 });
 tracer.use('pg', {
-    service: 'nango-postgres'
+    service: (params: { database: string }) => `postgres-${params.database}`
+});
+tracer.use('elasticsearch', {
+    service: 'nango-elasticsearch'
 });
 tracer.use('express');
+tracer.use('dns', {
+    enabled: false
+});

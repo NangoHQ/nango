@@ -1,8 +1,7 @@
-import type { Context } from '@temporalio/activity';
-import { LogActionEnum } from './Activity.js';
+import type { JSONSchema7 } from 'json-schema';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
-import type { NangoProps } from '../sdk/sync.js';
-import type { NangoIntegrationData, NangoSyncEndpoint } from './NangoConfig.js';
+import type { NangoConfigMetadata, NangoModel, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
+import type { LogContext } from '@nangohq/logs';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -13,10 +12,10 @@ export enum SyncStatus {
 }
 
 export enum SyncType {
-    INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL',
-    WEBHOOK = 'WEBHOOK',
     FULL = 'FULL',
+    WEBHOOK = 'WEBHOOK',
+    POST_CONNECTION_SCRIPT = 'POST_CONNECTION_SCRIPT',
     ACTION = 'ACTION'
 }
 
@@ -29,15 +28,16 @@ export interface SyncResult {
 export type SyncResultByModel = Record<string, SyncResult>;
 
 export interface Sync extends TimestampsAndDeleted {
-    id?: string;
+    id: string;
     nango_connection_id: number;
     name: string;
-    last_sync_date?: Date | null;
+    last_sync_date: Date | null;
     futureActionTimes?: {
         seconds?: number;
         nanos?: number;
     };
     frequency: string | null;
+    last_fetched_at: Date | null;
 }
 
 export interface Action extends TimestampsAndDeleted {
@@ -45,12 +45,13 @@ export interface Action extends TimestampsAndDeleted {
 }
 
 export interface Job extends TimestampsAndDeleted {
-    id?: number;
+    id: number;
     status: SyncStatus;
     type: SyncType;
     sync_id: string;
     job_id: string;
     run_id?: string | null;
+    log_id?: string | null;
     result?: SyncResultByModel;
     sync_config_id?: number;
 }
@@ -65,8 +66,10 @@ export interface ReportedSyncJobStatus {
     frequency: string;
     finishedAt: Date;
     nextScheduledSyncAt: Date | null;
+    latestExecutionStatus: SyncStatus;
 }
 
+// TODO: change that to use Parsed type
 export interface SyncModelSchema {
     name: string;
     fields: {
@@ -75,25 +78,15 @@ export interface SyncModelSchema {
     }[];
 }
 
-export enum SyncConfigType {
-    SYNC = 'sync',
-    ACTION = 'action'
-}
-
-export interface NangoConfigMetadata {
-    scopes?: string[];
-    description?: string;
-}
-
 export interface SyncConfig extends TimestampsAndDeleted {
     id?: number;
     environment_id: number;
     sync_name: string;
-    type: SyncConfigType;
+    type: ScriptTypeLiteral;
     file_location: string;
     nango_config_id: number;
     models: string[];
-    model_schema: SyncModelSchema[];
+    model_schema: SyncModelSchema[] | NangoModel[];
     active: boolean;
     runs: string;
     track_deletes: boolean;
@@ -101,12 +94,14 @@ export interface SyncConfig extends TimestampsAndDeleted {
     attributes?: object;
     metadata?: NangoConfigMetadata;
     version?: string;
-    pre_built?: boolean;
-    is_public?: boolean;
+    pre_built?: boolean | null;
+    is_public?: boolean | null;
     endpoints?: NangoSyncEndpoint[];
-    input?: string | SyncModelSchema;
+    input?: string | undefined;
     sync_type?: SyncType | undefined;
-    webhook_subscriptions?: string[];
+    webhook_subscriptions: string[] | null;
+    enabled: boolean;
+    models_json_schema?: JSONSchema7 | null;
 }
 
 export interface SyncEndpoint extends Timestamps {
@@ -117,160 +112,26 @@ export interface SyncEndpoint extends Timestamps {
     model?: string;
 }
 
-export interface SlimSync {
-    id?: number;
-    name: string;
-    auto_start?: boolean;
-    sync_id?: string | null;
-    providerConfigKey?: string;
-    connections?: number;
-}
-
-export interface SlimAction {
-    id?: number;
-    providerConfigKey?: string;
-    name: string;
-}
-
 export interface SyncDeploymentResult {
     name: string;
     version?: string;
     providerConfigKey: string;
-    type: SyncConfigType;
+    type: ScriptTypeLiteral;
     last_deployed?: Date;
-    input?: string | SyncModelSchema;
+    input?: string | SyncModelSchema | undefined;
     models: string | string[];
     id?: number | undefined;
 
-    // legacy
+    /** @deprecated legacy **/
     sync_name?: string;
+    /** @deprecated legacy **/
     syncName?: string;
 }
 
 export interface SyncConfigResult {
     result: SyncDeploymentResult[];
-    activityLogId: number | null;
+    logCtx: LogContext;
 }
-
-export interface SyncAndActionDifferences {
-    newSyncs: SlimSync[];
-    deletedSyncs: SlimSync[];
-    newActions: SlimAction[];
-    deletedActions: SlimAction[];
-}
-
-interface InternalIncomingPreBuiltFlowConfig {
-    type: SyncConfigType;
-    models: string[];
-    runs: string;
-    auto_start?: boolean;
-    attributes?: object;
-    metadata?: NangoConfigMetadata;
-    model_schema: string;
-    input?: string | SyncModelSchema;
-    endpoints?: NangoSyncEndpoint[];
-}
-
-export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlowConfig {
-    provider: string;
-    is_public: boolean;
-    public_route?: string;
-    name: string;
-    syncName?: string; // legacy
-    nango_config_id?: number;
-
-    providerConfigKey?: string;
-    fileBody?: {
-        js: string;
-        ts: string;
-    };
-}
-
-export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
-    syncName: string;
-    providerConfigKey: string;
-    fileBody?: {
-        js: string;
-        ts: string;
-    };
-    version?: string;
-    track_deletes?: boolean;
-    sync_type?: SyncType;
-    webhookSubscriptions?: string[];
-}
-
-export enum ScheduleStatus {
-    RUNNING = 'RUNNING',
-    PAUSED = 'PAUSED',
-    STOPPED = 'STOPPED'
-}
-
-export interface Schedule extends TimestampsAndDeleted {
-    id?: string;
-    schedule_id: string;
-    status: ScheduleStatus;
-    sync_id: string;
-    sync_job_id: number;
-    frequency: string;
-    offset: number;
-}
-
-export type CustomerFacingDataRecord = {
-    _nango_metadata: RecordMetadata;
-} & Record<string, any> & { id: string | number };
-
-export interface EncryptedRawRecord {
-    iv: string;
-    authTag: string;
-    encryptedValue: string;
-}
-
-export type UnencryptedRawRecord = Record<string, any> & { id: string | number };
-
-export type RawDataRecordResult = {
-    id: string | number;
-    record: UnencryptedRawRecord | EncryptedRawRecord;
-} & RecordMetadata;
-
-export type GetRecordsResponse = { records: CustomerFacingDataRecord[]; next_cursor?: string | null } | null;
-
-// TO DEPRECATE
-export type RecordWrapCustomerFacingDataRecord = { record: CustomerFacingDataRecord }[];
-
-export interface DataRecord extends Timestamps {
-    [index: string]: number | string | Date | object | undefined | boolean | null;
-    id?: string;
-    external_id: string;
-    json: object;
-    record?: object;
-    data_hash: string;
-    nango_connection_id: number;
-    model: string;
-    sync_id: string;
-    sync_config_id?: number | undefined;
-    external_is_deleted?: boolean;
-    external_deleted_at?: Date | null;
-    json_iv?: string | null;
-    json_tag?: string | null;
-    pending_delete?: boolean;
-}
-
-export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
-
-interface RecordMetadata {
-    first_seen_at: string;
-    last_modified_at: string;
-    last_action: LastAction;
-    deleted_at: string | null;
-    cursor: string;
-}
-
-// DEPRECATED
-export interface DataRecordWithMetadata extends RecordMetadata {
-    record: object;
-}
-
-export type SyncWithSchedule = Sync & Schedule;
 
 export enum SyncCommand {
     PAUSE = 'PAUSE',
@@ -280,22 +141,6 @@ export enum SyncCommand {
     CANCEL = 'CANCEL'
 }
 
-export const CommandToActivityLog = {
-    PAUSE: LogActionEnum.PAUSE_SYNC,
-    UNPAUSE: LogActionEnum.RESTART_SYNC,
-    RUN: LogActionEnum.TRIGGER_SYNC,
-    RUN_FULL: LogActionEnum.TRIGGER_FULL_SYNC,
-    CANCEL: LogActionEnum.CANCEL_SYNC
-};
-
-export const SyncCommandToScheduleStatus = {
-    PAUSE: ScheduleStatus.PAUSED,
-    UNPAUSE: ScheduleStatus.RUNNING,
-    RUN: ScheduleStatus.RUNNING,
-    RUN_FULL: ScheduleStatus.RUNNING,
-    CANCEL: ScheduleStatus.RUNNING
-};
-
 export interface SyncConfigWithProvider {
     id: number;
     sync_name: string;
@@ -304,23 +149,5 @@ export interface SyncConfigWithProvider {
     updated_at: string;
     provider_config_key: string;
     unique_key: string;
-    type: SyncConfigType;
-}
-
-export interface IntegrationServiceInterface {
-    runScript(
-        syncName: string,
-        syncId: string,
-        activityLogId: number | undefined,
-        nangoProps: NangoProps,
-        integrationData: NangoIntegrationData,
-        environmentId: number,
-        writeToDb: boolean,
-        isInvokedImmediately: boolean,
-        isWebhook: boolean,
-        optionalLoadLocation?: string,
-        input?: object,
-        temporalContext?: Context
-    ): Promise<any>;
-    cancelScript(syncId: string, environmentId: number): Promise<void>;
+    type: ScriptTypeLiteral;
 }

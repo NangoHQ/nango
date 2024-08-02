@@ -1,13 +1,13 @@
 {
     "name": "@nangohq/node",
-    "version": "0.39.4",
+    "version": "0.42.2",
     "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
     "module": "./dist/index.js",
     "scripts": {
-        "build": "tsup lib/index.ts --format cjs && tsc",
-        "prepublishOnly": "npm install && npm run build"
+        "build": "tsup lib/index.ts --format cjs",
+        "prepublishOnly": "npm run build"
     },
     "exports": {
         ".": {
@@ -28,7 +28,7 @@
         "axios": "^1.2.0"
     },
     "engines": {
-        "node": ">=16.7"
+        "node": ">=18.0"
     },
     "files": [
         "dist/**/*",
@@ -36,6 +36,8 @@
         "README.md"
     ],
     "devDependencies": {
-        "tsup": "^7.2.0"
+        "@nangohq/types": "^0.42.2",
+        "tsup": "^8.0.2",
+        "vitest": "1.6.0"
     }
 }

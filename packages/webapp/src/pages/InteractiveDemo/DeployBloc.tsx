@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { cn } from '../../utils/utils';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { CheckCircledIcon } from '@radix-ui/react-icons';
+import { apiFetch } from '../../utils/api';
 
 type File = 'github-issues-demo.ts' | 'nango.yaml';
 
@@ -52,9 +53,8 @@ models:
 
         try {
             // Deploy the provider
-            const res = await fetch(`/api/v1/onboarding/deploy`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+            const res = await apiFetch(`/api/v1/onboarding/deploy?env=dev`, {
+                method: 'POST'
             });
 
             if (res.status !== 200) {
@@ -66,8 +66,10 @@ models:
             }
 
             setError(null);
+            analyticsTrack('web:demo:deploy_success');
             onProgress();
         } catch (err) {
+            analyticsTrack('web:demo:deploy_error');
             setError(err instanceof Error ? `error: ${err.message}` : 'An unexpected error occurred');
             return;
         } finally {
@@ -92,7 +94,7 @@ models:
         >
             <div className="border bg-zinc-900 border-zinc-900 rounded-lg text-white text-sm">
                 <div className="flex justify-between items-center px-5 py-4 bg-zinc-900 rounded-lg">
-                    <div className="space-x-4">
+                    <div className="flex gap-4">
                         <Tab
                             variant={'zombie'}
                             className={cn('cursor-default', file !== 'github-issues-demo.ts' && 'cursor-pointer bg-zinc-900 pointer-events-auto')}

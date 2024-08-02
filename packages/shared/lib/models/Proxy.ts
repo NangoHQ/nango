@@ -1,8 +1,8 @@
 import type { ParamsSerializerOptions } from 'axios';
 import type { HTTP_VERB } from './Generic.js';
-import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials } from './Auth.js';
+import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials, TbaCredentials, TableauCredentials } from './Auth.js';
 import type { Connection } from './Connection.js';
-import type { Template as ProviderTemplate } from './Provider.js';
+import type { Template as ProviderTemplate } from '@nangohq/types';
 
 interface BaseProxyConfiguration {
     providerConfigKey: string;
@@ -29,7 +29,7 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
     decompress?: boolean;
     method: HTTP_VERB;
     provider: string;
-    token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
+    token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials | TbaCredentials | TableauCredentials;
     template: ProviderTemplate;
     connection: Connection;
 }
@@ -39,7 +39,7 @@ export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text'
 export interface InternalProxyConfiguration {
     provider: string;
     connection: Connection;
-    existingActivityLogId?: number;
+    existingActivityLogId?: string | null;
 }
 
 export interface RetryHeaderConfig {

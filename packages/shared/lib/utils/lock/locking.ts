@@ -1,3 +1,4 @@
+import { stringifyError } from '@nangohq/utils';
 import type { KVStore } from '../kvstore/KVStore.js';
 
 export class Locking {
@@ -7,19 +8,22 @@ export class Locking {
         this.store = store;
     }
 
-    public async tryAcquire(key: string, ttlInMs: number, acquisitionTimeoutMs: number): Promise<void> {
+    public async tryAcquire(key: string, ttlInMs: number, acquisitionTimeoutMs: number): Promise<{ tries: number }> {
         if (ttlInMs <= 0) {
             throw new Error(`lock's TTL must be greater than 0`);
         }
         if (acquisitionTimeoutMs <= 0) {
             throw new Error(`acquisitionTimeoutMs must be greater than 0`);
         }
+
         const start = Date.now();
+        let tries = 0;
         while (Date.now() - start < acquisitionTimeoutMs) {
             try {
                 await this.acquire(key, ttlInMs);
-                return;
+                return { tries };
             } catch {
+                tries += 1;
                 await new Promise((resolve) => setTimeout(resolve, 50));
             }
         }
@@ -33,7 +37,7 @@ export class Locking {
         try {
             await this.store.set(key, '1', false, ttlInMs);
         } catch (err) {
-            throw new Error(`Failed to acquire lock for key: ${key} ${JSON.stringify(err)}`);
+            throw new Error(`Failed to acquire lock for key: ${key} ${stringifyError(err)}`);
         }
     }
 

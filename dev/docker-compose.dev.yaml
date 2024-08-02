@@ -1,7 +1,7 @@
 version: '3.9'
 services:
     nango-db:
-        image: postgres
+        image: postgres:15.5-alpine
         container_name: nango-db
         environment:
             POSTGRES_PASSWORD: nango
@@ -14,29 +14,39 @@ services:
         networks:
             - nango
 
-    temporal:
-        image: temporalio/auto-setup
-        container_name: temporal
-        depends_on:
-            - nango-db
-        environment:
-            - DB=postgresql
-            - DB_PORT=5432
-            - POSTGRES_USER=nango
-            - POSTGRES_PWD=nango
-            - POSTGRES_SEEDS=nango-db
+    nango-redis:
+        image: redis:7.2.4
+        container_name: nango-redis
         ports:
-            - 7233:7233
+            - '6379:6379'
         networks:
             - nango
 
-    nango-redis:
-        image: "redis:latest"
-        container_name: nango-redis
+    elasticsearch:
+        container_name: elasticsearch
+        image: elasticsearch:8.13.0
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - elasticsearch-data1:/usr/share/elasticsearch/data
         ports:
-            - "6379:6379"
+            - 9500:9200
+            - 9600:9300
+        environment:
+            - discovery.type=single-node
+            - xpack.security.enabled=false
         networks:
             - nango
+        deploy:
+            resources:
+                limits:
+                    memory: 2GB
 
 networks:
     nango:
+
+volumes:
+    elasticsearch-data1:
+        driver: local

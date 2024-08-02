@@ -1,0 +1,103 @@
+name: CLI Publish & Verify
+
+on:
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
+
+concurrency:
+    group: verify-cli-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+        outputs:
+            GIT_HASH: ${{ steps.publish_step.outputs.hash }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version-file: '.nvmrc'
+                  registry-url: 'https://npm.pkg.github.com'
+                  scope: '@nangohq'
+                  always-auth: true
+            - name: Build
+              run: |
+                  npm ci
+                  npm run ts-build
+            - name: Publish packages to github registry so they can be bumped
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  function check_and_publish {
+                    PACKAGE_PATH=$1
+                    PACKAGE_NAME=$(node -p "require('./${PACKAGE_PATH}/package.json').name")
+                    PACKAGE_VERSION=$(node -p "require('./${PACKAGE_PATH}/package.json').version")
+                    if npm view ${PACKAGE_NAME}@${PACKAGE_VERSION} ; then
+                      echo "Version ${PACKAGE_VERSION} of ${PACKAGE_NAME} already exists. Skipping publish."
+                    else
+                      echo "Publishing ${PACKAGE_NAME}@${PACKAGE_VERSION}..."
+                      pushd ./${PACKAGE_PATH}
+                      npm publish --ignore-scripts
+                      popd
+                    fi
+                  }
+
+                  check_and_publish packages/node-client
+                  check_and_publish packages/shared
+                  check_and_publish packages/frontend
+                  check_and_publish packages/types
+                  check_and_publish packages/nango-yaml
+            - id: publish_step
+              name: Publish npm packages to the github registry
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              shell: bash
+              continue-on-error: true
+              run: |
+                  GIT_HASH=$(git rev-parse HEAD)
+                  echo "hash=${GIT_HASH}" >> "$GITHUB_OUTPUT"
+                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH
+            - name: Publish the cli privately under the correct scope
+              working-directory: packages/cli
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
+                  npm publish
+    verify:
+        runs-on: ubuntu-latest
+        needs: publish
+        env:
+            NANGO_CLI_UPGRADE_MODE: ignore
+            GIT_HASH: ${{ needs.publish.outputs.GIT_HASH }}
+        permissions:
+            contents: read
+            packages: write
+        steps:
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '20.12.2'
+                  registry-url: 'https://npm.pkg.github.com'
+                  scope: '@nangohq'
+                  always-auth: true
+            - name: Install the cli from the github package registry
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  npm init -y
+                  npm install nango@npm:@nangohq/cli@0.0.1-$GIT_HASH
+                  VERSION_OUTPUT=$(npx nango version)
+                  EXPECTED_VERSION="Nango CLI version: 0.0.1-$GIT_HASH"
+                  [ "$VERSION_OUTPUT" = "$EXPECTED_VERSION" ] || { echo "Version mismatch. Expected: $EXPECTED_VERSION, got: $VERSION_OUTPUT"; exit 1; }
+                  npx nango version --debug
+                  npx nango init --debug
+                  cd nango-integrations
+                  npx nango generate --debug

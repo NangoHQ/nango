@@ -16,7 +16,7 @@ Ship integrations fast. Maintain full control.
     <br />
 
   <br/>
-    <a href="https://nango.dev/integrations">150+ pre-configured APIs</a>
+    <a href="https://nango.dev/integrations">190+ pre-configured APIs</a>
     ·
     <a href="https://nango.dev">Website</a>
     ·
@@ -55,9 +55,9 @@ Nango's flexibility ensures it supports any API integration:
 2. **Custom integrations**: Build your own integrations in code with limitless customization capabilities.
 3. **Managed integrations**: Leverage Nango experts to create and maintain your integrations end-to-end.
 
-# 🔌 150+ pre-built APIs & integrations, or build your own!
+# 🔌 190+ pre-built APIs & integrations, or build your own!
 
-[Over 150 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
+[Over 190 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
 - **Accounting**: Netsuite, Quickbooks, Xero, ...
 - **Communications**: Slack, Discord, Teams, ...
 - **CRMs**: Hubspot, Salesforce, ...
@@ -84,7 +84,8 @@ Sign up for free and try the interactive demo:
 
 Our mission is to enable all SaaS to seamlessly integrate together. By being open source, every engineer can contribute improvements to the platform for everyone:
 - [Contribute an API](/customize/guides/contribute-an-api)
-- [Contribute integration templates](/customize/guides/contribute-an-integration-template)
+- [Create a custom integration](/customize/guides/create-a-custom-integration)
+- [Extend an integration template](/customize/guides/extend-an-integration-template)
 
 # 📚 Learn more
 
@@ -103,3 +104,4 @@ Thank you for continuously making Nango better ❤️
 # 🐻 History
 
 Pizzly (a simple service for OAuth) was initially developed by the team at [Bearer](https://www.bearer.com/?ref=pizzly) with contributions of more than 40 individuals. Over time the focus of Bearer shifted and they could no longer maintain Pizzly. In late 2022 the team at [Nango](https://www.nango.dev) adopted the project and has since maintained and evolved it together with the growing Nango community.
+

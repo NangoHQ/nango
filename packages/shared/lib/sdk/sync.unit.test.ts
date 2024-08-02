@@ -1,47 +1,98 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
-import { AuthModes, Template } from '../models/index.js';
+import type { Config, SyncConfig } from '../models/index.js';
+import type { Template } from '@nangohq/types';
 import configService from '../services/config.service.js';
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
-import { NangoAction } from './sync.js';
+import type { NangoProps } from './sync.js';
+import { NangoAction, NangoSync } from './sync.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 import proxyService from '../services/proxy.service.js';
 import type { AxiosResponse } from 'axios';
+import { NangoError } from '../utils/error.js';
 
-vi.mock('@nangohq/node', () => {
-    const Nango = vi.fn();
-    return { Nango };
-});
+const nangoProps: NangoProps = {
+    scriptType: 'sync',
+    secretKey: '***',
+    providerConfigKey: 'github',
+    provider: 'github',
+    connectionId: 'connection-1',
+    dryRun: false,
+    activityLogId: '1',
+    team: {
+        id: 1,
+        name: 'team'
+    },
+    environmentId: 1,
+    environmentName: 'test-env',
+    lastSyncDate: new Date(),
+    syncConfig: {} as SyncConfig,
+    syncId: '1',
+    syncJobId: 1,
+    nangoConnectionId: 1,
+    debug: false,
+    runnerFlags: {} as any,
+    startedAt: new Date()
+};
 
-describe('Proxy', () => {
+describe('cache', () => {
     let nangoAction: NangoAction;
     let nango: Nango;
     beforeEach(async () => {
         nangoAction = new NangoAction({
-            secretKey: '***',
-            providerConfigKey: 'github',
-            connectionId: 'connection-1'
+            ...nangoProps
         });
         nango = new Nango({ secretKey: '***' });
-        (await import('@nangohq/node')).Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
-        vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, activityLogs: [] }));
+        const nodeClient = (await import('@nangohq/node')).Nango;
+        nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        nodeClient.prototype.setMetadata = vi.fn().mockReturnValue({});
+        nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
+        vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, logs: [] }));
     });
     afterEach(() => {
         vi.clearAllMocks();
     });
 
-    it('memoizes connection', async () => {
-        await nangoAction.proxy({ endpoint: '/issues' });
-        await nangoAction.proxy({ endpoint: '/issues' });
-        expect(nango.getConnection).toHaveBeenCalledTimes(1);
+    describe('Proxy', () => {
+        it('memoizes connection', async () => {
+            await nangoAction.proxy({ endpoint: '/issues' });
+            await nangoAction.proxy({ endpoint: '/issues' });
+            expect(nango.getConnection).toHaveBeenCalledTimes(1);
+        });
+
+        it('get connection if memoized connection is too old', async () => {
+            await nangoAction.proxy({ endpoint: '/issues' });
+            const later = Date.now() + 61000;
+            vi.spyOn(Date, 'now').mockReturnValue(later);
+            await nangoAction.proxy({ endpoint: '/issues' });
+            expect(nango.getConnection).toHaveBeenCalledTimes(2);
+        });
     });
-    it('get connection if memoized connection is too old', async () => {
-        await nangoAction.proxy({ endpoint: '/issues' });
-        const later = Date.now() + 61000;
-        vi.spyOn(Date, 'now').mockReturnValue(later);
-        await nangoAction.proxy({ endpoint: '/issues' });
-        expect(nango.getConnection).toHaveBeenCalledTimes(2);
+
+    describe('Metadata', () => {
+        it('getMetadata should reuse connection', async () => {
+            await nangoAction.getConnection();
+            await nangoAction.getMetadata();
+            expect(nango.getConnection).toHaveBeenCalledTimes(1);
+        });
+
+        it('setMetadata should invalidate connection', async () => {
+            await nangoAction.getConnection();
+            await nangoAction.setMetadata({});
+            await nangoAction.getConnection();
+            await nangoAction.getMetadata();
+            expect(nango.getConnection).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    describe('Integration', () => {
+        it('getWebhookURL should reuse integration', async () => {
+            await nangoAction.getWebhookURL();
+            await nangoAction.getWebhookURL();
+            expect(nango.getIntegration).toHaveBeenCalledTimes(1);
+        });
     });
 });
 
@@ -92,7 +143,7 @@ describe('Pagination', () => {
 
     it('Throws error if there is no pagination config in provider template', async () => {
         const template: Template = {
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             proxy: { base_url: '' },
             authorization_url: '',
             token_url: ''
@@ -108,9 +159,8 @@ describe('Pagination', () => {
         stubProviderTemplate(cursorPagination);
         mockErrorManagerReport();
 
-        // @ts-expect-error
-        vi.spyOn(configService, 'getProviderConfig').mockImplementation((config: any) => {
-            return Promise.resolve('{}');
+        vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
+            return Promise.resolve({} as Config);
         });
 
         // TODO: mock to return at least one more page to check that cursor is passed in body too
@@ -125,6 +175,9 @@ describe('Pagination', () => {
         expect(nango.proxy).toHaveBeenCalledWith({
             method: 'POST',
             endpoint,
+            headers: {
+                'user-agent': expect.any(String)
+            },
             data: { limit: 2 },
             paginate: { limit: 2 },
             connectionId: 'abc',
@@ -157,6 +210,9 @@ describe('Pagination', () => {
         expect(nango.proxy).toHaveBeenLastCalledWith({
             method: 'GET',
             endpoint,
+            headers: {
+                'user-agent': expect.any(String)
+            },
             params: { offset: '3', per_page: 3 },
             paginate: paginationConfigOverride,
             providerConfigKey,
@@ -357,10 +413,78 @@ describe('Pagination', () => {
 
     const buildTemplate = (paginationConfig: CursorPagination | OffsetPagination | LinkPagination): Template => {
         return {
-            auth_mode: AuthModes.OAuth2,
+            auth_mode: 'OAUTH2',
             proxy: { base_url: 'https://api.github.com/', paginate: paginationConfig },
             authorization_url: '',
             token_url: ''
         };
     };
+});
+
+describe('batchSave', () => {
+    it('should validate records with json schema', async () => {
+        const nango = new NangoSync({
+            ...nangoProps,
+            dryRun: true,
+            runnerFlags: { validateSyncRecords: true } as any,
+            syncConfig: {
+                models_json_schema: {
+                    definitions: { Test: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false } }
+                }
+            } as any
+        });
+
+        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(new NangoError(`invalid_sync_record`));
+    });
+});
+
+describe('Log', () => {
+    it('should enforce activityLogId when not in dryRun', () => {
+        expect(() => {
+            new NangoAction({ ...nangoProps, activityLogId: undefined });
+        }).toThrowError(new Error('Parameter activityLogId is required when not in dryRun'));
+    });
+
+    it('should not fail on null', async () => {
+        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
+        await nangoAction.log(null);
+    });
+
+    it('should allow level', async () => {
+        const mock = vi.fn(() => ({ response: { status: 200 } }));
+        const nangoAction = new NangoAction({ ...nangoProps }, { persistApi: mock as any });
+
+        await nangoAction.log('hello', { level: 'error' });
+
+        expect(mock).toHaveBeenCalledWith({
+            data: {
+                activityLogId: '1',
+                level: 'error',
+                msg: 'hello',
+                timestamp: expect.any(Number)
+            },
+            headers: {
+                Authorization: 'Bearer ***'
+            },
+            method: 'POST',
+            url: '/environment/1/log'
+        });
+    });
+
+    it('should enforce type: log message + object + level', async () => {
+        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
+        // @ts-expect-error Level is wrong on purpose, if it's not breaking anymore the type is broken
+        await nangoAction.log('hello', { foo: 'bar' }, { level: 'foobar' });
+    });
+
+    it('should enforce type: log message +level', async () => {
+        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
+        // @ts-expect-error Level is wrong on purpose, if it's not breaking anymore the type is broken
+        await nangoAction.log('hello', { level: 'foobar' });
+    });
+
+    it('should enforce type: log message + object', async () => {
+        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
+        await nangoAction.log('hello', { foo: 'bar' });
+    });
 });

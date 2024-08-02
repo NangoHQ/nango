@@ -1,16 +1,6 @@
-import type {
-    AuthModes,
-    AppStoreCredentials,
-    AuthCredentials,
-    ApiKeyCredentials,
-    BasicApiCredentials,
-    AppCredentials,
-    AuthOperation,
-    UnauthCredentials
-} from './Auth.js';
+import type { ApiKeyCredentials, BasicApiCredentials } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
-
-export type Metadata = Record<string, string | Record<string, any>>;
+import type { AuthModeType, Metadata, ActiveLogIds, AuthOperationType, AllAuthCredentials, DBTeam, DBEnvironment } from '@nangohq/types';
 
 export type ConnectionConfig = Record<string, any>;
 
@@ -32,14 +22,31 @@ export interface StoredConnection extends BaseConnection {
 }
 
 export interface Connection extends BaseConnection {
-    credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials;
+    credentials: AllAuthCredentials;
 }
 
-export type RecentlyCreatedConnection = Pick<StoredConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'> & {
-    auth_mode: AuthModes;
-    error?: string;
-    operation: AuthOperation;
-};
+export interface RecentlyCreatedConnection {
+    connection: StoredConnection;
+    auth_mode: AuthModeType;
+    error?: FailedConnectionError;
+    operation: AuthOperationType;
+    environment: DBEnvironment;
+    account: DBTeam;
+}
+
+export interface FailedConnectionError {
+    type: string;
+    description: string;
+}
+
+export interface RecentlyFailedConnection {
+    connection: Pick<StoredConnection, 'connection_id' | 'provider_config_key'>;
+    auth_mode: AuthModeType;
+    error?: FailedConnectionError;
+    operation: AuthOperationType;
+    environment: DBEnvironment;
+    account: DBTeam;
+}
 
 export interface ApiConnection {
     id?: number;
@@ -61,6 +68,9 @@ export interface NangoConnection {
     connection_config?: ConnectionConfig;
 
     // TODO legacy while the migration is in progress
+    /**
+     * @deprecated
+     */
     account_id?: number;
 }
 
@@ -71,4 +81,5 @@ export interface ConnectionList {
     provider: string;
     created: string;
     metadata?: Metadata | null;
+    active_logs?: ActiveLogIds | null;
 }

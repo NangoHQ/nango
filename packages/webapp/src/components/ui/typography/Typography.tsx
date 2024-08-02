@@ -1,7 +1,8 @@
 import React, { forwardRef } from 'react';
 import { Tooltip } from '@geist-ui/core';
 import { HelpCircle } from '@geist-ui/icons';
-import { cva, VariantProps } from 'class-variance-authority';
+import type { VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
 import classNames from 'classnames';
 
 const typographyStyles = cva('flex gap-2 items-center tracking-tight font-bold', {

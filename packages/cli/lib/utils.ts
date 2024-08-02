@@ -1,7 +1,6 @@
-import https from 'https';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import fs from 'fs';
-import * as os from 'os';
+import os from 'os';
 import npa from 'npm-package-arg';
 import Module from 'node:module';
 import path, { dirname } from 'path';
@@ -11,10 +10,10 @@ import util from 'util';
 import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
-import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
-import { SyncConfigType, cloudHost, stagingHost } from '@nangohq/shared';
+import { cloudHost, stagingHost, NANGO_VERSION } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { state } from './state.js';
+import https from 'node:https';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -112,6 +111,10 @@ export function checkEnvVars(optionalHostport?: string) {
     }
 }
 
+export function getPkgVersion() {
+    return NANGO_VERSION;
+}
+
 export async function upgradeAction(debug = false) {
     const isRunViaNpx = process.argv.some((arg) => arg.includes('npx'));
     const locallyInstalled = isLocallyInstalled('nango', debug);
@@ -141,11 +144,11 @@ export async function upgradeAction(debug = false) {
 
     try {
         const resolved = npa('nango');
-        const { version } = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
+        const version = getPkgVersion();
         if (debug) {
             printDebug(`Version ${version} of nango is installed.`);
         }
-        const response = await axios.get(`https://registry.npmjs.org/${resolved.name}`);
+        const response = await http.get(`https://registry.npmjs.org/${resolved.name}`);
         const latestVersion = response.data['dist-tags'].latest;
 
         if (debug) {
@@ -219,13 +222,13 @@ export async function getConnection(providerConfigKey: string, connectionId: str
     if (debug) {
         printDebug(`getConnection endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
     }
-    return await axios
-        .get(url, { params: { provider_config_key: providerConfigKey }, headers, httpsAgent: httpsAgent() })
+    return await http
+        .get(url, { params: { provider_config_key: providerConfigKey }, headers })
         .then((res) => {
             return res.data;
         })
-        .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+        .catch((err: unknown) => {
+            console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
         });
 }
 
@@ -235,13 +238,13 @@ export async function getConfig(providerConfigKey: string, debug = false) {
     if (debug) {
         printDebug(`getConfig endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
     }
-    return await axios
-        .get(url, { headers, httpsAgent: httpsAgent() })
+    return await http
+        .get(url, { headers })
         .then((res) => {
             return res.data;
         })
-        .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+        .catch((err: unknown) => {
+            console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
         });
 }
 
@@ -253,166 +256,37 @@ export function enrichHeaders(headers: Record<string, string | number | boolean>
     return headers;
 }
 
-export function httpsAgent() {
-    return new https.Agent({
-        rejectUnauthorized: false
-    });
+const defaultHttpsAgent = new https.Agent({ keepAlive: true, rejectUnauthorized: false });
+export const http = axios.create({
+    httpsAgent: defaultHttpsAgent,
+    headers: { 'User-Agent': getUserAgent() }
+});
+
+export function getUserAgent(): string {
+    const clientVersion = getPkgVersion();
+    const nodeVersion = process.versions.node;
+
+    const osName = os.platform().replace(' ', '_');
+    const osVersion = os.release().replace(' ', '_');
+    return `nango-cli/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})`;
 }
 
-export function getFieldType(rawField: string | NangoModel, debug = false): string {
-    if (typeof rawField === 'string') {
-        let field = rawField;
-        let hasNull = false;
-        let hasUndefined = false;
-        let tsType = '';
-        if (field.indexOf('null') !== -1) {
-            field = field.replace(/\s*\|\s*null\s*/g, '');
-            hasNull = true;
-        }
-
-        if (field === 'undefined') {
-            if (debug) {
-                printDebug(`Field is defined undefined which isn't recommended.`);
-            }
-            return 'undefined';
-        }
-
-        if (field.indexOf('undefined') !== -1) {
-            field = field.replace(/\s*\|\s*undefined\s*/g, '');
-            hasUndefined = true;
-        }
-
-        switch (field) {
-            case 'boolean':
-            case 'bool':
-                tsType = 'boolean';
-                break;
-            case 'string':
-                tsType = 'string';
-                break;
-            case 'char':
-                tsType = 'string';
-                break;
-            case 'integer':
-            case 'int':
-            case 'number':
-                tsType = 'number';
-                break;
-            case 'date':
-                tsType = 'Date';
-                break;
-            default:
-                tsType = field;
-        }
-
-        if (hasNull) {
-            tsType = `${tsType} | null`;
-        }
-
-        if (hasUndefined) {
-            tsType = `${tsType} | undefined`;
-        }
-        return tsType;
-    } else {
-        try {
-            const nestedFields = Object.keys(rawField)
-                .map((fieldName: string) => `  ${fieldName}: ${getFieldType(rawField[fieldName] as string | NangoModel)};`)
-                .join('\n');
-            return `{\n${nestedFields}\n}`;
-        } catch (_) {
-            console.log(chalk.red(`Failed to parse field ${rawField} so just returning it back as a string`));
-            return String(rawField);
-        }
-    }
-}
-
-export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
-    const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
-        const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
-        const syncNames = Object.keys(syncObject);
-        for (const syncName of syncNames) {
-            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-            if (syncData.returns) {
-                const syncReturns = Array.isArray(syncData.returns) ? syncData.returns : [syncData.returns];
-                syncReturns.forEach((modelName) => {
-                    if (!acc.includes(modelName)) {
-                        acc.push(modelName);
-                    }
-                });
-            }
-        }
-        return acc;
-    }, [] as string[]);
-
-    if (!models) {
-        return null;
-    }
-
-    const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
-        const fields = models[modelName] as NangoModel;
-
-        // we only care that models that are returned have an ID field
-        // if the model is not returned from a sync script then it must be a
-        // helper model that is used to build the returned models
-        const syncForModel = Object.keys(integrations).find((providerConfigKey) => {
-            const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
-            const syncNames = Object.keys(syncObject);
-            for (const syncName of syncNames) {
-                const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-                if (syncData.returns && syncData.type !== SyncConfigType.ACTION) {
-                    return syncData.returns.includes(modelName);
-                }
-            }
-            return false;
-        });
-
-        if (returnedModels.includes(modelName) && !fields['id'] && syncForModel) {
-            throw new Error(`Model "${modelName}" doesn't have an id field. This is required to be able to uniquely identify the data record.`);
-        }
-
-        const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
-        const interfaceName = `${singularModelName.charAt(0).toUpperCase()}${singularModelName.slice(1)}`;
-        let extendsClause = '';
-        const fieldDefinitions = Object.keys(fields)
-            .filter((fieldName: string) => {
-                if (fieldName === '__extends') {
-                    const fieldModel = fields[fieldName] as unknown as string;
-                    const multipleExtends = fieldModel.split(',').map((e) => e.trim());
-                    extendsClause = ` extends ${multipleExtends.join(', ')}`;
-                    return false;
-                }
-                return true;
-            })
-            .map((fieldName: string) => {
-                const fieldModel = fields[fieldName] as string | NangoModel;
-                const fieldType = getFieldType(fieldModel, debug);
-                return `  ${fieldName}: ${fieldType};`;
-            })
-            .join('\n');
-        const interfaceDefinition = `export interface ${interfaceName}${extendsClause} {\n${fieldDefinitions}\n}\n`;
-        return interfaceDefinition;
-    });
-
-    return interfaceDefinitions;
-}
-
-export function getNangoRootPath(debug = false) {
+export function getNangoRootPath(debug = false): string {
     const packagePath = getPackagePath(debug);
-    if (!packagePath) {
-        if (debug) {
-            printDebug('Could not find nango cli root path locally');
-        }
-        return null;
-    }
+    const rootPath = path.resolve(packagePath, '..');
 
     if (debug) {
-        printDebug(`Found the nango cli root path at ${path.resolve(packagePath, '..')}`);
+        printDebug(`Found the nango cli root path at ${rootPath}`);
     }
 
-    return path.resolve(packagePath, '..');
+    return rootPath;
 }
 
-function getPackagePath(debug = false) {
+function getPackagePath(debug = false): string {
+    if (process.env['CI'] || process.env['VITEST']) {
+        return path.join(__dirname);
+    }
+
     try {
         if (isLocallyInstalled('nango', debug)) {
             if (debug) {
@@ -436,18 +310,11 @@ function getPackagePath(debug = false) {
 }
 
 export async function parseSecretKey(environment: string, debug = false): Promise<void> {
-    if (process.env['NANGO_SECRET_KEY_PROD'] && environment === 'prod') {
+    if (process.env[`NANGO_SECRET_KEY_${environment.toUpperCase()}`]) {
         if (debug) {
-            printDebug(`Environment is set to prod, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_PROD.`);
+            printDebug(`Environment is set to ${environment}, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_${environment.toUpperCase()}.`);
         }
-        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_PROD'];
-    }
-
-    if (process.env['NANGO_SECRET_KEY_DEV'] && environment === 'dev') {
-        if (debug) {
-            printDebug(`Environment is set to dev, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_DEV.`);
-        }
-        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_DEV'];
+        process.env['NANGO_SECRET_KEY'] = process.env[`NANGO_SECRET_KEY_${environment.toUpperCase()}`];
     }
 
     if (!process.env['NANGO_SECRET_KEY']) {
@@ -464,4 +331,16 @@ export async function parseSecretKey(environment: string, debug = false): Promis
             process.exit(1);
         }
     }
+}
+
+/**
+ * Convert Windows backslash paths to slash paths.
+ * From https://github.com/sindresorhus/slash/blob/main/index.js
+ */
+export function slash(path: string) {
+    const isExtendedLengthPath = path.startsWith('\\\\?\\');
+    if (isExtendedLengthPath) {
+        return path;
+    }
+    return path.replace(/\\/g, '/');
 }

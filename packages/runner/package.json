@@ -5,8 +5,8 @@
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
+    "private": true,
     "scripts": {
-        "build": "rimraf ./dist && tsc",
         "start": "node dist/app.js",
         "dev": "nodemon"
     },
@@ -18,19 +18,23 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/shared": "^0.39.4",
-        "@trpc/client": "^10.44.0",
-        "@trpc/server": "^10.44.0",
+        "@nangohq/shared": "file:../shared",
+        "@nangohq/utils": "file:../utils",
+        "@trpc/client": "^10.45.1",
+        "@trpc/server": "^10.45.1",
+        "axios": "^1.2.0",
+        "botbuilder": "^4.22.3",
         "connect-timeout": "^1.9.0",
         "dd-trace": "5.2.0",
-        "express": "^4.18.2",
+        "express": "^4.19.2",
         "superjson": "^2.2.1",
-        "undici": "6.6.2",
+        "undici": "6.12.0",
         "zod": "^3.22.4"
     },
     "devDependencies": {
         "@types/connect-timeout": "^0.0.39",
-        "@types/node": "^18.7.6",
-        "typescript": "^5.3.3"
+        "@types/node": "20.12.2",
+        "typescript": "5.3.3",
+        "vitest": "1.6.0"
     }
 }

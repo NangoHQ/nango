@@ -1,26 +1,29 @@
-import { Fragment } from 'react';
-import { Tabs, SubTabs, EndpointResponse } from './Show';
+import * as Table from '../../components/ui/Table';
+import type { Tabs, SubTabs, EndpointResponse } from './Show';
 import EndpointRow from './components/EndpointRow';
-import HelpFooter from './components/HelpFooter';
-import { IntegrationConfig, Account, Flow } from '../../types';
+import { HelpFooter } from './components/HelpFooter';
+import type { EnvironmentAndAccount } from '@nangohq/server';
+import type { IntegrationConfig, Flow, FlowEndpoint } from '../../types';
+import { EmptyState } from '../../components/EmptyState';
 
 interface APIReferenceProps {
     integration: IntegrationConfig | null;
     setActiveTab: (tab: Tabs) => void;
     endpoints: EndpointResponse;
-    account: Account;
+    environment: EnvironmentAndAccount['environment'];
     setSubTab: (tab: SubTabs) => void;
     setFlow: (flow: Flow) => void;
+    setEndpoint: (endpoint: FlowEndpoint | string) => void;
 }
 
 export default function APIReference(props: APIReferenceProps) {
-    const { integration, endpoints, setSubTab, setFlow } = props;
+    const { integration, endpoints, setSubTab, setFlow, setEndpoint } = props;
 
     const allFlows = [
-        ...(endpoints?.enabledFlows?.syncs || []),
-        ...(endpoints?.enabledFlows?.actions || []),
-        ...(endpoints?.unEnabledFlows?.syncs || []),
-        ...(endpoints?.unEnabledFlows?.actions || [])
+        ...(endpoints?.allFlows?.syncs || []),
+        ...(endpoints?.allFlows?.actions || []),
+        ...(endpoints?.disabledFlows?.syncs || []),
+        ...(endpoints?.disabledFlows?.actions || [])
     ];
     // if any element in the array has elements in the endpoints array then return true
     const hasEndpoints = allFlows.some((flow) => flow.endpoints.length > 0);
@@ -28,45 +31,58 @@ export default function APIReference(props: APIReferenceProps) {
     return (
         <div className="h-fit rounded-md text-white text-sm">
             {!hasEndpoints ? (
-                <div className="flex flex-col border border-border-gray rounded-md text-white text-sm text-center p-10">
-                    <h2 className="text-xl text-center w-full">No available endpoint</h2>
-                    <div className="mt-4 text-gray-400">
-                        There is no{' '}
-                        <a
-                            className="text-text-blue hover:text-text-light-blue"
-                            href="https://docs.nango.dev/understand/concepts/templates"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            integration template
-                        </a>{' '}
-                        available for this API yet.
+                <EmptyState
+                    title="No available endpoints"
+                    help={
+                        <>
+                            There is no{' '}
+                            <a
+                                className="text-text-blue hover:text-text-light-blue"
+                                href="https://docs.nango.dev/understand/concepts/templates"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                integration template
+                            </a>{' '}
+                            available for this API yet.
+                        </>
+                    }
+                >
+                    <div className="mt-10">
+                        <HelpFooter />
                     </div>
-                    <HelpFooter />
-                </div>
+                </EmptyState>
             ) : (
                 <>
-                    <table className="w-[976px]">
-                        <tbody className="flex flex-col max-w-[976px]">
-                            <tr>
-                                <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-active-gray border border-neutral-800 rounded-md">
-                                    <div className="w-0">Endpoint</div>
-                                    <div className="w-64 -ml-11">Description</div>
-                                    <div className="">Enabled</div>
-                                </td>
-                            </tr>
-                            {allFlows.map((flow, flowIndex) => (
-                                <Fragment key={flowIndex}>
-                                    {flow.endpoints.map((endpoint, index: number) => (
-                                        <tr key={`tr-${flow.name}-${flowIndex}-${index}`}>
-                                            <EndpointRow flow={flow} endpoint={endpoint} integration={integration} setSubTab={setSubTab} setFlow={setFlow} />
-                                        </tr>
-                                    ))}
-                                </Fragment>
-                            ))}
-                        </tbody>
-                    </table>
-                    <HelpFooter />
+                    <Table.Table className="table-fixed">
+                        <Table.Header>
+                            <Table.Row>
+                                <Table.Head className="w-[300px]">Endpoint</Table.Head>
+                                <Table.Head className="w-[400px]">Description</Table.Head>
+                                <Table.Head className="w-[60px]">Enabled</Table.Head>
+                            </Table.Row>
+                        </Table.Header>
+                        <Table.Body>
+                            {allFlows.map((flow, flowIndex) => {
+                                return flow.endpoints.map((endpoint, index: number) => {
+                                    return (
+                                        <EndpointRow
+                                            key={`tr-${flow.name}-${flowIndex}-${index}`}
+                                            flow={flow}
+                                            endpoint={endpoint}
+                                            integration={integration}
+                                            setSubTab={setSubTab}
+                                            setFlow={setFlow}
+                                            setEndpoint={setEndpoint}
+                                        />
+                                    );
+                                });
+                            })}
+                        </Table.Body>
+                    </Table.Table>
+                    <div className="mt-10">
+                        <HelpFooter />
+                    </div>
                 </>
             )}
         </div>

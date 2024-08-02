@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { AdjustmentsHorizontalIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import type { EnvironmentAndAccount } from '@nangohq/server';
 import { Prism } from '@mantine/prism';
 import Button from '../../components/ui/button/Button';
-import CopyButton from '../../components/ui/button/CopyButton';
+import { CopyButton } from '../../components/ui/button/CopyButton';
 import Info from '../../components/ui/Info';
 import EndpointLabel from './components/EndpointLabel';
-import { NangoSyncEndpoint, IntegrationConfig, FlowEndpoint, Flow, Account } from '../../types';
-import { nodeSnippet, nodeActionSnippet, curlSnippet } from '../../utils/language-snippets';
-import { parseInput, generateResponseModel } from '../../utils/utils';
+import type { IntegrationConfig, FlowEndpoint, Flow } from '../../types';
+import { nodeSyncSnippet, nodeActionSnippet, curlSnippet } from '../../utils/language-snippets';
 import { Tabs, SubTabs } from './Show';
 import { useStore } from '../../store';
+import { getSyncResponse, modelToString } from '../../utils/scripts';
+import type { NangoModel } from '@nangohq/types';
 
 enum Language {
     Node = 0,
@@ -21,47 +23,62 @@ enum Language {
 }
 
 interface EndpointReferenceProps {
-    account: Account;
+    environment: EnvironmentAndAccount['environment'];
     integration: IntegrationConfig;
+    activeEndpoint: string | FlowEndpoint | null;
     activeFlow: Flow | null;
     setSubTab: (tab: SubTabs) => void;
     setActiveTab: (tab: Tabs) => void;
 }
 
+const connectionId = '<CONNECTION-ID>';
 export default function EndpointReference(props: EndpointReferenceProps) {
-    const { account, integration, activeFlow, setSubTab, setActiveTab } = props;
+    const { environment, integration, activeFlow, setSubTab, setActiveTab, activeEndpoint } = props;
 
     const [showParametersOpen, setShowParametersOpen] = useState(false);
     const [language, setLanguage] = useState<Language>(Language.Node);
     const [syncSnippet, setSyncSnippet] = useState('');
     const [jsonResponseSnippet, setJsonResponseSnippet] = useState('');
 
-    const connectionId = '<CONNECTION-ID>';
-
     const baseUrl = useStore((state) => state.baseUrl);
 
     useEffect(() => {
-        if (activeFlow) {
-            setSyncSnippet(
-                activeFlow?.type === 'sync'
-                    ? nodeSnippet(activeFlow?.models, account?.secret_key, connectionId, integration?.unique_key)
-                    : nodeActionSnippet(activeFlow?.name, account?.secret_key, connectionId, integration?.unique_key, parseInput(activeFlow))
-            );
-
-            const jsonModel = generateResponseModel(
-                activeFlow?.models,
-                Array.isArray(activeFlow?.returns) ? activeFlow?.returns[0] : activeFlow.returns,
-                activeFlow?.type === 'sync'
-            );
-            if (activeFlow?.type === 'sync') {
-                setJsonResponseSnippet(
-                    JSON.stringify({ records: [{ ...jsonModel }], next_cursor: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz...' }, null, 2)
-                );
-            } else {
-                setJsonResponseSnippet(JSON.stringify(jsonModel, null, 2));
-            }
+        if (!activeFlow) {
+            return;
         }
-    }, [activeFlow, account, integration?.unique_key]);
+
+        const activeEndpointIndex = activeFlow.endpoints.findIndex((endpoint) => endpoint === activeEndpoint);
+        const outputModelName = Array.isArray(activeFlow.returns) ? activeFlow.returns[activeEndpointIndex] : activeFlow.returns;
+        // This code is completely valid but webpack is complaining for some obscure reason
+        const outputModel = (activeFlow.models as unknown as NangoModel[]).find((m) => m.name === outputModelName);
+
+        if (language === Language.Node) {
+            setSyncSnippet(
+                activeFlow.type === 'sync'
+                    ? nodeSyncSnippet({
+                          modelName: activeFlow.models[0].name,
+                          secretKey: environment.secret_key,
+                          connectionId,
+                          providerConfigKey: integration.unique_key
+                      })
+                    : nodeActionSnippet({
+                          actionName: activeFlow.name,
+                          secretKey: environment.secret_key,
+                          connectionId,
+                          providerConfigKey: integration.unique_key,
+                          input: activeFlow.input
+                      })
+            );
+        } else {
+            setSyncSnippet(curlSnippet(baseUrl, activeFlow?.endpoints[0], environment.secret_key, connectionId, integration.unique_key, activeFlow.input));
+        }
+
+        if (activeFlow.type === 'sync') {
+            setJsonResponseSnippet(outputModel ? getSyncResponse(outputModel) : 'no response');
+        } else {
+            setJsonResponseSnippet(outputModel ? modelToString(outputModel) : 'no response');
+        }
+    }, [activeFlow, environment, integration.unique_key, activeEndpoint, language]);
 
     const routeToFlow = () => {
         setActiveTab(Tabs.Scripts);
@@ -72,10 +89,10 @@ export default function EndpointReference(props: EndpointReferenceProps) {
         <div className="text-white">
             <div className="flex flex-col z-10 mt-4 text-gray-400">
                 <span className="flex items-center">
-                    <EndpointLabel endpoint={activeFlow?.endpoints[0] as string | FlowEndpoint} type={activeFlow?.type as string} />
+                    <EndpointLabel endpoint={activeEndpoint as string | FlowEndpoint} type={activeFlow?.type as string} />
                     <AdjustmentsHorizontalIcon onClick={routeToFlow} className="flex h-5 w-5 ml-2 cursor-pointer" />
                 </span>
-                {activeFlow?.description && <span className="mt-2">{activeFlow?.description}</span>}
+                {activeFlow?.description && <span className="mt-2">{activeFlow.description}</span>}
             </div>
             {!activeFlow?.version && activeFlow?.version === null && (
                 <Info size={18} classNames="mt-10 mb-10 z-10" padding="px-4 py-1.5" color="orange">
@@ -94,51 +111,26 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                         <div className="flex items-center space-x-4">
                             <Button
                                 type="button"
-                                variant={`${language === Language.Node ? 'active' : 'hover'}`}
+                                variant={language === Language.Node ? 'active' : 'hover'}
                                 className={`cursor-default ${language === Language.Node ? 'pointer-events-none' : 'cursor-pointer'}`}
                                 onClick={() => {
-                                    if (language !== Language.Node) {
-                                        setSyncSnippet(
-                                            activeFlow?.type === 'sync'
-                                                ? nodeSnippet(activeFlow?.models, account?.secret_key, connectionId, integration?.unique_key)
-                                                : nodeActionSnippet(
-                                                      activeFlow?.name as string,
-                                                      account?.secret_key,
-                                                      connectionId,
-                                                      integration?.unique_key,
-                                                      parseInput(activeFlow as Flow)
-                                                  )
-                                        );
-                                        setLanguage(Language.Node);
-                                    }
+                                    setLanguage(Language.Node);
                                 }}
                             >
                                 Node
                             </Button>
                             <Button
                                 type="button"
-                                variant={`${language === Language.cURL ? 'active' : 'hover'}`}
+                                variant={language === Language.cURL ? 'active' : 'hover'}
                                 className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
                                 onClick={() => {
-                                    if (language !== Language.cURL) {
-                                        setSyncSnippet(
-                                            curlSnippet(
-                                                baseUrl,
-                                                activeFlow?.endpoints[0] as NangoSyncEndpoint,
-                                                account?.secret_key,
-                                                connectionId,
-                                                integration?.unique_key,
-                                                parseInput(activeFlow as Flow)
-                                            )
-                                        );
-                                        setLanguage(Language.cURL);
-                                    }
+                                    setLanguage(Language.cURL);
                                 }}
                             >
                                 cURL
                             </Button>
                         </div>
-                        <CopyButton dark text={syncSnippet} />
+                        <CopyButton text={syncSnippet} />
                     </div>
                     <Prism noCopy language="typescript" className="p-3 transparent-code" colorScheme="dark">
                         {syncSnippet}
@@ -217,27 +209,11 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                                     type="button"
                                     variant="active"
                                     className={`cursor-default ${language === Language.Node ? 'pointer-events-none' : 'cursor-pointer'}`}
-                                    onClick={() => {
-                                        if (language !== Language.Node) {
-                                            setSyncSnippet(
-                                                activeFlow?.type === 'sync'
-                                                    ? nodeSnippet(activeFlow?.models, account?.secret_key, connectionId, integration?.unique_key)
-                                                    : nodeActionSnippet(
-                                                          activeFlow?.name as string,
-                                                          account?.secret_key,
-                                                          connectionId,
-                                                          integration?.unique_key,
-                                                          parseInput(activeFlow as Flow)
-                                                      )
-                                            );
-                                            setLanguage(Language.Node);
-                                        }
-                                    }}
                                 >
                                     JSON
                                 </Button>
                             </div>
-                            <CopyButton dark text={jsonResponseSnippet} />
+                            <CopyButton text={jsonResponseSnippet} />
                         </div>
                         <Prism noCopy language="json" className="p-3 transparent-code" colorScheme="dark">
                             {jsonResponseSnippet}

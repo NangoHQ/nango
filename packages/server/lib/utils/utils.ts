@@ -1,42 +1,32 @@
-import { fileURLToPath } from 'url';
-import path from 'path';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import type { Request } from 'express';
-import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse } from '@nangohq/shared';
-import logger from './logger.js';
+import type { User } from '@nangohq/shared';
+import type { Template as ProviderTemplate } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
-import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
+import { NangoError, userService, interpolateString, Orchestrator, getOrchestratorUrl } from '@nangohq/shared';
+import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
-export async function getUserAccountAndEnvironmentFromSession(
-    req: Request<any, any>
-): Promise<ServiceResponse<{ user: User; account: Account; environment: Environment }>> {
+const logger = getLogger('Server.Utils');
+
+export async function getUserFromSession(req: Request<any>): Promise<Result<User, NangoError>> {
     const sessionUser = req.user;
-    const currentEnvironment = req.cookies['env'] || 'dev';
-
-    if (sessionUser == null) {
+    if (!sessionUser) {
         const error = new NangoError('user_not_found');
 
-        return { success: false, error, response: null };
+        return Err(error);
     }
 
     const user = await userService.getUserById(sessionUser.id);
 
-    if (user == null) {
+    if (!user) {
         const error = new NangoError('user_not_found');
-        return { success: false, error, response: null };
+        return Err(error);
     }
 
-    const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
-
-    if (environmentAndAccount == null) {
-        const error = new NangoError('account_not_found');
-        return { success: false, error, response: null };
-    }
-
-    const { account, environment } = environmentAndAccount as { account: Account; environment: Environment };
-
-    const response = { user, account, environment };
-
-    return { success: true, error: null, response };
+    return Ok(user);
 }
 
 export function dirname() {
@@ -124,19 +114,31 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
 }
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
-    if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers) {
+    if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers || template.proxy?.verification) {
         const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
-        const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
+        const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
         const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
-        const proxyBaseUrlMatches = template.proxy?.base_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const proxyBaseUrlMatches = template.proxy?.base_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
         const proxyHeaderMatches = template.proxy?.headers
             ? Array.from(new Set(Object.values(template.proxy.headers).flatMap((header) => header.match(/\${connectionConfig\.([^{}]*)}/g) || [])))
             : [];
         const proxyMatches = [...proxyBaseUrlMatches, ...proxyHeaderMatches].filter(
-            // we ignore config params in proxy attributes that are also in the token response metadata or redirect url metadata
-            (param) => [...(template.token_response_metadata || []), ...(template.redirect_uri_metadata || [])].indexOf(cleanParamName(param)) == -1
+            // we ignore config params in proxy attributes that are also in the
+            // - token response metadata
+            // - redirect url metadata
+            // - connection_configuration - this is what is parsed from the post connection script
+            (param) =>
+                ![
+                    ...(template.token_response_metadata || []),
+                    ...(template.redirect_uri_metadata || []),
+                    ...(template.connection_configuration || [])
+                ].includes(cleanParamName(param))
         );
-        return [...tokenUrlMatches, ...authorizationUrlMatches, ...proxyMatches]
+        const proxyVerificationMatches =
+            template.proxy?.verification?.endpoint.match(/\${connectionConfig\.([^{}]*)}/g) ||
+            template.proxy?.verification?.base_url_override?.match(/\${connectionConfig\.([^{}]*)}/g) ||
+            [];
+        return [...tokenUrlMatches, ...authorizationUrlMatches, ...proxyMatches, ...proxyVerificationMatches]
             .map(cleanParamName)
             .filter((value, index, array) => array.indexOf(value) === index); // remove duplicates
     }
@@ -332,4 +334,12 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
 
 export function resetPasswordSecret() {
     return process.env['NANGO_ADMIN_KEY'] || 'nango';
+}
+
+export function getOrchestratorClient() {
+    return new OrchestratorClient({ baseUrl: getOrchestratorUrl() });
+}
+
+export function getOrchestrator() {
+    return new Orchestrator(getOrchestratorClient());
 }

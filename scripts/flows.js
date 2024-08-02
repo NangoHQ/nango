@@ -1,6 +1,7 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import yaml from 'js-yaml';
+import { exec } from 'node:child_process';
 
 const rootDir = './integration-templates';
 
@@ -42,9 +43,14 @@ fs.readdirSync(rootDir).forEach((serviceDir) => {
 
                 for (const model in nangoData.models) {
                     if (nangoData.models[model].__extends) {
-                        const extendedModel = nangoData.models[model].__extends;
-                        const fullModel = nangoData.models[extendedModel];
-                        nangoData.models[model] = { ...fullModel };
+                        const extendedModel = nangoData.models[model].__extends.split(',');
+                        for (const modelToExtend of extendedModel) {
+                            const fullModel = nangoData.models[modelToExtend];
+                            nangoData.models[model] = { ...fullModel, ...nangoData.models[model] };
+                        }
+
+                        // remove extends key
+                        delete nangoData.models[model].__extends;
                     }
                 }
                 output.integrations[integrationName].models = {
@@ -60,4 +66,11 @@ fs.readdirSync(rootDir).forEach((serviceDir) => {
     }
 });
 
-fs.writeFileSync(path.join('./packages/shared', 'flows.yaml'), yaml.dump(output));
+const filePath = path.join('./packages/shared', 'flows.yaml');
+fs.writeFileSync(filePath, yaml.dump(output));
+exec(`npx prettier ${filePath} -w`, (error) => {
+    if (error) {
+        console.error('An error occured during prettier', error);
+        process.exit(1);
+    }
+});

@@ -1,10 +1,12 @@
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
-import Nango from '@nangohq/frontend';
+import { useSWRConfig } from 'swr';
+import Nango, { AuthError } from '@nangohq/frontend';
 import { Prism } from '@mantine/prism';
 import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
+import type { Integration } from '@nangohq/server';
 
 import useSet from '../../hooks/useSet';
 import { isHosted, isStaging, baseUrl } from '../../utils/utils';
@@ -16,47 +18,49 @@ import { LeftNavBarItems } from '../../components/LeftNavBar';
 import SecretInput from '../../components/ui/input/SecretInput';
 import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { useStore } from '../../store';
-import { AuthModes } from '../../types';
+import type { AuthModeType } from '@nangohq/types';
 import { useEnvironment } from '../../hooks/useEnvironment';
 
-interface Integration {
-    authMode: AuthModes;
-    uniqueKey: string;
-    provider: string;
-    connection_count: number;
-    creationDate: string;
-    connectionConfigParams: string[];
-}
-
 export default function IntegrationCreate() {
+    const { mutate } = useSWRConfig();
+    const env = useStore((state) => state.env);
+
     const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [integrations, setIntegrations] = useState<Integration[] | null>(null);
     const navigate = useNavigate();
     const [integration, setIntegration] = useState<Integration | null>(null);
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
-    const [authMode, setAuthMode] = useState<AuthModes>(AuthModes.OAuth2);
+    const [authMode, setAuthMode] = useState<AuthModeType>('OAUTH2');
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
     const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
     const [authorizationParamsError, setAuthorizationParamsError] = useState<boolean>(false);
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
+    const [oauthSelectedScopes, oauthAddToScopesSet, oauthRemoveFromSelectedSet] = useSet<string>();
+    const [oauthccSelectedScopes, oauthccAddToScopesSet, oauthccRemoveFromSelectedSet] = useSet<string>();
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
-    const [websocketsPath, setWebsocketsPath] = useState('');
+    const [websocketsPath, setWebsocketsPath] = useState<string>('');
     const [isHmacEnabled, setIsHmacEnabled] = useState(false);
     const [hmacDigest, setHmacDigest] = useState('');
-    const getIntegrationListAPI = useGetIntegrationListAPI();
+    const getIntegrationListAPI = useGetIntegrationListAPI(env);
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
+    const [oAuthClientId, setOAuthClientId] = useState('');
+    const [tokenId, setTokenId] = useState('');
+    const [tokenSecret, setTokenSecret] = useState('');
+    const [patName, setpatName] = useState('');
+    const [patSecret, setpatSecret] = useState('');
+    const [contentUrl, setContentUrl] = useState('');
+    const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
     const [issuerId, setIssuerId] = useState('');
     const analyticsTrack = useAnalyticsTrack();
-    const getHmacAPI = useGetHmacAPI();
+    const getHmacAPI = useGetHmacAPI(env);
     const { providerConfigKey } = useParams();
-    const env = useStore((state) => state.cookieValue);
-    const { environment } = useEnvironment();
+    const { environmentAndAccount } = useEnvironment(env);
 
     useEffect(() => {
         setLoaded(false);
@@ -72,9 +76,9 @@ export default function IntegrationCreate() {
             }
         };
         if (isHmacEnabled && integration?.uniqueKey && connectionId) {
-            getHmac();
+            void getHmac();
         }
-    }, [isHmacEnabled, integration?.uniqueKey, connectionId, getHmacAPI]);
+    }, [isHmacEnabled, integration?.uniqueKey, connectionId]);
 
     useEffect(() => {
         const getIntegrations = async () => {
@@ -96,11 +100,11 @@ export default function IntegrationCreate() {
             }
         };
 
-        if (environment) {
+        if (environmentAndAccount) {
+            const { environment, host } = environmentAndAccount;
             setPublicKey(environment.public_key);
-            setHostUrl(environment.host || baseUrl());
-            setWebsocketsPath(environment.websockets_path);
-            setHmacDigest(environment.hmac_digest ?? '');
+            setHostUrl(host || baseUrl());
+            setWebsocketsPath(environment.websockets_path || '');
             setIsHmacEnabled(Boolean(environment.hmac_key));
         }
 
@@ -108,9 +112,9 @@ export default function IntegrationCreate() {
             setLoaded(true);
             void getIntegrations();
         }
-    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, environment, setPublicKey, providerConfigKey]);
+    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, environmentAndAccount, setPublicKey, providerConfigKey]);
 
-    const handleCreate = async (e: React.SyntheticEvent) => {
+    const handleCreate = (e: React.SyntheticEvent) => {
         e.preventDefault();
         setServerErrorMessage('');
 
@@ -125,21 +129,25 @@ export default function IntegrationCreate() {
         const nango = new Nango({ host: hostUrl, websocketsPath, publicKey });
 
         let credentials = {};
+        let params = connectionConfigParams || {};
 
-        if (authMode === AuthModes.Basic) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        Object.keys(params).forEach((key) => params[key] === '' && delete params[key]);
+
+        if (authMode === 'BASIC') {
             credentials = {
                 username: apiAuthUsername,
                 password: apiAuthPassword
             };
         }
 
-        if (authMode === AuthModes.ApiKey) {
+        if (authMode === 'API_KEY') {
             credentials = {
                 apiKey
             };
         }
 
-        if (authMode === AuthModes.AppStore) {
+        if (authMode === 'APP_STORE') {
             credentials = {
                 privateKeyId,
                 issuerId,
@@ -147,9 +155,53 @@ export default function IntegrationCreate() {
             };
         }
 
-        nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
+        if (authMode === 'OAUTH2' || authMode === 'TBA') {
+            credentials = {
+                oauth_client_id_override: oAuthClientId,
+                oauth_client_secret_override: oAuthClientSecret
+            };
+
+            if (oauthSelectedScopes.length > 0) {
+                params = {
+                    ...params,
+                    oauth_scopes_override: oauthSelectedScopes.join(',')
+                };
+            }
+        }
+
+        if (authMode === 'OAUTH2_CC') {
+            credentials = {
+                client_id: oAuthClientId,
+                client_secret: oAuthClientSecret
+            };
+
+            if (oauthccSelectedScopes.length > 0) {
+                params = {
+                    ...params,
+                    oauth_scopes: oauthccSelectedScopes.join(',')
+                };
+            }
+        }
+
+        if (authMode === 'TBA') {
+            credentials = {
+                ...credentials,
+                token_id: tokenId,
+                token_secret: tokenSecret
+            };
+        }
+
+        if (authMode === 'TABLEAU') {
+            credentials = {
+                pat_name: patName,
+                pat_secret: patSecret,
+                content_url: contentUrl
+            };
+        }
+
+        nango[authMode === 'NONE' ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
             user_scope: selectedScopes || [],
-            params: connectionConfigParams || {},
+            params,
             authorization_params: authorizationParams || {},
             hmac: hmacDigest || '',
             credentials
@@ -157,10 +209,11 @@ export default function IntegrationCreate() {
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
+                void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
                 navigate(`/${env}/connections`, { replace: true });
             })
-            .catch((err: { message: string; type: string }) => {
-                setServerErrorMessage(`${err.type} error: ${err.message}`);
+            .catch((err: unknown) => {
+                setServerErrorMessage(err instanceof AuthError ? `${err.type} error: ${err.message}` : 'unknown error');
             });
     };
 
@@ -232,9 +285,27 @@ export default function IntegrationCreate() {
         // Iterate of connection config params and create a string.
         if (connectionConfigParams != null && Object.keys(connectionConfigParams).length >= 0) {
             connectionConfigParamsStr = 'params: { ';
+            let hasAnyValue = false;
             for (const [key, value] of Object.entries(connectionConfigParams)) {
-                connectionConfigParamsStr += `${key}: '${value}', `;
+                if (value !== '') {
+                    connectionConfigParamsStr += `${key}: '${value}', `;
+                    hasAnyValue = true;
+                }
             }
+            connectionConfigParamsStr = connectionConfigParamsStr.slice(0, -2);
+            connectionConfigParamsStr += ' }';
+            if (!hasAnyValue) {
+                connectionConfigParamsStr = '';
+            }
+        }
+
+        if (authMode === 'OAUTH2' && oauthSelectedScopes.length > 0) {
+            if (connectionConfigParamsStr) {
+                connectionConfigParamsStr += ', ';
+            } else {
+                connectionConfigParamsStr = 'params: { ';
+            }
+            connectionConfigParamsStr += `oauth_scopes_override: '${oauthSelectedScopes.join(',')}', `;
             connectionConfigParamsStr = connectionConfigParamsStr.slice(0, -2);
             connectionConfigParamsStr += ' }';
         }
@@ -269,48 +340,152 @@ export default function IntegrationCreate() {
         }
 
         let apiAuthString = '';
-        if (integration?.authMode === AuthModes.ApiKey) {
+        if (integration?.authMode === 'API_KEY') {
             apiAuthString = `
     credentials: {
       apiKey: '${apiKey}'
-}`;
+    }
+  `;
         }
 
-        if (integration?.authMode === AuthModes.Basic) {
+        if (integration?.authMode === 'BASIC') {
             apiAuthString = `
     credentials: {
       username: '${apiAuthUsername}',
       password: '${apiAuthPassword}'
-}`;
+    }
+  `;
         }
 
         let appStoreAuthString = '';
 
-        if (integration?.authMode === AuthModes.AppStore) {
+        if (integration?.authMode === 'APP_STORE') {
             appStoreAuthString = `
     credentials: {
         privateKeyId: '${privateKeyId}',
         issuerId: '${issuerId}',
         privateKey: '${privateKey}'
-}`;
+    }
+  `;
+        }
+
+        let oauthCredentialsString = '';
+
+        if (integration?.authMode === 'OAUTH2' && oAuthClientId && oAuthClientSecret) {
+            oauthCredentialsString = `
+    credentials: {
+        oauth_client_id_override: '${oAuthClientId}',
+        oauth_client_secret_override: '${oAuthClientSecret}'
+    }
+  `;
+        }
+        let tbaCredentialsString = '';
+        if (integration?.authMode === 'TBA') {
+            if (oAuthClientId && oAuthClientSecret) {
+                tbaCredentialsString = `
+    credentials: {
+        token_id: '${tokenId}',
+        token_secret: '${tokenSecret}',
+        oauth_client_id_override: '${oAuthClientId}',
+        oauth_client_secret_override: '${oAuthClientSecret}'
+    }
+  `;
+            } else {
+                tbaCredentialsString = `
+    credentials: {
+        token_id: '${tokenId}',
+        token_secret: '${tokenSecret}'
+    }
+  `;
+            }
+        }
+
+        let tableauCredentialsString = '';
+        if (integration?.authMode === 'TABLEAU') {
+            if (patName && patSecret && contentUrl) {
+                tableauCredentialsString = `
+    credentials: {
+        pat_name: '${patName}',
+        pat_secret: '${patSecret}',
+        content_url: '${contentUrl}'
+    }
+  `;
+            }
+        }
+
+        let oauth2ClientCredentialsString = '';
+
+        if (integration?.authMode === 'OAUTH2_CC') {
+            if (oAuthClientId && oAuthClientSecret) {
+                oauth2ClientCredentialsString = `
+    credentials: {
+        client_id: '${oAuthClientId}',
+        client_secret: '${oAuthClientSecret}'
+    }
+  `;
+            }
+
+            if (oAuthClientId && !oAuthClientSecret) {
+                oauth2ClientCredentialsString = `
+    credentials: {
+        client_id: '${oAuthClientId}'
+    }
+  `;
+            }
+
+            if (!oAuthClientId && oAuthClientSecret) {
+                oauth2ClientCredentialsString = `
+    credentials: {
+        client_secret: '${oAuthClientSecret}'
+    }
+  `;
+            }
+
+            if (authMode === 'OAUTH2_CC' && oauthccSelectedScopes.length > 0) {
+                connectionConfigParamsStr = connectionConfigParamsStr ? `${connectionConfigParamsStr.slice(0, -2)}, ` : 'params: { ';
+                connectionConfigParamsStr += `oauth_scopes: '${oauthccSelectedScopes.join(',')}' }`;
+            }
         }
 
         const connectionConfigStr =
-            !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr && !apiAuthString && !appStoreAuthString
+            !connectionConfigParamsStr &&
+            !authorizationParamsStr &&
+            !userScopesStr &&
+            !hmacKeyStr &&
+            !apiAuthString &&
+            !appStoreAuthString &&
+            !oauthCredentialsString &&
+            !oauth2ClientCredentialsString &&
+            !tableauCredentialsString &&
+            !tbaCredentialsString
                 ? ''
                 : ', { ' +
-                  [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString, appStoreAuthString].filter(Boolean).join(', ') +
-                  ' }';
+                  [
+                      connectionConfigParamsStr,
+                      authorizationParamsStr,
+                      hmacKeyStr,
+                      userScopesStr,
+                      apiAuthString,
+                      appStoreAuthString,
+                      oauthCredentialsString,
+                      oauth2ClientCredentialsString,
+                      tableauCredentialsString,
+                      tbaCredentialsString
+                  ]
+                      .filter(Boolean)
+                      .join(', ') +
+                  '}';
 
         return `import Nango from '@nangohq/frontend';
 
 const nango = new Nango(${argsStr});
 
-nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
+  .then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
-}).catch((err: { message: string; type: string }) => {
+  }).catch((err: { message: string; type: string }) => {
     // handle error
-});`;
+  });`;
     };
 
     return (
@@ -396,6 +571,194 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
+                            {authMode === 'OAUTH2_CC' && (
+                                <>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Client ID</span>
+                                        </div>
+                                        <div className="flex text-white mt-1 items-center">
+                                            <div className="w-full relative">
+                                                <SecretInput
+                                                    copy={true}
+                                                    id="oauth_client_id"
+                                                    name="oauth_client_id"
+                                                    placeholder="Find the Client ID on the developer portal of the external API provider."
+                                                    optionalvalue={oAuthClientId}
+                                                    setoptionalvalue={setOAuthClientId}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Client Secret</span>
+                                        </div>
+                                        <div className="mt-1">
+                                            <SecretInput
+                                                copy={true}
+                                                id="client_secret"
+                                                name="client_secret"
+                                                autoComplete="one-time-code"
+                                                placeholder="Find the Client Secret on the developer portal of the external API provider."
+                                                required
+                                                optionalvalue={oAuthClientSecret}
+                                                setoptionalvalue={setOAuthClientSecret}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Scopes</span>
+                                        </div>
+                                        <div className="mt-1">
+                                            <TagsInput
+                                                id="oauth_scopes"
+                                                name="oauth_scopes"
+                                                type="text"
+                                                defaultValue={''}
+                                                selectedScopes={oauthccSelectedScopes}
+                                                addToScopesSet={oauthccAddToScopesSet}
+                                                removeFromSelectedSet={oauthccRemoveFromSelectedSet}
+                                                minLength={1}
+                                                onChange={() => null}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {integration?.provider.includes('netsuite') && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                            OAuth Credentials Override
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="oauth_client_id"
+                                            name="oauth_client_id"
+                                            placeholder="OAuth Client ID Override"
+                                            optionalvalue={oAuthClientId}
+                                            setoptionalvalue={setOAuthClientId}
+                                        />
+                                    </div>
+                                    <div className="mt-8">
+                                        <SecretInput
+                                            copy={true}
+                                            id="oauth_client_secret"
+                                            name="oauth_client_secret"
+                                            placeholder="OAuth Client Secret Override"
+                                            optionalvalue={oAuthClientSecret}
+                                            setoptionalvalue={setOAuthClientSecret}
+                                        />
+                                    </div>
+                                    {integration?.provider !== 'netsuite-tba' && (
+                                        <>
+                                            <div className="flex mt-6">
+                                                <label htmlFor="oauth_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                                    OAuth Scope Override
+                                                </label>
+                                            </div>
+                                            <div className="mt-1">
+                                                <TagsInput
+                                                    id="scopes"
+                                                    name="oauth_scopes"
+                                                    type="text"
+                                                    defaultValue={''}
+                                                    onChange={() => null}
+                                                    selectedScopes={oauthSelectedScopes}
+                                                    addToScopesSet={oauthAddToScopesSet}
+                                                    removeFromSelectedSet={oauthRemoveFromSelectedSet}
+                                                    minLength={1}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+
+                            {integration?.authMode === 'TBA' && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="token_id" className="text-text-light-gray block text-sm font-semibold">
+                                            Token ID
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="token_id"
+                                            name="token_id"
+                                            placeholder="Token ID"
+                                            optionalvalue={tokenId}
+                                            setoptionalvalue={setTokenId}
+                                        />
+                                    </div>
+                                    <div className="mt-4">
+                                        <label htmlFor="token_secret" className="text-text-light-gray block text-sm font-semibold">
+                                            Token Secret
+                                        </label>
+                                        <SecretInput
+                                            copy={true}
+                                            id="token_secret"
+                                            name="token_secret"
+                                            placeholder="Token secret"
+                                            optionalvalue={tokenSecret}
+                                            setoptionalvalue={setTokenSecret}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {integration?.authMode === 'TABLEAU' && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="pat_name" className="text-text-light-gray block text-sm font-semibold">
+                                            PAT Name
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="pat_name"
+                                            name="pat_name"
+                                            placeholder="PAT Name"
+                                            optionalvalue={patName}
+                                            setoptionalvalue={setpatName}
+                                        />
+                                    </div>
+                                    <div className="mt-4">
+                                        <label htmlFor="pat_secret" className="text-text-light-gray block text-sm font-semibold">
+                                            PAT Secret
+                                        </label>
+                                        <SecretInput
+                                            copy={true}
+                                            id="pat_secret"
+                                            name="pat_secret"
+                                            placeholder="PAT Secret"
+                                            optionalvalue={patSecret}
+                                            setoptionalvalue={setpatSecret}
+                                        />
+                                    </div>
+                                    <div className="mt-4">
+                                        <label htmlFor="content_url" className="text-text-light-gray block text-sm font-semibold">
+                                            Conent Url
+                                        </label>
+                                        <SecretInput
+                                            copy={true}
+                                            id="content_url"
+                                            name="content_url"
+                                            placeholder="Conent Url"
+                                            value={contentUrl}
+                                            setoptionalvalue={setContentUrl}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                             {integration?.connectionConfigParams?.map((paramName: string) => (
                                 <div key={paramName}>
                                     <div className="flex mt-6">
@@ -438,16 +801,16 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             ))}
 
-                            {(authMode === AuthModes.ApiKey || authMode === AuthModes.Basic) && (
+                            {(authMode === 'API_KEY' || authMode === 'BASIC') && (
                                 <div>
                                     <div>
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                             Auth Type
                                         </label>
-                                        <p className="mt-3 mb-5">{`${authMode}`}</p>
+                                        <p className="mt-3 mb-5">{authMode}</p>
                                     </div>
 
-                                    {authMode === AuthModes.Basic && (
+                                    {authMode === 'BASIC' && (
                                         <div>
                                             <div className="flex mt-6">
                                                 <label htmlFor="username" className="text-text-light-gray block text-sm font-semibold">
@@ -482,7 +845,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                             </div>
                                         </div>
                                     )}
-                                    {authMode === AuthModes.ApiKey && (
+                                    {authMode === 'API_KEY' && (
                                         <div>
                                             <div className="flex mt-6">
                                                 <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
@@ -516,7 +879,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
-                            {authMode === AuthModes.App && (
+                            {authMode === 'APP' && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="optional_authorization_params" className="text-text-light-gray block text-sm font-semibold">
@@ -551,7 +914,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
-                            {authMode === AuthModes.AppStore && (
+                            {authMode === 'APP_STORE' && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
@@ -642,7 +1005,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 </div>
                             )}
 
-                            {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && (
+                            {(authMode === 'OAUTH1' || authMode === 'OAUTH2') && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="optional_authorization_params" className="text-text-light-gray block text-sm font-semibold">
@@ -681,7 +1044,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                 {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}
                                 <div className="flex">
                                     <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
-                                        {authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2 ? <>Start OAuth Flow</> : <>Create Connection</>}
+                                        {authMode === 'OAUTH1' || authMode === 'OAUTH2' ? <>Start OAuth Flow</> : <>Create Connection</>}
                                     </button>
                                     <label htmlFor="email" className="text-text-light-gray block text-sm pt-5 ml-4">
                                         or from your frontend:

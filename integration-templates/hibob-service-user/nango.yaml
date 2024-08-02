@@ -1,35 +1,34 @@
 integrations:
-  hibob-service-user:
-    syncs:
-      hibob-employees:
-        runs: every hour
-        description: |
-          Returns a list of all active employees.
-          Details: full sync, doesn't track deletes, metadata is not required.
-        output: HibobEmployee
-        sync_type: full
-        endpoint: /hibob-service-user/hibob-employees
+    hibob-service-user:
+        syncs:
+            employees:
+                runs: every hour
+                description: |
+                    Fetches a list of all active employees
+                output: HibobEmployee
+                sync_type: full
+                endpoint: GET /hibob-service-user/hibob-employees
 models:
-  HibobEmployee:
-    id: string
-    firstName: string
-    surname: string
-    email: string
-    displayName: string
-    personal:
-      honorific: string
-      shortBirthDate: string
-      gender: string
-    about:
-      avatar: string
-      hobbies: string[]
-    work:
-      reportsTo:
+    HibobEmployee:
         id: string
         firstName: string
         surname: string
         email: string
-      title: string
-      department: string
-      site: string
-      startDate: date
+        displayName: string
+        personal:
+            honorific: string
+            shortBirthDate: string
+            gender: string
+        about:
+            avatar: string
+            hobbies: string[]
+        work:
+            reportsTo:
+                id: string
+                firstName: string
+                surname: string
+                email: string
+            title: string
+            department: string
+            site: string
+            startDate: date

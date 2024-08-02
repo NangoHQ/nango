@@ -1,12 +1,12 @@
 import * as crypto from 'node:crypto';
-import { schema } from '../db/database.js';
-import type { Environment } from '../models/Environment.js';
+import { schema } from '@nangohq/database';
+import type { DBEnvironment } from '@nangohq/types';
 
 class HmacService {
     private algorithm = 'sha256';
 
     async isEnabled(id: number): Promise<boolean> {
-        const result = await schema().select('hmac_enabled').from<Environment>('_nango_environments').where({ id });
+        const result = await schema().select('hmac_enabled').from<DBEnvironment>('_nango_environments').where({ id });
 
         const enabled = result[0]?.hmac_enabled ?? false;
 
@@ -14,7 +14,7 @@ class HmacService {
     }
 
     async getKey(id: number): Promise<string> {
-        const result = await schema().select('hmac_key').from<Environment>('_nango_environments').where({ id });
+        const result = await schema().select('hmac_key').from<DBEnvironment>('_nango_environments').where({ id });
 
         const key = result[0]?.hmac_key ?? '';
 

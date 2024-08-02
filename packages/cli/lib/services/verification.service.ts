@@ -1,26 +1,32 @@
 import fs from 'fs';
-import glob from 'glob';
 import chalk from 'chalk';
-import path from 'path';
 import promptly from 'promptly';
-import { exec } from 'child_process';
+import path from 'path';
 
-import { nangoConfigFile, loadLocalNangoConfig, determineVersion } from '@nangohq/shared';
-import configService from './config.service.js';
-import compileService from './compile.service.js';
-import { printDebug, getNangoRootPath } from '../utils.js';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
+import { parse } from './config.service.js';
+import { compileAllFiles, listFilesToCompile } from './compile.service.js';
+import { printDebug } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
 import { init, generate } from '../cli.js';
 
 class VerificationService {
-    public async necessaryFilesExist(autoConfirm: boolean, debug = false, checkDist = false) {
-        const cwd = process.cwd();
+    public async necessaryFilesExist({
+        fullPath,
+        autoConfirm,
+        debug = false,
+        checkDist = false
+    }: {
+        fullPath: string;
+        autoConfirm: boolean;
+        debug?: boolean;
+        checkDist?: boolean;
+    }) {
         if (debug) {
-            printDebug(`Current full working directory is read as: ${cwd}`);
+            printDebug(`Current full working directory is read as: ${fullPath}`);
         }
-        const currentDirectorySplit = cwd.split(/[\/\\]/);
-        const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
 
+        const currentDirectory = path.basename(fullPath);
         if (debug) {
             printDebug(`Current stripped directory is read as: ${currentDirectory}`);
         }
@@ -30,7 +36,7 @@ class VerificationService {
             process.exit(1);
         }
 
-        if (!fs.existsSync(`./${nangoConfigFile}`)) {
+        if (!fs.existsSync(path.join(fullPath, nangoConfigFile))) {
             const install = autoConfirm
                 ? true
                 : await promptly.confirm(`No ${nangoConfigFile} file was found. Would you like to create some default integrations and build them? (yes/no)`);
@@ -39,9 +45,9 @@ class VerificationService {
                 if (debug) {
                     printDebug(`Running init, generate, and tsc to create ${nangoConfigFile} file, generate the integration files and then compile them.`);
                 }
-                init(debug);
-                await generate(debug);
-                await compileService.run(debug);
+                init({ absolutePath: fullPath, debug });
+                generate({ fullPath, debug });
+                await compileAllFiles({ fullPath, debug });
             } else {
                 console.log(chalk.red(`Exiting...`));
                 process.exit(1);
@@ -56,7 +62,7 @@ class VerificationService {
             return;
         }
 
-        const distDir = './dist';
+        const distDir = path.join(fullPath, 'dist');
 
         if (!fs.existsSync(distDir)) {
             if (debug) {
@@ -71,8 +77,8 @@ class VerificationService {
                     printDebug(`Creating the dist directory and generating the default integration files.`);
                 }
                 fs.mkdirSync(distDir);
-                await generate(debug);
-                await compileService.run(debug);
+                generate({ fullPath, debug });
+                await compileAllFiles({ fullPath, debug });
             }
         } else {
             const files = fs.readdirSync(distDir);
@@ -88,53 +94,27 @@ class VerificationService {
                     if (debug) {
                         printDebug(`Generating the default integration files.`);
                     }
-                    await compileService.run(debug);
+                    await compileAllFiles({ fullPath, debug });
                 }
             }
         }
     }
 
-    public async runMigration(loadLocation: string): Promise<void> {
-        if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
-            return;
-        }
-        const localConfig = await loadLocalNangoConfig(loadLocation);
+    public filesMatchConfig({ fullPath }: { fullPath: string }): boolean {
+        const { success, error, response } = parse(fullPath);
 
-        if (!localConfig) {
-            return;
-        }
-
-        const version = determineVersion(localConfig);
-        if (version === 'v2') {
-            console.log(chalk.blue(`nango.yaml is already at v2.`));
-        }
-        if (version === 'v1' && localConfig.integrations) {
-            exec(`node ${getNangoRootPath()}/scripts/v1-v2.js ./${nangoConfigFile}`, (error) => {
-                if (error) {
-                    console.log(chalk.red(`There was an issue migrating your nango.yaml to v2.`));
-                    console.error(error);
-                    return;
-                }
-                console.log(chalk.blue(`Migrated to v2 of nango.yaml!`));
-            });
-        }
-    }
-
-    public async filesMatchConfig(): Promise<boolean> {
-        const { success, error, response: config } = await configService.load();
-
-        if (!success || !config) {
+        if (!success || !response?.parsed) {
             console.log(chalk.red(error?.message));
-            throw new Error('Failed to load config');
+            return false;
         }
 
-        const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
-        const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
+        const syncNames = response.parsed.integrations.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
+        const actionNames = response.parsed.integrations.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);
 
-        const tsFiles = glob.sync(`./*.ts`);
+        const tsFiles = listFilesToCompile({ fullPath, parsed: response.parsed });
 
-        const tsFileNames = tsFiles.filter((file) => !file.includes('models.ts')).map((file) => path.basename(file, '.ts'));
+        const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
 
         const missingSyncsAndActions = flows.filter((syncOrActionName) => !tsFileNames.includes(syncOrActionName));
 

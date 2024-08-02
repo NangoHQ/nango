@@ -325,19 +325,19 @@ await nango.listConnections();
 Returns a specific connection with credentials.
 
 ```js
-await nango.getConnection();
+await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 ```
 
 <Info>
-The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth). 
+The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.). 
 
 If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/integrate/guides/proxy-requests-to-an-api)).
 </Info>
 
 <Tip>
-Every time you fetch the connection with this API endpoint, Nango will check if the access token has expired. If it has, it will refresh it.
+When you fetch the connection with this API endpoint, Nango will check if the access token has expired. If it has, it will refresh it.
 
-**We recommend you always fetch the token just before you use it to make sure it is fresh!**
+We recommend not caching tokens for longer than 5 minutes to ensure they are fresh.
 </Tip>
 
 **Parameters**
@@ -346,16 +346,13 @@ Every time you fetch the connection with this API endpoint, Nango will check if 
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-
     <ResponseField name="connectionId" type="string" required>
         The connection ID.
     </ResponseField>
-
-    <ResponseField name="forceRefresh" type="string">
+    <ResponseField name="forceRefresh" type="boolean">
         Defaults to `false`. If `false`, the token will only be refreshed if it expires within 15 minutes. If `true`, a token refresh attempt will happen on each request. This is only useful for testing and should not be done at high traffic.
     </ResponseField>
-
-    <ResponseField name="refreshToken" type="string">
+    <ResponseField name="refreshToken" type="boolean">
         Defaults to `false`. If `false`, the refresh token is not included in the response, otherwise it is. In production, it is not advised to return the refresh token, for security reasons, since only the access token is needed to sign requests.
     </ResponseField>
 </Expandable>
@@ -437,10 +434,13 @@ const myTypedMetadata = await nango.getMetadata<CustomMetadata>('<INTEGRATION-ID
 
 ### Set connection metadata
 
-Set custom metadata for the connection (overrides existing metadata).
+Set custom metadata for the connection or connections (overrides existing metadata).
 
 ```js
 await nango.setMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
+
+# set an array of connection ids
+await nango.setMetadata('<INTEGRATION-ID>', ['CONNECTION-ID', 'CONNECTION-ID-TWO'], { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
 ```
 
 **Parameters**
@@ -450,8 +450,8 @@ await nango.setMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1': 'C
         The integration ID of the connection.
     </ResponseField>
 
-    <ResponseField name="connectionId" type="string" required>
-        The connection ID.
+    <ResponseField name="connectionId" type="string | string[]" required>
+        The connection ID or connection IDs.
     </ResponseField>
 
     <ResponseField name="metadata" type="Record<string, any>" required>
@@ -461,14 +461,27 @@ await nango.setMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1': 'C
 
 **Response**
 
-Empty response.
+<Expandable>
+```json
+{
+    "connection_id": "<string | [string]>",
+    "provider_config_key": "<string>",
+    "metadata": {
+        "CUSTOM_KEY1": "CUSTOM_VALUE1"
+    }
+}
+```
+</Expandable>
 
 ### Edit connection metadata
 
-Edit custom metadata for the connection. Only overrides specified properties, not the entire metadata.
+Edit custom metadata for the connection or connections. Only overrides specified properties, not the entire metadata.
 
 ```js
 await nango.updateMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
+
+# update an array of connection ids
+await nango.updateMetadata('<INTEGRATION-ID>', ['CONNECTION-ID', 'CONNECTION-ID-TWO'], { 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
 ```
 
 **Parameters**
@@ -478,8 +491,8 @@ await nango.updateMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1':
         The integration ID of the connection.
     </ResponseField>
 
-    <ResponseField name="connectionId" type="string" required>
-        The connection ID.
+    <ResponseField name="connectionId" type="string | string[]" required>
+        The connection ID or connection IDs.
     </ResponseField>
 
     <ResponseField name="metadata" type="Record<string, any>" required>
@@ -489,7 +502,17 @@ await nango.updateMetadata('<INTEGRATION-ID>', 'CONNECTION-ID', { 'CUSTOM_KEY1':
 
 **Response**
 
-Empty response.
+<Expandable>
+```json
+{
+    "connection_id": "<string | [string]>",
+    "provider_config_key": "<string>",
+    "metadata": {
+        "CUSTOM_KEY1": "CUSTOM_VALUE1"
+    }
+}
+```
+</Expandable>
 
 ### Delete a connection
 
@@ -515,12 +538,12 @@ await nango.deleteConnection('<INTEGRATION-ID>', 'CONNECTION-ID');
 
 Empty response.
 
-# Scripts
+# Integration scripts
 
 
-### Get scripts config
+### Get integration scripts config
 
-Return the configuration for all scripts
+Return the configuration for all integration scripts
 
 ```ts
 const scriptsConfig = await nango.getScriptsConfig();
@@ -935,7 +958,7 @@ await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', 'SYNC_NAME', '<CON
         The connection ID. 
     </ResponseField>
     <ResponseField name="frequency" type="string" required>
-        The frequency you want to set (ex: 'every hour'). Set to `null` to revert to the default frequency.
+        The frequency you want to set (ex: 'every hour'). Set to `null` to revert to the default frequency.  Uses the https://github.com/vercel/ms notations. Min frequency: 5 minutes.
     </ResponseField>
 </Expandable>
 
@@ -1013,17 +1036,20 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
 
 # Proxy
 
-### Proxy - GET requests
-
-Triggers an action for a connection.
+Makes an HTTP request using the [proxy](/understand/concepts/proxy):
 
 ```js
-const res = await nango.get({
-    endpoint: '/endpoint',
+const config = { 
+    endpoint: '/some-endpoint',
     providerConfigKey: '<INTEGRATION-ID>',
-    connectionId: '<CONNECTION-ID>',
-    baseUrlOverride: 'https://base-url.com'
-});
+    connectionId: '<CONNECTION-ID>'
+};
+
+await nango.get(config); // GET request
+await nango.post(config); // POST request
+await nango.put(config); // PUT request
+await nango.patch(config); // PATCH request
+await nango.delete(config); // DELETE request
 ```
 
 **Parameters**
@@ -1078,258 +1104,6 @@ The response from the external API is passed back to you exactly as Nango gets i
 </Expandable>
 
 
-### Proxy - POST requests
-
-Triggers an action for a connection.
-
-```js
-const res = await nango.post({
-    endpoint: '/endpoint',
-    providerConfigKey: '<INTEGRATION-ID>',
-    connectionId: '<CONNECTION-ID>',
-    baseUrlOverride: 'https://base-url.com'
-});
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="config" type="object" required>
-        <Expandable title="config" defaultOpen>
-            <ResponseField name="endpoint" type="string" required>
-                The endpoint of the request.
-            </ResponseField>
-            <ResponseField name="providerConfigKey" type="string" required>
-                The integration ID (for credential injection).
-            </ResponseField>
-            <ResponseField name="connectionId" type="string" required>
-                The connection ID (for credential injection). 
-            </ResponseField>
-            <ResponseField name="headers" type="Record<string, string>">
-                The headers of the request.
-            </ResponseField>
-            <ResponseField name="params" type="Record<string, string | number>">
-                The query parameters of the request.
-            </ResponseField>
-            <ResponseField name="data" type="unkown">
-                The body of the request.
-            </ResponseField>
-            <ResponseField name="retries" type="number">
-                The number of retries in case of failure (with exponential back-off). Optional, default 0.
-            </ResponseField>
-            <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
-            </ResponseField>
-            <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
-            </ResponseField>
-            <ResponseField name="decompress" type="boolean">
-                Override the decompress option when making requests. Optional, defaults to false
-            </ResponseField>
-            <ResponseField name="responseType" type="'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'">
-                The type of the response. 
-            </ResponseField>
-        </Expandable>
-    </ResponseField>
-</Expandable>
-
-**Response**
-
-<Expandable>
-The response from the external API is passed back to you exactly as Nango gets it:
-- response code
-- response headers
-- response body
-</Expandable>
-
-### Proxy - PUT requests
-
-Triggers an action for a connection.
-
-```js
-const res = await nango.put({
-    endpoint: '/endpoint',
-    providerConfigKey: '<INTEGRATION-ID>',
-    connectionId: '<CONNECTION-ID>',
-    baseUrlOverride: 'https://base-url.com'
-});
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="config" type="object" required>
-        <Expandable title="config" defaultOpen>
-            <ResponseField name="endpoint" type="string" required>
-                The endpoint of the request.
-            </ResponseField>
-            <ResponseField name="providerConfigKey" type="string" required>
-                The integration ID (for credential injection).
-            </ResponseField>
-            <ResponseField name="connectionId" type="string" required>
-                The connection ID (for credential injection). 
-            </ResponseField>
-            <ResponseField name="headers" type="Record<string, string>">
-                The headers of the request.
-            </ResponseField>
-            <ResponseField name="params" type="Record<string, string | number>">
-                The query parameters of the request.
-            </ResponseField>
-            <ResponseField name="data" type="unkown">
-                The body of the request.
-            </ResponseField>
-            <ResponseField name="retries" type="number">
-                The number of retries in case of failure (with exponential back-off). Optional, default 0.
-            </ResponseField>
-            <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
-            </ResponseField>
-            <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
-            </ResponseField>
-            <ResponseField name="decompress" type="boolean">
-                Override the decompress option when making requests. Optional, defaults to false
-            </ResponseField>
-            <ResponseField name="responseType" type="'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'">
-                The type of the response. 
-            </ResponseField>
-        </Expandable>
-    </ResponseField>
-</Expandable>
-
-**Response**
-
-<Expandable>
-The response from the external API is passed back to you exactly as Nango gets it:
-- response code
-- response headers
-- response body
-</Expandable>
-
-### Proxy - PATCH requests
-
-Triggers an action for a connection.
-
-```js
-const res = await nango.patch({
-    endpoint: '/endpoint',
-    providerConfigKey: '<INTEGRATION-ID>',
-    connectionId: '<CONNECTION-ID>',
-    baseUrlOverride: 'https://base-url.com'
-});
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="config" type="object" required>
-        <Expandable title="config" defaultOpen>
-            <ResponseField name="endpoint" type="string" required>
-                The endpoint of the request.
-            </ResponseField>
-            <ResponseField name="providerConfigKey" type="string" required>
-                The integration ID (for credential injection).
-            </ResponseField>
-            <ResponseField name="connectionId" type="string" required>
-                The connection ID (for credential injection). 
-            </ResponseField>
-            <ResponseField name="headers" type="Record<string, string>">
-                The headers of the request.
-            </ResponseField>
-            <ResponseField name="params" type="Record<string, string | number>">
-                The query parameters of the request.
-            </ResponseField>
-            <ResponseField name="data" type="unkown">
-                The body of the request.
-            </ResponseField>
-            <ResponseField name="retries" type="number">
-                The number of retries in case of failure (with exponential back-off). Optional, default 0.
-            </ResponseField>
-            <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
-            </ResponseField>
-            <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
-            </ResponseField>
-            <ResponseField name="decompress" type="boolean">
-                Override the decompress option when making requests. Optional, defaults to false
-            </ResponseField>
-            <ResponseField name="responseType" type="'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'">
-                The type of the response. 
-            </ResponseField>
-        </Expandable>
-    </ResponseField>
-</Expandable>
-
-**Response**
-
-<Expandable>
-The response from the external API is passed back to you exactly as Nango gets it:
-- response code
-- response headers
-- response body
-</Expandable>
-
-### Proxy - DELETE requests
-
-Triggers an action for a connection.
-
-```js
-const res = await nango.delete({
-    endpoint: '/endpoint',
-    providerConfigKey: '<INTEGRATION-ID>',
-    connectionId: '<CONNECTION-ID>',
-    baseUrlOverride: 'https://base-url.com'
-});
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="config" type="object" required>
-        <Expandable title="config" defaultOpen>
-            <ResponseField name="endpoint" type="string" required>
-                The endpoint of the request.
-            </ResponseField>
-            <ResponseField name="providerConfigKey" type="string" required>
-                The integration ID (for credential injection).
-            </ResponseField>
-            <ResponseField name="connectionId" type="string" required>
-                The connection ID (for credential injection). 
-            </ResponseField>
-            <ResponseField name="headers" type="Record<string, string>">
-                The headers of the request.
-            </ResponseField>
-            <ResponseField name="params" type="Record<string, string | number>">
-                The query parameters of the request.
-            </ResponseField>
-            <ResponseField name="data" type="unkown">
-                The body of the request.
-            </ResponseField>
-            <ResponseField name="retries" type="number">
-                The number of retries in case of failure (with exponential back-off). Optional, default 0.
-            </ResponseField>
-            <ResponseField name="retryOn" type="number[]">
-                Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
-            </ResponseField>
-            <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
-            </ResponseField>
-            <ResponseField name="decompress" type="boolean">
-                Override the decompress option when making requests. Optional, defaults to false
-            </ResponseField>
-            <ResponseField name="responseType" type="'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'">
-                The type of the response. 
-            </ResponseField>
-        </Expandable>
-    </ResponseField>
-</Expandable>
-
-**Response**
-
-<Expandable>
-The response from the external API is passed back to you exactly as Nango gets it:
-- response code
-- response headers
-- response body
-</Expandable>
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

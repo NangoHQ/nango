@@ -1,0 +1,12 @@
+{
+    "federalAgency": {
+        "name": "Test123"
+    },
+    "name": "Cool opp",
+    "dueDate": "2019-12-31",
+    "description": "This is a cool opportunity",
+    "city": "San Francisco",
+    "state": "CA",
+    "country": "USA",
+    "stage": "08-Shortlisted"
+}

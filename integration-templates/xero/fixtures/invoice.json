@@ -1,0 +1,11 @@
+[
+    {
+        "external_contact_id": "69559f1c-5b66-4320-826d-892cc34c4934",
+        "type": "ACCPAY",
+        "fees": [
+            {
+                "description": "yes"
+            }
+        ]
+    }
+]

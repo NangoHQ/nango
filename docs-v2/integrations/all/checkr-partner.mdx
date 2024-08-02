@@ -1,0 +1,56 @@
+---
+title: Checkr Partner
+sidebarTitle: Checkr Partner
+---
+
+API configurations: [`checkr-partner`](https://nango.dev/providers.yaml), [`checkr-partner-staging`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [How to register a partner Application](https://docs.checkr.com/partners/#section/Getting-Started/Create-a-Partner-Application-for-your-Checkr-account)
+-   [OAuth related docs](https://docs.checkr.com/partners/#section/Getting-Started/Connect-your-customers-to-Checkr)
+-   [Checkr API docs](https://docs.checkr.com/)
+-   [Checkr rate limiting](https://docs.checkr.com/#section/Reference/Rate-limiting)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-  As a partner you are provided with both staging and a production account. For more details check [staging vs production accounts](https://docs.checkr.com/partners/#section/Getting-Started/Staging-vs-Production-accounts)
+-  The `access_token` generated are long lived, until revoked and don't need to be refreshed.
+-  Checkr requires partners to comply with a quick integration review so as to make the integration production ready. For more details check [production approval process](https://docs.checkr.com/partners/#section/Production-Approval-Process)
+-  After creating a connection, Checkr requires you to pass the `access_token` as Basic Authentication as follows:
+```js
+        const connection = await nango.getConnection();
+        let access_token: string;
+        if ('access_token' in connection.credentials) {
+            access_token = connection.credentials.access_token;
+        } else {
+            throw new nango.ActionError({
+                message: `access_token is missing`
+            });
+        }
+        const config = {
+            endpoint: '/v1/account',
+            headers: {
+                Authorization: 'Basic ' + Buffer.from(access_token + ':').toString('base64')
+            }
+        }
+
+        const response = await nango.get(config);
+```
+- You can have a look at the following simple [sync template](/integrations/integration-templates/checkr-partner) based on [Checkr retrieve authenticated account details](https://docs.checkr.com/#tag/Account)
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/checkr-partner.mdx)</Note>
