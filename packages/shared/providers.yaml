@@ -944,6 +944,7 @@ fiserv:
     auth_mode: OAUTH2_CC
     token_url: https://cert.api.fiservapps.com/fts-apim/oauth2/v2
     token_request_auth_method: basic
+    expires_in_unit: milliseconds
     token_params:
         grant_type: client_credentials
     proxy:

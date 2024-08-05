@@ -105,5 +105,5 @@ async function fetchDriveItemDetails(nango: NangoSync, siteId: string, listId: s
         retries: 10
     });
 
-    return toFile(response.data);
+    return toFile(response.data, siteId);
 }
