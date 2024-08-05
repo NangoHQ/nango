@@ -4,11 +4,23 @@ import { Input } from '../../../../../components/ui/input/Input';
 import { InfoBloc } from '../../../../../components/InfoBloc';
 import SecretTextarea from '../../../../../components/ui/input/SecretTextArea';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
+import { DeleteIntegrationButton } from './Delete';
+import Button from '../../../../../components/ui/button/Button';
+import { useState } from 'react';
+import { useStore } from '../../../../../store';
 
 export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
     data: { integration },
     environment
 }) => {
+    const env = useStore((state) => state.env);
+    const [loading, setLoading] = useState(false);
+
+    const onSave = () => {
+        setLoading(true);
+        setLoading(false);
+    };
+
     return (
         <div className="mt-10 flex flex-col gap-10">
             {environment.callback_url && (
@@ -62,6 +74,13 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
                     required
                 />
             </InfoBloc>
+
+            <div className="flex justify-between">
+                {integration && <DeleteIntegrationButton env={env} integration={integration} />}
+                <Button variant={'primary'} onClick={onSave} isLoading={loading}>
+                    Save
+                </Button>
+            </div>
         </div>
     );
 };

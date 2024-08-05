@@ -9,10 +9,10 @@ import { Input } from '../../../../../components/ui/input/Input';
 import { useState } from 'react';
 import { DeleteIntegrationButton } from './Delete';
 import { useStore } from '../../../../../store';
-import TagsInput from '../../../../../components/ui/input/TagsInput';
+import SecretTextarea from '../../../../../components/ui/input/SecretTextArea';
 
-export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
-    data: { integration, template },
+export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
+    data: { integration },
     environment
 }) => {
     const env = useStore((state) => state.env);
@@ -31,6 +31,35 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
             </InfoBloc>
 
             <div className="flex flex-col gap-10 mt-10">
+                <div className="flex gap-10">
+                    <InfoBloc title="App ID">
+                        <Input
+                            id="app_id"
+                            name="app_id"
+                            type="text"
+                            defaultValue={integration.oauth_client_id}
+                            placeholder="Obtain the app id from the app page."
+                            required
+                            minLength={1}
+                            variant={'flat'}
+                            after={<CopyButton text={integration.oauth_client_id} />}
+                        />
+                    </InfoBloc>
+                    <InfoBloc title="App Public Link">
+                        <Input
+                            id="app_link"
+                            name="app_link"
+                            type="text"
+                            defaultValue={integration.app_link}
+                            placeholder="Obtain the app public link from the app page."
+                            required
+                            minLength={1}
+                            variant={'flat'}
+                            after={<CopyButton text={integration.app_link || ''} />}
+                        />
+                    </InfoBloc>
+                </div>
+
                 <InfoBloc title="Client ID">
                     <Input
                         id="client_id"
@@ -58,11 +87,19 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
                     />
                 </InfoBloc>
 
-                {template.auth_mode !== 'TBA' && (
-                    <InfoBloc title="Scopes">
-                        <TagsInput id="scopes" name="scopes" type="text" defaultValue={integration.oauth_scopes || ''} minLength={1} />
-                    </InfoBloc>
-                )}
+                <InfoBloc
+                    title="App Private Key"
+                    help={<p>Obtain the app private key from the app page by downloading the private key and pasting the entirety of its contents here</p>}
+                >
+                    <SecretTextarea
+                        copy={true}
+                        id="private_key"
+                        name="private_key"
+                        defaultValue={integration.oauth_client_secret}
+                        additionalClass={`w-full`}
+                        required
+                    />
+                </InfoBloc>
 
                 <div className="flex justify-between">
                     {integration && <DeleteIntegrationButton env={env} integration={integration} />}

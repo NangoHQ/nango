@@ -5,10 +5,12 @@ import type { ApiIntegration } from '@nangohq/types';
 import { useToast } from '../../../../../hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 import { mutate } from 'swr';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../../../components/ui/Dialog';
 
 export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIntegration }> = ({ env, integration }) => {
     const { toast } = useToast();
     const navigate = useNavigate();
+    const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const onDelete = async () => {
@@ -20,15 +22,34 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
         if ('error' in deleted.json) {
             toast({ title: deleted.json.error.message || 'Failed to delete, an error occurred', variant: 'error' });
         } else {
-            toast({ title: `Deleted integration ${integration.unique_key}`, variant: 'success' });
+            toast({ title: `Integration "${integration.unique_key}" has been deleted`, variant: 'success' });
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integration`), undefined);
             navigate(`/${env}/integrations`);
         }
     };
 
     return (
-        <Button type="button" variant={'danger'} onClick={onDelete} isLoading={loading}>
-            Delete
-        </Button>
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button type="button" variant={'danger'} isLoading={loading}>
+                    Delete
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogTitle>Delete integration?</DialogTitle>
+                <DialogDescription>
+                    You are about to permanently delete this integration, all of its associated connections and records. This operation is not reversible, are
+                    you sure you wish to continue?
+                </DialogDescription>
+                <DialogFooter className="mt-4">
+                    <DialogClose asChild>
+                        <Button variant={'zinc'}>Cancel</Button>
+                    </DialogClose>
+                    <Button variant={'danger'} onClick={onDelete} isLoading={loading}>
+                        Delete integration, connections and records
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
