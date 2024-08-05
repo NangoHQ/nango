@@ -15,7 +15,7 @@ import type {
     PostDeployConfirmation
 } from '@nangohq/types';
 import { stagingHost, cloudHost } from '@nangohq/shared';
-import { compileAllFiles, resolveTsFileLocation } from './compile.service.js';
+import { compileSingleFile, compileAllFiles, resolveTsFileLocation, getFileToCompile } from './compile.service.js';
 
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
@@ -132,7 +132,35 @@ class DeployService {
 
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
-        const successfulCompile = await compileAllFiles({ fullPath, debug });
+        let successfulCompile = false;
+
+        if (singleDeployMode) {
+            const scriptName: string = String(optionalSyncName || optionalActionName);
+            const type = optionalSyncName ? 'syncs' : 'actions';
+            const providerConfigKey = response.parsed.integrations.find((integration) => {
+                if (optionalSyncName) {
+                    return integration.syncs.find((sync) => sync.name === scriptName);
+                } else {
+                    return integration.actions.find((action) => action.name === scriptName);
+                }
+            })?.providerConfigKey;
+
+            if (providerConfigKey) {
+                const parentFilePath = resolveTsFileLocation({ fullPath, scriptName, providerConfigKey, type });
+                successfulCompile = await compileSingleFile({
+                    fullPath,
+                    file: getFileToCompile({
+                        fullPath,
+                        filePath: path.join(parentFilePath, `${scriptName}.ts`)
+                    }),
+                    parsed: response.parsed,
+                    debug
+                });
+            }
+        } else {
+            successfulCompile = await compileAllFiles({ fullPath, debug });
+        }
+
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exit(1);
@@ -296,87 +324,91 @@ class DeployService {
                 postConnectionScriptsByProvider.push({ providerConfigKey, scripts });
             }
 
-            for (const sync of integration.syncs) {
-                if (optionalSyncName && optionalSyncName !== sync.name) {
-                    continue;
-                }
+            if (!optionalActionName) {
+                for (const sync of integration.syncs) {
+                    if (optionalSyncName && optionalSyncName !== sync.name) {
+                        continue;
+                    }
 
-                const metadata: NangoConfigMetadata = {};
-                if (sync.description) {
-                    metadata['description'] = sync.description;
-                }
-                if (sync.scopes) {
-                    metadata['scopes'] = sync.scopes;
-                }
+                    const metadata: NangoConfigMetadata = {};
+                    if (sync.description) {
+                        metadata['description'] = sync.description;
+                    }
+                    if (sync.scopes) {
+                        metadata['scopes'] = sync.scopes;
+                    }
 
-                const files = loadScriptFiles({ scriptName: sync.name, providerConfigKey, fullPath, type: 'syncs' });
-                if (!files) {
-                    console.log(chalk.red(`No script files found for "${sync.name}"`));
-                    return null;
-                }
-                if (debug) {
-                    printDebug(`Scripts files found for ${sync.name}`);
-                }
+                    const files = loadScriptFiles({ scriptName: sync.name, providerConfigKey, fullPath, type: 'syncs' });
+                    if (!files) {
+                        console.log(chalk.red(`No script files found for "${sync.name}"`));
+                        return null;
+                    }
+                    if (debug) {
+                        printDebug(`Scripts files found for ${sync.name}`);
+                    }
 
-                const body: IncomingFlowConfig = {
-                    syncName: sync.name,
-                    providerConfigKey,
-                    models: sync.output || [],
-                    version: version || sync.version,
-                    runs: sync.runs,
-                    track_deletes: sync.track_deletes,
-                    auto_start: sync.auto_start,
-                    attributes: {},
-                    metadata: metadata,
-                    input: sync.input || undefined,
-                    sync_type: sync.sync_type,
-                    type: sync.type,
-                    fileBody: files,
-                    model_schema: sync.usedModels.map((name) => parsed.models.get(name)!),
-                    endpoints: sync.endpoints,
-                    webhookSubscriptions: sync.webhookSubscriptions
-                };
+                    const body: IncomingFlowConfig = {
+                        syncName: sync.name,
+                        providerConfigKey,
+                        models: sync.output || [],
+                        version: version || sync.version,
+                        runs: sync.runs,
+                        track_deletes: sync.track_deletes,
+                        auto_start: sync.auto_start,
+                        attributes: {},
+                        metadata: metadata,
+                        input: sync.input || undefined,
+                        sync_type: sync.sync_type,
+                        type: sync.type,
+                        fileBody: files,
+                        model_schema: sync.usedModels.map((name) => parsed.models.get(name)!),
+                        endpoints: sync.endpoints,
+                        webhookSubscriptions: sync.webhookSubscriptions
+                    };
 
-                postData.push(body);
+                    postData.push(body);
+                }
             }
 
-            for (const action of integration.actions) {
-                if (optionalActionName && optionalActionName !== action.name) {
-                    continue;
-                }
+            if (!optionalSyncName) {
+                for (const action of integration.actions) {
+                    if (optionalActionName && optionalActionName !== action.name) {
+                        continue;
+                    }
 
-                const metadata = {} as NangoConfigMetadata;
-                if (action.description) {
-                    metadata['description'] = action.description;
-                }
-                if (action.scopes) {
-                    metadata['scopes'] = action.scopes;
-                }
+                    const metadata = {} as NangoConfigMetadata;
+                    if (action.description) {
+                        metadata['description'] = action.description;
+                    }
+                    if (action.scopes) {
+                        metadata['scopes'] = action.scopes;
+                    }
 
-                const files = loadScriptFiles({ scriptName: action.name, providerConfigKey, fullPath, type: 'actions' });
-                if (!files) {
-                    console.log(chalk.red(`No script files found for "${action.name}"`));
-                    return null;
-                }
-                if (debug) {
-                    printDebug(`Scripts files found for "${action.name}"`);
-                }
+                    const files = loadScriptFiles({ scriptName: action.name, providerConfigKey, fullPath, type: 'actions' });
+                    if (!files) {
+                        console.log(chalk.red(`No script files found for "${action.name}"`));
+                        return null;
+                    }
+                    if (debug) {
+                        printDebug(`Scripts files found for "${action.name}"`);
+                    }
 
-                const body: IncomingFlowConfig = {
-                    syncName: action.name,
-                    providerConfigKey,
-                    models: action.output || [],
-                    version: version || action.version,
-                    runs: '',
-                    metadata: metadata,
-                    input: action.input || undefined,
-                    type: action.type,
-                    fileBody: files,
-                    model_schema: action.usedModels.map((name) => parsed.models.get(name)!),
-                    endpoints: action.endpoint ? [action.endpoint] : []
-                };
+                    const body: IncomingFlowConfig = {
+                        syncName: action.name,
+                        providerConfigKey,
+                        models: action.output || [],
+                        version: version || action.version,
+                        runs: '',
+                        metadata: metadata,
+                        input: action.input || undefined,
+                        type: action.type,
+                        fileBody: files,
+                        model_schema: action.usedModels.map((name) => parsed.models.get(name)!),
+                        endpoints: action.endpoint ? [action.endpoint] : []
+                    };
 
-                postData.push(body);
+                    postData.push(body);
+                }
             }
         }
 
