@@ -258,6 +258,10 @@
                     "type": "string",
                     "enum": ["basic", "custom"]
                 },
+                "expires_in_unit": {
+                    "type": "string",
+                    "enum": ["milliseconds"]
+                },
                 "token_response_metadata": {
                     "type": "array",
                     "items": {

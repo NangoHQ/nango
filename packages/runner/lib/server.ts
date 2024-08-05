@@ -56,6 +56,8 @@ function startProcedure() {
                 env: nangoProps.environmentId,
                 connectionId: nangoProps.connectionId,
                 syncId: nangoProps.syncId,
+                version: nangoProps.syncConfig.version,
+                fileLocation: nangoProps.syncConfig.file_location,
                 input: codeParams
             });
             usage.track(nangoProps);

@@ -282,7 +282,7 @@ export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?
             await compileAllFiles({ fullPath, debug });
             return;
         }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, parsed, debug });
+        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), parsed, debug });
     });
 }
 

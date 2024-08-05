@@ -9,7 +9,7 @@ import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js'
 import { route as putTaskRoute } from '../routes/v1/tasks/putTaskId.js';
 import { route as postHeartbeatRoute } from '../routes/v1/tasks/taskId/postHeartbeat.js';
 import type { Result, Route } from '@nangohq/utils';
-import { Ok, Err, routeFetch, getLogger } from '@nangohq/utils';
+import { Ok, Err, routeFetch, getLogger, retryWithBackoff, httpRetryStrategy } from '@nangohq/utils';
 import type { Endpoint } from '@nangohq/types';
 import type {
     ClientError,
@@ -37,8 +37,12 @@ export class OrchestratorClient {
         this.baseUrl = baseUrl;
     }
 
-    private routeFetch<E extends Endpoint<any>>(route: Route<E>) {
-        return routeFetch(this.baseUrl, route);
+    private routeFetch<E extends Endpoint<any>>(
+        route: Route<E>
+    ): (props: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }) => Promise<E['Reply']> {
+        return (props) => {
+            return retryWithBackoff(() => routeFetch(this.baseUrl, route)(props), { retry: httpRetryStrategy, numOfAttempts: 3, maxDelay: 50 });
+        };
     }
 
     public async immediate(props: ImmediateProps): Promise<Result<{ taskId: string }, ClientError>> {
