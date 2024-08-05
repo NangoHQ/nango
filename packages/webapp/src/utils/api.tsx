@@ -404,31 +404,6 @@ export function useCreateIntegrationAPI(env: string) {
     };
 }
 
-export function useCreateEmptyIntegrationAPI(env: string) {
-    const signout = useSignout();
-
-    return async (provider: string) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({
-                    provider: provider
-                })
-            };
-
-            const res = await apiFetch(`/api/v1/integration/new?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useEditIntegrationAPI(env: string) {
     const signout = useSignout();
 
@@ -464,56 +439,6 @@ export function useEditIntegrationAPI(env: string) {
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditIntegrationNameAPI(env: string) {
-    const signout = useSignout();
-
-    return async (providerConfigKey: string, name: string) => {
-        try {
-            const options = {
-                method: 'PUT',
-                body: JSON.stringify({
-                    oldProviderConfigKey: providerConfigKey,
-                    newProviderConfigKey: name
-                })
-            };
-
-            const res = await apiFetch(`/api/v1/integration/name?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useDeleteIntegrationAPI(env: string) {
-    const signout = useSignout();
-
-    return async (providerConfigKey: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?env=${env}`, {
-                method: 'DELETE'
-            });
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 204) {
                 return serverErrorToast();
             }
 

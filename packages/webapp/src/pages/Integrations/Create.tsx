@@ -1,16 +1,17 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { toast } from 'react-toastify';
 import debounce from 'lodash/debounce';
 import { useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 
-import { useGetIntegrationDetailsAPI, useGetProvidersAPI, useCreateEmptyIntegrationAPI } from '../../utils/api';
+import { useGetIntegrationDetailsAPI, useGetProvidersAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { useStore } from '../../store';
 import { useSWRConfig } from 'swr';
 import type { AuthModeType } from '@nangohq/types';
+import { apiPostIntegration } from '../../hooks/useIntegration';
+import { useToast } from '../../hooks/useToast';
 
 interface Provider {
     name: string;
@@ -22,6 +23,7 @@ interface Provider {
 
 export default function Create() {
     const { mutate } = useSWRConfig();
+    const { toast } = useToast();
     const env = useStore((state) => state.env);
 
     const [loaded, setLoaded] = useState(false);
@@ -29,7 +31,6 @@ export default function Create() {
     const [providers, setProviders] = useState<Provider[] | null>(null);
     const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI(env);
     const getProvidersAPI = useGetProvidersAPI(env);
-    const createIntegrationAPI = useCreateEmptyIntegrationAPI(env);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -50,13 +51,14 @@ export default function Create() {
     }, [getIntegrationDetailsAPI, getProvidersAPI, loaded, setLoaded]);
 
     const onCreateIntegration = async (provider: string) => {
-        const res = await createIntegrationAPI(provider);
+        const created = await apiPostIntegration(env, { provider });
 
-        if (res?.status === 200) {
-            toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
-            const data = await res.json();
-            void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integration'), undefined);
-            navigate(`/${env}/integration/${data.config.unique_key}#auth`);
+        if ('error' in created.json) {
+            toast({ title: created.json.error.message || 'Failed to create, an error occurred', variant: 'error' });
+        } else {
+            toast({ title: 'Integration created', variant: 'success' });
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integration`), undefined);
+            navigate(`/${env}/integrations/${created.json.data.unique_key}/settings`);
         }
     };
 

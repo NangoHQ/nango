@@ -22,7 +22,7 @@ export const UserSettings: React.FC = () => {
         const updated = await apiPatchUser({ name });
 
         if ('error' in updated.json) {
-            toast({ title: updated.json.error.message || 'Failed to delete, an error occurred', variant: 'error' });
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
         } else {
             toast({ title: 'You have successfully updated your profile', variant: 'success' });
             setEdit(false);

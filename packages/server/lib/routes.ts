@@ -78,6 +78,7 @@ import { getIntegration } from './controllers/v1/integrations/:uniqueKey/getInte
 import { patchIntegration } from './controllers/v1/integrations/:uniqueKey/patchIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/:uniqueKey/deleteIntegration.js';
 import { deleteIntegrationPublic } from './controllers/config/:providerConfigKey/deleteIntegration.js';
+import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 
 export const router = express.Router();
 
@@ -247,9 +248,8 @@ web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.g
 
 web.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 web.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
-web.route('/api/v1/integration').post(webAuth, configController.createProviderConfig.bind(configController));
-web.route('/api/v1/integration/new').post(webAuth, configController.createEmptyProviderConfig.bind(configController));
 web.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
+web.route('/api/v1/integrations').post(webAuth, postIntegration);
 web.route('/api/v1/integrations/:integrationId').get(webAuth, getIntegration);
 web.route('/api/v1/integrations/:integrationId').patch(webAuth, patchIntegration);
 web.route('/api/v1/integrations/:integrationId').delete(webAuth, deleteIntegration);

@@ -387,37 +387,6 @@ class ConfigController {
         }
     }
 
-    async createEmptyProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-            const accountId = res.locals['account'].id;
-
-            if (req.body['provider'] == null) {
-                errorManager.errRes(res, 'missing_provider_template');
-                return;
-            }
-
-            const provider = req.body['provider'];
-
-            if (!configService.checkProviderTemplateExists(provider)) {
-                errorManager.errRes(res, 'unknown_provider_template');
-                return;
-            }
-
-            const result = await configService.createEmptyProviderConfig(provider, environmentId);
-
-            void analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider });
-            res.status(200).send({
-                config: {
-                    unique_key: result.unique_key,
-                    provider
-                }
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async createProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;

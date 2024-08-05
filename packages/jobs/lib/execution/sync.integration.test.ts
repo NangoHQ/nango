@@ -332,7 +332,7 @@ async function seeds(records: UnencryptedRecordData[], trackDeletes: boolean) {
     }
 
     const config = await seeders.createConfigSeed(env, providerConfigKey, 'google');
-    if (!config?.[0]?.id) {
+    if (!config?.id) {
         throw new Error('Failed to create config');
     }
 
@@ -351,7 +351,7 @@ async function seeds(records: UnencryptedRecordData[], trackDeletes: boolean) {
         enabled: true,
         environment_id: env.id,
         model_schema: [],
-        nango_config_id: config[0].id,
+        nango_config_id: config.id,
         runs: '',
         webhook_subscriptions: [],
         created_at: new Date(),

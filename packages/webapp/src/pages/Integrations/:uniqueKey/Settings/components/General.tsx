@@ -27,7 +27,7 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
 
         setLoading(false);
         if ('error' in updated.json) {
-            toast({ title: updated.json.error.message || 'Failed to edit, an error occurred', variant: 'error' });
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
         } else {
             toast({ title: 'Successfully updated integration id', variant: 'success' });
             setShowEditIntegrationId(false);

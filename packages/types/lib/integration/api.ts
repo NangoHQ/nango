@@ -20,6 +20,15 @@ export type DeleteIntegrationPublic = Endpoint<{
     Success: { success: true };
 }>;
 
+export type PostIntegration = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/integrations';
+    Body: { provider: string };
+    Success: {
+        data: ApiIntegration;
+    };
+}>;
+
 export type ApiIntegration = Merge<IntegrationConfig, ApiTimestamps>;
 export type GetIntegration = Endpoint<{
     Method: 'GET';
