@@ -853,7 +853,7 @@ class ConnectionService {
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType): AuthCredentials {
+    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderTemplateOAuth2): AuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
@@ -903,10 +903,13 @@ class ConnectionService {
 
                 let expiresAt: Date | undefined;
 
+                //fiserv returns expires_in in milliseconds
                 if (rawCreds['expires_at']) {
                     expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
                 } else if (rawCreds['expires_in']) {
-                    expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
+                    const expiresIn = Number.parseInt(rawCreds['expires_in'], 10);
+                    const multiplier = template?.expires_in_unit === 'milliseconds' ? 1 : 1000;
+                    expiresAt = new Date(Date.now() + expiresIn * multiplier);
                 } else {
                     expiresAt = new Date(Date.now() + DEFAULT_EXPIRES_AT_MS);
                 }
@@ -1260,7 +1263,7 @@ class ConnectionService {
                 return { success: false, error: new NangoError('invalid_client_credentials'), response: null };
             }
 
-            const parsedCreds = this.parseRawCredentials(data, 'OAUTH2_CC') as OAuth2ClientCredentials;
+            const parsedCreds = this.parseRawCredentials(data, 'OAUTH2_CC', template) as OAuth2ClientCredentials;
 
             parsedCreds.client_id = client_id;
             parsedCreds.client_secret = client_secret;
