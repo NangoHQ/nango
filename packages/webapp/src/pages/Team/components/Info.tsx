@@ -17,9 +17,11 @@ export const TeamInfo: React.FC = () => {
     const [edit, setEdit] = useState(false);
 
     const onSave = async () => {
-        const update = await apiPutTeam(env, { name });
+        const updated = await apiPutTeam(env, { name });
 
-        if (!update || update.res.status === 200) {
+        if ('error' in updated) {
+            toast({ title: 'An unexpected error occurred', variant: 'error' });
+        } else {
             toast({ title: 'Team updated successfully', variant: 'success' });
             setEdit(false);
             void mutate();

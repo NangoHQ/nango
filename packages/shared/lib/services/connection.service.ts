@@ -555,6 +555,16 @@ class ConnectionService {
         return result[0].connection_config;
     }
 
+    public async countConnections({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<number> {
+        const res = await db.knex
+            .from<StoredConnection>(`_nango_connections`)
+            .where({ environment_id: environmentId, provider_config_key: providerConfigKey, deleted: false })
+            .count<{ count: string }>('*')
+            .first();
+
+        return res?.count ? Number(res.count) : 0;
+    }
+
     public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<NangoConnection[]> {
         const result = await db.knex
             .from<StoredConnection>(`_nango_connections`)

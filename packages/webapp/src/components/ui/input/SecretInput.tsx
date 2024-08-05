@@ -2,6 +2,8 @@ import { forwardRef, useCallback, useState } from 'react';
 import { EyeIcon, EyeSlashIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import { CopyButton } from '../button/CopyButton';
+import { Input } from './Input';
+import Button from '../button/Button';
 
 type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
     copy?: boolean;
@@ -24,30 +26,28 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
     const value = optionalvalue === null ? '' : optionalvalue || changedValue;
     const updateValue = setoptionalvalue || setChangedValue;
 
-    const top = props.tall ? 'top-2.5' : 'top-0.5';
-
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible, setIsSecretVisible]);
 
     return (
-        <div className={`relative flex ${props.additionalclass ?? ''}`}>
-            <input
+        <div className={`relative flex grow ${props.additionalclass ?? ''}`}>
+            <Input
                 type={isSecretVisible ? 'text' : 'password'}
                 ref={ref}
-                className={classNames(
-                    'border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none',
-                    className
-                )}
+                variant={'flat'}
+                className={classNames(className)}
                 value={value || ''}
                 onChange={(e) => updateValue(e.currentTarget.value)}
                 {...props}
+                after={
+                    <div className={`flex items-center gap-2`}>
+                        <Button variant="icon" size={'xs'} onClick={toggleSecretVisibility}>
+                            {isSecretVisible ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                        </Button>
+                        {copy && <CopyButton text={(props.value || optionalvalue || defaultValue)?.toString() || ''} />}
+                        {refresh && <ArrowPathIcon className="flex h-4 w-4 cursor-pointer text-gray-500" onClick={refresh} />}
+                    </div>
+                }
             />
-            <span className={`absolute right-2 ${top} flex items-center bg-active-gray border-border-gray gap-2 h-6`}>
-                <span onClick={toggleSecretVisibility} className="rounded text-sm text-gray-600 cursor-pointer">
-                    {isSecretVisible ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
-                </span>
-                {copy && <CopyButton text={(props.value || optionalvalue || defaultValue)?.toString() || ''} />}
-                {refresh && <ArrowPathIcon className="flex h-4 w-4 cursor-pointer text-gray-500" onClick={refresh} />}
-            </span>
         </div>
     );
 });

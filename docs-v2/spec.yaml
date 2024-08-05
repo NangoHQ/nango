@@ -56,10 +56,10 @@ paths:
                                     description: The Nango API Configuration.
                                 oauth_client_id:
                                     type: string
-                                    description: The ID of your OAuth app (registed with the external API). Required for OAuth APIs.
+                                    description: The ID of your OAuth app (registered with the external API). Required for OAuth APIs.
                                 oauth_client_secret:
                                     type: string
-                                    description: The secret of your OAuth app (registed with the external API). Required for OAuth APIs.
+                                    description: The secret of your OAuth app (registered with the external API). Required for OAuth APIs.
                                 oauth_scopes:
                                     type: string
                                     description: Comma separated list of scopes.
@@ -116,10 +116,10 @@ paths:
                                     description: The Nango API Configuration.
                                 oauth_client_id:
                                     type: string
-                                    description: The ID of your OAuth app (registed with the external API).
+                                    description: The ID of your OAuth app (registered with the external API).
                                 oauth_client_secret:
                                     type: string
-                                    description: The secret of your OAuth app (registed with the external API).
+                                    description: The secret of your OAuth app (registered with the external API).
                                 oauth_scopes:
                                     type: string
                                     description: Comma separated list of scopes.
@@ -260,8 +260,15 @@ paths:
                       type: string
                   description: The integration ID that you created in Nango.
             responses:
-                '204':
-                    description: Successfully deleled an integration
+                '200':
+                    description: Successfully deleted an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
                 '400':
                     description: Invalid request
                     content:
@@ -467,7 +474,7 @@ paths:
                       type: string
             responses:
                 '204':
-                    description: Successfully deleled an connection
+                    description: Successfully deleted an connection
                 '400':
                     description: Invalid request
                     content:

@@ -24,7 +24,7 @@ import {
     getGlobalWebhookReceiveUrl,
     getSyncConfigsAsStandardConfig
 } from '@nangohq/shared';
-import { getOrchestrator, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
+import { parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import type { RequestLocals } from '../utils/express.js';
 
 export interface Integration {
@@ -45,8 +45,6 @@ interface FlowConfigs {
     enabledFlows: NangoSyncConfig[];
     disabledFlows: NangoSyncConfig[];
 }
-
-const orchestrator = getOrchestrator();
 
 const separateFlows = (flows: NangoSyncConfig[]): FlowConfigs => {
     return flows.reduce(
@@ -265,42 +263,6 @@ class ConfigController {
             }
 
             await configService.editProviderConfig(newConfig);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async editProviderConfigName(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { environment } = res.locals;
-
-            if (req.body == null) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            if (req.body['oldProviderConfigKey'] == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            if (req.body['newProviderConfigKey'] == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            const oldProviderConfigKey = req.body['oldProviderConfigKey'];
-            const newProviderConfigKey = req.body['newProviderConfigKey'];
-
-            const config = await configService.getProviderConfig(oldProviderConfigKey, environment.id);
-
-            if (config == null) {
-                errorManager.errRes(res, 'unknown_provider_config');
-                return;
-            }
-
-            await configService.editProviderConfigName(oldProviderConfigKey, newProviderConfigKey, environment.id);
             res.status(200).send();
         } catch (err) {
             next(err);
@@ -673,24 +635,6 @@ class ConfigController {
                     provider: provider
                 }
             });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async deleteProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-            const providerConfigKey = req.params['providerConfigKey'] as string | null;
-
-            if (providerConfigKey == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            await configService.deleteProviderConfig(providerConfigKey, environmentId, orchestrator);
-
-            res.status(204).send();
         } catch (err) {
             next(err);
         }

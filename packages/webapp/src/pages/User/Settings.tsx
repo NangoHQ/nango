@@ -19,9 +19,11 @@ export const UserSettings: React.FC = () => {
     const [edit, setEdit] = useState(false);
 
     const onSave = async () => {
-        const update = await apiPatchUser({ name });
+        const updated = await apiPatchUser({ name });
 
-        if (!update || update.res.status === 200) {
+        if ('error' in updated.json) {
+            toast({ title: updated.json.error.message || 'Failed to delete, an error occurred', variant: 'error' });
+        } else {
             toast({ title: 'You have successfully updated your profile', variant: 'success' });
             setEdit(false);
             void mutate();
@@ -54,6 +56,10 @@ export const UserSettings: React.FC = () => {
                 </Info>
             </DashboardLayout>
         );
+    }
+
+    if (!user) {
+        return null;
     }
 
     return (
@@ -101,7 +107,7 @@ export const UserSettings: React.FC = () => {
                                 size={'md'}
                                 variant={'emptyFaded'}
                                 onClick={() => {
-                                    setName(user!.name);
+                                    setName(user.name);
                                     setEdit(false);
                                 }}
                             >
@@ -115,7 +121,7 @@ export const UserSettings: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-5">
                     <h3 className="font-semibold text-sm text-white">Email</h3>
-                    <p className="text-white text-sm">{user!.email}</p>
+                    <p className="text-white text-sm">{user.email}</p>
                 </div>
             </div>
         </DashboardLayout>
