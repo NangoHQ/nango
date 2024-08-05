@@ -1,9 +1,9 @@
 import { forwardRef, useCallback, useState } from 'react';
 import { EyeIcon, EyeSlashIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-import classNames from 'classnames';
 import { CopyButton } from '../button/CopyButton';
 import { Input } from './Input';
 import Button from '../button/Button';
+import { cn } from '../../../utils/utils';
 
 type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
     copy?: boolean;
@@ -34,7 +34,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                 type={isSecretVisible ? 'text' : 'password'}
                 ref={ref}
                 variant={'flat'}
-                className={classNames(className)}
+                className={cn(className)}
                 value={value || ''}
                 onChange={(e) => updateValue(e.currentTarget.value)}
                 {...props}

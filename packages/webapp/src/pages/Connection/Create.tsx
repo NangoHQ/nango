@@ -997,8 +997,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             copy={true}
                                             id="private_key"
                                             name="private_key"
-                                            optionalvalue={privateKey}
-                                            setoptionalvalue={(value) => setPrivateKey(value)}
+                                            optionalValue={privateKey}
+                                            setOptionalValue={(value) => setPrivateKey(value)}
                                             required
                                         />
                                     </div>

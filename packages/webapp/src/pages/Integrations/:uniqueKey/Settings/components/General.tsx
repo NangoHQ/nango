@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { GetIntegration } from '@nangohq/types';
 import { Pencil1Icon } from '@radix-ui/react-icons';
-import { formatDateToUSFormat } from '../../../../../utils/utils';
+import { formatDateToInternationalFormat } from '../../../../../utils/utils';
 import Button from '../../../../../components/ui/button/Button';
 import { Input } from '../../../../../components/ui/input/Input';
 import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
@@ -10,8 +10,14 @@ import { useStore } from '../../../../../store';
 import { useNavigate } from 'react-router-dom';
 import { mutate } from 'swr';
 import { InfoBloc } from '../../../../../components/InfoBloc';
+import { CopyButton } from '../../../../../components/ui/button/CopyButton';
+import SecretInput from '../../../../../components/ui/input/SecretInput';
+import type { EnvironmentAndAccount } from '@nangohq/server';
 
-export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data'] }> = ({ data: { integration, template } }) => {
+export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
+    data: { integration, template },
+    environment
+}) => {
     const { toast } = useToast();
     const navigate = useNavigate();
 
@@ -82,9 +88,35 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
                 </InfoBloc>
             </div>
             <div className="flex gap-10">
-                <InfoBloc title="Creation Date">{formatDateToUSFormat(integration.created_at)}</InfoBloc>
+                <InfoBloc title="Creation Date">{formatDateToInternationalFormat(integration.created_at)}</InfoBloc>
                 <InfoBloc title="Auth Type">{template.auth_mode}</InfoBloc>
             </div>
+
+            {template.webhook_routing_script && (
+                <>
+                    <InfoBloc
+                        title="Webhook Url"
+                        help={<p>Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks</p>}
+                    >
+                        <div>{`${environment.webhook_receive_url}/${integration.unique_key}`}</div>
+                        <CopyButton text={`${environment.webhook_receive_url}/${integration.unique_key}`} />
+                    </InfoBloc>
+
+                    {template.webhook_user_defined_secret && (
+                        <InfoBloc title="Webhook Secret" help={<p>`Obtain the Webhook Secret from on the developer portal of the Integration Provider</p>}>
+                            <SecretInput
+                                copy={true}
+                                id="incoming_webhook_secret"
+                                name="incoming_webhook_secret"
+                                autoComplete="one-time-code"
+                                defaultValue={integration ? integration.custom?.webhookSecret : ''}
+                                additionalclass={`w-full`}
+                                required
+                            />
+                        </InfoBloc>
+                    )}
+                </>
+            )}
         </div>
     );
 };
