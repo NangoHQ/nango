@@ -53,7 +53,7 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(func
                     {...rest}
                 />
             )}
-            <div className="absolute right-1 top-1 flex items-center">
+            <div className="absolute right-1 top-1 flex items-center bg-active-gray">
                 <Button variant={'icon'} size={'xs'} onClick={toggleSecretVisibility} className="rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
                     {isSecretVisible ? <EyeNoneIcon /> : <EyeOpenIcon />}
                 </Button>

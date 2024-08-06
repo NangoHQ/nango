@@ -7,11 +7,11 @@ import { cn } from '../../../utils/utils';
 export type ButtonVariants = VariantProps<typeof buttonStyles>['variant'];
 
 export const buttonStyles = cva(
-    'rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-100',
+    'rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-100',
     {
         variants: {
             variant: {
-                primary: 'bg-white text-black hover:bg-gray-300 disabled:bg-pure-black disabled:text-white',
+                primary: 'bg-white text-black hover:bg-gray-300 disabled:bg-active-gray disabled:text-white',
                 secondary: 'bg-[#282828] text-white hover:bg-gray-800',
                 success: 'bg-green-700 text-white hover:bg-green-500',
                 danger: 'bg-red-base text-white hover:bg-red-500',

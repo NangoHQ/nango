@@ -10,19 +10,32 @@ import { useState } from 'react';
 import { DeleteIntegrationButton } from './Delete';
 import { useStore } from '../../../../../store';
 import TagsInput from '../../../../../components/ui/input/TagsInput';
+import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
+import { useToast } from '../../../../../hooks/useToast';
 
 export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
     data: { integration, template },
     environment
 }) => {
+    const { toast } = useToast();
     const env = useStore((state) => state.env);
     const [loading, setLoading] = useState(false);
     const [clientId, setClientId] = useState(integration.oauth_client_id || '');
     const [clientSecret, setClientSecret] = useState(integration.oauth_client_secret || '');
     const [scopes, setScopes] = useState(integration.oauth_scopes || '');
 
-    const onSave = () => {
+    const onSave = async () => {
         setLoading(true);
+
+        const updated = await apiPatchIntegration(env, integration.unique_key, { authType: template.auth_mode as any, clientId, clientSecret, scopes });
+
+        setLoading(false);
+        if ('error' in updated.json) {
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
+        } else {
+            toast({ title: 'Successfully updated integration', variant: 'success' });
+        }
+
         setLoading(false);
     };
 
@@ -65,13 +78,13 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
 
                 {template.auth_mode !== 'TBA' && (
                     <InfoBloc title="Scopes">
-                        <TagsInput id="scopes" name="scopes" type="text" value={scopes} onChange={(e) => setScopes(e.target.value)} minLength={1} />
+                        <TagsInput id="scopes" name="scopes" type="text" defaultValue={scopes} onScopeChange={setScopes} minLength={1} />
                     </InfoBloc>
                 )}
 
                 <div className="flex justify-between">
                     {integration && <DeleteIntegrationButton env={env} integration={integration} />}
-                    <Button variant={'primary'} onClick={onSave} isLoading={loading}>
+                    <Button variant={'primary'} onClick={onSave} isLoading={loading} disabled={!clientId || !clientSecret}>
                         Save
                     </Button>
                 </div>

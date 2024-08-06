@@ -12,57 +12,39 @@ const validationBody = z
     })
     .strict()
     .or(
-        z.discriminatedUnion('authType', [
-            z
-                .object({
-                    authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
-                    clientId: z.string().min(1).max(255),
-                    clientSecret: z.string().min(1),
-                    scopes: z.string().min(1).optional()
-                })
-                .strict(),
-            z
-                .object({
-                    authType: z.enum(['APP']),
-                    appId: z.string().min(1).max(255),
-                    appLink: z.string().min(1),
-                    privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY----')
-                })
-                .strict()
-        ])
+        z.discriminatedUnion(
+            'authType',
+            [
+                z
+                    .object({
+                        authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
+                        clientId: z.string().min(1).max(255),
+                        clientSecret: z.string().min(1),
+                        scopes: z.string().optional()
+                    })
+                    .strict(),
+                z
+                    .object({
+                        authType: z.enum(['APP']),
+                        appId: z.string().min(1).max(255),
+                        appLink: z.string().min(1),
+                        privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY----')
+                    })
+                    .strict(),
+                z
+                    .object({
+                        authType: z.enum(['CUSTOM']),
+                        clientId: z.string().min(1).max(255),
+                        clientSecret: z.string().min(1),
+                        appId: z.string().min(1).max(255),
+                        appLink: z.string().min(1),
+                        privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY----')
+                    })
+                    .strict()
+            ],
+            { errorMap: () => ({ message: 'invalid credentials object' }) }
+        )
     );
-// .or(
-//     z
-//         .object({
-//             authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
-//             clientId: z.string().min(1).max(255),
-//             clientSecret: z.string().min(1),
-//             scopes: z.string().min(1).optional()
-//         })
-//         .strict()
-// )
-// .or(
-//     z
-//         .object({
-//             authType: z.enum(['APP']),
-//             appId: z.string().min(1).max(255),
-//             appLink: z.string().min(1),
-//             privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY----')
-//         })
-//         .strict()
-// )
-// .or(
-//     z
-//         .object({
-//             authType: z.enum(['CUSTOM']),
-//             clientId: z.string().min(1).max(255),
-//             clientSecret: z.string().min(1),
-//             appId: z.string().min(1).max(255),
-//             appLink: z.string().min(1),
-//             privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY----')
-//         })
-//         .strict()
-// );
 
 export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });

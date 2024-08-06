@@ -9,6 +9,7 @@ import { Input } from './Input';
 type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
     defaultValue?: string;
     selectedScopes?: string[];
+    onScopeChange?: (values: string) => void;
     addToScopesSet?: (scope: string) => void;
     removeFromSelectedSet?: (scope: string) => void;
 };
@@ -18,6 +19,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
         className,
         defaultValue,
         selectedScopes: optionalSelectedScopes,
+        onScopeChange,
         addToScopesSet: optionalAddToScopesSet,
         removeFromSelectedSet: optionalRemoveFromSelectedSet,
         ...props
@@ -53,6 +55,12 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
             });
         }
     }, [defaultScopes, addToScopesSet, optionalAddToScopesSet]);
+
+    useEffect(() => {
+        if (onScopeChange) {
+            onScopeChange(scopes.join(','));
+        }
+    }, [scopes, onScopeChange]);
 
     function handleEnter(e: KeyboardEvent<HTMLInputElement>) {
         //quick check for empty inputs

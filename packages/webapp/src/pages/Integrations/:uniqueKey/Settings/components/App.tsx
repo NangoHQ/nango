@@ -31,7 +31,7 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
         if ('error' in updated.json) {
             toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
         } else {
-            toast({ title: 'Successfully updated integration id', variant: 'success' });
+            toast({ title: 'Successfully updated integration', variant: 'success' });
         }
 
         setLoading(false);
@@ -96,7 +96,7 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
 
             <div className="flex justify-between">
                 {integration && <DeleteIntegrationButton env={env} integration={integration} />}
-                <Button variant={'primary'} onClick={onSave} isLoading={loading}>
+                <Button variant={'primary'} onClick={onSave} isLoading={loading} disabled={!appId || !appLink || !privateKey}>
                     Save
                 </Button>
             </div>

@@ -10,21 +10,34 @@ import { useState } from 'react';
 import { DeleteIntegrationButton } from './Delete';
 import { useStore } from '../../../../../store';
 import SecretTextarea from '../../../../../components/ui/input/SecretTextArea';
+import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
+import { useToast } from '../../../../../hooks/useToast';
 
 export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
     data: { integration },
     environment
 }) => {
+    const { toast } = useToast();
     const env = useStore((state) => state.env);
     const [loading, setLoading] = useState(false);
     const [appId, setAppId] = useState(integration.oauth_client_id || '');
     const [appLink, setAppLink] = useState(integration.app_link || '');
-    const [privateKey, setPrivateKey] = useState(integration.oauth_client_secret || '');
+    const [privateKey, setPrivateKey] = useState(integration.custom?.private_key || '');
     const [clientId, setClientId] = useState(integration.oauth_client_id || '');
     const [clientSecret, setClientSecret] = useState(integration.oauth_client_secret || '');
 
-    const onSave = () => {
+    const onSave = async () => {
         setLoading(true);
+
+        const updated = await apiPatchIntegration(env, integration.unique_key, { authType: 'CUSTOM', clientId, clientSecret, appId, appLink, privateKey });
+
+        setLoading(false);
+        if ('error' in updated.json) {
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
+        } else {
+            toast({ title: 'Successfully updated integration', variant: 'success' });
+        }
+
         setLoading(false);
     };
 
@@ -113,7 +126,7 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
 
                 <div className="flex justify-between">
                     {integration && <DeleteIntegrationButton env={env} integration={integration} />}
-                    <Button variant={'primary'} onClick={onSave} isLoading={loading}>
+                    <Button variant={'primary'} onClick={onSave} isLoading={loading} disabled={!appId || !appLink || !privateKey || !clientId || !clientSecret}>
                         Save
                     </Button>
                 </div>

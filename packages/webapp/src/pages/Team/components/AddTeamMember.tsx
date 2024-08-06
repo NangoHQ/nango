@@ -131,7 +131,13 @@ export const AddTeamMember: React.FC<{ team: ApiTeam }> = ({ team }) => {
                         <DialogClose asChild>
                             <Button variant={'zinc'}>Cancel</Button>
                         </DialogClose>
-                        <Button variant={'primary'} onClick={onSubmit} isLoading={loading} disabled={emails.filter((v) => v.value !== '').length <= 0}>
+                        <Button
+                            variant={'primary'}
+                            onClick={onSubmit}
+                            isLoading={loading}
+                            disabled={emails.filter((v) => v.value !== '').length <= 0}
+                            className="disabled:bg-pure-black"
+                        >
                             Invite new members
                         </Button>
                     </DialogFooter>
