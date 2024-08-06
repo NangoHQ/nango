@@ -75,17 +75,17 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const items = useMemo(() => {
         const list: MenuItem[] = [{ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` }];
         if (meta && showInteractiveDemo && !meta.onboardingComplete) {
-            list.push({ name: 'Interactive Demo', icon: RocketIcon, value: LeftNavBarItems.InteractiveDemo, link: `/dev/interactive-demo` });
+            list.push({ name: 'Interactive Demo', icon: RocketIcon, value: LeftNavBarItems.InteractiveDemo, link: `/${env}/interactive-demo` });
         }
 
-        list.push({ name: 'Integrations', icon: SquaresPlusIcon, value: LeftNavBarItems.Integrations, link: `/dev/integrations` });
-        list.push({ name: 'Connections', icon: LinkIcon, value: LeftNavBarItems.Connections, link: `/dev/connections` });
-        list.push({ name: 'Logs', icon: QueueListIcon, value: LeftNavBarItems.Logs, link: `/dev/logs` });
+        list.push({ name: 'Integrations', icon: SquaresPlusIcon, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
+        list.push({ name: 'Connections', icon: LinkIcon, value: LeftNavBarItems.Connections, link: `/${env}/connections` });
+        list.push({ name: 'Logs', icon: QueueListIcon, value: LeftNavBarItems.Logs, link: `/${env}/logs` });
         list.push({
             name: 'Environment Settings',
             icon: AdjustmentsHorizontalIcon,
             value: LeftNavBarItems.EnvironmentSettings,
-            link: `/dev/environment-settings`
+            link: `/${env}/environment-settings`
         });
 
         return list;
