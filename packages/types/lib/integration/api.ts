@@ -2,6 +2,7 @@ import type { Merge } from 'type-fest';
 import type { ApiTimestamps, Endpoint } from '../api';
 import type { IntegrationConfig } from './db';
 import type { Template } from './template';
+import type { AuthModeType } from '../auth/api';
 
 export type GetListIntegrations = Endpoint<{
     Method: 'GET';
@@ -51,7 +52,28 @@ export type PatchIntegration = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/integrations/:id';
     Params: { integrationId: string };
-    Body: { integrationId?: string | undefined };
+    Body:
+        | { integrationId?: string | undefined }
+        | {
+              authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
+              clientId: string;
+              clientSecret: string;
+              scopes?: string | undefined;
+          }
+        | {
+              authType: Extract<AuthModeType, 'APP'>;
+              appId: string;
+              appLink: string;
+              privateKey: string;
+          }
+        | {
+              authType: Extract<AuthModeType, 'CUSTOM'>;
+              clientId: string;
+              clientSecret: string;
+              appId: string;
+              appLink: string;
+              privateKey: string;
+          };
     Success: {
         data: {
             success: boolean;

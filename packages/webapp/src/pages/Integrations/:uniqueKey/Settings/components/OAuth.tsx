@@ -17,6 +17,9 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
 }) => {
     const env = useStore((state) => state.env);
     const [loading, setLoading] = useState(false);
+    const [clientId, setClientId] = useState(integration.oauth_client_id || '');
+    const [clientSecret, setClientSecret] = useState(integration.oauth_client_secret || '');
+    const [scopes, setScopes] = useState(integration.oauth_scopes || '');
 
     const onSave = () => {
         setLoading(true);
@@ -36,7 +39,8 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
                         id="client_id"
                         name="client_id"
                         type="text"
-                        defaultValue={integration ? integration.oauth_client_id : ''}
+                        value={clientId}
+                        onChange={(e) => setClientId(e.target.value)}
                         autoComplete="one-time-code"
                         placeholder="Find the Client ID on the developer portal of the external API provider."
                         required
@@ -53,14 +57,15 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
                         name="client_secret"
                         autoComplete="one-time-code"
                         placeholder="Find the Client Secret on the developer portal of the external API provider."
-                        defaultValue={integration ? integration.oauth_client_secret : ''}
+                        value={clientSecret}
+                        onChange={(e) => setClientSecret(e.target.value)}
                         required
                     />
                 </InfoBloc>
 
                 {template.auth_mode !== 'TBA' && (
                     <InfoBloc title="Scopes">
-                        <TagsInput id="scopes" name="scopes" type="text" defaultValue={integration.oauth_scopes || ''} minLength={1} />
+                        <TagsInput id="scopes" name="scopes" type="text" value={scopes} onChange={(e) => setScopes(e.target.value)} minLength={1} />
                     </InfoBloc>
                 )}
 

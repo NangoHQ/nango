@@ -17,6 +17,11 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
 }) => {
     const env = useStore((state) => state.env);
     const [loading, setLoading] = useState(false);
+    const [appId, setAppId] = useState(integration.oauth_client_id || '');
+    const [appLink, setAppLink] = useState(integration.app_link || '');
+    const [privateKey, setPrivateKey] = useState(integration.oauth_client_secret || '');
+    const [clientId, setClientId] = useState(integration.oauth_client_id || '');
+    const [clientSecret, setClientSecret] = useState(integration.oauth_client_secret || '');
 
     const onSave = () => {
         setLoading(true);
@@ -37,7 +42,8 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
                             id="app_id"
                             name="app_id"
                             type="text"
-                            defaultValue={integration.oauth_client_id}
+                            value={appId}
+                            onChange={(e) => setAppId(e.target.value)}
                             placeholder="Obtain the app id from the app page."
                             required
                             minLength={1}
@@ -50,7 +56,8 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
                             id="app_link"
                             name="app_link"
                             type="text"
-                            defaultValue={integration.app_link}
+                            value={appLink}
+                            onChange={(e) => setAppLink(e.target.value)}
                             placeholder="Obtain the app public link from the app page."
                             required
                             minLength={1}
@@ -65,7 +72,8 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
                         id="client_id"
                         name="client_id"
                         type="text"
-                        defaultValue={integration ? integration.oauth_client_id : ''}
+                        value={clientId}
+                        onChange={(e) => setClientId(e.target.value)}
                         autoComplete="one-time-code"
                         placeholder="Find the Client ID on the developer portal of the external API provider."
                         required
@@ -82,7 +90,8 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
                         name="client_secret"
                         autoComplete="one-time-code"
                         placeholder="Find the Client Secret on the developer portal of the external API provider."
-                        defaultValue={integration ? integration.oauth_client_secret : ''}
+                        value={clientSecret}
+                        onChange={(e) => setClientSecret(e.target.value)}
                         required
                     />
                 </InfoBloc>
@@ -95,7 +104,8 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
                         copy={true}
                         id="private_key"
                         name="private_key"
-                        defaultValue={integration.oauth_client_secret}
+                        value={privateKey}
+                        onChange={(e) => setPrivateKey(e.target.value)}
                         additionalClass={`w-full`}
                         required
                     />

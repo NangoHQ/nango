@@ -10,7 +10,59 @@ const validationBody = z
     .object({
         integrationId: validationParams.shape.integrationId.optional()
     })
-    .strict();
+    .strict()
+    .or(
+        z.discriminatedUnion('authType', [
+            z
+                .object({
+                    authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
+                    clientId: z.string().min(1).max(255),
+                    clientSecret: z.string().min(1),
+                    scopes: z.string().min(1).optional()
+                })
+                .strict(),
+            z
+                .object({
+                    authType: z.enum(['APP']),
+                    appId: z.string().min(1).max(255),
+                    appLink: z.string().min(1),
+                    privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY----')
+                })
+                .strict()
+        ])
+    );
+// .or(
+//     z
+//         .object({
+//             authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
+//             clientId: z.string().min(1).max(255),
+//             clientSecret: z.string().min(1),
+//             scopes: z.string().min(1).optional()
+//         })
+//         .strict()
+// )
+// .or(
+//     z
+//         .object({
+//             authType: z.enum(['APP']),
+//             appId: z.string().min(1).max(255),
+//             appLink: z.string().min(1),
+//             privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY----')
+//         })
+//         .strict()
+// )
+// .or(
+//     z
+//         .object({
+//             authType: z.enum(['CUSTOM']),
+//             clientId: z.string().min(1).max(255),
+//             clientSecret: z.string().min(1),
+//             appId: z.string().min(1).max(255),
+//             appLink: z.string().min(1),
+//             privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY----')
+//         })
+//         .strict()
+// );
 
 export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -47,13 +99,34 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     const body: PatchIntegration['Body'] = valBody.data;
 
     const copy = { ...integration };
-    if (body.integrationId) {
+    // Rename
+    if ('integrationId' in body && body.integrationId) {
         const exists = await configService.getIdByProviderConfigKey(environment.id, body.integrationId);
         if (exists && exists !== integration.id) {
             res.status(400).send({ error: { code: 'invalid_body', message: 'integrationId is already used by another integration' } });
             return;
         }
+
         copy.unique_key = body.integrationId;
+    }
+
+    // Credentials
+    if ('authType' in body) {
+        if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
+            copy.oauth_client_id = body.clientId;
+            copy.oauth_client_secret = body.clientSecret;
+            copy.oauth_scopes = body.scopes || '';
+        } else if (body.authType === 'APP') {
+            copy.oauth_client_id = body.appId;
+            copy.oauth_client_secret = body.privateKey;
+            copy.app_link = body.appLink;
+        } else if (body.authType === 'CUSTOM') {
+            copy.oauth_client_id = body.clientId;
+            copy.oauth_client_secret = body.clientSecret;
+            copy.oauth_client_id = body.appId;
+            copy.app_link = body.appLink;
+            copy.custom = { private_key: body.privateKey };
+        }
     }
 
     const update = await configService.editProviderConfig(copy);

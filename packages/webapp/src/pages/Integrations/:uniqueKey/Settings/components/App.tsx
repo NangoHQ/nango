@@ -8,16 +8,32 @@ import { DeleteIntegrationButton } from './Delete';
 import Button from '../../../../../components/ui/button/Button';
 import { useState } from 'react';
 import { useStore } from '../../../../../store';
+import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
+import { useToast } from '../../../../../hooks/useToast';
 
 export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
     data: { integration },
     environment
 }) => {
+    const { toast } = useToast();
     const env = useStore((state) => state.env);
     const [loading, setLoading] = useState(false);
+    const [appId, setAppId] = useState(integration.oauth_client_id || '');
+    const [appLink, setAppLink] = useState(integration.app_link || '');
+    const [privateKey, setPrivateKey] = useState(integration.oauth_client_secret || '');
 
-    const onSave = () => {
+    const onSave = async () => {
         setLoading(true);
+
+        const updated = await apiPatchIntegration(env, integration.unique_key, { authType: 'APP', appId, appLink, privateKey });
+
+        setLoading(false);
+        if ('error' in updated.json) {
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
+        } else {
+            toast({ title: 'Successfully updated integration id', variant: 'success' });
+        }
+
         setLoading(false);
     };
 
@@ -38,7 +54,8 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
                         id="app_id"
                         name="app_id"
                         type="text"
-                        defaultValue={integration.oauth_client_id}
+                        value={appId}
+                        onChange={(e) => setAppId(e.target.value)}
                         placeholder="Obtain the app id from the app page."
                         required
                         minLength={1}
@@ -51,7 +68,8 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
                         id="app_link"
                         name="app_link"
                         type="text"
-                        defaultValue={integration.app_link}
+                        value={appLink}
+                        onChange={(e) => setAppLink(e.target.value)}
                         placeholder="Obtain the app public link from the app page."
                         required
                         minLength={1}
@@ -69,7 +87,8 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
                     copy={true}
                     id="private_key"
                     name="private_key"
-                    defaultValue={integration.oauth_client_secret}
+                    value={privateKey}
+                    onChange={(e) => setPrivateKey(e.target.value)}
                     additionalClass={`w-full`}
                     required
                 />
