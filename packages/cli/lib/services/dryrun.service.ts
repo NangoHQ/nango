@@ -14,7 +14,6 @@ import * as vm from 'node:vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
-import * as soap from 'soap';
 import { Buffer } from 'buffer';
 
 interface RunArgs extends GlobalOptions {
@@ -430,9 +429,8 @@ export class DryRunService {
                             case 'zod':
                                 return zod;
                             case 'soap':
-                                return soap;
                             case 'botbuilder':
-                                throw new Error('Module "botbuilder" is not allowed. Please test the integration using the Nango dashboard');
+                                throw new Error(`Module '${moduleName}' not available in dry run. Please test the integration using the Nango dashboard`);
                             default:
                                 throw new Error(`Module '${moduleName}' is not allowed`);
                         }
