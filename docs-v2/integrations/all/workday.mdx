@@ -1,0 +1,38 @@
+---
+title: Workable
+sidebarTitle: Workable
+---
+
+API configuration: [`workday`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | 🚫 |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+Workday provides two APIs, a REST and a SOAP one. Only the SOAP is currently supported.
+
+## Connection configuration in Nango
+
+Workable requires a user specific subdomain for the API base URL.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('workday', '<CONNECTION-ID>', {params: {subdomain: '<workday-subdomain>'}});
+```
+
+For more details see the [docs here](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization).
+
+## API gotchas
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
