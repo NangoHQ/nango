@@ -4,11 +4,9 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
 import { getJobsUrl, getPersistAPIUrl } from '@nangohq/shared';
-import type { NangoProps, RunnerOutput } from '@nangohq/shared';
+import type { NangoProps } from '@nangohq/shared';
 import { RunnerMonitor } from './monitor.js';
 import { exec } from './exec.js';
-import { exec as execLegacy } from './exec.legacy.js';
-import { cancel } from './cancel.js';
 import { abort } from './abort.js';
 import superjson from 'superjson';
 import { httpFetch, logger } from './utils.js';
@@ -21,14 +19,6 @@ export const t = initTRPC.create({
 const router = t.router;
 const publicProcedure = t.procedure;
 
-interface RunParams {
-    nangoProps: NangoProps;
-    isInvokedImmediately: boolean;
-    isWebhook: boolean;
-    code: string;
-    codeParams?: object;
-}
-
 interface StartParams {
     taskId: string;
     nangoProps: NangoProps;
@@ -38,8 +28,6 @@ interface StartParams {
 
 const appRouter = router({
     health: healthProcedure(),
-    run: runProcedure(),
-    cancel: cancelProcedureLegacy(), //TODO: remove once refactoring of jobs is deployed
     abort: abortProcedure(),
     start: startProcedure()
 });
@@ -58,28 +46,6 @@ const jobsServiceUrl = process.env['NOTIFY_IDLE_ENDPOINT']?.replace(/\/idle$/, '
 const persistServiceUrl = getPersistAPIUrl();
 const usage = new RunnerMonitor({ runnerId, jobsServiceUrl, persistServiceUrl });
 
-function runProcedure() {
-    return publicProcedure
-        .input((input) => input as RunParams)
-        .mutation(async ({ input }): Promise<RunnerOutput> => {
-            const { nangoProps, code, codeParams } = input;
-            try {
-                logger.info('Received task', {
-                    env: nangoProps.environmentId,
-                    connectionId: nangoProps.connectionId,
-                    syncId: nangoProps.syncId,
-                    input: codeParams
-                });
-                usage.track(nangoProps);
-                const scriptType: 'sync' | 'action' | 'webhook' = input.isWebhook ? 'webhook' : input.isInvokedImmediately ? 'action' : 'sync';
-                return await execLegacy(nangoProps, scriptType, code, codeParams);
-            } finally {
-                usage.untrack(nangoProps);
-                logger.info('Task done');
-            }
-        });
-}
-
 function startProcedure() {
     return publicProcedure
         .input((input) => input as StartParams)
@@ -90,6 +56,8 @@ function startProcedure() {
                 env: nangoProps.environmentId,
                 connectionId: nangoProps.connectionId,
                 syncId: nangoProps.syncId,
+                version: nangoProps.syncConfig.version,
+                fileLocation: nangoProps.syncConfig.file_location,
                 input: codeParams
             });
             usage.track(nangoProps);
@@ -126,15 +94,6 @@ function startProcedure() {
                 }
             });
             return true;
-        });
-}
-
-function cancelProcedureLegacy() {
-    return publicProcedure
-        .input((input) => input as { syncId: string })
-        .mutation(({ input }) => {
-            logger.info('Received cancel', { input });
-            return cancel(input.syncId);
         });
 }
 

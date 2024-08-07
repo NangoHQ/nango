@@ -492,6 +492,15 @@ chorus:
     proxy:
         base_url: https://chorus.ai
     docs: https://docs.nango.dev/integrations/all/chorus
+circle-so:
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.circle.so
+        headers:
+            Authorization: Token ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/circle-so
 clari-copilot:
     auth_mode: API_KEY
     proxy:
@@ -749,6 +758,15 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+e-conomic:
+    categories:
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        base_url: https://restapi.e-conomic.com
+        headers:
+            Content-Type: application/json
+    docs: https://docs.nango.dev/integrations/all/e-conomic
 egnyte:
     categories:
         - storage
@@ -843,6 +861,8 @@ exact-online:
     token_expiration_buffer: 30
     proxy:
         base_url: https://start.exactonline.${connectionConfig.extension}/
+        headers:
+            Accept: application/json
         paginate:
             type: link
             link_path_in_response_body: d.__next
@@ -917,6 +937,32 @@ fireflies:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/fireflies
+fiserv:
+    categories:
+        - banking
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://cert.api.fiservapps.com/fts-apim/oauth2/v2
+    token_request_auth_method: basic
+    expires_in_unit: milliseconds
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostUrl}
+    docs: https://docs.nango.dev/integrations/all/fiserv
+fiserv-api-key:
+    categories:
+        - banking
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://prod.emea.api.fiservapps.com
+        headers:
+            API-Key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /sandbox/exp/v1/authorisations
+    docs: https://docs.nango.dev/integrations/all/fiserv
 fitbit:
     categories:
         - sports
@@ -1507,7 +1553,7 @@ klaviyo:
         base_url: https://a.klaviyo.com
         headers:
             Authorization: Klaviyo-API-Key ${apiKey}
-            revision: ${connectionConfig.revisionHeader}
+            revision: '2024-07-15'
         verification:
             method: GET
             endpoint: /api/accounts
@@ -1531,7 +1577,7 @@ klaviyo-oauth:
     proxy:
         base_url: https://a.klaviyo.com
         headers:
-            revision: ${connectionConfig.revisionHeader}
+            revision: '2024-07-15'
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/klaviyo
@@ -2831,6 +2877,23 @@ todoist:
     proxy:
         base_url: https://api.todoist.com
     docs: https://docs.nango.dev/integrations/all/todoist
+tumblr:
+    categories:
+        - social
+        - communication
+    auth_mode: OAUTH2
+    authorization_url: https://www.tumblr.com/oauth2/authorize
+    token_url: https://api.tumblr.com/v2/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.tumblr.com/v2
+    docs: https://docs.nango.dev/integrations/all/tumblr
 twitch:
     categories:
         - gaming
@@ -3104,6 +3167,13 @@ workable:
             Authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
     docs: https://docs.nango.dev/integrations/all/workable
+workday:
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.workday.com
+    docs: https://docs.nango.dev/integrations/all/workday
 wrike:
     categories:
         - productivity

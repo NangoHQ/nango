@@ -16,6 +16,126 @@ integrations:
                 name: string
                 company: string
                 email: string
+    anrok:
+        actions:
+            create-ephemeral-transaction:
+                description: |
+                    Creates an ephemeral transaction in Anrok.
+                input: Transaction
+                output: TransactionActionResponse
+                endpoint: POST /ephmeral-transaction
+            create-or-update-transaction:
+                description: |
+                    Creates or updates a transaction in Anrok.
+                input: Transaction[]
+                output: TransactionActionResponse
+                endpoint: POST /transaction
+            void-transaction:
+                description: |
+                    Voids a transaction in Anrok.
+                input: TransactionToDelete[]
+                output: TransactionDeletionActionResponse
+                endpoint: POST /transaction/voide
+            negate-transaction:
+                description: |
+                    Creates a negation in Anrok.
+                input: TransactionToNegate[]
+                output: TransactionNegationActionResponse
+                endpoint: POST /transaction/negate
+        models:
+            AnrokAddress:
+                line1: string
+                city: string
+                postalCode: string
+                country: string
+            AnrokLineItems:
+                id: string
+                productExternalId: string
+                amount: number
+            AnrokTaxIds:
+                type: string
+                value: string
+            AnrokTransactionData:
+                id?: string | undefined
+                accountingDate: string
+                currencyCode: string
+                customerId: string
+                customerName: string
+                customerAddress: AnrokAddress
+                lineItems: AnrokLineItems[]
+                customerTaxIds?: AnrokTaxIds[]
+            AnrokContact:
+                external_id: string
+                name: string
+                address_line_1: string
+                city: string
+                zip: string
+                country: string
+                taxable: boolean
+                tax_number: string
+            BaseTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+            Transaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+            TransactionFee:
+                item_id: string
+                item_code: string | null
+                amount_cents: number | null
+            TaxBreakdown:
+                name?: string
+                rate?: string
+                tax_amount?: number
+                type?: string | null
+                reason?: string
+            FailedTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+                validation_errors: any[]
+            SuccessTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+                sub_total_excluding_taxes?: number
+                taxes_amount_cents?: number
+            TransactionActionResponse:
+                succeeded: SuccessTransaction[]
+                failed: FailedTransaction[]
+            TransactionToNegate:
+                id: string
+                voided_id: string
+            TransactionToDelete:
+                id: string
+            TransactionNegationActionResponse:
+                succeeded: TransactionToNegate[]
+                failed: FailedTransactionToNegate[]
+            TransactionDeletionActionResponse:
+                succeeded: TransactionToDelete[]
+                failed: FailedTransactionToDelete[]
+            FailedTransactionToDelete:
+                id: string
+                validation_errors: any[]
+            FailedTransactionToNegate:
+                id: string
+                voided_id: string
+                validation_errors: any[]
+            TransactionFeeWithTaxBreakdown:
+                item_id: string
+                item_code: string | null
+                amount_cents: number | null
+                tax_amount_cents: number
+                tax_breakdown: TaxBreakdown[]
     asana:
         syncs:
             tasks:
@@ -978,6 +1098,161 @@ integrations:
                 id: string
                 title: string
                 name: string
+    exact-online:
+        syncs:
+            customers:
+                version: 1.0.0
+                description: |
+                    Fetches all customers in Exact Online
+                runs: every hour
+                output: ExactCustomer
+                sync_type: full
+                auto_start: true
+                endpoint: GET /customers
+                track_deletes: true
+            payments:
+                version: 1.0.0
+                description: |
+                    Fetches all payments in Exact Online
+                runs: every hour
+                output: ExactPayment
+                sync_type: full
+                auto_start: true
+                endpoint: GET /payments
+                track_deletes: true
+        actions:
+            create-customer:
+                version: 1.0.0
+                description: |
+                    Creates a customer in ExactOnline
+                input: ExactCustomerCreateInput
+                output: ExactCustomerCreateOutput
+                endpoint: POST /customers
+            update-customer:
+                version: 1.0.0
+                description: |
+                    Updates a customer in ExactOnline
+                input: ExactCustomerUpdateInput
+                output: ExactCustomerUpdateOutput
+                endpoint: PUT /customers
+            create-invoice:
+                version: 1.0.0
+                description: |
+                    Creates an invoice in ExactOnline
+                input: ExactInvoiceCreateInput
+                output: ExactInvoiceCreateOutput
+                endpoint: POST /invoices
+            update-invoice:
+                version: 1.0.0
+                description: |
+                    Updates an invoice in ExactOnline
+                input: ExactInvoiceUpdateInput
+                output: ExactInvoiceUpdateOutput
+                endpoint: PUT /invoices
+            attach-file-invoice:
+                version: 1.0.0
+                description: |
+                    Uploads a file to ExactOnline and link it to an invoice
+                input: ExactInvoiceAttachFileInput
+                output: ExactInvoiceAttachFileOutput
+                endpoint: POST /invoices/attach-file
+        models:
+            ExactCustomer:
+                id: string
+                division: number | null
+                name: string
+                email: string | null
+                taxNumber: string | null
+                addressLine1: string | null
+                addressLine2: string | null
+                city: string | null
+                zip: string | null
+                country: string | null
+                state: string | null
+                phone: string | null
+            ExactCustomerCreateBase:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+            ExactCustomerCreateInput:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+            ExactCustomerCreateOutput:
+                id: string
+            ExactCustomerUpdateInput:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+                id: string
+                name?: string | null
+            ExactCustomerUpdateOutput:
+                success: boolean
+            ExactPayment:
+                id: string
+                description: string | null
+                division: number | null
+                customerId: string | null
+                amount: number | null
+                createdAt: string | null
+                currency: string | null
+                journal: string | null
+                paymentMethod: string | null
+                paymentReference: string | null
+                status: number | null
+                transactionID: string | null
+            ExactInvoiceLine:
+                itemId: string
+                quantity: number
+                amountNet: number
+                vatCode?: string
+                description?: string
+            ExactInvoiceCreateInput:
+                customerId: string
+                journal: number
+                currency?: EUR
+                description?: string
+                createdAt?: date
+                lines: ExactInvoiceLine[]
+            ExactInvoiceCreateOutput:
+                id: string
+            ExactInvoiceUpdateInput:
+                id: string
+                deliverTo?: string
+                currency?: EUR
+                description?: string
+                createdAt?: date
+            ExactInvoiceUpdateOutput:
+                success: boolean
+            ExactInvoiceAttachFileInput:
+                invoiceId: string
+                customerId: string
+                subject: string
+                filename: string
+                content: string
+            ExactInvoiceAttachFileOutput:
+                success: boolean
     expensify:
         actions:
             list-policies:
@@ -2868,9 +3143,10 @@ integrations:
                 input: SharePointMetadata
                 auto_start: false
                 output: FileMetadata
-                version: 1.0.0
+                version: 1.0.1
         models:
             FileMetadata:
+                siteId: string
                 id: string
                 name: string
                 etag: string
