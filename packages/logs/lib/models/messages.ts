@@ -287,7 +287,7 @@ export async function listMessages(opts: {
     let cursor: any[] | undefined;
     let sort: estypes.Sort = [{ createdAt: 'desc' }, { id: 'desc' }];
     if (opts.cursorBefore) {
-        // search_before does not exists so we reverse the sort
+        // search_before does not exist so we reverse the sort
         // https://github.com/elastic/elasticsearch/issues/29449
         cursor = parseCursor(opts.cursorBefore);
         sort = [{ createdAt: 'asc' }, { id: 'asc' }];

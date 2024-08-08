@@ -29,7 +29,7 @@ export const declineInvite = asyncWrapper<DeclineInvite>(async (req, res) => {
     const data: DeclineInvite['Params'] = val.data;
     const invitation = await getInvitation(data.id);
     if (!invitation || invitation.email !== user.email) {
-        res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exists or is expired' } });
+        res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
         return;
     }
 
