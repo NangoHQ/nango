@@ -228,7 +228,7 @@ export async function getConnection(providerConfigKey: string, connectionId: str
             return res.data;
         })
         .catch((err: unknown) => {
-            console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
+            console.log(`❌ ${err instanceof AxiosError ? JSON.stringify(err.response?.data.error) : JSON.stringify(err, ['message'])}`);
         });
 }
 

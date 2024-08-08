@@ -9,7 +9,7 @@ import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { NangoConfigV1, StandardNangoConfig, NangoSyncConfig } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
-import type { SlimSync } from '@nangohq/types';
+import type { DBSyncConfig, SlimSync } from '@nangohq/types';
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -168,27 +168,21 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
     return null;
 }
 
-export async function getFlowConfigsByParams(environment_id: number, providerConfigKey: string): Promise<SyncConfig[]> {
+export async function getFlowConfigsByParams(environment_id: number, providerConfigKey: string): Promise<DBSyncConfig[]> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
     if (!config) {
         throw new Error('Provider config not found');
     }
 
-    const result = await schema()
-        .from<SyncConfig>(TABLE)
-        .where({
-            environment_id,
-            nango_config_id: config.id as number,
-            active: true,
-            deleted: false
-        });
+    const result = await db.knex.from<DBSyncConfig>(TABLE).select<DBSyncConfig[]>('*').where({
+        environment_id,
+        nango_config_id: config.id!,
+        active: true,
+        deleted: false
+    });
 
-    if (result) {
-        return result;
-    }
-
-    return [];
+    return result;
 }
 
 export async function getSyncAndActionConfigsBySyncNameAndConfigId(environment_id: number, nango_config_id: number, sync_name: string): Promise<SyncConfig[]> {

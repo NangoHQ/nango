@@ -1,13 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
-import type {
-    StandardNangoConfig,
-    Config as ProviderConfig,
-    IntegrationWithCreds,
-    Integration as ProviderIntegration,
-    Config,
-    NangoSyncConfig
-} from '@nangohq/shared';
+import type { StandardNangoConfig, Config as ProviderConfig, IntegrationWithCreds, Integration as ProviderIntegration, NangoSyncConfig } from '@nangohq/shared';
 import { isHosted } from '@nangohq/utils';
 import type { Template as ProviderTemplate, AuthModeType } from '@nangohq/types';
 import {
@@ -175,95 +168,6 @@ class ConfigController {
                 })
                 .sort((a, b) => a.name.localeCompare(b.name));
             res.status(200).send(providers);
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async editProviderConfigWeb(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { environment } = res.locals;
-
-            if (req.body == null) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            if (req.body['provider_config_key'] == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            if (req.body['provider'] == null) {
-                errorManager.errRes(res, 'missing_provider_template');
-                return;
-            }
-
-            const provider = req.body['provider'];
-
-            const template = configService.getTemplate(provider as string);
-            const authMode = template.auth_mode;
-
-            if (authMode === 'OAUTH1' || authMode === 'OAUTH2' || authMode === 'CUSTOM') {
-                if (req.body['client_id'] == null) {
-                    errorManager.errRes(res, 'missing_client_id');
-                    return;
-                }
-                if (req.body['client_secret'] == null) {
-                    errorManager.errRes(res, 'missing_client_secret');
-                    return;
-                }
-            }
-
-            let oauth_client_secret = req.body['client_secret'] ?? null;
-
-            if (template.auth_mode === 'APP') {
-                if (!oauth_client_secret.includes('BEGIN RSA PRIVATE KEY')) {
-                    errorManager.errRes(res, 'invalid_app_secret');
-                    return;
-                }
-                oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
-            }
-
-            const custom: Config['custom'] = req.body['custom'] ?? null;
-
-            if (template.auth_mode === 'CUSTOM') {
-                if (!custom || !custom['private_key']) {
-                    errorManager.errRes(res, 'missing_custom');
-                    return;
-                }
-
-                const { private_key } = custom;
-
-                if (!private_key.includes('BEGIN RSA PRIVATE KEY')) {
-                    errorManager.errRes(res, 'invalid_app_secret');
-                    return;
-                }
-                custom['private_key'] = Buffer.from(private_key).toString('base64');
-            }
-
-            const oldConfig = await configService.getProviderConfig(req.body['provider_config_key'], environment.id);
-            if (oldConfig == null) {
-                errorManager.errRes(res, 'unknown_provider_config');
-                return;
-            }
-
-            const newConfig: ProviderConfig = {
-                ...oldConfig,
-                unique_key: req.body['provider_config_key'],
-                provider: req.body['provider'],
-                oauth_client_id: req.body['client_id'],
-                oauth_client_secret,
-                oauth_scopes: req.body['scopes'],
-                app_link: req.body['app_link'],
-                environment_id: environment.id
-            };
-            if (custom) {
-                newConfig.custom = custom;
-            }
-
-            await configService.editProviderConfig(newConfig);
-            res.status(200).send();
         } catch (err) {
             next(err);
         }

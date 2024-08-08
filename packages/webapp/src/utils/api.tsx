@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
 import type { RunSyncCommand, PreBuiltFlow } from '../types';
-import type { AuthModeType, PostSignup } from '@nangohq/types';
+import type { PostSignup } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
     return await fetch(input, {
@@ -347,92 +347,6 @@ export function useGetIntegrationDetailsAPI(env: string) {
     return async (providerConfigKey: string) => {
         try {
             const res = await apiFetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?env=${env}&include_creds=true`);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useCreateIntegrationAPI(env: string) {
-    const signout = useSignout();
-
-    return async (
-        provider: string,
-        authMode: AuthModeType,
-        providerConfigKey: string,
-        clientId: string,
-        clientSecret: string,
-        scopes: string,
-        app_link: string,
-        custom?: Record<string, string>
-    ) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({
-                    auth_mode: authMode,
-                    provider: provider,
-                    provider_config_key: providerConfigKey,
-                    oauth_client_id: clientId,
-                    oauth_client_secret: clientSecret,
-                    oauth_scopes: scopes,
-                    app_link,
-                    custom
-                })
-            };
-
-            const res = await apiFetch(`/api/v1/integration?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditIntegrationAPI(env: string) {
-    const signout = useSignout();
-
-    return async (
-        provider: string,
-        authMode: AuthModeType,
-        providerConfigKey: string,
-        clientId: string,
-        clientSecret: string,
-        scopes: string,
-        app_link: string,
-        custom?: Record<string, string>
-    ) => {
-        try {
-            const options = {
-                method: 'PUT',
-                body: JSON.stringify({
-                    auth_mode: authMode,
-                    provider: provider,
-                    provider_config_key: providerConfigKey,
-                    client_id: clientId,
-                    client_secret: clientSecret,
-                    scopes: scopes,
-                    app_link,
-                    custom
-                })
-            };
-
-            const res = await apiFetch(`/api/v1/integration?env=${env}`, options);
 
             if (res.status === 401) {
                 return signout();

@@ -79,6 +79,7 @@ import { patchIntegration } from './controllers/v1/integrations/:uniqueKey/patch
 import { deleteIntegration } from './controllers/v1/integrations/:uniqueKey/deleteIntegration.js';
 import { deleteIntegrationPublic } from './controllers/config/:providerConfigKey/deleteIntegration.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
+import { getIntegrationFlows } from './controllers/v1/integrations/:uniqueKey/flows/getFlows.js';
 
 export const router = express.Router();
 
@@ -247,12 +248,12 @@ web.route('/api/v1/environment/activate-key').post(webAuth, environmentControlle
 web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
 web.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
-web.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
 web.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 web.route('/api/v1/integrations').post(webAuth, postIntegration);
 web.route('/api/v1/integrations/:integrationId').get(webAuth, getIntegration);
 web.route('/api/v1/integrations/:integrationId').patch(webAuth, patchIntegration);
 web.route('/api/v1/integrations/:integrationId').delete(webAuth, deleteIntegration);
+web.route('/api/v1/integrations/:integrationId/flows').get(webAuth, getIntegrationFlows);
 
 web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 

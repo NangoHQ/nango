@@ -2,7 +2,7 @@ import useSWR from 'swr';
 import type { ListIntegration } from '@nangohq/server';
 import type { SWRError } from '../utils/api';
 import { apiFetch, swrFetcher } from '../utils/api';
-import type { DeleteIntegration, GetIntegration, PatchIntegration, PostIntegration } from '@nangohq/types';
+import type { DeleteIntegration, GetIntegration, GetIntegrationFlows, PatchIntegration, PostIntegration } from '@nangohq/types';
 
 export function useListIntegration(env: string) {
     const { data, error, mutate } = useSWR<ListIntegration>(`/api/v1/integration?env=${env}`, swrFetcher);
@@ -16,6 +16,7 @@ export function useListIntegration(env: string) {
         mutate
     };
 }
+
 export function useGetIntegration(env: string, integrationId: string) {
     const { data, error, mutate } = useSWR<GetIntegration['Success'], SWRError<GetIntegration['Errors']>>(
         `/api/v1/integrations/${integrationId}?env=${env}`,
@@ -64,5 +65,21 @@ export async function apiDeleteIntegration(env: string, integrationId: string) {
     return {
         res,
         json: (await res.json()) as DeleteIntegration['Reply']
+    };
+}
+
+export function useGetIntegrationFlows(env: string, integrationId: string) {
+    const { data, error, mutate } = useSWR<GetIntegrationFlows['Success'], SWRError<GetIntegrationFlows['Errors']>>(
+        `/api/v1/integrations/${integrationId}/flows?env=${env}`,
+        swrFetcher
+    );
+
+    const loading = !data && !error;
+
+    return {
+        loading,
+        error: error?.json,
+        data: data?.data,
+        mutate
     };
 }

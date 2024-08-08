@@ -16,6 +16,8 @@ export type * from './connection/db.js';
 export type * from './meta/api.js';
 export type * from './invitations/api.js';
 export type * from './invitations/db.js';
+export type * from './syncConfigs/db.js';
+export type * from './syncConfigs/api.js';
 export type * from './team/api.js';
 export type * from './team/db.js';
 
