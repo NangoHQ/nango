@@ -61,6 +61,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
             syncId: sync.id,
+            syncJobId: -1,
             debug: false,
             runnerFlags: await getRunnerFlags(),
             startedAt: new Date()

@@ -6,6 +6,7 @@ import * as vm from 'node:vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
+import * as soap from 'soap';
 import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
 import { errorToObject, metrics } from '@nangohq/utils';
@@ -51,6 +52,8 @@ export async function exec(
                             return zod;
                         case 'botbuilder':
                             return botbuilder;
+                        case 'soap':
+                            return soap;
                         default:
                             throw new Error(`Module '${moduleName}' is not allowed`);
                     }

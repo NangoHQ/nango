@@ -3169,6 +3169,13 @@ workable:
             Authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
     docs: https://docs.nango.dev/integrations/all/workable
+workday:
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.workday.com
+    docs: https://docs.nango.dev/integrations/all/workday
 wrike:
     categories:
         - productivity

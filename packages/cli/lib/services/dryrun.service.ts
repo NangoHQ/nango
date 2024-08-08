@@ -428,8 +428,9 @@ export class DryRunService {
                                 return crypto;
                             case 'zod':
                                 return zod;
+                            case 'soap':
                             case 'botbuilder':
-                                throw new Error('Module "botbuilder" is not allowed. Please test the integration using the Nango dashboard');
+                                throw new Error(`Module '${moduleName}' not available in dry run. Please test the integration using the Nango dashboard`);
                             default:
                                 throw new Error(`Module '${moduleName}' is not allowed`);
                         }
