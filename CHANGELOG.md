@@ -940,7 +940,7 @@ All notable changes to this project will be documented in this file.
 - *(webapp)* Improve field values on refresh (#1782) by @hassan254-prog
 - *(db)* Add index for isSyncJobRunning (#1793) by @bodinsamuel
 - *(integrations)* Api support and integration template for zoho-mail (#1779) by @hassan254-prog
-- *(SecretInput)* Handle null optionalvalue gracefully (#1781) by @hassan254-prog
+- *(SecretInput)* Handle null optionalValue gracefully (#1781) by @hassan254-prog
 - *(webapp)* Improve input integration ID on edit (#1783) by @hassan254-prog
 
 ### Changed
