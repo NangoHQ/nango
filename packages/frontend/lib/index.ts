@@ -491,7 +491,14 @@ interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
-    credentials?: OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials | TBACredentials | TableauCredentials;
+    credentials?:
+        | OAuthCredentialsOverride
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppStoreCredentials
+        | TBACredentials
+        | TableauCredentials
+        | OAuth2ClientCredentials;
 }
 
 interface OAuthCredentialsOverride {
