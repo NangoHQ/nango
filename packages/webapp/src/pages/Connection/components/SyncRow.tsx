@@ -302,9 +302,9 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                 )}
 
                                 <Link to={logUrl} className="w-full">
-                                    <Button variant="zombie" className="w-full gap-6">
+                                    <Button variant="zombie" className="w-full gap-4">
                                         <QueueListIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                        <span className="pl-2">View Logs</span>
+                                        View Logs
                                     </Button>
                                 </Link>
                             </div>

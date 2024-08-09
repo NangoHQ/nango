@@ -56,7 +56,7 @@ export class ModelsParser {
             return true;
         }
 
-        // Model does not exists but that could just mean string literal
+        // Model does not exist but that could just mean string literal
         if (!this.raw[name]) {
             this.warnings.push(
                 new ParserError({

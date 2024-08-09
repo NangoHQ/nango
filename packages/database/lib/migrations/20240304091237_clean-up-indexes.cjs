@@ -2,7 +2,7 @@ exports.config = { transaction: false };
 
 exports.up = async function (knex) {
     // logs
-    // This index does not exists in Prod
+    // This index does not exist in Prod
     await knex.schema.raw('DROP INDEX CONCURRENTLY IF EXISTS created_at_index');
     await knex.schema.raw('DROP INDEX CONCURRENTLY IF EXISTS idx_logs_environment_timestamp');
 

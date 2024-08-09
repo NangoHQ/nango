@@ -27,4 +27,7 @@ API configuration: [`quickbooks`](https://nango.dev/providers.yaml)
 
 ## API gotchas
 
+- Quickbooks requires a company ID for each API request. Quickbooks returns it as part of the OAuth flow, and Nango stores it automatically in the `connection_config` for you with the key `realmId`.
+    - You can use [getConnection](/reference/scripts#get-the-connection-credentials) in your integration scripts to retrieve it, or when you fetch the Connection credentials with the REST API or SDK
+
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks.mdx)</Note>

@@ -26,7 +26,7 @@ export const InviteSignup: React.FC = () => {
         setLoadingAccept(true);
 
         const accepted = await apiAcceptInvite(token!);
-        if (accepted && accepted.res.status === 200) {
+        if (accepted.res.status === 200) {
             toast({ title: `You joined the team`, variant: 'success' });
             navigate('/');
         } else {
@@ -38,7 +38,7 @@ export const InviteSignup: React.FC = () => {
         setLoadingDecline(true);
 
         const declined = await apiDeclineInvite(token!);
-        if (declined && declined.res.status === 200) {
+        if (declined.res.status === 200) {
             toast({ title: `You declined the invitation`, variant: 'success' });
             navigate('/');
         } else {
