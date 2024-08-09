@@ -2215,7 +2215,6 @@ podium:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    expires_in_ms: 36000000
     proxy:
         headers:
             Podium-Version: ${connectionConfig.apiVersion}
