@@ -1,5 +1,3 @@
-import type { BaseConnection } from '../connection/db.js';
-
 export interface AuthModes {
     OAuth1: 'OAUTH1';
     OAuth2: 'OAUTH2';
@@ -149,10 +147,6 @@ export type RefreshTokenResponse = AuthorizationTokenResponse;
 export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {
     expires_in?: number;
 }
-
-export type ImportedCredentials =
-    | (OAuth2Credentials & Partial<Pick<AuthorizationTokenResponse, 'expires_in'>> & Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>)
-    | OAuth1Credentials;
 
 export type AllAuthCredentials =
     | OAuth1Credentials

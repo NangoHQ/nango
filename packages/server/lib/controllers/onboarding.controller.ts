@@ -129,7 +129,7 @@ class OnboardingController {
                 payload.connection = true;
             }
 
-            const sync = await getSyncByIdAndName(connectionExists.id, DEMO_SYNC_NAME);
+            const sync = await getSyncByIdAndName(connectionExists.id!, DEMO_SYNC_NAME);
             if (!sync) {
                 payload.progress = 1;
                 res.status(200).json(payload);
@@ -140,7 +140,7 @@ class OnboardingController {
             }
 
             const getRecords = await recordsService.getRecords({
-                connectionId: connectionExists.id,
+                connectionId: connectionExists.id!,
                 model: DEMO_MODEL
             });
             if (getRecords.isErr()) {
