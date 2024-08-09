@@ -584,8 +584,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                                     id="oauth_client_id"
                                                     name="oauth_client_id"
                                                     placeholder="Find the Client ID on the developer portal of the external API provider."
-                                                    optionalvalue={oAuthClientId}
-                                                    setoptionalvalue={setOAuthClientId}
+                                                    optionalValue={oAuthClientId}
+                                                    setOptionalValue={setOAuthClientId}
                                                 />
                                             </div>
                                         </div>
@@ -602,8 +602,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                                 autoComplete="one-time-code"
                                                 placeholder="Find the Client Secret on the developer portal of the external API provider."
                                                 required
-                                                optionalvalue={oAuthClientSecret}
-                                                setoptionalvalue={setOAuthClientSecret}
+                                                optionalValue={oAuthClientSecret}
+                                                setOptionalValue={setOAuthClientSecret}
                                             />
                                         </div>
                                     </div>
@@ -641,8 +641,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             id="oauth_client_id"
                                             name="oauth_client_id"
                                             placeholder="OAuth Client ID Override"
-                                            optionalvalue={oAuthClientId}
-                                            setoptionalvalue={setOAuthClientId}
+                                            optionalValue={oAuthClientId}
+                                            setOptionalValue={setOAuthClientId}
                                         />
                                     </div>
                                     <div className="mt-8">
@@ -651,8 +651,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             id="oauth_client_secret"
                                             name="oauth_client_secret"
                                             placeholder="OAuth Client Secret Override"
-                                            optionalvalue={oAuthClientSecret}
-                                            setoptionalvalue={setOAuthClientSecret}
+                                            optionalValue={oAuthClientSecret}
+                                            setOptionalValue={setOAuthClientSecret}
                                         />
                                     </div>
                                     {integration?.provider !== 'netsuite-tba' && (
@@ -693,8 +693,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             id="token_id"
                                             name="token_id"
                                             placeholder="Token ID"
-                                            optionalvalue={tokenId}
-                                            setoptionalvalue={setTokenId}
+                                            optionalValue={tokenId}
+                                            setOptionalValue={setTokenId}
                                         />
                                     </div>
                                     <div className="mt-4">
@@ -706,8 +706,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             id="token_secret"
                                             name="token_secret"
                                             placeholder="Token secret"
-                                            optionalvalue={tokenSecret}
-                                            setoptionalvalue={setTokenSecret}
+                                            optionalValue={tokenSecret}
+                                            setOptionalValue={setTokenSecret}
                                         />
                                     </div>
                                 </div>
@@ -726,8 +726,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             id="pat_name"
                                             name="pat_name"
                                             placeholder="PAT Name"
-                                            optionalvalue={patName}
-                                            setoptionalvalue={setpatName}
+                                            optionalValue={patName}
+                                            setOptionalValue={setpatName}
                                         />
                                     </div>
                                     <div className="mt-4">
@@ -739,8 +739,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             id="pat_secret"
                                             name="pat_secret"
                                             placeholder="PAT Secret"
-                                            optionalvalue={patSecret}
-                                            setoptionalvalue={setpatSecret}
+                                            optionalValue={patSecret}
+                                            setOptionalValue={setpatSecret}
                                         />
                                     </div>
                                     <div className="mt-4">
@@ -753,7 +753,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             name="content_url"
                                             placeholder="Conent Url"
                                             value={contentUrl}
-                                            setoptionalvalue={setContentUrl}
+                                            setOptionalValue={setContentUrl}
                                         />
                                     </div>
                                 </div>
@@ -823,8 +823,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                                     copy={true}
                                                     id="username"
                                                     name="username"
-                                                    optionalvalue={apiAuthUsername}
-                                                    setoptionalvalue={setApiAuthUsername}
+                                                    optionalValue={apiAuthUsername}
+                                                    setOptionalValue={setApiAuthUsername}
                                                 />
                                             </div>
 
@@ -839,8 +839,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                                     copy={true}
                                                     id="password"
                                                     name="password"
-                                                    optionalvalue={apiAuthPassword}
-                                                    setoptionalvalue={setApiAuthPassword}
+                                                    optionalValue={apiAuthPassword}
+                                                    setOptionalValue={setApiAuthPassword}
                                                 />
                                             </div>
                                         </div>
@@ -869,8 +869,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                                     copy={true}
                                                     id="api_key"
                                                     name="api_key"
-                                                    optionalvalue={apiKey}
-                                                    setoptionalvalue={setApiKey}
+                                                    optionalValue={apiKey}
+                                                    setOptionalValue={setApiKey}
                                                     required
                                                 />
                                             </div>
@@ -997,8 +997,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             copy={true}
                                             id="private_key"
                                             name="private_key"
-                                            optionalvalue={privateKey}
-                                            setoptionalvalue={(value) => setPrivateKey(value)}
+                                            optionalValue={privateKey}
+                                            setOptionalValue={(value) => setPrivateKey(value)}
                                             required
                                         />
                                     </div>
