@@ -41,7 +41,7 @@ describe('Auto Idle Demo', async () => {
             .insert({
                 created_at: new Date(),
                 sync_name: DEMO_SYNC_NAME,
-                nango_config_id: config![0]!.id!,
+                nango_config_id: config!.id!,
                 file_location: '_LOCAL_FILE_',
                 version: '1',
                 models: ['GithubIssueDemo'],

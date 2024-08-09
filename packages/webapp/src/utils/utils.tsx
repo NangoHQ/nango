@@ -94,6 +94,23 @@ export function formatDateToUSFormat(dateString: string): string {
     }
     return formattedDate;
 }
+export function formatDateToInternationalFormat(dateString: string): string {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false
+    };
+
+    const formattedDate = date.toLocaleString('en-US', options);
+
+    if (formattedDate === 'Invalid Date') {
+        return '-';
+    }
+    return formattedDate;
+}
 
 export function formatDateToLogFormat(dateString: string): string {
     const date = new Date(dateString);

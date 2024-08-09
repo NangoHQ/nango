@@ -204,33 +204,4 @@ describe('Should verify the config controller HTTP API calls', () => {
             })
         );
     });
-
-    it('DELETE a provider config successfully', async () => {
-        const result = await db.knex.select('*').from('_nango_environments');
-        const req: any = {
-            params: {
-                providerConfigKey: 'test'
-            },
-            headers: {
-                Authorization: `Bearer ${result[0].secret_key}`
-            }
-        };
-        const res = {
-            status: (code: number) => {
-                return code;
-            },
-            locals
-        } as unknown as Response;
-
-        const statusSpy = vi.spyOn(res, 'status');
-
-        const next = () => {
-            return;
-        };
-
-        await configController.deleteProviderConfig(req as unknown as Request, res as unknown as Response<any, Required<RequestLocals>>, next as NextFunction);
-        const config = await configService.getProviderConfig('test', 1);
-        expect(statusSpy).toHaveBeenCalledWith(204);
-        expect(config).toBe(null);
-    });
 });

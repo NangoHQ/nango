@@ -53,7 +53,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         // Joined from an invitation
         invitation = await getInvitation(state.token);
         if (!invitation || invitation.email !== authorizedUser.email) {
-            res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exists or is expired' } });
+            res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
             return;
         }
     }

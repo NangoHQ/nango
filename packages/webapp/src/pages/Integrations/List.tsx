@@ -66,7 +66,7 @@ export default function IntegrationList() {
                                         uniqueKey !== integrations.at(-1)?.uniqueKey ? 'border-b border-border-gray' : ''
                                     } min-h-[4em] px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
                                     onClick={() => {
-                                        navigate(`/${env}/integration/${uniqueKey}`);
+                                        navigate(`/${env}/integrations/${uniqueKey}`);
                                     }}
                                 >
                                     <div className="flex items-center w-2/3 gap-2 py-2 truncate">
