@@ -32,7 +32,7 @@ server.post(
         }),
         body: z
             .object({
-                activityLogId: z.union([z.number(), z.string()]),
+                activityLogId: z.string(),
                 level: z.enum(['info', 'debug', 'error', 'warn', 'http', 'verbose', 'silly']),
                 msg: z.string(),
                 timestamp: z.number().optional() // Optional until fully deployed
@@ -54,7 +54,7 @@ const validateRecordsRequest = validateRequest({
         records: z.array(z.object({ id: z.union([z.string().max(255).min(1), z.number()]) })).nonempty(),
         providerConfigKey: z.string(),
         connectionId: z.string(),
-        activityLogId: z.union([z.number(), z.string()])
+        activityLogId: z.string()
     })
 });
 const recordPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';

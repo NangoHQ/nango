@@ -16,7 +16,7 @@ export class Scheduler {
     private monitor: MonitorWorker | null = null;
     private scheduling: SchedulingWorker | null = null;
     private cleanup: CleanupWorker | null = null;
-    private onCallbacks: Record<TaskState, (task: Task) => void>;
+    private onCallbacks: Record<TaskState, (scheduler: Scheduler, task: Task) => void>;
     private dbClient: DatabaseClient;
 
     /**
@@ -36,7 +36,7 @@ export class Scheduler {
      *    }
      * });
      */
-    constructor({ dbClient, on }: { dbClient: DatabaseClient; on: Record<TaskState, (task: Task) => void> }) {
+    constructor({ dbClient, on }: { dbClient: DatabaseClient; on: Record<TaskState, (scheduler: Scheduler, task: Task) => void> }) {
         if (isMainThread) {
             this.onCallbacks = on;
             this.dbClient = dbClient;
@@ -49,7 +49,7 @@ export class Scheduler {
                     return;
                 }
                 for (const task of fetched.value) {
-                    this.onCallbacks[task.state](task);
+                    this.onCallbacks[task.state](this, task);
                 }
             });
             this.monitor.start();
@@ -62,7 +62,7 @@ export class Scheduler {
                     return;
                 }
                 for (const task of fetched.value) {
-                    this.onCallbacks[task.state](task);
+                    this.onCallbacks[task.state](this, task);
                 }
             });
             this.scheduling.start();
@@ -185,7 +185,7 @@ export class Scheduler {
                 if (task.scheduleId) {
                     await schedules.update(trx, { id: task.scheduleId, lastScheduledTaskId: task.id });
                 }
-                this.onCallbacks[task.state](task);
+                this.onCallbacks[task.state](this, task);
             }
             return created;
         });
@@ -226,7 +226,7 @@ export class Scheduler {
     public async dequeue({ groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
         const dequeued = await tasks.dequeue(this.dbClient.db, { groupKey, limit });
         if (dequeued.isOk()) {
-            dequeued.value.forEach((task) => this.onCallbacks[task.state](task));
+            dequeued.value.forEach((task) => this.onCallbacks[task.state](this, task));
         }
         return dequeued;
     }
@@ -254,7 +254,7 @@ export class Scheduler {
         const succeeded = await tasks.transitionState(this.dbClient.db, { taskId, newState: 'SUCCEEDED', output });
         if (succeeded.isOk()) {
             const task = succeeded.value;
-            this.onCallbacks[task.state](task);
+            this.onCallbacks[task.state](this, task);
         }
         return succeeded;
     }
@@ -283,7 +283,7 @@ export class Scheduler {
             const failed = await tasks.transitionState(trx, { taskId, newState: 'FAILED', output: error });
             if (failed.isOk()) {
                 const task = failed.value;
-                this.onCallbacks[task.state](task);
+                this.onCallbacks[task.state](this, task);
                 // Create a new task if the task is retryable
                 if (task.retryMax > task.retryCount) {
                     const taskProps: ImmediateProps = {
@@ -322,7 +322,7 @@ export class Scheduler {
         });
         if (cancelled.isOk()) {
             const task = cancelled.value;
-            this.onCallbacks[task.state](task);
+            this.onCallbacks[task.state](this, task);
         }
         return cancelled;
     }
@@ -375,7 +375,7 @@ export class Scheduler {
             if (res.isErr()) {
                 return Err(`Error transitioning schedule '${scheduleName}': ${stringifyError(res.error)}`);
             }
-            cancelledTasks.forEach((task) => this.onCallbacks[task.state](task));
+            cancelledTasks.forEach((task) => this.onCallbacks[task.state](this, task));
             return res;
         });
     }

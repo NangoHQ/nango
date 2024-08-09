@@ -46,7 +46,7 @@ class EnvironmentService {
                     }
 
                     const envName = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
-                    // This key is set dynamically and does not exists in database
+                    // This key is set dynamically and does not exist in database
                     const env = await db.knex
                         .select<Pick<DBEnvironment, 'account_id'>>('account_id')
                         .from<DBEnvironment>(TABLE)
@@ -111,7 +111,7 @@ class EnvironmentService {
                         continue;
                     }
                     const envName = environmentVariable.replace('NANGO_PUBLIC_KEY_', '').toLowerCase();
-                    // This key is set dynamically and does not exists in database
+                    // This key is set dynamically and does not exist in database
                     const env = await db.knex
                         .select<Pick<DBEnvironment, 'account_id'>>('account_id')
                         .from<DBEnvironment>(TABLE)

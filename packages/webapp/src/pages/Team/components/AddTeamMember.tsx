@@ -66,24 +66,22 @@ export const AddTeamMember: React.FC<{ team: ApiTeam }> = ({ team }) => {
     const onSubmit = async () => {
         setLoading(true);
 
-        const update = await apiPostInvite(env, { emails: emails.map((email) => email.value).filter(Boolean) });
+        const created = await apiPostInvite(env, { emails: emails.map((email) => email.value).filter(Boolean) });
 
-        if (update) {
-            if (update.res.status === 200) {
-                toast({ title: `Added successfully to ${team.name}'s team`, variant: 'success' });
-                setOpen(false);
-                setEmails([{ value: '' }]);
-                void mutate();
-            } else if (update.res.status === 400 && 'error' in update.json && update.json.error.code === 'invalid_body') {
-                // Append validation error to each email
-                const errors = update.json.error.errors!;
-                const tmp = emails.map(({ value }, index) => {
-                    return { value, error: errors.find((err) => err.path[0] === 'emails' && err.path[1] === index)?.message };
-                });
-                setEmails(tmp);
-            } else {
-                toast({ title: 'An unexpected error occurred', variant: 'error' });
-            }
+        if ('data' in created.json) {
+            toast({ title: `${created.json.data.invited.length} new members have successfully been added to ${team.name}'s team`, variant: 'success' });
+            setOpen(false);
+            setEmails([{ value: '' }]);
+            void mutate();
+        } else if (created.res.status === 400 && 'error' in created.json && created.json.error.code === 'invalid_body') {
+            // Append validation error to each email
+            const errors = created.json.error.errors!;
+            const tmp = emails.map(({ value }, index) => {
+                return { value, error: errors.find((err) => err.path[0] === 'emails' && err.path[1] === index)?.message };
+            });
+            setEmails(tmp);
+        } else {
+            toast({ title: 'An unexpected error occurred', variant: 'error' });
         }
 
         setLoading(false);
@@ -133,7 +131,13 @@ export const AddTeamMember: React.FC<{ team: ApiTeam }> = ({ team }) => {
                         <DialogClose asChild>
                             <Button variant={'zinc'}>Cancel</Button>
                         </DialogClose>
-                        <Button variant={'primary'} onClick={onSubmit} isLoading={loading} disabled={emails.filter((v) => v.value !== '').length <= 0}>
+                        <Button
+                            variant={'primary'}
+                            onClick={onSubmit}
+                            isLoading={loading}
+                            disabled={emails.filter((v) => v.value !== '').length <= 0}
+                            className="disabled:bg-pure-black"
+                        >
                             Invite new members
                         </Button>
                     </DialogFooter>

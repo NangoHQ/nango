@@ -16,6 +16,126 @@ integrations:
                 name: string
                 company: string
                 email: string
+    anrok:
+        actions:
+            create-ephemeral-transaction:
+                description: |
+                    Creates an ephemeral transaction in Anrok.
+                input: Transaction
+                output: TransactionActionResponse
+                endpoint: POST /ephmeral-transaction
+            create-or-update-transaction:
+                description: |
+                    Creates or updates a transaction in Anrok.
+                input: Transaction[]
+                output: TransactionActionResponse
+                endpoint: POST /transaction
+            void-transaction:
+                description: |
+                    Voids a transaction in Anrok.
+                input: TransactionToDelete[]
+                output: TransactionDeletionActionResponse
+                endpoint: POST /transaction/voide
+            negate-transaction:
+                description: |
+                    Creates a negation in Anrok.
+                input: TransactionToNegate[]
+                output: TransactionNegationActionResponse
+                endpoint: POST /transaction/negate
+        models:
+            AnrokAddress:
+                line1: string
+                city: string
+                postalCode: string
+                country: string
+            AnrokLineItems:
+                id: string
+                productExternalId: string
+                amount: number
+            AnrokTaxIds:
+                type: string
+                value: string
+            AnrokTransactionData:
+                id?: string | undefined
+                accountingDate: string
+                currencyCode: string
+                customerId: string
+                customerName: string
+                customerAddress: AnrokAddress
+                lineItems: AnrokLineItems[]
+                customerTaxIds?: AnrokTaxIds[]
+            AnrokContact:
+                external_id: string
+                name: string
+                address_line_1: string
+                city: string
+                zip: string
+                country: string
+                taxable: boolean
+                tax_number: string
+            BaseTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+            Transaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+            TransactionFee:
+                item_id: string
+                item_code: string | null
+                amount_cents: number | null
+            TaxBreakdown:
+                name?: string
+                rate?: string
+                tax_amount?: number
+                type?: string | null
+                reason?: string
+            FailedTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+                validation_errors: any[]
+            SuccessTransaction:
+                id?: string | undefined
+                issuing_date: string
+                currency: string
+                contact: AnrokContact
+                fees: TransactionFee[]
+                sub_total_excluding_taxes?: number
+                taxes_amount_cents?: number
+            TransactionActionResponse:
+                succeeded: SuccessTransaction[]
+                failed: FailedTransaction[]
+            TransactionToNegate:
+                id: string
+                voided_id: string
+            TransactionToDelete:
+                id: string
+            TransactionNegationActionResponse:
+                succeeded: TransactionToNegate[]
+                failed: FailedTransactionToNegate[]
+            TransactionDeletionActionResponse:
+                succeeded: TransactionToDelete[]
+                failed: FailedTransactionToDelete[]
+            FailedTransactionToDelete:
+                id: string
+                validation_errors: any[]
+            FailedTransactionToNegate:
+                id: string
+                voided_id: string
+                validation_errors: any[]
+            TransactionFeeWithTaxBreakdown:
+                item_id: string
+                item_code: string | null
+                amount_cents: number | null
+                tax_amount_cents: number
+                tax_breakdown: TaxBreakdown[]
     asana:
         syncs:
             tasks:
@@ -371,20 +491,39 @@ integrations:
                 description: |
                     Action to create a new employee
                 output: BamboohrCreateEmployeeResponse
-                input: BamboohrEmployee
+                input: BamboohrCreateEmployee
                 endpoint: POST /bamboohr/create-employee
+                version: 1.0.0
+            update-employee:
+                endpoint: PUT /bamboohr/employee
+                input: BamboohrUpdateEmployee
+                output: BamboohrResponseStatus
+                description: Update an existing employee in the system
+            fetch-fields:
+                endpoint: GET /bamboohr/fields
+                output: BamboohrField[]
+                description: Introspection to retrieve available fields
         models:
+            BamboohrField:
+                id: string
+                type: string
+                name: string
+                alias?: string
+                options?: Option[]
+            Option:
+                id: number
+                name: string
             BamboohrEmployee:
                 id: string
                 employeeNumber: string
                 firstName: string
                 lastName: string
-                dateOfBirth: date
+                dateOfBirth: string
                 address1: string
                 bestEmail: string
                 workEmail: string
                 jobTitle: string
-                hireDate: date
+                hireDate: string
                 supervisorId: string
                 supervisor: string
                 createdByUserId: string
@@ -404,7 +543,69 @@ integrations:
                 ssn: string
                 workPhone: string
                 homePhone: string
+            BamboohrCreateEmployee:
+                firstName: string
+                lastName: string
+                employeeNumber?: string
+                dateOfBirth?: string
+                address1?: string
+                bestEmail?: string
+                workEmail?: string
+                jobTitle?: string
+                hireDate?: string
+                supervisorId?: string
+                supervisor?: string
+                createdByUserId?: string
+                department?: string
+                division?: string
+                employmentHistoryStatus?: string
+                gender?: string
+                country?: string
+                city?: string
+                location?: string
+                state?: string
+                maritalStatus?: string
+                exempt?: string
+                payRate?: string
+                payType?: string
+                payPer?: string
+                ssn?: string
+                workPhone?: string
+                homePhone?: string
+            BamboohrUpdateEmployee:
+                id: string
+                firstName?: string
+                lastName?: string
+                employeeNumber?: string
+                dateOfBirth?: string
+                address1?: string
+                bestEmail?: string
+                workEmail?: string
+                jobTitle?: string
+                hireDate?: string
+                supervisorId?: string
+                supervisor?: string
+                createdByUserId?: string
+                department?: string
+                division?: string
+                employmentHistoryStatus?: string
+                gender?: string
+                country?: string
+                city?: string
+                location?: string
+                state?: string
+                maritalStatus?: string
+                exempt?: string
+                payRate?: string
+                payType?: string
+                payPer?: string
+                ssn?: string
+                workPhone?: string
+                homePhone?: string
             BamboohrCreateEmployeeResponse:
+                status: string
+                id: string
+            BamboohrResponseStatus:
                 status: string
     calendly:
         syncs:
@@ -897,6 +1098,161 @@ integrations:
                 id: string
                 title: string
                 name: string
+    exact-online:
+        syncs:
+            customers:
+                version: 1.0.0
+                description: |
+                    Fetches all customers in Exact Online
+                runs: every hour
+                output: ExactCustomer
+                sync_type: full
+                auto_start: true
+                endpoint: GET /customers
+                track_deletes: true
+            payments:
+                version: 1.0.0
+                description: |
+                    Fetches all payments in Exact Online
+                runs: every hour
+                output: ExactPayment
+                sync_type: full
+                auto_start: true
+                endpoint: GET /payments
+                track_deletes: true
+        actions:
+            create-customer:
+                version: 1.0.0
+                description: |
+                    Creates a customer in ExactOnline
+                input: ExactCustomerCreateInput
+                output: ExactCustomerCreateOutput
+                endpoint: POST /customers
+            update-customer:
+                version: 1.0.0
+                description: |
+                    Updates a customer in ExactOnline
+                input: ExactCustomerUpdateInput
+                output: ExactCustomerUpdateOutput
+                endpoint: PUT /customers
+            create-invoice:
+                version: 1.0.0
+                description: |
+                    Creates an invoice in ExactOnline
+                input: ExactInvoiceCreateInput
+                output: ExactInvoiceCreateOutput
+                endpoint: POST /invoices
+            update-invoice:
+                version: 1.0.0
+                description: |
+                    Updates an invoice in ExactOnline
+                input: ExactInvoiceUpdateInput
+                output: ExactInvoiceUpdateOutput
+                endpoint: PUT /invoices
+            attach-file-invoice:
+                version: 1.0.0
+                description: |
+                    Uploads a file to ExactOnline and link it to an invoice
+                input: ExactInvoiceAttachFileInput
+                output: ExactInvoiceAttachFileOutput
+                endpoint: POST /invoices/attach-file
+        models:
+            ExactCustomer:
+                id: string
+                division: number | null
+                name: string
+                email: string | null
+                taxNumber: string | null
+                addressLine1: string | null
+                addressLine2: string | null
+                city: string | null
+                zip: string | null
+                country: string | null
+                state: string | null
+                phone: string | null
+            ExactCustomerCreateBase:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+            ExactCustomerCreateInput:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+            ExactCustomerCreateOutput:
+                id: string
+            ExactCustomerUpdateInput:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+                id: string
+                name?: string | null
+            ExactCustomerUpdateOutput:
+                success: boolean
+            ExactPayment:
+                id: string
+                description: string | null
+                division: number | null
+                customerId: string | null
+                amount: number | null
+                createdAt: string | null
+                currency: string | null
+                journal: string | null
+                paymentMethod: string | null
+                paymentReference: string | null
+                status: number | null
+                transactionID: string | null
+            ExactInvoiceLine:
+                itemId: string
+                quantity: number
+                amountNet: number
+                vatCode?: string
+                description?: string
+            ExactInvoiceCreateInput:
+                customerId: string
+                journal: number
+                currency?: EUR
+                description?: string
+                createdAt?: date
+                lines: ExactInvoiceLine[]
+            ExactInvoiceCreateOutput:
+                id: string
+            ExactInvoiceUpdateInput:
+                id: string
+                deliverTo?: string
+                currency?: EUR
+                description?: string
+                createdAt?: date
+            ExactInvoiceUpdateOutput:
+                success: boolean
+            ExactInvoiceAttachFileInput:
+                invoiceId: string
+                customerId: string
+                subject: string
+                filename: string
+                content: string
+            ExactInvoiceAttachFileOutput:
+                success: boolean
     expensify:
         actions:
             list-policies:
@@ -2625,6 +2981,18 @@ integrations:
                 label: integer
                 cc_email: string
     salesforce:
+        actions:
+            fetch-fields:
+                description: >
+                    Fetch available task fields. If the input is not specified then it
+                    defaults back to "Task"
+
+                    Data Validation: Parses all incoming data with Zod. Does not fail on
+                    parsing error will instead log parse error and return result.
+                scopes: offline_access,api
+                input: SalesforceEntity
+                output: SalesforceFieldSchema
+                endpoint: GET /salesforce/fetch-fields
         syncs:
             accounts:
                 runs: every hour
@@ -2713,6 +3081,31 @@ integrations:
                     created_date: string
                     created_by: string
                 last_modified_date: string
+            SalesforceEntity:
+                name: string
+            SalesforceFieldSchema:
+                fields: Field[]
+                childRelationships: ChildField[]
+            NestedFieldSchema:
+                fields: Field[]
+            Field:
+                name: string
+                label: string
+                type: string
+                referenceTo: string[]
+                relationshipName: string | null
+            ChildField:
+                object: string
+                relationshipName: string | null
+                field: string
+            ActionResponseError:
+                message: string
+                details?: ActionResponseErrorDetails
+            ActionResponseErrorDetails:
+                message: string
+                method: string
+                url: string
+                code: string
     sharepoint-online:
         actions:
             list-sites:
@@ -2724,6 +3117,17 @@ integrations:
                     - Sites.ReadWrite.All
                     - offline_access
                 output: SharePointMetadata
+                version: 1.0.0
+            fetch-file:
+                description: >
+                    This action will be used to fetch the latest file download_url which
+                    can be used to download the actual file.
+                endpoint: GET /sharepoint/fetch-file
+                scopes:
+                    - Sites.ReadWrite.All
+                    - offline_access
+                output: FetchFile
+                input: FetchFileInput
                 version: 1.0.0
         syncs:
             file-sync:
@@ -2739,9 +3143,10 @@ integrations:
                 input: SharePointMetadata
                 auto_start: false
                 output: FileMetadata
-                version: 1.0.0
+                version: 1.0.1
         models:
             FileMetadata:
+                siteId: string
                 id: string
                 name: string
                 etag: string
@@ -2761,6 +3166,12 @@ integrations:
                 webUrl: string
             SharePointMetadata:
                 sitesToSync: Site[]
+            FetchFileInput:
+                siteId: string
+                itemId: string
+            FetchFile:
+                id: string
+                download_url: string | null
     slack:
         syncs:
             users:
@@ -3556,10 +3967,11 @@ integrations:
                     that is in DRAFT or SUBMITTED set the status to DELETED. If an
                     invoice has been AUTHORISED it can't be deleted but you can set
                     the status to VOIDED.
-                input: Invoice[]
+                input: UpdateInvoice[]
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
                 endpoint: PUT /xero/invoices
+                version: 1.0.0
             create-credit-note:
                 description: |
                     Creates one or more credit notes in Xero.
@@ -3762,6 +4174,18 @@ integrations:
                 currency: string
                 purchase_order: string | null
                 fees: InvoiceFee[]
+            UpdateInvoice:
+                type?: ACCPAY | ACCREC
+                external_contact_id?: string
+                url?: string
+                id: string
+                issuing_date?: string | null
+                payment_due_date?: string | null
+                status?: string
+                number?: string
+                currency?: string
+                purchase_order?: string | null
+                fees?: UpdateInvoiceFee[]
             InvoiceFee:
                 account_code?: string
                 item_code?: string | null
@@ -3774,6 +4198,18 @@ integrations:
                 precise_unit_amount: number | null
                 amount_cents: number | null
                 taxes_amount_cents: number | null
+            UpdateInvoiceFee:
+                account_code?: string
+                item_code?: string | null
+                account_external_id?: string | null
+                discount_amount_cents?: number | null
+                discount_rate?: number | null
+                item_id?: string
+                description?: string | null
+                units?: number | null
+                precise_unit_amount?: number | null
+                amount_cents?: number | null
+                taxes_amount_cents?: number | null
             FailedInvoice:
                 type: ACCPAY | ACCREC
                 external_contact_id: string

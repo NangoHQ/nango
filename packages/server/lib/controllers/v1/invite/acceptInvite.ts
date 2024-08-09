@@ -3,7 +3,6 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { z } from 'zod';
 import type { AcceptInvite } from '@nangohq/types';
-import { userToAPI } from '../../../formatters/user.js';
 
 const validation = z
     .object({
@@ -30,7 +29,7 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
     const data: AcceptInvite['Params'] = val.data;
     const invitation = await getInvitation(data.id);
     if (!invitation || invitation.email !== user.email) {
-        res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exists or is expired' } });
+        res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
         return;
     }
 
@@ -45,7 +44,7 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
 
     // User is stored in session, so we need to update the DB
     // @ts-expect-error you got to love passport
-    req.session.passport.user = userToAPI(updated);
+    req.session.passport.user = updated;
     req.session.save((err) => {
         if (err) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to update session' } });

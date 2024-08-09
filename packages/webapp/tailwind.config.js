@@ -9,7 +9,7 @@ module.exports = {
         extend: {
             colors: {
                 'bg-black': '#0E1014',
-                'pure-black': '#05050a',
+                'pure-black': '#05050A',
                 'active-gray': '#161720',
                 'hover-gray': '#1D1F28',
                 'text-light-gray': '#A9A9A9',
@@ -24,15 +24,33 @@ module.exports = {
                 'row-hover': '#0d0d14',
                 white: '#FFFFFF',
 
+                'orange-light': '#FFD19A',
+                'orange-base': '#EC9455',
+                'orange-base-35': '#F5AE73',
+                'orange-dark': '#F76B15',
+
+                // ---
                 // From Figma
+                'green-light': '#EDFBD8',
+                'green-base-35': '#84D65A59',
                 'green-base': '#84D65A',
                 'green-dark': '#2B641E',
+
+                'blue-light': '#D7F1FD',
                 'blue-base': '#509AF8',
+                'blue-base-35': '#509AF859',
+                'blue-dark': '#0C2A75',
+
+                'red-light': '#FCE8DB',
                 'red-base': '#EF665B',
+                'red-base-35': '#EF665B59',
                 'red-dark': '#71192F',
-                'red-base-35': 'rgba(57, 58, 55, 0.16)',
+
+                'yellow-light': '#FEF7D1',
                 'yellow-base': '#F7C752',
-                'yellow-base-35': 'rgba(247, 199, 82, 0.35)',
+                'yellow-base-35': '#F7C75259',
+                'yellow-dark': '#755118',
+
                 'alert-red': '#EF665B',
                 'dark-0': '#FFFFFF',
                 'dark-100': '#F4F4F5',
@@ -44,7 +62,8 @@ module.exports = {
                 'dark-700': '#18181B',
                 'dark-800': '#09090B',
                 'border-gray-400': '#323439',
-                'text-light': '#A9ACB3'
+                'text-light': '#A9ACB3',
+                ring: '#A9ACB3'
             },
             width: {
                 largebox: '1200px',

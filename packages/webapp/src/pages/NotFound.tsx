@@ -31,7 +31,7 @@ export const NotFound: React.FC = () => {
             return;
         }
 
-        navigate(`/${env}/integrations`);
+        navigate(`/${env}/`);
     }, [location, env, navigate, showInteractiveDemo]);
 
     return null;

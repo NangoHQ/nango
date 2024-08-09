@@ -522,6 +522,10 @@ export class NangoError extends Error {
                 this.message = `The webhook script failed with an error: ${this.payload}`;
                 break;
 
+            case 'post_connection_script_failure':
+                this.message = `The post-connection script failed with an error: ${this.payload}`;
+                break;
+
             case 'pass_through_error':
                 this.status = 400;
                 this.message = `${this.payload}`;
@@ -608,9 +612,29 @@ export class NangoError extends Error {
                 this.message = 'Failed to validate a record in batchSave';
                 break;
 
-            case 'action_output_too_big':
+            case 'script_output_too_big':
                 this.status = 400;
-                this.message = 'Action output is too big';
+                this.message = 'Script output is too big';
+                break;
+
+            case 'sync_job_update_failure':
+                this.status = 500;
+                this.message = `The sync job results could not be updated: ${this.payload}`;
+                break;
+
+            case 'script_invalid_error':
+                this.status = 500;
+                this.message = `An invalid error of type: ${typeof this.payload}`;
+                break;
+
+            case 'script_http_error':
+                this.status = 500;
+                this.message = `An error occurred during an HTTP call`;
+                break;
+
+            case 'script_internal_error':
+                this.status = 500;
+                this.message = `An internal error occurred during the script execution`;
                 break;
 
             default:
@@ -636,13 +660,13 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
         }
     } else if (err.message) {
         errorMessage = err.message;
-    } else if (typeof err === 'object' && Object.keys(err as object).length > 0) {
+    } else if (err && typeof err === 'object' && Object.keys(err as object).length > 0) {
         errorMessage = stringifyError(err, { pretty: true, stack: true });
     } else {
         errorMessage = String(err);
     }
 
-    const content = `The script failed to execute for ${scriptName} with the following error: ${errorMessage}`;
+    const content = `Script for '${scriptName}' failed to execute with error: ${errorMessage}`;
 
     const status = err?.response?.status || 500;
     const error = new NangoError(errorType, content, status);

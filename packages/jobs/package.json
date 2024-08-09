@@ -2,7 +2,7 @@
     "name": "@nangohq/nango-jobs",
     "version": "1.0.0",
     "type": "module",
-    "main": "dist/index.js",
+    "main": "dist/app.js",
     "private": true,
     "scripts": {
         "start": "tsc && node dist/app.js",
@@ -25,14 +25,12 @@
         "@nangohq/records": "file:../records",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
-        "@trpc/client": "10.45.2",
-        "@trpc/server": "10.45.2",
         "axios": "^1.3.4",
         "dd-trace": "5.2.0",
         "dotenv": "^16.0.3",
         "get-port": "7.1.0",
+        "express": "4.19.2",
         "node-cron": "3.0.3",
-        "superjson": "2.2.1",
         "zod": "^3.22.4"
     },
     "devDependencies": {

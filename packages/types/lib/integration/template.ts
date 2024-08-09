@@ -67,6 +67,7 @@ export interface TemplateOAuth2 extends Template {
     body_format?: OAuthBodyFormatType;
 
     refresh_url?: string;
+    expires_in_unit?: 'milliseconds';
 
     token_request_auth_method?: 'basic' | 'custom';
 }

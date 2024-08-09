@@ -1,6 +1,6 @@
-import type { NangoAction, BamboohrEmployee, BamboohrCreateEmployeeResponse } from '../../models';
+import type { NangoAction, BamboohrCreateEmployee, BamboohrCreateEmployeeResponse } from '../../models';
 
-export default async function runAction(nango: NangoAction, input: BamboohrEmployee): Promise<BamboohrCreateEmployeeResponse> {
+export default async function runAction(nango: NangoAction, input: BamboohrCreateEmployee): Promise<BamboohrCreateEmployeeResponse> {
     // Input validation on only required fields
     if (!input.firstName && !input.lastName) {
         throw new nango.ActionError({
@@ -17,31 +17,11 @@ export default async function runAction(nango: NangoAction, input: BamboohrEmplo
     }
 
     try {
+        const { firstName, lastName, ...rest } = input;
         const postData = {
-            firstName: input.firstName,
-            lastName: input.lastName,
-            dateOfBirth: input.dateOfBirth,
-            address1: input.address1,
-            hireDate: input.hireDate,
-            department: input.department,
-            division: input.division,
-            employeeNumber: input.employeeNumber,
-            employmentHistoryStatus: input.employmentHistoryStatus,
-            gender: input.gender,
-            jobTitle: input.jobTitle,
-            country: input.country,
-            city: input.city,
-            location: input.location,
-            state: input.state,
-            maritalStatus: input.maritalStatus,
-            payRate: input.payRate,
-            payType: input.payType,
-            ssn: input.ssn,
-            workPhone: input.workPhone,
-            homePhone: input.homePhone,
-            exempt: input.exempt,
-            payPer: input.payPer,
-            workEmail: input.workEmail
+            firstName,
+            lastName,
+            ...rest
         };
 
         const response = await nango.post({
@@ -49,12 +29,22 @@ export default async function runAction(nango: NangoAction, input: BamboohrEmplo
             data: postData
         });
 
+        const location = response.headers['location'];
+
+        const id = location.split('/').pop();
+
         return {
+            id,
             status: response.statusText
         };
     } catch (error: any) {
+        const messageHeader = error.response?.headers['x-bamboohr-error-message'];
+        const errorMessage = messageHeader || error.response?.data || error.message;
+
         throw new nango.ActionError({
-            message: `Error in runAction: ${error.message}`
+            message: `Failed to create employee`,
+            status: error.response.status,
+            error: errorMessage || undefined
         });
     }
 }

@@ -1,0 +1,12 @@
+{
+    "name": "John Name",
+    "email": "test@gmail.com",
+    "city": "paris",
+    "country": "France",
+    "phone": null,
+    "state": null,
+    "address_line_1": null,
+    "address_line_2": null,
+    "zip": null,
+    "tax_number": "top"
+}

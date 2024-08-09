@@ -70,7 +70,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
             env,
             connections: connection?.connection_id,
             syncs: sync.name,
-            day: new Date(sync.latest_sync?.updated_at)
+            day: sync.latest_sync?.updated_at ? new Date(sync.latest_sync.updated_at) : null
         });
     }, [env, sync.name]);
 
@@ -302,9 +302,9 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                 )}
 
                                 <Link to={logUrl} className="w-full">
-                                    <Button variant="zombie" className="w-full gap-6">
+                                    <Button variant="zombie" className="w-full gap-4">
                                         <QueueListIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
-                                        <span className="pl-2">View Logs</span>
+                                        View Logs
                                     </Button>
                                 </Link>
                             </div>

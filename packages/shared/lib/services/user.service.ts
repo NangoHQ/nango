@@ -3,7 +3,7 @@ import * as uuid from 'uuid';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err } from '@nangohq/utils';
 import type { User } from '../models/Admin.js';
-import type { DBTeam, DBUser } from '@nangohq/types';
+import type { DBUser } from '@nangohq/types';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 
@@ -20,13 +20,8 @@ class UserService {
         return result || null;
     }
 
-    async getUserAndAccountByToken(token: string): Promise<Result<User & DBTeam & { account_id: number; user_id: number }>> {
-        const result = await db.knex
-            .select('*', '_nango_accounts.id as account_id', '_nango_users.id as user_id')
-            .from<User>(`_nango_users`)
-            .join('_nango_accounts', '_nango_accounts.id', '_nango_users.account_id')
-            .where({ email_verification_token: token })
-            .first();
+    async getUserByToken(token: string): Promise<Result<DBUser>> {
+        const result = await db.knex.select('_nango_users.*').from<User>(`_nango_users`).where({ email_verification_token: token }).first();
 
         if (result) {
             const expired = new Date(result.email_verification_token_expires_at).getTime() < new Date().getTime();
@@ -100,14 +95,21 @@ class UserService {
         return result || null;
     }
 
-    async createUser(
-        email: string,
-        name: string,
-        hashed_password: string,
-        salt: string,
-        account_id: number,
-        email_verified: boolean = true
-    ): Promise<User | null> {
+    async createUser({
+        email,
+        name,
+        hashed_password = '',
+        salt = '',
+        account_id,
+        email_verified
+    }: {
+        email: string;
+        name: string;
+        hashed_password?: string;
+        salt?: string;
+        account_id: number;
+        email_verified: boolean;
+    }): Promise<User | null> {
         const expires_at = new Date(new Date().getTime() + VERIFICATION_EMAIL_EXPIRATION);
         const result: Pick<User, 'id'>[] = await db.knex
             .from<User>('_nango_users')

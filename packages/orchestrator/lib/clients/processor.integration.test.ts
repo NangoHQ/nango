@@ -5,9 +5,8 @@ import { OrchestratorClient } from './client.js';
 import { OrchestratorProcessor } from './processor.js';
 import getPort from 'get-port';
 import { EventsHandler } from '../events.js';
-import { Ok, Err, nanoid } from '@nangohq/utils';
+import { Err, Ok, nanoid } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { JsonValue } from 'type-fest';
 import type { OrchestratorTask } from './types.js';
 import { tracer } from 'dd-trace';
 
@@ -40,21 +39,21 @@ describe('OrchestratorProcessor', () => {
         await dbClient.clearDatabase();
     });
 
-    it('should process tasks and mark them as successful if processing succeed', async () => {
+    it('should process tasks', async () => {
         const groupKey = nanoid();
-        const mockProcess = vi.fn(async (): Promise<Result<JsonValue>> => Promise.resolve(Ok({ foo: 'bar' })));
+        const mockProcess = vi.fn(async (): Promise<Result<void>> => Promise.resolve(Ok(undefined)));
         const n = 10;
         await processN(mockProcess, groupKey, n);
 
         expect(mockProcess).toHaveBeenCalledTimes(n);
         const tasks = await scheduler.searchTasks({ groupKey });
         for (const task of tasks.unwrap()) {
-            expect(task.state).toBe('SUCCEEDED');
+            expect(task.state).toBe('STARTED');
         }
     });
     it('should process tasks and mark them as failed if processing failed', async () => {
         const groupKey = nanoid();
-        const mockProcess = vi.fn(async (): Promise<Result<JsonValue>> => Promise.resolve(Err('Failed')));
+        const mockProcess = vi.fn(async (): Promise<Result<void>> => Promise.resolve(Err('Failed')));
         const n = 10;
         await processN(mockProcess, groupKey, n);
 
@@ -64,42 +63,9 @@ describe('OrchestratorProcessor', () => {
             expect(task.state).toBe('FAILED');
         }
     });
-    it('should cancel terminated tasks', async () => {
-        const groupKey = nanoid();
-        const mockAbort = vi.fn((_taskId: string) => {});
-        const mockProcess = vi.fn(async (task: OrchestratorTask): Promise<Result<JsonValue>> => {
-            let aborted = false;
-            task.abortController.signal.onabort = () => {
-                aborted = true;
-                mockAbort(task.id);
-            };
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            if (aborted) {
-                return Err('Aborted');
-            }
-            return Ok({ foo: 'bar' });
-        });
-
-        // Cancel all tasks after 100 ms
-        const cancellingTimeout = setTimeout(async () => {
-            const tasks = await scheduler.searchTasks({ groupKey });
-            for (const task of tasks.unwrap()) {
-                await scheduler.cancel({ taskId: task.id, reason: { message: 'Cancelling task' } });
-            }
-        }, 100);
-        const n = 5;
-        await processN(mockProcess, groupKey, n);
-
-        expect(mockProcess).toHaveBeenCalledTimes(n);
-        const tasks = await scheduler.searchTasks({ groupKey, state: 'CANCELLED' });
-        for (const task of tasks.unwrap()) {
-            expect(mockAbort).toHaveBeenCalledWith(task.id);
-        }
-        clearTimeout(cancellingTimeout);
-    });
 });
 
-async function processN(handler: (task: OrchestratorTask) => Promise<Result<JsonValue>>, groupKey: string, n: number) {
+async function processN(handler: (task: OrchestratorTask) => Promise<Result<void>>, groupKey: string, n: number) {
     const processor = new OrchestratorProcessor({
         handler,
         opts: { orchestratorClient, groupKey, maxConcurrency: n, checkForTerminatedInterval: 100 }
@@ -124,7 +90,7 @@ async function immediateTask({ groupKey }: { groupKey: string }) {
         heartbeatTimeoutSecs: 30,
         payload: {
             type: 'action',
-            activityLogId: 1234,
+            activityLogId: '1234',
             actionName: 'Task',
             connection: {
                 id: 1234,

@@ -4,7 +4,7 @@ import * as crypto from 'node:crypto';
 import { axiosInstance as axios, getLogger, SIGNATURE_METHOD } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
+import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
@@ -104,6 +104,12 @@ class ProxyService {
                 }
                 break;
             case 'OAUTH2_CC':
+                {
+                    const credentials = connection.credentials;
+                    token = credentials.token;
+                }
+                break;
+            case 'TABLEAU':
                 {
                     const credentials = connection.credentials;
                     token = credentials.token;
@@ -380,7 +386,20 @@ class ProxyService {
         const { connection } = config;
         const { template: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
 
-        const apiBase = config.baseUrlOverride || templateApiBase;
+        let apiBase = config.baseUrlOverride || templateApiBase;
+
+        if (apiBase?.includes('${') && apiBase?.includes('||')) {
+            const connectionConfig = connection.connection_config;
+            const splitApiBase = apiBase.split(/\s*\|\|\s*/);
+
+            if (!connectionConfig) {
+                apiBase = splitApiBase[1];
+            } else {
+                const keyMatch = apiBase.match(/connectionConfig\.(\w+)/);
+                const index = keyMatch && keyMatch[1] && connectionConfig[keyMatch[1]] ? 0 : 1;
+                apiBase = splitApiBase[index]?.trim();
+            }
+        }
 
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
         let endpoint = apiEndpoint.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
@@ -416,6 +435,14 @@ class ProxyService {
                     };
                 }
                 break;
+            case 'TABLEAU':
+                {
+                    const token = config.token as TableauCredentials;
+                    headers = {
+                        'X-tableau-Auth': token
+                    };
+                }
+                break;
             case 'API_KEY':
                 headers = {};
                 break;
@@ -436,11 +463,17 @@ class ProxyService {
                     let tokenPair;
                     switch (config.template.auth_mode) {
                         case 'OAUTH2':
-                            tokenPair = { accessToken: config.token };
+                            if (value.includes('connectionConfig')) {
+                                value = value.replace(/connectionConfig\./g, '');
+                                tokenPair = config.connection.connection_config;
+                            } else {
+                                tokenPair = { accessToken: config.token };
+                            }
                             break;
                         case 'BASIC':
                         case 'API_KEY':
                         case 'OAUTH2_CC':
+                        case 'TABLEAU':
                             if (value.includes('connectionConfig')) {
                                 value = value.replace(/connectionConfig\./g, '');
                                 tokenPair = config.connection.connection_config;

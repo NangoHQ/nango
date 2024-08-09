@@ -1,25 +1,27 @@
 import type { ChangeEvent, TextareaHTMLAttributes } from 'react';
 import { forwardRef, useCallback, useState } from 'react';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import classNames from 'classnames';
 import { CopyButton } from '../button/CopyButton';
+import { cn } from '../../../utils/utils';
+import { EyeNoneIcon, EyeOpenIcon } from '@radix-ui/react-icons';
+import Button from '../button/Button';
+import { Input } from './Input';
 
 interface SecretTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     copy?: boolean;
-    optionalvalue?: string;
-    setoptionalvalue?: (value: string) => void;
-    additionalclass?: string;
+    optionalValue?: string;
+    setOptionalValue?: (value: string) => void;
+    additionalClass?: string;
 }
 
 const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(function SecretTextarea(
-    { className, copy, optionalvalue, setoptionalvalue, additionalclass, defaultValue, ...rest },
+    { className, copy, optionalValue, setOptionalValue, additionalClass, defaultValue, ...rest },
     ref
 ) {
     const [isSecretVisible, setIsSecretVisible] = useState(false);
     const [changedValue, setChangedValue] = useState(defaultValue);
 
-    const value = optionalvalue || changedValue;
-    const updateValue = setoptionalvalue || setChangedValue;
+    const value = optionalValue || changedValue;
+    const updateValue = setOptionalValue || setChangedValue;
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible]);
 
@@ -28,12 +30,12 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(func
     };
 
     return (
-        <div className={`relative flex ${additionalclass ?? ''}`}>
+        <div className={cn('relative flex', additionalClass)}>
             {isSecretVisible ? (
                 <textarea
                     ref={ref}
-                    className={classNames(
-                        'border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none',
+                    className={cn(
+                        'bg-active-gray border-dark-800  text-text-light-gray w-full appearance-none rounded-md px-3 py-2 text-base placeholder-gray-400 shadow-sm ',
                         className,
                         'h-48'
                     )}
@@ -42,25 +44,21 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(func
                     {...rest}
                 />
             ) : (
-                <input
+                <Input
                     type="password"
+                    variant={'flat'}
                     value={value}
                     // @ts-expect-error we are mixing input and textarea props
                     onChange={(e) => updateValue(e.currentTarget.value)}
-                    autoComplete="new-password"
-                    className={classNames(
-                        'border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.6 text-sm placeholder-gray-400 shadow-sm focus:outline-none',
-                        className
-                    )}
                     {...rest}
                 />
             )}
-            <span className="absolute right-1 top-1.5 flex items-center bg-active-gray border-border-gray">
-                <span onClick={toggleSecretVisibility} className="rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
-                    {isSecretVisible ? <EyeSlashIcon className="w-4 h-4 ml-1" /> : <EyeIcon className="w-4 h-4 ml-1" />}
-                </span>
+            <div className="absolute right-1 top-1 flex items-center bg-active-gray">
+                <Button variant={'icon'} size={'xs'} onClick={toggleSecretVisibility} className="rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
+                    {isSecretVisible ? <EyeNoneIcon /> : <EyeOpenIcon />}
+                </Button>
                 {copy && <CopyButton text={value as string} />}
-            </span>
+            </div>
         </div>
     );
 });

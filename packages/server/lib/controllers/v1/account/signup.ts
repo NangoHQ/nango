@@ -80,7 +80,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         await acceptInvitation(token);
     } else {
         // Regular account
-        account = await accountService.createAccount(`${name}'s Organization`);
+        account = await accountService.createAccount(`${name}'s Team`);
         if (!account) {
             res.status(500).send({
                 error: { code: 'error_creating_account', message: 'There was a problem creating the account. Please reach out to support.' }
@@ -92,7 +92,14 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     // Create user
     const salt = crypto.randomBytes(16).toString('base64');
     const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, salt, 310000, 32, 'sha256')).toString('base64');
-    const user = await userService.createUser(email, name, hashedPassword, salt, account.id, false);
+    const user = await userService.createUser({
+        email,
+        name,
+        hashed_password: hashedPassword,
+        salt,
+        account_id: account.id,
+        email_verified: token ? true : false
+    });
     if (!user) {
         res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
         return;

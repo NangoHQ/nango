@@ -5,7 +5,6 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { Input } from '../../components/ui/input/Input';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { CopyButton } from '../../components/ui/button/CopyButton';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useToast } from '../../hooks/useToast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/Tooltip';
@@ -20,10 +19,12 @@ export const UserSettings: React.FC = () => {
     const [edit, setEdit] = useState(false);
 
     const onSave = async () => {
-        const update = await apiPatchUser({ name });
+        const updated = await apiPatchUser({ name });
 
-        if (!update || update.res.status === 200) {
-            toast({ title: 'Profile updated successfully', variant: 'success' });
+        if ('error' in updated.json) {
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
+        } else {
+            toast({ title: 'You have successfully updated your profile', variant: 'success' });
             setEdit(false);
             void mutate();
         }
@@ -57,6 +58,10 @@ export const UserSettings: React.FC = () => {
         );
     }
 
+    if (!user) {
+        return null;
+    }
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.UserSettings}>
             <div className="flex justify-between items-center">
@@ -67,14 +72,13 @@ export const UserSettings: React.FC = () => {
                     <h3 className="font-semibold text-sm text-white">Display Name</h3>
                     <Input
                         ref={ref}
-                        variant={'flat'}
+                        variant={edit ? 'border' : 'flat'}
                         inputSize={'lg'}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         disabled={!edit}
                         after={
                             <div className="flex gap-1 items-center">
-                                <CopyButton text={name} />
                                 {!edit && (
                                     <Tooltip delayDuration={0}>
                                         <TooltipTrigger asChild>
@@ -98,18 +102,18 @@ export const UserSettings: React.FC = () => {
                         }
                     />
                     {edit && (
-                        <div className="flex justify-end gap-1 items-center">
+                        <div className="flex justify-end gap-2 items-center">
                             <Button
-                                size={'sm'}
-                                variant={'zombie'}
+                                size={'md'}
+                                variant={'emptyFaded'}
                                 onClick={() => {
-                                    setName(user!.name);
+                                    setName(user.name);
                                     setEdit(false);
                                 }}
                             >
                                 Cancel
                             </Button>
-                            <Button size={'sm'} onClick={onSave}>
+                            <Button size={'md'} onClick={onSave}>
                                 Save
                             </Button>
                         </div>
@@ -117,18 +121,7 @@ export const UserSettings: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-5">
                     <h3 className="font-semibold text-sm text-white">Email</h3>
-                    <Input
-                        ref={ref}
-                        variant={'flat'}
-                        inputSize={'lg'}
-                        value={user!.email}
-                        disabled={true}
-                        after={
-                            <div className="flex gap-1 items-center">
-                                <CopyButton text={user!.email} />
-                            </div>
-                        }
-                    />
+                    <p className="text-white text-sm">{user.email}</p>
                 </div>
             </div>
         </DashboardLayout>

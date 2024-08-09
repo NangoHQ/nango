@@ -16,7 +16,6 @@ export const PrivateRoute: React.FC = () => {
     const env = useStore((state) => state.env);
     const setStoredEnvs = useStore((state) => state.setEnvs);
     const setBaseUrl = useStore((state) => state.setBaseUrl);
-    const setEmail = useStore((state) => state.setEmail);
     const setDebugMode = useStore((state) => state.setDebugMode);
     const setEnv = useStore((state) => state.setEnv);
 
@@ -27,7 +26,6 @@ export const PrivateRoute: React.FC = () => {
 
         setStoredEnvs(meta.environments);
         setBaseUrl(meta.baseUrl);
-        setEmail(meta.email);
         setDebugMode(meta.debugMode);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [meta, error]);

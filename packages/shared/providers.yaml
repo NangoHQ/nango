@@ -423,7 +423,6 @@ certn:
         - legal
     auth_mode: API_KEY
     proxy:
-        alias: certn
         base_url: https://api.certn.co
         headers:
             Authorization: Bearer ${apiKey}
@@ -493,6 +492,15 @@ chorus:
     proxy:
         base_url: https://chorus.ai
     docs: https://docs.nango.dev/integrations/all/chorus
+circle-so:
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.circle.so
+        headers:
+            Authorization: Token ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/circle-so
 clari-copilot:
     auth_mode: API_KEY
     proxy:
@@ -534,7 +542,6 @@ close:
         - offline_access
     proxy:
         base_url: https://api.close.com/api
-        docs: https://developer.close.com/
     docs: https://docs.nango.dev/integrations/all/close
 coda:
     categories:
@@ -621,7 +628,7 @@ datev:
     authorization_url: https://login.datev.de/openid/authorize
     token_url: https://api.datev.de/token
     token_request_auth_method: basic
-    scope_seprator: ' '
+    scope_separator: ' '
     default_scopes:
         - openid
     authorization_params:
@@ -751,6 +758,15 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+e-conomic:
+    categories:
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        base_url: https://restapi.e-conomic.com
+        headers:
+            Content-Type: application/json
+    docs: https://docs.nango.dev/integrations/all/e-conomic
 egnyte:
     categories:
         - storage
@@ -843,6 +859,13 @@ exact-online:
     refresh_params:
         grant_type: refresh_token
     token_expiration_buffer: 30
+    proxy:
+        base_url: https://start.exactonline.${connectionConfig.extension}/
+        headers:
+            Accept: application/json
+        paginate:
+            type: link
+            link_path_in_response_body: d.__next
     docs: https://docs.nango.dev/integrations/all/exact-online
 exist:
     categories:
@@ -914,6 +937,32 @@ fireflies:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/fireflies
+fiserv:
+    categories:
+        - banking
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://cert.api.fiservapps.com/fts-apim/oauth2/v2
+    token_request_auth_method: basic
+    expires_in_unit: milliseconds
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostUrl}
+    docs: https://docs.nango.dev/integrations/all/fiserv
+fiserv-api-key:
+    categories:
+        - banking
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://prod.emea.api.fiservapps.com
+        headers:
+            API-Key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /sandbox/exp/v1/authorisations
+    docs: https://docs.nango.dev/integrations/all/fiserv
 fitbit:
     categories:
         - sports
@@ -974,6 +1023,18 @@ front:
             response_path: _results
             link_path_in_response_body: _pagination.next
     docs: https://docs.nango.dev/integrations/all/front
+gainsight-cc:
+    categories:
+        - support
+        - crm
+    auth_mode: OAUTH2_CC
+    token_url: https://api2-${connectionConfig.region}.insided.com/oauth2/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api2-${connectionConfig.region}.insided.com
+    docs: https://docs.nango.dev/integrations/all/gainsight-cc
 garmin:
     categories:
         - sports
@@ -1041,6 +1102,8 @@ gitlab:
     token_url: https://gitlab.com/oauth/token
     authorization_params:
         response_type: code
+    proxy:
+        base_url: https://gitlab.com
     docs: https://docs.nango.dev/integrations/all/gitlab
 gong:
     categories:
@@ -1053,6 +1116,8 @@ gong-oauth:
     auth_mode: OAUTH2
     authorization_url: https://app.gong.io/oauth2/authorize
     token_url: https://app.gong.io/oauth2/generate-customer-token
+    token_response_metadata:
+        - api_base_url_for_customer
     authorization_params:
         response_type: code
         access_type: offline
@@ -1063,7 +1128,7 @@ gong-oauth:
     disable_pkce: true
     token_request_auth_method: basic
     proxy:
-        base_url: https://api.gong.io
+        base_url: ${connectionConfig.api_base_url_for_customer} || https://api.gong.io
     docs: https://docs.nango.dev/integrations/all/gong
 google:
     auth_mode: OAUTH2
@@ -1437,6 +1502,8 @@ jotform:
 helpscout-docs:
     auth_mode: BASIC
     proxy:
+        retry:
+            after: 'X-RateLimit-Reset'
         base_url: https://docsapi.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 helpscout-mailbox:
@@ -1450,6 +1517,8 @@ helpscout-mailbox:
     refresh_params:
         grant_type: refresh_token
     proxy:
+        retry:
+            after: 'X-RateLimit-Retry-After'
         base_url: https://api.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 keap:
@@ -1488,7 +1557,7 @@ klaviyo:
         base_url: https://a.klaviyo.com
         headers:
             Authorization: Klaviyo-API-Key ${apiKey}
-            revision: ${connectionConfig.revisionHeader}
+            revision: '2024-07-15'
         verification:
             method: GET
             endpoint: /api/accounts
@@ -1512,7 +1581,7 @@ klaviyo-oauth:
     proxy:
         base_url: https://a.klaviyo.com
         headers:
-            revision: ${connectionConfig.revisionHeader}
+            revision: '2024-07-15'
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/klaviyo
@@ -1699,6 +1768,8 @@ microsoft-teams:
         - productivity
         - video
     alias: microsoft
+    webhook_routing_script: microsoftTeamsWebhookRouting
+    post_connection_script: microsoftTeamsPostConnection
     docs: https://docs.nango.dev/integrations/all/microsoft-teams
 microsoft-tenant-specific:
     categories:
@@ -2147,7 +2218,7 @@ productboard:
     auth_mode: OAUTH2
     authorization_url: https://app.productboard.com/oauth2/authorize
     token_url: https://app.productboard.com/oauth2/token
-    scope_seprator: ' '
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -2325,7 +2396,7 @@ servicem8:
     token_url: https://go.servicem8.com/oauth/access_token
     proxy:
         base_url: https://api.servicem8.com
-    scope_seprator: ' '
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -2350,6 +2421,7 @@ signnow:
     docs: https://docs.nango.dev/integrations/all/signnow
 signnow-sandbox:
     categories:
+        - legal
     auth_mode: OAUTH2
     authorization_url: https://app-eval.signnow.com/authorize
     token_url: https://api-eval.signnow.com/oauth2/token
@@ -2659,6 +2731,17 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+tableau:
+    categories:
+        - analytics
+    auth_mode: TABLEAU
+    token_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}/auth/signin
+    proxy:
+        headers:
+            Accept: application/json
+            Content-Type: application/json
+        base_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}
+    docs: https://docs.nango.dev/integrations/all/tableau
 teamtailor:
     categories:
         - ats
@@ -2683,6 +2766,17 @@ teamwork:
     proxy:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://docs.nango.dev/integrations/all/teamwork
+ticktick:
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://ticktick.com/oauth/authorize
+    token_url: https://ticktick.com/oauth/token
+    scope_separator: ' '
+    proxy:
+        base_url: https://api.ticktick.com
+    docs: https://docs.nango.dev/integrations/all/ticktick
 tiktok-accounts:
     categories:
         - social
@@ -2804,6 +2898,23 @@ todoist:
     proxy:
         base_url: https://api.todoist.com
     docs: https://docs.nango.dev/integrations/all/todoist
+tumblr:
+    categories:
+        - social
+        - communication
+    auth_mode: OAUTH2
+    authorization_url: https://www.tumblr.com/oauth2/authorize
+    token_url: https://api.tumblr.com/v2/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.tumblr.com/v2
+    docs: https://docs.nango.dev/integrations/all/tumblr
 twitch:
     categories:
         - gaming
@@ -2879,7 +2990,7 @@ twinfield:
         nonce: AnotherRandomStringTwinfield
     refresh_params:
         grant_type: refresh_token
-    scope_seprator: ' '
+    scope_separator: ' '
     default_scopes:
         - openid
         - twf.user
@@ -2944,7 +3055,7 @@ vimeo:
     authorization_url: https://api.vimeo.com/oauth/authorize
     token_url: https://api.vimeo.com/oauth/access_token
     token_request_auth_method: basic
-    scope_seprator: ' '
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -3077,6 +3188,13 @@ workable:
             Authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
     docs: https://docs.nango.dev/integrations/all/workable
+workday:
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.workday.com
+    docs: https://docs.nango.dev/integrations/all/workday
 wrike:
     categories:
         - productivity

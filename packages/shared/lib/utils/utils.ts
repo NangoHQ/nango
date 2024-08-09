@@ -94,6 +94,18 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
     return new Date(expirationDate);
 }
 
+export function parseTableauTokenExpirationDate(timeStr: string): Date | undefined {
+    // sample estimatedTimeToExpire: "estimatedTimeToExpiration": "177:05:38"
+    const [days, hours, minutes] = timeStr.split(':').map(Number);
+
+    if (days && hours && minutes) {
+        const milliseconds = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
+        return new Date(Date.now() + milliseconds);
+    }
+
+    return undefined;
+}
+
 export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
     const currDate = new Date();
     const dateDiffMs = expireDate.getTime() - currDate.getTime();
@@ -212,7 +224,7 @@ export function connectionCopyWithParsedConnectionConfig(connection: Connection)
 
 export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined): string | undefined {
     // Maps the format that is used in providers.yaml (inherited from oauth), to the format of the Connection model.
-    return baseUrl ? baseUrl.replace('connectionConfig', 'connection_config') : baseUrl;
+    return baseUrl ? baseUrl.replace(/connectionConfig/g, 'connection_config') : baseUrl;
 }
 
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {

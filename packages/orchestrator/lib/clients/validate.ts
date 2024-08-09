@@ -1,7 +1,7 @@
 import { taskStates } from '@nangohq/scheduler';
 import type { Schedule, Task } from '@nangohq/scheduler';
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
-import { TaskAction, TaskWebhook, TaskPostConnection, TaskSync } from './types.js';
+import { TaskAction, TaskWebhook, TaskPostConnection, TaskSync, TaskSyncAbort } from './types.js';
 import { z } from 'zod';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -24,10 +24,23 @@ export const syncArgsSchema = z.object({
     ...commonSchemaArgsFields
 });
 
+export const syncAbortArgsSchema = z.object({
+    type: z.literal('abort'),
+    abortedTask: z.object({
+        id: z.string().uuid(),
+        state: z.enum(taskStates)
+    }),
+    reason: z.string().min(1),
+    syncId: z.string().min(1),
+    syncName: z.string().min(1),
+    debug: z.boolean(),
+    ...commonSchemaArgsFields
+});
+
 export const actionArgsSchema = z.object({
     type: z.literal('action'),
     actionName: z.string().min(1),
-    activityLogId: z.union([z.number(), z.string()]),
+    activityLogId: z.string(),
     input: jsonSchema,
     ...commonSchemaArgsFields
 });
@@ -35,7 +48,7 @@ export const webhookArgsSchema = z.object({
     type: z.literal('webhook'),
     webhookName: z.string().min(1),
     parentSyncName: z.string().min(1),
-    activityLogId: z.union([z.number(), z.string()]),
+    activityLogId: z.string(),
     input: jsonSchema,
     ...commonSchemaArgsFields
 });
@@ -44,7 +57,7 @@ export const postConnectionArgsSchema = z.object({
     postConnectionName: z.string().min(1),
     version: z.string().min(1),
     fileLocation: z.string().min(1),
-    activityLogId: z.union([z.number(), z.string()]),
+    activityLogId: z.string(),
     ...commonSchemaArgsFields
 });
 
@@ -58,6 +71,10 @@ const commonSchemaFields = {
 const syncSchema = z.object({
     ...commonSchemaFields,
     payload: syncArgsSchema
+});
+const syncAbortchema = z.object({
+    ...commonSchemaFields,
+    payload: syncAbortArgsSchema
 });
 const actionSchema = z.object({
     ...commonSchemaFields,
@@ -84,7 +101,26 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 syncId: sync.data.payload.syncId,
                 syncName: sync.data.payload.syncName,
                 connection: sync.data.payload.connection,
+                groupKey: sync.data.groupKey,
                 debug: sync.data.payload.debug
+            })
+        );
+    }
+    const syncAbort = syncAbortchema.safeParse(task);
+    if (syncAbort.success) {
+        return Ok(
+            TaskSyncAbort({
+                id: syncAbort.data.id,
+                abortedTask: syncAbort.data.payload.abortedTask,
+                state: syncAbort.data.state,
+                name: syncAbort.data.name,
+                attempt: syncAbort.data.retryCount + 1,
+                syncId: syncAbort.data.payload.syncId,
+                syncName: syncAbort.data.payload.syncName,
+                connection: syncAbort.data.payload.connection,
+                groupKey: syncAbort.data.groupKey,
+                reason: syncAbort.data.payload.reason,
+                debug: syncAbort.data.payload.debug
             })
         );
     }
@@ -99,6 +135,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 actionName: action.data.payload.actionName,
                 connection: action.data.payload.connection,
                 activityLogId: action.data.payload.activityLogId,
+                groupKey: action.data.groupKey,
                 input: action.data.payload.input
             })
         );
@@ -115,6 +152,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 parentSyncName: webhook.data.payload.parentSyncName,
                 connection: webhook.data.payload.connection,
                 activityLogId: webhook.data.payload.activityLogId,
+                groupKey: webhook.data.groupKey,
                 input: webhook.data.payload.input
             })
         );
@@ -130,12 +168,15 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 postConnectionName: postConnection.data.payload.postConnectionName,
                 version: postConnection.data.payload.version,
                 connection: postConnection.data.payload.connection,
+                groupKey: postConnection.data.groupKey,
                 fileLocation: postConnection.data.payload.fileLocation,
                 activityLogId: postConnection.data.payload.activityLogId
             })
         );
     }
-    return Err(`Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || postConnection.error)}`);
+    return Err(
+        `Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || postConnection.error || syncAbort.error)}`
+    );
 }
 
 export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedule> {

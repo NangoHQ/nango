@@ -52,12 +52,12 @@ export async function sendInviteEmail({
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
         email,
-        `Join the "${account.name}" account on Nango`,
+        `You’re Invited! Join "${account.name}" on Nango`,
         `<p>Hi,</p>
 
-<p>${user.name} is inviting you to join the "${account.name}" account on Nango.</p>
+<p>${user.name} invites you to join "${account.name}" on Nango.</p>
 
-<p>Join this account by clicking <a href="${basePublicUrl}/signup/${invitation.token}">here</a> and completing your signup.</p>
+<p>Join this team by clicking <a href="${basePublicUrl}/signup/${invitation.token}">here</a> and completing your signup.</p>
 
 <p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
 

@@ -8,13 +8,11 @@ interface State {
     env: string;
     baseUrl: string;
     envs: Env[];
-    email: string;
     showInteractiveDemo: boolean;
     debugMode: boolean;
     setEnv: (value: string) => void;
     setEnvs: (envs: Env[]) => void;
     setBaseUrl: (value: string) => void;
-    setEmail: (value: string) => void;
     setShowInteractiveDemo: (value: boolean) => void;
     setDebugMode: (value: boolean) => void;
 }
@@ -23,7 +21,6 @@ export const useStore = create<State>((set, get) => ({
     env: 'dev',
     envs: [{ name: 'dev' }, { name: 'prod' }],
     baseUrl: 'https://api.nango.dev',
-    email: '',
     showInteractiveDemo: true,
     debugMode: false,
 
@@ -41,10 +38,6 @@ export const useStore = create<State>((set, get) => ({
 
     setBaseUrl: (value) => {
         set({ baseUrl: value });
-    },
-
-    setEmail: (value) => {
-        set({ email: value });
     },
 
     setShowInteractiveDemo: (value) => {

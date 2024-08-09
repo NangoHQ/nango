@@ -29,7 +29,7 @@ export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
         return;
     }
 
-    const { account } = res.locals;
+    const { account, user: me } = res.locals;
     const params: DeleteTeamUser['Params'] = val.data;
 
     const user = await userService.getUserById(params.id);
@@ -37,9 +37,13 @@ export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
         res.status(400).send({ error: { code: 'user_not_found' } });
         return;
     }
+    if (user.email === me.email) {
+        res.status(400).send({ error: { code: 'forbidden_self_delete', message: "You can't remove yourself from a team" } });
+        return;
+    }
 
     // Account ID is not nullable until we change the way we deal with default account so we create a temp one
-    const newTeam = await accountService.createAccount(`${user.name}'s Organization`);
+    const newTeam = await accountService.createAccount(`${user.name}'s Team`);
     if (!newTeam) {
         res.status(500).send({ error: { code: 'server_error' } });
         return;

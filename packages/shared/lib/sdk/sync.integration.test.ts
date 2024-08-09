@@ -37,10 +37,15 @@ describe('Connection service integration tests', () => {
             }
 
             const nangoProps: NangoProps = {
+                scriptType: 'sync',
                 host: 'http://localhost:3003',
-                accountId: environment.account_id,
+                team: {
+                    id: environment.account_id,
+                    name: 'team'
+                },
                 connectionId: String(establishedConnection.connection_id),
                 environmentId: environment.id,
+                environmentName: environment.name,
                 providerConfigKey: String(establishedConnection?.provider_config_key),
                 provider: 'hubspot',
                 activityLogId: '1',
@@ -50,7 +55,9 @@ describe('Connection service integration tests', () => {
                 syncJobId: 2,
                 lastSyncDate: new Date(),
                 syncConfig: {} as SyncConfig,
-                runnerFlags: {} as any
+                debug: false,
+                runnerFlags: {} as any,
+                startedAt: new Date()
             };
 
             const nango = new NangoAction(nangoProps);

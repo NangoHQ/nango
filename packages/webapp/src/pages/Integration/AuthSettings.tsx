@@ -385,7 +385,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     name="incoming_webhook_secret"
                                     autoComplete="one-time-code"
                                     defaultValue={integration ? integration.custom?.webhookSecret : ''}
-                                    additionalclass={`w-full`}
+                                    additionalClass={`w-full`}
                                     required
                                 />
                             </div>
@@ -469,7 +469,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                                     defaultValue={
                                         integration ? (integration?.auth_mode === 'CUSTOM' ? integration.custom?.private_key : integration.client_secret) : ''
                                     }
-                                    additionalclass={`w-full`}
+                                    additionalClass={`w-full`}
                                     required
                                 />
                             </div>

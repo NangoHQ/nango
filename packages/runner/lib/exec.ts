@@ -1,32 +1,25 @@
 import type { NangoProps, RunnerOutput } from '@nangohq/shared';
 import { AxiosError } from 'axios';
 import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
-import { syncAbortControllers } from './state.js';
 import { Buffer } from 'buffer';
 import * as vm from 'node:vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
+import * as soap from 'soap';
+import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
-import { metrics, stringifyError } from '@nangohq/utils';
+import { errorToObject, metrics } from '@nangohq/utils';
 import { logger } from './utils.js';
 
 export async function exec(
     nangoProps: NangoProps,
-    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script',
     code: string,
-    codeParams?: object
+    codeParams?: object,
+    abortController: AbortController = new AbortController()
 ): Promise<RunnerOutput> {
-    const abortController = new AbortController();
-
-    if (scriptType == 'sync' && nangoProps.syncId) {
-        syncAbortControllers.set(nangoProps.syncId, abortController);
-    }
-
-    const rawNango = scriptType === 'action' ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
-
+    const rawNango = nangoProps.scriptType === 'action' ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
-
     nango.abortSignal = abortController.signal;
 
     const wrappedCode = `
@@ -39,7 +32,7 @@ export async function exec(
     `;
 
     return await tracer.trace<Promise<RunnerOutput>>(SpanTypes.RUNNER_EXEC, async (span) => {
-        span.setTag('accountId', nangoProps.accountId)
+        span.setTag('accountId', nangoProps.team?.id)
             .setTag('environmentId', nangoProps.environmentId)
             .setTag('connectionId', nangoProps.connectionId)
             .setTag('providerConfigKey', nangoProps.providerConfigKey)
@@ -47,7 +40,7 @@ export async function exec(
 
         try {
             const script = new vm.Script(wrappedCode);
-            const sandbox = {
+            const sandbox: vm.Context = {
                 console,
                 require: (moduleName: string) => {
                     switch (moduleName) {
@@ -57,31 +50,37 @@ export async function exec(
                             return crypto;
                         case 'zod':
                             return zod;
+                        case 'botbuilder':
+                            return botbuilder;
+                        case 'soap':
+                            return soap;
                         default:
                             throw new Error(`Module '${moduleName}' is not allowed`);
                     }
                 },
                 Buffer,
-                setTimeout
+                setTimeout,
+                Error
             };
 
             const context = vm.createContext(sandbox);
             const scriptExports = script.runInContext(context);
 
-            if (scriptType === 'webhook') {
+            if (nangoProps.scriptType === 'webhook') {
                 if (!scriptExports.onWebhookPayloadReceived) {
                     const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
 
                     throw new Error(content);
                 }
 
-                return await scriptExports.onWebhookPayloadReceived(nango, codeParams);
+                const output = await scriptExports.onWebhookPayloadReceived(nango, codeParams);
+                return { success: true, response: output, error: null };
             }
 
             if (!scriptExports.default || typeof scriptExports.default !== 'function') {
                 throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
             }
-            if (scriptType === 'action') {
+            if (nangoProps.scriptType === 'action') {
                 let inputParams = codeParams;
                 if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
                     inputParams = undefined;
@@ -129,9 +128,10 @@ export async function exec(
                     }
                 }
 
-                return output;
+                return { success: true, response: output, error: null };
             } else {
-                return await scriptExports.default(nango);
+                await scriptExports.default(nango);
+                return { success: true, response: true, error: null };
             }
         } catch (error) {
             if (error instanceof ActionError) {
@@ -142,22 +142,73 @@ export async function exec(
                     success: false,
                     error: {
                         type,
-                        payload: payload || {},
+                        payload: Array.isArray(payload) || (typeof payload !== 'object' && payload !== null) ? { message: payload } : payload || {}, // TODO: fix ActionError so payload is always an object
                         status: 500
                     },
                     response: null
                 };
-            } else if (error instanceof NangoError) {
-                throw error;
-            } else {
-                if (error instanceof AxiosError && error.response?.data) {
-                    const errorResponse = error.response.data.payload || error.response.data;
-                    span.setTag('error', errorResponse);
-                    throw new Error(JSON.stringify(errorResponse));
-                }
+            }
 
+            if (error instanceof NangoError) {
                 span.setTag('error', error);
-                throw new Error(`Error executing code '${stringifyError(error)}'`);
+                return {
+                    success: false,
+                    error: {
+                        type: error.type,
+                        payload: error.payload,
+                        status: error.status
+                    },
+                    response: null
+                };
+            } else if (error instanceof AxiosError) {
+                span.setTag('error', error);
+                if (error.response?.data) {
+                    const errorResponse = error.response.data.payload || error.response.data;
+                    return {
+                        success: false,
+                        error: {
+                            type: 'script_http_error',
+                            payload: typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse,
+                            status: error.response.status
+                        },
+                        response: null
+                    };
+                } else {
+                    const tmp = errorToObject(error);
+                    return {
+                        success: false,
+                        error: {
+                            type: 'script_http_error',
+                            payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                            status: 500
+                        },
+                        response: null
+                    };
+                }
+            } else if (error instanceof Error) {
+                const tmp = errorToObject(error);
+                span.setTag('error', tmp);
+                return {
+                    success: false,
+                    error: {
+                        type: 'script_internal_error',
+                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                        status: 500
+                    },
+                    response: null
+                };
+            } else {
+                const tmp = errorToObject(!error || typeof error !== 'object' ? new Error(JSON.stringify(error)) : error);
+                span.setTag('error', tmp);
+                return {
+                    success: false,
+                    error: {
+                        type: 'script_internal_error',
+                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                        status: 500
+                    },
+                    response: null
+                };
             }
         } finally {
             span.finish();
