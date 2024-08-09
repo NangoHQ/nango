@@ -203,7 +203,7 @@ export default function ConnectionList() {
                             <div className="flex gap-4 items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md">
                                 <div className="w-2/3">Connection IDs</div>
                                 <div className="w-1/3">Integration</div>
-                                <div className="w-20">Created</div>
+                                <div className="w-24">Created</div>
                             </div>
                             {filteredConnections.map(
                                 ({ id, connection_id: connectionId, provider, provider_config_key: providerConfigKey, created: creationDate, active_logs }) => (
@@ -227,7 +227,7 @@ export default function ConnectionList() {
                                             </div>
                                             <p className="break-words break-all">{providerConfigKey}</p>
                                         </div>
-                                        <div className="flex w-20">
+                                        <div className="flex w-24">
                                             <time dateTime={creationDate} title={creationDate}>
                                                 {formatDate(creationDate)}
                                             </time>
