@@ -1102,6 +1102,8 @@ gitlab:
     token_url: https://gitlab.com/oauth/token
     authorization_params:
         response_type: code
+    proxy:
+        base_url: https://gitlab.com
     docs: https://docs.nango.dev/integrations/all/gitlab
 gong:
     categories:
