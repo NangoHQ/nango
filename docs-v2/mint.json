@@ -454,6 +454,7 @@
                 "integrations/all/pipedrive",
                 "integrations/all/pivotaltracker",
                 "integrations/all/productboard",
+                "integrations/all/podium",
                 "integrations/all/posthog",
                 "integrations/all/qualtrics",
                 "integrations/all/quickbooks",

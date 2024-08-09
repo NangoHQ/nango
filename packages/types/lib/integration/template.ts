@@ -68,6 +68,7 @@ export interface TemplateOAuth2 extends Template {
 
     refresh_url?: string;
     expires_in_unit?: 'milliseconds';
+    expires_in_mins?: number; //in minutes
 
     token_request_auth_method?: 'basic' | 'custom';
 }
