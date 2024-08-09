@@ -386,7 +386,20 @@ class ProxyService {
         const { connection } = config;
         const { template: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
 
-        const apiBase = config.baseUrlOverride || templateApiBase;
+        let apiBase = config.baseUrlOverride || templateApiBase;
+
+        if (apiBase?.includes('${') && apiBase?.includes('||')) {
+            const connectionConfig = connection.connection_config;
+            const splitApiBase = apiBase.split(/\s*\|\|\s*/);
+
+            if (!connectionConfig) {
+                apiBase = splitApiBase[1];
+            } else {
+                const keyMatch = apiBase.match(/connectionConfig\.(\w+)/);
+                const index = keyMatch && keyMatch[1] && connectionConfig[keyMatch[1]] ? 0 : 1;
+                apiBase = splitApiBase[index]?.trim();
+            }
+        }
 
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
         let endpoint = apiEndpoint.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
