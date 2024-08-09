@@ -135,15 +135,15 @@ class ApiAuthController {
             await logCtx.info('API key auth creation was successful');
             await logCtx.success();
 
-            const [updatedConnection] = await connectionService.upsertApiConnection(
+            const [updatedConnection] = await connectionService.upsertApiConnection({
                 connectionId,
                 providerConfigKey,
-                config.provider,
+                provider: config.provider,
                 credentials,
                 connectionConfig,
-                environment.id,
-                account.id
-            );
+                environment,
+                account
+            });
 
             if (updatedConnection) {
                 await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
@@ -307,15 +307,15 @@ class ApiAuthController {
             await logCtx.info('Basic API key auth creation was successful', { username });
             await logCtx.success();
 
-            const [updatedConnection] = await connectionService.upsertApiConnection(
+            const [updatedConnection] = await connectionService.upsertApiConnection({
                 connectionId,
                 providerConfigKey,
-                config.provider,
+                provider: config.provider,
                 credentials,
                 connectionConfig,
-                environment.id,
-                account.id
-            );
+                environment,
+                account
+            });
 
             if (updatedConnection) {
                 await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });

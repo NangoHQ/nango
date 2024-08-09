@@ -148,7 +148,7 @@ class AppAuthController {
                     }
                 );
 
-                connectionCreationFailedHook(
+                void connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
@@ -167,15 +167,15 @@ class AppAuthController {
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
             }
 
-            const [updatedConnection] = await connectionService.upsertConnection(
+            const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                session.provider,
-                credentials as unknown as AuthCredentials,
-                connectionConfig as Record<string, string | boolean>,
-                environment.id,
-                account.id
-            );
+                provider: session.provider,
+                parsedRawCredentials: credentials as unknown as AuthCredentials,
+                connectionConfig,
+                environmentId: environment.id,
+                accountId: account.id
+            });
 
             if (updatedConnection) {
                 await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
@@ -221,7 +221,7 @@ class AppAuthController {
                 connectionId: String(connectionId)
             });
 
-            connectionCreationFailedHook(
+            void connectionCreationFailedHook(
                 {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,

@@ -279,7 +279,15 @@ const initDb = async () => {
         { account: { id: env.account_id, name: '' }, environment: { id: env.id, name: env.name } }
     );
 
-    const connectionRes = await connectionService.upsertConnection(`conn-test`, `provider-test`, 'google', {} as AuthCredentials, {}, env.id, 0);
+    const connectionRes = await connectionService.upsertConnection({
+        connectionId: `conn-test`,
+        providerConfigKey: `provider-test`,
+        provider: 'google',
+        parsedRawCredentials: {} as AuthCredentials,
+        connectionConfig: {},
+        environmentId: env.id,
+        accountId: 0
+    });
     const connectionId = connectionRes[0]?.connection.id;
     if (!connectionId) throw new Error('Connection not created');
 

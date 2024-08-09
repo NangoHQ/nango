@@ -61,7 +61,15 @@ describe('Auto Idle Demo', async () => {
                 enabled: true
             })
             .returning('id');
-        const conn = await connectionService.upsertConnection(connName, DEMO_GITHUB_CONFIG_KEY, 'github', {} as any, {}, env.id, 0);
+        const conn = await connectionService.upsertConnection({
+            connectionId: connName,
+            providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
+            provider: 'github',
+            parsedRawCredentials: {} as any,
+            connectionConfig: {},
+            environmentId: env.id,
+            accountId: 0
+        });
         const connection = conn[0]!.connection;
         const sync = (await createSync(connection.id!, DEMO_SYNC_NAME))!;
         const now = new Date();

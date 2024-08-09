@@ -1,6 +1,6 @@
 import type { AuthModeType, AuthOperationType } from '@nangohq/types';
 import type { ServiceResponse } from './Generic.js';
-import type { BaseConnection, StoredConnection } from './Connection.js';
+import type { StoredConnection } from './Connection.js';
 
 export enum OAuthAuthorizationMethod {
     BODY = 'body',
@@ -137,7 +137,3 @@ export type RefreshTokenResponse = AuthorizationTokenResponse;
 export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {
     expires_in?: number;
 }
-
-export type ImportedCredentials =
-    | (OAuth2Credentials & Partial<Pick<AuthorizationTokenResponse, 'expires_in'>> & Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>)
-    | OAuth1Credentials;

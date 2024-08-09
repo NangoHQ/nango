@@ -367,15 +367,15 @@ class OAuthController {
             await logCtx.info('OAuth2 client credentials creation was successful');
             await logCtx.success();
 
-            const [updatedConnection] = await connectionService.upsertConnection(
+            const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                config.provider,
-                credentials,
+                provider: config.provider,
+                parsedRawCredentials: credentials,
                 connectionConfig,
-                environment.id,
-                account.id
-            );
+                environmentId: environment.id,
+                accountId: account.id
+            });
 
             if (updatedConnection) {
                 await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
@@ -1041,15 +1041,15 @@ class OAuthController {
                     : connectionConfig['oauth_scopes_override'];
             }
 
-            const [updatedConnection] = await connectionService.upsertConnection(
+            const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                session.provider,
+                provider: session.provider,
                 parsedRawCredentials,
                 connectionConfig,
-                session.environmentId,
-                account.id
-            );
+                environmentId: session.environmentId,
+                accountId: account.id
+            });
 
             await logCtx.debug(
                 `OAuth connection successful${template.auth_mode === 'CUSTOM' && !installationId ? ' and request for app approval is pending' : ''}`,
@@ -1213,15 +1213,15 @@ class OAuthController {
             .then(async (accessTokenResult) => {
                 const parsedAccessTokenResult = connectionService.parseRawCredentials(accessTokenResult, 'OAUTH1');
 
-                const [updatedConnection] = await connectionService.upsertConnection(
+                const [updatedConnection] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey,
-                    session.provider,
-                    parsedAccessTokenResult,
-                    { ...session.connectionConfig, ...metadata },
-                    environment.id,
-                    account.id
-                );
+                    provider: session.provider,
+                    parsedRawCredentials: parsedAccessTokenResult,
+                    connectionConfig: { ...session.connectionConfig, ...metadata },
+                    environmentId: environment.id,
+                    accountId: account.id
+                });
 
                 await logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
 

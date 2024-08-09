@@ -113,7 +113,7 @@ class AppStoreAuthController {
             const { success, error, response: credentials } = await connectionService.getAppStoreCredentials(template, connectionConfig, privateKey);
 
             if (!success || !credentials) {
-                connectionCreationFailedHook(
+                void connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
@@ -136,15 +136,15 @@ class AppStoreAuthController {
             await logCtx.info('App Store auth creation was successful');
             await logCtx.success();
 
-            const [updatedConnection] = await connectionService.upsertConnection(
+            const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                config.provider,
-                credentials as unknown as AuthCredentials,
+                provider: config.provider,
+                parsedRawCredentials: credentials as unknown as AuthCredentials,
                 connectionConfig,
-                environment.id,
-                account.id
-            );
+                environmentId: environment.id,
+                accountId: account.id
+            });
 
             if (updatedConnection) {
                 await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
@@ -167,7 +167,7 @@ class AppStoreAuthController {
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
-            connectionCreationFailedHook(
+            void connectionCreationFailedHook(
                 {
                     connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                     environment,
