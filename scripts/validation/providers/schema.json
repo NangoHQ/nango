@@ -262,6 +262,9 @@
                     "type": "string",
                     "enum": ["milliseconds"]
                 },
+                "expires_in_ms": {
+                    "type": "number"
+                },
                 "token_response_metadata": {
                     "type": "array",
                     "items": {

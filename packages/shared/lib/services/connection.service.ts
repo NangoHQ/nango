@@ -868,6 +868,8 @@ class ConnectionService {
                     expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
                 } else if (rawCreds['expires_in']) {
                     expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
+                } else if (template?.expires_in_ms) {
+                    expiresAt = new Date(Date.now() + template.expires_in_ms);
                 }
 
                 const oauth2Creds: OAuth2Credentials = {
