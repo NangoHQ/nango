@@ -2376,7 +2376,7 @@ salesforce-experience-cloud:
         - instance_url
     proxy:
         base_url: ${connectionConfig.instance_url}
-    docs: https://docs.nango.dev/integrations/all/salesforce
+    docs: https://docs.nango.dev/integrations/all/salesforce-experience-cloud
 salesloft:
     categories:
         - marketing
