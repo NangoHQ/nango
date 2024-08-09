@@ -24,9 +24,11 @@ export const UserAction: React.FC<{ user: ApiUser }> = ({ user }) => {
 
     const onRemove = async () => {
         setLoading(true);
-        const update = await apiDeleteTeamUser(env, { id: user.id });
+        const updated = await apiDeleteTeamUser(env, { id: user.id });
 
-        if (update && update.res.status === 200) {
+        if ('error' in updated) {
+            toast({ title: 'An unexpected error occurred', variant: 'error' });
+        } else {
             if (user.id === me!.id) {
                 navigate('/');
                 toast({ title: `You left the team successfully`, variant: 'success' });
@@ -36,8 +38,6 @@ export const UserAction: React.FC<{ user: ApiUser }> = ({ user }) => {
             toast({ title: `${user.name} has been removed from your team`, variant: 'success' });
             setOpen(false);
             void mutate();
-        } else {
-            toast({ title: 'An unexpected error occurred', variant: 'error' });
         }
         setLoading(false);
     };
@@ -87,9 +87,11 @@ export const InvitationAction: React.FC<{ invitation: ApiInvitation }> = ({ invi
 
     const onRevoke = async () => {
         setLoading(true);
-        const update = await apiDeleteInvite(env, { email: invitation.email });
+        const deleted = await apiDeleteInvite(env, { email: invitation.email });
 
-        if (!update || update.res.status === 200) {
+        if ('error' in deleted) {
+            toast({ title: 'An unexpected error occurred', variant: 'error' });
+        } else {
             toast({ title: `${invitation.email}'s invitation has been revoked`, variant: 'success' });
             setOpen(false);
             void mutate();

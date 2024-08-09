@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import type { SWRError } from '../utils/api';
-import { apiFetch, requestErrorToast, swrFetcher } from '../utils/api';
+import { apiFetch, swrFetcher } from '../utils/api';
 import type { DeleteTeamUser, GetTeam, PutTeam } from '@nangohq/types';
 
 export function useTeam(env: string) {
@@ -20,32 +20,24 @@ export function useTeam(env: string) {
 }
 
 export async function apiPutTeam(env: string, body: PutTeam['Body']) {
-    try {
-        const res = await apiFetch(`/api/v1/team?env=${env}`, {
-            method: 'PUT',
-            body: JSON.stringify(body)
-        });
+    const res = await apiFetch(`/api/v1/team?env=${env}`, {
+        method: 'PUT',
+        body: JSON.stringify(body)
+    });
 
-        return {
-            res,
-            json: (await res.json()) as PutTeam['Reply']
-        };
-    } catch {
-        requestErrorToast();
-    }
+    return {
+        res,
+        json: (await res.json()) as PutTeam['Reply']
+    };
 }
 
 export async function apiDeleteTeamUser(env: string, params: DeleteTeamUser['Params']) {
-    try {
-        const res = await apiFetch(`/api/v1/team/users/${params.id}?env=${env}`, {
-            method: 'DELETE'
-        });
+    const res = await apiFetch(`/api/v1/team/users/${params.id}?env=${env}`, {
+        method: 'DELETE'
+    });
 
-        return {
-            res,
-            json: (await res.json()) as DeleteTeamUser['Reply']
-        };
-    } catch {
-        requestErrorToast();
-    }
+    return {
+        res,
+        json: (await res.json()) as DeleteTeamUser['Reply']
+    };
 }
