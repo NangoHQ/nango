@@ -110,7 +110,7 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
                                 name="incoming_webhook_secret"
                                 autoComplete="one-time-code"
                                 defaultValue={integration ? integration.custom?.webhookSecret : ''}
-                                additionalclass={`w-full`}
+                                additionalClass={`w-full`}
                                 required
                             />
                         </InfoBloc>

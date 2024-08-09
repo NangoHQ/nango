@@ -557,12 +557,12 @@ export const EnvironmentSettings: React.FC = () => {
                                 </div>
                                 <div className="flex">
                                     <SecretInput
-                                        additionalclass="w-full h-11"
+                                        additionalClass="w-full h-11"
                                         tall
                                         disabled
                                         copy={true}
-                                        optionalvalue={secretKey}
-                                        setoptionalvalue={setSecretKey}
+                                        optionalValue={secretKey}
+                                        setOptionalValue={setSecretKey}
                                     />
                                     {secretKeyRotatable && (
                                         <>
@@ -871,7 +871,7 @@ export const EnvironmentSettings: React.FC = () => {
                                 </div>
                                 {!hmacEditMode && (
                                     <div className="flex">
-                                        <SecretInput disabled optionalvalue={hmacKey} setoptionalvalue={setHmacKey} additionalclass="w-full" tall />
+                                        <SecretInput disabled optionalValue={hmacKey} setOptionalValue={setHmacKey} additionalClass="w-full" tall />
                                         <button
                                             onClick={() => setHmacEditMode(!hmacEditMode)}
                                             className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"

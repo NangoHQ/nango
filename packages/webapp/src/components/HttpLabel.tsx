@@ -22,10 +22,6 @@ const styles = cva('', {
 });
 
 export const HttpLabel: React.FC<{ verb: HTTP_VERB; path: string }> = ({ verb, path }) => {
-    return <HttpBase verb={verb} path={path} />;
-};
-
-export const HttpBase: React.FC<{ verb: HTTP_VERB; path: string }> = ({ verb, path }) => {
     return (
         <div className="flex items-center gap-2 text-[11px]">
             <div className={cn(styles({ bg: verb }), 'py-0.5 px-2 rounded')}>
