@@ -1,6 +1,5 @@
 import type { Config, Job, NangoProps, SyncConfig } from '@nangohq/shared';
 import {
-    addSyncConfigToJob,
     environmentService,
     externalWebhookService,
     getApiUrl,
@@ -40,7 +39,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
     let logCtx: LogContext | undefined;
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
-    let syncJob: Pick<Job, 'id'> | null = null;
+    let syncJob: Job | null = null;
     let lastSyncDate: Date | null = null;
     let syncType: SyncType = SyncType.FULL;
     let providerConfig: Config | null = null;
@@ -83,7 +82,16 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             }
         );
 
-        syncJob = await createSyncJob(task.syncId, syncType, SyncStatus.RUNNING, task.name, task.connection, task.id, logCtx.id);
+        syncJob = await createSyncJob({
+            sync_id: task.syncId,
+            type: syncType,
+            status: SyncStatus.RUNNING,
+            job_id: task.name,
+            nangoConnection: task.connection,
+            sync_config_id: syncConfig.id!,
+            run_id: task.id,
+            log_id: logCtx.id
+        });
         if (!syncJob) {
             throw new Error(`Failed to create sync job for sync: ${task.syncId}. TaskId: ${task.id}`);
         }
@@ -98,8 +106,6 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
                 executionId: task.id
             });
         }
-
-        await addSyncConfigToJob(syncJob.id, syncConfig.id!);
 
         const nangoProps: NangoProps = {
             scriptType: 'sync',
