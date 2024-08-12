@@ -401,7 +401,7 @@ class ConnectionController {
                     updatedConnection = imported;
                 }
             } else if (template.auth_mode === 'OAUTH1') {
-                const { oauth_token, oauth_token_secret, metadata } = req.body;
+                const { oauth_token, oauth_token_secret } = req.body;
 
                 if (!oauth_token) {
                     errorManager.errRes(res, 'missing_oauth_token');
