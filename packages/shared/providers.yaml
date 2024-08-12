@@ -1102,6 +1102,8 @@ gitlab:
     token_url: https://gitlab.com/oauth/token
     authorization_params:
         response_type: code
+    proxy:
+        base_url: https://gitlab.com
     docs: https://docs.nango.dev/integrations/all/gitlab
 gong:
     categories:
@@ -2198,6 +2200,29 @@ pivotaltracker:
             method: GET
             endpoint: /accounts
     docs: https://docs.nango.dev/integrations/all/pivotaltracker
+podium:
+    categories:
+        - communication
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://api.podium.com/oauth/authorize
+    token_url: https://api.podium.com/oauth/token
+    scope_separator: ' '
+    body_format: json
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            Podium-Version: ${connectionConfig.apiVersion}
+            Content-Type: application/json
+        base_url: https://api.podium.com
+        retry:
+            after: 'x-ratelimit-reset'
+    docs: https://docs.nango.dev/integrations/all/podium
 posthog:
     categories:
         - dev-tools
@@ -2868,6 +2893,23 @@ trello:
     proxy:
         base_url: https://api.trello.com
     docs: https://docs.nango.dev/integrations/all/trello
+tsheetsteam:
+    categories:
+        - payroll
+        - hr
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://rest.tsheets.com/api/v1/authorize
+    token_url: https://rest.tsheets.com/api/v1/grant
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://rest.tsheets.com/api/v1
+    docs: https://docs.nango.dev/integrations/all/tsheetsteam
 todoist:
     categories:
         - productivity
