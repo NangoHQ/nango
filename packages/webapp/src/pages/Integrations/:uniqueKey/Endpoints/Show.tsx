@@ -1,25 +1,26 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Skeleton } from '../../../../components/ui/Skeleton';
 import { useGetIntegrationFlows } from '../../../../hooks/useIntegration';
 import { useStore } from '../../../../store';
 import { useMemo } from 'react';
-import type { HTTP_VERB, NangoSyncConfig } from '@nangohq/types';
-import * as Table from '../../../../components/ui/Table';
-import { HttpLabel } from '../../../../components/HttpLabel';
-import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
+import type { HTTP_VERB } from '@nangohq/types';
+import type { NangoSyncConfigWithEndpoint } from './components/List';
+import { EndpointsList } from './components/List';
+import { EndpointOne } from './components/One';
 
-type NangoSyncConfigWithEndpoint = NangoSyncConfig & { endpoint: { verb: HTTP_VERB; path: string } };
 const allowedGroup = ['customers', 'invoices', 'payments', 'tickets'];
 export const EndpointsShow: React.FC = () => {
     const env = useStore((state) => state.env);
     const { integrationId } = useParams();
     const { data, loading } = useGetIntegrationFlows(env, integrationId!);
+    const [searchParams] = useSearchParams();
 
     const byGroup = useMemo(() => {
         if (!data) {
             return [];
         }
 
+        // Create groups
         const tmp: Record<string, NangoSyncConfigWithEndpoint[]> = {};
         for (const flow of data.flows) {
             for (const endpoint of flow.endpoints) {
@@ -42,6 +43,7 @@ export const EndpointsShow: React.FC = () => {
             }
         }
 
+        // Sort flows inside the groups
         const groups: { name: string; flows: NangoSyncConfigWithEndpoint[] }[] = [];
         for (const group of Object.entries(tmp)) {
             groups.push({
@@ -66,6 +68,27 @@ export const EndpointsShow: React.FC = () => {
         return groups;
     }, [data]);
 
+    const currentFlow = useMemo<NangoSyncConfigWithEndpoint | undefined>(() => {
+        if (searchParams.size <= 0 || !data) {
+            return;
+        }
+
+        const verb = searchParams.get('verb');
+        const path = searchParams.get('path');
+        if (!verb || !path) {
+            return;
+        }
+
+        for (const flow of data.flows) {
+            for (const endpointObj of flow.endpoints) {
+                const endpoint = Object.entries(endpointObj)[0];
+                if (endpoint[0] === verb && endpoint[1] === path) {
+                    return { ...flow, endpoint: { verb: verb as HTTP_VERB, path } };
+                }
+            }
+        }
+    }, [searchParams, data]);
+
     if (loading) {
         return (
             <div>
@@ -77,53 +100,10 @@ export const EndpointsShow: React.FC = () => {
     if (!data) {
         return null;
     }
-    return (
-        <div className="text-sm text-white flex flex-col gap-10">
-            <div className="flex flex-col gap-8">
-                {byGroup.map(({ name, flows }) => {
-                    return (
-                        <div key={name}>
-                            <div className="bg-active-gray capitalize py-1 px-2 text-sm rounded-sm">{name}</div>
-                            <Table.Table className="table-fixed">
-                                <Table.Header>
-                                    <Table.Row>
-                                        <Table.Head className="w-[200px] bg-pure-black p-0"></Table.Head>
-                                        <Table.Head className="w-[300px] bg-pure-black p-0"></Table.Head>
-                                        <Table.Head className="w-[60px] bg-pure-black p-0"></Table.Head>
-                                        <Table.Head className="w-[60px] bg-pure-black p-0"></Table.Head>
-                                    </Table.Row>
-                                </Table.Header>
-                                <Table.Body>
-                                    {flows.map((flow) => {
-                                        return (
-                                            <Table.Row key={flow.name}>
-                                                <Table.Cell bordered className="text-white">
-                                                    <HttpLabel {...flow.endpoint} />
-                                                </Table.Cell>
-                                                <Table.Cell bordered className="text-white">
-                                                    {flow.description}
-                                                </Table.Cell>
-                                                <Table.Cell bordered className="text-white">
-                                                    {flow.is_public ? 'Template' : 'Custom'}
-                                                </Table.Cell>
-                                                <Table.Cell bordered className="text-white"></Table.Cell>
-                                            </Table.Row>
-                                        );
-                                    })}
-                                </Table.Body>
-                            </Table.Table>
-                        </div>
-                    );
-                })}
-            </div>
 
-            <div className="text-text-light-gray flex gap-2 items-center">
-                <QuestionMarkCircledIcon />
-                Can&apos;t find the endpoint you need?{' '}
-                <a href="https://docs.nango.dev/customize/overview" className="underline">
-                    Add your own
-                </a>
-            </div>
-        </div>
-    );
+    if (currentFlow) {
+        return <EndpointOne flow={currentFlow} />;
+    }
+
+    return <EndpointsList byGroup={byGroup} />;
 };

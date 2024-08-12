@@ -1,3 +1,4 @@
+import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
 import { cn } from '../utils/utils';
 import type { HTTP_VERB } from '@nangohq/types';
@@ -20,14 +21,28 @@ const styles = cva('', {
         }
     }
 });
+const sizesVerb = cva('', {
+    variants: {
+        size: { xs: 'text-[11px]', xl: 'text-base' },
+        defaultVariants: { size: 'xs' }
+    }
+});
+type Sizes = VariantProps<typeof sizesVerb>['size'];
 
-export const HttpLabel: React.FC<{ verb: HTTP_VERB; path: string }> = ({ verb, path }) => {
+const sizesText = cva('', {
+    variants: {
+        size: { xs: 'text-sm', xl: 'text-base' },
+        defaultVariants: { size: 'xs' }
+    }
+});
+
+export const HttpLabel: React.FC<{ verb: HTTP_VERB; path: string; size?: Sizes }> = ({ verb, path, size }) => {
     return (
-        <div className="flex items-center gap-2 text-[11px]">
-            <div className={cn(styles({ bg: verb }), 'py-0.5 px-2 rounded')}>
+        <div className={cn('flex items-center gap-2')}>
+            <div className={cn(styles({ bg: verb }), sizesVerb({ size }), 'py-0.5 px-2 rounded')}>
                 <span className={cn(styles({ text: verb }), 'font-semibold')}>{verb}</span>
             </div>
-            <span className="break-all text-sm">{path}</span>
+            <span className={cn(sizesText({ size }), 'break-all font-code')}>{path}</span>
         </div>
     );
 };
