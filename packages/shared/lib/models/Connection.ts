@@ -54,6 +54,7 @@ export interface ApiConnection {
     provider_config_key: string;
     config_id?: number;
     environment_id: number;
+    metadata?: Metadata | null;
     connection_config: ConnectionConfig;
     credentials_iv?: string | null;
     credentials_tag?: string | null;

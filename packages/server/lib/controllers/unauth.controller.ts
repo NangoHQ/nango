@@ -82,13 +82,13 @@ class UnAuthController {
             await logCtx.info('Unauthenticated connection creation was successful');
             await logCtx.success();
 
-            const [updatedConnection] = await connectionService.upsertUnauthConnection(
+            const [updatedConnection] = await connectionService.upsertUnauthConnection({
                 connectionId,
                 providerConfigKey,
-                config.provider,
-                environment.id,
-                account.id
-            );
+                provider: config.provider,
+                environment,
+                account
+            });
 
             if (updatedConnection) {
                 await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
