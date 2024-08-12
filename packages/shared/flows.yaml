@@ -100,7 +100,7 @@ integrations:
                 currency: string
                 contact: AnrokContact
                 fees: TransactionFee[]
-                validation_errors: any[]
+                validation_errors: any
             SuccessTransaction:
                 id?: string | undefined
                 issuing_date: string
@@ -125,11 +125,11 @@ integrations:
                 failed: FailedTransactionToDelete[]
             FailedTransactionToDelete:
                 id: string
-                validation_errors: any[]
+                validation_errors: any
             FailedTransactionToNegate:
                 id: string
                 voided_id: string
-                validation_errors: any[]
+                validation_errors: any
             TransactionFeeWithTaxBreakdown:
                 item_id: string
                 item_code: string | null

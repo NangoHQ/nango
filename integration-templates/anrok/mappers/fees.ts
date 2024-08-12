@@ -17,7 +17,7 @@ export function mapFees(fees: TransactionFee[], lineItems: AnrokLineItem[]): Tra
                 }
             } else if (juris.notTaxedReason) {
                 taxBreakdown.push({
-                    reason: juris.notTaxedReason.reason.type,
+                    reason: juris.notTaxedReason.reason?.type || '',
                     type: juris.notTaxedReason.type
                 });
             }

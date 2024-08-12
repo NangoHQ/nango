@@ -77,7 +77,7 @@ models:
         reason?: string
     FailedTransaction:
         __extends: Transaction
-        validation_errors: any[]
+        validation_errors: any
     SuccessTransaction:
         __extends: Transaction
         sub_total_excluding_taxes?: number
@@ -98,10 +98,10 @@ models:
         failed: FailedTransactionToDelete[]
     FailedTransactionToDelete:
         __extends: TransactionToDelete
-        validation_errors: any[]
+        validation_errors: any
     FailedTransactionToNegate:
         __extends: TransactionToNegate
-        validation_errors: any[]
+        validation_errors: any
     TransactionFeeWithTaxBreakdown:
         __extends: TransactionFee
         tax_amount_cents: number
