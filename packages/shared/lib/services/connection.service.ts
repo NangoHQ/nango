@@ -395,7 +395,7 @@ class ConnectionService {
         account: DBTeam;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
-        parsedRawCredentials: OAuth2Credentials | OAuth1Credentials;
+        parsedRawCredentials: OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
     }) {
         const [importedConnection] = await this.upsertConnection({

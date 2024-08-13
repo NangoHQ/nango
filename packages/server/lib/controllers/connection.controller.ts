@@ -1,7 +1,15 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Config as ProviderConfig, OAuth2Credentials, AuthCredentials, ConnectionList, ConnectionUpsertResponse } from '@nangohq/shared';
 import db from '@nangohq/database';
-import type { TbaCredentials, Template as ProviderTemplate, ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials } from '@nangohq/types';
+import type {
+    TbaCredentials,
+    Template as ProviderTemplate,
+    ApiKeyCredentials,
+    BasicApiCredentials,
+    ConnectionConfig,
+    OAuth1Credentials,
+    OAuth2ClientCredentials
+} from '@nangohq/types';
 import { configService, connectionService, errorManager, analytics, AnalyticsTypes, NangoError, accountService, SlackService } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
@@ -378,6 +386,69 @@ class ConnectionController {
                             environment,
                             account,
                             auth_mode: 'OAUTH2',
+                            operation: res.operation
+                        },
+                        provider,
+                        logContextGetter
+                    );
+                };
+
+                const [imported] = await connectionService.importOAuthConnection({
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
+                    provider,
+                    metadata,
+                    environment,
+                    account,
+                    connectionConfig,
+                    parsedRawCredentials: oAuthCredentials,
+                    connectionCreatedHook: connCreatedHook
+                });
+
+                if (imported) {
+                    updatedConnection = imported;
+                }
+            } else if (template.auth_mode === 'OAUTH2_CC') {
+                const { access_token, oauth_client_id_override, oauth_client_secret_override, expires_at } = req.body;
+
+                if (!access_token) {
+                    errorManager.errRes(res, 'missing_access_token');
+                    return;
+                }
+
+                const { expires_at: parsedExpiresAt } = connectionService.parseRawCredentials(
+                    { access_token, expires_at },
+                    template.auth_mode
+                ) as OAuth2ClientCredentials;
+
+                if (parsedExpiresAt && isNaN(parsedExpiresAt.getTime())) {
+                    errorManager.errRes(res, 'invalid_expires_at');
+                    return;
+                }
+
+                const oAuthCredentials: OAuth2ClientCredentials = {
+                    type: template.auth_mode,
+                    token: access_token,
+                    expires_at: parsedExpiresAt,
+                    client_id: oauth_client_id_override,
+                    client_secret: oauth_client_secret_override,
+                    raw: req.body.raw || req.body
+                };
+
+                const connectionConfig: ConnectionConfig = { ...connection_config };
+
+                if (connectionConfig['oauth_scopes_override']) {
+                    const scopesOverride = connectionConfig['oauth_scopes_override'];
+                    connectionConfig['oauth_scopes_override'] = !Array.isArray(scopesOverride) ? scopesOverride.split(',') : scopesOverride;
+                }
+
+                const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            connection: res.connection,
+                            environment,
+                            account,
+                            auth_mode: 'OAUTH2_CC',
                             operation: res.operation
                         },
                         provider,
