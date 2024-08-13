@@ -34,6 +34,7 @@ class ProviderClient {
         switch (provider) {
             case 'salesforce':
             case 'salesforce-sandbox':
+            case 'salesforce-experience-cloud':
                 return true;
             default:
                 return false;
@@ -122,6 +123,7 @@ class ProviderClient {
         switch (config.provider) {
             case 'salesforce':
             case 'salesforce-sandbox':
+            case 'salesforce-experience-cloud':
                 return this.introspectedSalesforceTokenExpired(
                     credentials.access_token,
                     config.oauth_client_id,
