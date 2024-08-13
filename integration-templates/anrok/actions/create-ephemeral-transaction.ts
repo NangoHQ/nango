@@ -2,6 +2,7 @@ import type { NangoAction, TransactionActionResponse, SuccessTransaction, Transa
 
 import type { AnrokResponse } from '../types';
 import { mapFees } from '../mappers/fees.js';
+import { errorToObject } from '../utils.js';
 
 export default async function runAction(nango: NangoAction, rawInput: Transaction[]): Promise<TransactionActionResponse> {
     const response: TransactionActionResponse = {
@@ -39,29 +40,27 @@ export default async function runAction(nango: NangoAction, rawInput: Transactio
             ];
         }
 
-        await nango
-            .post<AnrokResponse>({
+        try {
+            const res = await nango.post<AnrokResponse>({
                 endpoint: 'v1/seller/transactions/createEphemeral',
                 data: anrokTransaction
-            })
-            .then((res) => {
-                const { preTaxAmount, taxAmountToCollect, lineItems } = res.data;
-
-                const transactionResponse: SuccessTransaction = {
-                    ...transaction,
-                    sub_total_excluding_taxes: Number(preTaxAmount),
-                    taxes_amount_cents: taxAmountToCollect,
-                    fees: mapFees(transaction.fees, lineItems)
-                };
-
-                response.succeeded.push(transactionResponse);
-            })
-            .catch((error) => {
-                response.failed.push({
-                    ...transaction,
-                    validation_errors: error.response.data
-                });
             });
+            const { preTaxAmount, taxAmountToCollect, lineItems } = res.data;
+
+            const transactionResponse: SuccessTransaction = {
+                ...transaction,
+                sub_total_excluding_taxes: Number(preTaxAmount),
+                taxes_amount_cents: taxAmountToCollect,
+                fees: mapFees(transaction.fees, lineItems)
+            };
+
+            response.succeeded.push(transactionResponse);
+        } catch (err) {
+            response.failed.push({
+                ...transaction,
+                validation_errors: errorToObject(err)
+            });
+        }
     }
     return response;
 }

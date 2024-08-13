@@ -2393,6 +2393,17 @@ salesforce-sandbox:
     proxy:
         base_url: ${connectionConfig.instance_url}
     docs: https://docs.nango.dev/integrations/all/salesforce
+salesforce-experience-cloud:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.my.site.com/services/oauth2/authorize
+    token_url: https://${connectionConfig.subdomain}.my.site.com/services/oauth2/token
+    default_scopes:
+        - offline_access
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    docs: https://docs.nango.dev/integrations/all/salesforce-experience-cloud
 salesloft:
     categories:
         - marketing
