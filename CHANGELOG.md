@@ -2,6 +2,72 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.3] - 2024-08-13
+
+### Added
+
+- Add TickTick OAuth provider (#2555) by @dax
+- *(integrations)* Add pagination for exact-online (#2565) by @bodinsamuel
+- *(integration-templates)* [nan-1518] update bamboo integration scripts (#2559) by @khaliqgant
+- Add note about scale plan limit to incoming webhooks docs (#2570) by @rguldener
+- *(integrations)* Add support for e-conomic (#2557) by @hassan254-prog
+- *(anrok-integrations)* [nan-1527] add anrok actions (#2569) by @khaliqgant
+- *(integrations)* Add support for fiserv (#2573) by @hassan254-prog
+- *(integrations)* Add support for tumblr (#2578) by @hassan254-prog
+- *(integrations)* Add default headers for exact-online (#2580) by @bodinsamuel
+- *(integrations)* Add support for Circle So (#2577) by @hassan254-prog
+- *(integrations)* Add templates for exact online (#2583) by @bodinsamuel
+- *(integrations)* Add support for Workday SOAP (#2590) by @bodinsamuel
+- *(proxy)* Add fallback to proxy base_url (#1873) by @hassan254-prog
+- Add base_url for gitlab (#2599) by @hassan254-prog
+- *(integrations)* Add support for tsheetsteam (#2598) by @hassan254-prog
+- *(integration)* Add support for podium (#2601) by @hassan254-prog
+- *(integrations)* Add salesforce-experience-cloud provider (#2592) by @gorets
+
+### Changed
+
+- Refactor runner and run.service (#2547) by @TBonnin
+- Remove legacy runner code (#2572) by @TBonnin
+- Log error in handlePayloadTooBigError (#2576) by @TBonnin
+- *(runner)* Log version and file location (#2579) by @TBonnin
+- Retry in orchestrator client (#2581) by @TBonnin
+- Add company ID explanation to quickbooks doc (#2593) by @rguldener
+- Typos (#2595) by @bodinsamuel
+
+### Fixed
+
+- *(docs)* Small fixes to the docs (#2554) by @khaliqgant
+- *(jobs)* PutTask error payload is not always an Record<string, unknown> (#2558) by @TBonnin
+- Sync/status type must be INCREMENTAL or INITIAL (#2560) by @TBonnin
+- Webhook syncType must be INITIAL instead of FULL (#2561) by @TBonnin
+- *(api)* Move GET /config to a dedicated file (#2549) by @bodinsamuel
+- Actions failing with cannot convert undefined or null to object (#2563) by @TBonnin
+- Compute sync metrics once sync completes (#2564) by @TBonnin
+- *(insights)* Feedbacks (#2566) by @bodinsamuel
+- *(webhook)* [nan-1528] operation should reflect the sync job run type not the type of sync it is (#2568) by @khaliqgant
+- *(proxy)* Send no data if empty body (#2556) by @TBonnin
+- *(klaviyo-integration)* [nan-1511] allow oauth to dynamically inject headers (#2571) by @khaliqgant
+- Support special characters in db urls (#2575) by @TBonnin
+- *(runner)* Serialize error correctly (#2567) by @bodinsamuel
+- *(proxy)* Error response with no data should report failure (#2584) by @TBonnin
+- *(proxy)* Consolidate error message (#2585) by @TBonnin
+- *(cli)* [nan-1145] only compile and deploy single sync (#2582) by @khaliqgant
+- *(runner)* Use correct Nango object for webhook (#2587) by @bodinsamuel
+- *(oauth2_cc)* Accommodate expires_in for fiserv (#2574) by @hassan254-prog
+- *(integrations)* Return siteId in the file-sync response (#2586) by @hassan254-prog
+- *(runner)* Pass a syncJobId to webhook handler (#2589) by @bodinsamuel
+- *(ui)* Wrong env in sidebar (#2591) by @bodinsamuel
+- *(integrations)* Update base_url for gong-oauth (#1770) by @hassan254-prog
+- *(cli)* Correct output when getConnection is 404 (#2596) by @bodinsamuel
+- *(ui)* Disabled button, improv secret input, http label (#2597) by @bodinsamuel
+- *(ui)* SWR types  (#2600) by @bodinsamuel
+- Revert expireAt for podium (#2603) by @hassan254-prog
+- *(api)* Upsert connection metadata/config (#2602) by @bodinsamuel
+- *(env)* Clarify auth flag by @bodinsamuel
+- *(ui)* Missing Inter font (#2606) by @bodinsamuel
+- *(anrok)* Handle errors correctly, fix types (#2605) by @bodinsamuel
+- *(webhook)* Allow handler to save records (#2604) by @bodinsamuel
+
 ## [v0.42.2] - 2024-07-26
 
 ### Added
@@ -940,7 +1006,7 @@ All notable changes to this project will be documented in this file.
 - *(webapp)* Improve field values on refresh (#1782) by @hassan254-prog
 - *(db)* Add index for isSyncJobRunning (#1793) by @bodinsamuel
 - *(integrations)* Api support and integration template for zoho-mail (#1779) by @hassan254-prog
-- *(SecretInput)* Handle null optionalValue gracefully (#1781) by @hassan254-prog
+- *(SecretInput)* Handle null optionalvalue gracefully (#1781) by @hassan254-prog
 - *(webapp)* Improve input integration ID on edit (#1783) by @hassan254-prog
 
 ### Changed
@@ -1649,6 +1715,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.3]: https://github.com/NangoHQ/nango/compare/v0.42.2..v0.42.3
 [v0.42.2]: https://github.com/NangoHQ/nango/compare/v0.42.0..v0.42.2
 [v0.42.0]: https://github.com/NangoHQ/nango/compare/v0.41.1..v0.42.0
 [v0.41.1]: https://github.com/NangoHQ/nango/compare/v0.41.0..v0.41.1
