@@ -10,7 +10,7 @@ export interface AnrokJuris {
     taxes: AnrokTax[];
     notTaxedReason: {
         type: string | null;
-        reason: {
+        reason?: {
             type: string;
         };
     };
