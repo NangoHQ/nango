@@ -464,6 +464,7 @@
                 "integrations/all/ring-central",
                 "integrations/all/sage",
                 "integrations/all/salesforce",
+                "integrations/all/salesforce-experience-cloud",
                 "integrations/all/salesloft",
                 "integrations/all/segment",
                 "integrations/all/sendgrid",
