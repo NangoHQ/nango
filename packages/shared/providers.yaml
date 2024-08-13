@@ -3082,6 +3082,7 @@ unanet:
 unauthenticated:
     auth_mode: NONE
     docs: https://docs.nango.dev/integrations/overview
+    webhook_routing_script: unauthenticatedWebhookRouting
 vimeo:
     categories:
         - video

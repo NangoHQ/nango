@@ -101,6 +101,8 @@ export const internalNango: InternalNango = {
 
         const type = get(body, webhookType);
 
+        const orchestrator = getOrchestrator();
+
         for (const syncConfig of syncConfigsWithWebhooks) {
             const { webhook_subscriptions } = syncConfig;
 
@@ -111,7 +113,7 @@ export const internalNango: InternalNango = {
             for (const webhook of webhook_subscriptions) {
                 if (type === webhook) {
                     for (const connection of connections) {
-                        await getOrchestrator().triggerWebhook({
+                        await orchestrator.triggerWebhook({
                             account,
                             environment,
                             integration,

@@ -7,4 +7,5 @@ export { default as salesforceWebhookRouting } from './salesforce-webhook-routin
 export { default as slackWebhookRouting } from './slack-webhook-routing.js';
 export { default as checkrWebhookRouting } from './checkr-webhook-routing.js';
 export { default as microsoftTeamsWebhookRouting } from './microsoft-teams-webhook-routing.js';
+export { default as unauthenticatedWebhookRouting } from './unauthenticated-webhook-routing.js';
 export * from './types.js';
