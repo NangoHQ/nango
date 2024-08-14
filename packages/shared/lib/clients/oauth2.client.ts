@@ -18,8 +18,8 @@ export function getSimpleOAuth2ClientConfig(
     connectionConfig: Record<string, string>
 ): Merge<ModuleOptions, { http: WreckHttpOptions }> {
     const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['OAUTH2'] as string);
-    const tokenUrl = new URL(interpolateString(templateTokenUrl.replace(/connectionConfig\./g, ''), encodeParameters(connectionConfig)));
-    const authorizeUrl = new URL(interpolateString(template.authorization_url!.replace(/connectionConfig\./g, ''), encodeParameters(connectionConfig)));
+    const tokenUrl = makeUrl(templateTokenUrl, connectionConfig);
+    const authorizeUrl = makeUrl(template.authorization_url!, connectionConfig);
 
     const headers = { 'User-Agent': 'Nango' };
 
@@ -155,4 +155,11 @@ export async function getFreshOAuth2Credentials(
         });
         return { success: false, error, response: null };
     }
+}
+
+function makeUrl(template: string, config: Record<string, any>): URL {
+    const cleanTemplate = template.replace(/connectionConfig\./g, '');
+    const encodedParams = encodeParameters(config);
+    const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
+    return new URL(interpolatedUrl);
 }
