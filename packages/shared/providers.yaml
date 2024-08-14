@@ -451,6 +451,13 @@ certn-partner:
             method: GET
             endpoint: /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
+chargebee:
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.chargebee.com
+    docs: https://apidocs.chargebee.com/docs/api
 checkr-partner:
     categories:
         - legal
