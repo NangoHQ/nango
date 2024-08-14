@@ -1,7 +1,6 @@
 import os from 'os';
 import fs from 'fs';
 import type { NangoProps } from '@nangohq/shared';
-import * as superjson from 'superjson';
 import { httpFetch, logger } from './utils.js';
 
 const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
@@ -98,7 +97,7 @@ export class RunnerMonitor {
                     await httpFetch({
                         method: 'post',
                         url: `${this.jobsServiceUrl}/idle`,
-                        data: superjson.stringify({
+                        data: JSON.stringify({
                             runnerId: this.runnerId,
                             idleTimeMs
                         })
