@@ -45,7 +45,7 @@ Nango's pre-built Google drive integration only syncs whitelisted files & folder
         if (nangoAuth.connectionId) {
             filesIds = await openGooglePicker();
             if(filesIds.length === 0) {
-            return;
+                return;
             }
         }
         } catch (error) {
@@ -55,29 +55,29 @@ Nango's pre-built Google drive integration only syncs whitelisted files & folder
 
     const openGooglePicker = async (): Promise<string[]> => {
         return new Promise<string[]>((resolve, reject) => {
-        openPicker({
-            appId: <GOOGLE_APP_ID>, // essential for keeping same file id between nango and your app
-            clientId: <GOOGLE_CLIENT_ID>,
-            developerKey: <GOOGLE_PICKER_API_KEY>,
-            viewId: 'DOCS',
-            showUploadView: true,
-            showUploadFolders: true,
-            supportDrives: true,
-            multiselect: true,
-            setIncludeFolders: true,
-            setSelectFolderEnabled: true,
-            callbackFunction: (data) => {
-            if (data.action === 'cancel') {
-                handleCancel();
-                resolve([]);
-                return;
-            }
-            else if (data.action == 'picked') {
-                const fileIds = data.docs.map((doc) => doc.id);
-                resolve(fileIds);
-            }
-            }
-        });
+            openPicker({
+                appId: <GOOGLE_APP_ID>, // essential for keeping same file id between nango and your app
+                clientId: <GOOGLE_CLIENT_ID>,
+                developerKey: <GOOGLE_PICKER_API_KEY>,
+                viewId: 'DOCS',
+                showUploadView: true,
+                showUploadFolders: true,
+                supportDrives: true,
+                multiselect: true,
+                setIncludeFolders: true,
+                setSelectFolderEnabled: true,
+                callbackFunction: (data) => {
+                    if (data.action === 'cancel') {
+                        handleCancel();
+                        resolve([]);
+                        return;
+                    }
+                    else if (data.action == 'picked') {
+                        const fileIds = data.docs.map((doc) => doc.id);
+                        resolve(fileIds);
+                    }
+                }
+            });
         });
     };
   ```
