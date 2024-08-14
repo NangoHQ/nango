@@ -239,3 +239,7 @@ export function getConnectionConfig(queryParams: any): Record<string, string> {
     const arr = Object.entries(queryParams).filter(([, v]) => typeof v === 'string'); // Filter strings
     return Object.fromEntries(arr) as Record<string, string>;
 }
+
+export function encodeParameters(params: Record<string, any>): Record<string, string> {
+    return Object.fromEntries(Object.entries(params).map(([key, value]) => [key, encodeURIComponent(String(value))]));
+}
