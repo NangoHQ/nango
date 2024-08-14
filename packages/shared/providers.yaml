@@ -457,7 +457,7 @@ chargebee:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.chargebee.com
-    docs: https://apidocs.chargebee.com/docs/api
+    docs: https://docs.nango.dev/integrations/all/chargebee
 checkr-partner:
     categories:
         - legal
