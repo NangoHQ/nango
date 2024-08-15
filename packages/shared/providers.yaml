@@ -456,7 +456,12 @@ chargebee:
         - payment
     auth_mode: BASIC
     proxy:
+        headers:
+            Authorization: Basic ${username}
         base_url: https://${connectionConfig.subdomain}.chargebee.com
+        verification:
+            method: GET
+            endpoint: /api/v2/customers
     docs: https://docs.nango.dev/integrations/all/chargebee
 checkr-partner:
     categories:
