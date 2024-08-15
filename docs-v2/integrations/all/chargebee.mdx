@@ -36,4 +36,8 @@ For more details see the [docs here](/integrate/guides/authorize-an-api#apis-req
 
 ## API gotchas
 
+- Rate limiting: APIs are rate limited in both test and live sites. Upon breacing the rate limit APIs respond with `429` [docs here](https://apidocs.chargebee.com/docs/api/error-handling?prod_cat_ver=2#api_rate_limits).
+    - Test sites: ~750 API calls per every 5 minutes
+    - Live sites: ~150 API calls per site per minute
+
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/chargebee.mdx)</Note>

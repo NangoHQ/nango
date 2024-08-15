@@ -462,6 +462,8 @@ chargebee:
         verification:
             method: GET
             endpoint: /api/v2/customers
+        retry:
+            after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/chargebee
 checkr-partner:
     categories:
