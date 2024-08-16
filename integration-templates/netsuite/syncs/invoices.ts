@@ -25,7 +25,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
             const mappedInvoice: NetsuiteInvoice = {
                 id: invoice.data.id,
                 customerId: invoice.data.entity?.id || '',
-                currency: invoice.data.currency?.id || '',
+                currency: invoice.data.currency?.refName || '',
                 description: invoice.data.memo || null,
                 createdAt: invoice.data.tranDate || '',
                 lines: [],
@@ -48,7 +48,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                 mappedInvoice.lines.push({
                     itemId: item.data.item?.id || '',
                     quantity: item.data.quantity ? Number(item.data.quantity) : 0,
-                    amountNet: item.data.amount ? Number(item.data.amount) : 0,
+                    amount: item.data.amount ? Number(item.data.amount) : 0,
                     ...(item.data.taxDetailsReference && { vatCode: item.data.taxDetailsReference }),
                     ...(item.data.item?.refName && { description: item.data.item?.refName })
                 });

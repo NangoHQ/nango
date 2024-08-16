@@ -48,7 +48,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                 mappedCreditNote.lines.push({
                     itemId: item.data.item?.id || '',
                     quantity: item.data.quantity ? Number(item.data.quantity) : 0,
-                    amountNet: item.data.amount ? Number(item.data.amount) : 0,
+                    amount: item.data.amount ? Number(item.data.amount) : 0,
                     ...(item.data.taxDetailsReference && { vatCode: item.data.taxDetailsReference }),
                     ...(item.data.item?.refName && { description: item.data.item?.refName })
                 });

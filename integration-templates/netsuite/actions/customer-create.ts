@@ -29,7 +29,7 @@ export default async function runAction(nango: NangoAction, input: NetsuiteCusto
         ...(Object.keys(address).length > 0 && { addressBook: { items: [address] } })
     };
     const res = await nango.post({
-        endpoint: 'customer',
+        endpoint: '/customer',
         data: body
     });
     const id = res.headers.location?.split('/').pop();

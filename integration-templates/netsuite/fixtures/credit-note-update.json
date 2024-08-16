@@ -1,0 +1,14 @@
+{
+    "id": "12345",
+    "description": "Updated credit note description",
+    "status": "CLOSED",
+    "lines": [
+        {
+            "itemId": "item3",
+            "quantity": 1,
+            "amount": 99.99,
+            "vatCode": "A",
+            "description": "product 3"
+        }
+    ]
+}

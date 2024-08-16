@@ -35,8 +35,8 @@ export interface NS_Item {
         id: string;
         refName: string;
     };
-    quantity?: string;
-    amount?: string;
+    quantity?: number;
+    amount?: number;
     taxDetailsReference?: string;
 }
 
@@ -44,18 +44,21 @@ export interface NS_Invoice {
     id: string;
     entity?: {
         id: string;
-        name: string;
+        name?: string;
     };
     currency?: {
-        id: string;
-        refName: string;
+        id?: string;
+        refName?: string;
     };
     memo?: string;
     tranDate?: string;
     total?: string;
     status?: {
         id: string;
-        refName: string;
+        refName?: string;
+    };
+    item: {
+        items: NS_Item[];
     };
 }
 
@@ -65,15 +68,18 @@ export interface NS_CreditNote {
         id: string;
     };
     currency?: {
-        id: string;
-        refName: string;
+        id?: string;
+        refName?: string;
     };
     memo?: string;
     tranDate?: string;
     total?: string;
     status?: {
         id: string;
-        refName: string;
+        refName?: string;
+    };
+    item: {
+        items: NS_Item[];
     };
 }
 
@@ -83,18 +89,18 @@ export interface NS_Payment {
     customer?: {
         id: string;
     };
-    payment?: string;
+    payment?: number;
     tranDate?: string;
     currency?: {
-        id: string;
-        refName: string;
+        id?: string;
+        refName?: string;
     };
     tranId?: string;
     status?: {
         id: string;
-        refName: string;
+        refName?: string;
     };
     apply?: {
-        links: { rel: string; href: string }[];
+        items: { doc: string }[];
     };
 }

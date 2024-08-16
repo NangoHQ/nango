@@ -137,7 +137,7 @@ models:
         phone: string | null
         __extends: NetsuiteAddress
 
-    NetsuiteCustomerCreateBase:
+    NetsuiteCustomerCreateInput:
         externalId: string
         name: string
         email?: string
@@ -149,15 +149,82 @@ models:
         country?: string
         state?: string
         phone?: string
-    NetsuiteCustomerCreateInput:
-        __extends: NetsuiteCustomerCreateBase
     NetsuiteCustomerCreateOutput:
         id: string
     NetsuiteCustomerUpdateInput:
-        __extends: NetsuiteCustomerCreateBase
+        __extends: NetsuiteCustomerCreateInput
         id: string
         name?: string
+        externalId?: string
     NetsuiteCustomerUpdateOutput:
+        success: boolean
+
+    # Credit Notes
+    NetsuiteCreditNote:
+        id: string
+        customerId: string
+        currency: string
+        description: string | null
+        createdAt: string
+        lines: NetsuiteInvoiceLine[]
+        total: number
+        status: string
+
+    NetsuiteCreditNoteLine:
+        itemId: string
+        quantity: number
+        amount: number
+        vatCode?: string
+        description?: string
+
+    NetsuiteCreditNoteCreateInput:
+        customerId: string
+        status: string
+        currency: string
+        description?: string
+        lines: NetsuiteCreditNoteLine[]
+    NetsuiteCreditNoteCreateOutput:
+        id: string
+    NetsuiteCreditNoteUpdateInput:
+        __extends: NetsuiteCreditNoteCreateInput
+        id: string
+    NetsuiteCreditNoteUpdateOutput:
+        success: boolean
+
+    # Invoices
+    NetsuiteInvoice:
+        id: string
+        customerId: string
+        currency: string
+        description: string | null
+        createdAt: string
+        lines: NetsuiteInvoiceLine[]
+        total: number
+        status: string
+
+    NetsuiteInvoiceLine:
+        itemId: string
+        quantity: number
+        amount: number
+        vatCode?: string
+        description?: string
+
+    NetsuiteInvoiceCreateInput:
+        customerId: string
+        currency: string
+        description?: string
+        status: string
+        lines: NetsuiteInvoiceLine[]
+    NetsuiteInvoiceCreateOutput:
+        id: string
+
+    NetsuiteInvoiceUpdateInput:
+        __extends: NetsuiteInvoiceCreateInput
+        id: string
+        customerId?: string
+        currency?: string
+        description?: string
+    NetsuiteInvoiceUpdateOutput:
         success: boolean
 
     # Payments
@@ -176,86 +243,20 @@ models:
         customerId: string
         amount: number
         currency: string
-        paymentMethod: string
-        paymentReference?: string
+        paymentReference: string
+        applyTo: string[]
+        status: string
         description?: string
     NetsuitePaymentCreateOutput:
         id: string
     NetsuitePaymentUpdateInput:
+        __extends: NetsuitePaymentCreateInput
         id: string
         amount?: number
         currency?: string
-        paymentMethod?: string
+        description?: string
         paymentReference?: string
-        description?: string
+        status?: string
+        applyTo?: string[]
     NetsuitePaymentUpdateOutput:
-        success: boolean
-
-    # Invoices
-    NetsuiteInvoice:
-        id: string
-        customerId: string
-        currency: string
-        description: string | null
-        createdAt: string
-        lines: NetsuiteInvoiceLine[]
-        total: number
-        status: string
-
-    NetsuiteInvoiceLine:
-        itemId: string
-        quantity: number
-        amountNet: number
-        vatCode?: string
-        description?: string
-
-    NetsuiteInvoiceCreateInput:
-        customerId: string
-        currency?: string
-        description?: string
-        createdAt?: date
-        lines: NetsuiteInvoiceLine[]
-    NetsuiteInvoiceCreateOutput:
-        id: string
-
-    NetsuiteInvoiceUpdateInput:
-        id: string
-        deliverTo?: string
-        currency?: string
-        description?: string
-        createdAt?: date
-    NetsuiteInvoiceUpdateOutput:
-        success: boolean
-
-    # Credit Notes
-    NetsuiteCreditNote:
-        id: string
-        customerId: string
-        currency: string
-        description: string | null
-        createdAt: string
-        lines: NetsuiteInvoiceLine[]
-        total: number
-        status: string
-
-    NetsuiteCreditNoteLine:
-        itemId: string
-        quantity: number
-        amountNet: number
-        vatCode?: string
-        description?: string
-
-    NetsuiteCreditNoteCreateInput:
-        customerId: string
-        currency?: string
-        description?: string
-        createdAt?: string
-        lines: NetsuiteCreditNoteLine[]
-    NetsuiteCreditNoteCreateOutput:
-        id: string
-    NetsuiteCreditNoteUpdateInput:
-        id: string
-        description?: string
-        createdAt?: string
-    NetsuiteCreditNoteUpdateOutput:
         success: boolean
