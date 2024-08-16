@@ -2751,6 +2751,250 @@ integrations:
                 organizationPath: string | null | undefined
                 isAdmin: boolean | null
                 department: string | null
+    netsuite:
+        syncs:
+            customers:
+                version: 1.0.0
+                description: |
+                    Fetches all customers in Netsuite
+                runs: every hour
+                output: NetsuiteCustomer
+                sync_type: full
+                auto_start: true
+                endpoint: GET /customers
+                track_deletes: true
+            payments:
+                version: 1.0.0
+                description: |
+                    Fetches all payments in Netsuite
+                runs: every hour
+                output: NetsuitePayment
+                sync_type: full
+                auto_start: true
+                endpoint: GET /payments
+                track_deletes: true
+            invoices:
+                version: 1.0.0
+                description: |
+                    Fetches all invoices in Netsuite
+                runs: every hour
+                output: NetsuiteInvoice
+                sync_type: full
+                auto_start: true
+                endpoint: GET /invoices
+                track_deletes: true
+            credit-notes:
+                version: 1.0.0
+                description: |
+                    Fetches all credit notes in Netsuite
+                runs: every hour
+                output: NetsuiteCreditNote
+                sync_type: full
+                auto_start: true
+                endpoint: GET /creditnotes
+                track_deletes: true
+        actions:
+            customer-create:
+                version: 1.0.0
+                description: |
+                    Creates a customer in Netsuite
+                input: NetsuiteCustomerCreateInput
+                output: NetsuiteCustomerCreateOutput
+                endpoint: POST /customers
+            customer-update:
+                version: 1.0.0
+                description: Updates a customer in Netsuite
+                input: NetsuiteCustomerUpdateInput
+                output: NetsuiteCustomerUpdateOutput
+                endpoint: PUT /customers
+            invoice-create:
+                version: 1.0.0
+                description: |
+                    Creates an invoice in Netsuite
+                input: NetsuiteInvoiceCreateInput
+                output: NetsuiteInvoiceCreateOutput
+                endpoint: POST /invoices
+            invoice-update:
+                version: 1.0.0
+                description: |
+                    Updates an invoice in Netsuite
+                input: NetsuiteInvoiceUpdateInput
+                output: NetsuiteInvoiceUpdateOutput
+                endpoint: PUT /invoices
+            payment-create:
+                version: 1.0.0
+                description: |
+                    Creates a payment in Netsuite
+                input: NetsuitePaymentCreateInput
+                output: NetsuitePaymentCreateOutput
+                endpoint: POST /payment
+            payment-update:
+                version: 1.0.0
+                description: Updates a payment in Netsuite
+                input: NetsuitePaymentUpdateInput
+                output: NetsuitePaymentUpdateOutput
+                endpoint: PUT /payment
+            credit-note-create:
+                version: 1.0.0
+                description: |
+                    Creates a credit note in Netsuite
+                input: NetsuiteCreditNoteCreateInput
+                output: NetsuiteCreditNoteCreateOutput
+                endpoint: POST /creditnote
+            credit-note-update:
+                version: 1.0.0
+                description: Updates a credit note in Netsuite
+                input: NetsuiteCreditNoteUpdateInput
+                output: NetsuiteCreditNoteUpdateOutput
+                endpoint: PUT /creditnote
+        models:
+            NetsuiteAddress:
+                addressLine1: string | null
+                addressLine2: string | null
+                city: string | null
+                zip: string | null
+                country: string | null
+                state: string | null
+            NetsuiteCustomer:
+                addressLine1: string | null
+                addressLine2: string | null
+                city: string | null
+                zip: string | null
+                country: string | null
+                state: string | null
+                id: string
+                externalId: string | null
+                name: string
+                email: string | null
+                taxNumber: string | null
+                phone: string | null
+            NetsuiteCustomerCreateBase:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+            NetsuiteCustomerCreateInput:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+            NetsuiteCustomerCreateOutput:
+                id: string
+            NetsuiteCustomerUpdateInput:
+                name: string
+                email?: string | null
+                taxNumber?: string | null
+                addressLine1?: string | null
+                addressLine2?: string | null
+                city?: string | null
+                zip?: string | null
+                country?: string | null
+                state?: string | null
+                phone?: string | null
+                id: string
+                name?: string | null
+            NetsuiteCustomerUpdateOutput:
+                success: boolean
+            NetsuitePayment:
+                id: string
+                description?: string
+                customerId: string | null
+                amount: number | null
+                createdAt: string | null
+                currency: string | null
+                paymentReference: string | null
+                status: string | null
+                applyTo: string[]
+            NetsuitePaymentCreateInput:
+                customerId: string
+                amount: number
+                currency: string
+                paymentMethod: string
+                paymentReference?: string
+                description?: string
+            NetsuitePaymentCreateOutput:
+                id: string
+            NetsuitePaymentUpdateInput:
+                id: string
+                amount?: number
+                currency?: string
+                paymentMethod?: string
+                paymentReference?: string
+                description?: string
+            NetsuitePaymentUpdateOutput:
+                success: boolean
+            NetsuiteInvoice:
+                id: string
+                customerId: string
+                currency: string
+                description: string | null
+                createdAt: string
+                lines: NetsuiteInvoiceLine[]
+                total: number
+                status: string
+            NetsuiteInvoiceLine:
+                itemId: string
+                quantity: number
+                amountNet: number
+                vatCode?: string
+                description?: string
+            NetsuiteInvoiceCreateInput:
+                customerId: string
+                currency?: string
+                description?: string
+                createdAt?: date
+                lines: NetsuiteInvoiceLine[]
+            NetsuiteInvoiceCreateOutput:
+                id: string
+            NetsuiteInvoiceUpdateInput:
+                id: string
+                deliverTo?: string
+                currency?: string
+                description?: string
+                createdAt?: date
+            NetsuiteInvoiceUpdateOutput:
+                success: boolean
+            NetsuiteCreditNote:
+                id: string
+                customerId: string
+                currency: string
+                description: string | null
+                createdAt: string
+                lines: NetsuiteInvoiceLine[]
+                total: number
+                status: string
+            NetsuiteCreditNoteLine:
+                itemId: string
+                quantity: number
+                amountNet: number
+                vatCode?: string
+                description?: string
+            NetsuiteCreditNoteCreateInput:
+                customerId: string
+                currency?: string
+                description?: string
+                createdAt?: string
+                lines: NetsuiteCreditNoteLine[]
+            NetsuiteCreditNoteCreateOutput:
+                id: string
+            NetsuiteCreditNoteUpdateInput:
+                id: string
+                description?: string
+                createdAt?: string
+            NetsuiteCreditNoteUpdateOutput:
+                success: boolean
     next-cloud-ocs:
         syncs:
             users:
