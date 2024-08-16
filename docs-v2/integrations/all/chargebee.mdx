@@ -36,7 +36,8 @@ For more details see the [docs here](/integrate/guides/authorize-an-api#apis-req
 
 ## API gotchas
 
-- Rate limiting: APIs are rate limited in both test and live sites. Upon breacing the rate limit APIs respond with `429` [docs here](https://apidocs.chargebee.com/docs/api/error-handling?prod_cat_ver=2#api_rate_limits).
+- Chargebee uses `Basic` auth to access different endpoints. Provide your `API key` as the Username value and leave the password field empty.
+- Rate limiting: APIs are rate limited in both test and live sites. Upon breaching the rate limit APIs respond with `429` [docs here](https://apidocs.chargebee.com/docs/api/error-handling?prod_cat_ver=2#api_rate_limits).
     - Test sites: ~750 API calls per every 5 minutes
     - Live sites: ~150 API calls per site per minute
 
