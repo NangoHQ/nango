@@ -1742,6 +1742,18 @@ medallia:
             after: 'X-RateLimit-Reset'
         base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://docs.nango.dev/integrations/all/medallia
+metabase:
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /api/database
+    docs: https://docs.nango.dev/integrations/all/metabase
 microsoft:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
