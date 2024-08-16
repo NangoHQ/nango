@@ -15,7 +15,7 @@ export interface NS_Address {
     addr2?: string;
     city?: string;
     zip?: string;
-    country?: { id: string; refName: string };
+    country?: { id: string };
     state?: { id: string };
 }
 export interface NS_Customer {
@@ -25,8 +25,8 @@ export interface NS_Customer {
     email?: string;
     defaultTaxReg?: string;
     phone?: string;
-    addressBook?: {
-        addressbookAddress?: NS_Address[];
+    addressBook: {
+        items: NS_Address[];
     };
 }
 

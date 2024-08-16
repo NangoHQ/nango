@@ -138,16 +138,17 @@ models:
         __extends: NetsuiteAddress
 
     NetsuiteCustomerCreateBase:
+        externalId: string
         name: string
-        email?: string | null
-        taxNumber?: string | null
-        addressLine1?: string | null
-        addressLine2?: string | null
-        city?: string | null
-        zip?: string | null
-        country?: string | null
-        state?: string | null
-        phone?: string | null
+        email?: string
+        taxNumber?: string
+        addressLine1?: string
+        addressLine2?: string
+        city?: string
+        zip?: string
+        country?: string
+        state?: string
+        phone?: string
     NetsuiteCustomerCreateInput:
         __extends: NetsuiteCustomerCreateBase
     NetsuiteCustomerCreateOutput:
@@ -155,7 +156,7 @@ models:
     NetsuiteCustomerUpdateInput:
         __extends: NetsuiteCustomerCreateBase
         id: string
-        name?: string | null
+        name?: string
     NetsuiteCustomerUpdateOutput:
         success: boolean
 

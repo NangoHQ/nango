@@ -2869,42 +2869,45 @@ integrations:
                 taxNumber: string | null
                 phone: string | null
             NetsuiteCustomerCreateBase:
+                externalId: string
                 name: string
-                email?: string | null
-                taxNumber?: string | null
-                addressLine1?: string | null
-                addressLine2?: string | null
-                city?: string | null
-                zip?: string | null
-                country?: string | null
-                state?: string | null
-                phone?: string | null
+                email?: string
+                taxNumber?: string
+                addressLine1?: string
+                addressLine2?: string
+                city?: string
+                zip?: string
+                country?: string
+                state?: string
+                phone?: string
             NetsuiteCustomerCreateInput:
+                externalId: string
                 name: string
-                email?: string | null
-                taxNumber?: string | null
-                addressLine1?: string | null
-                addressLine2?: string | null
-                city?: string | null
-                zip?: string | null
-                country?: string | null
-                state?: string | null
-                phone?: string | null
+                email?: string
+                taxNumber?: string
+                addressLine1?: string
+                addressLine2?: string
+                city?: string
+                zip?: string
+                country?: string
+                state?: string
+                phone?: string
             NetsuiteCustomerCreateOutput:
                 id: string
             NetsuiteCustomerUpdateInput:
+                externalId: string
                 name: string
-                email?: string | null
-                taxNumber?: string | null
-                addressLine1?: string | null
-                addressLine2?: string | null
-                city?: string | null
-                zip?: string | null
-                country?: string | null
-                state?: string | null
-                phone?: string | null
+                email?: string
+                taxNumber?: string
+                addressLine1?: string
+                addressLine2?: string
+                city?: string
+                zip?: string
+                country?: string
+                state?: string
+                phone?: string
                 id: string
-                name?: string | null
+                name?: string
             NetsuiteCustomerUpdateOutput:
                 success: boolean
             NetsuitePayment:
