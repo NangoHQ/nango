@@ -52,7 +52,7 @@ jobs:
               run: |
                   export SENTRY_KEY=${{ secrets[inputs.key_for_sentry_secret] }}
                   export POSTHOG_KEY=${{ secrets[inputs.key_for_posthog_secret] }}
-                  ./scripts/build_docker.sh build ${{ inputs.name }} ${{ env.SHA }}
+                  docker buildx build --platform linux/amd64,linux/arm64 -t nangohq/nango:${{ inputs.name }}-${{ env.SHA }} --push .
 
             - name: Push image
               if: env.CAN_PUSH == 'true'

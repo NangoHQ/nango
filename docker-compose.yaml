@@ -17,7 +17,8 @@ services:
     nango-server:
         image: nangohq/nango-server:hosted
         container_name: nango-server
-        platform: linux/amd64
+        # Specifying this will break arm support, its optional anyways
+        # platform: linux/amd64  
         environment:
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/database/lib/migrations
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}

@@ -39,4 +39,7 @@ jobs:
 
                   npm ci
                   npm run ${{ inputs.run-cmd }}
-                  docker buildx build -f packages/${{ inputs.package }}/Dockerfile --platform linux/amd64 ${{ inputs.tags }} . --no-cache ${{ env.PUSH }}
+                  docker buildx build -f packages/${{ inputs.package }}/Dockerfile \
+                      --platform linux/amd64,linux/arm64 \
+                      --tag ${{ inputs.tags }} \
+                      . --no-cache ${{ env.PUSH }}
