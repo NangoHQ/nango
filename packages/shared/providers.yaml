@@ -499,6 +499,34 @@ checkr-partner-staging:
     webhook_routing_script: checkrWebhookRouting
     post_connection_script: checkrPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr
+checkout-com:
+    categories:
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://access.checkout.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            Content-Type: application/json
+            Accept: application/json
+        base_url: https://api.checkout.com
+    docs: https://docs.nango.dev/integrations/all/checkout-com
+checkout-com-sandbox:
+    categories:
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://access.sandbox.checkout.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            Content-Type: application/json
+            Accept: application/json
+        base_url: https://api.sandbox.checkout.com
+    docs: https://docs.nango.dev/integrations/all/checkout-com
 chorus:
     auth_mode: BASIC
     proxy:
