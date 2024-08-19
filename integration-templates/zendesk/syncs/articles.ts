@@ -46,7 +46,7 @@ async function paginate(
 
     await nango.log(`Fetching Zendesk Tickets - with pageCounter = ${contentPage ? contentPage.pageNumber : 0} & pageSize = ${pageSize}`);
 
-    const res = await nango.get({
+    const res = await nango.proxy({
         baseUrlOverride: `https://${subdomain}.zendesk.com`,
         endpoint: contentPage ? contentPage.nextPageEndpoint : endpoint,
         method: method,
