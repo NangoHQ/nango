@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
 import OAuth from 'oauth-1.0a';
 import * as crypto from 'node:crypto';
@@ -371,9 +372,9 @@ class ProxyService {
 
             const handling = this.handleResponse(config, options.url!);
             return { response, logs: [...logs, ...handling.logs] };
-        } catch (e: unknown) {
-            const handling = this.handleErrorResponse(e as AxiosError, options.url!, config);
-            return { response: handling.response, logs: [...logs, ...handling.logs] };
+        } catch (err) {
+            const handling = this.handleErrorResponse(err, options.url!, config);
+            return { response: err as any, logs: [...logs, ...handling.logs] };
         }
     }
 
@@ -553,64 +554,39 @@ class ProxyService {
         };
     }
 
-    private reportError(error: AxiosError, config: ApplicationConstructedProxyConfiguration, errorMessage: string): LogsBuffer[] {
-        const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
-        return [
-            {
-                level: 'error',
-                createdAt: new Date().toISOString(),
-                message: `The provider responded back with an error "${error.response?.status}"`,
-                meta: {
-                    errorMessage,
-                    requestHeaders: safeHeaders,
-                    responseHeaders: error.response?.headers
-                }
-            }
-        ];
-    }
-
-    private handleErrorResponse(error: AxiosError, url: string, config: ApplicationConstructedProxyConfiguration): RouteResponse & Logs {
+    private handleErrorResponse(error: unknown, url: string, config: ApplicationConstructedProxyConfiguration): Logs {
         const logs: LogsBuffer[] = [];
-        if (!error.response?.data) {
-            const {
-                message,
-                stack,
-                config: { method },
-                code,
-                status
-            } = error.toJSON() as any;
 
-            const errorObject = { message, stack, code, status, url, method };
-
+        if (isAxiosError(error)) {
+            const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
             logs.push({
                 level: 'error',
                 createdAt: new Date().toISOString(),
-                message: `${method.toUpperCase()} request to ${url} failed`,
-                error: errorObject as any
+                message: `${config.method.toUpperCase()} request to ${url} failed`,
+                error: {
+                    name: error.name,
+                    message: error.message,
+                    payload: {
+                        method: config.method,
+                        stack: error.stack,
+                        code: error.code,
+                        status: error.status,
+                        url,
+                        data: error.response?.data,
+                        safeHeaders
+                    }
+                }
             });
-
-            logs.push(...this.reportError(error, config, message));
         } else {
-            const {
-                message,
-                config: { method }
-            } = error.toJSON() as any;
-            const errorData = error.response.data;
-
             logs.push({
                 level: 'error',
                 createdAt: new Date().toISOString(),
-                message: `${method.toUpperCase()} request to ${url} failed`,
-                error: (errorData as any).error || (errorData as any)
+                message: `${config.method.toUpperCase()} request to ${url} failed`,
+                error: error as any
             });
-
-            logs.push(...this.reportError(error, config, message));
         }
 
-        return {
-            response: error,
-            logs
-        };
+        return { logs };
     }
 }
 
