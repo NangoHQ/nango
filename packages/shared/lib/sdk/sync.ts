@@ -457,6 +457,7 @@ export class NangoAction {
             throw new Error('Missing provider config key');
         }
         return {
+            method: 'GET',
             ...config,
             providerConfigKey: config.providerConfigKey,
             connectionId: config.connectionId,
@@ -476,7 +477,7 @@ export class NangoAction {
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         this.exitSyncIfAborted();
         if (!config.method) {
-            throw new Error(`Missing "method" in the proxy() call to ${config.endpoint}`);
+            config.method = 'GET';
         }
 
         if (this.dryRun) {

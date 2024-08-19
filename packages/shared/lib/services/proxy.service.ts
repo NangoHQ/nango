@@ -558,7 +558,6 @@ class ProxyService {
         const logs: LogsBuffer[] = [];
 
         if (isAxiosError(error)) {
-            console.log('yo');
             const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
             logs.push({
                 level: 'error',
@@ -579,8 +578,6 @@ class ProxyService {
                 }
             });
         } else {
-            console.log('ya');
-            console.log('coucou', error);
             logs.push({
                 level: 'error',
                 createdAt: new Date().toISOString(),
