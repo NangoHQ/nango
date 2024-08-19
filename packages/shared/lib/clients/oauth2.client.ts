@@ -5,7 +5,7 @@ import { AuthorizationCode } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import { LogActionEnum } from '../models/Telemetry.js';
-import { interpolateString } from '../utils/utils.js';
+import { interpolateString, encodeParameters } from '../utils/utils.js';
 import Boom from '@hapi/boom';
 import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
@@ -18,10 +18,9 @@ export function getSimpleOAuth2ClientConfig(
     connectionConfig: Record<string, string>
 ): Merge<ModuleOptions, { http: WreckHttpOptions }> {
     const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['OAUTH2'] as string);
-    const strippedTokenUrl = templateTokenUrl.replace(/connectionConfig\./g, '');
-    const tokenUrl = new URL(interpolateString(strippedTokenUrl, connectionConfig));
-    const strippedAuthorizeUrl = template.authorization_url!.replace(/connectionConfig\./g, '');
-    const authorizeUrl = new URL(interpolateString(strippedAuthorizeUrl, connectionConfig));
+    const tokenUrl = makeUrl(templateTokenUrl, connectionConfig);
+    const authorizeUrl = makeUrl(template.authorization_url!, connectionConfig);
+
     const headers = { 'User-Agent': 'Nango' };
 
     const authConfig = template as ProviderTemplateOAuth2;
@@ -156,4 +155,11 @@ export async function getFreshOAuth2Credentials(
         });
         return { success: false, error, response: null };
     }
+}
+
+function makeUrl(template: string, config: Record<string, any>): URL {
+    const cleanTemplate = template.replace(/connectionConfig\./g, '');
+    const encodedParams = encodeParameters(config);
+    const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
+    return new URL(interpolatedUrl);
 }

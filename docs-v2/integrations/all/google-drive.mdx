@@ -24,7 +24,92 @@ API configuration: [`google-drive`](https://nango.dev/providers.yaml)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+## Pre-built Google Drive integration
+Nango's pre-built Google drive integration only syncs whitelisted files & folders. You can use the [Google Drive Picker](https://developers.google.com/drive/picker/guides/overview) to let the customer pick files & folders to sync.
+
+<Steps>
+  <Step title="Auth & Show Google Drive Picker">
+    Scope to set in Nango: `https://www.googleapis.com/auth/drive.readonly`
+
+    In your frontend, run the OAuth flow with `nango.auth` and show the Google drive picker to your user.
+
+    Example code:
+    ```js
+    const ingest = async () => {
+        let filesIds: string[] = [];      
+        
+        const cid = generateCid(); // generate a unique id for the connection
+
+        try {
+        const nangoAuth = await nango.auth('google-drive', cid);
+        if (nangoAuth.connectionId) {
+            filesIds = await openGooglePicker();
+            if(filesIds.length === 0) {
+                return;
+            }
+        }
+        } catch (error) {
+            // deal with error
+        }
+    }
+
+    const openGooglePicker = async (): Promise<string[]> => {
+        return new Promise<string[]>((resolve, reject) => {
+            openPicker({
+                appId: <GOOGLE_APP_ID>, // essential for keeping same file id between nango and your app
+                clientId: <GOOGLE_CLIENT_ID>,
+                developerKey: <GOOGLE_PICKER_API_KEY>,
+                viewId: 'DOCS',
+                showUploadView: true,
+                showUploadFolders: true,
+                supportDrives: true,
+                multiselect: true,
+                setIncludeFolders: true,
+                setSelectFolderEnabled: true,
+                callbackFunction: (data) => {
+                    if (data.action === 'cancel') {
+                        handleCancel();
+                        resolve([]);
+                        return;
+                    }
+                    else if (data.action == 'picked') {
+                        const fileIds = data.docs.map((doc) => doc.id);
+                        resolve(fileIds);
+                    }
+                }
+            });
+        });
+    };
+  ```
+  Placeholders:
+  - `<GOOGLE_APP_ID>` is your App id. [How to find your app id](https://stackoverflow.com/a/40638063)
+  - `<GOOGLE_CLIENT_ID>` is the client id of your Google OAuth app
+  - `<GOOGLE_PICKER_API_KEY>` is the api key for your [Google Picker API](https://developers.google.com/drive/picker/guides/overview)
+  </Step>
+  <Step title="Push file & folder IDs to Nango">
+    Pass the user selected file & folder IDs to your backend.
+
+    From there, call the [Nango SDK](https://docs.nango.dev/reference/sdks/node#edit-connection-metadata) or [REST API](https://docs.nango.dev/reference/api/connection/update-metadata) to store the id's on the user's connection (SDK example):
+    ```ts
+    await nango.updateMetadata(
+        'google-drive',
+        'CONNECTION-ID',
+        {
+             'folders': ['<folder-id>, ...],
+            'files': ['<file-id>', ...] 
+        }
+    );
+    ```
+  </Step>
+  <Step title="Re-trigger the sync">
+    Re-trigger the sync in the dashboard, or with the API or node SDK. File metadata should get synced.
+  </Step>
+</Steps>
+
 ## API gotchas
+
+- Almost all Google drive scopes are ["restricted scopes"](https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification) by Google. This means your app needs to pass a security review with Google, before you can go live with users.
+    - The only exception is the `drive.file` scope. It lets your app access files & folders the user has previously authorized with the Google Drive Picker API.
 
 <Note>
     Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-drive.mdx)
