@@ -420,6 +420,7 @@
                 "integrations/all/marketo",
                 "integrations/all/mailgun",
                 "integrations/all/medallia",
+                "integrations/all/metabase",
                 "integrations/all/microsoft",
                 "integrations/all/microsoft-ads",
                 "integrations/all/microsoft-entra-id",
