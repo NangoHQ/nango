@@ -1420,6 +1420,9 @@ holded:
         base_url: https://api.holded.com/api
         headers:
             key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /invoicing/v1/contacts
     docs: https://docs.nango.dev/integrations/all/holded
 hubspot:
     categories:
