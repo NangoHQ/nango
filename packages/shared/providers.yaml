@@ -271,6 +271,23 @@ battlenet:
     token_params:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/battlenet
+bigcommerce:
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://login.bigcommerce.com/oauth2/authorize
+    token_url: https://login.bigcommerce.com/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        context: stores/${connectionConfig.storeHash}
+        account_uuid: ${connectionConfig.accountUuid}
+    token_params:
+        context: stores/${connectionConfig.storeHash}
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.bigcommerce.com/stores/${connectionConfig.storeHash}
+    docs: https://docs.nango.dev/integrations/all/bigcommerce
 bitbucket:
     categories:
         - dev-tools
