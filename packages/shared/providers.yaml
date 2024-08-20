@@ -1410,6 +1410,20 @@ highlevel-white-label:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/highlevel
+holded:
+    categories:
+        - accounting
+        - crm
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.holded.com/api
+        headers:
+            key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /invoicing/v1/contacts
+    docs: https://docs.nango.dev/integrations/all/holded
 hubspot:
     categories:
         - marketing
