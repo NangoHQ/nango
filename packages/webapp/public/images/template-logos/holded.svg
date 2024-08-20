@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="580"
+   height="580"
+   viewBox="0 0 580 580"
+   fill="none"
+   version="1.1"
+   id="svg5"
+   sodipodi:docname="logo_holded.svg"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview5"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.57328016"
+     inkscape:cx="1288.2009"
+     inkscape:cy="343.63652"
+     inkscape:window-width="2194"
+     inkscape:window-height="1168"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg5" />
+  <g
+     clip-path="url(#clip0_3416_5555)"
+     id="g5"
+     transform="translate(6,44)">
+    <path
+       d="M 415.383,327.715 161.278,28.6439 c -3.28,-3.7354 -4.803,-7.7044 -4.803,-12.0235 0,-4.7861 1.757,-8.75497 5.272,-11.6733 3.397,-2.91834 8.083,-4.43587 14.058,-4.43587 h 237.118 c 10.31,0 18.628,3.73547 25.071,11.20637 L 562.996,154.716 c 3.281,4.319 5.038,9.922 5.272,16.926 0.235,7.004 -1.523,12.607 -5.272,16.926 L 441.157,325.263 c -3.163,3.852 -7.498,6.07 -12.887,6.887 -5.389,0.818 -9.606,-0.7 -12.887,-4.435 z"
+       fill="#fcfcfc"
+       id="path1"
+       style="fill:#fd454d;fill-opacity:1" />
+    <path
+       d="M 271.051,490.091 5.58163,183.782 C 1.83273,179.463 0.0754305,173.86 0.309736,166.973 0.661196,159.969 2.65281,154.366 6.40171,150.046 L 91.9236,50.3565 c 4.3346,-4.786 8.9034,-7.2374 13.7064,-7.2374 5.858,0 10.778,2.4514 14.527,7.2374 l 267.11,313.5455 c 3.163,3.735 4.803,7.704 4.803,11.673 0,4.086 -1.523,7.938 -4.803,11.674 l -90.326,102.842 c -3.28,4.319 -7.38,6.42 -12.535,6.42 -5.155,0 -9.606,-2.101 -13.355,-6.42 z"
+       fill="#fcfcfc"
+       id="path2"
+       style="fill:#fd454d;fill-opacity:1" />
+    <mask
+       id="mask0_3416_5555"
+       maskUnits="userSpaceOnUse"
+       x="723"
+       y="0"
+       width="2286"
+       height="507">
+      <path
+         d="M 3008.29,0.51123 H 723.289 V 506.511 H 3008.29 Z"
+         fill="#ffffff"
+         id="path3" />
+    </mask>
+  </g>
+  <defs
+     id="defs5">
+    <clipPath
+       id="clip0_3416_5555">
+      <rect
+         width="3008"
+         height="506"
+         fill="#ffffff"
+         transform="translate(0.289062,0.51123)"
+         id="rect5"
+         x="0"
+         y="0" />
+    </clipPath>
+  </defs>
+</svg>
