@@ -24,7 +24,7 @@ import {
     getGlobalWebhookReceiveUrl,
     getSyncConfigsAsStandardConfig
 } from '@nangohq/shared';
-import { getOrchestrator, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
+import { parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import type { RequestLocals } from '../utils/express.js';
 
 export interface Integration {
@@ -45,8 +45,6 @@ interface FlowConfigs {
     enabledFlows: NangoSyncConfig[];
     disabledFlows: NangoSyncConfig[];
 }
-
-const orchestrator = getOrchestrator();
 
 const separateFlows = (flows: NangoSyncConfig[]): FlowConfigs => {
     return flows.reduce(
@@ -673,24 +671,6 @@ class ConfigController {
                     provider: provider
                 }
             });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async deleteProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-            const providerConfigKey = req.params['providerConfigKey'] as string | null;
-
-            if (providerConfigKey == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            await configService.deleteProviderConfig(providerConfigKey, environmentId, orchestrator);
-
-            res.status(204).send();
         } catch (err) {
             next(err);
         }

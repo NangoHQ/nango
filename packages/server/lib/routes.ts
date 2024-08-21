@@ -74,6 +74,8 @@ import { postManagedSignup } from './controllers/v1/account/managed/postSignup.j
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getEnvJs } from './controllers/v1/getEnvJs.js';
 import { getListIntegrations } from './controllers/config/getListIntegrations.js';
+import { deleteIntegrationPublic } from './controllers/config/:providerConfigKey/deleteIntegration.js';
+import { deleteIntegration } from './controllers/v1/integrations/:providerConfigKey/deleteIntegration.js';
 
 export const router = express.Router();
 
@@ -149,7 +151,7 @@ publicAPI.route('/config').get(apiAuth, getListIntegrations);
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
-publicAPI.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteProviderConfig.bind(configController));
+publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deleteIntegrationPublic);
 publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 publicAPI.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 publicAPI.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
@@ -247,7 +249,7 @@ web.route('/api/v1/integration').put(webAuth, configController.editProviderConfi
 web.route('/api/v1/integration/name').put(webAuth, configController.editProviderConfigName.bind(connectionController));
 web.route('/api/v1/integration').post(webAuth, configController.createProviderConfig.bind(configController));
 web.route('/api/v1/integration/new').post(webAuth, configController.createEmptyProviderConfig.bind(configController));
-web.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfig.bind(connectionController));
+web.route('/api/v1/integration/:providerConfigKey').delete(webAuth, deleteIntegration);
 web.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 
 web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));

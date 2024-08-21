@@ -10,3 +10,19 @@ export type GetListIntegrations = Endpoint<{
         }[];
     };
 }>;
+
+export type DeleteIntegrationPublic = Endpoint<{
+    Method: 'DELETE';
+    Path: '/config/:providerConfigKey';
+    Params: { providerConfigKey: string };
+    Success: { success: true };
+}>;
+
+export type DeleteIntegration = Endpoint<{
+    Method: 'DELETE';
+    Path: '/api/v1/integration/:providerConfigKey';
+    Params: { providerConfigKey: string };
+    Success: {
+        data: { success: boolean };
+    };
+}>;

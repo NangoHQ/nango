@@ -56,7 +56,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
         setModalShowSpinner(true);
         const res = await deleteIntegrationAPI(integrationId);
 
-        if (res?.status === 204) {
+        if (res?.status === 200) {
             toast.success('Integration deleted!', { position: toast.POSITION.BOTTOM_CENTER });
             clearCache();
             navigate(`/${env}/integrations`, { replace: true });
