@@ -342,6 +342,7 @@
                 "integrations/all/clickup",
                 "integrations/all/close",
                 "integrations/all/cloudentity",
+                "integrations/all/codeclimate",
                 "integrations/all/coda",
                 "integrations/all/confluence",
                 "integrations/all/contentful",

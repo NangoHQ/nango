@@ -610,6 +610,20 @@ coda:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/coda
+codeclimate:
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        headers:
+            Accept: application/vnd.api+json
+            Authorization: Token token=${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/user
+    docs: https://docs.nango.dev/integrations/all/codeclimate
 confluence:
     categories:
         - knowledge-base
