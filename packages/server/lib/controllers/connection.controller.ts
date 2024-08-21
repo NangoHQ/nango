@@ -1,14 +1,15 @@
 import type { Request, Response, NextFunction } from 'express';
-import type {
-    Config as ProviderConfig,
-    OAuth2Credentials,
-    ImportedCredentials,
-    AuthCredentials,
-    ConnectionList,
-    ConnectionUpsertResponse
-} from '@nangohq/shared';
+import type { Config as ProviderConfig, OAuth2Credentials, AuthCredentials, ConnectionList, ConnectionUpsertResponse } from '@nangohq/shared';
 import db from '@nangohq/database';
-import type { TbaCredentials, Template as ProviderTemplate } from '@nangohq/types';
+import type {
+    TbaCredentials,
+    Template as ProviderTemplate,
+    ApiKeyCredentials,
+    BasicApiCredentials,
+    ConnectionConfig,
+    OAuth1Credentials,
+    OAuth2ClientCredentials
+} from '@nangohq/types';
 import { configService, connectionService, errorManager, analytics, AnalyticsTypes, NangoError, accountService, SlackService } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
@@ -291,8 +292,7 @@ class ConnectionController {
     async createConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { environment, account } = res.locals;
-
-            const { connection_id, provider_config_key } = req.body;
+            const { connection_id, provider_config_key, metadata, connection_config } = req.body;
 
             if (!connection_id) {
                 errorManager.errRes(res, 'missing_connection');
@@ -305,12 +305,9 @@ class ConnectionController {
             }
 
             const provider = await configService.getProviderName(provider_config_key);
-
             if (!provider) {
                 const error = new NangoError('unknown_provider_config', { providerConfigKey: provider_config_key, environmentName: environment.name });
-
                 errorManager.errResFromNangoErr(res, error);
-
                 return;
             }
 
@@ -328,13 +325,12 @@ class ConnectionController {
 
             const template = configService.getTemplate(provider);
 
-            let oAuthCredentials: ImportedCredentials;
-            let updatedConnection: ConnectionUpsertResponse = {} as ConnectionUpsertResponse;
+            let updatedConnection: ConnectionUpsertResponse | undefined;
 
             let runHook = false;
 
             if (template.auth_mode === 'OAUTH2') {
-                const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config, no_expiration: noExpiration } = req.body;
+                const { access_token, refresh_token, expires_at, expires_in, no_expiration: noExpiration } = req.body;
 
                 const { expires_at: parsedExpiresAt } = connectionService.parseRawCredentials(
                     { access_token, refresh_token, expires_at, expires_in },
@@ -356,16 +352,14 @@ class ConnectionController {
                     return;
                 }
 
-                oAuthCredentials = {
+                const oAuthCredentials: OAuth2Credentials = {
                     type: template.auth_mode,
                     access_token,
                     refresh_token,
                     expires_at: expires_at || parsedExpiresAt,
-                    expires_in,
-                    metadata,
-                    connection_config,
                     raw: req.body.raw || req.body
                 };
+                const connectionConfig: ConnectionConfig = { ...connection_config };
 
                 if (req.body['oauth_client_id_override']) {
                     oAuthCredentials.config_override = {
@@ -380,18 +374,9 @@ class ConnectionController {
                     };
                 }
 
-                if (connection_config) {
-                    oAuthCredentials.connection_config = {
-                        ...oAuthCredentials.connection_config,
-                        ...req.body['connection_config']
-                    };
-                    if (connection_config['oauth_scopes_override']) {
-                        const scopesOverride = connection_config['oauth_scopes_override'];
-                        oAuthCredentials.connection_config = {
-                            ...oAuthCredentials.connection_config,
-                            oauth_scopes_override: !Array.isArray(scopesOverride) ? scopesOverride.split(',') : scopesOverride
-                        };
-                    }
+                if (connectionConfig['oauth_scopes_override']) {
+                    const scopesOverride = connectionConfig['oauth_scopes_override'];
+                    connectionConfig['oauth_scopes_override'] = !Array.isArray(scopesOverride) ? scopesOverride.split(',') : scopesOverride;
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
@@ -408,15 +393,80 @@ class ConnectionController {
                     );
                 };
 
-                const [imported] = await connectionService.importOAuthConnection(
-                    connection_id,
-                    provider_config_key,
+                const [imported] = await connectionService.importOAuthConnection({
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
                     provider,
-                    environment.id,
-                    account.id,
-                    oAuthCredentials,
-                    connCreatedHook
-                );
+                    metadata,
+                    environment,
+                    account,
+                    connectionConfig,
+                    parsedRawCredentials: oAuthCredentials,
+                    connectionCreatedHook: connCreatedHook
+                });
+
+                if (imported) {
+                    updatedConnection = imported;
+                }
+            } else if (template.auth_mode === 'OAUTH2_CC') {
+                const { access_token, oauth_client_id_override, oauth_client_secret_override, expires_at } = req.body;
+
+                if (!access_token) {
+                    errorManager.errRes(res, 'missing_access_token');
+                    return;
+                }
+
+                const { expires_at: parsedExpiresAt } = connectionService.parseRawCredentials(
+                    { access_token, expires_at },
+                    template.auth_mode
+                ) as OAuth2ClientCredentials;
+
+                if (parsedExpiresAt && isNaN(parsedExpiresAt.getTime())) {
+                    errorManager.errRes(res, 'invalid_expires_at');
+                    return;
+                }
+
+                const oAuthCredentials: OAuth2ClientCredentials = {
+                    type: template.auth_mode,
+                    token: access_token,
+                    expires_at: parsedExpiresAt,
+                    client_id: oauth_client_id_override,
+                    client_secret: oauth_client_secret_override,
+                    raw: req.body.raw || req.body
+                };
+
+                const connectionConfig: ConnectionConfig = { ...connection_config };
+
+                if (connectionConfig['oauth_scopes_override']) {
+                    const scopesOverride = connectionConfig['oauth_scopes_override'];
+                    connectionConfig['oauth_scopes_override'] = !Array.isArray(scopesOverride) ? scopesOverride.split(',') : scopesOverride;
+                }
+
+                const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    void connectionCreatedHook(
+                        {
+                            connection: res.connection,
+                            environment,
+                            account,
+                            auth_mode: 'OAUTH2_CC',
+                            operation: res.operation
+                        },
+                        provider,
+                        logContextGetter
+                    );
+                };
+
+                const [imported] = await connectionService.importOAuthConnection({
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
+                    provider,
+                    metadata,
+                    environment,
+                    account,
+                    connectionConfig,
+                    parsedRawCredentials: oAuthCredentials,
+                    connectionCreatedHook: connCreatedHook
+                });
 
                 if (imported) {
                     updatedConnection = imported;
@@ -434,7 +484,7 @@ class ConnectionController {
                     return;
                 }
 
-                oAuthCredentials = {
+                const oAuthCredentials: OAuth1Credentials = {
                     type: template.auth_mode,
                     oauth_token,
                     oauth_token_secret,
@@ -455,15 +505,17 @@ class ConnectionController {
                     );
                 };
 
-                const [imported] = await connectionService.importOAuthConnection(
-                    connection_id,
-                    provider_config_key,
+                const [imported] = await connectionService.importOAuthConnection({
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
                     provider,
-                    environment.id,
-                    account.id,
-                    oAuthCredentials,
-                    connCreatedHook
-                );
+                    metadata,
+                    environment,
+                    account,
+                    connectionConfig: { ...connection_config },
+                    parsedRawCredentials: oAuthCredentials,
+                    connectionCreatedHook: connCreatedHook
+                });
 
                 if (imported) {
                     updatedConnection = imported;
@@ -476,7 +528,7 @@ class ConnectionController {
                     return;
                 }
 
-                const credentials = {
+                const credentials: BasicApiCredentials = {
                     type: template.auth_mode,
                     username,
                     password
@@ -495,15 +547,17 @@ class ConnectionController {
                         logContextGetter
                     );
                 };
-                const [imported] = await connectionService.importApiAuthConnection(
-                    connection_id,
-                    provider_config_key,
+                const [imported] = await connectionService.importApiAuthConnection({
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
                     provider,
-                    environment.id,
-                    account.id,
+                    metadata,
+                    environment,
+                    account,
                     credentials,
-                    connCreatedHook
-                );
+                    connectionConfig: { ...connection_config },
+                    connectionCreatedHook: connCreatedHook
+                });
 
                 if (imported) {
                     updatedConnection = imported;
@@ -516,7 +570,7 @@ class ConnectionController {
                     return;
                 }
 
-                const credentials = {
+                const credentials: ApiKeyCredentials = {
                     type: template.auth_mode,
                     apiKey
                 };
@@ -535,15 +589,17 @@ class ConnectionController {
                     );
                 };
 
-                const [imported] = await connectionService.importApiAuthConnection(
-                    connection_id,
-                    provider_config_key,
+                const [imported] = await connectionService.importApiAuthConnection({
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
                     provider,
-                    environment.id,
-                    account.id,
+                    metadata,
+                    environment,
+                    account,
+                    connectionConfig: { ...connection_config },
                     credentials,
-                    connCreatedHook
-                );
+                    connectionCreatedHook: connCreatedHook
+                });
 
                 if (imported) {
                     updatedConnection = imported;
@@ -561,7 +617,7 @@ class ConnectionController {
                     return;
                 }
 
-                const connectionConfig = {
+                const connectionConfig: ConnectionConfig = {
                     installation_id,
                     app_id
                 };
@@ -580,22 +636,23 @@ class ConnectionController {
                     return;
                 }
 
-                const [imported] = await connectionService.upsertConnection(
-                    connection_id,
-                    provider_config_key,
+                const [imported] = await connectionService.upsertConnection({
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
                     provider,
-                    credentials as unknown as AuthCredentials,
+                    parsedRawCredentials: credentials as unknown as AuthCredentials,
                     connectionConfig,
-                    environment.id,
-                    account.id
-                );
+                    environmentId: environment.id,
+                    accountId: account.id,
+                    metadata
+                });
 
                 if (imported) {
                     updatedConnection = imported;
                     runHook = true;
                 }
             } else if (template.auth_mode === 'TBA') {
-                const { token_id, token_secret, metadata, connection_config } = req.body;
+                const { token_id, token_secret } = req.body;
 
                 const tbaCredentials: TbaCredentials = {
                     type: template.auth_mode,
@@ -604,11 +661,11 @@ class ConnectionController {
                     config_override: {}
                 };
 
-                if (req.body['oauth_client_id_override']) {
+                if ('oauth_client_id_override' in req.body) {
                     tbaCredentials.config_override['client_id'] = req.body['oauth_client_id_override'];
                 }
 
-                if (req.body['oauth_client_secret_override']) {
+                if ('oauth_client_secret_override' in req.body) {
                     tbaCredentials.config_override['client_secret'] = req.body['oauth_client_secret_override'];
                 }
 
@@ -647,7 +704,15 @@ class ConnectionController {
                     updatedConnection = imported;
                 }
             } else if (template.auth_mode === 'NONE') {
-                const [imported] = await connectionService.upsertUnauthConnection(connection_id, provider_config_key, provider, environment.id, account.id);
+                const [imported] = await connectionService.upsertUnauthConnection({
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
+                    provider,
+                    environment,
+                    account,
+                    metadata,
+                    connectionConfig: { ...connection_config }
+                });
 
                 if (imported) {
                     updatedConnection = imported;

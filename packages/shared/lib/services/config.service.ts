@@ -187,7 +187,7 @@ class ConfigService {
         environmentId: number;
         providerConfigKey: string;
         orchestrator: Orchestrator;
-    }): Promise<number> {
+    }): Promise<boolean> {
         await syncManager.deleteSyncsByProviderConfig(environmentId, providerConfigKey, orchestrator);
 
         if (isCloud) {
@@ -196,12 +196,16 @@ class ConfigService {
 
         await deleteSyncConfigByConfigId(id);
 
-        await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+        const updated = await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+        if (updated <= 0) {
+            return false;
+        }
 
-        return db.knex
+        await db.knex
             .from<Connection>(`_nango_connections`)
             .where({ provider_config_key: providerConfigKey, environment_id: environmentId, deleted: false })
             .update({ deleted: true, deleted_at: new Date() });
+        return true;
     }
 
     async editProviderConfig(config: ProviderConfig) {

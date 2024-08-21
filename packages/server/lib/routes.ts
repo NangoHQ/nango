@@ -74,12 +74,12 @@ import { postManagedSignup } from './controllers/v1/account/managed/postSignup.j
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getEnvJs } from './controllers/v1/getEnvJs.js';
 import { getListIntegrations } from './controllers/config/getListIntegrations.js';
-import { getIntegration } from './controllers/v1/integrations/:uniqueKey/getIntegration.js';
-import { patchIntegration } from './controllers/v1/integrations/:uniqueKey/patchIntegration.js';
-import { deleteIntegration } from './controllers/v1/integrations/:uniqueKey/deleteIntegration.js';
-import { deleteIntegrationPublic } from './controllers/config/:providerConfigKey/deleteIntegration.js';
+import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
+import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
+import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
+import { deleteIntegrationPublic } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
-import { getIntegrationFlows } from './controllers/v1/integrations/:uniqueKey/flows/getFlows.js';
+import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
 
 export const router = express.Router();
 
@@ -247,13 +247,13 @@ web.route('/api/v1/environment/webhook/settings').patch(webAuth, patchSettings);
 web.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
-web.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
-web.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
+web.route('/api/v1/integrations').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
+web.route('/api/v1/integrations/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 web.route('/api/v1/integrations').post(webAuth, postIntegration);
-web.route('/api/v1/integrations/:integrationId').get(webAuth, getIntegration);
-web.route('/api/v1/integrations/:integrationId').patch(webAuth, patchIntegration);
-web.route('/api/v1/integrations/:integrationId').delete(webAuth, deleteIntegration);
-web.route('/api/v1/integrations/:integrationId/flows').get(webAuth, getIntegrationFlows);
+web.route('/api/v1/integrations/:providerConfigKey').get(webAuth, getIntegration);
+web.route('/api/v1/integrations/:providerConfigKey').patch(webAuth, patchIntegration);
+web.route('/api/v1/integrations/:providerConfigKey').delete(webAuth, deleteIntegration);
+web.route('/api/v1/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
 
 web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 

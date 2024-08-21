@@ -37,7 +37,7 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
         } else {
             toast({ title: 'Successfully updated integration id', variant: 'success' });
             setShowEditIntegrationId(false);
-            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integration`), undefined);
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
             navigate(`/${env}/integrations/${integrationId}/settings`);
         }
     };

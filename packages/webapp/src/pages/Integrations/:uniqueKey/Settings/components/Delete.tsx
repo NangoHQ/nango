@@ -23,7 +23,7 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
             toast({ title: deleted.json.error.message || 'Failed to delete, an error occurred', variant: 'error' });
         } else {
             toast({ title: `Integration "${integration.unique_key}" has been deleted`, variant: 'success' });
-            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integration`), undefined);
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
             navigate(`/${env}/integrations`);
         }
     };

@@ -324,7 +324,7 @@ export function useGetIntegrationListAPI(env: string) {
 
     return async () => {
         try {
-            const res = await apiFetch(`/api/v1/integration?env=${env}`);
+            const res = await apiFetch(`/api/v1/integrations?env=${env}`);
 
             if (res.status === 401) {
                 return signout();
@@ -346,7 +346,7 @@ export function useGetIntegrationDetailsAPI(env: string) {
 
     return async (providerConfigKey: string) => {
         try {
-            const res = await apiFetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?env=${env}&include_creds=true`);
+            const res = await apiFetch(`/api/v1/integrations/${encodeURIComponent(providerConfigKey)}?env=${env}&include_creds=true`);
 
             if (res.status === 401) {
                 return signout();
@@ -688,7 +688,7 @@ export function useUpdateSyncFrequency(env: string) {
 export function useGetConnectionAPI(env: string) {
     return async (providerConfigKey: string) => {
         try {
-            const res = await apiFetch(`/api/v1/integration/${providerConfigKey}/connections?env=${env}`, {
+            const res = await apiFetch(`/api/v1/integrations/${providerConfigKey}/connections?env=${env}`, {
                 method: 'GET'
             });
 

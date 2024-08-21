@@ -57,7 +57,7 @@ export default function Create() {
             toast({ title: created.json.error.message || 'Failed to create, an error occurred', variant: 'error' });
         } else {
             toast({ title: 'Integration created', variant: 'success' });
-            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integration`), undefined);
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
             navigate(`/${env}/integrations/${created.json.data.unique_key}/settings`);
         }
     };

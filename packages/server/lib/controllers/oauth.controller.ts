@@ -7,7 +7,8 @@ import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
-    getConnectionMetadataFromTokenResponse
+    getConnectionMetadataFromTokenResponse,
+    missesInterpolationParamInObject
 } from '../utils/utils.js';
 import type { DBEnvironment, DBTeam, Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
 import type {
@@ -34,7 +35,8 @@ import {
     LogTypes,
     AnalyticsTypes,
     hmacService,
-    ErrorSourceEnum
+    ErrorSourceEnum,
+    interpolateObjectValues
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -367,15 +369,15 @@ class OAuthController {
             await logCtx.info('OAuth2 client credentials creation was successful');
             await logCtx.success();
 
-            const [updatedConnection] = await connectionService.upsertConnection(
+            const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                config.provider,
-                credentials,
+                provider: config.provider,
+                parsedRawCredentials: credentials,
                 connectionConfig,
-                environment.id,
-                account.id
-            );
+                environmentId: environment.id,
+                accountId: account.id
+            });
 
             if (updatedConnection) {
                 await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
@@ -479,12 +481,27 @@ class OAuthController {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
 
+            if (template.authorization_params && missesInterpolationParamInObject(template.authorization_params, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig('authorization_params', JSON.stringify(connectionConfig));
+                await logCtx.error(error.message, { connectionConfig });
+                await logCtx.failed();
+
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            }
+
+            if (template.token_params && missesInterpolationParamInObject(template.token_params, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig('token_params', JSON.stringify(connectionConfig));
+                await logCtx.error(error.message, { connectionConfig });
+                await logCtx.failed();
+
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            }
             if (
                 oauth2Template.token_params == undefined ||
                 oauth2Template.token_params.grant_type == undefined ||
                 oauth2Template.token_params.grant_type == 'authorization_code'
             ) {
-                let allAuthParams: Record<string, string | undefined> = oauth2Template.authorization_params || {};
+                let allAuthParams: Record<string, string | undefined> = interpolateObjectValues(oauth2Template.authorization_params || {}, connectionConfig);
 
                 // We always implement PKCE, no matter whether the server requires it or not,
                 // unless it has been explicitly turned off for this template
@@ -883,11 +900,11 @@ class OAuthController {
 
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
 
-        let additionalTokenParams: Record<string, string> = {};
+        let additionalTokenParams: Record<string, string | undefined> = {};
         if (template.token_params !== undefined) {
             // We need to remove grant_type, simpleOAuth2 handles that for us
             const deepCopy = JSON.parse(JSON.stringify(template.token_params));
-            additionalTokenParams = deepCopy;
+            additionalTokenParams = interpolateObjectValues(deepCopy, session.connectionConfig);
         }
 
         // We always implement PKCE, no matter whether the server requires it or not,
@@ -1041,15 +1058,15 @@ class OAuthController {
                     : connectionConfig['oauth_scopes_override'];
             }
 
-            const [updatedConnection] = await connectionService.upsertConnection(
+            const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                session.provider,
+                provider: session.provider,
                 parsedRawCredentials,
                 connectionConfig,
-                session.environmentId,
-                account.id
-            );
+                environmentId: session.environmentId,
+                accountId: account.id
+            });
 
             await logCtx.debug(
                 `OAuth connection successful${template.auth_mode === 'CUSTOM' && !installationId ? ' and request for app approval is pending' : ''}`,
@@ -1213,15 +1230,15 @@ class OAuthController {
             .then(async (accessTokenResult) => {
                 const parsedAccessTokenResult = connectionService.parseRawCredentials(accessTokenResult, 'OAUTH1');
 
-                const [updatedConnection] = await connectionService.upsertConnection(
+                const [updatedConnection] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey,
-                    session.provider,
-                    parsedAccessTokenResult,
-                    { ...session.connectionConfig, ...metadata },
-                    environment.id,
-                    account.id
-                );
+                    provider: session.provider,
+                    parsedRawCredentials: parsedAccessTokenResult,
+                    connectionConfig: { ...session.connectionConfig, ...metadata },
+                    environmentId: environment.id,
+                    accountId: account.id
+                });
 
                 await logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
 

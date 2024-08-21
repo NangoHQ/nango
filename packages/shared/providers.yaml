@@ -271,6 +271,23 @@ battlenet:
     token_params:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/battlenet
+bigcommerce:
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://login.bigcommerce.com/oauth2/authorize
+    token_url: https://login.bigcommerce.com/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        context: stores/${connectionConfig.storeHash}
+        account_uuid: ${connectionConfig.accountUuid}
+    token_params:
+        context: stores/${connectionConfig.storeHash}
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.bigcommerce.com/stores/${connectionConfig.storeHash}
+    docs: https://docs.nango.dev/integrations/all/bigcommerce
 bitbucket:
     categories:
         - dev-tools
@@ -451,6 +468,18 @@ certn-partner:
             method: GET
             endpoint: /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
+chargebee:
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.chargebee.com
+        verification:
+            method: GET
+            endpoint: /api/v2/business_entities
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/chargebee
 checkr-partner:
     categories:
         - legal
@@ -487,6 +516,34 @@ checkr-partner-staging:
     webhook_routing_script: checkrWebhookRouting
     post_connection_script: checkrPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr
+checkout-com:
+    categories:
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://access.checkout.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            Content-Type: application/json
+            Accept: application/json
+        base_url: https://api.checkout.com
+    docs: https://docs.nango.dev/integrations/all/checkout-com
+checkout-com-sandbox:
+    categories:
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://access.sandbox.checkout.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            Content-Type: application/json
+            Accept: application/json
+        base_url: https://api.sandbox.checkout.com
+    docs: https://docs.nango.dev/integrations/all/checkout-com
 chorus:
     auth_mode: BASIC
     proxy:
@@ -553,6 +610,20 @@ coda:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/coda
+codeclimate:
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        headers:
+            Accept: application/vnd.api+json
+            Authorization: Token token=${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/user
+    docs: https://docs.nango.dev/integrations/all/codeclimate
 confluence:
     categories:
         - knowledge-base
@@ -1370,6 +1441,20 @@ highlevel-white-label:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/highlevel
+holded:
+    categories:
+        - accounting
+        - crm
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.holded.com/api
+        headers:
+            key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /invoicing/v1/contacts
+    docs: https://docs.nango.dev/integrations/all/holded
 hubspot:
     categories:
         - marketing
@@ -1742,6 +1827,18 @@ medallia:
             after: 'X-RateLimit-Reset'
         base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://docs.nango.dev/integrations/all/medallia
+metabase:
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /api/database
+    docs: https://docs.nango.dev/integrations/all/metabase
 microsoft:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
@@ -2200,6 +2297,29 @@ pivotaltracker:
             method: GET
             endpoint: /accounts
     docs: https://docs.nango.dev/integrations/all/pivotaltracker
+podium:
+    categories:
+        - communication
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://api.podium.com/oauth/authorize
+    token_url: https://api.podium.com/oauth/token
+    scope_separator: ' '
+    body_format: json
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            Podium-Version: ${connectionConfig.apiVersion}
+            Content-Type: application/json
+        base_url: https://api.podium.com
+        retry:
+            after: 'x-ratelimit-reset'
+    docs: https://docs.nango.dev/integrations/all/podium
 posthog:
     categories:
         - dev-tools
@@ -2370,6 +2490,17 @@ salesforce-sandbox:
     proxy:
         base_url: ${connectionConfig.instance_url}
     docs: https://docs.nango.dev/integrations/all/salesforce
+salesforce-experience-cloud:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.my.site.com/services/oauth2/authorize
+    token_url: https://${connectionConfig.subdomain}.my.site.com/services/oauth2/token
+    default_scopes:
+        - offline_access
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    docs: https://docs.nango.dev/integrations/all/salesforce-experience-cloud
 salesloft:
     categories:
         - marketing
@@ -2870,6 +3001,23 @@ trello:
     proxy:
         base_url: https://api.trello.com
     docs: https://docs.nango.dev/integrations/all/trello
+tsheetsteam:
+    categories:
+        - payroll
+        - hr
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://rest.tsheets.com/api/v1/authorize
+    token_url: https://rest.tsheets.com/api/v1/grant
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://rest.tsheets.com/api/v1
+    docs: https://docs.nango.dev/integrations/all/tsheetsteam
 todoist:
     categories:
         - productivity
@@ -3031,6 +3179,7 @@ unanet:
 unauthenticated:
     auth_mode: NONE
     docs: https://docs.nango.dev/integrations/overview
+    webhook_routing_script: unauthenticatedWebhookRouting
 vimeo:
     categories:
         - video

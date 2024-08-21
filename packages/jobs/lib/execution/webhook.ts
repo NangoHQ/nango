@@ -1,8 +1,20 @@
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Config, NangoConnection, NangoProps, Sync } from '@nangohq/shared';
-import { NangoError, configService, environmentService, getApiUrl, getRunnerFlags, getSyncByIdAndName, getSyncConfigRaw } from '@nangohq/shared';
+import type { Config, Job, NangoConnection, NangoProps, Sync } from '@nangohq/shared';
+import {
+    NangoError,
+    SyncStatus,
+    SyncType,
+    configService,
+    createSyncJob,
+    environmentService,
+    getApiUrl,
+    getRunnerFlags,
+    getSyncByIdAndName,
+    getSyncConfigRaw,
+    updateSyncJobStatus
+} from '@nangohq/shared';
 import { bigQueryClient } from '../clients.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
@@ -13,6 +25,8 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | undefined | null;
     let sync: Sync | undefined | null;
+    let syncJob: Pick<Job, 'id'> | null = null;
+
     try {
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
@@ -43,6 +57,20 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
 
+        syncJob = await createSyncJob({
+            sync_id: sync.id,
+            type: SyncType.INCREMENTAL,
+            status: SyncStatus.RUNNING,
+            job_id: task.name,
+            nangoConnection: task.connection,
+            sync_config_id: syncConfig.id!,
+            run_id: task.id,
+            log_id: logCtx.id
+        });
+        if (!syncJob) {
+            throw new Error(`Failed to create sync job for sync: ${sync.id}. TaskId: ${task.id}`);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'webhook',
             host: getApiUrl(),
@@ -61,7 +89,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
             syncId: sync.id,
-            syncJobId: -1,
+            syncJobId: syncJob.id,
             debug: false,
             runnerFlags: await getRunnerFlags(),
             startedAt: new Date()
@@ -92,6 +120,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             },
             syncId: sync?.id as string,
             syncName: task.parentSyncName,
+            syncJobId: syncJob?.id,
             providerConfigKey: task.connection.provider_config_key,
             activityLogId: task.activityLogId,
             runTime: 0,
@@ -124,6 +153,8 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
     });
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     await logCtx.info(content);
+
+    await updateSyncJobStatus(nangoProps.syncJobId!, SyncStatus.SUCCESS);
 }
 
 export async function handleWebhookError({ nangoProps, error }: { nangoProps: NangoProps; error: NangoError }): Promise<void> {
@@ -136,6 +167,7 @@ export async function handleWebhookError({ nangoProps, error }: { nangoProps: Na
         },
         syncId: nangoProps.syncId!,
         syncName: nangoProps.syncConfig.sync_name,
+        syncJobId: nangoProps.syncJobId!,
         providerConfigKey: nangoProps.providerConfigKey,
         activityLogId: nangoProps.activityLogId!,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
@@ -151,6 +183,7 @@ async function onFailure({
     environment,
     syncId,
     syncName,
+    syncJobId,
     providerConfigKey,
     activityLogId,
     runTime,
@@ -160,6 +193,7 @@ async function onFailure({
     team?: { id: number; name: string };
     environment: { id: number; name: string };
     syncId: string;
+    syncJobId?: number | undefined;
     syncName: string;
     providerConfigKey: string;
     activityLogId: string;
@@ -187,4 +221,8 @@ async function onFailure({
     }
     const logCtx = await logContextGetter.get({ id: activityLogId });
     await logCtx.error(error.message, { error });
+
+    if (syncJobId) {
+        await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
+    }
 }

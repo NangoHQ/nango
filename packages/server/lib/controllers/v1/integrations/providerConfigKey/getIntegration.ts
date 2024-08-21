@@ -8,7 +8,7 @@ import { integrationToApi } from '../../../../formatters/integration.js';
 
 export const validationParams = z
     .object({
-        integrationId: z
+        providerConfigKey: z
             .string()
             .regex(/[a-zA-Z0-9-]+/)
             .max(255)
@@ -33,7 +33,7 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
     const { environment } = res.locals;
     const params: GetIntegration['Params'] = valParams.data;
 
-    const integration = await configService.getProviderConfig(params.integrationId, environment.id);
+    const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
         return;
@@ -55,7 +55,7 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
         webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
     }
 
-    const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.integrationId });
+    const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
 
     res.status(200).send({
         data: {

@@ -1,7 +1,7 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
-import type { AuthCredentials, Connection, Sync, Job as SyncJob } from '@nangohq/shared';
+import type { AuthCredentials, Sync, Job as SyncJob } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
 import { environmentService, connectionService, createSync, createSyncJob, SyncType, SyncStatus, accountService } from '@nangohq/shared';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
@@ -17,7 +17,7 @@ describe('Persist API', () => {
         account: DBTeam;
         env: DBEnvironment;
         activityLogId: string;
-        connection: Connection;
+        connection: Exclude<Awaited<ReturnType<typeof connectionService.getConnectionById>>, null>;
         sync: Sync;
         syncJob: SyncJob;
     };
@@ -279,18 +279,34 @@ const initDb = async () => {
         { account: { id: env.account_id, name: '' }, environment: { id: env.id, name: env.name } }
     );
 
-    const connectionRes = await connectionService.upsertConnection(`conn-test`, `provider-test`, 'google', {} as AuthCredentials, {}, env.id, 0);
+    const connectionRes = await connectionService.upsertConnection({
+        connectionId: `conn-test`,
+        providerConfigKey: `provider-test`,
+        provider: 'google',
+        parsedRawCredentials: {} as AuthCredentials,
+        connectionConfig: {},
+        environmentId: env.id,
+        accountId: 0
+    });
     const connectionId = connectionRes[0]?.connection.id;
     if (!connectionId) throw new Error('Connection not created');
 
-    const connection = (await connectionService.getConnectionById(connectionId)) as Connection;
+    const connection = await connectionService.getConnectionById(connectionId);
     if (!connection) throw new Error('Connection not found');
 
     const sync = await createSync(connectionId, 'sync-test');
     if (!sync?.id) throw new Error('Sync not created');
 
-    const syncJob = (await createSyncJob(sync.id, SyncType.FULL, SyncStatus.RUNNING, `job-test`, connection)) as SyncJob;
-    if (!syncJob) throw new Error('Sync job not created');
+    const syncJob = await createSyncJob({
+        sync_id: sync.id,
+        type: SyncType.FULL,
+        status: SyncStatus.RUNNING,
+        job_id: `job-test`,
+        nangoConnection: connection
+    });
+    if (!syncJob) {
+        throw new Error('Sync job not created');
+    }
 
     return {
         account: (await accountService.getAccountById(0))!,

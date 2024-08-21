@@ -37,8 +37,8 @@ export type PostIntegration = Endpoint<{
 export type ApiIntegration = Merge<IntegrationConfig, ApiTimestamps>;
 export type GetIntegration = Endpoint<{
     Method: 'GET';
-    Path: '/api/v1/integrations/:id';
-    Params: { integrationId: string };
+    Path: '/api/v1/integrations/:providerConfigKey';
+    Params: { providerConfigKey: string };
     Success: {
         data: {
             integration: ApiIntegration;
@@ -54,8 +54,8 @@ export type GetIntegration = Endpoint<{
 
 export type PatchIntegration = Endpoint<{
     Method: 'PATCH';
-    Path: '/api/v1/integrations/:id';
-    Params: { integrationId: string };
+    Path: '/api/v1/integrations/:providerConfigKey';
+    Params: { providerConfigKey: string };
     Body:
         | { integrationId?: string | undefined }
         | {
@@ -86,13 +86,11 @@ export type PatchIntegration = Endpoint<{
 }>;
 
 export type DeleteIntegration = Endpoint<{
-    Method: 'PATCH';
-    Path: '/api/v1/integrations/:id';
-    Params: { integrationId: string };
+    Method: 'DELETE';
+    Path: '/api/v1/integrations/:providerConfigKey';
+    Params: { providerConfigKey: string };
     Success: {
-        data: {
-            success: boolean;
-        };
+        data: { success: boolean };
     };
 }>;
 
@@ -126,8 +124,8 @@ export interface NangoSyncConfig {
 
 export type GetIntegrationFlows = Endpoint<{
     Method: 'GET';
-    Path: '/api/v1/integrations/:id/flows';
-    Params: { integrationId: string };
+    Path: '/api/v1/integrations/:providerConfigKey/flows';
+    Params: { providerConfigKey: string };
     Success: {
         data: {
             flows: NangoSyncConfig[];

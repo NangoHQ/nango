@@ -3,8 +3,8 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { DeleteIntegration } from '@nangohq/types';
 import { configService } from '@nangohq/shared';
 
-import { validationParams } from './getIntegration.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
+import { validationParams } from './getIntegration.js';
 
 const orchestrator = getOrchestrator();
 
@@ -26,7 +26,7 @@ export const deleteIntegration = asyncWrapper<DeleteIntegration>(async (req, res
     const { environment } = res.locals;
     const params: DeleteIntegration['Params'] = valParams.data;
 
-    const integration = await configService.getProviderConfig(params.integrationId, environment.id);
+    const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
         return;
@@ -40,8 +40,6 @@ export const deleteIntegration = asyncWrapper<DeleteIntegration>(async (req, res
     });
 
     res.status(200).send({
-        data: {
-            success: deleted > 0
-        }
+        data: { success: deleted }
     });
 });

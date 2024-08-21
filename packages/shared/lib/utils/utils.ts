@@ -198,6 +198,18 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
     });
 }
 
+export function interpolateObjectValues(obj: Record<string, string | undefined>, connectionConfig: Record<string, any>): Record<string, string | undefined> {
+    const interpolated: Record<string, string | undefined> = {};
+    for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'string') {
+            interpolated[key] = interpolateStringFromObject(value, { connectionConfig });
+        } else {
+            interpolated[key] = value;
+        }
+    }
+    return interpolated;
+}
+
 export function connectionCopyWithParsedConnectionConfig(connection: Connection) {
     const connectionCopy = Object.assign({}, connection);
 
@@ -238,4 +250,8 @@ export function interpolateIfNeeded(str: string, replacers: Record<string, any>)
 export function getConnectionConfig(queryParams: any): Record<string, string> {
     const arr = Object.entries(queryParams).filter(([, v]) => typeof v === 'string'); // Filter strings
     return Object.fromEntries(arr) as Record<string, string>;
+}
+
+export function encodeParameters(params: Record<string, any>): Record<string, string> {
+    return Object.fromEntries(Object.entries(params).map(([key, value]) => [key, encodeURIComponent(String(value))]));
 }

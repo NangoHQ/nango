@@ -7,16 +7,26 @@ import { SyncStatus } from '../../models/Sync.js';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 
-export const createSyncJob = async (
-    sync_id: string,
-    type: SyncType,
-    status: SyncStatus,
-    job_id: string,
-    nangoConnection: NangoConnection | null,
-    run_id?: string,
-    log_id?: string
-): Promise<Pick<SyncJob, 'id'> | null> => {
-    const job: { sync_id: string; type: SyncType; status: SyncStatus; job_id: string; run_id?: string } = {
+export async function createSyncJob({
+    sync_id,
+    type,
+    status,
+    job_id,
+    nangoConnection,
+    sync_config_id,
+    run_id,
+    log_id
+}: {
+    sync_id: string;
+    type: SyncType;
+    status: SyncStatus;
+    job_id: string;
+    nangoConnection: NangoConnection | null;
+    sync_config_id?: number;
+    run_id?: string;
+    log_id?: string;
+}): Promise<SyncJob | null> {
+    const job: Partial<SyncJob> = {
         sync_id,
         type,
         status,
@@ -24,9 +34,12 @@ export const createSyncJob = async (
         ...(run_id ? { run_id } : {}),
         ...(log_id ? { log_id: log_id } : {})
     };
+    if (sync_config_id) {
+        job.sync_config_id = sync_config_id;
+    }
 
     try {
-        const syncJob = await schema().from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('id');
+        const syncJob = await schema().from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('*');
 
         if (syncJob && syncJob.length > 0 && syncJob[0]) {
             return syncJob[0];
@@ -50,7 +63,7 @@ export const createSyncJob = async (
     }
 
     return null;
-};
+}
 
 export const updateRunId = async (id: number, run_id: string): Promise<void> => {
     await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({

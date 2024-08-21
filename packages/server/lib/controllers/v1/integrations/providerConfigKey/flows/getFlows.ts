@@ -23,7 +23,7 @@ export const getIntegrationFlows = asyncWrapper<GetIntegrationFlows>(async (req,
     const { environment } = res.locals;
     const params: GetIntegration['Params'] = valParams.data;
 
-    const integration = await configService.getProviderConfig(params.integrationId, environment.id);
+    const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
         return;
@@ -31,7 +31,7 @@ export const getIntegrationFlows = asyncWrapper<GetIntegrationFlows>(async (req,
 
     const availablePublicFlows = flowService.getAllAvailableFlowsAsStandardConfig();
     const [template] = availablePublicFlows.filter((flow) => flow.providerConfigKey === integration.provider);
-    const allFlows = await getSyncConfigsAsStandardConfig(environment.id, params.integrationId);
+    const allFlows = await getSyncConfigsAsStandardConfig(environment.id, params.providerConfigKey);
 
     const dbFlows: NangoSyncConfig[] = [...(allFlows?.actions || []), ...(allFlows?.syncs || [])];
     const templateFlows: NangoSyncConfig[] = [...(template?.actions || []), ...(template?.syncs || [])];

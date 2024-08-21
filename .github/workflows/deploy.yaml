@@ -1,4 +1,5 @@
 name: '[Release] Deploy service'
+run-name: '[Release] [${{ inputs.stage }}] Deploy ${{ inputs.service }}'
 
 on:
     workflow_dispatch:

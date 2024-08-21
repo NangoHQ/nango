@@ -5,7 +5,7 @@ import { apiFetch, swrFetcher } from '../utils/api';
 import type { DeleteIntegration, GetIntegration, GetIntegrationFlows, PatchIntegration, PostIntegration } from '@nangohq/types';
 
 export function useListIntegration(env: string) {
-    const { data, error, mutate } = useSWR<ListIntegration>(`/api/v1/integration?env=${env}`, swrFetcher);
+    const { data, error, mutate } = useSWR<ListIntegration>(`/api/v1/integrations?env=${env}`, swrFetcher);
 
     const loading = !data && !error;
 

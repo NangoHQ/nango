@@ -8,7 +8,7 @@ import { validationParams } from './getIntegration.js';
 
 const validationBody = z
     .object({
-        integrationId: validationParams.shape.integrationId.optional()
+        integrationId: validationParams.shape.providerConfigKey.optional()
     })
     .strict()
     .or(
@@ -72,7 +72,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     const { environment } = res.locals;
     const params: PatchIntegration['Params'] = valParams.data;
 
-    const integration = await configService.getProviderConfig(params.integrationId, environment.id);
+    const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
         return;

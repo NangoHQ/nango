@@ -303,11 +303,11 @@ export declare class NangoAction {
     private proxyConfig;
     protected exitSyncIfAborted(): void;
     proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
-    get<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
-    post<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
-    put<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
-    patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
-    delete<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
+    get<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
+    post<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
+    put<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
+    patch<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
+    delete<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials | TableauCredentials>;
     getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection>;
     setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
