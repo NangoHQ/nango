@@ -44,6 +44,15 @@ export function missesInterpolationParam(str: string, replacers: Record<string, 
 }
 
 /**
+ * A helper function to check if any string in an object misses interpolation params.
+ * For example:
+ * missesInterpolationParamInObject({ context: 'stores/${storeHash}', response_type: 'code' }, { storeHash: 'abc123' }) -> returns false
+ * missesInterpolationParamInObject({ context: 'stores/${storeHash}', response_type: 'code' }, {}) -> returns true
+ */
+export function missesInterpolationParamInObject(params: Record<string, string>, replacers: Record<string, any>) {
+    return Object.values(params).some((param) => missesInterpolationParam(param, replacers));
+}
+/**
  * A helper function to extract the additional authorization parameters from the frontend Auth request.
  */
 export function getAdditionalAuthorizationParams(params: any): Record<string, string | undefined> {
@@ -114,10 +123,28 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
 }
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
-    if (template.token_url || template.authorization_url || template.proxy?.base_url || template.proxy?.headers || template.proxy?.verification) {
+    if (
+        template.token_url ||
+        template.authorization_url ||
+        template.proxy?.base_url ||
+        template.proxy?.headers ||
+        template.proxy?.verification ||
+        template.authorization_params ||
+        template.token_params
+    ) {
         const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
         const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
         const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const authorizationParamsMatches = template.authorization_params
+            ? Object.values(template.authorization_params).flatMap((param) =>
+                  typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []
+              )
+            : [];
+
+        const tokenParamsMatches = template.token_params
+            ? Object.values(template.token_params).flatMap((param) => (typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []))
+            : [];
+
         const proxyBaseUrlMatches = template.proxy?.base_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
         const proxyHeaderMatches = template.proxy?.headers
             ? Array.from(new Set(Object.values(template.proxy.headers).flatMap((header) => header.match(/\${connectionConfig\.([^{}]*)}/g) || [])))
@@ -138,7 +165,15 @@ export function parseConnectionConfigParamsFromTemplate(template: ProviderTempla
             template.proxy?.verification?.endpoint.match(/\${connectionConfig\.([^{}]*)}/g) ||
             template.proxy?.verification?.base_url_override?.match(/\${connectionConfig\.([^{}]*)}/g) ||
             [];
-        return [...tokenUrlMatches, ...authorizationUrlMatches, ...proxyMatches, ...proxyVerificationMatches]
+
+        return [
+            ...tokenUrlMatches,
+            ...authorizationUrlMatches,
+            ...authorizationParamsMatches,
+            ...tokenParamsMatches,
+            ...proxyMatches,
+            ...proxyVerificationMatches
+        ]
             .map(cleanParamName)
             .filter((value, index, array) => array.indexOf(value) === index); // remove duplicates
     }

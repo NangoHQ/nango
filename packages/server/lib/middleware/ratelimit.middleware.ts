@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { createClient } from 'redis';
 import { RateLimiterRes, RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
 import { getRedisUrl } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { flagHasAPIRateLimit, getLogger } from '@nangohq/utils';
 
 const logger = getLogger('RateLimiter');
 
@@ -28,6 +28,11 @@ const rateLimiter = await (async () => {
 })();
 
 export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    if (!flagHasAPIRateLimit) {
+        next();
+        return;
+    }
+
     const setXRateLimitHeaders = (rateLimiterRes: RateLimiterRes) => {
         const resetEpoch = Math.floor(new Date(Date.now() + rateLimiterRes.msBeforeNext).getTime() / 1000);
         res.setHeader('X-RateLimit-Limit', rateLimiter.points);
