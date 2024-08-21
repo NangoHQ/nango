@@ -22,3 +22,4 @@ export const flagHasScripts = isLocal || isEnterprise || isCloud || isTest;
 export const flagHasAuth = process.env['FLAG_AUTH_ENABLED'] !== 'false';
 export const flagHasManagedAuth =
     process.env['FLAG_MANAGED_AUTH_ENABLED'] === 'true' && Boolean(process.env['WORKOS_API_KEY'] && process.env['WORKOS_CLIENT_ID']);
+export const flagHasAPIRateLimit = process.env['FLAG_API_RATE_LIMIT_ENABLED'] !== 'false';
