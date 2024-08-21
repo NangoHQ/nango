@@ -6,8 +6,12 @@ export interface NSAPI_GetResponses<T> {
     data: {
         items: T[];
         hasMore: boolean;
-        links: { rel: string; href: string }[];
+        links: NSAPI_Links;
     };
+}
+
+export interface NSAPI_Links {
+    links: { rel?: string; href?: string }[];
 }
 
 export interface NS_Address {

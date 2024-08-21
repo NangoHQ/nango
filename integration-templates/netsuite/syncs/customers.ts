@@ -1,5 +1,5 @@
 import type { NangoSync, NetsuiteCustomer, NetsuiteAddress, ProxyConfiguration } from '../../models';
-import type { NS_Customer, NS_Address, NSAPI_GetResponse, NSAPI_GetResponses } from '../types';
+import type { NS_Customer, NS_Address, NSAPI_GetResponse, NSAPI_GetResponses, NSAPI_Links } from '../types';
 import { paginate } from '../helpers/pagination.js';
 
 const retries = 3;
@@ -49,8 +49,8 @@ function getAddress(customerId: string, nango: NangoSync): Promise<NetsuiteAddre
             retries
         })
         .then((res: NSAPI_GetResponses<any>) => {
-            const addressBookIds = res.data.items.map((addressLink) => {
-                return addressLink.links?.find((link: any) => link.rel === 'self')?.href.match(/\/addressBook\/(\d+)/)?.[1];
+            const addressBookIds = res.data.items.map((addressLink: NSAPI_Links) => {
+                return addressLink.links?.find((link) => link.rel === 'self')?.href?.match(/\/addressBook\/(\d+)/)?.[1];
             });
             // NOTE: only first address is being used
             if (addressBookIds.length > 0) {

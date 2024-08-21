@@ -1,5 +1,5 @@
 import type { NangoSync, NetsuiteInvoice, ProxyConfiguration } from '../../models';
-import type { NS_Invoice, NS_Item, NSAPI_GetResponse, NSAPI_GetResponses } from '../types';
+import type { NS_Invoice, NS_Item, NSAPI_GetResponse, NSAPI_GetResponses, NSAPI_Links } from '../types';
 import { paginate } from '../helpers/pagination.js';
 
 const retries = 3;
@@ -37,8 +37,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                 endpoint: `/invoice/${invoiceLink.id}/item`,
                 retries
             });
-            const itemIds = items.data.items.map((itemLink) => {
-                return itemLink.links?.find((link: any) => link.rel === 'self').href.match(/\/item\/(\d+)/)?.[1];
+            const itemIds = items.data.items.map((itemLink: NSAPI_Links) => {
+                return itemLink.links?.find((link) => link.rel === 'self')?.href?.match(/\/item\/(\d+)/)?.[1];
             });
             for (const itemId of itemIds) {
                 const item: NSAPI_GetResponse<NS_Item> = await nango.get({

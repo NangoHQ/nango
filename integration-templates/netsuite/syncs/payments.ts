@@ -1,5 +1,5 @@
 import type { NangoSync, NetsuitePayment, ProxyConfiguration } from '../../models';
-import type { NS_Payment, NSAPI_GetResponse, NSAPI_GetResponses } from '../types';
+import type { NS_Payment, NSAPI_GetResponse, NSAPI_GetResponses, NSAPI_Links } from '../types';
 import { paginate } from '../helpers/pagination.js';
 
 const retries = 3;
@@ -26,8 +26,9 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                 endpoint: `/customerpayment/${paymentLink.id}/apply`,
                 retries
             });
-            const applyTo = apply.data.items.map((applyLink) => {
-                return applyLink.links?.find((link: any) => link.rel === 'self').href.match(/\/apply\/doc=(\d+)/)?.[1];
+            const applyTo = apply.data.items.flatMap((applyLink: NSAPI_Links) => {
+                const doc = applyLink.links?.find((link) => link.rel === 'self')?.href?.match(/\/apply\/doc=(\d+)/)?.[1];
+                return doc ? [doc] : [];
             });
             mappedPayments.push({
                 id: payment.data.id,
