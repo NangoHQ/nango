@@ -32,31 +32,31 @@ API configuration: [`bigcommerce`](https://nango.dev/providers.yaml)
 - After creating a new connection on Nango, you will need to rewrite your HTTP request headers to use the `X-Auth-Token` header to pass the API account's `access_token` instead of the Authorization header as described in [here](https://developer.bigcommerce.com/docs/start/authentication/api-accounts#how-to-migrate). Please look at the following example:
 
 ```js
-        const connection = await nango.getConnection();
+const connection = await nango.getConnection();
 
-        if (!connection.credentials || typeof connection.credentials !== 'object') {
-            throw new nango.ActionError({
-                message: `credentials are missing or invalid`
-            });
-        }
+if (!connection.credentials || typeof connection.credentials !== 'object') {
+    throw new nango.ActionError({
+        message: `credentials are missing or invalid`
+    });
+}
 
-        let access_token: string;
-        if ('access_token' in connection.credentials) {
-            access_token = connection.credentials.access_token;
-        } else {
-            throw new nango.ActionError({
-                message: `access_token is missing`
-            });
-        }
+let access_token: string;
+if ('access_token' in connection.credentials) {
+    access_token = connection.credentials.access_token;
+} else {
+    throw new nango.ActionError({
+        message: `access_token is missing`
+    });
+}
 
-        const config = {
-            endpoint: '/v2/orders',
-            headers: {
-                'X-Auth-Token': access_token
-            }
-        };
+const config = {
+    endpoint: '/v2/orders',
+    headers: {
+        'X-Auth-Token': access_token
+    }
+};
 
-        const response = await nango.get(config);
+const response = await nango.get(config);
 
 ```
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bigcommerce.mdx)</Note>
