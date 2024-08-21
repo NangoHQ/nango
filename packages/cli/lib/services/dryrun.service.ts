@@ -120,7 +120,7 @@ export class DryRunService {
             if (!providerConfigKey) {
                 console.log(
                     chalk.red(
-                        `Provider config key not found, please check that the provider exists for this sync name: ${syncName} by going to the Nango dashboard.`
+                        `Provider config key not found, please check that the provider exists for this sync name: ${syncName} by going to the Nango dashboard. (and pass it in as --integration-id)`
                     )
                 );
                 return;

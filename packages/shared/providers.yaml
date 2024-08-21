@@ -271,6 +271,23 @@ battlenet:
     token_params:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/battlenet
+bigcommerce:
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://login.bigcommerce.com/oauth2/authorize
+    token_url: https://login.bigcommerce.com/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        context: stores/${connectionConfig.storeHash}
+        account_uuid: ${connectionConfig.accountUuid}
+    token_params:
+        context: stores/${connectionConfig.storeHash}
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.bigcommerce.com/stores/${connectionConfig.storeHash}
+    docs: https://docs.nango.dev/integrations/all/bigcommerce
 bitbucket:
     categories:
         - dev-tools
@@ -593,6 +610,20 @@ coda:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/coda
+codeclimate:
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        headers:
+            Accept: application/vnd.api+json
+            Authorization: Token token=${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/user
+    docs: https://docs.nango.dev/integrations/all/codeclimate
 confluence:
     categories:
         - knowledge-base
