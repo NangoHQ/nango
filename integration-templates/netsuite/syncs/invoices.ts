@@ -1,4 +1,4 @@
-import type { NangoSync, NetsuiteInvoice, ProxyConfiguration } from '../../models';
+import type { NangoSync, NetsuiteInvoice, NetsuiteInvoiceLine, ProxyConfiguration } from '../../models';
 import type { NS_Invoice, NS_Item, NSAPI_GetResponse, NSAPI_GetResponses, NSAPI_Links } from '../types';
 import { paginate } from '../helpers/pagination.js';
 
@@ -45,13 +45,18 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                     endpoint: `/invoice/${invoiceLink.id}/item/${itemId}`,
                     retries
                 });
-                mappedInvoice.lines.push({
+                const line: NetsuiteInvoiceLine = {
                     itemId: item.data.item?.id || '',
                     quantity: item.data.quantity ? Number(item.data.quantity) : 0,
-                    amount: item.data.amount ? Number(item.data.amount) : 0,
-                    ...(item.data.taxDetailsReference && { vatCode: item.data.taxDetailsReference }),
-                    ...(item.data.item?.refName && { description: item.data.item?.refName })
-                });
+                    amount: item.data.amount ? Number(item.data.amount) : 0
+                };
+                if (item.data.taxDetailsReference) {
+                    line.vatCode = item.data.taxDetailsReference;
+                }
+                if (item.data.item?.refName) {
+                    line.description = item.data.item?.refName;
+                }
+                mappedInvoice.lines.push(line);
             }
 
             mappedInvoices.push(mappedInvoice);

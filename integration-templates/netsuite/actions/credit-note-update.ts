@@ -1,5 +1,5 @@
 import type { NangoAction, NetsuiteCreditNoteUpdateInput, NetsuiteCreditNoteUpdateOutput } from '../../models';
-import type { NS_CreditNote } from '../types';
+import type { NS_CreditNote, NS_Item } from '../types';
 import { netsuiteCreditNoteUpdateInputSchema } from '../schema.zod.js';
 
 export default async function runAction(nango: NangoAction, input: NetsuiteCreditNoteUpdateInput): Promise<NetsuiteCreditNoteUpdateOutput> {
@@ -12,22 +12,35 @@ export default async function runAction(nango: NangoAction, input: NetsuiteCredi
     }
 
     const lines = input.lines?.map((line) => {
-        return {
+        const item: NS_Item = {
             item: { id: line.itemId, refName: line.description || '' },
             quantity: line.quantity,
-            amount: line.amount,
-            ...(line.vatCode && { taxDetailsReference: line.vatCode })
+            amount: line.amount
         };
+        if (line.vatCode) {
+            item.taxDetailsReference = line.vatCode;
+        }
+        return item;
     });
 
     const body: Partial<NS_CreditNote> = {
-        id: input.id,
-        ...(input.customerId && { entity: { id: input.customerId } }),
-        ...(input.status && { status: { id: input.status } }),
-        ...(input.currency && { currency: { refName: input.currency } }),
-        ...(input.description && { memo: input.description }),
-        ...(lines && { item: { items: lines } })
+        id: input.id
     };
+    if (input.customerId) {
+        body.entity = { id: input.customerId };
+    }
+    if (input.status) {
+        body.status = { id: input.status };
+    }
+    if (input.currency) {
+        body.currency = { refName: input.currency };
+    }
+    if (input.description) {
+        body.memo = input.description;
+    }
+    if (lines) {
+        body.item = { items: lines };
+    }
     await nango.patch({
         endpoint: '/creditmemo',
         data: body

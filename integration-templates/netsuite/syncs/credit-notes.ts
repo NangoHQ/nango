@@ -1,4 +1,4 @@
-import type { NangoSync, NetsuiteCreditNote, ProxyConfiguration } from '../../models';
+import type { NangoSync, NetsuiteCreditNote, NetsuiteCreditNoteLine, ProxyConfiguration } from '../../models';
 import type { NS_CreditNote, NS_Item, NSAPI_GetResponse, NSAPI_GetResponses, NSAPI_Links } from '../types';
 import { paginate } from '../helpers/pagination.js';
 
@@ -45,13 +45,18 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                     endpoint: `/creditmemo/${creditNoteLink.id}/item/${itemId}`,
                     retries
                 });
-                mappedCreditNote.lines.push({
+                const mappedCreditNoteLine: NetsuiteCreditNoteLine = {
                     itemId: item.data.item?.id || '',
                     quantity: item.data.quantity ? Number(item.data.quantity) : 0,
-                    amount: item.data.amount ? Number(item.data.amount) : 0,
-                    ...(item.data.taxDetailsReference && { vatCode: item.data.taxDetailsReference }),
-                    ...(item.data.item?.refName && { description: item.data.item?.refName })
-                });
+                    amount: item.data.amount ? Number(item.data.amount) : 0
+                };
+                if (item.data.taxDetailsReference) {
+                    mappedCreditNoteLine.vatCode = item.data.taxDetailsReference;
+                }
+                if (item.data.item?.refName) {
+                    mappedCreditNoteLine.description = item.data.item?.refName;
+                }
+                mappedCreditNote.lines.push(mappedCreditNoteLine);
             }
 
             mappedCreditNotes.push(mappedCreditNote);

@@ -30,7 +30,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                 const doc = applyLink.links?.find((link) => link.rel === 'self')?.href?.match(/\/apply\/doc=(\d+)/)?.[1];
                 return doc ? [doc] : [];
             });
-            mappedPayments.push({
+            const mappedPayment: NetsuitePayment = {
                 id: payment.data.id,
                 createdAt: payment.data.tranDate || null,
                 customerId: payment.data.customer?.id || null,
@@ -38,9 +38,12 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                 currency: payment.data.currency?.refName || null,
                 paymentReference: payment.data.tranId || null,
                 status: payment.data.status?.id || null,
-                applyTo,
-                ...(payment.data.memo && { description: payment.data.memo })
-            });
+                applyTo
+            };
+            if (payment.data.memo) {
+                mappedPayment.description = payment.data.memo;
+            }
+            mappedPayments.push(mappedPayment);
         }
 
         await nango.batchSave<NetsuitePayment>(mappedPayments, 'NetsuitePayment');

@@ -14,8 +14,6 @@ export default async function runAction(nango: NangoAction, input: NetsuiteCredi
     const body: Partial<NS_CreditNote> = {
         entity: { id: input.customerId },
         status: { id: input.status },
-        ...(input.currency && { currency: { refName: input.currency } }),
-        ...(input.description && { memo: input.description }),
         item: {
             items: input.lines.map((line) => ({
                 item: { id: line.itemId, refName: line.description || '' },
@@ -25,6 +23,12 @@ export default async function runAction(nango: NangoAction, input: NetsuiteCredi
             }))
         }
     };
+    if (input.currency) {
+        body.currency = { refName: input.currency };
+    }
+    if (input.description) {
+        body.memo = input.description;
+    }
     const res = await nango.post({
         endpoint: '/creditmemo',
         data: body

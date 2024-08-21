@@ -11,23 +11,42 @@ export default async function runAction(nango: NangoAction, input: NetsuiteCusto
         });
     }
 
-    const address: Partial<NS_Address> = {
-        ...(input.addressLine1 && { addr1: input.addressLine1 }),
-        ...(input.addressLine2 && { addr2: input.addressLine2 }),
-        ...(input.city && { city: input.city }),
-        ...(input.zip && { zip: input.zip }),
-        ...(input.country && { country: { id: input.country } }),
-        ...(input.state && { state: { id: input.state } })
-    };
+    const address: Partial<NS_Address> = {};
+    if (input.addressLine1) {
+        address.addr1 = input.addressLine1;
+    }
+    if (input.addressLine2) {
+        address.addr2 = input.addressLine2;
+    }
+    if (input.city) {
+        address.city = input.city;
+    }
+    if (input.zip) {
+        address.zip = input.zip;
+    }
+    if (input.country) {
+        address.country = { id: input.country };
+    }
+    if (input.state) {
+        address.state = { id: input.state };
+    }
 
     const body: Partial<NS_Customer> = {
         externalId: input.externalId,
-        companyName: input.name,
-        ...(input.email && { email: input.email }),
-        ...(input.phone && { phone: input.phone }),
-        ...(input.taxNumber && { taxNumber: input.taxNumber }),
-        ...(Object.keys(address).length > 0 && { addressBook: { items: [address] } })
+        companyName: input.name
     };
+    if (input.email) {
+        body.email = input.email;
+    }
+    if (input.phone) {
+        body.phone = input.phone;
+    }
+    if (input.taxNumber) {
+        body.defaultTaxReg = input.taxNumber;
+    }
+    if (Object.keys(address).length > 0) {
+        body.addressBook = { items: [address] };
+    }
     const res = await nango.post({
         endpoint: '/customer',
         data: body

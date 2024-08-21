@@ -12,15 +12,29 @@ export default async function runAction(nango: NangoAction, input: NetsuitePayme
     }
 
     const body: Partial<NS_Payment> = {
-        id: input.id,
-        ...(input.customerId && { customer: { id: input.customerId } }),
-        ...(input.amount && { payment: input.amount }),
-        ...(input.currency && { currency: { refName: input.currency } }),
-        ...(input.paymentReference && { tranId: input.paymentReference }),
-        ...(input.status && { status: { id: input.status } }),
-        ...(input.applyTo && { apply: { items: input.applyTo.map((id) => ({ doc: id })) } }),
-        ...(input.description && { memo: input.description })
+        id: input.id
     };
+    if (input.customerId) {
+        body.customer = { id: input.customerId };
+    }
+    if (input.amount) {
+        body.payment = input.amount;
+    }
+    if (input.currency) {
+        body.currency = { refName: input.currency };
+    }
+    if (input.paymentReference) {
+        body.tranId = input.paymentReference;
+    }
+    if (input.status) {
+        body.status = { id: input.status };
+    }
+    if (input.applyTo) {
+        body.apply = { items: input.applyTo.map((id) => ({ doc: id })) };
+    }
+    if (input.description) {
+        body.memo = input.description;
+    }
 
     await nango.patch({
         endpoint: '/customerpayment',
