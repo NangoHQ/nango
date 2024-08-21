@@ -74,8 +74,8 @@ import { postManagedSignup } from './controllers/v1/account/managed/postSignup.j
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getEnvJs } from './controllers/v1/getEnvJs.js';
 import { getListIntegrations } from './controllers/config/getListIntegrations.js';
-import { deleteIntegrationPublic } from './controllers/config/:providerConfigKey/deleteIntegration.js';
-import { deleteIntegration } from './controllers/v1/integrations/:providerConfigKey/deleteIntegration.js';
+import { deleteIntegrationPublic } from './controllers/config/providerConfigKey/deleteIntegration.js';
+import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 
 export const router = express.Router();
 
