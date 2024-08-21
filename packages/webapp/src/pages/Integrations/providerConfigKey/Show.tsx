@@ -15,10 +15,10 @@ import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
 
 export const ShowIntegration: React.FC = () => {
-    const { integrationId } = useParams();
+    const { providerConfigKey } = useParams();
     const location = useLocation();
     const env = useStore((state) => state.env);
-    const { data, loading, error } = useGetIntegration(env, integrationId!);
+    const { data, loading, error } = useGetIntegration(env, providerConfigKey!);
     const [tab, setTab] = useState<string>('');
 
     useEffect(() => {
@@ -119,7 +119,7 @@ export const ShowIntegration: React.FC = () => {
                 </Link>
             </nav>
             <Routes>
-                <Route path="/" element={<EndpointsShow />} />
+                <Route path="/" element={<EndpointsShow integration={data} />} />
                 <Route path="/settings" element={<SettingsShow data={data} />} />
                 <Route path="*" element={<PageNotFound />} />
             </Routes>

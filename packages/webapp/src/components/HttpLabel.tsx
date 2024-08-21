@@ -21,17 +21,17 @@ const styles = cva('', {
         }
     }
 });
-const sizesVerb = cva('', {
+const sizesVerb = cva('text-[11px]', {
     variants: {
-        size: { xs: 'text-[11px]', xl: 'text-base' },
+        size: { xs: '', xl: 'text-base' },
         defaultVariants: { size: 'xs' }
     }
 });
 type Sizes = VariantProps<typeof sizesVerb>['size'];
 
-const sizesText = cva('', {
+const sizesText = cva('text-[13px]', {
     variants: {
-        size: { xs: 'text-sm', xl: 'text-base' },
+        size: { xs: '', xl: 'text-base' },
         defaultVariants: { size: 'xs' }
     }
 });
@@ -39,7 +39,7 @@ const sizesText = cva('', {
 export const HttpLabel: React.FC<{ verb: HTTP_VERB; path: string; size?: Sizes }> = ({ verb, path, size }) => {
     return (
         <div className={cn('flex items-center gap-2')}>
-            <div className={cn(styles({ bg: verb }), sizesVerb({ size }), 'py-0.5 px-2 rounded')}>
+            <div className={cn(styles({ bg: verb }), sizesVerb({ size }), 'py-[1px] px-1.5 rounded')}>
                 <span className={cn(styles({ text: verb }), 'font-semibold')}>{verb}</span>
             </div>
             <span className={cn(sizesText({ size }), 'break-all font-code')}>{path}</span>

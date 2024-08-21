@@ -15,7 +15,7 @@ import Signin from './pages/Account/Signin';
 import { InteractiveDemo } from './pages/InteractiveDemo';
 import IntegrationList from './pages/Integrations/List';
 import CreateIntegration from './pages/Integrations/Create';
-import { ShowIntegration } from './pages/Integrations/:uniqueKey/Show';
+import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
 import ConnectionList from './pages/Connection/List';
 import Connection from './pages/Connection/Show';
 import ConnectionCreate from './pages/Connection/Create';
@@ -79,9 +79,9 @@ const App = () => {
                                 </Route>
                             )}
                             <Route path="/:env/integrations" element={<IntegrationList />} />
-                            <Route path="/:env/integration/create" element={<CreateIntegration />} />
-                            <Route path="/:env/integration/:integrationId" element={<Navigate to={'/integrations'} />} />
-                            <Route path="/:env/integrations/:integrationId/*" element={<ShowIntegration />} />
+                            <Route path="/:env/integrations/create" element={<CreateIntegration />} />
+                            <Route path="/:env/integration/:providerConfigKey" element={<Navigate to={'/integrations'} />} />
+                            <Route path="/:env/integrations/:providerConfigKey/*" element={<ShowIntegration />} />
                             <Route path="/:env/connections" element={<ConnectionList />} />
                             <Route path="/:env/connections/create" element={<ConnectionCreate />} />
                             <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />

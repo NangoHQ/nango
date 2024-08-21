@@ -3,16 +3,16 @@ import { Skeleton } from '../../../../components/ui/Skeleton';
 import { useGetIntegrationFlows } from '../../../../hooks/useIntegration';
 import { useStore } from '../../../../store';
 import { useMemo } from 'react';
-import type { HTTP_VERB } from '@nangohq/types';
+import type { GetIntegration, HTTP_VERB } from '@nangohq/types';
 import type { NangoSyncConfigWithEndpoint } from './components/List';
 import { EndpointsList } from './components/List';
 import { EndpointOne } from './components/One';
 
 const allowedGroup = ['customers', 'invoices', 'payments', 'tickets'];
-export const EndpointsShow: React.FC = () => {
+export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['data'] }> = ({ integration }) => {
     const env = useStore((state) => state.env);
-    const { integrationId } = useParams();
-    const { data, loading } = useGetIntegrationFlows(env, integrationId!);
+    const { providerConfigKey } = useParams();
+    const { data, loading } = useGetIntegrationFlows(env, providerConfigKey!);
     const [searchParams] = useSearchParams();
 
     const byGroup = useMemo(() => {
@@ -56,11 +56,13 @@ export const EndpointsShow: React.FC = () => {
                     else if (lenA < lenB) return -1;
 
                     // Sort by verb
-                    if (a.endpoint.verb === 'GET') return -1;
+                    if (a.endpoint.verb === 'GET' && b.endpoint.verb !== 'GET') return -1;
                     else if (a.endpoint.verb === 'POST' && b.endpoint.verb === 'PUT') return -1;
                     else if (a.endpoint.verb === 'PUT' && b.endpoint.verb === 'PATCH') return -1;
                     else if (a.endpoint.verb === 'PATCH' && b.endpoint.verb === 'DELETE') return -1;
-                    return 1;
+
+                    // Finally sort alphabetically
+                    return a.endpoint.path > b.endpoint.path ? 1 : -1;
                 })
             });
         }
@@ -102,7 +104,7 @@ export const EndpointsShow: React.FC = () => {
     }
 
     if (currentFlow) {
-        return <EndpointOne flow={currentFlow} />;
+        return <EndpointOne flow={currentFlow} integration={integration} />;
     }
 
     return <EndpointsList byGroup={byGroup} />;

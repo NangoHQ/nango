@@ -13,7 +13,7 @@ export const EndpointsList: React.FC<{ byGroup: { name: string; flows: NangoSync
                 {byGroup.map(({ name, flows }) => {
                     return (
                         <div key={name}>
-                            <div className="bg-active-gray capitalize py-1 px-2 text-sm rounded-sm">{name}</div>
+                            <div className="bg-active-gray capitalize py-1 px-2 text-sm rounded-sm font-semibold">{name}</div>
                             <Table.Table className="table-fixed">
                                 <Table.Header>
                                     <Table.Row>
@@ -30,7 +30,7 @@ export const EndpointsList: React.FC<{ byGroup: { name: string; flows: NangoSync
                                             <Link to={`?${usp.toString()}`} key={flow.name} className="contents">
                                                 <Table.Row key={flow.name}>
                                                     <Table.Cell bordered className="text-white">
-                                                        <HttpLabel {...flow.endpoint} />
+                                                        <HttpLabel {...flow.endpoint} size="xs" />
                                                     </Table.Cell>
                                                     <Table.Cell bordered className="text-white">
                                                         {flow.description}
