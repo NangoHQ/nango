@@ -1,5 +1,5 @@
 <div align="center">
-  
+
 <img src="/assets/nango-logo.png?raw=true" width="350">
 
 </div>
@@ -29,7 +29,7 @@ Nango is a single API to interact with all other external APIs. It should be the
 
 <img src="/docs-v2/images/overview.png">
 
-## 👩‍💻 Sample code 
+## 👩‍💻 Sample code
 
 Initiate a new OAuth flow from your frontend:
 
@@ -83,9 +83,9 @@ Sign up for free and try the interactive demo:
 # 🙋‍♀️ Why is Nango open-source?
 
 Our mission is to enable all SaaS to seamlessly integrate together. By being open source, every engineer can contribute improvements to the platform for everyone:
-- [Contribute an API](/customize/guides/contribute-an-api)
-- [Create a custom integration](/customize/guides/create-a-custom-integration)
-- [Extend an integration template](/customize/guides/extend-an-integration-template)
+- [Contribute an API](https://docs.nango.dev/customize/guides/contribute-an-api)
+- [Create a custom integration](https://docs.nango.dev/customize/guides/create-a-custom-integration)
+- [Extend an integration template](https://docs.nango.dev/customize/guides/extend-an-integration-template)
 
 # 📚 Learn more
 

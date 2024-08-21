@@ -198,6 +198,18 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
     });
 }
 
+export function interpolateObjectValues(obj: Record<string, string | undefined>, connectionConfig: Record<string, any>): Record<string, string | undefined> {
+    const interpolated: Record<string, string | undefined> = {};
+    for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'string') {
+            interpolated[key] = interpolateStringFromObject(value, { connectionConfig });
+        } else {
+            interpolated[key] = value;
+        }
+    }
+    return interpolated;
+}
+
 export function connectionCopyWithParsedConnectionConfig(connection: Connection) {
     const connectionCopy = Object.assign({}, connection);
 
