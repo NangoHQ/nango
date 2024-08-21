@@ -17,6 +17,7 @@ export async function* paginate<TResult>({
 
         if (res.data?.hasMore) {
             const next = res.data?.links?.find((link: { rel: string; href: string }) => link.rel === 'next')?.href;
+            if (!next) break;
             const offset = next.match(/offset=(\d+)/)?.[1];
             if (!offset) break;
             config.params = { limit, offset };
