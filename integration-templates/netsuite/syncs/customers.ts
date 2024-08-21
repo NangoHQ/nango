@@ -42,41 +42,46 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
     }
 }
 
-function getAddress(customerId: string, nango: NangoSync): Promise<NetsuiteAddress> {
-    return nango
-        .get({
+async function getAddress(customerId: string, nango: NangoSync): Promise<NetsuiteAddress> {
+    const emptyAddress = {
+        addressLine1: null,
+        addressLine2: null,
+        city: null,
+        zip: null,
+        country: null,
+        state: null
+    };
+    try {
+        const addressBookRes: NSAPI_GetResponses<any> = await nango.get({
             endpoint: `/customer/${customerId}/addressbook`,
             retries
-        })
-        .then((res: NSAPI_GetResponses<any>) => {
-            const addressBookIds = res.data.items.map((addressLink: NSAPI_Links) => {
-                return addressLink.links?.find((link) => link.rel === 'self')?.href?.match(/\/addressBook\/(\d+)/)?.[1];
-            });
-            // NOTE: only first address is being used
-            if (addressBookIds.length > 0) {
-                return nango
-                    .get({
-                        endpoint: `/customer/${customerId}/addressBook/${addressBookIds[0]}/addressBookAddress`,
-                        retries
-                    })
-                    .then((res: NSAPI_GetResponse<NS_Address>) => {
-                        return {
-                            addressLine1: res.data.addr1 || null,
-                            addressLine2: res.data.addr2 || null,
-                            city: res.data.city || null,
-                            zip: res.data.zip || null,
-                            country: res.data.country?.id || null,
-                            state: res.data.state?.id || null
-                        };
-                    });
-            }
-            return {
-                addressLine1: null,
-                addressLine2: null,
-                city: null,
-                zip: null,
-                country: null,
-                state: null
-            };
         });
+
+        const addressBookIds = addressBookRes.data.items.map((addressLink: NSAPI_Links) => {
+            return addressLink.links?.find((link) => link.rel === 'self')?.href?.match(/\/addressBook\/(\d+)/)?.[1];
+        });
+
+        // NOTE: only first address is being used
+        if (addressBookIds.length > 0) {
+            const addressResponse: NSAPI_GetResponse<NS_Address> = await nango.get({
+                endpoint: `/customer/${customerId}/addressBook/${addressBookIds[0]}/addressBookAddress`,
+                retries
+            });
+
+            return {
+                addressLine1: addressResponse.data.addr1 || null,
+                addressLine2: addressResponse.data.addr2 || null,
+                city: addressResponse.data.city || null,
+                zip: addressResponse.data.zip || null,
+                country: addressResponse.data.country?.id || null,
+                state: addressResponse.data.state?.id || null
+            };
+        }
+        return emptyAddress;
+    } catch (error) {
+        // Note: not throwing error on address fetch failure
+        // as it is not critical for the customer data
+        await nango.log('Error fetching address', { customerId, error });
+        return emptyAddress;
+    }
 }
