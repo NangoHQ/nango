@@ -1,0 +1,12 @@
+{
+    "name": "John Name",
+    "externalId": "0000-0000",
+    "email": "some@test.com",
+    "phone": "+33123456789",
+    "addressLine1": "Rue de la rue",
+    "zip": "75001",
+    "city": "Paris",
+    "country": "France",
+    "state": null,
+    "tax_number": "1234567"
+}

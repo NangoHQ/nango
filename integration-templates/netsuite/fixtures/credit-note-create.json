@@ -1,0 +1,22 @@
+{
+    "customerId": "1234",
+    "currency": "USD",
+    "description": "My description",
+    "status": "OPEN",
+    "lines": [
+        {
+            "itemId": "item1",
+            "quantity": 1,
+            "amount": 99.99,
+            "vatCode": "A",
+            "description": "product 1"
+        },
+        {
+            "itemId": "item2",
+            "quantity": 3,
+            "amount": 1.23,
+            "vatCode": "A",
+            "description": "product 2"
+        }
+    ]
+}

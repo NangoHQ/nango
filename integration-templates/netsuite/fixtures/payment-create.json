@@ -1,0 +1,9 @@
+{
+    "customerId": "12345",
+    "description": "Payment July 2024",
+    "amount": 10.99,
+    "currency": "EUR",
+    "paymentReference": "0001",
+    "status": "DEPOSITED",
+    "applyTo": ["1234"]
+}
