@@ -345,8 +345,16 @@ class ProxyController {
                 chunks.push(data);
             });
             stringify.on('end', () => {
-                const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : 'unknown error';
-                void this.reportError(error, url, config, data, logCtx);
+                const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : '';
+                let errorData: string | Record<string, string> = data;
+                if (error.response?.headers?.['content-type']?.includes('application/json')) {
+                    try {
+                        errorData = JSON.parse(data);
+                    } catch {
+                        // Intentionally left blank - errorData will be a string
+                    }
+                }
+                void this.reportError(error, url, config, errorData, logCtx);
             });
         } else {
             await logCtx.error('Unknown error');
@@ -415,11 +423,17 @@ class ProxyController {
         }
     }
 
-    private async reportError(error: AxiosError, url: string, config: ApplicationConstructedProxyConfiguration, errorMessage: string, logCtx: LogContext) {
+    private async reportError(
+        error: AxiosError,
+        url: string,
+        config: ApplicationConstructedProxyConfiguration,
+        errorContent: string | Record<string, string>,
+        logCtx: LogContext
+    ) {
         const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
         await logCtx.http(`${error.request?.method.toUpperCase()} ${url} failed with status '${error.response?.status}'`, {
             meta: {
-                error: errorMessage
+                content: errorContent
             },
             request: {
                 method: config.method,
