@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { OutgoingHttpHeaders } from 'http';
+import type { OutgoingHttpHeaders, IncomingHttpHeaders } from 'http';
 import type { TransformCallback } from 'stream';
 import type stream from 'stream';
 import { Readable, Transform, PassThrough } from 'stream';
@@ -161,6 +161,31 @@ class ProxyController {
             }
             metrics.increment(metrics.Types.PROXY_FAILURE);
             next(err);
+        } finally {
+            const getHeaders = (hs: IncomingHttpHeaders | OutgoingHttpHeaders): Record<string, string> => {
+                const headers: Record<string, string> = {};
+                for (const [key, value] of Object.entries(hs)) {
+                    if (typeof value === 'string') {
+                        headers[key] = value;
+                    } else if (Array.isArray(value)) {
+                        headers[key] = value.join(', ');
+                    }
+                }
+                return headers;
+            };
+            const reqHeaders = getHeaders(req.headers);
+            reqHeaders['authorization'] = 'REDACTED';
+            await logCtx?.enrichOperation({
+                request: {
+                    url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+                    method: req.method,
+                    headers: reqHeaders
+                },
+                response: {
+                    code: res.statusCode,
+                    headers: getHeaders(res.getHeaders())
+                }
+            });
         }
     }
 
@@ -213,7 +238,18 @@ class ProxyController {
         logCtx: LogContext;
     }) {
         const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
-        await logCtx.info(`${config.method.toUpperCase()} ${url} was successful`, { headers: safeHeaders });
+        await logCtx.http(`${config.method.toUpperCase()} ${url} was successful`, {
+            meta: null,
+            request: {
+                method: config.method,
+                url,
+                headers: safeHeaders
+            },
+            response: {
+                code: responseStream.status,
+                headers: responseStream.headers as Record<string, string>
+            }
+        });
 
         const contentType = responseStream.headers['content-type'];
         const isJsonResponse = contentType && contentType.includes('application/json');
@@ -381,12 +417,19 @@ class ProxyController {
 
     private async reportError(error: AxiosError, url: string, config: ApplicationConstructedProxyConfiguration, errorMessage: string, logCtx: LogContext) {
         const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
-        await logCtx.error(`${error.request?.method.toUpperCase()} ${url} failed with status '${error.response?.status}'`, {
-            code: error.response?.status,
-            url,
-            error: new Error(errorMessage),
-            requestHeaders: safeHeaders,
-            responseHeaders: error.response?.headers
+        await logCtx.http(`${error.request?.method.toUpperCase()} ${url} failed with status '${error.response?.status}'`, {
+            meta: {
+                error: errorMessage
+            },
+            request: {
+                method: config.method,
+                url,
+                headers: safeHeaders
+            },
+            response: {
+                code: error.response?.status || 500,
+                headers: error.response?.headers as Record<string, string>
+            }
         });
         await logCtx.failed();
     }
