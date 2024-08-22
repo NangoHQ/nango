@@ -1,7 +1,7 @@
 import type { NangoAction, ExactInvoiceAttachFileOutput, ExactInvoiceAttachFileInput } from '../../models';
 import type { E0_SalesInvoice, EO_Document, EO_DocumentAttachment, ResponsePostBody } from '../types';
 import { getUser } from '../helpers/get-user.js';
-import { exactInvoiceAttachFileInputSchema } from '../../schema.zod.js';
+import { exactInvoiceAttachFileInputSchema } from '../schema.zod.js';
 
 export default async function runAction(nango: NangoAction, input: ExactInvoiceAttachFileInput): Promise<ExactInvoiceAttachFileOutput> {
     const parsedInput = exactInvoiceAttachFileInputSchema.safeParse(input);
