@@ -39,7 +39,7 @@ jobs:
                     dirs=$(find integration-templates -maxdepth 1 -type d | tail -n +2)
                   else
                     echo "Automatic trigger detected. Uploading changed templates."
-                    dirs=$(echo "${{ steps.changed-files-specific.outputs.all_changed_files }}" | xargs -n1 dirname | sort -u)
+                    dirs=$(echo "${{ steps.changed-files-specific.outputs.all_changed_files }}" | cut -d'/' -f1,2 | sort -u)
                   fi
                   for dir in $dirs; do
                     integration=$(basename $dir)
