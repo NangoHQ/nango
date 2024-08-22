@@ -3,10 +3,37 @@ import * as Table from '../../../../../components/ui/Table';
 import { HttpLabel } from '../../../../../components/HttpLabel';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import { Link } from 'react-router-dom';
+import { EmptyState } from '../../../../../components/EmptyState';
+import { HelpFooter } from '../../../components/HelpFooter';
 
 export type NangoSyncConfigWithEndpoint = NangoSyncConfig & { endpoint: { verb: HTTP_VERB; path: string } };
 
 export const EndpointsList: React.FC<{ byGroup: { name: string; flows: NangoSyncConfigWithEndpoint[] }[] }> = ({ byGroup }) => {
+    if (byGroup.length <= 0) {
+        return (
+            <EmptyState
+                title="No available endpoints"
+                help={
+                    <>
+                        There is no{' '}
+                        <a
+                            className="text-text-blue hover:text-text-light-blue"
+                            href="https://docs.nango.dev/understand/concepts/templates"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            integration template
+                        </a>{' '}
+                        available for this API yet.
+                    </>
+                }
+            >
+                <div className="mt-10">
+                    <HelpFooter />
+                </div>
+            </EmptyState>
+        );
+    }
     return (
         <div className="text-sm text-white flex flex-col gap-10">
             <div className="flex flex-col gap-8">
@@ -32,7 +59,7 @@ export const EndpointsList: React.FC<{ byGroup: { name: string; flows: NangoSync
                                                     <Table.Cell bordered className="text-white">
                                                         <HttpLabel {...flow.endpoint} size="xs" />
                                                     </Table.Cell>
-                                                    <Table.Cell bordered className="text-white">
+                                                    <Table.Cell bordered className="text-white truncate">
                                                         {flow.description}
                                                     </Table.Cell>
                                                     <Table.Cell bordered className="text-white">

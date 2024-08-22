@@ -21,7 +21,7 @@ export const InfoBloc: React.FC<{ title: string; help?: React.ReactNode; childre
                             </Button>
                         </Tooltip.TooltipTrigger>
                         <Tooltip.TooltipContent side="right">
-                            <div className="flex text-white text-sm upper">{help}</div>
+                            <div className="flex text-white text-sm">{help}</div>
                         </Tooltip.TooltipContent>
                     </Tooltip.Tooltip>
                 )}

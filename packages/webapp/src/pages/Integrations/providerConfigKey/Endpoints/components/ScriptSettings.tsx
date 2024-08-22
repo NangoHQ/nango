@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, GearIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, GearIcon, QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import Button from '../../../../../components/ui/button/Button';
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '../../../../../components/ui/Drawer';
 import { InfoBloc } from '../../../../../components/InfoBloc';
@@ -6,8 +6,10 @@ import { EnableDisableSync } from '../../../components/EnableDisableSync';
 import type { GetIntegration } from '@nangohq/types';
 import type { NangoSyncConfigWithEndpoint } from './List';
 import { githubIntegrationTemplates } from '../../../../../utils/utils';
+import * as Tooltip from '../../../../../components/ui/Tooltip';
 
 const drawerWidth = '630px';
+
 export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['data']; flow: NangoSyncConfigWithEndpoint }> = ({ integration, flow }) => {
     const isSync = flow.type === 'sync';
 
@@ -52,8 +54,22 @@ export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['
                                 <InfoBloc title="Sync Type" className="min-w-[250px]">
                                     {flow.sync_type}
                                 </InfoBloc>
-                                <InfoBloc title="Sync Frequency" className="min-w-[250px] capitalize">
-                                    {flow.runs}
+                                <InfoBloc title="Sync Frequency" className="min-w-[250px]">
+                                    <div className="capitalize">{flow.runs}</div>
+                                    {!flow.is_public && (
+                                        <Tooltip.Tooltip delayDuration={0}>
+                                            <Tooltip.TooltipTrigger asChild>
+                                                <Button variant="icon" size={'xs'}>
+                                                    <QuestionMarkCircledIcon />
+                                                </Button>
+                                            </Tooltip.TooltipTrigger>
+                                            <Tooltip.TooltipContent side="bottom">
+                                                <div className="flex text-white text-sm">
+                                                    Edit the frequency directly in your <code className="font-code px-2">nango.yaml</code>
+                                                </div>
+                                            </Tooltip.TooltipContent>
+                                        </Tooltip.Tooltip>
+                                    )}
                                 </InfoBloc>
                                 <InfoBloc title="Sync Metadata" className="min-w-[250px]">
                                     {flow.input || 'n/a'}
