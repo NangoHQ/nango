@@ -44,7 +44,7 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
                 input: model
             });
         } else {
-            return curlSnippet(baseUrl, endpointAction, secretKey, connectionId, providerConfigKey, model, 'POST');
+            return curlSnippet({ baseUrl, endpoint: endpointAction, secretKey, connectionId, providerConfigKey, input: model, method: 'POST' });
         }
     }, [title, providerConfigKey, connectionId, secretKey, language, baseUrl]);
 

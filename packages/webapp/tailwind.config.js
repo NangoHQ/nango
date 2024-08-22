@@ -70,6 +70,7 @@ module.exports = {
                 largecell: '480px'
             },
             fontSize: {
+                xs: '11px',
                 s: '13px',
                 '3xl': '28px'
             },

@@ -105,7 +105,7 @@ export interface NangoSyncConfig {
     scopes?: string[];
     metadata?: NangoConfigMetadata;
     track_deletes?: boolean;
-    returns: string[];
+    returns: string[] | string;
     models: any[];
     endpoints: NangoSyncEndpoint[];
     is_public?: boolean | null;
