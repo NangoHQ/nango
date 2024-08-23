@@ -330,6 +330,7 @@
                 "integrations/all/box",
                 "integrations/all/braintree",
                 "integrations/all/brex",
+                "integrations/all/builder-io",
                 "integrations/all/calendly",
                 "integrations/all/canny",
                 "integrations/all/certn",
