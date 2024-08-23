@@ -1201,6 +1201,23 @@ google-ads:
             cursor_name_in_request: pageToken
             response_path: results
     docs: https://docs.nango.dev/integrations/all/google-ads
+google-play:
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.google.com/o/oauth2/auth
+    token_url: https://accounts.google.com/o/oauth2/token
+    authorization_params:
+        response_type: code
+        access_type: offline
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://play.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-play
 gorgias:
     categories:
         - e-commerce

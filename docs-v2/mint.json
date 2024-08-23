@@ -388,6 +388,7 @@
                 "integrations/all/google-drive",
                 "integrations/all/google-mail",
                 "integrations/all/google-sheet",
+                "integrations/all/google-play",
                 "integrations/all/gorgias",
                 "integrations/all/greenhouse",
                 "integrations/all/gumroad",
