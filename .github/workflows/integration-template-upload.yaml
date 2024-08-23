@@ -1,14 +1,10 @@
 name: Upload integration templates to S3
 
 on:
+    workflow_dispatch:
     push:
         branches:
             - master
-    pull_request:
-        branches:
-            - master
-        types:
-            - closed
 
 concurrency:
     group: templates-${{ github.event.pull_request.number || github.ref }}
@@ -17,7 +13,6 @@ concurrency:
 jobs:
     template-upload:
         runs-on: ubuntu-latest
-        if: (github.event_name == 'push') || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
         steps:
             - name: Checkout repository
@@ -28,6 +23,7 @@ jobs:
                   npm install -g nango
 
             - name: Get specific changed files
+              if: github.event_name != 'workflow_dispatch'
               id: changed-files-specific
               uses: tj-actions/changed-files@v41
               with:
@@ -36,18 +32,16 @@ jobs:
                       integration-templates/**/*
 
             - name: Process and Upload changed directories to S3
-              if: steps.changed-files-specific.outputs.any_changed == 'true'
+              if: steps.changed-files-specific.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
               run: |
-                  wd=$(pwd)
-
-                  echo "Changed files:"
-                  echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
-
-                  for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
-                    dir=$(dirname $file)
-
-                    # just grab the first two parts of the path
-                    dir=$(echo $dir | cut -d'/' -f1,2)
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    echo "Manual trigger detected. Uploading all templates."
+                    dirs=$(find integration-templates -maxdepth 1 -type d | tail -n +2)
+                  else
+                    echo "Automatic trigger detected. Uploading changed templates."
+                    dirs=$(echo "${{ steps.changed-files-specific.outputs.all_changed_files }}" | cut -d'/' -f1,2 | sort -u)
+                  fi
+                  for dir in $dirs; do
                     integration=$(basename $dir)
 
                     mkdir -p /tmp/nango-temp/nango-integrations/$integration
@@ -56,10 +50,11 @@ jobs:
                     cp -r $dir/* /tmp/nango-temp/nango-integrations/$integration/
 
                     cd /tmp/nango-temp/nango-integrations
+                    npm install zod soap botbuilder
                     nango compile
 
-                    cp -r dist/ $wd/$dir/
-                    cp -r .nango/ $wd/$dir/
+                    cp -r dist/ $GITHUB_WORKSPACE/$dir/
+                    cp -r .nango/ $GITHUB_WORKSPACE/$dir/
 
                     cd -
                     rm -rf /tmp/nango-temp

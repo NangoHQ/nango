@@ -271,6 +271,23 @@ battlenet:
     token_params:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/battlenet
+bigcommerce:
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://login.bigcommerce.com/oauth2/authorize
+    token_url: https://login.bigcommerce.com/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        context: stores/${connectionConfig.storeHash}
+        account_uuid: ${connectionConfig.accountUuid}
+    token_params:
+        context: stores/${connectionConfig.storeHash}
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.bigcommerce.com/stores/${connectionConfig.storeHash}
+    docs: https://docs.nango.dev/integrations/all/bigcommerce
 bitbucket:
     categories:
         - dev-tools
@@ -473,6 +490,18 @@ certn-partner:
             method: GET
             endpoint: /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
+chargebee:
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.chargebee.com
+        verification:
+            method: GET
+            endpoint: /api/v2/business_entities
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/chargebee
 checkr-partner:
     categories:
         - legal
@@ -509,6 +538,34 @@ checkr-partner-staging:
     webhook_routing_script: checkrWebhookRouting
     post_connection_script: checkrPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr
+checkout-com:
+    categories:
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://access.checkout.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            Content-Type: application/json
+            Accept: application/json
+        base_url: https://api.checkout.com
+    docs: https://docs.nango.dev/integrations/all/checkout-com
+checkout-com-sandbox:
+    categories:
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://access.sandbox.checkout.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            Content-Type: application/json
+            Accept: application/json
+        base_url: https://api.sandbox.checkout.com
+    docs: https://docs.nango.dev/integrations/all/checkout-com
 chorus:
     auth_mode: BASIC
     proxy:
@@ -575,6 +632,20 @@ coda:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/coda
+codeclimate:
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        headers:
+            Accept: application/vnd.api+json
+            Authorization: Token token=${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/user
+    docs: https://docs.nango.dev/integrations/all/codeclimate
 confluence:
     categories:
         - knowledge-base
@@ -1392,6 +1463,20 @@ highlevel-white-label:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/highlevel
+holded:
+    categories:
+        - accounting
+        - crm
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.holded.com/api
+        headers:
+            key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /invoicing/v1/contacts
+    docs: https://docs.nango.dev/integrations/all/holded
 hubspot:
     categories:
         - marketing
@@ -1764,6 +1849,18 @@ medallia:
             after: 'X-RateLimit-Reset'
         base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://docs.nango.dev/integrations/all/medallia
+metabase:
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /api/database
+    docs: https://docs.nango.dev/integrations/all/metabase
 microsoft:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize

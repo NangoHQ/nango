@@ -25,7 +25,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "axios": "^1.2.0"
+        "axios": "^1.7.4"
     },
     "engines": {
         "node": ">=18.0"

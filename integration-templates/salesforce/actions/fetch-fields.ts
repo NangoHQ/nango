@@ -1,5 +1,5 @@
 import type { NangoAction, SalesforceFieldSchema, ProxyConfiguration, ActionResponseError, ChildField, Field, SalesforceEntity } from '../../models';
-import { fieldSchema, childFieldSchema } from '../../schema.zod.js';
+import { fieldSchema, childFieldSchema } from '../schema.zod.js';
 
 /**
  * This action fetches the available objects for a given organization in Salesforce.

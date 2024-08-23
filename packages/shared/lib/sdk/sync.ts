@@ -457,6 +457,7 @@ export class NangoAction {
             throw new Error('Missing provider config key');
         }
         return {
+            method: 'GET',
             ...config,
             providerConfigKey: config.providerConfigKey,
             connectionId: config.connectionId,
@@ -475,6 +476,10 @@ export class NangoAction {
 
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         this.exitSyncIfAborted();
+        if (!config.method) {
+            config.method = 'GET';
+        }
+
         if (this.dryRun) {
             return this.nango.proxy(config);
         } else {
@@ -510,35 +515,35 @@ export class NangoAction {
         }
     }
 
-    public async get<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+    public async get<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'GET'
         });
     }
 
-    public async post<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+    public async post<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'POST'
         });
     }
 
-    public async put<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+    public async put<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'PUT'
         });
     }
 
-    public async patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+    public async patch<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'PATCH'
         });
     }
 
-    public async delete<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+    public async delete<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'DELETE'
