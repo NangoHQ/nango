@@ -239,7 +239,6 @@ class ProxyController {
     }) {
         const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
         await logCtx.http(`${config.method.toUpperCase()} ${url} was successful`, {
-            meta: null,
             request: {
                 method: config.method,
                 url,
