@@ -6,7 +6,6 @@ import type { Result } from '@nangohq/utils';
 import { NangoError, deserializeNangoError } from '../utils/error.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type { NangoConnection } from '../models/Connection.js';
-import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
 import { v4 as uuid } from 'uuid';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
@@ -110,9 +109,13 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         const startTime = Date.now();
-        const workflowId = `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connection.connection_id}.${uuid()}`;
         try {
-            await logCtx.info(`Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`, { input });
+            await logCtx.info(`Starting action '${actionName}'`, {
+                input,
+                action: actionName,
+                connection: connection.connection_id,
+                integration: connection.provider_config_key
+            });
 
             let parsedInput = null;
             try {
@@ -144,7 +147,7 @@ export class Orchestrator {
             const res = actionResult.mapError((err) => {
                 return (
                     deserializeNangoError(err.payload) ||
-                    new NangoError('action_failure', { error: err.message, ...(err.payload ? { payload: err.payload } : {}) })
+                    new NangoError('action_script_failure', { error: err.message, ...(err.payload ? { payload: err.payload } : {}) })
                 );
             });
 
@@ -152,16 +155,20 @@ export class Orchestrator {
                 throw res.error;
             }
 
-            const content = `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
+            const content = `The action was successfully run`;
 
-            await logCtx.info(content);
+            await logCtx.info(content, {
+                action: actionName,
+                connection: connection.connection_id,
+                integration: connection.provider_config_key,
+                truncated_response: JSON.stringify(res.value, null, 2)?.slice(0, 100)
+            });
 
             await telemetry.log(
                 LogTypes.ACTION_SUCCESS,
                 content,
                 LogActionEnum.ACTION,
                 {
-                    workflowId,
                     input: JSON.stringify(input, null, 2),
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
@@ -181,9 +188,13 @@ export class Orchestrator {
                 formattedError = new NangoError('action_failure', { error: errorToObject(err) });
             }
 
-            const content = `The action workflow ${workflowId} failed with error: ${stringifyError(err)}`;
-
-            await logCtx.error(`Failed with error "${formattedError.type}"`, { error: formattedError });
+            const content = `The action failed`;
+            await logCtx.error(content, {
+                error: formattedError,
+                action: actionName,
+                connection: connection.connection_id,
+                integration: connection.provider_config_key
+            });
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -201,7 +212,7 @@ export class Orchestrator {
                 content,
                 LogActionEnum.ACTION,
                 {
-                    workflowId,
+                    error: stringifyError(err),
                     input: JSON.stringify(input, null, 2),
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
@@ -270,10 +281,13 @@ export class Orchestrator {
             }
         );
 
-        const workflowId = `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${syncConfig.sync_name}:${webhookName}.${connection.connection_id}.${Date.now()}`;
-
         try {
-            await logCtx.info('Starting webhook workflow', { workflowId, input });
+            await logCtx.info('Starting webhook workflow', {
+                input,
+                webhook: webhookName,
+                connection: connection.connection_id,
+                integration: connection.provider_config_key
+            });
 
             let parsedInput = null;
             try {
@@ -302,25 +316,44 @@ export class Orchestrator {
                 groupKey,
                 args
             });
-            const res = webhookResult.mapError((e) => new NangoError('webhook_failure', e.payload ?? { error: e.message }));
+            const res = webhookResult.mapError((err) => {
+                return (
+                    deserializeNangoError(err.payload) ||
+                    new NangoError('webhook_script_failure', { error: err.message, ...(err.payload ? { payload: err.payload } : {}) })
+                );
+            });
 
             if (res.isErr()) {
                 throw res.error;
             }
 
-            await logCtx.info('The webhook workflow was successfully run');
+            await logCtx.info('The webhook was successfully run', {
+                action: webhookName,
+                connection: connection.connection_id,
+                integration: connection.provider_config_key
+            });
+
             await logCtx.success();
 
             metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
             return res as Result<T, NangoError>;
-        } catch (e) {
-            const errorMessage = stringifyError(e, { pretty: true });
-            const error = new NangoError('webhook_script_failure', { errorMessage });
+        } catch (err) {
+            let formattedError: NangoError;
+            if (err instanceof NangoError) {
+                formattedError = err;
+            } else {
+                formattedError = new NangoError('webhook_failure', { error: errorToObject(err) });
+            }
 
-            await logCtx.error('The webhook workflow failed', { error: e });
+            await logCtx.error('The webhook failed', {
+                error: err,
+                webhook: webhookName,
+                connection: connection.connection_id,
+                integration: connection.provider_config_key
+            });
             await logCtx.failed();
 
-            errorManager.report(e, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: connection.environment_id,
@@ -333,8 +366,8 @@ export class Orchestrator {
             });
 
             metrics.increment(metrics.Types.WEBHOOK_FAILURE);
-            span.setTag('error', error);
-            return Err(error);
+            span.setTag('error', formattedError);
+            return Err(formattedError);
         } finally {
             span.finish();
         }
@@ -366,9 +399,12 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         const startTime = Date.now();
-        const workflowId = `${SYNC_TASK_QUEUE}.POST_CONNECTION_SCRIPT:${name}.${connection.connection_id}.${uuid()}`;
         try {
-            await logCtx.info(`Starting post connection script workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`);
+            await logCtx.info(`Starting post connection script`, {
+                postConnection: name,
+                connection: connection.connection_id,
+                integration: connection.provider_config_key
+            });
 
             const groupKey: string = 'post-connection-script';
             const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
@@ -389,22 +425,31 @@ export class Orchestrator {
                 groupKey,
                 args
             });
-            const res = result.mapError((e) => new NangoError('post_connection_failure', e.payload ?? { error: e.message }));
+
+            const res = result.mapError((err) => {
+                return (
+                    deserializeNangoError(err.payload) ||
+                    new NangoError('post_connection_script_failure', { error: err.message, ...(err.payload ? { payload: err.payload } : {}) })
+                );
+            });
 
             if (res.isErr()) {
                 throw res.error;
             }
 
-            const content = `The post connection script workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(res.value, null, 2)?.slice(0, 100)}`;
+            const content = `The post connection script was successfully run.`;
 
-            await logCtx.info(content);
+            await logCtx.info(content, {
+                postConnection: name,
+                connection: connection.connection_id,
+                integration: connection.provider_config_key
+            });
 
             await telemetry.log(
                 LogTypes.POST_CONNECTION_SCRIPT_SUCCESS,
                 content,
                 LogActionEnum.POST_CONNECTION_SCRIPT,
                 {
-                    workflowId,
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
                     providerConfigKey: connection.provider_config_key,
@@ -416,12 +461,21 @@ export class Orchestrator {
             metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
-            const errorMessage = stringifyError(err, { pretty: true });
-            const error = new NangoError('post_connection_script_failure', { errorMessage });
+            let formattedError: NangoError;
+            if (err instanceof NangoError) {
+                formattedError = err;
+            } else {
+                formattedError = new NangoError('post_connection_failure', { error: errorToObject(err) });
+            }
 
-            const content = `The post-connection-script workflow ${workflowId} failed with error: ${err}`;
+            const content = `The post connection script failed`;
 
-            await logCtx.error(content);
+            await logCtx.error(content, {
+                error: formattedError,
+                postConnection: name,
+                connection: connection.connection_id,
+                integration: connection.provider_config_key
+            });
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -438,7 +492,6 @@ export class Orchestrator {
                 content,
                 LogActionEnum.POST_CONNECTION_SCRIPT,
                 {
-                    workflowId,
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
                     providerConfigKey: connection.provider_config_key,
@@ -449,8 +502,8 @@ export class Orchestrator {
             );
 
             metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_FAILURE);
-            span.setTag('error', error);
-            return Err(error);
+            span.setTag('error', formattedError);
+            return Err(formattedError);
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
