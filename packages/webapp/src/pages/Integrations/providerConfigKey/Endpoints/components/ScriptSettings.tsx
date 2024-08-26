@@ -2,7 +2,7 @@ import { ArrowLeftIcon, GearIcon, QuestionMarkCircledIcon } from '@radix-ui/reac
 import Button from '../../../../../components/ui/button/Button';
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '../../../../../components/ui/Drawer';
 import { InfoBloc } from '../../../../../components/InfoBloc';
-import { EnableDisableSync } from '../../../components/EnableDisableSync';
+import { ScriptToggle } from '../../../components/ScriptToggle';
 import type { GetIntegration } from '@nangohq/types';
 import type { NangoSyncConfigWithEndpoint } from './List';
 import { githubIntegrationTemplates } from '../../../../../utils/utils';
@@ -28,10 +28,10 @@ export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['
                             <ArrowLeftIcon className="" />
                         </DrawerClose>
                     </div>
-                    <h2 className="text-xl font-semibold">Script Configuration</h2>
+                    <h2 className="text-xl font-semibold">Script Settings</h2>
                     <div className="flex flex-wrap gap-10 pt-7">
                         <InfoBloc title="Enabled" className="min-w-[250px]">
-                            <EnableDisableSync flow={flow} integration={integration.integration} />
+                            <ScriptToggle flow={flow} integration={integration} />
                         </InfoBloc>
                         {flow.is_public && (
                             <InfoBloc title="Source" className="min-w-[250px]">

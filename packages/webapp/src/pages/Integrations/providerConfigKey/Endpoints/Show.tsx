@@ -107,5 +107,5 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         return <EndpointOne flow={currentFlow} integration={integration} />;
     }
 
-    return <EndpointsList byGroup={byGroup} />;
+    return <EndpointsList byGroup={byGroup} integration={integration} />;
 };

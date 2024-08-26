@@ -1,14 +1,18 @@
-import type { HTTP_VERB, NangoSyncConfig } from '@nangohq/types';
+import type { GetIntegration, HTTP_VERB, NangoSyncConfig } from '@nangohq/types';
 import * as Table from '../../../../../components/ui/Table';
 import { HttpLabel } from '../../../../../components/HttpLabel';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import { Link } from 'react-router-dom';
 import { EmptyState } from '../../../../../components/EmptyState';
 import { HelpFooter } from '../../../components/HelpFooter';
+import { ScriptToggle } from '../../../components/ScriptToggle';
 
 export type NangoSyncConfigWithEndpoint = NangoSyncConfig & { endpoint: { verb: HTTP_VERB; path: string } };
 
-export const EndpointsList: React.FC<{ byGroup: { name: string; flows: NangoSyncConfigWithEndpoint[] }[] }> = ({ byGroup }) => {
+export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['data']; byGroup: { name: string; flows: NangoSyncConfigWithEndpoint[] }[] }> = ({
+    integration,
+    byGroup
+}) => {
     if (byGroup.length <= 0) {
         return (
             <EmptyState
@@ -55,7 +59,7 @@ export const EndpointsList: React.FC<{ byGroup: { name: string; flows: NangoSync
                                         const usp = new URLSearchParams(flow.endpoint);
                                         return (
                                             <Link to={`?${usp.toString()}`} key={flow.name} className="contents">
-                                                <Table.Row key={flow.name}>
+                                                <Table.Row>
                                                     <Table.Cell bordered className="text-white">
                                                         <HttpLabel {...flow.endpoint} size="xs" />
                                                     </Table.Cell>
@@ -65,7 +69,9 @@ export const EndpointsList: React.FC<{ byGroup: { name: string; flows: NangoSync
                                                     <Table.Cell bordered className="text-white">
                                                         {flow.is_public ? 'Template' : 'Custom'}
                                                     </Table.Cell>
-                                                    <Table.Cell bordered className="text-white"></Table.Cell>
+                                                    <Table.Cell bordered className="text-white">
+                                                        <ScriptToggle flow={flow} integration={integration} />
+                                                    </Table.Cell>
                                                 </Table.Row>
                                             </Link>
                                         );
