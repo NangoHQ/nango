@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { OutgoingHttpHeaders, IncomingHttpHeaders } from 'http';
+import type { OutgoingHttpHeaders } from 'http';
 import type { TransformCallback } from 'stream';
 import type stream from 'stream';
 import { Readable, Transform, PassThrough } from 'stream';
@@ -10,7 +10,7 @@ import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration } from '@nangohq/shared';
 import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
-import { metrics, getLogger, axiosInstance as axios } from '@nangohq/utils';
+import { metrics, getLogger, axiosInstance as axios, getHeaders } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
@@ -162,17 +162,6 @@ class ProxyController {
             metrics.increment(metrics.Types.PROXY_FAILURE);
             next(err);
         } finally {
-            const getHeaders = (hs: IncomingHttpHeaders | OutgoingHttpHeaders): Record<string, string> => {
-                const headers: Record<string, string> = {};
-                for (const [key, value] of Object.entries(hs)) {
-                    if (typeof value === 'string') {
-                        headers[key] = value;
-                    } else if (Array.isArray(value)) {
-                        headers[key] = value.join(', ');
-                    }
-                }
-                return headers;
-            };
             const reqHeaders = getHeaders(req.headers);
             reqHeaders['authorization'] = 'REDACTED';
             await logCtx?.enrichOperation({
