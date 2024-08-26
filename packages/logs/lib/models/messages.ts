@@ -204,6 +204,7 @@ export async function update(opts: { id: OperationRow['id']; data: SetRequired<P
     await client.update({
         index: getFullIndexName(indexMessages.index, opts.data.createdAt),
         id: opts.id,
+        retry_on_conflict: 3,
         refresh: isTest,
         body: {
             doc: {
