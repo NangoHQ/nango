@@ -80,16 +80,23 @@ export class LogContextStateless {
         });
     }
 
+    async http(
+        message: string,
+        data: {
+            request: MessageRow['request'];
+            response: MessageRow['response'];
+            meta?: MessageRow['meta'];
+        }
+    ): Promise<boolean> {
+        const level: MessageRow['level'] = data.response && data.response.code >= 400 ? 'error' : 'info';
+        return await this.log({ type: 'http', level, message, ...data, source: 'internal' });
+    }
+
     /**
      * @deprecated Only there for retro compat
      */
     async trace(message: string, meta: MessageMeta | null = null): Promise<boolean> {
         return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
-    }
-
-    async http(message: string, data: Pick<MessageRow, 'request' | 'response' | 'meta'>): Promise<boolean> {
-        const level: MessageRow['level'] = data.response && data.response.code >= 400 ? 'error' : 'info';
-        return await this.log({ type: 'http', level, message, ...data, source: 'internal' });
     }
 }
 

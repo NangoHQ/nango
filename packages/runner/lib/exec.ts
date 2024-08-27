@@ -60,7 +60,9 @@ export async function exec(
                 },
                 Buffer,
                 setTimeout,
-                Error
+                Error,
+                URL,
+                URLSearchParams
             };
 
             const context = vm.createContext(sandbox);

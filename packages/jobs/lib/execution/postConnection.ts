@@ -121,7 +121,6 @@ export async function handlePostConnectionSuccess({ nangoProps }: { nangoProps: 
         createdAt: Date.now()
     });
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
-    await logCtx.info(content);
     await logCtx.success();
 }
 

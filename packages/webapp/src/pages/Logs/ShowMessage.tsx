@@ -12,13 +12,16 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
     }, [message.createdAt]);
 
     const payload = useMemo(() => {
-        if (!message.meta && !message.error) {
+        if (!message.meta && !message.error && !message.request && !message.response) {
             return null;
         }
 
-        const pl: Record<string, any> = {};
-        if (message.meta) {
-            pl.output = message.meta;
+        const pl: Record<string, any> = message.meta ? { ...message.meta } : {};
+        if (message.request) {
+            pl.request = message.request;
+        }
+        if (message.response) {
+            pl.response = message.response;
         }
         if (message.error) {
             pl.error = message.error.message;

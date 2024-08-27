@@ -436,7 +436,10 @@ export class DryRunService {
                         }
                     },
                     Buffer,
-                    setTimeout
+                    setTimeout,
+                    Error,
+                    URL,
+                    URLSearchParams
                 };
 
                 const context = vm.createContext(sandbox);
