@@ -2,17 +2,21 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import type { PutUpgradePreBuiltFlow } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { flowConfig } from '../../../sync/deploy/postConfirmation.js';
 import { logContextGetter } from '@nangohq/logs';
-import { upgradePreBuilt as upgradePrebuiltFlow } from '@nangohq/shared';
+import { configService, flowService, getSyncConfigById, upgradePreBuilt as upgradePrebuiltFlow } from '@nangohq/shared';
+import { flowConfig } from '../../../sync/deploy/postConfirmation.js';
 
-const validation = flowConfig.extend({
-    id: z.number(),
-    upgrade_version: z.string(),
-    last_deployed: z.string(),
-    is_public: z.literal(true),
-    pre_built: z.literal(true)
-});
+const validation = z
+    .object({
+        id: z.number(),
+        provider: z.string().min(1).max(255),
+        scriptName: z.string().min(1).max(255),
+        type: flowConfig.shape.type,
+        upgradeVersion: z.string(),
+        lastDeployed: z.string(),
+        providerConfigKey: z.string().min(1).max(255)
+    })
+    .strict();
 
 export const putUpgradePreBuilt = asyncWrapper<PutUpgradePreBuiltFlow>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -22,7 +26,6 @@ export const putUpgradePreBuilt = asyncWrapper<PutUpgradePreBuiltFlow>(async (re
     }
 
     const val = validation.safeParse(req.body);
-
     if (!val.success) {
         res.status(400).send({
             error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }
@@ -30,13 +33,40 @@ export const putUpgradePreBuilt = asyncWrapper<PutUpgradePreBuiltFlow>(async (re
         return;
     }
 
-    const flowConfig: PutUpgradePreBuiltFlow['Body'] = val.data;
+    const body: PutUpgradePreBuiltFlow['Body'] = val.data;
     const { environment, account } = res.locals;
+
+    const syncConfig = await getSyncConfigById(environment.id, body.id);
+    if (!syncConfig) {
+        res.status(400).send({
+            error: { code: 'unknown_sync_config' }
+        });
+        return;
+    }
+
+    const config = await configService.getProviderConfig(body.providerConfigKey, environment.id);
+    if (!config) {
+        res.status(400).send({ error: { code: 'unknown_provider' } });
+        return;
+    }
+
+    const flow = flowService.getFlowByIntegrationAndName({ provider: body.provider, type: body.type, scriptName: body.scriptName });
+    if (!flow) {
+        res.status(400).send({ error: { code: 'unknown_flow' } });
+        return;
+    }
+
+    if (flow.version !== body.upgradeVersion) {
+        res.status(400).send({ error: { code: 'invalid_version' } });
+        return;
+    }
 
     const result = await upgradePrebuiltFlow({
         environment,
         account,
-        flowConfig,
+        config,
+        syncConfig,
+        flow,
         logContextGetter
     });
 

@@ -8,12 +8,12 @@ import {
     deployPreBuilt as deployPreBuiltSyncConfig,
     syncManager,
     remoteFileService,
-    getNangoConfigIdAndLocationFromId,
     getSyncsByConnectionIdsAndEnvironmentIdAndSyncName,
     enableScriptConfig as enableConfig,
     disableScriptConfig as disableConfig,
     environmentService,
-    getSyncConfigsAsStandardConfig
+    getSyncConfigsAsStandardConfig,
+    getSyncConfigById
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
@@ -53,7 +53,6 @@ class FlowController {
                 environment,
                 account,
                 configs: config,
-                nangoYamlBody: req.body.nangoYamlBody || '',
                 logContextGetter,
                 orchestrator
             });
@@ -96,8 +95,7 @@ class FlowController {
             } else {
                 // it has an id, so it's either a public template that is active, or a private template
                 // either way, we need to fetch it from the users directory in s3
-                const configLookupResult = await getNangoConfigIdAndLocationFromId(id as number);
-
+                const configLookupResult = await getSyncConfigById(environmentId, id as number);
                 if (!configLookupResult) {
                     res.status(400).send('Invalid file reference');
                     return;

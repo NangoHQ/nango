@@ -15,24 +15,13 @@ export interface FlowProps {
     provider: string;
     providerConfigKey: string;
     reload: () => void;
-    rawName?: string;
     connections: Connection[];
     endpoints?: EndpointResponse;
     setIsEnabling?: (isEnabling: boolean) => void;
     showSpinner?: boolean;
 }
 
-export default function EnableDisableSync({
-    flow,
-    endpoints,
-    provider,
-    providerConfigKey,
-    reload,
-    rawName,
-    connections,
-    setIsEnabling,
-    showSpinner
-}: FlowProps) {
+export default function EnableDisableSync({ flow, endpoints, provider, providerConfigKey, reload, connections, setIsEnabling, showSpinner }: FlowProps) {
     const env = useStore((state) => state.env);
     const createFlow = useCreateFlow(env);
     const syncs = endpoints?.allFlows?.syncs;
@@ -77,14 +66,14 @@ export default function EnableDisableSync({
         setVisible(true);
     };
 
-    const createNewFlow = async (flow: PostPreBuiltDeploy['Body']['flow']) => {
+    const createNewFlow = async (body: PostPreBuiltDeploy['Body']) => {
         setModalShowSpinner(true);
         if (setIsEnabling) {
             setIsEnabling(true);
         }
-        const res = await createFlow({ flow });
+        const res = await createFlow(body);
 
-        return finalizeEnableSync(res, flow.model_schema as any); // TODO: fix this type
+        return finalizeEnableSync(res);
     };
 
     const reEnableFlow = async (flow: any): Promise<boolean> => {
@@ -98,10 +87,10 @@ export default function EnableDisableSync({
             body: JSON.stringify(flow)
         });
 
-        return finalizeEnableSync(res, flow.model_schema); // TODO: fix this type
+        return finalizeEnableSync(res);
     };
 
-    const finalizeEnableSync = async (res: Response | undefined, _model_schema: string): Promise<boolean> => {
+    const finalizeEnableSync = async (res: Response | undefined): Promise<boolean> => {
         if (!res) {
             setModalShowSpinner(false);
             if (setIsEnabling) {
@@ -175,25 +164,7 @@ export default function EnableDisableSync({
                 id: flow.id
             });
         } else {
-            success = await createNewFlow({
-                provider,
-                providerConfigKey,
-                type: flow.type,
-                name: flow.name,
-                runs: flow.runs as string,
-                auto_start: flow.auto_start === true,
-                models: flow.models.map((model) => model.name),
-                input: flow.input,
-                metadata: {
-                    description: flow.description,
-                    scopes: flow.scopes
-                },
-                endpoints: flow.endpoints,
-                is_public: flow.is_public,
-                model_schema: JSON.stringify(flow.models),
-                public_route: rawName || provider,
-                track_deletes: flow.track_deletes
-            });
+            success = await createNewFlow({ provider, providerConfigKey, type: flow.type, scriptName: flow.name });
         }
 
         if (success) {

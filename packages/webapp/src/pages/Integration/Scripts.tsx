@@ -108,7 +108,6 @@ export default function Scripts(props: ScriptProps) {
                                                     provider={integration.provider}
                                                     providerConfigKey={integration.unique_key}
                                                     reload={reload}
-                                                    rawName={endpoints?.disabledFlows?.rawName}
                                                     connections={integration?.connections}
                                                 />
                                             </Table.Cell>
@@ -157,7 +156,6 @@ export default function Scripts(props: ScriptProps) {
                                                     provider={integration.provider}
                                                     providerConfigKey={integration.unique_key}
                                                     reload={reload}
-                                                    rawName={endpoints?.disabledFlows?.rawName}
                                                     connections={integration?.connections}
                                                     showSpinner={true}
                                                 />
