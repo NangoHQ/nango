@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.5] - 2024-08-27
+
+### Added
+
+- POST /connection: add support for OAUTH2_CC auth mode (#2607) by @TBonnin
+- *(integrations)* Add support for chargebee (#2615) by @edishu
+- *(integrations)* Add support for metabase (#2617) by @hassan254-prog
+- *(integrations)* Add support for checkout.com (#2616) by @hassan254-prog
+- Add integration provider for Holded (#2620) by @vrouet
+- *(integrations)* Add support for bigcommerce (#2621) by @hassan254-prog
+- *(integrations)* Add support for codeclimate (#2625) by @hassan254-prog
+- Adding templates for Netsuite (#2618) by @TBonnin
+- *(pagination)* [nan-1532] add offset_start_value (#2638) by @khaliqgant
+- *(scripts)* Add missing native objects (#2639) by @bodinsamuel
+
+### Changed
+
+- Display job and stage in github action name (#2610) by @TBonnin
+- Document Google Drive template on docs (#2611) by @rguldener
+- *(deps)* Bump axios from 1.7.2 to 1.7.4 (#2612) by @dependabot[bot]
+- Update aws s3 lib to fix fast-xml-parse vulnerability (#2626) by @TBonnin
+- Allow to run templates upload gh action manually (#2629) by @TBonnin
+
+### Fixed
+
+- *(url)* Handle special characters in connection params (#2608) by @hassan254-prog
+- Runner request to jobs /idle endpoint (#2614) by @TBonnin
+- Update error message for provider key missing (#2622) by @kndwin
+- *(api)* Allow disabling rate limit (#2623) by @bodinsamuel
+- *(api)* DELETE integration split logic, dedicated files (#2624) by @bodinsamuel
+- Upload templates github action (#2627) by @TBonnin
+- Disable proxy debug log by default (#2628) by @TBonnin
+- Wrong file path for schema.zod.js in templates (#2630) by @TBonnin
+- *(upload templates)* Using cut instead of dirname (#2632) by @TBonnin
+- Better payload for proxy logs and operations (#2631) by @TBonnin
+- Action and webhook logs improvements (#2634) by @TBonnin
+
 ## [v0.42.4] - 2024-08-13
 
 ### Added
@@ -1715,6 +1752,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.5]: https://github.com/NangoHQ/nango/compare/v0.42.4..v0.42.5
 [v0.42.4]: https://github.com/NangoHQ/nango/compare/v0.42.2..v0.42.4
 [v0.42.2]: https://github.com/NangoHQ/nango/compare/v0.42.0..v0.42.2
 [v0.42.0]: https://github.com/NangoHQ/nango/compare/v0.41.1..v0.42.0
