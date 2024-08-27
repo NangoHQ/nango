@@ -46,7 +46,7 @@ interface InternalIncomingPreBuiltFlowConfig {
 export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     provider: string;
     is_public: boolean;
-    public_route?: string;
+    public_route: string;
     name: string;
     syncName?: string; // legacy
     nango_config_id?: number;

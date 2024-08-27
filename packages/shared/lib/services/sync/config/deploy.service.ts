@@ -268,8 +268,10 @@ export async function upgradePreBuilt({
         ...syncConfig,
         created_at: now,
         updated_at: now,
-        version: flow.version!
+        version: flow.version!,
+        model_schema: JSON.stringify(flow.models) as any
     };
+    delete flowData.id;
 
     try {
         const [syncId] = await db.knex.from<SyncConfig>(TABLE).insert(flowData).returning('id');
@@ -359,6 +361,9 @@ export async function deployPreBuilt({
     orchestrator: Orchestrator;
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
     const [firstConfig] = configs;
+    if (!firstConfig || !firstConfig.public_route) {
+        return { success: false, error: new NangoError('no_config'), response: null };
+    }
 
     const providerConfigKeys = [];
 
@@ -374,7 +379,7 @@ export async function deployPreBuilt({
 
     // this is a public template so copy it from the public location
     await remoteFileService.copy(
-        firstConfig?.public_route as string,
+        firstConfig.public_route,
         nangoConfigFile,
         `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`,
         environment.id,
@@ -480,7 +485,7 @@ export async function deployPreBuilt({
 
         if (is_public) {
             await remoteFileService.copy(
-                config.public_route as string,
+                config.public_route,
                 `${type}s/${sync_name}.ts`,
                 `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}.ts`,
                 environment.id,
