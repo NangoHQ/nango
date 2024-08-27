@@ -4,10 +4,11 @@ import { useModal } from '@geist-ui/core';
 import ActionModal from '../../../components/ui/ActionModal';
 import ToggleButton from '../../../components/ui/button/ToggleButton';
 import Spinner from '../../../components/ui/Spinner';
-import type { PreBuiltFlow, Flow, Connection, Sync } from '../../../types';
+import type { Flow, Connection } from '../../../types';
 import type { EndpointResponse } from '../Show';
 import { apiFetch, useCreateFlow } from '../../../utils/api';
 import { useStore } from '../../../store';
+import type { PostPreBuiltDeploy } from '@nangohq/types';
 
 export interface FlowProps {
     flow: Flow;
@@ -20,18 +21,6 @@ export interface FlowProps {
     setIsEnabling?: (isEnabling: boolean) => void;
     showSpinner?: boolean;
 }
-
-interface ExtendedPreBuiltFlow extends PreBuiltFlow {
-    id?: number;
-    provider: string;
-    providerConfigKey: string;
-    public_route: string;
-    model_schema: string;
-}
-
-type ExtendedFlow = ExtendedPreBuiltFlow &
-    Pick<Flow, 'sync_type' | 'track_deletes' | 'scopes' | 'input' | 'returns' | 'endpoints' | 'is_public' | 'output' | 'pre_built'> &
-    Pick<Sync, 'metadata'>;
 
 export default function EnableDisableSync({
     flow,
@@ -88,17 +77,17 @@ export default function EnableDisableSync({
         setVisible(true);
     };
 
-    const createNewFlow = async (flow: ExtendedFlow) => {
+    const createNewFlow = async (flow: PostPreBuiltDeploy['Body']['flow']) => {
         setModalShowSpinner(true);
         if (setIsEnabling) {
             setIsEnabling(true);
         }
-        const res = await createFlow([flow]);
+        const res = await createFlow({ flow });
 
-        return finalizeEnableSync(res, flow.model_schema);
+        return finalizeEnableSync(res, flow.model_schema as any); // TODO: fix this type
     };
 
-    const reEnableFlow = async (flow: ExtendedFlow): Promise<boolean> => {
+    const reEnableFlow = async (flow: any): Promise<boolean> => {
         setModalShowSpinner(true);
         if (setIsEnabling) {
             setIsEnabling(true);
@@ -109,7 +98,7 @@ export default function EnableDisableSync({
             body: JSON.stringify(flow)
         });
 
-        return finalizeEnableSync(res, flow.model_schema);
+        return finalizeEnableSync(res, flow.model_schema); // TODO: fix this type
     };
 
     const finalizeEnableSync = async (res: Response | undefined, _model_schema: string): Promise<boolean> => {
@@ -164,36 +153,47 @@ export default function EnableDisableSync({
     };
 
     const onEnableSync = async (flow: Flow): Promise<boolean> => {
-        const flowPayload: ExtendedFlow = {
-            provider,
-            providerConfigKey,
-            type: flow.type,
-            name: flow.name,
-            runs: flow.runs as string,
-            auto_start: flow.auto_start === true,
-            track_deletes: flow.track_deletes,
-            sync_type: flow.sync_type,
-            models: flow.models.map((model) => model.name),
-            scopes: flow.scopes,
-            input: flow.input,
-            returns: flow.returns,
-            metadata: {
-                description: flow.description,
-                scopes: flow.scopes
-            },
-            endpoints: flow.endpoints,
-            output: flow.output,
-            pre_built: flow.pre_built,
-            is_public: flow.is_public,
-            model_schema: JSON.stringify(flow.models),
-            public_route: rawName || provider
-        };
-
         let success = false;
         if (flow.id) {
-            success = await reEnableFlow({ ...flowPayload, id: flow.id });
+            success = await reEnableFlow({
+                providerConfigKey,
+                type: flow.type,
+                runs: flow.runs as string,
+                auto_start: flow.auto_start === true,
+                track_deletes: flow.track_deletes,
+                sync_type: (flow.sync_type ? flow.sync_type.toLocaleLowerCase() : 'full') as any,
+                models: flow.models.map((model) => model.name),
+                input: flow.input,
+                metadata: {
+                    description: flow.description,
+                    scopes: flow.scopes
+                },
+                endpoints: flow.endpoints,
+                pre_built: true,
+                is_public: true,
+                model_schema: JSON.stringify(flow.models),
+                id: flow.id
+            });
         } else {
-            success = await createNewFlow(flowPayload);
+            success = await createNewFlow({
+                provider,
+                providerConfigKey,
+                type: flow.type,
+                name: flow.name,
+                runs: flow.runs as string,
+                auto_start: flow.auto_start === true,
+                models: flow.models.map((model) => model.name),
+                input: flow.input,
+                metadata: {
+                    description: flow.description,
+                    scopes: flow.scopes
+                },
+                endpoints: flow.endpoints,
+                is_public: flow.is_public,
+                model_schema: JSON.stringify(flow.models),
+                public_route: rawName || provider,
+                track_deletes: flow.track_deletes
+            });
         }
 
         if (success) {

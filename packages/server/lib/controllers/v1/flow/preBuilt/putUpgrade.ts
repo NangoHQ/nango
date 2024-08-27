@@ -7,7 +7,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { upgradePreBuilt as upgradePrebuiltFlow } from '@nangohq/shared';
 
 const validation = flowConfig.extend({
-    id: z.string(),
+    id: z.number(),
     upgrade_version: z.string(),
     last_deployed: z.string(),
     is_public: z.literal(true),

@@ -188,7 +188,8 @@ class OnboardingController {
                     model_schema: JSON.stringify(githubDemoSync.models),
                     is_public: true,
                     public_route: 'github',
-                    input: ''
+                    input: '',
+                    track_deletes: githubDemoSync.track_deletes === true
                 },
                 {
                     provider: 'github',
@@ -201,7 +202,8 @@ class OnboardingController {
                     models: [githubDemoAction.returns as unknown as string],
                     model_schema: JSON.stringify(githubDemoAction.models),
                     public_route: 'github',
-                    input: githubDemoAction.input!
+                    input: githubDemoAction.input!,
+                    track_deletes: githubDemoAction.track_deletes === true
                 }
             ];
 

@@ -574,7 +574,7 @@ export async function deployPreBuilt({
             model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
             environment_id: environment.id,
             deleted: false,
-            track_deletes: false,
+            track_deletes: config.track_deletes,
             type,
             auto_start: auto_start === false ? false : true,
             attributes,

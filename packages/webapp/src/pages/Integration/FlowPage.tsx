@@ -23,7 +23,7 @@ import EnableDisableSync from './components/EnableDisableSync';
 import { autoStartSnippet, setMetadataSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
 import { getSyncResponse } from '../../utils/scripts';
-import type { SyncTypeLiteral, IncomingFlowConfigUpgrade, NangoModel } from '@nangohq/types';
+import type { SyncTypeLiteral, NangoModel, PutUpgradePreBuiltFlow } from '@nangohq/types';
 
 interface FlowPageProps {
     environment: EnvironmentAndAccount['environment'];
@@ -263,8 +263,8 @@ export default function FlowPage(props: FlowPageProps) {
             });
             return;
         }
-        const upgradeFlow: IncomingFlowConfigUpgrade = {
-            id: flow.id.toString(),
+        const upgradeFlow: PutUpgradePreBuiltFlow['Body'] = {
+            id: flow.id,
             syncName: flow.name,
             providerConfigKey: integration.unique_key,
             fileBody: {
@@ -285,7 +285,8 @@ export default function FlowPage(props: FlowPageProps) {
             runs: flow.runs || '',
             models: flow.models.map((model) => model.name),
             model_schema: JSON.stringify(flow.models),
-            webhookSubscriptions: flow.webhookSubscriptions
+            webhookSubscriptions: flow.webhookSubscriptions,
+            track_deletes: flow.track_deletes
         };
 
         const response = await apiFetch(`/api/v1/flow/pre-built/upgrade?env=${env}`, {
