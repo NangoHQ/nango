@@ -72,5 +72,5 @@ export interface LinkPagination extends Pagination {
 
 export interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
-    offset_start_value: number;
+    offset_start_value?: number;
 }
