@@ -407,6 +407,28 @@ brex-staging:
     proxy:
         base_url: https://platform.staging.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
+builder-io-private:
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/builder-io
+builder-io-public:
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        query:
+            apiKey: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/builder-io
 calendly:
     categories:
         - productivity
