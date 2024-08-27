@@ -526,7 +526,7 @@ export async function deployPreBuilt({
             nango_config_id,
             file_location,
             version,
-            models,
+            models: Array.isArray(models) ? models : [models],
             active: true,
             runs,
             input: input && typeof input !== 'string' ? String(input.name) : input,
