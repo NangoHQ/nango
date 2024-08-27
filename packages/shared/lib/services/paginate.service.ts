@@ -124,7 +124,7 @@ class PaginationService {
     ): AsyncGenerator<T[], undefined, void> {
         const offsetPagination: OffsetPagination = paginationConfig;
         const offsetParameterName: string = offsetPagination.offset_name_in_request;
-        let offset = 0;
+        let offset = offsetPagination.offset_start_value || 0;
 
         while (true) {
             updatedBodyOrParams[offsetParameterName] = `${offset}`;
