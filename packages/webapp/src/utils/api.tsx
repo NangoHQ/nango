@@ -513,7 +513,7 @@ export function useDeleteIntegrationAPI(env: string) {
                 return signout();
             }
 
-            if (res.status !== 204) {
+            if (res.status !== 200) {
                 return serverErrorToast();
             }
 

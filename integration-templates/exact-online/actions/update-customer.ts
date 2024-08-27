@@ -1,7 +1,7 @@
 import type { NangoAction, ExactCustomerUpdateInput, ExactCustomerUpdateOutput } from '../../models';
 import type { EO_Account, ResponsePostBody } from '../types';
 import { getUser } from '../helpers/get-user.js';
-import { exactCustomerUpdateInputSchema } from '../../schema.zod.js';
+import { exactCustomerUpdateInputSchema } from '../schema.zod.js';
 
 export default async function runAction(nango: NangoAction, input: ExactCustomerUpdateInput): Promise<ExactCustomerUpdateOutput> {
     const parsedInput = exactCustomerUpdateInputSchema.safeParse(input);

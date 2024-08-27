@@ -10,7 +10,7 @@ import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration } from '@nangohq/shared';
 import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
-import { metrics, getLogger, axiosInstance as axios } from '@nangohq/utils';
+import { metrics, getLogger, axiosInstance as axios, getHeaders } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
@@ -40,6 +40,7 @@ class ProxyController {
             const retries = req.get('Retries') as string;
             const baseUrlOverride = req.get('Base-Url-Override') as string;
             const decompress = req.get('Decompress') as string;
+            const isDebug = (req.get('Debug') as string) === 'true';
             const isSync = (req.get('Nango-Is-Sync') as string) === 'true';
             const isDryRun = (req.get('Nango-Is-Dry-Run') as string) === 'true';
             const retryOn = req.get('Retry-On') ? (req.get('Retry-On') as string).split(',').map(Number) : null;
@@ -126,6 +127,9 @@ class ProxyController {
             // We batch save, since we have buffered the createdAt it shouldn't impact order
             await Promise.all(
                 logs.map(async (log) => {
+                    if (log.level === 'debug' && !isDebug) {
+                        return;
+                    }
                     await logCtx!.log({ type: 'log', ...log });
                 })
             );
@@ -137,7 +141,7 @@ class ProxyController {
                 return;
             }
 
-            await this.sendToHttpMethod({ res, method: method as HTTP_VERB, configBody: proxyConfig, logCtx });
+            await this.sendToHttpMethod({ res, method: method as HTTP_VERB, configBody: proxyConfig, logCtx, isDebug });
         } catch (err) {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
@@ -157,6 +161,20 @@ class ProxyController {
             }
             metrics.increment(metrics.Types.PROXY_FAILURE);
             next(err);
+        } finally {
+            const reqHeaders = getHeaders(req.headers);
+            reqHeaders['authorization'] = 'REDACTED';
+            await logCtx?.enrichOperation({
+                request: {
+                    url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+                    method: req.method,
+                    headers: reqHeaders
+                },
+                response: {
+                    code: res.statusCode,
+                    headers: getHeaders(res.getHeaders())
+                }
+            });
         }
     }
 
@@ -167,12 +185,14 @@ class ProxyController {
         res,
         method,
         configBody,
-        logCtx
+        logCtx,
+        isDebug
     }: {
         res: Response;
         method: HTTP_VERB;
         configBody: ApplicationConstructedProxyConfiguration;
         logCtx: LogContext;
+        isDebug: boolean;
     }) {
         const url = proxyService.constructUrl(configBody);
         let decompress = false;
@@ -188,7 +208,8 @@ class ProxyController {
             config: configBody,
             decompress,
             data: configBody.data,
-            logCtx
+            logCtx,
+            isDebug
         });
     }
 
@@ -206,7 +227,17 @@ class ProxyController {
         logCtx: LogContext;
     }) {
         const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
-        await logCtx.info(`${config.method.toUpperCase()} request to ${url} was successful`, { headers: safeHeaders });
+        await logCtx.http(`${config.method.toUpperCase()} ${url} was successful`, {
+            request: {
+                method: config.method,
+                url,
+                headers: safeHeaders
+            },
+            response: {
+                code: responseStream.status,
+                headers: responseStream.headers as Record<string, string>
+            }
+        });
 
         const contentType = responseStream.headers['content-type'];
         const isJsonResponse = contentType && contentType.includes('application/json');
@@ -302,8 +333,16 @@ class ProxyController {
                 chunks.push(data);
             });
             stringify.on('end', () => {
-                const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : 'unknown error';
-                void this.reportError(error, url, config, data, logCtx);
+                const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : '';
+                let errorData: string | Record<string, string> = data;
+                if (error.response?.headers?.['content-type']?.includes('application/json')) {
+                    try {
+                        errorData = JSON.parse(data);
+                    } catch {
+                        // Intentionally left blank - errorData will be a string
+                    }
+                }
+                void this.reportError(error, url, config, errorData, logCtx);
             });
         } else {
             await logCtx.error('Unknown error');
@@ -318,7 +357,8 @@ class ProxyController {
         config,
         decompress,
         data,
-        logCtx
+        logCtx,
+        isDebug
     }: {
         res: Response;
         method: HTTP_VERB;
@@ -327,12 +367,15 @@ class ProxyController {
         decompress: boolean;
         data?: unknown;
         logCtx: LogContext;
+        isDebug: boolean;
     }) {
         try {
             const logs: LogsBuffer[] = [];
             const headers = proxyService.constructHeaders(config, method, url);
 
-            await logCtx.debug(`Sending ${method.toUpperCase()} request to ${url}`, { headers });
+            if (isDebug) {
+                await logCtx.debug(`${method.toUpperCase()} ${url}`, { headers });
+            }
 
             const requestConfig: AxiosRequestConfig = {
                 method,
@@ -354,6 +397,9 @@ class ProxyController {
             // We batch save, since we have buffered the createdAt it shouldn't impact order
             await Promise.all(
                 logs.map(async (log) => {
+                    if (log.level === 'debug' && !isDebug) {
+                        return;
+                    }
                     await logCtx.log({ type: 'log', ...log });
                 })
             );
@@ -365,14 +411,27 @@ class ProxyController {
         }
     }
 
-    private async reportError(error: AxiosError, url: string, config: ApplicationConstructedProxyConfiguration, errorMessage: string, logCtx: LogContext) {
+    private async reportError(
+        error: AxiosError,
+        url: string,
+        config: ApplicationConstructedProxyConfiguration,
+        errorContent: string | Record<string, string>,
+        logCtx: LogContext
+    ) {
         const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
-        await logCtx.error(`${error.request?.method.toUpperCase()} ${url} failed with status '${error.response?.status}'`, {
-            code: error.response?.status,
-            url,
-            error: new Error(errorMessage),
-            requestHeaders: safeHeaders,
-            responseHeaders: error.response?.headers
+        await logCtx.http(`${error.request?.method.toUpperCase()} ${url} failed with status '${error.response?.status}'`, {
+            meta: {
+                content: errorContent
+            },
+            request: {
+                method: config.method,
+                url,
+                headers: safeHeaders
+            },
+            response: {
+                code: error.response?.status || 500,
+                headers: error.response?.headers as Record<string, string>
+            }
         });
         await logCtx.failed();
     }

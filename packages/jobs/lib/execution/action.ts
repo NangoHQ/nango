@@ -105,11 +105,6 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     }
 }
 export async function handleActionSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
-    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
-    const content = `${nangoProps.syncConfig.sync_name} action was run successfully and results are being sent synchronously.`;
-
-    await logCtx.info(content);
-
     const connection: NangoConnection = {
         id: nangoProps.nangoConnectionId!,
         connection_id: nangoProps.connectionId,
@@ -219,5 +214,4 @@ async function onFailure({
             }
         });
     }
-    await logCtx.error(error.message, { error });
 }

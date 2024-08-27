@@ -1,0 +1,34 @@
+---
+title: CodeClimate
+sidebarTitle: CodeClimate
+---
+
+API configuration: [`CodeClimate`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (Basic)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [Generate a CodeClimate token in your CodeClimate account](https://codeclimate.com/profile/tokens)
+-   [CodeClimate Auth related docs](https://developer.codeclimate.com/#authentication)
+-   [CodeClimate API docs](https://developer.codeclimate.com/#overview)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- CodeClimate uses API_KEY auth mode with `Authorization: Token token=token` in the request header to access different endpoints.
+- When creating a new connection on Nango, you will need to add your domain. For the cloud option, use `api.codeclimate.com`; for on-premise, use `YOUR-CC-HOST-NAME`.
+- CodeClimate enforces a general rate limit of 5,000 requests per token per hour.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/codeclimate.mdx)</Note>

@@ -178,32 +178,35 @@ class ConfigService {
         return { id: id[0]?.id, unique_key: config.unique_key } as Pick<ProviderConfig, 'id' | 'unique_key'>;
     }
 
-    async deleteProviderConfig(providerConfigKey: string, environment_id: number, orchestrator: Orchestrator): Promise<number> {
-        const idResult = (
-            await db.knex.select('id').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, environment_id, deleted: false })
-        )[0];
-
-        if (!idResult) {
-            throw new NangoError('unknown_provider_config');
-        }
-
-        const { id } = idResult;
-
-        await syncManager.deleteSyncsByProviderConfig(environment_id, providerConfigKey, orchestrator);
+    async deleteProviderConfig({
+        id,
+        environmentId,
+        providerConfigKey,
+        orchestrator
+    }: {
+        id: number;
+        environmentId: number;
+        providerConfigKey: string;
+        orchestrator: Orchestrator;
+    }): Promise<boolean> {
+        await syncManager.deleteSyncsByProviderConfig(environmentId, providerConfigKey, orchestrator);
 
         if (isCloud) {
-            const config = await this.getProviderConfig(providerConfigKey, environment_id);
-            await deleteSyncFilesForConfig(config?.id as number, environment_id);
+            await deleteSyncFilesForConfig(id, environmentId);
         }
 
         await deleteSyncConfigByConfigId(id);
 
-        await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+        const updated = await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+        if (updated <= 0) {
+            return false;
+        }
 
-        return db.knex
+        await db.knex
             .from<Connection>(`_nango_connections`)
-            .where({ provider_config_key: providerConfigKey, environment_id, deleted: false })
+            .where({ provider_config_key: providerConfigKey, environment_id: environmentId, deleted: false })
             .update({ deleted: true, deleted_at: new Date() });
+        return true;
     }
 
     async editProviderConfig(config: ProviderConfig) {

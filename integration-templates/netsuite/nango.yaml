@@ -1,0 +1,262 @@
+integrations:
+    netsuite:
+        syncs:
+            # Customers
+            customers:
+                version: 1.0.0
+                description: |
+                    Fetches all customers in Netsuite
+                runs: every hour
+                output: NetsuiteCustomer
+                sync_type: full
+                auto_start: true
+                endpoint: GET /customers
+                track_deletes: true
+
+            # Payments
+            payments:
+                version: 1.0.0
+                description: |
+                    Fetches all payments in Netsuite
+                runs: every hour
+                output: NetsuitePayment
+                sync_type: full
+                auto_start: true
+                endpoint: GET /payments
+                track_deletes: true
+
+            # Invoices
+            invoices:
+                version: 1.0.0
+                description: |
+                    Fetches all invoices in Netsuite
+                runs: every hour
+                output: NetsuiteInvoice
+                sync_type: full
+                auto_start: true
+                endpoint: GET /invoices
+                track_deletes: true
+
+            # Credit notes
+            credit-notes:
+                version: 1.0.0
+                description: |
+                    Fetches all credit notes in Netsuite
+                runs: every hour
+                output: NetsuiteCreditNote
+                sync_type: full
+                auto_start: true
+                endpoint: GET /creditnotes
+                track_deletes: true
+
+        actions:
+            # Customers
+            customer-create:
+                version: 1.0.0
+                description: |
+                    Creates a customer in Netsuite
+                input: NetsuiteCustomerCreateInput
+                output: NetsuiteCustomerCreateOutput
+                endpoint: POST /customers
+            customer-update:
+                version: 1.0.0
+                description: Updates a customer in Netsuite
+                input: NetsuiteCustomerUpdateInput
+                output: NetsuiteCustomerUpdateOutput
+                endpoint: PUT /customers
+
+            # Invoices
+            invoice-create:
+                version: 1.0.0
+                description: |
+                    Creates an invoice in Netsuite
+                input: NetsuiteInvoiceCreateInput
+                output: NetsuiteInvoiceCreateOutput
+                endpoint: POST /invoices
+            invoice-update:
+                version: 1.0.0
+                description: |
+                    Updates an invoice in Netsuite
+                input: NetsuiteInvoiceUpdateInput
+                output: NetsuiteInvoiceUpdateOutput
+                endpoint: PUT /invoices
+            #     attach-file-invoice:
+            #         version: 1.0.0
+            #         description: |
+            #             Uploads a file to Netsuite and link it to an invoice
+            #         input: NetsuiteInvoiceAttachFileInput
+            #         output: NetsuiteInvoiceAttachFileOutput
+            #         endpoint: POST /invoices/attach-file
+
+            # Payments
+            payment-create:
+                version: 1.0.0
+                description: |
+                    Creates a payment in Netsuite
+                input: NetsuitePaymentCreateInput
+                output: NetsuitePaymentCreateOutput
+                endpoint: POST /payment
+            payment-update:
+                version: 1.0.0
+                description: Updates a payment in Netsuite
+                input: NetsuitePaymentUpdateInput
+                output: NetsuitePaymentUpdateOutput
+                endpoint: PUT /payment
+
+            # Credits-Notes
+            credit-note-create:
+                version: 1.0.0
+                description: |
+                    Creates a credit note in Netsuite
+                input: NetsuiteCreditNoteCreateInput
+                output: NetsuiteCreditNoteCreateOutput
+                endpoint: POST /creditnote
+            credit-note-update:
+                version: 1.0.0
+                description: Updates a credit note in Netsuite
+                input: NetsuiteCreditNoteUpdateInput
+                output: NetsuiteCreditNoteUpdateOutput
+                endpoint: PUT /creditnote
+
+models:
+    # Customers
+    NetsuiteAddress:
+        addressLine1: string | null
+        addressLine2: string | null
+        city: string | null
+        zip: string | null
+        country: string | null
+        state: string | null
+
+    NetsuiteCustomer:
+        id: string
+        externalId: string | null
+        name: string
+        email: string | null
+        taxNumber: string | null
+        phone: string | null
+        __extends: NetsuiteAddress
+
+    NetsuiteCustomerCreateInput:
+        externalId: string
+        name: string
+        email?: string
+        taxNumber?: string
+        addressLine1?: string
+        addressLine2?: string
+        city?: string
+        zip?: string
+        country?: string
+        state?: string
+        phone?: string
+    NetsuiteCustomerCreateOutput:
+        id: string
+    NetsuiteCustomerUpdateInput:
+        __extends: NetsuiteCustomerCreateInput
+        id: string
+        name?: string
+        externalId?: string
+    NetsuiteCustomerUpdateOutput:
+        success: boolean
+
+    # Credit Notes
+    NetsuiteCreditNote:
+        id: string
+        customerId: string
+        currency: string
+        description: string | null
+        createdAt: string
+        lines: NetsuiteInvoiceLine[]
+        total: number
+        status: string
+
+    NetsuiteCreditNoteLine:
+        itemId: string
+        quantity: number
+        amount: number
+        vatCode?: string
+        description?: string
+
+    NetsuiteCreditNoteCreateInput:
+        customerId: string
+        status: string
+        currency: string
+        description?: string
+        lines: NetsuiteCreditNoteLine[]
+    NetsuiteCreditNoteCreateOutput:
+        id: string
+    NetsuiteCreditNoteUpdateInput:
+        __extends: NetsuiteCreditNoteCreateInput
+        id: string
+    NetsuiteCreditNoteUpdateOutput:
+        success: boolean
+
+    # Invoices
+    NetsuiteInvoice:
+        id: string
+        customerId: string
+        currency: string
+        description: string | null
+        createdAt: string
+        lines: NetsuiteInvoiceLine[]
+        total: number
+        status: string
+
+    NetsuiteInvoiceLine:
+        itemId: string
+        quantity: number
+        amount: number
+        vatCode?: string
+        description?: string
+
+    NetsuiteInvoiceCreateInput:
+        customerId: string
+        currency: string
+        description?: string
+        status: string
+        lines: NetsuiteInvoiceLine[]
+    NetsuiteInvoiceCreateOutput:
+        id: string
+
+    NetsuiteInvoiceUpdateInput:
+        __extends: NetsuiteInvoiceCreateInput
+        id: string
+        customerId?: string
+        currency?: string
+        description?: string
+    NetsuiteInvoiceUpdateOutput:
+        success: boolean
+
+    # Payments
+    NetsuitePayment:
+        id: string
+        description?: string
+        customerId: string | null
+        amount: number | null
+        createdAt: string | null
+        currency: string | null
+        paymentReference: string | null
+        status: string | null
+        applyTo: string[]
+
+    NetsuitePaymentCreateInput:
+        customerId: string
+        amount: number
+        currency: string
+        paymentReference: string
+        applyTo: string[]
+        status: string
+        description?: string
+    NetsuitePaymentCreateOutput:
+        id: string
+    NetsuitePaymentUpdateInput:
+        __extends: NetsuitePaymentCreateInput
+        id: string
+        amount?: number
+        currency?: string
+        description?: string
+        paymentReference?: string
+        status?: string
+        applyTo?: string[]
+    NetsuitePaymentUpdateOutput:
+        success: boolean
