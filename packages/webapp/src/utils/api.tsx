@@ -819,7 +819,7 @@ export function useGetFlows(env: string) {
 export function useCreateFlow(env: string) {
     return async (flow: PreBuiltFlow[]) => {
         try {
-            const res = await apiFetch(`/api/v1/flow/deploy/pre-built?env=${env}`, {
+            const res = await apiFetch(`/api/v1/flow/pre-built/deploy/?env=${env}`, {
                 method: 'POST',
                 body: JSON.stringify(flow)
             });

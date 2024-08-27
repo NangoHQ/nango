@@ -288,7 +288,7 @@ export default function FlowPage(props: FlowPageProps) {
             webhookSubscriptions: flow.webhookSubscriptions
         };
 
-        const response = await apiFetch(`/api/v1/flow/upgrade/pre-built?env=${env}`, {
+        const response = await apiFetch(`/api/v1/flow/pre-built/upgrade?env=${env}`, {
             method: 'PUT',
             body: JSON.stringify(upgradeFlow)
         });

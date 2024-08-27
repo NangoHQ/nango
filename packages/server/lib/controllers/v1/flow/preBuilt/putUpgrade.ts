@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import type { UpgradePreBuiltFlow, IncomingFlowConfigUpgrade } from '@nangohq/types';
+import type { PutUpgradePreBuiltFlow } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { flowConfig } from '../../../sync/deploy/postConfirmation.js';
 import { logContextGetter } from '@nangohq/logs';
@@ -14,7 +14,7 @@ const validation = flowConfig.extend({
     pre_built: z.literal(true)
 });
 
-export const putUpgradePreBuilt = asyncWrapper<UpgradePreBuiltFlow>(async (req, res) => {
+export const putUpgradePreBuilt = asyncWrapper<PutUpgradePreBuiltFlow>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -30,7 +30,7 @@ export const putUpgradePreBuilt = asyncWrapper<UpgradePreBuiltFlow>(async (req, 
         return;
     }
 
-    const flowConfig: IncomingFlowConfigUpgrade = val.data;
+    const flowConfig: PutUpgradePreBuiltFlow['Body'] = val.data;
     const { environment, account } = res.locals;
 
     const result = await upgradePrebuiltFlow({
