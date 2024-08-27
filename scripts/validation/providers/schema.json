@@ -146,8 +146,8 @@
                                 "offset_name_in_request": {
                                     "type": "string"
                                 },
-                                "offset_name_in_response": {
-                                    "type": "string"
+                                "offset_start_value": {
+                                    "type": "number"
                                 },
                                 "response_path": {
                                     "type": "string"

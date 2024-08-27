@@ -3269,7 +3269,6 @@ whoop:
         paginate:
             type: cursor
             offset_name_in_request: nextToken
-            offset_name_in_response: next_token
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/whoop
 wildix-pbx:
