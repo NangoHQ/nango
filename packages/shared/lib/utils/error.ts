@@ -533,7 +533,7 @@ export class NangoError extends Error {
 
             case 'action_script_runtime_error':
                 this.status = 500;
-                this.message = '';
+                this.message = 'The action script failed with a runtime error';
                 break;
 
             case 'script_cancelled':

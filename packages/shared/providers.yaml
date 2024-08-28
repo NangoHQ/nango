@@ -407,6 +407,28 @@ brex-staging:
     proxy:
         base_url: https://platform.staging.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
+builder-io-private:
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/builder-io
+builder-io-public:
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        query:
+            apiKey: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/builder-io
 calendly:
     categories:
         - productivity
@@ -1272,6 +1294,23 @@ google-ads:
             cursor_name_in_request: pageToken
             response_path: results
     docs: https://docs.nango.dev/integrations/all/google-ads
+google-play:
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.google.com/o/oauth2/auth
+    token_url: https://accounts.google.com/o/oauth2/token
+    authorization_params:
+        response_type: code
+        access_type: offline
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://play.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-play
 gorgias:
     categories:
         - e-commerce
@@ -3269,7 +3308,6 @@ whoop:
         paginate:
             type: cursor
             offset_name_in_request: nextToken
-            offset_name_in_response: next_token
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/whoop
 wildix-pbx:
