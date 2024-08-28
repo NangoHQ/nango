@@ -8,10 +8,9 @@ import useSWR, { useSWRConfig } from 'swr';
 import { requestErrorToast, swrFetcher, useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import ActionModal from '../../components/ui/ActionModal';
-import { ErrorCircle } from '../../components/ui/label/error-circle';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../layout/DashboardLayout';
-import Info from '../../components/ui/Info';
+import { Info } from '../../components/Info';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
@@ -250,21 +249,15 @@ We could not retrieve and/or refresh your access token due to the following erro
 
             {serverErrorMessage && (
                 <div className="flex my-4">
-                    <Info showIcon={false} size={14} padding="py-1 px-1 py-1" color="red">
-                        <div className="flex items-center text-sm">
-                            <ErrorCircle />
-                            <span className="ml-2">{serverErrorMessage}</span>
-                        </div>
-                    </Info>
+                    <Info variant={'destructive'}>{serverErrorMessage}</Info>
                 </div>
             )}
 
             {activeTab === Tabs.Authorization && connectionResponse.errorLog && (
                 <div className="flex my-4">
-                    <Info showIcon={false} size={14} padding="py-1 px-1" color="red">
-                        <div className="flex items-center text-sm">
-                            <ErrorCircle />
-                            <span className="ml-2">There was an error refreshing the credentials</span>
+                    <Info variant={'destructive'}>
+                        <div>
+                            There was an error refreshing the credentials
                             <Link
                                 to={getLogsUrl({
                                     env,
@@ -283,32 +276,29 @@ We could not retrieve and/or refresh your access token due to the following erro
 
             {activeTab === Tabs.Syncs && syncs && syncs.some((sync) => sync.active_logs?.log_id) && (
                 <div className="flex my-4">
-                    <Info showIcon={false} size={14} padding="py-1 px-1" color="red">
-                        <div className="flex items-center text-sm">
-                            <ErrorCircle />
-                            <span className="ml-2">
-                                Last sync execution failed for the following sync
-                                {syncs.filter((sync) => sync.active_logs?.log_id).length > 1 ? 's' : ''}:{' '}
-                                {syncs
-                                    .filter((sync) => sync.active_logs?.log_id)
-                                    .map((sync, index) => (
-                                        <Fragment key={sync.name}>
-                                            {sync.name} (
-                                            <Link className="underline" to={getLogsUrl({ env, operationId: sync.active_logs?.log_id, syncs: sync.name })}>
-                                                logs
-                                            </Link>
-                                            ){index < syncs.filter((sync) => sync.active_logs?.log_id).length - 1 && ', '}
-                                        </Fragment>
-                                    ))}
-                                .
-                            </span>
+                    <Info variant={'destructive'}>
+                        <div>
+                            Last sync execution failed for the following sync
+                            {syncs.filter((sync) => sync.active_logs?.log_id).length > 1 ? 's' : ''}:{' '}
+                            {syncs
+                                .filter((sync) => sync.active_logs?.log_id)
+                                .map((sync, index) => (
+                                    <Fragment key={sync.name}>
+                                        {sync.name} (
+                                        <Link className="underline" to={getLogsUrl({ env, operationId: sync.active_logs?.log_id, syncs: sync.name })}>
+                                            logs
+                                        </Link>
+                                        ){index < syncs.filter((sync) => sync.active_logs?.log_id).length - 1 && ', '}
+                                    </Fragment>
+                                ))}
+                            .
                         </div>
                     </Info>
                 </div>
             )}
 
             {!slackIsConnected && !isHosted() && (
-                <Info size={14} color="blue" showIcon={false} padding="mt-7 p-1 py-1">
+                <Info className="mt-4">
                     <div className="flex text-sm items-center">
                         <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
                         Receive instant monitoring alerts on Slack.{' '}

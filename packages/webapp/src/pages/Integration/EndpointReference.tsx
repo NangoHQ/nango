@@ -4,7 +4,7 @@ import type { EnvironmentAndAccount } from '@nangohq/server';
 import { Prism } from '@mantine/prism';
 import Button from '../../components/ui/button/Button';
 import { CopyButton } from '../../components/ui/button/CopyButton';
-import Info from '../../components/ui/Info';
+import { Info } from '../../components/Info';
 import EndpointLabel from './components/EndpointLabel';
 import type { IntegrationConfig, FlowEndpoint, Flow } from '../../types';
 import { nodeSyncSnippet, nodeActionSnippet, curlSnippet } from '../../utils/language-snippets';
@@ -95,7 +95,7 @@ export default function EndpointReference(props: EndpointReferenceProps) {
                 {activeFlow?.description && <span className="mt-2">{activeFlow.description}</span>}
             </div>
             {!activeFlow?.version && activeFlow?.version === null && (
-                <Info size={18} classNames="mt-10 mb-10 z-10" padding="px-4 py-1.5" color="orange">
+                <Info variant={'warning'}>
                     This endpoint is disabled. Enable it in the associated{' '}
                     <span className="cursor-pointer underline" onClick={routeToFlow}>
                         script settings

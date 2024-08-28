@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import Info from '../../components/ui/Info';
+import { Info } from '../../components/Info';
 import { useGetOperation } from '../../hooks/useLogs';
 import { useStore } from '../../store';
 import { OperationTag } from './components/OperationTag';
@@ -80,9 +80,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     if (error || !operation) {
         return (
             <div className="py-6 px-6 flex flex-col gap-9">
-                <Info color="red" classNames="text-xs" size={20} padding="p-2">
-                    An error occurred
-                </Info>
+                <Info variant={'destructive'}>An error occurred</Info>
             </div>
         );
     }

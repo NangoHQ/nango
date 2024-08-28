@@ -7,7 +7,7 @@ import { formatDateToLogFormat, formatQuantity } from '../../../utils/utils';
 import { useStore } from '../../../store';
 import * as Table from '../../../components/ui/Table';
 import Spinner from '../../../components/ui/Spinner';
-import Info from '../../../components/ui/Info';
+import { Info } from '../../../components/Info';
 import { LevelTag } from './LevelTag';
 import { MessageRow } from './MessageRow';
 import { ChevronRightIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
@@ -215,11 +215,7 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
                 />
             </header>
             <main className="flex flex-col overflow-hidden">
-                {error && (
-                    <Info color="red" classNames="text-xs" padding="p-2" size={20}>
-                        An error occurred
-                    </Info>
-                )}
+                {error && <Info variant={'destructive'}>An error occurred</Info>}
                 <Table.Table className="mt-6 table-fixed flex flex-col overflow-hidden">
                     <Table.Header className="w-full table table-fixed">
                         {table.getHeaderGroups().map((headerGroup) => (

@@ -7,7 +7,7 @@ import type { EnvironmentAndAccount } from '@nangohq/server';
 import { Tooltip, useModal } from '@geist-ui/core';
 import type { IntegrationConfig } from '../../types';
 import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI, useEditIntegrationNameAPI } from '../../utils/api';
-import Info from '../../components/ui/Info';
+import { Info } from '../../components/Info';
 import ActionModal from '../../components/ui/ActionModal';
 import SecretInput from '../../components/ui/input/SecretInput';
 import SecretTextArea from '../../components/ui/input/SecretTextArea';
@@ -394,7 +394,7 @@ export default function AuthSettings(props: AuthSettingsProps) {
                 </>
             )}
             {(integration?.auth_mode === 'BASIC' || integration?.auth_mode === 'API_KEY') && (
-                <Info size={20} color="blue">
+                <Info>
                     The &quot;{integration?.provider}&quot; integration provider uses {integration?.auth_mode === 'BASIC' ? 'basic auth' : 'API Keys'} for
                     authentication (
                     <a
