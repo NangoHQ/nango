@@ -3,14 +3,38 @@ import { HttpLabel } from '../../../../../components/HttpLabel';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { Tag } from '../../../../../components/ui/label/Tag';
 import type { NangoSyncConfigWithEndpoint } from './List';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { GetIntegration, NangoModel } from '@nangohq/types';
-import { getSyncResponse, modelToString } from '../../../../../utils/scripts';
+import { fieldToTypescript, getSyncResponse, modelToString } from '../../../../../utils/scripts';
 import { curlSnippet, nodeActionSnippet, nodeSyncSnippet } from '../../../../../utils/language-snippets';
 import { useStore } from '../../../../../store';
 import { useEnvironment } from '../../../../../hooks/useEnvironment';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../components/ui/Select';
 import { ScriptSettings } from './ScriptSettings';
+import Info from '../../../../../components/ui/Info';
+import { useLocalStorage } from 'react-use';
+
+const syncDefaultQueryParams = [
+    {
+        name: 'modified_after',
+        type: 'string',
+        description: `Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records modified after this timestamp are returned, otherwise all records are returned`,
+        optional: true
+    },
+    { name: 'limit', type: 'number', description: `The maximum number of records to return. Defaults to 100.`, optional: true },
+    {
+        name: 'cursor',
+        type: 'string',
+        description: `Each record from this method comes with a synchronization cursor in _nango_metadata.cursor. Save the last fetched record's cursor to track how far you've synced. By providing the cursor to this endpoint, you'll continue syncing from where you left off, receiving only post-cursor changes. This same cursor is used to paginate through the results of this endpoint.`,
+        optional: true
+    },
+    {
+        name: 'filter',
+        type: 'added | updated | deleted',
+        description: `Filter to only show results that have been added or updated or deleted.`,
+        optional: true
+    }
+];
 
 const connectionId = '<CONNECTION_ID>';
 export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['data']; flow: NangoSyncConfigWithEndpoint }> = ({ integration, flow }) => {
@@ -19,7 +43,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
 
     const { environmentAndAccount } = useEnvironment(env);
 
-    const [language, setLanguage] = useState<'node' | 'curl'>('node');
+    const [language, setLanguage] = useLocalStorage<'node' | 'curl'>('nango:snippet:language', 'node');
 
     const [requestSnippet, responseSnippet] = useMemo(() => {
         let req = '';
@@ -63,6 +87,18 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
         return [req, res];
     }, [flow, language, baseUrl, environmentAndAccount, integration]);
 
+    const queryParams = useMemo(() => {
+        return flow.type === 'sync' ? syncDefaultQueryParams : null;
+    }, [flow]);
+
+    const body = useMemo(() => {
+        return flow.type === 'action' && flow.input ? flow.input : null;
+    }, [flow.input, flow.type]);
+
+    const metadata = useMemo(() => {
+        return flow.type === 'sync' && flow.input ? flow.input : null;
+    }, [flow.input, flow.type]);
+
     return (
         <div className="flex flex-col gap-10 text-white text-sm">
             <header className="bg-active-gray flex gap-10 justify-between p-5">
@@ -72,21 +108,97 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                     </h2>
                     <div>{flow.description}</div>
                 </div>
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 content-center">
                     <ScriptSettings flow={flow} integration={integration} />
                 </div>
             </header>
 
+            {!flow.enabled && <Info color="orange">This endpoint is disabled. To enable it, go to settings</Info>}
+
             <main className="flex gap-10">
-                <div className="bg-active-gray p-5 w-1/2">
-                    <h3 className="text-xl font-semibold">Query & Path Parameters</h3>
+                <div className="w-1/2 flex flex-col gap-10">
+                    {queryParams && (
+                        <div className="bg-active-gray p-5 rounded-md">
+                            <h3 className="text-xl font-semibold pb-6">Query Parameters</h3>
+                            <div className="flex flex-col gap-5">
+                                {queryParams.map((queryParam) => {
+                                    return (
+                                        <div key={queryParam.name} className="flex flex-col pb-5 gap-2.5 border-b border-b-border-gray last-of-type:border-b-0">
+                                            <div className="flex justify-between">
+                                                <div className="flex gap-2">
+                                                    <code className="font-code text-text-light-gray text-s">{queryParam.name}</code>
+                                                    <code className="font-code text-text-light-gray text-s bg-dark-600 px-2 rounded-md">{queryParam.type}</code>
+                                                </div>
+                                                {queryParam.optional && <div className="text-text-light-gray text-s">Optional</div>}
+                                            </div>
+                                            <div>{queryParam.description}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                    {metadata && (
+                        <div className="bg-active-gray p-5 rounded-sm">
+                            <h3 className="text-xl font-semibold pb-6">
+                                Metadata{' '}
+                                {('isAnon' in metadata && !metadata.isAnon) ||
+                                    (!('isAnon' in metadata) && <code className="font-code italic text-green-base">&lt;{metadata.name}&gt;</code>)}
+                            </h3>
+                            <div className="flex flex-col gap-5">
+                                {metadata.fields.map((field) => {
+                                    return (
+                                        <div key={field.name} className="flex flex-col pb-5 gap-2.5 border-b border-b-border-gray last-of-type:border-b-0">
+                                            <div className="flex justify-between">
+                                                <div className="flex gap-2">
+                                                    <code className="font-code text-text-light-gray text-s">{field.name}</code>
+                                                    <code className="font-code text-text-light-gray text-s bg-dark-600 px-2 rounded-md">
+                                                        {/* {'value' in field ? (Array.isArray(field.value) ? 'Arr' : field.value) : field.type} */}
+                                                        {'value' in field ? fieldToTypescript({ field }) : field.type}
+                                                    </code>
+                                                </div>
+                                                {'optional' in field && field.optional && <div className="text-text-light-gray text-s">Optional</div>}
+                                            </div>
+                                            {/* <div>{field}</div> */}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                    {body && (
+                        <div className="bg-active-gray p-5 rounded-md">
+                            <h3 className="text-xl font-semibold pb-6">
+                                Body <code className="font-code italic text-green-base">&lt;{body.name}&gt;</code>
+                            </h3>
+                            <div className="flex flex-col gap-5">
+                                {body.fields.map((field) => {
+                                    return (
+                                        <div key={field.name} className="flex flex-col pb-5 gap-2.5 border-b border-b-border-gray last-of-type:border-b-0">
+                                            <div className="flex justify-between">
+                                                <div className="flex gap-2">
+                                                    <code className="font-code text-text-light-gray text-s">{field.name}</code>
+                                                    <code className="font-code text-text-light-gray text-s bg-dark-600 px-2 rounded-md">
+                                                        {/* {'value' in field ? (Array.isArray(field.value) ? 'Arr' : field.value) : field.type} */}
+                                                        {'value' in field ? fieldToTypescript({ field }) : field.type}
+                                                    </code>
+                                                </div>
+                                                {'optional' in field && field.optional && <div className="text-text-light-gray text-s">Optional</div>}
+                                            </div>
+                                            {/* <div>{field}</div> */}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="flex flex-col grow gap-10 w-1/2">
-                    <div className="flex flex-col border border-active-gray">
-                        <header className="flex justify-between items-center bg-active-gray px-4 py-2 rounded-t-lg">
+                    <div className="flex flex-col border border-active-gray rounded-md">
+                        <header className="flex justify-between items-center bg-active-gray px-4 py-2 rounded-t-md">
                             <div className="text-text-light-gray">Request</div>
                             <div className="flex gap-2 items-center ">
-                                <Select defaultValue="node" onValueChange={(v) => setLanguage(v as any)}>
+                                <Select defaultValue={language} onValueChange={(v) => setLanguage(v as any)}>
                                     <SelectTrigger className="bg-dark-600 uppercase text-text-light-gray text-[11px] px-1.5 py-0.5 h-auto">
                                         <SelectValue placeholder="Language" />
                                     </SelectTrigger>
@@ -108,8 +220,9 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                             </Prism>
                         </div>
                     </div>
-                    <div className="flex flex-col border border-active-gray">
-                        <header className="flex justify-between items-center bg-active-gray px-4 py-2 rounded-t-lg">
+
+                    <div className="flex flex-col border border-active-gray rounded-md">
+                        <header className="flex justify-between items-center bg-active-gray px-4 py-2 rounded-t-md">
                             <div className="text-text-light-gray">Response</div>
                             <div className="flex gap-2 items-center ">
                                 <Tag bgClassName="bg-dark-600">Json</Tag>

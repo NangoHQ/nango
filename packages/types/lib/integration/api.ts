@@ -3,8 +3,8 @@ import type { ApiTimestamps, Endpoint } from '../api';
 import type { IntegrationConfig } from './db';
 import type { Template } from './template';
 import type { AuthModeType } from '../auth/api';
-import type { NangoSyncEndpoint, ScriptTypeLiteral } from '../nangoYaml';
-import type { NangoConfigMetadata } from '../deploy/incomingFlow';
+import type { NangoModel, NangoSyncEndpoint, ScriptTypeLiteral } from '../nangoYaml';
+import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';
 import type { JSONSchema7 } from 'json-schema';
 import type { SyncType } from '../scripts/syncs/api';
 
@@ -113,7 +113,7 @@ export interface NangoSyncConfig {
     version?: string | null;
     last_deployed?: string | null;
     id?: number;
-    input?: any;
+    input?: NangoModel | LegacySyncModelSchema;
     sync_type?: SyncType;
     nango_yaml_version?: string;
     webhookSubscriptions?: string[];

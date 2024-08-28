@@ -16,9 +16,9 @@ export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['
     return (
         <Drawer direction="right" snapPoints={[drawerWidth]} handleOnly={true} noBodyStyles={true} dismissible={true} disablePreventScroll={true}>
             <DrawerTrigger asChild>
-                <Button variant={'emptyFaded'}>
+                <Button variant={'zombie'} className="text-text-light-gray">
                     <GearIcon />
-                    Script Settings
+                    Settings
                 </Button>
             </DrawerTrigger>
             <DrawerContent>
@@ -72,7 +72,11 @@ export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['
                                     )}
                                 </InfoBloc>
                                 <InfoBloc title="Sync Metadata" className="min-w-[250px]">
-                                    {flow.input || 'n/a'}
+                                    {flow.input ? (
+                                        <code className="font-code text-xs border border-border-gray rounded-md px-1">{flow.input.name}</code>
+                                    ) : (
+                                        'n/a'
+                                    )}
                                 </InfoBloc>
                                 <InfoBloc title="Detect Deletions" className="min-w-[250px]">
                                     {flow.track_deletes === true ? 'Yes' : 'No'}

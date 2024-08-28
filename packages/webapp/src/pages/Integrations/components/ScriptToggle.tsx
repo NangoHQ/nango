@@ -6,26 +6,13 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import Button from '../../../components/ui/button/Button';
 import { useCreateFlow } from '../../../utils/api';
 import { useStore } from '../../../store';
-import type { Flow, PreBuiltFlow, Sync } from '../../../types';
-
-interface ExtendedPreBuiltFlow extends PreBuiltFlow {
-    id?: number;
-    provider: string;
-    providerConfigKey: string;
-    public_route: string;
-    model_schema: string;
-}
-
-type ExtendedFlow = ExtendedPreBuiltFlow &
-    Pick<Flow, 'sync_type' | 'track_deletes' | 'scopes' | 'input' | 'returns' | 'endpoints' | 'is_public' | 'output' | 'pre_built'> &
-    Pick<Sync, 'metadata'>;
 
 export const ScriptToggle: React.FC<{
     flow: NangoSyncConfigWithEndpoint;
     integration: GetIntegration['Success']['data'];
-}> = ({ flow, integration }) => {
+}> = ({ flow }) => {
     const env = useStore((state) => state.env);
-    const createFlow = useCreateFlow(env);
+    const _createFlow = useCreateFlow(env);
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -37,38 +24,38 @@ export const ScriptToggle: React.FC<{
         }
     };
 
-    const onEnable = async () => {
+    const onEnable = () => {
         setLoading(true);
-        const flowPayload: ExtendedFlow = {
-            provider: integration.integration.provider,
-            providerConfigKey: integration.integration.unique_key,
-            type: flow.type || 'sync',
-            name: flow.name,
-            runs: flow.runs,
-            auto_start: flow.auto_start === true,
-            track_deletes: flow.track_deletes === true,
-            sync_type: flow.sync_type,
-            models: flow.models.map((model) => model.name),
-            scopes: flow.scopes || [],
-            input: flow.input,
-            returns: flow.returns,
-            metadata: {
-                description: flow.description,
-                scopes: flow.scopes
-            },
-            endpoints: flow.endpoints,
-            output: flow.returns,
-            pre_built: flow.pre_built === true,
-            is_public: flow.is_public === true,
-            model_schema: JSON.stringify(flow.models),
-            public_route: rawName || provider
-        };
+        _createFlow;
+        // const flowPayload: ExtendedFlow = {
+        //     provider: integration.integration.provider,
+        //     providerConfigKey: integration.integration.unique_key,
+        //     type: flow.type || 'sync',
+        //     name: flow.name,
+        //     runs: flow.runs,
+        //     auto_start: flow.auto_start === true,
+        //     track_deletes: flow.track_deletes === true,
+        //     sync_type: flow.sync_type,
+        //     models: flow.models.map((model) => model.name),
+        //     scopes: flow.scopes || [],
+        //     input: flow.input,
+        //     returns: flow.returns,
+        //     metadata: {
+        //         description: flow.description,
+        //         scopes: flow.scopes
+        //     },
+        //     endpoints: flow.endpoints,
+        //     output: flow.returns,
+        //     pre_built: flow.pre_built === true,
+        //     is_public: flow.is_public === true,
+        //     model_schema: JSON.stringify(flow.models),
+        //     public_route: rawName || provider
+        // };
 
-        let success = false;
         if (flow.id) {
             //
         } else {
-            success = await createFlow([flowPayload]);
+            // await createFlow([flowPayload]);
         }
 
         setLoading(false);
