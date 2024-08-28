@@ -510,7 +510,7 @@ export class Nango {
     }
 
     /**
-     * Starts the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified
+     * Starts the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified. Upon starting the schedule, the sync will execute immediately and then continue to run at the specified frequency. If the schedule was already started, this will have no effect.
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param syncs - An optional array of sync names to start. If empty, all applicable syncs will be started
      * @param connectionId - An optional ID of the connection for which to start the syncs. If not provided, syncs will be started for all applicable connections
