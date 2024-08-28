@@ -7,7 +7,7 @@ import type { Sync } from '../types';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 import { useStore } from '../store';
-import Info from '../components/ui/Info';
+import { Info } from '../components/Info';
 import Button from '../components/ui/button/Button';
 import Spinner from '../components/ui/Spinner';
 

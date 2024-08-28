@@ -1,5 +1,5 @@
 import { LeftNavBarItems } from '../../components/LeftNavBar';
-import Info from '../../components/ui/Info';
+import { Info } from '../../components/Info';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { useTeam } from '../../hooks/useTeam';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -30,7 +30,7 @@ export const TeamSettings: React.FC = () => {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
                 <h2 className="text-3xl font-semibold text-white mb-16">Team Settings</h2>
-                <Info color={'red'} classNames="text-xs" size={20}>
+                <Info variant={'destructive'}>
                     An error occurred, refresh your page or reach out to the support.{' '}
                     {error.error.code === 'generic_error_support' && (
                         <>

@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiAcceptInvite, apiDeclineInvite, useInvite } from '../../hooks/useInvite';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { Skeleton } from '../../components/ui/Skeleton';
-import Info from '../../components/ui/Info';
+import { Info } from '../../components/Info';
 import Button from '../../components/ui/button/Button';
 import { useState } from 'react';
 import { useToast } from '../../hooks/useToast';
@@ -79,7 +79,7 @@ export const InviteSignup: React.FC = () => {
                                 </div>
                             </>
                         ) : (
-                            <Info color={'red'} classNames="text-xs" size={20}>
+                            <Info variant={'destructive'}>
                                 An error occurred, refresh your page or reach out to the support.{' '}
                                 {error.error.code === 'generic_error_support' && (
                                     <>
