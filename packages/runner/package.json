@@ -23,17 +23,17 @@
         "@trpc/client": "^10.45.1",
         "@trpc/server": "^10.45.1",
         "axios": "^1.7.4",
-        "botbuilder": "^4.22.3",
-        "connect-timeout": "^1.9.0",
-        "dd-trace": "5.2.0",
+        "botbuilder": "4.22.3",
+        "connect-timeout": "1.9.0",
+        "dd-trace": "5.21.0",
         "express": "^4.19.2",
-        "soap": "1.1.1",
-        "superjson": "^2.2.1",
+        "soap": "1.1.2",
+        "superjson": "2.2.1",
         "undici": "6.12.0",
-        "zod": "^3.22.4"
+        "zod": "3.23.8"
     },
     "devDependencies": {
-        "@types/connect-timeout": "^0.0.39",
+        "@types/connect-timeout": "0.0.39",
         "@types/node": "20.12.2",
         "typescript": "5.3.3",
         "vitest": "1.6.0"

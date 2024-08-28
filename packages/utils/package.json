@@ -17,14 +17,14 @@
     "dependencies": {
         "@colors/colors": "1.6.0",
         "axios": "^1.7.4",
-        "dd-trace": "5.2.0",
+        "dd-trace": "5.21.0",
         "exponential-backoff": "3.1.1",
         "http-proxy-agent": "7.0.2",
         "https-proxy-agent": "7.0.4",
         "nanoid": "5.0.7",
         "serialize-error": "11.0.3",
         "winston": "3.13.0",
-        "zod": "3.22.4"
+        "zod": "3.23.8"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
