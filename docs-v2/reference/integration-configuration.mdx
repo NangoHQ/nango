@@ -26,9 +26,9 @@ integrations:
           - scope2
         auto_start: true # If true, data syncing starts when a new connection is created.
         track_deletes: true # If true, automatically detects deleted records (for full refresh syncs only).
-        webhook_subscriptions: # The types of webhook this sync handles.
-          - subscription1
-          - subscription2
+        webhook-subscriptions: # The types of webhook this sync handles.
+          - event_type_1
+          - event_type_2
 
     actions:
       asana-create-task:
