@@ -17,7 +17,7 @@ import { Tabs, SubTabs } from './Show';
 import type { IntegrationConfig, Flow, Connection } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '../../components/ui/Dialog';
-import Info from '../../components/ui/Info';
+import { Info } from '../../components/Info';
 import { formatDateToShortUSFormat, githubIntegrationTemplates } from '../../utils/utils';
 import EnableDisableSync from './components/EnableDisableSync';
 import { autoStartSnippet, setMetadataSnippet } from '../../utils/language-snippets';
@@ -370,7 +370,7 @@ export default function FlowPage(props: FlowPageProps) {
                 </div>
                 {flow.is_public && (
                     <div className="my-1">
-                        <Info size={18} padding="px-4 py-1.5">
+                        <Info>
                             This script originates from a template made public by Nango. Templates are intended as a starting point and can easily be customized{' '}
                             <a
                                 href="https://docs.nango.dev/customize/guides/extend-an-integration-template"
@@ -386,7 +386,7 @@ export default function FlowPage(props: FlowPageProps) {
                 )}
                 {flow?.nango_yaml_version === 'v1' && (
                     <div className="my-5">
-                        <Info size={18} padding="px-4 py-1.5">
+                        <Info>
                             This {flow?.type} is using the legacy nango.yaml schema.{' '}
                             <a
                                 href="https://docs.nango.dev/customize/guides/advanced/migrate-integration-configuration"
@@ -581,7 +581,7 @@ export default function FlowPage(props: FlowPageProps) {
                                 <div className="flex flex-col w-full">
                                     <span className="text-gray-400 text-xs uppercase mb-2">Metadata</span>
                                     <div className="text-sm w-full text-[#C3E5FA]">
-                                        <Info size={16} verticallyCenter={false}>
+                                        <Info>
                                             <span>To use this sync, programmatically add metadata on each connection.</span>
                                             <div className="flex w-[700px] cursor-pointer" onClick={() => setShowMetadataCode(!showMetadataCode)}>
                                                 <div className="flex-col items-center mt-4 border border-blue-400 border-opacity-50 rounded px-2 py-2 -ml-8 w-full">
@@ -635,7 +635,7 @@ export default function FlowPage(props: FlowPageProps) {
                                 <div className="flex flex-col w-full">
                                     <span className="text-gray-400 text-xs uppercase mb-2">Auto Starts</span>
                                     <div className="text-sm w-full">
-                                        <Info size={18} verticallyCenter={false}>
+                                        <Info>
                                             <span>To use this sync, programmatically start the sync for each connection.</span>
                                             <div className="flex w-[700px] cursor-pointer" onClick={() => setShowAutoStartCode(!showAutoStartCode)}>
                                                 <div className="flex-col items-center mt-4 border border-blue-400 border-opacity-50 rounded px-2 py-2 -ml-8 w-full">
