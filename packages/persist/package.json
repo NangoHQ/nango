@@ -23,9 +23,9 @@
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
-        "dd-trace": "5.2.0",
+        "dd-trace": "5.21.0",
         "express": "^4.19.2",
-        "zod": "^3.22.4",
+        "zod": "3.23.8",
         "zod-express": "^0.0.8"
     },
     "devDependencies": {

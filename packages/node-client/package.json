@@ -37,7 +37,7 @@
     ],
     "devDependencies": {
         "@nangohq/types": "^0.42.5",
-        "tsup": "^8.0.2",
+        "tsup": "^8.2.4",
         "vitest": "1.6.0"
     }
 }

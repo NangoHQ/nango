@@ -17,11 +17,11 @@
         "@elastic/elasticsearch": "8.13.1",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/utils": "file:../utils",
-        "zod": "3.22.4"
+        "zod": "3.23.8"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "type-fest": "4.14.0",
+        "type-fest": "4.25.0",
         "vitest": "1.6.0"
     },
     "files": [
