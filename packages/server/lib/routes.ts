@@ -48,7 +48,7 @@ import {
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { setMetadata } from './controllers/connection/setMetadata.js';
 import { updateMetadata } from './controllers/connection/updateMetadata.js';
-import { putUpgradePreBuilt } from './controllers/v1/flow/upgrade/putPreBuilt.js';
+import { putUpgradePreBuilt } from './controllers/v1/flow/preBuilt/putUpgrade.js';
 import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
@@ -76,6 +76,7 @@ import { getEnvJs } from './controllers/v1/getEnvJs.js';
 import { getListIntegrations } from './controllers/config/getListIntegrations.js';
 import { deleteIntegrationPublic } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
+import { postPreBuiltDeploy } from './controllers/v1/flow/preBuilt/postDeploy.js';
 
 export const router = express.Router();
 
@@ -269,8 +270,8 @@ web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(
 web.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
 web.route('/api/v1/sync/:syncId/frequency').put(webAuth, syncController.updateFrequency.bind(syncController));
 web.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
-web.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
-web.route('/api/v1/flow/upgrade/pre-built').put(webAuth, putUpgradePreBuilt);
+web.route('/api/v1/flow/pre-built/deploy').post(webAuth, postPreBuiltDeploy);
+web.route('/api/v1/flow/pre-built/upgrade').put(webAuth, putUpgradePreBuilt);
 web.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
 web.route('/api/v1/flow/:id/disable').patch(webAuth, flowController.disableFlow.bind(flowController));
 web.route('/api/v1/flow/:id/enable').patch(webAuth, flowController.enableFlow.bind(flowController));

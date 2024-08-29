@@ -68,7 +68,8 @@ describe('Sync config create', () => {
                 models: ['Model_1', 'Model_2'],
                 runs: 'every 6h',
                 version: '1',
-                model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]'
+                model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]',
+                track_deletes: true
             }
         ];
 
@@ -106,7 +107,8 @@ describe('Sync config create', () => {
                 models: ['Model_1', 'Model_2'],
                 runs: 'every 6h',
                 version: '1',
-                model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]'
+                model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]',
+                track_deletes: true
             }
         ];
 

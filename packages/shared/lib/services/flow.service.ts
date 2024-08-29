@@ -9,6 +9,7 @@ import type { NangoConfig, NangoIntegration, NangoSyncConfig, NangoModelV1, Stan
 import type { HTTP_VERB } from '../models/Generic.js';
 import { errorManager } from '../index.js';
 import { stringifyError } from '@nangohq/utils';
+import type { ScriptTypeLiteral } from '@nangohq/types';
 
 export interface Config {
     integrations: NangoIntegration & NangoModelV1;
@@ -62,6 +63,17 @@ class FlowService {
         }
 
         return standardConfig;
+    }
+
+    public getFlowByIntegrationAndName({ provider, type, scriptName }: { provider: string; type: ScriptTypeLiteral; scriptName: string }) {
+        const availablePublicFlows = this.getAllAvailableFlowsAsStandardConfig();
+        const flows = availablePublicFlows.filter((flow) => flow.providerConfigKey === provider);
+        if (flows.length <= 0 || !flows[0]) {
+            return null;
+        }
+
+        const flow = flows[0][`${type}s`].find((flow) => flow.name === scriptName);
+        return flow || null;
     }
 
     public getFlow(name: string) {

@@ -113,17 +113,6 @@ export interface OAuth2ClientCredentials {
     client_secret: string;
 }
 
-export interface PreBuiltFlow {
-    provider: string;
-    type: string;
-    name: string;
-    runs: string | null;
-    auto_start: boolean;
-    models: string[];
-    model_schema: string;
-    is_public: boolean;
-}
-
 export interface FlowEndpoint {
     GET?: string;
     POST?: string;
