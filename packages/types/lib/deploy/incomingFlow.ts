@@ -39,33 +39,24 @@ interface InternalIncomingPreBuiltFlowConfig {
     model_schema: string | NangoModel[];
     input?: string | LegacySyncModelSchema | undefined;
     endpoints?: NangoSyncEndpoint[] | undefined;
+    track_deletes: boolean;
+    providerConfigKey: string;
 }
 
 export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     provider: string;
     is_public: boolean;
-    public_route?: string;
+    public_route: string;
     name: string;
     syncName?: string; // legacy
     nango_config_id?: number;
-    providerConfigKey?: string;
     fileBody?: IncomingScriptFiles;
 }
 
 export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     syncName: string;
-    providerConfigKey: string;
     fileBody: IncomingScriptFiles;
     version?: string | undefined;
-    track_deletes?: boolean;
     sync_type?: SyncTypeLiteral | undefined;
     webhookSubscriptions?: string[] | undefined;
-}
-
-export interface IncomingFlowConfigUpgrade extends IncomingFlowConfig {
-    id: string;
-    upgrade_version: string;
-    last_deployed: string;
-    is_public: true;
-    pre_built: true;
 }

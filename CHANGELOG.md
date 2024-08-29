@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.6] - 2024-08-29
+
+### Added
+
+- *(integrations)* Add support for builder.io (#2637) by @hassan254-prog
+- *(integrations)* Add support for google play (#2636) by @hassan254-prog
+- *(api)* Prebuilt endpoints (#2642) by @bodinsamuel
+
+### Changed
+
+- Clarify start sync behavior (#2644) by @bastienbeurier
+- *(deps)* Bump micromatch and lint-staged (#2640) by @dependabot[bot]
+- Update the template list in the docs (#2635) by @hassan254-prog
+- Incorrect webhook subscription example (#2633) by @bodinsamuel
+
+### Fixed
+
+- *(tiktok-accounts)* [nan-1233] check for nested data (#2641) by @khaliqgant
+- *(ui)* Upgrade Info component with Radix (#2645) by @bodinsamuel
+- *(proxy)* Correctly stream attachment (#2643) by @bodinsamuel
+- *(deps)* Manual upgrade (#2647) by @bodinsamuel
+- *(docs)* [nan-1511] update docs for webhooks (#2648) by @khaliqgant
+
 ## [v0.42.5] - 2024-08-27
 
 ### Added
@@ -1752,6 +1775,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.6]: https://github.com/NangoHQ/nango/compare/v0.42.5..v0.42.6
 [v0.42.5]: https://github.com/NangoHQ/nango/compare/v0.42.4..v0.42.5
 [v0.42.4]: https://github.com/NangoHQ/nango/compare/v0.42.2..v0.42.4
 [v0.42.2]: https://github.com/NangoHQ/nango/compare/v0.42.0..v0.42.2

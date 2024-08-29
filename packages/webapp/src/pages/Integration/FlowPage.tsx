@@ -23,7 +23,7 @@ import EnableDisableSync from './components/EnableDisableSync';
 import { autoStartSnippet, setMetadataSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
 import { getSyncResponse } from '../../utils/scripts';
-import type { SyncTypeLiteral, IncomingFlowConfigUpgrade, NangoModel } from '@nangohq/types';
+import type { NangoModel, PutUpgradePreBuiltFlow } from '@nangohq/types';
 
 interface FlowPageProps {
     environment: EnvironmentAndAccount['environment'];
@@ -263,32 +263,18 @@ export default function FlowPage(props: FlowPageProps) {
             });
             return;
         }
-        const upgradeFlow: IncomingFlowConfigUpgrade = {
-            id: flow.id.toString(),
-            syncName: flow.name,
-            providerConfigKey: integration.unique_key,
-            fileBody: {
-                js: '',
-                ts: ''
-            },
-            upgrade_version: flow.upgrade_version,
-            last_deployed: flow.last_deployed || '',
-            metadata: {
-                description: flow.description || '',
-                scopes: flow.scopes || []
-            },
-            endpoints: flow.endpoints,
-            is_public: true,
+
+        const upgradeFlow: PutUpgradePreBuiltFlow['Body'] = {
+            id: flow.id,
+            provider: integration.provider,
+            scriptName: flow.name,
             type: flow.type,
-            pre_built: true,
-            sync_type: flow.sync_type?.toLowerCase() as SyncTypeLiteral,
-            runs: flow.runs || '',
-            models: flow.models.map((model) => model.name),
-            model_schema: JSON.stringify(flow.models),
-            webhookSubscriptions: flow.webhookSubscriptions
+            providerConfigKey: integration.unique_key,
+            upgradeVersion: flow.upgrade_version,
+            lastDeployed: flow.last_deployed || ''
         };
 
-        const response = await apiFetch(`/api/v1/flow/upgrade/pre-built?env=${env}`, {
+        const response = await apiFetch(`/api/v1/flow/pre-built/upgrade?env=${env}`, {
             method: 'PUT',
             body: JSON.stringify(upgradeFlow)
         });
@@ -416,7 +402,6 @@ export default function FlowPage(props: FlowPageProps) {
                                     provider={integration.provider}
                                     providerConfigKey={integration.unique_key}
                                     reload={reload}
-                                    rawName={flowConfig?.rawName}
                                     connections={connections}
                                     endpoints={endpoints}
                                     setIsEnabling={setIsEnabling}

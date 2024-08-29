@@ -1,4 +1,4 @@
-export interface ApiError<TCode extends string, TErrors = undefined, P = unknown> {
+export interface ApiError<TCode extends string, TErrors = any, P = unknown> {
     error: {
         code: TCode;
         message?: string | undefined;
@@ -72,7 +72,7 @@ export interface Endpoint<T extends EndpointDefinition> {
     /**
      * Response body for any error
      */
-    Errors: T['Error'] extends ApiError<any> ? ResDefaultErrors | T['Error'] : ResDefaultErrors;
+    Errors: T['Error'] extends { error: any } ? ResDefaultErrors | T['Error'] : ResDefaultErrors;
 
     /**
      * Response body (success + error)

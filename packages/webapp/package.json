@@ -35,7 +35,7 @@
         "@heroicons/react": "2.1.5",
         "@mantine/core": "7.12.1",
         "@mantine/prism": "5.10.5",
-        "@nangohq/frontend": "^0.42.5",
+        "@nangohq/frontend": "^0.42.6",
         "@nangohq/server": "file:../server",
         "@nangohq/types": "file:../types",
         "@radix-ui/react-dialog": "1.1.1",

@@ -404,7 +404,8 @@ class DeployService {
                         type: action.type,
                         fileBody: files,
                         model_schema: action.usedModels.map((name) => parsed.models.get(name)!),
-                        endpoints: action.endpoint ? [action.endpoint] : []
+                        endpoints: action.endpoint ? [action.endpoint] : [],
+                        track_deletes: false
                     };
 
                     postData.push(body);

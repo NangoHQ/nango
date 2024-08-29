@@ -65,7 +65,7 @@ export function apiFetch(baseUrl: string) {
 /**
  * Assert API response is an error
  */
-export function isError(json: any): asserts json is ApiError<any, any> {
+export function isError(json: any): asserts json is ApiError<any> {
     if (!('error' in json)) {
         console.log('isError', inspect(json, true, 100));
         throw new Error('Response is not an error');
