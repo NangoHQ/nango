@@ -67,7 +67,7 @@ export async function compileAllFiles({
             if (!completed) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
                     success = false;
-                } else if (!scriptName) {
+                } else if (!scriptName && !file.inputPath.endsWith('models.ts')) {
                     success = false;
                 }
             }
@@ -196,7 +196,6 @@ async function compile({
     debug: boolean;
 }): Promise<boolean> {
     const providerConfiguration = getProviderConfigurationFromPath({ filePath: file.inputPath, parsed });
-
     if (!providerConfiguration) {
         return false;
     }
