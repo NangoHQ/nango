@@ -234,6 +234,7 @@ program
 
         const success = await compileAllFiles({ fullPath, debug });
         if (!success) {
+            console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exitCode = 1;
         }
     });
