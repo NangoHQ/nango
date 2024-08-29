@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
 import { useDebounce } from 'react-use';
 import { cn } from '../../../utils/utils';
-import Info from '../../../components/ui/Info';
+import { Info } from '../../../components/Info';
 
 export interface SearchableMultiSelectArgs<T> {
     label: string;
@@ -110,11 +110,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                     />
                     <CommandList>
                         <CommandEmpty>No framework found.</CommandEmpty>
-                        {maxed && (
-                            <Info color={'orange'} classNames="text-xs mx-2.5 mt-2" size={20} padding="py-1 px-2">
-                                Can&apos;t select more filters
-                            </Info>
-                        )}
+                        {maxed && <Info variant={'warning'}>Can&apos;t select more filters</Info>}
                         <CommandGroup>
                             {options.map((option) => {
                                 const checked = selected.some((sel) => option.value === sel);

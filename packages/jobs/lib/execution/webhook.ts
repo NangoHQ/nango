@@ -122,7 +122,6 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncName: task.parentSyncName,
             syncJobId: syncJob?.id,
             providerConfigKey: task.connection.provider_config_key,
-            activityLogId: task.activityLogId,
             runTime: 0,
             error,
             environment: { id: task.connection.environment_id, name: environment?.name || 'unknown' },
@@ -151,8 +150,6 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now()
     });
-    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
-    await logCtx.info(content);
 
     await updateSyncJobStatus(nangoProps.syncJobId!, SyncStatus.SUCCESS);
 }
@@ -169,7 +166,6 @@ export async function handleWebhookError({ nangoProps, error }: { nangoProps: Na
         syncName: nangoProps.syncConfig.sync_name,
         syncJobId: nangoProps.syncJobId!,
         providerConfigKey: nangoProps.providerConfigKey,
-        activityLogId: nangoProps.activityLogId!,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
@@ -185,7 +181,6 @@ async function onFailure({
     syncName,
     syncJobId,
     providerConfigKey,
-    activityLogId,
     runTime,
     error
 }: {
@@ -196,7 +191,6 @@ async function onFailure({
     syncJobId?: number | undefined;
     syncName: string;
     providerConfigKey: string;
-    activityLogId: string;
     runTime: number;
     error: NangoError;
 }): Promise<void> {
@@ -219,8 +213,6 @@ async function onFailure({
             createdAt: Date.now()
         });
     }
-    const logCtx = await logContextGetter.get({ id: activityLogId });
-    await logCtx.error(error.message, { error });
 
     if (syncJobId) {
         await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);

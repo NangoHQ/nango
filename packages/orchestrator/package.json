@@ -16,15 +16,15 @@
     "dependencies": {
         "@nangohq/scheduler": "file:../scheduler",
         "@nangohq/utils": "file:../utils",
-        "dd-trace": "5.2.0",
+        "dd-trace": "5.21.0",
         "express": "4.19.2",
         "get-port": "7.1.0",
         "p-queue": "8.0.1",
-        "zod": "3.22.4"
+        "zod": "3.23.8"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "type-fest": "4.14.0",
+        "type-fest": "4.25.0",
         "@types/node": "20.12.2",
         "vitest": "1.6.0"
     }

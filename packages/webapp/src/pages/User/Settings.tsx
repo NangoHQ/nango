@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
-import Info from '../../components/ui/Info';
+import { Info } from '../../components/Info';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Input } from '../../components/ui/input/Input';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
@@ -46,7 +46,7 @@ export const UserSettings: React.FC = () => {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.UserSettings}>
                 <h2 className="text-3xl font-semibold text-white mb-16">Profile Settings</h2>
-                <Info color={'red'} classNames="text-xs" size={20}>
+                <Info variant={'destructive'}>
                     An error occurred, refresh your page or reach out to the support.{' '}
                     {error.error.code === 'generic_error_support' && (
                         <>

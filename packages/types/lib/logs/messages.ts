@@ -140,6 +140,6 @@ export type OperationRow = Merge<Required<OperationRowInsert>, { accountId: numb
 export type MessageRowInsert = Pick<MessageRow, 'type' | 'message'> & Partial<Omit<MessageRow, 'type' | 'message'>> & { id?: never };
 
 // Buffer logs inside proxy calls
-export type LogsBuffer = Pick<MessageRow, 'level' | 'message' | 'createdAt'> & Partial<Pick<MessageRow, 'error' | 'meta'>>;
+export type LogsBuffer = Pick<MessageRow, 'level' | 'message' | 'createdAt'> & Partial<Pick<MessageRow, 'error' | 'meta' | 'type' | 'request' | 'response'>>;
 
 export type MessageOrOperationRow = MessageRow | OperationRow;

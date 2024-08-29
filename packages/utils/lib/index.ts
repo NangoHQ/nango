@@ -12,6 +12,7 @@ export * from './string.js';
 export * from './express/requestLoggerMiddleware.js';
 export * from './express/route.js';
 export * from './express/validate.js';
+export * from './express/headers.js';
 export * from './workflows.js';
 export * from './axios.js';
 export * from './auth.js';

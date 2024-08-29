@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import Info from '../../components/ui/Info';
+import { Info } from '../../components/Info';
 import { useGetOperation } from '../../hooks/useLogs';
 import { useStore } from '../../store';
 import { OperationTag } from './components/OperationTag';
@@ -36,6 +36,21 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         return !operation || operation.state === 'waiting' || operation.state === 'running';
     }, [operation]);
 
+    const payload = useMemo(() => {
+        if (!operation?.meta && !operation?.request && !operation?.response) {
+            return null;
+        }
+
+        const pl: Record<string, any> = operation.meta ? { ...operation.meta } : {};
+        if (operation.request) {
+            pl.request = operation.request;
+        }
+        if (operation.response) {
+            pl.response = operation.response;
+        }
+        return pl;
+    }, [operation?.meta, operation?.request, operation?.response]);
+
     useInterval(
         () => {
             // Auto refresh
@@ -65,9 +80,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     if (error || !operation) {
         return (
             <div className="py-6 px-6 flex flex-col gap-9">
-                <Info color="red" classNames="text-xs" size={20} padding="p-2">
-                    An error occurred
-                </Info>
+                <Info variant={'destructive'}>An error occurred</Info>
             </div>
         );
     }
@@ -154,7 +167,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
             </div>
             <div className="">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
-                {operation.meta ? (
+                {payload ? (
                     <div className="text-gray-400 text-sm bg-pure-black py-2 max-h-36 overflow-y-scroll">
                         <Prism
                             language="json"
@@ -164,7 +177,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                                 return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                             }}
                         >
-                            {JSON.stringify(operation.meta, null, 2)}
+                            {JSON.stringify(payload, null, 2)}
                         </Prism>
                     </div>
                 ) : (

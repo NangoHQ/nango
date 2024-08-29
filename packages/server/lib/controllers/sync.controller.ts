@@ -33,7 +33,7 @@ import {
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import type { LastAction } from '@nangohq/records';
-import { isHosted } from '@nangohq/utils';
+import { getHeaders, isHosted } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -324,7 +324,6 @@ class SyncController {
                 return;
             } else {
                 span.setTag('nango.error', actionResponse.error);
-                await logCtx.error('Failed to run action', { error: actionResponse.error });
                 await logCtx.failed();
 
                 errorManager.errResFromNangoErr(res, actionResponse.error);
@@ -340,6 +339,20 @@ class SyncController {
             }
 
             next(err);
+        } finally {
+            const reqHeaders = getHeaders(req.headers);
+            reqHeaders['authorization'] = 'REDACTED';
+            await logCtx?.enrichOperation({
+                request: {
+                    url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+                    method: req.method,
+                    headers: reqHeaders
+                },
+                response: {
+                    code: res.statusCode,
+                    headers: getHeaders(res.getHeaders())
+                }
+            });
         }
     }
 

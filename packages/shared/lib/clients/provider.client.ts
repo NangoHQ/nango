@@ -320,7 +320,7 @@ class ProviderClient {
 
             const response = await axios.post(refreshTokenUrl, body);
 
-            if (response.status === 200 && response.data !== null) {
+            if (response.status === 200 && response.data && response.data.data) {
                 return {
                     access_token: response.data.data['access_token'],
                     token_type: response.data.data['token_type'],
