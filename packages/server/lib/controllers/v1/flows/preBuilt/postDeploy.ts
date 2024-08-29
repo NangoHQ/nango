@@ -45,7 +45,7 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
     }
 
     if (account.is_capped) {
-        const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: body.providerConfigKey, environmentId, type: 'activate' });
+        const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: body.providerConfigKey, environmentId, type: 'deploy' });
         if (isCapped) {
             res.status(400).send({ error: { code: 'resource_capped' } });
             return;

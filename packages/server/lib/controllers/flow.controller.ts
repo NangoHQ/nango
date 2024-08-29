@@ -2,15 +2,11 @@ import type { Request, Response, NextFunction } from 'express';
 import type { FlowDownloadBody } from '@nangohq/shared';
 import {
     flowService,
-    connectionService,
     errorManager,
     configService,
     deployPreBuilt as deployPreBuiltSyncConfig,
     syncManager,
     remoteFileService,
-    getSyncsByConnectionIdsAndEnvironmentIdAndSyncName,
-    enableScriptConfig as enableConfig,
-    disableScriptConfig as disableConfig,
     environmentService,
     getSyncConfigsAsStandardConfig,
     getSyncConfigById
@@ -117,78 +113,6 @@ class FlowController {
             const nangoConfigs = await getSyncConfigsAsStandardConfig(environmentId);
 
             res.send(nangoConfigs);
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async enableFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { account, environment } = res.locals;
-
-            const id = req.params['id'];
-            const flow = req.body;
-
-            if (!id) {
-                res.status(400).send('Missing id');
-                return;
-            }
-
-            if (account.is_capped && flow?.providerConfigKey) {
-                const isCapped = await connectionService.shouldCapUsage({
-                    providerConfigKey: flow?.providerConfigKey,
-                    environmentId: environment.id,
-                    type: 'activate'
-                });
-
-                if (isCapped) {
-                    errorManager.errRes(res, 'resource_capped');
-                    return;
-                }
-            }
-
-            await enableConfig(Number(id));
-
-            await syncManager.triggerIfConnectionsExist([flow], environment.id, logContextGetter, orchestrator);
-
-            res.status(200).send([{ ...flow, enabled: true }]);
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async disableFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-
-            const id = req.params['id'];
-            const connectionIds = req.query['connectionIds'] as string;
-            const syncName = req.query['sync_name'] as string;
-            const flow = req.body;
-
-            if (!id) {
-                res.status(400).send('Missing id');
-                return;
-            }
-
-            if (!syncName) {
-                res.status(400).send('Missing sync_name');
-                return;
-            }
-
-            if (connectionIds) {
-                const connections = connectionIds.split(',');
-
-                const syncs = await getSyncsByConnectionIdsAndEnvironmentIdAndSyncName(connections, environmentId, syncName);
-
-                for (const sync of syncs) {
-                    await syncManager.softDeleteSync(sync.id, environmentId, orchestrator);
-                }
-            }
-
-            await disableConfig(Number(id));
-
-            res.send({ ...flow, enabled: false });
         } catch (e) {
             next(e);
         }

@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
 import type { RunSyncCommand } from '../types';
-import type { PostPreBuiltDeploy, PostSignup } from '@nangohq/types';
+import type { PostSignup } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
     return await fetch(input, {
@@ -646,21 +646,6 @@ export function useGetFlows(env: string) {
         try {
             const res = await apiFetch(`/api/v1/flows?env=${env}`, {
                 method: 'GET'
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useCreateFlow(env: string) {
-    return async (body: PostPreBuiltDeploy['Body']) => {
-        try {
-            const res = await apiFetch(`/api/v1/flow/pre-built/deploy/?env=${env}`, {
-                method: 'POST',
-                body: JSON.stringify(body)
             });
 
             return res;

@@ -3,7 +3,7 @@ import type { ScriptTypeLiteral } from '../nangoYaml';
 
 export type PutUpgradePreBuiltFlow = Endpoint<{
     Method: 'PUT';
-    Path: '/api/v1/flow/pre-built/upgrade';
+    Path: '/api/v1/flows/pre-built/upgrade';
     Body: {
         id: number;
         provider: string;
@@ -21,7 +21,7 @@ export type PutUpgradePreBuiltFlow = Endpoint<{
 
 export type PostPreBuiltDeploy = Endpoint<{
     Method: 'POST';
-    Path: '/api/v1/flow/pre-built/deploy';
+    Path: '/api/v1/flows/pre-built/deploy';
     Body: {
         provider: string;
         providerConfigKey: string;
@@ -32,6 +32,42 @@ export type PostPreBuiltDeploy = Endpoint<{
     Success: {
         data: {
             id: number;
+        };
+    };
+}>;
+
+export type PatchFlowEnable = Endpoint<{
+    Method: 'PATCH';
+    Path: '/api/v1/flows/:id/enable';
+    Params: { id: number };
+    Body: {
+        provider: string;
+        providerConfigKey: string;
+        scriptName: string;
+        type: ScriptTypeLiteral;
+    };
+    Error: ApiError<'unknown_provider'> | ApiError<'resource_capped'> | ApiError<'unknown_sync_config'>;
+    Success: {
+        data: {
+            success: boolean;
+        };
+    };
+}>;
+
+export type PatchFlowDisable = Endpoint<{
+    Method: 'PATCH';
+    Path: '/api/v1/flows/:id/disable';
+    Params: { id: number };
+    Body: {
+        provider: string;
+        providerConfigKey: string;
+        scriptName: string;
+        type: ScriptTypeLiteral;
+    };
+    Error: ApiError<'unknown_provider'>;
+    Success: {
+        data: {
+            success: boolean;
         };
     };
 }>;

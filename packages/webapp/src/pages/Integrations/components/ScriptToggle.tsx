@@ -4,70 +4,97 @@ import type { GetIntegration } from '@nangohq/types';
 import type { NangoSyncConfigWithEndpoint } from '../providerConfigKey/Endpoints/components/List';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
 import Button from '../../../components/ui/button/Button';
-import { useCreateFlow } from '../../../utils/api';
 import { useStore } from '../../../store';
+import { apiFlowDisable, apiFlowEnable, apiPreBuiltDeployFlow } from '../../../hooks/useFlow';
+import { useToast } from '../../../hooks/useToast';
+import { mutate } from 'swr';
 
 export const ScriptToggle: React.FC<{
     flow: NangoSyncConfigWithEndpoint;
     integration: GetIntegration['Success']['data'];
-}> = ({ flow }) => {
+}> = ({ flow, integration }) => {
+    const { toast } = useToast();
     const env = useStore((state) => state.env);
-    const _createFlow = useCreateFlow(env);
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
     const toggleSync = () => {
-        console.log('prat', flow.type);
         if (flow.type === 'sync') {
             setOpen(!open);
         }
     };
 
-    const onEnable = () => {
+    const onEnable = async () => {
         setLoading(true);
-        _createFlow;
-        // const flowPayload: ExtendedFlow = {
-        //     provider: integration.integration.provider,
-        //     providerConfigKey: integration.integration.unique_key,
-        //     type: flow.type || 'sync',
-        //     name: flow.name,
-        //     runs: flow.runs,
-        //     auto_start: flow.auto_start === true,
-        //     track_deletes: flow.track_deletes === true,
-        //     sync_type: flow.sync_type,
-        //     models: flow.models.map((model) => model.name),
-        //     scopes: flow.scopes || [],
-        //     input: flow.input,
-        //     returns: flow.returns,
-        //     metadata: {
-        //         description: flow.description,
-        //         scopes: flow.scopes
-        //     },
-        //     endpoints: flow.endpoints,
-        //     output: flow.returns,
-        //     pre_built: flow.pre_built === true,
-        //     is_public: flow.is_public === true,
-        //     model_schema: JSON.stringify(flow.models),
-        //     public_route: rawName || provider
-        // };
 
         if (flow.id) {
-            //
+            // Already deployed, we just need to enable
+            const res = await apiFlowEnable(
+                env,
+                { id: flow.id },
+                {
+                    provider: integration.integration.provider,
+                    providerConfigKey: integration.integration.unique_key,
+                    type: flow.type!,
+                    scriptName: flow.name
+                }
+            );
+            if ('error' in res.json) {
+                toast({ title: 'An unexpected error occurred', variant: 'error' });
+            } else {
+                toast({ title: `Enabled successfully`, variant: 'success' });
+                await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
+                setOpen(false);
+            }
         } else {
-            // await createFlow([flowPayload]);
+            // Initial deployment
+            const res = await apiPreBuiltDeployFlow(env, {
+                provider: integration.integration.provider,
+                providerConfigKey: integration.integration.unique_key,
+                type: flow.type!,
+                scriptName: flow.name
+            });
+            if ('error' in res.json) {
+                toast({ title: 'An unexpected error occurred', variant: 'error' });
+            } else {
+                toast({ title: `Deployed successfully`, variant: 'success' });
+                await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
+                setOpen(false);
+            }
         }
 
         setLoading(false);
     };
-    const onDisable = () => {};
+
+    const onDisable = async () => {
+        if (!flow.id) {
+            return;
+        }
+
+        const res = await apiFlowDisable(
+            env,
+            { id: flow.id },
+            {
+                provider: integration.integration.provider,
+                providerConfigKey: integration.integration.unique_key,
+                type: flow.type!,
+                scriptName: flow.name
+            }
+        );
+        if ('error' in res.json) {
+            toast({ title: 'An unexpected error occurred', variant: 'error' });
+        } else {
+            toast({ title: `Disabled successfully`, variant: 'success' });
+            await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
+            setOpen(false);
+        }
+    };
 
     return (
         <div
             className="flex"
             onClick={(e) => {
-                console.log('ha', e);
-                // e.preventDefault();
                 e.stopPropagation();
             }}
         >

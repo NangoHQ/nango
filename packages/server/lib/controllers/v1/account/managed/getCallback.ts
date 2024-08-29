@@ -19,7 +19,6 @@ const validation = z
 function parseState(state: string): InviteAccountState | null {
     try {
         const res = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
-        console.log('res', Buffer.from(state, 'base64').toString('ascii'));
         if (!res || !(typeof res === 'object') || !('token' in res)) {
             return null;
         }

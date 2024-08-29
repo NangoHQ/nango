@@ -48,7 +48,7 @@ import {
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { setMetadata } from './controllers/connection/setMetadata.js';
 import { updateMetadata } from './controllers/connection/updateMetadata.js';
-import { putUpgradePreBuilt } from './controllers/v1/flow/preBuilt/putUpgrade.js';
+import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
 import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
@@ -80,7 +80,9 @@ import { deleteIntegration } from './controllers/v1/integrations/providerConfigK
 import { deleteIntegrationPublic } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
-import { postPreBuiltDeploy } from './controllers/v1/flow/preBuilt/postDeploy.js';
+import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
+import { patchFlowDisable } from './controllers/v1/flows/id/patchDisable.js';
+import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 
 export const router = express.Router();
 
@@ -273,11 +275,11 @@ web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(
 web.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
 web.route('/api/v1/sync/:syncId/frequency').put(webAuth, syncController.updateFrequency.bind(syncController));
 web.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
-web.route('/api/v1/flow/pre-built/deploy').post(webAuth, postPreBuiltDeploy);
-web.route('/api/v1/flow/pre-built/upgrade').put(webAuth, putUpgradePreBuilt);
+web.route('/api/v1/flows/pre-built/deploy').post(webAuth, postPreBuiltDeploy);
+web.route('/api/v1/flows/pre-built/upgrade').put(webAuth, putUpgradePreBuilt);
 web.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
-web.route('/api/v1/flow/:id/disable').patch(webAuth, flowController.disableFlow.bind(flowController));
-web.route('/api/v1/flow/:id/enable').patch(webAuth, flowController.enableFlow.bind(flowController));
+web.route('/api/v1/flows/:id/disable').patch(webAuth, patchFlowDisable);
+web.route('/api/v1/flows/:id/enable').patch(webAuth, patchFlowEnable);
 web.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 web.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
