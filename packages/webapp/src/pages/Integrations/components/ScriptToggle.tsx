@@ -8,6 +8,7 @@ import { useStore } from '../../../store';
 import { apiFlowDisable, apiFlowEnable, apiPreBuiltDeployFlow } from '../../../hooks/useFlow';
 import { useToast } from '../../../hooks/useToast';
 import { mutate } from 'swr';
+import Spinner from '../../../components/ui/Spinner';
 
 export const ScriptToggle: React.FC<{
     flow: NangoSyncConfigWithEndpoint;
@@ -19,9 +20,15 @@ export const ScriptToggle: React.FC<{
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
-    const toggleSync = () => {
+    const toggleSync = async () => {
         if (flow.type === 'sync') {
             setOpen(!open);
+        } else if (flow.type === 'action') {
+            if (flow.enabled) {
+                await onDisable();
+            } else {
+                await onEnable();
+            }
         }
     };
 
@@ -93,11 +100,12 @@ export const ScriptToggle: React.FC<{
 
     return (
         <div
-            className="flex"
+            className="flex gap-2"
             onClick={(e) => {
                 e.stopPropagation();
             }}
         >
+            <div className="w-[20px]">{flow.type === 'action' && loading && <Spinner size={1} />}</div>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                     <ToggleButton enabled={flow.enabled === true} onChange={() => toggleSync()} />
