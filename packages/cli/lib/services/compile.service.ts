@@ -67,6 +67,8 @@ export async function compileAllFiles({
             if (!completed) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
                     success = false;
+                } else if (!scriptName) {
+                    success = false;
                 }
             }
         } catch (error) {
@@ -203,7 +205,6 @@ async function compile({
     const type = syncConfig?.type || 'sync';
 
     const success = compileImportedFile({ fullPath, filePath: file.inputPath, compiler, type, parsed });
-
     if (!success) {
         return false;
     }
