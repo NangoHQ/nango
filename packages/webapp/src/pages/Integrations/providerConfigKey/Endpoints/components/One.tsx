@@ -11,7 +11,7 @@ import { useStore } from '../../../../../store';
 import { useEnvironment } from '../../../../../hooks/useEnvironment';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../components/ui/Select';
 import { ScriptSettings } from './ScriptSettings';
-import Info from '../../../../../components/ui/Info';
+import { Info } from '../../../../../components/Info';
 import { useLocalStorage } from 'react-use';
 
 const syncDefaultQueryParams = [
@@ -113,7 +113,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                 </div>
             </header>
 
-            {!flow.enabled && <Info color="orange">This endpoint is disabled. To enable it, go to settings</Info>}
+            {!flow.enabled && <Info variant="warning">This endpoint is disabled. To enable it, go to settings</Info>}
 
             <main className="flex gap-10">
                 <div className="w-1/2 flex flex-col gap-10">

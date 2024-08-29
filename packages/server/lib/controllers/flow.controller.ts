@@ -8,17 +8,16 @@ import {
     deployPreBuilt as deployPreBuiltSyncConfig,
     syncManager,
     remoteFileService,
-    getNangoConfigIdAndLocationFromId,
     getSyncsByConnectionIdsAndEnvironmentIdAndSyncName,
     enableScriptConfig as enableConfig,
     disableScriptConfig as disableConfig,
     environmentService,
-    getSyncConfigsAsStandardConfig
+    getSyncConfigsAsStandardConfig,
+    getSyncConfigById
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
-import type { IncomingPreBuiltFlowConfig } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -54,7 +53,6 @@ class FlowController {
                 environment,
                 account,
                 configs: config,
-                nangoYamlBody: req.body.nangoYamlBody || '',
                 logContextGetter,
                 orchestrator
             });
@@ -67,65 +65,6 @@ class FlowController {
             await syncManager.triggerIfConnectionsExist(preBuiltResponse.result, environment.id, logContextGetter, orchestrator);
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async deployPreBuiltFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const config: IncomingPreBuiltFlowConfig[] = req.body;
-
-            if (!config) {
-                res.status(400).send('Missing config');
-                return;
-            }
-
-            if (config.some((c) => !c.provider)) {
-                res.status(400).send('Missing integration');
-                return;
-            }
-
-            const { environment, account } = res.locals;
-            const environmentId = environment.id;
-
-            // config is an array for compatibility purposes, it will only ever have one item
-            const [firstConfig] = config;
-            let providerLookup;
-            if (firstConfig?.providerConfigKey) {
-                providerLookup = await configService.getConfigIdByProviderConfigKey(firstConfig.providerConfigKey, environmentId);
-            } else {
-                providerLookup = await configService.getConfigIdByProvider(firstConfig?.provider as string, environmentId);
-            }
-
-            if (!providerLookup) {
-                errorManager.errRes(res, 'provider_not_on_account');
-                return;
-            }
-
-            if (account.is_capped && firstConfig?.providerConfigKey) {
-                const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: firstConfig.providerConfigKey, environmentId, type: 'activate' });
-
-                if (isCapped) {
-                    errorManager.errRes(res, 'resource_capped');
-                    return;
-                }
-            }
-
-            const {
-                success: preBuiltSuccess,
-                error: preBuiltError,
-                response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig({ environment, account, configs: config, nangoYamlBody: '', logContextGetter, orchestrator });
-
-            if (!preBuiltSuccess || preBuiltResponse === null) {
-                errorManager.errResFromNangoErr(res, preBuiltError);
-                return;
-            }
-
-            await syncManager.triggerIfConnectionsExist(preBuiltResponse.result, environmentId, logContextGetter, orchestrator);
-
-            res.status(201).send(preBuiltResponse.result);
         } catch (e) {
             next(e);
         }
@@ -156,8 +95,7 @@ class FlowController {
             } else {
                 // it has an id, so it's either a public template that is active, or a private template
                 // either way, we need to fetch it from the users directory in s3
-                const configLookupResult = await getNangoConfigIdAndLocationFromId(id as number);
-
+                const configLookupResult = await getSyncConfigById(environmentId, id as number);
                 if (!configLookupResult) {
                     res.status(400).send('Invalid file reference');
                     return;

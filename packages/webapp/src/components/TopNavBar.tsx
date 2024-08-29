@@ -1,7 +1,7 @@
 import { ChatBubbleBottomCenterIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { useMemo } from 'react';
 import { useSignout } from '../utils/user';
-import Info from './ui/Info';
+import { Info } from './Info';
 import { useUser } from '../hooks/useUser';
 
 export default function NavBar() {
@@ -19,7 +19,7 @@ export default function NavBar() {
         <div className="bg-pure-black flex justify-between border-b border-border-gray py-3">
             <div className="text-white px-6 text-sm">
                 {isHNDemo && (
-                    <Info padding={'px-3 py-1.5'} size={15}>
+                    <Info>
                         This is a test account. Click{' '}
                         <button className="font-bold" onClick={onCreateAccount}>
                             here

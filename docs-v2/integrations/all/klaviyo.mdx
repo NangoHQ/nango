@@ -13,7 +13,7 @@ API configuration: [`klaviyo`](https://nango.dev/providers.yaml), [`klaviyo-oaut
 | [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
 | [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
 | [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | ✅  |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
@@ -33,7 +33,7 @@ API configuration: [`klaviyo`](https://nango.dev/providers.yaml), [`klaviyo-oaut
 ## API gotchas
 
 - For `API_KEY` auth mode, `Klaviyo` uses Public and Private API Keys to access different endpoints. Endpoints that begin with `/api` need to be authenticated with the private API key, while endpoints that begin with `/client` need to be authenticated using the public API key.
-- When adding a new connection, you will also need to add a `revisionHeader` to resolve API versions. For more details check [Klaviyo API versioning](https://developers.klaviyo.com/en/docs/api_versioning_and_deprecation_policy#api-versioning)
+- If you want to use a different API version than the default one set in Nango you can override the `revision` by adding in the necessary header. For more details check [Klaviyo API versioning](https://developers.klaviyo.com/en/docs/api_versioning_and_deprecation_policy#api-versioning)
 - Rate limiting in `klaviyo-oauth` is different from the [standard API rate limiting](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling). For more details check [klaviyo-oauth rate limits](https://developers.klaviyo.com/en/docs/set_up_oauth#rate-limits)
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo.mdx)</Note>

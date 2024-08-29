@@ -8,7 +8,7 @@ import { useStore } from '../../../store';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { useGetIntegration } from '../../../hooks/useIntegration';
 import { Skeleton } from '../../../components/ui/Skeleton';
-import Info from '../../../components/ui/Info';
+import { Info } from '../../../components/Info';
 import PageNotFound from '../../PageNotFound';
 import { useEffect, useState } from 'react';
 import { EndpointsShow } from './Endpoints/Show';
@@ -61,7 +61,7 @@ export const ShowIntegration: React.FC = () => {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
                 <h2 className="text-3xl font-semibold text-white mb-16">Integration</h2>
-                <Info color={'red'} classNames="text-xs" size={20}>
+                <Info variant={'destructive'}>
                     An error occurred, refresh your page or reach out to the support.{' '}
                     {error.error.code === 'generic_error_support' && (
                         <>

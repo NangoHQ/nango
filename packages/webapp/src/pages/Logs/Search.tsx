@@ -1,7 +1,7 @@
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import Info from '../../components/ui/Info';
+import { Info } from '../../components/Info';
 import { useSearchOperations } from '../../hooks/useLogs';
 import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
@@ -326,7 +326,7 @@ export const LogsSearch: React.FC = () => {
                         </div>
                     </div>
                 ) : (
-                    <Info color={'red'} classNames="text-xs" size={20}>
+                    <Info variant={'destructive'}>
                         An error occurred, refresh your page or reach out to the support.{' '}
                         {error.error.code === 'generic_error_support' && (
                             <>

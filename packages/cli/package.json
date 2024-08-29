@@ -48,7 +48,7 @@
         "ts-node": "^10.9.1",
         "tsup": "^8.1.0",
         "typescript": "^5.3.3",
-        "zod": "^3.22.4"
+        "zod": "3.23.8"
     },
     "devDependencies": {
         "@babel/core": "^7.22.1",

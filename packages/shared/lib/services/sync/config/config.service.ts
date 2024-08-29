@@ -638,21 +638,18 @@ export async function getPublicConfig(environment_id: number): Promise<SyncConfi
         });
 }
 
-export async function getNangoConfigIdAndLocationFromId(id: number): Promise<{ nango_config_id: number; file_location: string } | null> {
+export async function getSyncConfigById(environmentId: number, id: number): Promise<SyncConfig | null> {
     const result = await schema()
         .from<SyncConfig>(TABLE)
-        .select(`${TABLE}.nango_config_id`, `${TABLE}.file_location`)
+        .select('*')
         .where({
             id,
+            environment_id: environmentId,
             deleted: false
         })
         .first();
 
-    if (!result) {
-        return null;
-    }
-
-    return result;
+    return result || null;
 }
 
 export async function updateFrequency(sync_config_id: number, runs: string): Promise<void> {

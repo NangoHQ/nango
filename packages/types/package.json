@@ -15,7 +15,7 @@
         "@types/json-schema": "7.0.15",
         "axios": "^1.7.4",
         "json-schema": "0.4.0",
-        "type-fest": "4.14.0"
+        "type-fest": "4.25.0"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "files": [

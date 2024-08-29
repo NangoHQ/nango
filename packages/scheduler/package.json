@@ -18,12 +18,12 @@
     },
     "dependencies": {
         "@nangohq/utils": "file:../utils",
-        "dd-trace": "5.2.0",
+        "dd-trace": "5.21.0",
         "knex": "3.1.0",
         "uuidv7": "0.6.3"
     },
     "devDependencies": {
-        "type-fest": "4.14.0",
+        "type-fest": "4.25.0",
         "vitest": "1.6.0"
     }
 }

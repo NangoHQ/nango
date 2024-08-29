@@ -47,7 +47,6 @@ export const Homepage: React.FC = () => {
                 </div>
                 <div className="text-white text-sm">Last 14 days</div>
             </div>
-
             <div className="grid gap-8 grid-cols-[repeat(auto-fill,minmax(300px,470px))] mt-8">
                 {globalEnv.features.scripts && (
                     <InsightChart
