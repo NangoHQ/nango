@@ -29,12 +29,6 @@ jobs:
     deploy:
         runs-on: ubuntu-latest
         steps:
-            - name: Check if NANGO_DEV_SECRET_KEY is set
-              run: |
-                  if [ -z "${{ secrets.NANGO_DEV_SECRET_KEY }}" ]; then
-                    echo "Error: NANGO_DEV_SECRET_KEY secret is not set"
-                    exit 1
-                  fi
             - name: Checkout code
               uses: actions/checkout@v4
             - name: Install Nango CLI
@@ -49,4 +43,14 @@ jobs:
                   else
                       stage="dev"
                   fi
+
+                  STAGE_UPPER=$(echo "$stage" | tr '[:lower:]' '[:upper:]')
+
+                  SECRET_KEY_VAR="NANGO_SECRET_KEY_${STAGE_UPPER}"
+
+                  if [ -z "${!SECRET_KEY_VAR}" ]; then
+                      echo "Error: ${SECRET_KEY_VAR} secret is not set"
+                      exit 1
+                  fi
+
                   nango deploy "$stage" --auto-confirm ${{ inputs.allowDestructive == 'true' && '--allow-destructive' || '' }}
