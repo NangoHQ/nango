@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { EmptyState } from '../../../../../components/EmptyState';
 import { HelpFooter } from '../../../components/HelpFooter';
 import { ScriptToggle } from '../../../components/ScriptToggle';
+import { useStore } from '../../../../../store';
 
 export type NangoSyncConfigWithEndpoint = NangoSyncConfig & { endpoint: { verb: HTTP_VERB; path: string } };
 
@@ -13,6 +14,8 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
     integration,
     byGroup
 }) => {
+    const env = useStore((state) => state.env);
+
     if (byGroup.length <= 0) {
         return (
             <EmptyState
@@ -38,6 +41,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
             </EmptyState>
         );
     }
+
     return (
         <div className="text-sm text-white flex flex-col gap-10">
             <div className="flex flex-col gap-8">
@@ -58,7 +62,11 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                                     {flows.map((flow) => {
                                         const usp = new URLSearchParams(flow.endpoint);
                                         return (
-                                            <Link to={`?${usp.toString()}`} key={flow.name} className="contents">
+                                            <Link
+                                                to={`/${env}/integrations/${integration.integration.unique_key}/endpoint?${usp.toString()}`}
+                                                key={flow.name}
+                                                className="contents"
+                                            >
                                                 <Table.Row>
                                                     <Table.Cell bordered className="text-white py-4 truncate">
                                                         <HttpLabel {...flow.endpoint} size="xs" />

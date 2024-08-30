@@ -38,7 +38,12 @@ export const getIntegrationFlows = asyncWrapper<GetIntegrationFlows>(async (req,
     const finalFlows: NangoSyncConfig[] = [...dbFlows];
 
     for (const templateFlow of templateFlows) {
-        if (hasSimilarFlow(templateFlow, dbFlows)) {
+        const similar = hasSimilarFlow(templateFlow, dbFlows);
+        if (similar) {
+            if (templateFlow.version && templateFlow.version !== similar.version) {
+                console.log(templateFlow.version, similar.version);
+                similar.upgrade_version = templateFlow.version;
+            }
             continue;
         }
 
@@ -62,18 +67,18 @@ function containsSameEndpoint(flowA: NangoSyncConfig, flowB: NangoSyncConfig) {
     }
     return false;
 }
-function hasSimilarFlow(templateFlow: NangoSyncConfig, list: NangoSyncConfig[]) {
+function hasSimilarFlow(templateFlow: NangoSyncConfig, list: NangoSyncConfig[]): NangoSyncConfig | false {
     const modelsName = new Set<string>(templateFlow.returns.map((model) => model));
 
     for (const flow of list) {
         if (flow.type === templateFlow.type && flow.name === templateFlow.name) {
-            return true;
+            return flow;
         }
         if (flow.type === 'sync' && flow.returns.find((model) => modelsName.has(model))) {
-            return true;
+            return flow;
         }
         if (containsSameEndpoint(flow, templateFlow)) {
-            return true;
+            return flow;
         }
 
         continue;

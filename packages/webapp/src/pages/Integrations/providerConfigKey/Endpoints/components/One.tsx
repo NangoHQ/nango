@@ -42,7 +42,6 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
     const baseUrl = useStore((state) => state.baseUrl);
 
     const { environmentAndAccount } = useEnvironment(env);
-
     const [language, setLanguage] = useLocalStorage<'node' | 'curl'>('nango:snippet:language', 'node');
 
     const [requestSnippet, responseSnippet] = useMemo(() => {

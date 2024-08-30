@@ -1,4 +1,4 @@
-import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy } from '@nangohq/types';
+import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from '@nangohq/types';
 import { apiFetch } from '../utils/api';
 
 export async function apiPreBuiltDeployFlow(env: string, body: PostPreBuiltDeploy['Body']) {
@@ -10,6 +10,18 @@ export async function apiPreBuiltDeployFlow(env: string, body: PostPreBuiltDeplo
     return {
         res,
         json: (await res.json()) as PostPreBuiltDeploy['Reply']
+    };
+}
+
+export async function apiPreBuiltUpgrade(env: string, body: PutUpgradePreBuiltFlow['Body']) {
+    const res = await apiFetch(`/api/v1/flows/pre-built/upgrade?env=${env}`, {
+        method: 'PUT',
+        body: JSON.stringify(body)
+    });
+
+    return {
+        res,
+        json: (await res.json()) as PutUpgradePreBuiltFlow['Reply']
     };
 }
 

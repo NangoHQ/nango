@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, GearIcon, Pencil1Icon, QuestionMarkCircledIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, CheckCircledIcon, GearIcon, Pencil1Icon, QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import Button from '../../../../../components/ui/button/Button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../../../components/ui/Dialog';
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '../../../../../components/ui/Drawer';
@@ -10,7 +10,7 @@ import { cn, githubIntegrationTemplates } from '../../../../../utils/utils';
 import * as Tooltip from '../../../../../components/ui/Tooltip';
 import { useState } from 'react';
 import { Input } from '../../../../../components/ui/input/Input';
-import { apiFlowUpdateFrequency } from '../../../../../hooks/useFlow';
+import { apiFlowUpdateFrequency, apiPreBuiltUpgrade } from '../../../../../hooks/useFlow';
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
 import { mutate } from 'swr';
@@ -24,6 +24,34 @@ export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['
 
     const [open, setOpen] = useState(false);
 
+    // Upgrade
+    const [openUpgrade, setOpenUpgrade] = useState(false);
+    const [loadingUpgrade, setLoadingUpgrade] = useState(false);
+    const onUpgrade = async () => {
+        setLoadingUpgrade(true);
+
+        // Already deployed, we just need to enable
+        const res = await apiPreBuiltUpgrade(env, {
+            id: flow.id!,
+            lastDeployed: flow.last_deployed || '',
+            upgradeVersion: flow.upgrade_version!,
+            provider: integration.integration.provider,
+            providerConfigKey: integration.integration.unique_key,
+            type: flow.type!,
+            scriptName: flow.name
+        });
+        if ('error' in res.json) {
+            toast({ title: 'An unexpected error occurred', variant: 'error' });
+        } else {
+            toast({ title: `Upgraded successfully`, variant: 'success' });
+            await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
+            setOpenFrequency(false);
+        }
+
+        setLoadingUpgrade(false);
+    };
+
+    // Frequency
     const [openFrequency, setOpenFrequency] = useState(false);
     const [loadingFrequency, setLoadingFrequency] = useState(false);
     const [frequency, setFrequency] = useState(flow.runs);
@@ -71,7 +99,6 @@ export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['
             setFrequencyError('The minimum frequency is 5 minutes');
             return;
         }
-        11;
         setFrequencyError(null);
     };
 
@@ -110,17 +137,75 @@ export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['
                         <InfoBloc title="Enabled" className="min-w-[250px]">
                             <ScriptToggle flow={flow} integration={integration} />
                         </InfoBloc>
-                        {flow.is_public && (
+                        {flow.is_public ? (
                             <InfoBloc title="Source" className="min-w-[250px]">
-                                Template
-                                <a
-                                    className="underline"
-                                    rel="noreferrer"
-                                    href={`${githubIntegrationTemplates}/${integration.integration.provider}/${flow.type}s/${flow.name}.ts`}
-                                    target="_blank"
-                                >
-                                    v{flow.version || '0.0.1'}
-                                </a>
+                                <div className="flex flex-col gap-1">
+                                    <div>
+                                        Template{' '}
+                                        <a
+                                            className="underline"
+                                            rel="noreferrer"
+                                            href={`${githubIntegrationTemplates}/${integration.integration.provider}/${flow.type}s/${flow.name}.ts`}
+                                            target="_blank"
+                                        >
+                                            v{flow.version || '0.0.1'}
+                                        </a>
+                                    </div>
+                                    <div>
+                                        {flow.upgrade_version ? (
+                                            <div className="flex gap-2 items-center">
+                                                <div className="text-yellow-base">Outdated</div>
+
+                                                <Dialog open={openUpgrade} onOpenChange={setOpenUpgrade}>
+                                                    <DialogTrigger asChild>
+                                                        <Button variant="zinc" size="xs">
+                                                            Upgrade to v{flow.upgrade_version}
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="pointer-events-auto">
+                                                        <DialogTitle>Upgrade to v{flow.upgrade_version}</DialogTitle>
+                                                        <DialogDescription>
+                                                            You are about to upgrade from version {flow.version} to{' '}
+                                                            <a
+                                                                className="underline"
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                href={`${githubIntegrationTemplates}/${integration.integration.provider}/${flow.type}s/${flow.name}.ts`}
+                                                            >
+                                                                v{flow.upgrade_version}
+                                                            </a>
+                                                            . <br />
+                                                            The new script will replace the old as soon as you upgrade. Major version changes indicate
+                                                            incompatible API modifications, possibly requiring changes to your code.
+                                                        </DialogDescription>
+                                                        <DialogFooter>
+                                                            <DialogClose asChild>
+                                                                <Button variant={'zinc'}>Cancel</Button>
+                                                            </DialogClose>
+                                                            <Button
+                                                                variant={'danger'}
+                                                                isLoading={loadingUpgrade}
+                                                                className="disabled:bg-pure-black"
+                                                                onClick={() => onUpgrade()}
+                                                            >
+                                                                Upgrade
+                                                            </Button>
+                                                        </DialogFooter>
+                                                    </DialogContent>
+                                                </Dialog>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-2 items-center text-green-base">
+                                                <CheckCircledIcon />
+                                                Up-to-date
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </InfoBloc>
+                        ) : (
+                            <InfoBloc title="Source" className="min-w-[250px]">
+                                Custom v{flow.version}
                             </InfoBloc>
                         )}
                         <InfoBloc title="Script Type" className="min-w-[250px]">

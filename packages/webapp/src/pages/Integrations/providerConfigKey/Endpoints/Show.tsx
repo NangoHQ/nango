@@ -1,4 +1,4 @@
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Route, Routes, useParams, useSearchParams } from 'react-router-dom';
 import { Skeleton } from '../../../../components/ui/Skeleton';
 import { useGetIntegrationFlows } from '../../../../hooks/useIntegration';
 import { useStore } from '../../../../store';
@@ -7,13 +7,14 @@ import type { GetIntegration, HTTP_VERB } from '@nangohq/types';
 import type { NangoSyncConfigWithEndpoint } from './components/List';
 import { EndpointsList } from './components/List';
 import { EndpointOne } from './components/One';
+import PageNotFound from '../../../PageNotFound';
 
 const allowedGroup = ['customers', 'invoices', 'payments', 'tickets'];
 export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['data'] }> = ({ integration }) => {
     const env = useStore((state) => state.env);
     const { providerConfigKey } = useParams();
-    const { data, loading } = useGetIntegrationFlows(env, providerConfigKey!);
     const [searchParams] = useSearchParams();
+    const { data, loading } = useGetIntegrationFlows(env, providerConfigKey!);
 
     const byGroup = useMemo(() => {
         if (!data) {
@@ -103,9 +104,11 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         return null;
     }
 
-    if (currentFlow) {
-        return <EndpointOne flow={currentFlow} integration={integration} />;
-    }
-
-    return <EndpointsList byGroup={byGroup} integration={integration} />;
+    return (
+        <Routes>
+            <Route path="/" element={<EndpointsList byGroup={byGroup} integration={integration} />} />
+            <Route path="/endpoint" element={currentFlow && <EndpointOne flow={currentFlow} integration={integration} />} />
+            <Route path="*" element={<PageNotFound />} />
+        </Routes>
+    );
 };

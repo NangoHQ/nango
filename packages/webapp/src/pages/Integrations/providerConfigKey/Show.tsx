@@ -10,14 +10,17 @@ import { useGetIntegration } from '../../../hooks/useIntegration';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { Info } from '../../../components/Info';
 import PageNotFound from '../../PageNotFound';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const location = useLocation();
+    const ref = useRef<HTMLDivElement>(null);
+
     const env = useStore((state) => state.env);
+
     const { data, loading, error } = useGetIntegration(env, providerConfigKey!);
     const [tab, setTab] = useState<string>('');
 
@@ -26,6 +29,14 @@ export const ShowIntegration: React.FC = () => {
             setTab('settings');
         } else {
             setTab('home');
+        }
+    }, [location]);
+
+    useEffect(() => {
+        // Scroll top on path change, because list of endpoints can be long and the body is not scrollable
+        // So clicking an endpoint will display the bottom of the next page without this
+        if (ref.current && ref.current.scrollTop > 150) {
+            ref.current.scrollTo({ top: 150 });
         }
     }, [location]);
 
@@ -78,7 +89,7 @@ export const ShowIntegration: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+        <DashboardLayout selectedItem={LeftNavBarItems.Integrations} ref={ref}>
             <div className="flex gap-4 justify-between">
                 <div className="flex gap-6">
                     <div className="shrink-0">
@@ -119,7 +130,7 @@ export const ShowIntegration: React.FC = () => {
                 </Link>
             </nav>
             <Routes>
-                <Route path="/" element={<EndpointsShow integration={data} />} />
+                <Route path="/*" element={<EndpointsShow integration={data} />} />
                 <Route path="/settings" element={<SettingsShow data={data} />} />
                 <Route path="*" element={<PageNotFound />} />
             </Routes>
