@@ -83,6 +83,7 @@ import { getIntegrationFlows } from './controllers/v1/integrations/providerConfi
 import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
 import { patchFlowDisable } from './controllers/v1/flows/id/patchDisable.js';
 import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
+import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
 
 export const router = express.Router();
 
@@ -273,13 +274,13 @@ web.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.
 web.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
 web.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
-web.route('/api/v1/sync/:syncId/frequency').put(webAuth, syncController.updateFrequency.bind(syncController));
 web.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
 web.route('/api/v1/flows/pre-built/deploy').post(webAuth, postPreBuiltDeploy);
 web.route('/api/v1/flows/pre-built/upgrade').put(webAuth, putUpgradePreBuilt);
 web.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
 web.route('/api/v1/flows/:id/disable').patch(webAuth, patchFlowDisable);
 web.route('/api/v1/flows/:id/enable').patch(webAuth, patchFlowEnable);
+web.route('/api/v1/flows/:id/frequency').patch(webAuth, patchFlowFrequency);
 web.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 web.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));

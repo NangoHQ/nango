@@ -1,4 +1,4 @@
-import type { PatchFlowDisable, PatchFlowEnable, PostPreBuiltDeploy } from '@nangohq/types';
+import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy } from '@nangohq/types';
 import { apiFetch } from '../utils/api';
 
 export async function apiPreBuiltDeployFlow(env: string, body: PostPreBuiltDeploy['Body']) {
@@ -34,5 +34,17 @@ export async function apiFlowDisable(env: string, params: PatchFlowDisable['Para
     return {
         res,
         json: (await res.json()) as PatchFlowDisable['Reply']
+    };
+}
+
+export async function apiFlowUpdateFrequency(env: string, params: PatchFlowFrequency['Params'], body: PatchFlowFrequency['Body']) {
+    const res = await apiFetch(`/api/v1/flows/${params.id}/frequency?env=${env}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body)
+    });
+
+    return {
+        res,
+        json: (await res.json()) as PatchFlowFrequency['Reply']
     };
 }

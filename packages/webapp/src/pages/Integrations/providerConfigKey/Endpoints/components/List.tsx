@@ -48,10 +48,10 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                             <Table.Table className="table-fixed">
                                 <Table.Header>
                                     <Table.Row>
-                                        <Table.Head className="w-[200px] bg-pure-black p-0"></Table.Head>
+                                        <Table.Head className="w-[220px] bg-pure-black p-0"></Table.Head>
                                         <Table.Head className="w-[340px] bg-pure-black p-0"></Table.Head>
                                         <Table.Head className="w-[60px] bg-pure-black p-0"></Table.Head>
-                                        <Table.Head className="w-[60px] bg-pure-black p-0"></Table.Head>
+                                        <Table.Head className="w-[50px] bg-pure-black p-0"></Table.Head>
                                     </Table.Row>
                                 </Table.Header>
                                 <Table.Body>
@@ -60,7 +60,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                                         return (
                                             <Link to={`?${usp.toString()}`} key={flow.name} className="contents">
                                                 <Table.Row>
-                                                    <Table.Cell bordered className="text-white py-4">
+                                                    <Table.Cell bordered className="text-white py-4 truncate">
                                                         <HttpLabel {...flow.endpoint} size="xs" />
                                                     </Table.Cell>
                                                     <Table.Cell bordered className="text-white truncate">

@@ -82,7 +82,7 @@ export const ShowIntegration: React.FC = () => {
             <div className="flex gap-4 justify-between">
                 <div className="flex gap-6">
                     <div className="shrink-0">
-                        <div className="w-[80px] h-[80px] p-5 border border-border-gray rounded-xl">
+                        <div className="w-[80px] h-[80px] p-4 border border-border-gray rounded-xl">
                             <IntegrationLogo provider={data.integration.provider} height={16} width={16} />
                         </div>
                     </div>

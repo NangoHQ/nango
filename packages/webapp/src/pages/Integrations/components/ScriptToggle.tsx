@@ -105,7 +105,6 @@ export const ScriptToggle: React.FC<{
                 e.stopPropagation();
             }}
         >
-            <div className="w-[20px]">{flow.type === 'action' && loading && <Spinner size={1} />}</div>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                     <ToggleButton enabled={flow.enabled === true} onChange={() => toggleSync()} />
@@ -144,6 +143,7 @@ export const ScriptToggle: React.FC<{
                     )}
                 </DialogContent>
             </Dialog>
+            <div className="w-[20px]">{flow.type === 'action' && loading && <Spinner size={1} />}</div>
         </div>
     );
 };

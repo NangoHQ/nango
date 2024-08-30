@@ -652,8 +652,8 @@ export async function getSyncConfigById(environmentId: number, id: number): Prom
     return result || null;
 }
 
-export async function updateFrequency(sync_config_id: number, runs: string): Promise<void> {
-    await schema()
+export async function updateFrequency(sync_config_id: number, runs: string): Promise<number> {
+    return await db.knex
         .from<SyncConfig>(TABLE)
         .update({
             runs

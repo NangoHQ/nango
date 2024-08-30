@@ -71,3 +71,22 @@ export type PatchFlowDisable = Endpoint<{
         };
     };
 }>;
+
+export type PatchFlowFrequency = Endpoint<{
+    Method: 'PATCH';
+    Path: '/api/v1/flows/:id/frequency';
+    Params: { id: number };
+    Body: {
+        provider: string;
+        providerConfigKey: string;
+        scriptName: string;
+        type: ScriptTypeLiteral;
+        frequency: string;
+    };
+    Error: ApiError<'unknown_provider'> | ApiError<'unknown_sync_config'> | ApiError<'failed_to_update_frequency'>;
+    Success: {
+        data: {
+            success: boolean;
+        };
+    };
+}>;

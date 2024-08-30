@@ -18,10 +18,10 @@ const syncDefaultQueryParams = [
     {
         name: 'modified_after',
         type: 'string',
-        description: `Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records modified after this timestamp are returned, otherwise all records are returned`,
+        description: `Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records modified after this timestamp are returned, otherwise all records are returned.`,
         optional: true
     },
-    { name: 'limit', type: 'number', description: `The maximum number of records to return. Defaults to 100.`, optional: true },
+    { name: 'limit', type: 'number', description: `The maximum number of records to return per page. Defaults to 100.`, optional: true },
     {
         name: 'cursor',
         type: 'string',
@@ -159,7 +159,6 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                                                 </div>
                                                 {'optional' in field && field.optional && <div className="text-text-light-gray text-s">Optional</div>}
                                             </div>
-                                            {/* <div>{field}</div> */}
                                         </div>
                                     );
                                 })}
@@ -185,13 +184,14 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                                                 </div>
                                                 {'optional' in field && field.optional && <div className="text-text-light-gray text-s">Optional</div>}
                                             </div>
-                                            {/* <div>{field}</div> */}
                                         </div>
                                     );
                                 })}
                             </div>
                         </div>
                     )}
+
+                    {!queryParams && !metadata && !body && <div className="text-text-light-gray px-5 italic">No parameters or body</div>}
                 </div>
                 <div className="flex flex-col grow gap-10 w-1/2">
                     <div className="flex flex-col border border-active-gray rounded-md">

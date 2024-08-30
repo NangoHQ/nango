@@ -655,21 +655,6 @@ export function useGetFlows(env: string) {
     };
 }
 
-export function useUpdateSyncFrequency(env: string) {
-    return async (syncId: number, frequency: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/sync/${syncId}/frequency?env=${env}`, {
-                method: 'PUT',
-                body: JSON.stringify({ frequency })
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useGetConnectionAPI(env: string) {
     return async (providerConfigKey: string) => {
         try {
