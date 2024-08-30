@@ -35,9 +35,10 @@ export const ScriptToggle: React.FC<{
     const onEnable = async () => {
         setLoading(true);
 
+        let res;
         if (flow.id) {
             // Already deployed, we just need to enable
-            const res = await apiFlowEnable(
+            res = await apiFlowEnable(
                 env,
                 { id: flow.id },
                 {
@@ -47,28 +48,28 @@ export const ScriptToggle: React.FC<{
                     scriptName: flow.name
                 }
             );
-            if ('error' in res.json) {
-                toast({ title: 'An unexpected error occurred', variant: 'error' });
-            } else {
-                toast({ title: `Enabled successfully`, variant: 'success' });
-                await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
-                setOpen(false);
-            }
         } else {
             // Initial deployment
-            const res = await apiPreBuiltDeployFlow(env, {
+            res = await apiPreBuiltDeployFlow(env, {
                 provider: integration.integration.provider,
                 providerConfigKey: integration.integration.unique_key,
                 type: flow.type!,
                 scriptName: flow.name
             });
-            if ('error' in res.json) {
-                toast({ title: 'An unexpected error occurred', variant: 'error' });
+        }
+        if ('error' in res.json) {
+            if (res.json.error.code === 'resource_capped') {
+                toast({
+                    title: 'Free accounts can only enable endpoints for integrations with 3 connections or less',
+                    variant: 'error'
+                });
             } else {
-                toast({ title: `Deployed successfully`, variant: 'success' });
-                await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
-                setOpen(false);
+                toast({ title: 'An unexpected error occurred', variant: 'error' });
             }
+        } else {
+            toast({ title: `Enabled successfully`, variant: 'success' });
+            await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
+            setOpen(false);
         }
 
         setLoading(false);
