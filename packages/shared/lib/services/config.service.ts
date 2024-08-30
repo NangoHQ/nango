@@ -289,12 +289,9 @@ class ConfigService {
             return null;
         }
 
-        const foundConfigId = fromConfig.id;
-
-        delete fromConfig.id;
-
+        const { id: foundConfigId, ...configWithoutId } = fromConfig;
         const id = await this.createProviderConfig({
-            ...fromConfig,
+            ...configWithoutId,
             environment_id: toEnvironmentId,
             unique_key: fromConfig.unique_key
         });
