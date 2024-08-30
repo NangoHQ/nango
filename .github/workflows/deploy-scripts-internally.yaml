@@ -1,7 +1,6 @@
 name: Deploy Scripts Internally
 
 on:
-    workflow_dispatch:
     push:
         branches:
             - master
