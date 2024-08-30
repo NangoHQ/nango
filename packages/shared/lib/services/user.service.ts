@@ -21,16 +21,19 @@ class UserService {
     }
 
     async getUserByToken(token: string): Promise<Result<DBUser>> {
-        const result = await db.knex.select('_nango_users.*').from<User>(`_nango_users`).where({ email_verification_token: token }).first();
+        const result = await db.knex.select<DBUser>('_nango_users.*').from<DBUser>(`_nango_users`).where({ email_verification_token: token }).first();
 
         if (result) {
-            const expired = new Date(result.email_verification_token_expires_at).getTime() < new Date().getTime();
+            const expired = result.email_verification_token_expires_at
+                ? new Date(result.email_verification_token_expires_at).getTime() < new Date().getTime()
+                : false;
             if (expired) {
                 return Err(new Error('token_expired'));
             }
+            return Ok(result);
         }
 
-        return Ok(result) || Err(new Error('user_not_found'));
+        return Err(new Error('user_not_found'));
     }
 
     async refreshEmailVerificationToken(expiredToken: string): Promise<User | null> {
