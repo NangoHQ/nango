@@ -1,0 +1,44 @@
+name: Deploy Scripts Internally
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - master
+
+concurrency:
+    group: templates-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    template-upload:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Install nango CLI
+              run: |
+                  npm install -g nango
+
+            - name: Process and deploy integrations
+              run: |
+                  dirs=$(find integration-templates -maxdepth 1 -type d | tail -n +2)
+                  for dir in $dirs; do
+                    integration=$(basename $dir)
+
+                    mkdir -p /tmp/nango-temp/nango-integrations/$integration
+
+                    cp $dir/nango.yaml /tmp/nango-temp/nango-integrations/
+                    cp -r $dir/* /tmp/nango-temp/nango-integrations/$integration/
+
+                    cd /tmp/nango-temp/nango-integrations
+                    npm install zod soap botbuilder
+                    nango deploy internal-dev template-$integration
+
+                    cd -
+                    rm -rf /tmp/nango-temp
+                  done
+              env:
+                  NANGO_SECRET_KEY_DEV: ${{ secrets.NANGO_SHARED_DEV_ACCOUNT_SECRET_KEY }}

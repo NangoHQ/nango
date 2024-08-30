@@ -277,6 +277,34 @@ class ConfigService {
 
         return result.id;
     }
+
+    async copyProviderConfigCreds(
+        fromEnvironmentId: number,
+        toEnvironmentId: number,
+        providerConfigKey: string
+    ): Promise<{ copiedToId: number; copiedFromId: number } | null> {
+        const fromConfig = await this.getProviderConfig(providerConfigKey, fromEnvironmentId);
+
+        if (!fromConfig || !fromConfig.id) {
+            return null;
+        }
+
+        const foundConfigId = fromConfig.id;
+
+        delete fromConfig.id;
+
+        const id = await this.createProviderConfig({
+            ...fromConfig,
+            environment_id: toEnvironmentId,
+            unique_key: fromConfig.unique_key
+        });
+
+        if (!id || id.length === 0 || !id[0] || !id[0].id) {
+            return null;
+        }
+
+        return { copiedToId: id[0].id, copiedFromId: foundConfigId };
+    }
 }
 
 export default new ConfigService();

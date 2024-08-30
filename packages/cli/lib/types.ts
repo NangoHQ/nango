@@ -6,11 +6,15 @@ export interface GlobalOptions {
 export type ENV = 'local' | 'staging' | 'production';
 
 export interface DeployOptions extends GlobalOptions {
-    env?: 'local' | 'staging' | 'production';
+    env?: ENV;
     local?: boolean;
     staging?: boolean;
     version?: string;
     sync?: string;
     action?: string;
     allowDestructive?: boolean;
+}
+
+export interface InternalDeployOptions {
+    env?: ENV;
 }

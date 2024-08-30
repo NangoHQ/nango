@@ -53,6 +53,7 @@ import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
+import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
 import { tbaAuthorization } from './controllers/auth/tba.js';
 import { tableauAuthorization } from './controllers/auth/tableau.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
@@ -164,6 +165,7 @@ publicAPI.route('/connection').post(apiAuth, connectionController.createConnecti
 publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 publicAPI.route('/sync/deploy').post(apiAuth, postDeploy);
 publicAPI.route('/sync/deploy/confirmation').post(apiAuth, postDeployConfirmation);
+publicAPI.route('/sync/deploy/internal').post(apiAuth, postDeployInternal);
 publicAPI.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
 publicAPI.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
 publicAPI.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
