@@ -432,6 +432,7 @@
                 "integrations/all/luma",
                 "integrations/all/mailchimp",
                 "integrations/all/marketo",
+                "integrations/all/make",
                 "integrations/all/mailgun",
                 "integrations/all/medallia",
                 "integrations/all/metabase",
