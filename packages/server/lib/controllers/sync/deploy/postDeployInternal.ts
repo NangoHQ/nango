@@ -47,6 +47,11 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
 
     const { account } = res.locals;
 
+    if (account.uuid !== process.env['NANGO_SHARED_DEV_ACCOUNT_UUID']) {
+        res.status(403).send({ error: { code: 'forbidden', message: 'This endpoint is only available for Nango internal use' } });
+        return;
+    }
+
     const environmentName = queryParamValues.data.customEnvironment;
 
     let environment = await environmentService.getByEnvironmentName(account.id, environmentName);
@@ -81,11 +86,6 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
                 }
             }
         }
-    }
-
-    if (account.uuid !== process.env['NANGO_SHARED_DEV_ACCOUNT_UUID']) {
-        res.status(403).send({ error: { code: 'forbidden', message: 'This endpoint is only available for Nango internal use' } });
-        return;
     }
 
     const {
