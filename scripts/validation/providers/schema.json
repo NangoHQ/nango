@@ -68,6 +68,9 @@
                 "authorization_url": {
                     "type": "string"
                 },
+                "authorization_url_encode": {
+                    "type": "boolean"
+                },
                 "authorization_url_replacements": {
                     "type": "object",
                     "additionalProperties": true

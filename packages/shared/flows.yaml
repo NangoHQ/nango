@@ -1657,6 +1657,8 @@ integrations:
                     and using the ID field provided by the response
                     (https://developers.google.com/drive/picker/reference/results)
                 input: DocumentMetadata
+                auto_start: false
+                version: 1.0.1
                 output: Document
                 sync_type: full
                 endpoint: GET /google-drive/documents
