@@ -341,6 +341,7 @@
                 "integrations/all/brex",
                 "integrations/all/builder-io",
                 "integrations/all/calendly",
+                "integrations/all/cal-com",
                 "integrations/all/canny",
                 "integrations/all/certn",
                 "integrations/all/chargebee",
