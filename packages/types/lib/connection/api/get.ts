@@ -25,3 +25,21 @@ export type GetConnection = Endpoint<{
         errorLog: ActiveLog | null;
     };
 }>;
+
+export type DeletePublicConnection = Endpoint<{
+    Method: 'DELETE';
+    Path: '/connection/:id';
+    Params: { connectionId: string };
+    Querystring: { provider_config_key: string };
+    Error: ApiError<'unknown_connection'> | ApiError<'unknown_provider_config'>;
+    Success: { success: boolean };
+}>;
+
+export type DeleteConnection = Endpoint<{
+    Method: 'DELETE';
+    Path: '/connection/:id';
+    Params: { connectionId: string };
+    Querystring: { provider_config_key: string; env: string };
+    Error: ApiError<'unknown_connection'> | ApiError<'unknown_provider_config'>;
+    Success: { success: boolean };
+}>;

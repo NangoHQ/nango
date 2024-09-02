@@ -25,7 +25,7 @@ import type {
     RecentlyFailedConnection
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
-import { getOrchestrator, getOrchestratorClient } from '../utils/utils.js';
+import { getOrchestrator } from '../utils/utils.js';
 import type { TbaCredentials, IntegrationConfig, Template as ProviderTemplate, DBEnvironment } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
@@ -140,9 +140,16 @@ export const connectionRefreshSuccess = async ({
         connection_id: connection.id
     });
 
-    const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
+    const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
 
-    await slackNotificationService.removeFailingConnection(connection, connection.connection_id, 'auth', null, environment.id, config.provider);
+    await slackNotificationService.removeFailingConnection({
+        connection,
+        name: connection.connection_id,
+        type: 'auth',
+        originalActivityLogId: null,
+        environment_id: environment.id,
+        provider: config.provider
+    });
 };
 
 export const connectionRefreshFailed = async ({
@@ -183,7 +190,7 @@ export const connectionRefreshFailed = async ({
         logCtx
     });
 
-    const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
+    const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
 
     await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
 };

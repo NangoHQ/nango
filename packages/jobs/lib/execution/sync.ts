@@ -328,14 +328,14 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
         // any changes while the sync is running
         await setLastSyncDate(nangoProps.syncId, nangoProps.startedAt);
 
-        await slackService.removeFailingConnection(
+        await slackService.removeFailingConnection({
             connection,
-            nangoProps.syncConfig.sync_name,
-            'sync',
-            nangoProps.activityLogId as unknown as string,
-            nangoProps.environmentId,
-            nangoProps.provider
-        );
+            name: nangoProps.syncConfig.sync_name,
+            type: 'sync',
+            originalActivityLogId: nangoProps.activityLogId as unknown as string,
+            environment_id: nangoProps.environmentId,
+            provider: nangoProps.provider
+        });
 
         await errorNotificationService.sync.clear({
             sync_id: nangoProps.syncId,

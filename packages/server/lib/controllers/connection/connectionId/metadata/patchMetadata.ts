@@ -1,19 +1,20 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { ApiError, SetMetadata, MetadataBody } from '@nangohq/types';
+import type { ApiError, UpdateMetadata, MetadataBody } from '@nangohq/types';
 import { connectionService } from '@nangohq/shared';
-import db from '@nangohq/database';
+import type { Connection } from '@nangohq/shared';
+import { providerConfigKeySchema } from '../../../../helpers/validation.js';
 
 const validation = z
     .object({
         connection_id: z.union([z.string().min(1), z.array(z.string().min(1))]),
-        provider_config_key: z.string().min(1),
+        provider_config_key: providerConfigKeySchema,
         metadata: z.record(z.unknown())
     })
     .strict();
 
-export const setMetadata = asyncWrapper<SetMetadata>(async (req, res) => {
+export const patchPublicMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -36,7 +37,7 @@ export const setMetadata = asyncWrapper<SetMetadata>(async (req, res) => {
 
     const connectionIds = Array.isArray(connectionIdArg) ? connectionIdArg : [connectionIdArg];
 
-    const ids: number[] = [];
+    const validConnections: Connection[] = [];
 
     for (const connectionId of connectionIds) {
         const { success, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
@@ -62,12 +63,10 @@ export const setMetadata = asyncWrapper<SetMetadata>(async (req, res) => {
             return;
         }
 
-        ids.push(connection.id);
+        validConnections.push(connection);
     }
 
-    await db.knex.transaction(async (trx) => {
-        await connectionService.replaceMetadata(ids, metadata, trx);
-    });
+    await connectionService.updateMetadata(validConnections, metadata);
 
-    res.status(201).send(req.body);
+    res.status(200).send(req.body);
 });
