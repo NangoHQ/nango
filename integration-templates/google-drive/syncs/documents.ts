@@ -1,4 +1,4 @@
-import type { NangoSync, Document } from '../../models';
+import type { NangoSync, Document } from "../../models";
 
 interface GoogleDriveFileResponse {
     id: string;
@@ -12,17 +12,31 @@ interface Metadata {
     folders?: string[];
 }
 
-const mimeTypeMapping: Record<string, string> = {
-    'application/vnd.google-apps.document': 'text/plain',
-    'application/vnd.google-apps.spreadsheet': 'text/csv',
-    'application/vnd.google-apps.presentation': 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+const structuredMimeTypeMapping: Record<string, string> = {
+    "application/vnd.google-apps.spreadsheet": "text/csv",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+        "text/csv",
+    "text/csv": "text/csv",
 };
+
+const whiteListedMimeTypes: Set<string> = new Set([
+    "application/vnd.google-apps.spreadsheet",
+    "application/vnd.google-apps.document",
+    "application/vnd.google-apps.presentation",
+    "application/pdf",
+    "text/plain",
+    "text/markdown",
+    "text/csv",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+]);
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const metadata = await nango.getMetadata<Metadata>();
 
     if (!metadata || (!metadata.files && !metadata.folders)) {
-        throw new Error('Metadata for files or folders is required.');
+        throw new Error("Metadata for files or folders is required.");
     }
 
     const initialFolders = metadata?.folders ? [...metadata.folders] : [];
@@ -38,30 +52,37 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         const proxyConfiguration = {
             endpoint: `drive/v3/files`,
             params: {
-                fields: 'files(id, name, mimeType, webViewLink, parents), nextPageToken',
+                fields:
+                    "files(id, name, mimeType, webViewLink, parents), nextPageToken",
                 pageSize: batchSize.toString(),
-                q: query
+                q: query,
             },
             paginate: {
-                response_path: 'files'
-            }
+                response_path: "files",
+            },
         };
 
-        for await (const files of nango.paginate<GoogleDriveFileResponse>(proxyConfiguration)) {
+        for await (const files of nango.paginate<GoogleDriveFileResponse>(
+            proxyConfiguration
+        )) {
             for (const file of files) {
-                if (file.mimeType === 'application/vnd.google-apps.folder') {
+                if (file.mimeType === "application/vnd.google-apps.folder") {
                     await processFolder(file.id);
-                } else if (file.mimeType === 'application/vnd.google-apps.document' || file.mimeType === 'application/pdf') {
-                    const content = await fetchDocumentContent(nango, file, file.mimeType);
+                } else if (whiteListedMimeTypes.has(file.mimeType)) {
+                    const content = await fetchDocumentContent(
+                        nango,
+                        file,
+                        file.mimeType
+                    );
                     batch.push({
                         id: file.id,
                         url: file.webViewLink,
-                        content: content || '',
-                        title: file.name
+                        content: content || "",
+                        title: file.name,
                     });
 
                     if (batch.length === batchSize) {
-                        await nango.batchSave<Document>(batch, 'Document');
+                        await nango.batchSave<Document>(batch, "Document");
                         batch = [];
                     }
                 }
@@ -79,20 +100,31 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                 const documentResponse = await nango.get({
                     endpoint: `drive/v3/files/${file}`,
                     params: {
-                        fields: 'id, name, mimeType, webViewLink, parents'
-                    }
+                        fields: "id, name, mimeType, webViewLink, parents",
+                    },
                 });
-                const content = await fetchDocumentContent(nango, documentResponse.data, documentResponse.data.mimeType);
+
+                if (!whiteListedMimeTypes.has(documentResponse.data.mimeType)) {
+                    await nango.log(
+                        `Skipping file ${file} due to unsupported mime type: ${documentResponse.data.mimeType}`
+                    );
+                    continue;
+                }
+                const content = await fetchDocumentContent(
+                    nango,
+                    documentResponse.data,
+                    documentResponse.data.mimeType
+                );
 
                 batch.push({
                     id: documentResponse.data.id,
                     url: documentResponse.data.webViewLink,
-                    content: content || '',
-                    title: documentResponse.data.name
+                    content: content || "",
+                    title: documentResponse.data.name,
                 });
 
                 if (batch.length === batchSize) {
-                    await nango.batchSave<Document>(batch, 'Document');
+                    await nango.batchSave<Document>(batch, "Document");
                     batch = [];
                 }
             } catch (e) {
@@ -102,30 +134,31 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
     }
 
     if (batch.length > 0) {
-        await nango.batchSave<Document>(batch, 'Document');
+        await nango.batchSave<Document>(batch, "Document");
     }
 }
 
-async function fetchDocumentContent(nango: NangoSync, doc: GoogleDriveFileResponse, mimeType: string): Promise<string | null> {
+async function fetchDocumentContent(
+    nango: NangoSync,
+    doc: GoogleDriveFileResponse,
+    mimeType: string
+): Promise<string | null> {
     try {
-        if (mimeType === 'application/vnd.google-apps.spreadsheet') {
+        if (structuredMimeTypeMapping[mimeType]) {
             const contentResponse = await nango.get({
                 endpoint: `drive/v3/files/${doc.id}/export`,
                 params: {
-                    mimeType: 'text/csv'
+                    mimeType: "text/csv",
                 },
-                responseType: 'text'
+                responseType: "text",
             });
             return contentResponse.data;
-        } else if (mimeType === 'application/pdf') {
-            return '';
         } else {
-            const exportType = mimeTypeMapping[mimeType] || 'text/plain';
             const contentResponse = await nango.get({
                 endpoint: `drive/v3/files/${doc.id}/export`,
                 params: {
-                    mimeType: exportType
-                }
+                    mimeType: "text/plain",
+                },
             });
 
             return contentResponse.data;
