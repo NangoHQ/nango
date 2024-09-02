@@ -48,8 +48,8 @@ describe(`POST ${endpoint}`, () => {
                 code: 'invalid_body',
                 errors: [
                     {
-                        code: 'too_small',
-                        message: 'String must contain at least 1 character(s)',
+                        code: 'invalid_string',
+                        message: 'Invalid',
                         path: ['connection_id']
                     }
                 ]
@@ -76,8 +76,8 @@ describe(`POST ${endpoint}`, () => {
                 code: 'invalid_body',
                 errors: [
                     {
-                        code: 'too_small',
-                        message: 'String must contain at least 1 character(s)',
+                        code: 'invalid_string',
+                        message: 'Invalid',
                         path: ['provider_config_key']
                     }
                 ]
