@@ -290,17 +290,17 @@ class ConfigService {
         }
 
         const { id: foundConfigId, ...configWithoutId } = fromConfig;
-        const id = await this.createProviderConfig({
+        const providerConfigResponse = await this.createProviderConfig({
             ...configWithoutId,
             environment_id: toEnvironmentId,
             unique_key: fromConfig.unique_key
         });
 
-        if (!id || id.length === 0 || !id[0] || !id[0].id) {
+        if (!providerConfigResponse || providerConfigResponse.length === 0 || !providerConfigResponse[0] || !providerConfigResponse[0].id) {
             return null;
         }
 
-        return { copiedToId: id[0].id, copiedFromId: foundConfigId };
+        return { copiedToId: providerConfigResponse[0].id, copiedFromId: foundConfigId };
     }
 }
 
