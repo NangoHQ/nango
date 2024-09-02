@@ -28,6 +28,9 @@ name: Deploy Nango Integrations
 jobs:
     deploy:
         runs-on: ubuntu-latest
+        env:
+            NANGO_SECRET_KEY_DEV: ${{ secrets.NANGO_SECRET_KEY_DEV }}
+            NANGO_SECRET_KEY_PROD: ${{ secrets.NANGO_SECRET_KEY_PROD }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -46,9 +49,9 @@ jobs:
 
                   STAGE_UPPER=$(echo "$stage" | tr '[:lower:]' '[:upper:]')
 
-                  SECRET_KEY_VAR="NANGO_SECRET_KEY_${STAGE_UPPER}"
+                  SECRET_KEY="${{ secrets[SECRET_KEY_VAR] }}"
 
-                  if [ -z "${!SECRET_KEY_VAR}" ]; then
+                  if [ -z "$SECRET_KEY" ]; then
                       echo "Error: ${SECRET_KEY_VAR} secret is not set"
                       exit 1
                   fi
