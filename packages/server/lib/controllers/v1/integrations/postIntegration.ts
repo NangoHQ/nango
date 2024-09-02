@@ -4,10 +4,11 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import type { PostIntegration } from '@nangohq/types';
 import { AnalyticsTypes, analytics, configService } from '@nangohq/shared';
 import { integrationToApi } from '../../../formatters/integration.js';
+import { providerSchema } from '../../../helpers/validation.js';
 
 const validationBody = z
     .object({
-        provider: z.string().min(1).max(255)
+        provider: providerSchema
     })
     .strict();
 

@@ -6,12 +6,13 @@ import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, deployPreBuilt, flowService, syncManager } from '@nangohq/shared';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { flowConfig } from '../../../sync/deploy/postConfirmation.js';
+import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
 const validation = z
     .object({
-        provider: z.string().min(1).max(255),
-        providerConfigKey: z.string().min(1).max(255),
-        scriptName: z.string().min(1).max(255),
+        provider: providerSchema,
+        providerConfigKey: providerConfigKeySchema,
+        scriptName: scriptNameSchema,
         type: flowConfig.shape.type
     })
     .strict();

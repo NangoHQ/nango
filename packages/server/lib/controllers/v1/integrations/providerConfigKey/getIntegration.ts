@@ -5,13 +5,11 @@ import type { GetIntegration } from '@nangohq/types';
 import { configService, connectionService, getGlobalWebhookReceiveUrl } from '@nangohq/shared';
 import { z } from 'zod';
 import { integrationToApi } from '../../../../formatters/integration.js';
+import { providerConfigKeySchema } from '../../../../helpers/validation.js';
 
 export const validationParams = z
     .object({
-        providerConfigKey: z
-            .string()
-            .regex(/[a-zA-Z0-9-]+/)
-            .max(255)
+        providerConfigKey: providerConfigKeySchema
     })
     .strict();
 

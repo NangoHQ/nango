@@ -173,6 +173,9 @@ class ConfigController {
         }
     }
 
+    /**
+     * Public api
+     */
     async getProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
@@ -291,6 +294,9 @@ class ConfigController {
         }
     }
 
+    /**
+     * Public api
+     */
     async createProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;
@@ -423,6 +429,9 @@ class ConfigController {
         }
     }
 
+    /**
+     * Public api
+     */
     async editProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;

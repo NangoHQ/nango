@@ -21,7 +21,7 @@
                     "syncs": {
                         "type": "object",
                         "patternProperties": {
-                            "[a-zA-Z0-9-]+": {
+                            "^[a-zA-Z0-9_-]+$": {
                                 "type": "object",
                                 "additionalProperties": false,
                                 "properties": {
@@ -169,7 +169,7 @@
                     "actions": {
                         "type": "object",
                         "patternProperties": {
-                            "[a-zA-Z0-9-]+": {
+                            "^[a-zA-Z0-9_-]+$": {
                                 "type": "object",
                                 "additionalProperties": false,
                                 "properties": {
@@ -262,7 +262,7 @@
         "models": {
             "type": "object",
             "patternProperties": {
-                "[a-zA-Z0-9_-]": {
+                "^[a-zA-Z0-9_-]$": {
                     "type": "object",
                     "additionalProperties": true
                 }

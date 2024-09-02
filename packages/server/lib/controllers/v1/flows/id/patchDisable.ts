@@ -4,12 +4,13 @@ import type { PatchFlowDisable } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { flowConfig } from '../../../sync/deploy/postConfirmation.js';
 import { configService, disableScriptConfig } from '@nangohq/shared';
+import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
 export const validationBody = z
     .object({
-        provider: z.string().min(1).max(255),
-        providerConfigKey: z.string().min(1).max(255),
-        scriptName: z.string().min(1).max(255),
+        provider: providerSchema,
+        providerConfigKey: providerConfigKeySchema,
+        scriptName: scriptNameSchema,
         type: flowConfig.shape.type
     })
     .strict();

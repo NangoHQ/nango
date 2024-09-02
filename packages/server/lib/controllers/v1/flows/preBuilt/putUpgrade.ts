@@ -5,16 +5,17 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import { configService, flowService, getSyncConfigById, upgradePreBuilt as upgradePrebuiltFlow } from '@nangohq/shared';
 import { flowConfig } from '../../../sync/deploy/postConfirmation.js';
+import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
 const validation = z
     .object({
         id: z.number(),
-        provider: z.string().min(1).max(255),
-        scriptName: z.string().min(1).max(255),
+        provider: providerSchema,
+        scriptName: scriptNameSchema,
         type: flowConfig.shape.type,
         upgradeVersion: z.string(),
         lastDeployed: z.string(),
-        providerConfigKey: z.string().min(1).max(255)
+        providerConfigKey: providerConfigKeySchema
     })
     .strict();
 
