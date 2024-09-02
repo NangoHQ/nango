@@ -64,10 +64,8 @@ export async function compileAllFiles({
     for (const file of integrationFiles) {
         try {
             const completed = await compile({ fullPath, file, parsed, compiler, debug });
-            if (!completed) {
+            if (completed === false) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
-                    success = false;
-                } else if (!scriptName && !file.inputPath.endsWith('models.ts')) {
                     success = false;
                 }
             }
@@ -110,7 +108,7 @@ export async function compileSingleFile({
             debug
         });
 
-        return result;
+        return result === true;
     } catch (error) {
         console.error(`Error compiling ${file.inputPath}:`);
         console.error(error);
@@ -194,10 +192,10 @@ async function compile({
     parsed: NangoYamlParsed;
     compiler: tsNode.Service;
     debug: boolean;
-}): Promise<boolean> {
+}): Promise<boolean | null> {
     const providerConfiguration = getProviderConfigurationFromPath({ filePath: file.inputPath, parsed });
     if (!providerConfiguration) {
-        return false;
+        return null;
     }
 
     const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === file.baseName);
