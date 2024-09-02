@@ -67,6 +67,8 @@ export async function compileAllFiles({
             if (!completed) {
                 if (scriptName && file.inputPath.includes(scriptName)) {
                     success = false;
+                } else if (!scriptName && !file.inputPath.endsWith('models.ts')) {
+                    success = false;
                 }
             }
         } catch (error) {
@@ -194,7 +196,6 @@ async function compile({
     debug: boolean;
 }): Promise<boolean> {
     const providerConfiguration = getProviderConfigurationFromPath({ filePath: file.inputPath, parsed });
-
     if (!providerConfiguration) {
         return false;
     }
@@ -203,7 +204,6 @@ async function compile({
     const type = syncConfig?.type || 'sync';
 
     const success = compileImportedFile({ fullPath, filePath: file.inputPath, compiler, type, parsed });
-
     if (!success) {
         return false;
     }

@@ -429,6 +429,34 @@ builder-io-public:
         query:
             apiKey: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
+cal-com-v1:
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cal.com/v1
+        query:
+            apiKey: ${apiKey}
+        retry:
+            at: 'X-RateLimit-Reset'
+        verification:
+            method: GET
+            endpoint: /me
+    docs: https://docs.nango.dev/integrations/all/cal-com
+cal-com-v2:
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cal.com/v2
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            at: 'X-RateLimit-Reset'
+        verification:
+            method: GET
+            endpoint: /me
+    docs: https://docs.nango.dev/integrations/all/cal-com
 calendly:
     categories:
         - productivity
@@ -1180,6 +1208,7 @@ github-app-oauth:
     alias: github
     auth_mode: CUSTOM
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
+    authorization_url_encode: false
     token_url:
         OAUTH2: https://github.com/login/oauth/access_token
         APP: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
@@ -1822,6 +1851,18 @@ listmonk:
         verification:
             method: GET
             endpoint: /lists
+make:
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.environmentUrl}/api/v2
+        headers:
+            Authorization: Token ${apiKey}
+        verification:
+            method: GET
+            endpoint: /users/me
+    docs: https://docs.nango.dev/integrations/all/make
 mailgun:
     categories:
         - marketing
