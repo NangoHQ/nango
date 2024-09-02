@@ -3,7 +3,7 @@ import debounce from 'lodash/debounce';
 import { useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 
-import { useGetIntegrationDetailsAPI, useGetProvidersAPI } from '../../utils/api';
+import { useGetProvidersAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
@@ -29,7 +29,6 @@ export default function Create() {
     const [loaded, setLoaded] = useState(false);
     const [initialProviders, setInitialProviders] = useState<Provider[] | null>(null);
     const [providers, setProviders] = useState<Provider[] | null>(null);
-    const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI(env);
     const getProvidersAPI = useGetProvidersAPI(env);
     const navigate = useNavigate();
 
@@ -48,7 +47,7 @@ export default function Create() {
             setLoaded(true);
             getProviders();
         }
-    }, [getIntegrationDetailsAPI, getProvidersAPI, loaded, setLoaded]);
+    }, [getProvidersAPI, loaded, setLoaded]);
 
     const onCreateIntegration = async (provider: string) => {
         const created = await apiPostIntegration(env, { provider });
