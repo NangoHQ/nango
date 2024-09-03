@@ -30,7 +30,7 @@ export default function IntegrationCreate() {
     const [integrations, setIntegrations] = useState<Integration[] | null>(null);
     const navigate = useNavigate();
     const [integration, setIntegration] = useState<Integration | null>(null);
-    const [connectionId, setConnectionId] = useState<string | null>(null);
+    const [connectionId, setConnectionId] = useState<string>(crypto.randomUUID());
     const [authMode, setAuthMode] = useState<AuthModeType>('OAUTH2');
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
     const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
@@ -528,7 +528,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             text={
                                                 <>
                                                     <div className="flex text-white text-sm">
-                                                        <p>{`The ID you will use to retrieve the connection (most often the user ID).`}</p>
+                                                        <p>{`The ID you will use to retrieve the connection.`}</p>
                                                     </div>
                                                 </>
                                             }
@@ -541,9 +541,11 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             id="connection_id"
                                             name="connection_id"
                                             type="text"
+                                            defaultValue={connectionId}
                                             autoComplete="new-password"
                                             className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                             onChange={handleConnectionIdChange}
+                                            required
                                         />
                                     </div>
                                 </div>
