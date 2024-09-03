@@ -53,7 +53,7 @@ class OAuthController {
         const accountId = account.id;
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
-        let connectionId = req.query['connection_id'] as string | undefined;
+        const connectionId = (req.query['connection_id'] || uuid.v4()) as string;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
         const userScope = req.query['user_scope'] as string | undefined;
 
@@ -84,21 +84,19 @@ class OAuthController {
             const authorizationParams = req.query['authorization_params'] != null ? getAdditionalAuthorizationParams(req.query['authorization_params']) : {};
             const overrideCredentials = req.query['credentials'] != null ? getAdditionalAuthorizationParams(req.query['credentials']) : {};
 
-            if (connectionId == null) {
+            if (!connectionId) {
                 const error = WSErrBuilder.MissingConnectionId();
                 await logCtx.error(error.message);
                 await logCtx.failed();
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
-            } else if (providerConfigKey == null) {
+            } else if (!providerConfigKey) {
                 const error = WSErrBuilder.MissingProviderConfigKey();
                 await logCtx.error(error.message);
                 await logCtx.failed();
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
-
-            connectionId = connectionId.toString();
 
             const hmacEnabled = await hmacService.isEnabled(environmentId);
             if (hmacEnabled) {

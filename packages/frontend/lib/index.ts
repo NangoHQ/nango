@@ -112,7 +112,7 @@ export default class Nango {
      */
     public auth(
         providerConfigKey: string,
-        connectionId: string,
+        connectionId?: string,
         options?: (ConnectionConfig | OAuth2ClientCredentials | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials) &
             AuthOptions
     ): Promise<AuthResult> {
@@ -127,7 +127,7 @@ export default class Nango {
             const credentials = options.credentials as BasicApiCredentials | ApiKeyCredentials;
             const { credentials: _, ...connectionConfig } = options as ConnectionConfig;
 
-            return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
+            return this.customAuth(providerConfigKey, this.convertCredentialsToConfig(credentials), connectionId, connectionConfig);
         }
 
         const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
@@ -278,15 +278,15 @@ export default class Nango {
     /**
      * Performs authorization based on the provided credentials i.e api, basic, appstore and oauth2
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param connectionId - The ID of the connection for which to create the custom Authorization
      * @param connectionConfigWithCredentials - The connection configuration containing the credentials
+     * * @param connectionId - Optional. The ID of the connection for which to create the custom Authorization
      * @param connectionConfig - Optional. Additional connection configuration
      * @returns A promise that resolves with the authorization result
      */
     private async customAuth(
         providerConfigKey: string,
-        connectionId: string,
         connectionConfigWithCredentials: ConnectionConfig,
+        connectionId?: string,
         connectionConfig?: ConnectionConfig
     ): Promise<AuthResult> {
         const { params: credentials } = connectionConfigWithCredentials;
@@ -425,11 +425,11 @@ export default class Nango {
 
     /**
      * Converts the connection ID and configuration parameters into a query string
-     * @param connectionId - The ID of the connection for which to generate a query string
+     * @param connectionId - Optional. The ID of the connection for which to generate a query string
      * @param connectionConfig - Optional. Additional configuration for the connection
      * @returns The generated query string
      */
-    private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
+    private toQueryString(connectionId?: string, connectionConfig?: ConnectionConfig): string {
         const query: string[] = [];
 
         if (connectionId) {

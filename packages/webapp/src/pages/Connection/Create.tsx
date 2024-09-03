@@ -30,7 +30,7 @@ export default function IntegrationCreate() {
     const [integrations, setIntegrations] = useState<Integration[] | null>(null);
     const navigate = useNavigate();
     const [integration, setIntegration] = useState<Integration | null>(null);
-    const [connectionId, setConnectionId] = useState<string>('test-connection-id');
+    const [connectionId, setConnectionId] = useState<string | null>(null);
     const [authMode, setAuthMode] = useState<AuthModeType>('OAUTH2');
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
     const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
@@ -206,11 +206,12 @@ export default function IntegrationCreate() {
             hmac: hmacDigest || '',
             credentials
         })
-            .then(() => {
+            .then((result) => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
                 void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
                 navigate(`/${env}/connections`, { replace: true });
+                console.log(result);
             })
             .catch((err: unknown) => {
                 setServerErrorMessage(err instanceof AuthError ? `${err.type} error: ${err.message}` : 'unknown error');
@@ -476,11 +477,12 @@ export default function IntegrationCreate() {
                       .join(', ') +
                   '}';
 
+        const connectionIdStr = connectionId ? `, '${connectionId}'` : '';
         return `import Nango from '@nangohq/frontend';
 
 const nango = new Nango(${argsStr});
 
-nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
+nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.uniqueKey}'${connectionIdStr}${connectionConfigStr})
   .then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
   }).catch((err: { message: string; type: string }) => {
@@ -539,9 +541,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             id="connection_id"
                                             name="connection_id"
                                             type="text"
-                                            defaultValue={connectionId}
                                             autoComplete="new-password"
-                                            required
                                             className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                             onChange={handleConnectionIdChange}
                                         />
