@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.8] - 2024-09-03
+
+### Added
+
+- *(internal-script-development)* [nan-1629] add internal deploy logic (#2655) by @khaliqgant
+
+### Changed
+
+- Correctly document basic auth (#2664) by @bodinsamuel
+
+### Fixed
+
+- *(slack)* Log operation to admin account only (#2668) by @bodinsamuel
+
 ## [v0.42.7] - 2024-09-02
 
 ### Added
@@ -1793,6 +1807,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.8]: https://github.com/NangoHQ/nango/compare/v0.42.7..v0.42.8
 [v0.42.7]: https://github.com/NangoHQ/nango/compare/v0.42.6..v0.42.7
 [v0.42.6]: https://github.com/NangoHQ/nango/compare/v0.42.5..v0.42.6
 [v0.42.5]: https://github.com/NangoHQ/nango/compare/v0.42.4..v0.42.5
