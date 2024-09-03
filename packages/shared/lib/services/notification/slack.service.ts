@@ -111,12 +111,6 @@ export class SlackService {
         return slackConnection;
     }
 
-    private async getAdminEnvironmentId(): Promise<number> {
-        const info = await accountService.getAccountAndEnvironmentIdByUUID(this.nangoAdminUUID as string, this.env);
-
-        return info?.environmentId as number;
-    }
-
     /**
      * Send Duplicate Notification to Nango Admins
      * @desc append the account and environment information to the notification content,
@@ -132,7 +126,6 @@ export class SlackService {
         ts?: string
     ) {
         const nangoAdminConnection = await this.getNangoAdminConnection();
-
         if (!nangoAdminConnection) {
             return;
         }
@@ -205,7 +198,6 @@ export class SlackService {
      */
     async reportFailure(nangoConnection: NangoConnection, name: string, type: string, originalActivityLogId: string, environment_id: number, provider: string) {
         const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
-
         if (!slackNotificationsEnabled) {
             return;
         }
@@ -230,14 +222,18 @@ export class SlackService {
         }
 
         const slackConnectionId = generateSlackConnectionId(account.uuid, envName);
-        const nangoEnvironmentId = await this.getAdminEnvironmentId();
+
+        const adminEnvironment = await environmentService.getAccountAndEnvironment({ accountUuid: this.nangoAdminUUID!, envName: this.env });
+        if (!adminEnvironment) {
+            throw new Error('failed_to_get_admin_env');
+        }
 
         // we get the connection on the nango admin account to be able to send the notification
         const {
             success: connectionSuccess,
             error: slackConnectionError,
             response: slackConnection
-        } = await connectionService.getConnection(slackConnectionId, this.integrationKey, nangoEnvironmentId);
+        } = await connectionService.getConnection(slackConnectionId, this.integrationKey, adminEnvironment.environment.id);
 
         if (!connectionSuccess || !slackConnection) {
             logger.error(slackConnectionError);
@@ -247,8 +243,8 @@ export class SlackService {
         const logCtx = await this.logContextGetter.create(
             { operation: { type: 'action' }, message: 'Start action' },
             {
-                account,
-                environment: { id: environment_id, name: envName },
+                account: adminEnvironment.account,
+                environment: adminEnvironment.environment,
                 integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
                 connection: { id: slackConnection.id!, name: slackConnection.connection_id }
             }
@@ -398,12 +394,16 @@ export class SlackService {
             throw new Error('failed_to_get_account');
         }
 
-        const nangoEnvironmentId = await this.getAdminEnvironmentId();
+        const adminEnvironment = await environmentService.getAccountAndEnvironment({ accountUuid: this.nangoAdminUUID!, envName: this.env });
+        if (!adminEnvironment) {
+            throw new Error('failed_to_get_admin_env');
+        }
+
         const slackConnectionId = generateSlackConnectionId(account.uuid, envName);
         const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
             slackConnectionId,
             this.integrationKey,
-            nangoEnvironmentId
+            adminEnvironment.environment.id
         );
 
         if (!connectionSuccess || !slackConnection) {
@@ -413,8 +413,8 @@ export class SlackService {
         const logCtx = await this.logContextGetter.create(
             { operation: { type: 'action' }, message: 'Start action' },
             {
-                account,
-                environment: { id: environment_id, name: envName },
+                account: adminEnvironment.account,
+                environment: adminEnvironment.environment,
                 integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
                 connection: { id: slackConnection.id!, name: slackConnection.connection_id }
             }
