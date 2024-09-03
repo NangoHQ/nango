@@ -611,19 +611,21 @@ integrations:
         syncs:
             events:
                 sync_type: full
+                track_deletes: true
                 runs: every hour
                 endpoint: GET /events
                 output: Event
                 description: Retrieve all upcoming events per a user
             event-types:
                 sync_type: full
+                track_deletes: true
                 runs: every hour
                 endpoint: GET /event/types
                 output: EventType
                 description: Retrieve all event types per a user
         models:
             EventType:
-                id: number
+                id: string
                 teamId: null | number
                 schedulingType: null | string
                 userId: number
@@ -714,7 +716,7 @@ integrations:
                 locale: string
                 bookingId: number
             Event:
-                id: number
+                id: string
                 title: string
                 userPrimaryEmail: string
                 description: string
