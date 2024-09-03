@@ -37,9 +37,11 @@ export interface OperationSync {
 }
 export interface OperationProxy {
     type: 'proxy';
+    action: 'call';
 }
 export interface OperationAction {
     type: 'action';
+    action: 'run';
 }
 export interface OperationAuth {
     type: 'auth';
@@ -131,8 +133,8 @@ export interface MessageRow {
 /**
  * What is required to insert a Message
  */
-export type OperationRowInsert = Merge<Partial<MessageRow>, { message: string; operation: OperationList }>;
-export type OperationRow = Merge<Required<OperationRowInsert>, { accountId: number; accountName: string }>;
+export type OperationRowInsert = Omit<Merge<Partial<MessageRow>, { operation: OperationList }>, 'message'>;
+export type OperationRow = Merge<Required<OperationRowInsert>, { message: string; accountId: number; accountName: string }>;
 
 /**
  * What is required to insert a Message

@@ -30,11 +30,7 @@ export const forwardWebhook = async ({
     }
 
     const logCtx = await logContextGetter.create(
-        {
-            operation: { type: 'webhook', action: 'outgoing' },
-            message: 'Forwarding Webhook',
-            expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
-        },
+        { operation: { type: 'webhook', action: 'outgoing' }, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() },
         {
             account,
             environment,

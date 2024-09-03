@@ -880,7 +880,7 @@ class ConnectionService {
 
             if ((!success && error) || !response) {
                 const logCtx = await logContextGetter.create(
-                    { operation: { type: 'auth', action: 'refresh_token' }, message: 'Token refresh error' },
+                    { operation: { type: 'auth', action: 'refresh_token' } },
                     {
                         account,
                         environment,

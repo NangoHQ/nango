@@ -5,9 +5,9 @@ import { getUser } from '../helpers/get-user.js';
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const { division } = await getUser(nango);
 
-    // List the accounts inside the user's Division
+    // List the payments
     for await (const paymentItems of nango.paginate<EO_Payment>({
-        endpoint: `/api/v1/${division}/crm/Payments`,
+        endpoint: `/api/v1/${division}/cashflow/Payments?$select=ID,Description,Division,Account,AmountFC,Created,Currency,Journal,PaymentMethod,PaymentReference,Status,TransactionID`,
         headers: { accept: 'application/json' },
         paginate: { response_path: 'd.results' },
         retries: 10

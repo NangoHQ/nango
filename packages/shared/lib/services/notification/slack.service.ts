@@ -245,7 +245,7 @@ export class SlackService {
         }
 
         const logCtx = await this.logContextGetter.create(
-            { operation: { type: 'action' }, message: 'Start action' },
+            { operation: { type: 'action', action: 'run' } },
             {
                 account,
                 environment: { id: environment_id, name: envName },
@@ -411,7 +411,7 @@ export class SlackService {
         }
 
         const logCtx = await this.logContextGetter.create(
-            { operation: { type: 'action' }, message: 'Start action' },
+            { operation: { type: 'action', action: 'run' } },
             {
                 account,
                 environment: { id: environment_id, name: envName },
