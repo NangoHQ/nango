@@ -26,9 +26,25 @@ export interface AuthResult {
     isPending?: boolean;
 }
 
+export interface AuthenticationResult {
+    providerConfigKey: string;
+    connectionToken: string;
+    isPending?: boolean;
+}
+
 interface AuthOptions {
     detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed
 }
+
+type AuthConfigOptions = (
+    | ConnectionConfig
+    | OAuth2ClientCredentials
+    | OAuthCredentialsOverride
+    | BasicApiCredentials
+    | ApiKeyCredentials
+    | AppStoreCredentials
+) &
+    AuthOptions;
 
 export default class Nango {
     private hostBaseUrl: string;
@@ -106,16 +122,41 @@ export default class Nango {
     /**
      * Initiates the authorization process for a connection
      * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param options - Optional. Additional options for authorization
+     * @returns A promise that resolves with the authorization result
+     */
+    public async authentication(providerConfigKey: string, options?: AuthConfigOptions): Promise<AuthenticationResult> {
+        if (
+            options &&
+            'credentials' in options &&
+            (('token_id' in options.credentials && 'token_secret' in options.credentials) ||
+                !('oauth_client_id_override' in options.credentials) ||
+                !('oauth_client_secret_override' in options.credentials)) &&
+            Object.keys(options.credentials).length > 0
+        ) {
+            throw new Error('This method supports only standard oauth2 for now. For custom authentication flows, please use the auth method');
+        }
+
+        const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(undefined, options as ConnectionConfig)}`;
+
+        try {
+            new URL(url);
+        } catch {
+            throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
+        }
+
+        return this.callAuth(url, options) as Promise<AuthenticationResult>;
+    }
+
+    /**
+     * Initiates the authorization process for a connection
+     * @deprecated Use `authentication` for standard OAuth2 flows and `auth` for custom authentication flows
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param connectionId - The ID of the connection for which to authorize
      * @param options - Optional. Additional options for authorization
      * @returns A promise that resolves with the authorization result
      */
-    public auth(
-        providerConfigKey: string,
-        connectionId: string,
-        options?: (ConnectionConfig | OAuth2ClientCredentials | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials) &
-            AuthOptions
-    ): Promise<AuthResult> {
+    public auth(providerConfigKey: string, connectionId: string, options?: AuthConfigOptions): Promise<AuthResult> {
         if (
             options &&
             'credentials' in options &&
@@ -138,19 +179,32 @@ export default class Nango {
             throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
         }
 
+        return this.callAuth(url, options) as Promise<AuthResult>;
+    }
+
+    private callAuth(url: string, options?: AuthConfigOptions): Promise<AuthResult | AuthenticationResult> {
         return new Promise((resolve, reject) => {
-            const successHandler = (providerConfigKey: string, connectionId: string, isPending = false) => {
+            const successHandler = (providerConfigKey: string, connectionId: string, connectionToken?: string, isPending = false) => {
                 if (this.status !== AuthorizationStatus.BUSY) {
                     return;
                 }
 
                 this.status = AuthorizationStatus.DONE;
 
-                return resolve({
-                    providerConfigKey: providerConfigKey,
-                    connectionId: connectionId,
-                    isPending
-                });
+                if (connectionToken) {
+                    resolve({
+                        providerConfigKey,
+                        connectionToken,
+                        connectionId,
+                        isPending
+                    });
+                } else {
+                    resolve({
+                        providerConfigKey,
+                        connectionId,
+                        isPending
+                    });
+                }
             };
 
             const errorHandler = (errorType: string, errorDesc: string) => {
@@ -161,7 +215,7 @@ export default class Nango {
                 this.status = AuthorizationStatus.DONE;
 
                 const error = new AuthError(errorDesc, errorType);
-                return reject(error);
+                reject(error);
             };
 
             if (this.status === AuthorizationStatus.BUSY) {
@@ -425,11 +479,11 @@ export default class Nango {
 
     /**
      * Converts the connection ID and configuration parameters into a query string
-     * @param connectionId - The ID of the connection for which to generate a query string
+     * @param connectionId - Optional. The ID of the connection for which to generate a query string
      * @param connectionConfig - Optional. Additional configuration for the connection
      * @returns The generated query string
      */
-    private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
+    private toQueryString(connectionId?: string, connectionConfig?: ConnectionConfig): string {
         const query: string[] = [];
 
         if (connectionId) {
@@ -563,7 +617,7 @@ class AuthorizationModal {
     constructor(
         webSocketUrl: string,
         url: string,
-        successHandler: (providerConfigKey: string, connectionId: string) => any,
+        successHandler: (providerConfigKey: string, connectionId: string, connectionToken?: string) => any,
         errorHandler: (errorType: string, errorDesc: string) => any,
         { width, height }: { width?: number | null; height?: number | null },
         debug?: boolean
@@ -609,7 +663,7 @@ class AuthorizationModal {
      */
     handleMessage(
         message: MessageEvent,
-        successHandler: (providerConfigKey: string, connectionId: string) => any,
+        successHandler: (providerConfigKey: string, connectionId: string, connectionToken?: string) => any,
         errorHandler: (errorType: string, errorDesc: string) => any
     ) {
         const data = JSON.parse(message.data);
@@ -637,7 +691,7 @@ class AuthorizationModal {
                     console.log(debugLogPrefix, 'Success received. Resolving authorization...');
                 }
 
-                successHandler(data.provider_config_key, data.connection_id);
+                successHandler(data.provider_config_key, data.connection_id, data.connection_token);
                 this.swClient.close();
                 break;
             default:

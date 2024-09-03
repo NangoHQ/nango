@@ -662,9 +662,11 @@ export function useGetSyncAPI(env: string) {
 }
 
 export function useGetHmacAPI(env: string) {
-    return async (providerConfigKey: string, connectionId: string) => {
+    return async (providerConfigKey: string, connectionId?: string | null) => {
         try {
-            const res = await apiFetch(`/api/v1/environment/hmac?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+            const baseUrl = `/api/v1/environment/hmac?env=${env}&provider_config_key=${providerConfigKey}`;
+            const url = connectionId ? `${baseUrl}&connection_id=${connectionId}` : baseUrl;
+            const res = await apiFetch(url, {
                 method: 'GET'
             });
 
