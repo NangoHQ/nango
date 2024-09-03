@@ -12,6 +12,7 @@ import type {
     IncomingFlowConfig,
     NangoConfigMetadata,
     PostDeploy,
+    PostDeployInternal,
     PostDeployConfirmation
 } from '@nangohq/types';
 import { stagingHost, cloudHost } from '@nangohq/shared';
@@ -19,7 +20,7 @@ import { compileSingleFile, compileAllFiles, resolveTsFileLocation, getFileToCom
 
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
-import type { DeployOptions } from '../types.js';
+import type { DeployOptions, InternalDeployOptions } from '../types.js';
 import { parse } from './config.service.js';
 import type { JSONSchema7 } from 'json-schema';
 import { loadSchemaJson } from './model.service.js';
@@ -178,6 +179,7 @@ class DeployService {
 
         const shouldConfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm;
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
+
         try {
             const bodyConfirmation: PostDeployConfirmation['Body'] = { ...postData, reconcile: false, debug, singleDeployMode };
             const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });
@@ -288,6 +290,69 @@ class DeployService {
                 console.log(chalk.red(`Error deploying the scripts with the following error: ${errorMessage}`));
                 process.exit(1);
             });
+    }
+
+    public async internalDeploy({
+        fullPath,
+        environment,
+        options,
+        debug = false
+    }: {
+        fullPath: string;
+        environment: string;
+        options: InternalDeployOptions;
+        debug?: boolean;
+    }) {
+        const { env } = options;
+        await verificationService.necessaryFilesExist({ fullPath, autoConfirm: true, checkDist: false });
+
+        await parseSecretKey('dev', debug);
+
+        if (!process.env['NANGO_HOSTPORT']) {
+            switch (env) {
+                case 'local':
+                    process.env['NANGO_HOSTPORT'] = `http://localhost:${port}`;
+                    break;
+                case 'staging':
+                    process.env['NANGO_HOSTPORT'] = stagingHost;
+                    break;
+                default:
+                    process.env['NANGO_HOSTPORT'] = cloudHost;
+                    break;
+            }
+        }
+
+        if (debug) {
+            printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
+            printDebug(`Environment is set to ${environment}`);
+        }
+
+        const { success, error, response } = parse(fullPath, debug);
+
+        if (!success || !response?.parsed) {
+            console.log(chalk.red(error?.message));
+            return;
+        }
+
+        const successfulCompile = await compileAllFiles({ fullPath, debug });
+
+        if (!successfulCompile) {
+            console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
+            process.exit(1);
+        }
+
+        const postData = this.package({ parsed: response.parsed, fullPath, debug });
+        if (!postData) {
+            return;
+        }
+
+        const nangoYamlBody = response.yaml;
+
+        const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy/internal?customEnvironment=${environment}`;
+
+        const bodyDeploy: PostDeployInternal['Body'] = { ...postData, reconcile: true, debug, nangoYamlBody, singleDeployMode: false };
+
+        await this.deploy(url, bodyDeploy);
     }
 
     public package({
