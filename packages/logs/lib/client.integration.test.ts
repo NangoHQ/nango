@@ -62,7 +62,7 @@ describe('client', () => {
                     id: ctx.id,
                     jobId: null,
                     level: 'info',
-                    message: '',
+                    message: 'Sync execution',
                     meta: null,
                     parentId: null,
                     request: null,

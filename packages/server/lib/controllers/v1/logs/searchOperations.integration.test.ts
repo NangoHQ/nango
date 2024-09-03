@@ -114,7 +114,7 @@ describe('POST /logs/operations', () => {
                     id: logCtx.id,
                     jobId: null,
                     level: 'info',
-                    message: 'test 1',
+                    message: 'Create connection',
                     meta: null,
                     operation: {
                         type: 'auth',
