@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.7] - 2024-09-02
+
+### Added
+
+- *(integrations)* Add flag auto_start (#2653) by @hassan254-prog
+- *(integrations)* Add support for cal.com (#2657) by @hassan254-prog
+- *(integrations)* Add support for make (#2656) by @hassan254-prog
+
+### Fixed
+
+- *(deps)* Upgrade botbuilder (#2649) by @bodinsamuel
+- *(github-action-example)* Check for the key later based on the determined stage (#2651) by @khaliqgant
+- *(cli)* Exit 1 when compilation fail (#2650) by @bodinsamuel
+- *(github-app-oauth)* [nan-1628] add escape hatch for avoiding encoding params (#2652) by @khaliqgant
+- *(user)* Correctly get user by token (#2654) by @bodinsamuel
+- *(github-template)* Fix secret key access (#2662) by @khaliqgant
+- *(cli)* Correctly compile file outside an integration (#2663) by @bodinsamuel
+
 ## [v0.42.6] - 2024-08-29
 
 ### Added
@@ -1775,6 +1793,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.7]: https://github.com/NangoHQ/nango/compare/v0.42.6..v0.42.7
 [v0.42.6]: https://github.com/NangoHQ/nango/compare/v0.42.5..v0.42.6
 [v0.42.5]: https://github.com/NangoHQ/nango/compare/v0.42.4..v0.42.5
 [v0.42.4]: https://github.com/NangoHQ/nango/compare/v0.42.2..v0.42.4

@@ -1,6 +1,6 @@
 import type { JSONSchema7 } from 'json-schema';
 
-import type { Endpoint } from '../api.js';
+import type { Endpoint, ApiError } from '../api.js';
 import type { IncomingFlowConfig, PostConnectionScriptByProvider } from './incomingFlow.js';
 
 export type PostDeployConfirmation = Endpoint<{
@@ -29,6 +29,25 @@ export type PostDeploy = Endpoint<{
         singleDeployMode?: boolean;
         jsonSchema?: JSONSchema7 | undefined;
     };
+    Success: any[]; // TODO: move SyncDeploymentResult here
+}>;
+
+export type PostDeployInternal = Endpoint<{
+    Method: 'POST';
+    Path: '/sync/deploy/internal';
+    Querystring: {
+        customEnvironment: string;
+    };
+    Body: {
+        flowConfigs: IncomingFlowConfig[];
+        postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
+        nangoYamlBody: string;
+        reconcile: boolean;
+        debug: boolean;
+        singleDeployMode?: boolean;
+        jsonSchema?: JSONSchema7 | undefined;
+    };
+    Error: ApiError<'forbidden'> | ApiError<'environment_creation_error'>;
     Success: any[]; // TODO: move SyncDeploymentResult here
 }>;
 
