@@ -4,7 +4,6 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
     for await (const eventResponse of nango.paginate<Event[]>({
         endpoint: '/bookings',
         params: {
-            limit: 1,
             ['filters[status]']: 'upcoming'
         },
         paginate: {

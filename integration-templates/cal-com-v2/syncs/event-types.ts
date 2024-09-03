@@ -3,7 +3,8 @@ import type { EventTypeResponse } from '../types';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const response = await nango.get<EventTypeResponse>({
-        endpoint: '/event-types'
+        endpoint: '/event-types',
+        retries: 10
     });
 
     const { data } = response.data;
