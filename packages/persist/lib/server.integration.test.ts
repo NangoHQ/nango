@@ -56,7 +56,7 @@ describe('Persist API', () => {
                 'Content-Type': 'application/json'
             }
         });
-        expect(response.status).toEqual(201);
+        expect(response.status).toEqual(204);
     });
 
     it('should refuse huge log', async () => {
@@ -135,7 +135,7 @@ describe('Persist API', () => {
                     }
                 }
             );
-            expect(response.status).toEqual(201);
+            expect(response.status).toEqual(204);
         });
     });
 
@@ -162,7 +162,7 @@ describe('Persist API', () => {
                 }
             }
         );
-        expect(response.status).toEqual(201);
+        expect(response.status).toEqual(204);
     });
 
     it('should update records ', async () => {
@@ -188,7 +188,7 @@ describe('Persist API', () => {
                 }
             }
         );
-        expect(response.status).toEqual(201);
+        expect(response.status).toEqual(204);
     });
 
     it('should fail if passing incorrect authorization header ', async () => {

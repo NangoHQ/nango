@@ -13,6 +13,6 @@ const method = 'GET';
 export const routeHandler: RouteHandler<Health> = {
     path,
     method,
-    validate: (_req, _res, next) => next(), // No extra validation needed
+    validate: (_req, _res, next) => next(),
     handler: (_req, res) => res.status(200).json({ status: 'ok' })
 };

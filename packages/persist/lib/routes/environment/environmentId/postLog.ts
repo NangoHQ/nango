@@ -41,7 +41,7 @@ const validate = validateRequest<PostLog>({
     parseParams: (data) =>
         z
             .object({
-                environmentId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber
+                environmentId: z.coerce.number().int().positive()
             })
             .strict()
             .parse(data)
@@ -64,7 +64,7 @@ const handler = async (req: EndpointRequest<PostLog>, res: EndpointResponse<Post
     });
 
     if (result) {
-        res.status(201).send();
+        res.status(204).send();
     } else {
         res.status(500).json({ error: { code: 'post_log_failed', message: `Failed to save log ${activityLogId}` } });
     }

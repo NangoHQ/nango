@@ -46,9 +46,9 @@ const handler = async (req: EndpointRequest<PutRecords>, res: EndpointResponse<P
         activityLogId
     });
     if (result.isOk()) {
-        res.status(201).send();
+        res.status(204).send();
     } else {
-        res.status(500).json({ error: { code: 'put_records_failed', message: `Failed to save records: ${result.error.message}` } });
+        res.status(500).json({ error: { code: 'put_records_failed', message: `Failed to delete records: ${result.error.message}` } });
     }
     return;
 };

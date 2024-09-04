@@ -46,7 +46,7 @@ const handler = async (req: EndpointRequest<DeleteRecords>, res: EndpointRespons
         activityLogId
     });
     if (result.isOk()) {
-        res.status(201).send();
+        res.status(204).send();
     } else {
         res.status(500).json({ error: { code: 'delete_records_failed', message: `Failed to save records: ${result.error.message}` } });
     }
