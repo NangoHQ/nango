@@ -629,6 +629,29 @@ class ConnectionService {
         return result;
     }
 
+    public async getConnectionsByEnvironmentAndConfigId(environment_id: number, config_id: number): Promise<StoredConnection[]> {
+        const result = await db.knex.from<StoredConnection>(`_nango_connections`).select('*').where({ environment_id, config_id, deleted: false });
+
+        if (!result || result.length == 0 || !result[0]) {
+            return [];
+        }
+
+        return result;
+    }
+
+    public async copyConnections(connections: StoredConnection[], environment_id: number, config_id: number) {
+        const newConnections = connections.map((connection) => {
+            return {
+                ...connection,
+                id: undefined,
+                environment_id,
+                config_id
+            };
+        });
+
+        await db.knex.batchInsert('_nango_connections', newConnections);
+    }
+
     public async getOldConnections({
         days,
         limit

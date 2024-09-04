@@ -293,4 +293,15 @@ program
         await deployService.admin({ fullPath, environmentName, debug });
     });
 
+program
+    .command('admin:deploy-internal', { hidden: true })
+    .description('Deploy a Nango integration to the internal Nango dev account')
+    .arguments('environment')
+    .option('-nre, --nango-remote-environment [nre]', 'Optional: Set the Nango remote environment (local, staging, production).')
+    .action(async function (this: Command, environment: string) {
+        const { debug, nangoRemoteEnvironment } = this.opts();
+        const fullPath = process.cwd();
+        await deployService.internalDeploy({ fullPath, environment, debug, options: { env: nangoRemoteEnvironment || 'prod' } });
+    });
+
 program.parse();
