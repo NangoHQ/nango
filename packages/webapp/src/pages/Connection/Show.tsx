@@ -5,7 +5,7 @@ import { useState, useEffect, Fragment } from 'react';
 import { toast } from 'react-toastify';
 import useSWR, { useSWRConfig } from 'swr';
 
-import { requestErrorToast, swrFetcher, useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../../utils/api';
+import { requestErrorToast, swrFetcher, useGetConnectionDetailsAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import ActionModal from '../../components/ui/ActionModal';
 import { TrashIcon } from '@heroicons/react/24/outline';
@@ -24,6 +24,7 @@ import type { GetConnection } from '@nangohq/types';
 
 import { useStore } from '../../store';
 import { getLogsUrl } from '../../utils/logs';
+import { apiDeleteConnection } from '../../hooks/useConnections';
 
 export enum Tabs {
     Syncs,
@@ -45,7 +46,6 @@ export default function ShowIntegration() {
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
     const [slackIsConnected, setSlackIsConnected] = useState(true);
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI(env);
-    const deleteConnectionAPI = useDeleteConnectionAPI(env);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -124,13 +124,15 @@ We could not retrieve and/or refresh your access token due to the following erro
         if (!connectionId || !providerConfigKey) return;
 
         setModalShowSpinner(true);
-        const res = await deleteConnectionAPI(connectionId, providerConfigKey);
+        const res = await apiDeleteConnection({ connectionId }, { provider_config_key: providerConfigKey, env });
         setModalShowSpinner(false);
 
-        if (res?.status === 204) {
+        if (res.res.status === 200) {
             toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });
             void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
             navigate(`/${env}/connections`, { replace: true });
+        } else {
+            toast.error('Failed to delete connection', { position: toast.POSITION.BOTTOM_CENTER });
         }
     };
 
