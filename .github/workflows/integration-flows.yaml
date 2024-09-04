@@ -1,4 +1,4 @@
-name: Nango Integration Flows Compile
+name: Nango Integration Flows Test & Compile
 
 on:
     push:
@@ -8,11 +8,11 @@ on:
     pull_request:
 
 concurrency:
-    group: flows-compile--${{ github.event.pull_request.number || github.ref }}
+    group: flows-tests-and-compile--${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
 jobs:
-    flow-compilation:
+    flow-tests-and-compilation:
         runs-on: ubuntu-latest
 
         steps:
@@ -33,7 +33,11 @@ jobs:
                   npm install -g ./packages/cli
                   NANGO_CLI_UPGRADE_MODE=ignore nango version --debug
 
-            - name: Compile with Nango
+            - name: Prep for integration tests
+              working-directory: tests/integration-templates
+              run: npm i
+
+            - name: Compile & Test with Nango
               run: |
                   set -e
                   cd integration-templates
@@ -46,5 +50,10 @@ jobs:
                         cd nango-integrations
                         NANGO_CLI_UPGRADE_MODE=ignore nango compile
                         cd ../../
+
+                        # run tests if applicable
+                        pushd ../tests/integration-templates
+                        bash generate-and-run-tests.bash $dir
+                        popd
                     fi
                   done
