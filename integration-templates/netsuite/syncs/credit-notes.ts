@@ -15,7 +15,10 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         const mappedCreditNotes: NetsuiteCreditNote[] = [];
         for (const creditNoteLink of creditNotes) {
             const creditNote: NSAPI_GetResponse<NS_CreditNote> = await nango.get({
-                endpoint: `/creditmemo/${creditNoteLink.id}?expandSubResources=true`,
+                endpoint: `/creditmemo/${creditNoteLink.id}`,
+                params: {
+                    expandSubResources: 'true'
+                },
                 retries
             });
             if (!creditNote.data) {

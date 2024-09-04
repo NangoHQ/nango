@@ -15,7 +15,10 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         const mappedInvoices: NetsuiteInvoice[] = [];
         for (const invoiceLink of invoices) {
             const invoice: NSAPI_GetResponse<NS_Invoice> = await nango.get({
-                endpoint: `/invoice/${invoiceLink.id}?expandSubResources=true`,
+                endpoint: `/invoice/${invoiceLink.id}`,
+                params: {
+                    expandSubResources: 'true'
+                },
                 retries
             });
             if (!invoice.data) {

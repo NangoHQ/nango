@@ -15,7 +15,10 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         const mappedPayments: NetsuitePayment[] = [];
         for (const paymentLink of payments) {
             const payment: NSAPI_GetResponse<NS_Payment> = await nango.get({
-                endpoint: `/customerpayment/${paymentLink.id}?expandSubResources=true`,
+                endpoint: `/customerpayment/${paymentLink.id}`,
+                params: {
+                    expandSubResources: 'true'
+                },
                 retries
             });
             if (!payment.data) {

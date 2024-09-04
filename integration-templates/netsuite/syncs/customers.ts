@@ -15,7 +15,10 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         const mappedCustomers: NetsuiteCustomer[] = [];
         for (const customerLink of customers) {
             const customer: NSAPI_GetResponse<NS_Customer> = await nango.get({
-                endpoint: `/customer/${customerLink.id}?expandSubResources=true`,
+                endpoint: `/customer/${customerLink.id}`,
+                params: {
+                    expandSubResources: 'true'
+                },
                 retries
             });
             if (!customer.data) {
