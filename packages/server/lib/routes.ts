@@ -17,7 +17,7 @@ import appAuthController from './controllers/appAuth.controller.js';
 import onboardingController from './controllers/onboarding.controller.js';
 import webhookController from './controllers/webhook.controller.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { authCheck } from './middleware/resource-capping.middleware.js';
+import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import path from 'path';
 import { dirname } from './utils/utils.js';
 import express from 'express';
@@ -26,7 +26,7 @@ import { setupAuth } from './clients/auth.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
-import type { Response, Request } from 'express';
+import type { Response, Request, RequestHandler } from 'express';
 import { isCloud, isEnterprise, isBasicAuthEnabled, isTest, isLocal, basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
@@ -85,13 +85,17 @@ export const router = express.Router();
 
 router.use(...securityMiddlewares());
 
-const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), authCheck, rateLimiterMiddleware];
-let webAuth = flagHasAuth
-    ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
+const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const adminAuth: RequestHandler[] = [
+    authMiddleware.secretKeyAuth.bind(authMiddleware),
+    authMiddleware.adminKeyAuth.bind(authMiddleware),
+    rateLimiterMiddleware
+];
+const apiPublicAuth: RequestHandler[] = [authMiddleware.publicKeyAuth.bind(authMiddleware), resourceCapping, rateLimiterMiddleware];
+let webAuth: RequestHandler[] = flagHasAuth
+    ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
     : isBasicAuthEnabled
-      ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
+      ? [passport.authenticate('basic', { session: false }) as RequestHandler, authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
       : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 // For integration test, we want to bypass session auth
