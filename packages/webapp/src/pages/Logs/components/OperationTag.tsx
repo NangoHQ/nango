@@ -1,18 +1,17 @@
-// import { ChevronRight } from '@geist-ui/icons';
 import type { SearchOperationsData } from '@nangohq/types';
+import {
+    IconX,
+    IconPlayerPlay,
+    IconClockPlay,
+    IconClockPause,
+    IconRefresh,
+    IconUserPlus,
+    IconCircleKey,
+    IconSettingsAutomation,
+    IconClockPlus
+} from '@tabler/icons-react';
 import { cn } from '../../../utils/utils';
 import { Tag } from '../../../components/ui/label/Tag';
-import {
-    CrossCircledIcon,
-    Crosshair1Icon,
-    MixerHorizontalIcon,
-    PauseIcon,
-    PersonIcon,
-    PlayIcon,
-    ReloadIcon,
-    ResumeIcon,
-    UploadIcon
-} from '@radix-ui/react-icons';
 import * as Tooltip from '../../../components/ui/Tooltip';
 
 export const OperationTag: React.FC<{ message: string; operation: Exclude<SearchOperationsData['operation'], null>; highlight?: boolean }> = ({
@@ -28,22 +27,22 @@ export const OperationTag: React.FC<{ message: string; operation: Exclude<Search
                         {operation.type}
                     </Tag>
                     {operation.type === 'sync' && (
-                        <Tag bgClassName={cn('bg-zinc-900 rounded-full py-0.5', highlight && 'bg-pure-black')} textClassName={cn(highlight && 'text-white')}>
-                            {operation.action === 'cancel' && <CrossCircledIcon className="w-3.5" />}
-                            {operation.action === 'init' && <UploadIcon className="w-3.5" />}
-                            {operation.action === 'pause' && <PauseIcon className="w-3.5" />}
-                            {operation.action === 'request_run' && <Crosshair1Icon className="w-3.5" />}
-                            {operation.action === 'request_run_full' && <Crosshair1Icon className="w-3.5" />}
-                            {operation.action === 'unpause' && <ResumeIcon className="w-3.5" />}
-                            {operation.action === 'run' && <PlayIcon className="w-3.5" />}
+                        <Tag bgClassName={cn('bg-zinc-900 rounded-full', highlight && 'bg-pure-black')} textClassName={cn(highlight && 'text-white')}>
+                            {operation.action === 'cancel' && <IconX className="w-3.5 h-3.5" />}
+                            {operation.action === 'init' && <IconClockPlus className="w-3.5 h-3.5" />}
+                            {operation.action === 'pause' && <IconClockPause className="w-3.5 h-3.5" />}
+                            {operation.action === 'request_run' && <IconPlayerPlay className="w-3.5 h-3.5" />}
+                            {operation.action === 'request_run_full' && <IconPlayerPlay className="w-3.5 h-3.5" />}
+                            {operation.action === 'unpause' && <IconClockPlay className="w-3.5 h-3.5" />}
+                            {operation.action === 'run' && <IconRefresh className="w-3.5 h-3.5" />}
                         </Tag>
                     )}
 
                     {operation.type === 'auth' && (
-                        <Tag bgClassName={cn('bg-zinc-900 rounded-full py-0.5', highlight && 'bg-pure-black')} textClassName={cn(highlight && 'text-white')}>
-                            {operation.action === 'create_connection' && <PersonIcon className="w-3.5" />}
-                            {operation.action === 'post_connection' && <MixerHorizontalIcon className="w-3.5" />}
-                            {operation.action === 'refresh_token' && <ReloadIcon className="w-3.5" />}
+                        <Tag bgClassName={cn('bg-zinc-900 rounded-full', highlight && 'bg-pure-black')} textClassName={cn(highlight && 'text-white')}>
+                            {operation.action === 'create_connection' && <IconUserPlus className="w-3.5 h-3.5" />}
+                            {operation.action === 'post_connection' && <IconSettingsAutomation className="w-3.5 h-3.5" />}
+                            {operation.action === 'refresh_token' && <IconCircleKey className="w-3.5 h-3.5" />}
                         </Tag>
                     )}
                 </div>

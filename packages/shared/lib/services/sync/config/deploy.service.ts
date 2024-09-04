@@ -52,10 +52,7 @@ export async function deploy({
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
     const providers = flows.map((flow) => flow.providerConfigKey);
 
-    const logCtx = await logContextGetter.create(
-        { operation: { type: 'deploy', action: 'custom' }, message: 'Deploying custom syncs' },
-        { account, environment }
-    );
+    const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
 
     if (nangoYamlBody) {
         await remoteFileService.upload(nangoYamlBody, `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`, environment.id);
@@ -231,10 +228,7 @@ export async function upgradePreBuilt({
     flow: NangoSyncConfig;
     logContextGetter: LogContextGetter;
 }): Promise<Result<boolean | null>> {
-    const logCtx = await logContextGetter.create(
-        { operation: { type: 'deploy', action: 'prebuilt' }, message: 'Upgrading pre-built flow' },
-        { account, environment }
-    );
+    const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
 
     const { sync_name: name, is_public, type } = syncConfig;
     const { unique_key: provider_config_key, provider } = config;
@@ -367,10 +361,7 @@ export async function deployPreBuilt({
 
     const providerConfigKeys = [];
 
-    const logCtx = await logContextGetter.create(
-        { operation: { type: 'deploy', action: 'prebuilt' }, message: 'Deploying pre-built flow' },
-        { account, environment }
-    );
+    const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
 
     const idsToMarkAsInvactive = [];
     const insertData: SyncConfig[] = [];

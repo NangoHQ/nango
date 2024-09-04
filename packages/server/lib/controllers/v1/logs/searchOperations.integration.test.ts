@@ -81,10 +81,7 @@ describe('POST /logs/operations', () => {
     it('should search logs and get one result', async () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create(
-            { message: 'test 1', operation: { type: 'auth', action: 'create_connection' } },
-            { account, environment: env }
-        );
+        const logCtx = await logContextGetter.create({ operation: { type: 'auth', action: 'create_connection' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 
@@ -117,7 +114,7 @@ describe('POST /logs/operations', () => {
                     id: logCtx.id,
                     jobId: null,
                     level: 'info',
-                    message: 'test 1',
+                    message: 'Create connection',
                     meta: null,
                     operation: {
                         type: 'auth',
@@ -145,10 +142,7 @@ describe('POST /logs/operations', () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
         const env2 = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create(
-            { message: 'test 1', operation: { type: 'auth', action: 'create_connection' } },
-            { account, environment: env }
-        );
+        const logCtx = await logContextGetter.create({ operation: { type: 'auth', action: 'create_connection' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 

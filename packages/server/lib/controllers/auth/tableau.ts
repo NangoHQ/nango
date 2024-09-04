@@ -80,7 +80,7 @@ export const tableauAuthorization = asyncWrapper<TableauAuthorization>(async (re
         const logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                message: 'Create connection via Tableau',
+                meta: { authType: 'tableau' },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }

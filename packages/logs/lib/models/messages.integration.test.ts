@@ -10,7 +10,7 @@ import { indexMessages } from '../es/schema.js';
 
 const account = { id: 1234, name: 'test' };
 const environment = { id: 5678, name: 'dev' };
-const operationPayload: OperationRowInsert = { operation: { type: 'sync', action: 'run' }, message: '' };
+const operationPayload: OperationRowInsert = { operation: { type: 'sync', action: 'run' } };
 
 describe('model', () => {
     beforeAll(async () => {

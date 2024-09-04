@@ -298,7 +298,7 @@ class SyncController {
                 .setTag('nango.environmentId', environmentId)
                 .setTag('nango.providerConfigKey', providerConfigKey);
             logCtx = await logContextGetter.create(
-                { operation: { type: 'action' }, message: 'Start action', expiresAt: defaultOperationExpiration.action() },
+                { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action() },
                 {
                     account,
                     environment,
@@ -554,10 +554,7 @@ class SyncController {
             }
 
             logCtx = await logContextGetter.create(
-                {
-                    operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] },
-                    message: `Trigger ${command}`
-                },
+                { operation: { type: 'sync', action: syncCommandToOperation[command as SyncCommand] } },
                 {
                     account,
                     environment,

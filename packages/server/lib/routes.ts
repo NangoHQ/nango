@@ -17,7 +17,7 @@ import appAuthController from './controllers/appAuth.controller.js';
 import onboardingController from './controllers/onboarding.controller.js';
 import webhookController from './controllers/webhook.controller.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { authCheck } from './middleware/resource-capping.middleware.js';
+import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import path from 'path';
 import { dirname } from './utils/utils.js';
 import express from 'express';
@@ -26,7 +26,7 @@ import { setupAuth } from './clients/auth.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
-import type { Response, Request } from 'express';
+import type { Response, Request, RequestHandler } from 'express';
 import { isCloud, isEnterprise, isBasicAuthEnabled, isTest, isLocal, basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
@@ -46,8 +46,6 @@ import {
     getEmailByExpiredToken
 } from './controllers/v1/account/index.js';
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
-import { setMetadata } from './controllers/connection/setMetadata.js';
-import { updateMetadata } from './controllers/connection/updateMetadata.js';
 import { putUpgradePreBuilt } from './controllers/v1/flow/preBuilt/putUpgrade.js';
 import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
@@ -78,18 +76,26 @@ import { getListIntegrations } from './controllers/config/getListIntegrations.js
 import { deleteIntegrationPublic } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { postPreBuiltDeploy } from './controllers/v1/flow/preBuilt/postDeploy.js';
+import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
+import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
+import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
+import { deleteConnection } from './controllers/v1/connection/deleteConnection.js';
 
 export const router = express.Router();
 
 router.use(...securityMiddlewares());
 
-const apiAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const adminAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), authMiddleware.adminKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const apiPublicAuth = [authMiddleware.publicKeyAuth.bind(authMiddleware), authCheck, rateLimiterMiddleware];
-let webAuth = flagHasAuth
-    ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
+const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const adminAuth: RequestHandler[] = [
+    authMiddleware.secretKeyAuth.bind(authMiddleware),
+    authMiddleware.adminKeyAuth.bind(authMiddleware),
+    rateLimiterMiddleware
+];
+const apiPublicAuth: RequestHandler[] = [authMiddleware.publicKeyAuth.bind(authMiddleware), resourceCapping, rateLimiterMiddleware];
+let webAuth: RequestHandler[] = flagHasAuth
+    ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
     : isBasicAuthEnabled
-      ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
+      ? [passport.authenticate('basic', { session: false }) as RequestHandler, authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
       : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 // For integration test, we want to bypass session auth
@@ -156,11 +162,11 @@ publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind
 publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deleteIntegrationPublic);
 publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 publicAPI.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
-publicAPI.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
+publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);
 publicAPI.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
 publicAPI.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadataLegacy.bind(connectionController));
-publicAPI.route('/connection/metadata').post(apiAuth, setMetadata);
-publicAPI.route('/connection/metadata').patch(apiAuth, updateMetadata);
+publicAPI.route('/connection/metadata').post(apiAuth, postPublicMetadata);
+publicAPI.route('/connection/metadata').patch(apiAuth, patchPublicMetadata);
 publicAPI.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 publicAPI.route('/sync/deploy').post(apiAuth, postDeploy);
@@ -259,7 +265,7 @@ web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(co
 
 web.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
 web.route('/api/v1/connection/:connectionId').get(webAuth, getConnectionWeb);
-web.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
+web.route('/api/v1/connection/:connectionId').delete(webAuth, deleteConnection);
 web.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 
 web.route('/api/v1/user').get(webAuth, getUser);

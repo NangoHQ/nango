@@ -34,7 +34,7 @@ class ApiAuthController {
             logCtx = await logContextGetter.create(
                 {
                     operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Create connection via API Key',
+                    meta: { authType: 'apikey' },
                     expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }
@@ -212,7 +212,7 @@ class ApiAuthController {
             logCtx = await logContextGetter.create(
                 {
                     operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Create connection via Basic Auth',
+                    meta: { authType: 'basic' },
                     expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }

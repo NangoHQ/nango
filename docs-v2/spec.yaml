@@ -466,8 +466,15 @@ paths:
                   schema:
                       type: string
             responses:
-                '204':
+                '200':
                     description: Successfully deleted an connection
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
                 '400':
                     description: Invalid request
                     content:

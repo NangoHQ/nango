@@ -267,11 +267,7 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         const logCtx = await logContextGetter.create(
-            {
-                operation: { type: 'webhook', action: 'incoming' },
-                message: 'Received a webhook',
-                expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
-            },
+            { operation: { type: 'webhook', action: 'incoming' }, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() },
             {
                 account,
                 environment,
@@ -666,7 +662,7 @@ export class Orchestrator {
             const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
 
             logCtx = await logContextGetter.create(
-                { operation: { type: 'sync', action: 'init' }, message: 'Sync initialization' },
+                { operation: { type: 'sync', action: 'init' } },
                 {
                     account,
                     environment,
