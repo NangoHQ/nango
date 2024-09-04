@@ -630,7 +630,7 @@ integrations:
                 schedulingType: null | string
                 userId: number
                 metadata:
-                    __string: any
+                    ___string: any
                 description: string | null
                 hidden: boolean
                 slug: string
@@ -662,7 +662,7 @@ integrations:
                 scheduleId: number | null
                 price: number
                 currency: string
-                slotInterval: number | null,
+                slotInterval: number | null
                 successRedirectUrl: string | null
                 isInstantEvent: boolean
                 aiPhoneCallConfig: string | null
