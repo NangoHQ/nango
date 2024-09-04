@@ -263,7 +263,10 @@ export interface NangoProps {
         };
         messages: unknown[];
     } | undefined;
+    rawSaveOutput?: unknown[] | undefined;
+    rawDeleteOutput?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
+    saveResponses?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
@@ -287,6 +290,7 @@ export declare class NangoAction {
     environmentName?: string;
     syncJobId?: number;
     dryRun?: boolean;
+    saveResponses?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig?: SyncConfig;
@@ -359,6 +363,8 @@ export declare class NangoSync extends NangoAction {
         };
         messages: unknown[];
     } | undefined;
+    rawSaveOutput?: unknown[];
+    rawDeleteOutput?: unknown[];
     stubbedMetadata?: Metadata | undefined;
     private batchSize;
     constructor(config: NangoProps);
