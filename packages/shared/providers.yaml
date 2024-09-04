@@ -470,6 +470,8 @@ calendly:
         paginate:
             type: link
             link_path_in_response_body: pagination.next_page
+        retry:
+            at: 'X-Ratelimit-Reset'
     token_response_metadata:
         - owner
     docs: https://docs.nango.dev/integrations/all/calendly

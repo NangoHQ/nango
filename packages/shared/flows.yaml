@@ -715,7 +715,7 @@ integrations:
                 position: number
             QuestionAndAnswer:
                 answer: string
-                position: string
+                position: number
                 question: string
             Tracking:
                 utm_campaign: string | null
@@ -754,6 +754,7 @@ integrations:
                 tracking: Tracking
                 updated_at: string
                 uri: string
+                cancellation?: EventCancellation
                 routing_form_submission: string | null
                 payment: Payment | null
                 no_show: string | null
