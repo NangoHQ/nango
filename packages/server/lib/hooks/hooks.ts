@@ -52,17 +52,15 @@ export const connectionCreationStartCapCheck = async ({
 
     const scriptConfigs = await getSyncConfigsWithConnections(providerConfigKey, environmentId);
 
-    if (scriptConfigs.length > 0) {
-        for (const script of scriptConfigs) {
-            const { connections } = script;
+    for (const script of scriptConfigs) {
+        const { connections } = script;
 
-            if (connections && connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
-                logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-                const analyticsType =
-                    creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
-                void analytics.trackByEnvironmentId(analyticsType, environmentId);
-                return true;
-            }
+        if (connections && connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+            logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
+            const analyticsType =
+                creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
+            void analytics.trackByEnvironmentId(analyticsType, environmentId);
+            return true;
         }
     }
 
