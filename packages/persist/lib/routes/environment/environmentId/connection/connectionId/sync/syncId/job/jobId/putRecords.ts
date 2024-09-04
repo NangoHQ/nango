@@ -48,7 +48,7 @@ const handler = async (req: EndpointRequest<PutRecords>, res: EndpointResponse<P
     if (result.isOk()) {
         res.status(204).send();
     } else {
-        res.status(500).json({ error: { code: 'put_records_failed', message: `Failed to delete records: ${result.error.message}` } });
+        res.status(500).json({ error: { code: 'put_records_failed', message: `Failed to update records: ${result.error.message}` } });
     }
     return;
 };
