@@ -44,6 +44,7 @@ jobs:
                   for dir in */; do
                     if [[ "$dir" != "." && "$dir" != "integration-templates/" ]]; then
                         cd "$dir"
+                        has_mocks=$([ -d "./mocks" ] && echo true || echo false)
                         mkdir -p nango-integrations/$dir
                         mv nango.yaml nango-integrations/
                         find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations/$dir {} +
@@ -51,10 +52,12 @@ jobs:
                         NANGO_CLI_UPGRADE_MODE=ignore nango compile
 
                         # run tests if applicable
-                        integration="${dir%/}"
-                        pushd ../../../tests/integration-templates
-                        bash generate-and-run-tests.bash $integration
-                        popd
+                        if [ "$has_mocks" = true ]; then
+                            integration="${dir%/}"
+                            pushd ../../../tests/integration-templates
+                            bash generate-and-run-tests.bash $integration
+                            popd
+                        fi
 
                         cd ../../
                     fi
