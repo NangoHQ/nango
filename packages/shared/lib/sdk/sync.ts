@@ -13,6 +13,7 @@ import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
+import { stringifyAndTruncateLog } from './utils.js';
 import type { DBTeam, MessageRowInsert } from '@nangohq/types';
 
 const logger = getLogger('SDK');
@@ -687,12 +688,15 @@ export class NangoAction {
 
         const [message, payload] = args;
 
+        // arrays are not supported in the log meta, so we convert them to objects
+        const meta = Array.isArray(payload) ? Object.fromEntries(payload.map((e, i) => [i, e])) : payload || null;
+
         await this.sendLogToPersist({
             type: 'log',
             level: oldLevelToNewLevel[level],
             source: 'user',
-            message: String(message),
-            meta: payload || null,
+            message: stringifyAndTruncateLog(message, 99_000),
+            meta,
             createdAt: new Date().toISOString(),
             environmentId: this.environmentId
         });
