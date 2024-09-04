@@ -52,7 +52,7 @@ jobs:
 
                         # run tests if applicable
                         integration="${dir%/}"
-                        pushd ../../tests/integration-templates
+                        pushd ../../../tests/integration-templates
                         bash generate-and-run-tests.bash $integration
                         popd
 
