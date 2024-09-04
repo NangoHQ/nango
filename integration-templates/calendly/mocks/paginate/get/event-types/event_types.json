@@ -1,0 +1,162 @@
+[
+    {
+        "active": false,
+        "admin_managed": false,
+        "booking_method": "instant",
+        "color": "#8247f5",
+        "created_at": "2024-06-20T10:53:31.468738Z",
+        "custom_questions": [
+            {
+                "answer_choices": [],
+                "enabled": true,
+                "include_other": false,
+                "name": "Please share anything that will help prepare for our meeting.",
+                "position": 0,
+                "required": false,
+                "type": "text"
+            }
+        ],
+        "deleted_at": null,
+        "description_html": null,
+        "description_plain": null,
+        "duration": 30,
+        "internal_note": null,
+        "kind": "solo",
+        "locations": null,
+        "name": "1-1",
+        "pooling_type": null,
+        "position": 1,
+        "profile": {
+            "name": "MockName LastName",
+            "owner": "https://api.calendly.com/users/111",
+            "type": "User"
+        },
+        "scheduling_url": "https://calendly.com/myname-gant-nango/1-1",
+        "secret": false,
+        "slug": "1-1",
+        "type": "StandardEventType",
+        "updated_at": "2024-07-17T18:44:38.538017Z",
+        "uri": "https://api.calendly.com/event_types/8221b1fa-c19b-4df4-bc98-167ba86f0325"
+    },
+    {
+        "active": false,
+        "admin_managed": false,
+        "booking_method": "instant",
+        "color": "#8247f5",
+        "created_at": "2024-07-17T18:44:38.345559Z",
+        "custom_questions": [
+            {
+                "answer_choices": [],
+                "enabled": true,
+                "include_other": false,
+                "name": "Please share anything that will help prepare for our meeting.",
+                "position": 0,
+                "required": false,
+                "type": "text"
+            }
+        ],
+        "deleted_at": null,
+        "description_html": null,
+        "description_plain": null,
+        "duration": 15,
+        "internal_note": null,
+        "kind": "solo",
+        "locations": null,
+        "name": "15 Minute Meeting",
+        "pooling_type": null,
+        "position": 0,
+        "profile": {
+            "name": "MockName LastName",
+            "owner": "https://api.calendly.com/users/111",
+            "type": "User"
+        },
+        "scheduling_url": "https://calendly.com/myname-gant-nango/15-minute-meeting",
+        "secret": false,
+        "slug": "15-minute-meeting",
+        "type": "StandardEventType",
+        "updated_at": "2024-07-17T18:44:38.345559Z",
+        "uri": "https://api.calendly.com/event_types/1767570f-5775-49e4-be8a-d431699f813c"
+    },
+    {
+        "active": true,
+        "admin_managed": false,
+        "booking_method": "instant",
+        "color": "#8247f5",
+        "created_at": "2024-07-08T08:10:06.767449Z",
+        "custom_questions": [
+            {
+                "answer_choices": [],
+                "enabled": true,
+                "include_other": false,
+                "name": "Please share anything that will help prepare for our meeting.",
+                "position": 0,
+                "required": false,
+                "type": "text"
+            }
+        ],
+        "deleted_at": null,
+        "description_html": null,
+        "description_plain": null,
+        "duration": 30,
+        "internal_note": null,
+        "kind": "solo",
+        "locations": [
+            {
+                "kind": "google_conference"
+            }
+        ],
+        "name": "30min",
+        "pooling_type": "collective",
+        "position": 0,
+        "profile": null,
+        "scheduling_url": "https://calendly.com/d/cphb-72c-fvg/30min",
+        "secret": false,
+        "slug": null,
+        "type": "StandardEventType",
+        "updated_at": "2024-07-08T08:11:08.922161Z",
+        "uri": "https://api.calendly.com/event_types/f4148cba-b0d4-4dd6-af84-2133e589f7e8"
+    },
+    {
+        "active": true,
+        "admin_managed": false,
+        "booking_method": "instant",
+        "color": "#8247f5",
+        "created_at": "2023-05-12T06:27:36.318965Z",
+        "custom_questions": [
+            {
+                "answer_choices": [],
+                "enabled": true,
+                "include_other": false,
+                "name": "Please share anything that will help prepare for our meeting.",
+                "position": 0,
+                "required": false,
+                "type": "text"
+            }
+        ],
+        "deleted_at": null,
+        "description_html": null,
+        "description_plain": null,
+        "duration": 30,
+        "internal_note": null,
+        "kind": "solo",
+        "locations": [
+            {
+                "kind": "google_conference"
+            }
+        ],
+        "name": "30 Minute Meeting",
+        "pooling_type": null,
+        "position": 2,
+        "profile": {
+            "name": "MockName LastName",
+            "owner": "https://api.calendly.com/users/111",
+            "type": "User"
+        },
+        "scheduling_url": "https://calendly.com/myname-gant-nango/30min",
+        "secret": false,
+        "slug": "30min",
+        "type": "StandardEventType",
+        "updated_at": "2024-07-17T18:44:38.538017Z",
+        "uri": "https://api.calendly.com/event_types/707093d8-ed80-463b-b341-ee56cc339c75"
+    }
+]
