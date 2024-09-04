@@ -1,5 +1,5 @@
 import type { NangoSync, NetsuiteInvoice, NetsuiteInvoiceLine, ProxyConfiguration } from '../../models';
-import type { NS_Invoice, NS_Item, NSAPI_GetResponse, NSAPI_GetResponses, NSAPI_Links } from '../types';
+import type { NS_Invoice, NSAPI_GetResponse } from '../types';
 import { paginate } from '../helpers/pagination.js';
 
 const retries = 3;
@@ -15,7 +15,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         const mappedInvoices: NetsuiteInvoice[] = [];
         for (const invoiceLink of invoices) {
             const invoice: NSAPI_GetResponse<NS_Invoice> = await nango.get({
-                endpoint: `/invoice/${invoiceLink.id}`,
+                endpoint: `/invoice/${invoiceLink.id}?expandSubResources=true`,
                 retries
             });
             if (!invoice.data) {
@@ -33,28 +33,17 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                 status: invoice.data.status?.id || ''
             };
 
-            const items: NSAPI_GetResponses<any> = await nango.get({
-                endpoint: `/invoice/${invoiceLink.id}/item`,
-                retries
-            });
-            const itemIds = items.data.items.map((itemLink: NSAPI_Links) => {
-                return itemLink.links?.find((link) => link.rel === 'self')?.href?.match(/\/item\/(\d+)/)?.[1];
-            });
-            for (const itemId of itemIds) {
-                const item: NSAPI_GetResponse<NS_Item> = await nango.get({
-                    endpoint: `/invoice/${invoiceLink.id}/item/${itemId}`,
-                    retries
-                });
+            for (const item of invoice.data.item.items) {
                 const line: NetsuiteInvoiceLine = {
-                    itemId: item.data.item?.id || '',
-                    quantity: item.data.quantity ? Number(item.data.quantity) : 0,
-                    amount: item.data.amount ? Number(item.data.amount) : 0
+                    itemId: item.item?.id || '',
+                    quantity: item.quantity ? Number(item.quantity) : 0,
+                    amount: item.amount ? Number(item.amount) : 0
                 };
-                if (item.data.taxDetailsReference) {
-                    line.vatCode = item.data.taxDetailsReference;
+                if (item.taxDetailsReference) {
+                    line.vatCode = item.taxDetailsReference;
                 }
-                if (item.data.item?.refName) {
-                    line.description = item.data.item?.refName;
+                if (item.item?.refName) {
+                    line.description = item.item?.refName;
                 }
                 mappedInvoice.lines.push(line);
             }
