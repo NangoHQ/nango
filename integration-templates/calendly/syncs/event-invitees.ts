@@ -19,6 +19,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         },
         retries: 10
     })) {
+        const eventInvitees: EventInvitee[] = [];
         for (const event of eventResponse) {
             const eventUri = event.uri;
             const segments = eventUri.split('/');
@@ -36,8 +37,9 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                     };
                 });
 
-                await nango.batchSave<EventInvitee>(invitees, 'EventInvitee');
+                eventInvitees.push(...invitees);
             }
         }
+        await nango.batchSave<EventInvitee>(eventInvitees, 'EventInvitee');
     }
 }
