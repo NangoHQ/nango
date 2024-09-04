@@ -53,10 +53,12 @@ jobs:
 
                         # run tests if applicable
                         if [ "$has_mocks" = true ]; then
-                            integration="${dir%/}"
+                            cp -r ../nango-integrations ../../../tests/integration-templates
                             pushd ../../../tests/integration-templates
-                            bash generate-and-run-tests.bash $integration
+                            npm run generate
+                            npm run test
                             popd
+                            rm -rf nango-integrations
                         fi
 
                         cd ../../
