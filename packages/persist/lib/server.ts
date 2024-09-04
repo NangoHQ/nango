@@ -1,10 +1,13 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
-import { validateRequest } from 'zod-express';
-import { z } from 'zod';
-import { getLogger, requestLoggerMiddleware } from '@nangohq/utils';
-import persistController from './controllers/persist.controller.js';
+import { getLogger, createRoute, requestLoggerMiddleware } from '@nangohq/utils';
 import { authMiddleware } from './middleware/auth.middleware.js';
+import { routeHandler as getHealthHandler } from './routes/getHealth.js';
+import { routeHandler as postLogHandler, path as logsPath } from './routes/environment/environmentId/postLog.js';
+import { routeHandler as postRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/postRecords.js';
+import { routeHandler as putRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/putRecords.js';
+import { routeHandler as deleteRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteRecords.js';
+import { recordsPath } from './records.js';
 
 const logger = getLogger('Persist');
 const maxSizeJsonLog = '100kb';
@@ -18,49 +21,14 @@ if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
 }
 
 server.use('/environment/:environmentId/*', authMiddleware);
+server.use(logsPath, express.json({ limit: maxSizeJsonLog }));
+server.use(recordsPath, express.json({ limit: maxSizeJsonRecords }));
 
-server.get('/health', (_req: Request, res: Response) => {
-    res.json({ status: 'ok' });
-});
-
-server.post(
-    '/environment/:environmentId/log',
-    express.json({ limit: maxSizeJsonLog }),
-    validateRequest({
-        params: z.object({
-            environmentId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber
-        }),
-        body: z
-            .object({
-                activityLogId: z.string(),
-                level: z.enum(['info', 'debug', 'error', 'warn', 'http', 'verbose', 'silly']),
-                msg: z.string(),
-                timestamp: z.number().optional() // Optional until fully deployed
-            })
-            .strict()
-    }),
-    persistController.saveLog.bind(persistController)
-);
-
-const validateRecordsRequest = validateRequest({
-    params: z.object({
-        environmentId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber,
-        nangoConnectionId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber,
-        syncId: z.string(),
-        syncJobId: z.string().transform(Number).pipe(z.number().int().positive()) as unknown as z.ZodNumber
-    }),
-    body: z.object({
-        model: z.string(),
-        records: z.array(z.object({ id: z.union([z.string().max(255).min(1), z.number()]) })).nonempty(),
-        providerConfigKey: z.string(),
-        connectionId: z.string(),
-        activityLogId: z.string()
-    })
-});
-const recordPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
-server.post(recordPath, express.json({ limit: maxSizeJsonRecords }), validateRecordsRequest, persistController.saveRecords.bind(persistController));
-server.delete(recordPath, express.json({ limit: maxSizeJsonRecords }), validateRecordsRequest, persistController.deleteRecords.bind(persistController));
-server.put(recordPath, express.json({ limit: maxSizeJsonRecords }), validateRecordsRequest, persistController.updateRecords.bind(persistController));
+createRoute(server, getHealthHandler);
+createRoute(server, postLogHandler);
+createRoute(server, postRecordsHandler);
+createRoute(server, deleteRecordsHandler);
+createRoute(server, putRecordsHandler);
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);

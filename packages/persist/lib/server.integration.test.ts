@@ -56,7 +56,7 @@ describe('Persist API', () => {
                 'Content-Type': 'application/json'
             }
         });
-        expect(response.status).toEqual(201);
+        expect(response.status).toEqual(204);
     });
 
     it('should refuse huge log', async () => {
@@ -88,9 +88,6 @@ describe('Persist API', () => {
                         records: [],
                         providerConfigKey: seed.connection.provider_config_key,
                         connectionId: seed.connection.connection_id,
-                        lastSyncDate: new Date(),
-                        trackDeletes: false,
-                        softDelete: true,
                         activityLogId: seed.activityLogId
                     }),
                     headers: {
@@ -101,23 +98,18 @@ describe('Persist API', () => {
             );
             expect(response.status).toEqual(400);
             const respBody = (await response.json()) as any[];
-            expect(respBody).toMatchObject([
-                {
-                    type: 'Body',
-                    errors: {
-                        issues: [
-                            {
-                                code: 'too_small',
-                                minimum: 1,
-                                type: 'array',
-                                message: 'Array must contain at least 1 element(s)',
-                                path: ['records']
-                            }
-                        ],
-                        name: 'ZodError'
-                    }
+            expect(respBody).toMatchObject({
+                error: {
+                    code: 'invalid_request',
+                    errors: [
+                        {
+                            code: 'too_small',
+                            message: 'Array must contain at least 1 element(s)',
+                            path: ['records']
+                        }
+                    ]
                 }
-            ]);
+            });
         });
 
         it('should save records', async () => {
@@ -135,9 +127,7 @@ describe('Persist API', () => {
                         records: records,
                         providerConfigKey: seed.connection.provider_config_key,
                         connectionId: seed.connection.connection_id,
-                        activityLogId: seed.activityLogId,
-                        lastSyncDate: new Date(),
-                        trackDeletes: false
+                        activityLogId: seed.activityLogId
                     }),
                     headers: {
                         Authorization: `Bearer ${mockSecretKey}`,
@@ -145,7 +135,7 @@ describe('Persist API', () => {
                     }
                 }
             );
-            expect(response.status).toEqual(201);
+            expect(response.status).toEqual(204);
         });
     });
 
@@ -164,9 +154,7 @@ describe('Persist API', () => {
                     records: records,
                     providerConfigKey: seed.connection.provider_config_key,
                     connectionId: seed.connection.connection_id,
-                    activityLogId: seed.activityLogId,
-                    lastSyncDate: new Date(),
-                    trackDeletes: false
+                    activityLogId: seed.activityLogId
                 }),
                 headers: {
                     Authorization: `Bearer ${mockSecretKey}`,
@@ -174,7 +162,7 @@ describe('Persist API', () => {
                 }
             }
         );
-        expect(response.status).toEqual(201);
+        expect(response.status).toEqual(204);
     });
 
     it('should update records ', async () => {
@@ -192,10 +180,7 @@ describe('Persist API', () => {
                     records: records,
                     providerConfigKey: seed.connection.provider_config_key,
                     connectionId: seed.connection.connection_id,
-                    activityLogId: seed.activityLogId,
-                    lastSyncDate: new Date(),
-                    trackDeletes: false,
-                    softDelete: true
+                    activityLogId: seed.activityLogId
                 }),
                 headers: {
                     Authorization: `Bearer ${mockSecretKey}`,
@@ -203,7 +188,7 @@ describe('Persist API', () => {
                 }
             }
         );
-        expect(response.status).toEqual(201);
+        expect(response.status).toEqual(204);
     });
 
     it('should fail if passing incorrect authorization header ', async () => {
@@ -224,7 +209,7 @@ describe('Persist API', () => {
         }
     });
 
-    it('should fail with invalid records ', async () => {
+    it('should fail updating invalid records ', async () => {
         const model = 'MyModel';
         const records = [{ id: 'id'.repeat(200), name: 'new1' }];
         const response = await fetch(
@@ -236,10 +221,7 @@ describe('Persist API', () => {
                     records: records,
                     providerConfigKey: seed.connection.provider_config_key,
                     connectionId: seed.connection.connection_id,
-                    activityLogId: seed.activityLogId,
-                    lastSyncDate: new Date(),
-                    trackDeletes: false,
-                    softDelete: true
+                    activityLogId: seed.activityLogId
                 }),
                 headers: {
                     Authorization: `Bearer ${mockSecretKey}`,
@@ -248,25 +230,18 @@ describe('Persist API', () => {
             }
         );
         expect(response.status).toEqual(400);
-        expect(await response.json()).toStrictEqual([
-            {
-                errors: {
-                    issues: [
-                        {
-                            code: 'too_big',
-                            exact: false,
-                            inclusive: true,
-                            maximum: 255,
-                            message: 'String must contain at most 255 character(s)',
-                            path: ['records', 0, 'id'],
-                            type: 'string'
-                        }
-                    ],
-                    name: 'ZodError'
-                },
-                type: 'Body'
+        expect(await response.json()).toStrictEqual({
+            error: {
+                code: 'invalid_request',
+                errors: [
+                    {
+                        code: 'too_big',
+                        message: 'String must contain at most 255 character(s)',
+                        path: ['records', 0, 'id']
+                    }
+                ]
             }
-        ]);
+        });
     });
 });
 
