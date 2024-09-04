@@ -1,4 +1,5 @@
 import type { NangoModel, NangoModelField } from '@nangohq/types';
+import stringifyObject from 'stringify-object';
 import type { NangoSyncModel } from '../types';
 
 export function isNewModel(model: NangoSyncModel | NangoModel): model is NangoModel {
@@ -9,25 +10,42 @@ export function getSyncResponse(model: NangoSyncModel | NangoModel) {
     let record = '';
     if (isNewModel(model)) {
         record = fieldsToTypescript({ fields: model.fields }).join('\n    ');
-    } else {
-        const tmp = JSON.stringify(legacyModelToObject(model), null, 2).slice(2);
-        record = tmp.substring(0, tmp.length - 2);
-    }
-    return `{
+        return `{
   "records": [
     {
     ${record}
       "_nango_metadata": {
-        "deleted_at": "<date | null>",
+        "deleted_at": "date | null",
         "last_action": "ADDED | UPDATED | DELETED",
-        "first_seen_at": "<date>",
-        "cursor": "<string>",
-        "last_modified_at": "<date>"
+        "first_seen_at": "date",
+        "cursor": "string",
+        "last_modified_at": "date"
       }
     }
   ],
-  "next_cursor": "MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAz..."
+  "next_cursor": "string"
 }`;
+    }
+
+    return stringifyObject(
+        {
+            records: [
+                {
+                    ...legacyModelToObject(model),
+
+                    _nango_metadata: {
+                        deleted_at: 'date | null',
+                        last_action: 'ADDED | UPDATED | DELETED',
+                        first_seen_at: 'date',
+                        cursor: 'string',
+                        last_modified_at: 'date'
+                    }
+                }
+            ],
+            next_cursor: 'string'
+        },
+        { indent: '  ', singleQuotes: false }
+    );
 }
 
 export function legacyModelToObject(model: NangoSyncModel) {
@@ -44,7 +62,7 @@ export function modelToString(model: NangoSyncModel | NangoModel) {
 ${fieldsToTypescript({ fields: model.fields }).join('\n').replace(/^/gm, '    ')}
     }`;
     } else {
-        return JSON.stringify(legacyModelToObject(model), null, 2).split('\n').join('\n').replace(/^/gm, '    ');
+        return stringifyObject(legacyModelToObject(model), { indent: '  ', singleQuotes: false });
     }
 }
 

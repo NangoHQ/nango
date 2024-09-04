@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Prism } from '@mantine/prism';
 import { Language, Steps, actionName, endpointAction } from './utils';
 import Button from '../../components/ui/button/Button';
@@ -7,7 +7,7 @@ import { cn } from '../../utils/utils';
 import { CopyButton } from '../../components/ui/button/CopyButton';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { CheckCircledIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
-import { curlSnippet, nodeActionSnippet } from '../../utils/language-snippets';
+import { httpSnippet, nodeActionSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
 import { useMeta } from '../../hooks/useMeta';
 import { apiFetch } from '../../utils/api';
@@ -30,22 +30,37 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
     const [error, setError] = useState<string | null>(null);
     const [url, setUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [snippet, setSnippet] = useState('');
 
     const baseUrl = useStore((state) => state.baseUrl);
 
-    const snippet = useMemo(() => {
-        const model: NangoModel = { name: 'CreateIssue', fields: [{ name: 'title', value: title }] };
-        if (language === Language.Node) {
-            return nodeActionSnippet({
-                actionName,
-                secretKey,
-                connectionId,
-                providerConfigKey,
-                input: model
-            });
-        } else {
-            return curlSnippet({ baseUrl, endpoint: endpointAction, secretKey, connectionId, providerConfigKey, input: model, method: 'POST' });
-        }
+    useEffect(() => {
+        void (async () => {
+            const model: NangoModel = { name: 'CreateIssue', fields: [{ name: 'title', value: title }] };
+            if (language === Language.Node) {
+                setSnippet(
+                    nodeActionSnippet({
+                        actionName,
+                        secretKey,
+                        connectionId,
+                        providerConfigKey,
+                        input: model
+                    })
+                );
+            } else {
+                setSnippet(
+                    await httpSnippet({
+                        baseUrl,
+                        endpoint: { POST: endpointAction },
+                        secretKey,
+                        connectionId,
+                        providerConfigKey,
+                        input: model,
+                        language: 'shell'
+                    })
+                );
+            }
+        })();
     }, [title, providerConfigKey, connectionId, secretKey, language, baseUrl]);
 
     useEffect(() => {

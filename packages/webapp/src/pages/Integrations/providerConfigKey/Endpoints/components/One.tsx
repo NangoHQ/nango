@@ -3,10 +3,10 @@ import { HttpLabel } from '../../../../../components/HttpLabel';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { Tag } from '../../../../../components/ui/label/Tag';
 import type { NangoSyncConfigWithEndpoint } from './List';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { GetIntegration, NangoModel } from '@nangohq/types';
 import { fieldToTypescript, getSyncResponse, modelToString } from '../../../../../utils/scripts';
-import { curlSnippet, nodeActionSnippet, nodeSyncSnippet } from '../../../../../utils/language-snippets';
+import { httpSnippet, nodeActionSnippet, nodeSyncSnippet } from '../../../../../utils/language-snippets';
 import { useStore } from '../../../../../store';
 import { useEnvironment } from '../../../../../hooks/useEnvironment';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../components/ui/Select';
@@ -42,48 +42,57 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
     const baseUrl = useStore((state) => state.baseUrl);
 
     const { environmentAndAccount } = useEnvironment(env);
-    const [language, setLanguage] = useLocalStorage<'node' | 'curl'>('nango:snippet:language', 'node');
+    const [language, setLanguage] = useLocalStorage<'node' | 'curl' | 'go' | 'javascript'>('nango:snippet:language', 'node');
+    const [requestSnippet, setRequestSnippet] = useState('');
+    const [responseSnippet, setResponseSnippet] = useState('');
 
-    const [requestSnippet, responseSnippet] = useMemo(() => {
-        let req = '';
-        let res = '';
+    useEffect(() => {
+        const generate = async () => {
+            let req = '';
+            let res = '';
 
-        const activeEndpointIndex = flow.endpoints.findIndex((endpoint) => {
-            const obj = Object.entries(endpoint)[0];
-            return obj[0] === flow.endpoint.verb && obj[1] === flow.endpoint.path;
-        });
-        const outputModelName = Array.isArray(flow.returns) ? flow.returns[activeEndpointIndex] : flow.returns;
-        // This code is completely valid but webpack is complaining for some obscure reason
-        const outputModel = (flow.models as unknown as NangoModel[]).find((m) => m.name === outputModelName);
-
-        const providerConfigKey = integration.integration.unique_key;
-        const secretKey = environmentAndAccount!.environment.secret_key;
-
-        // Request
-        if (language === 'node') {
-            req =
-                flow.type === 'sync'
-                    ? nodeSyncSnippet({ modelName: outputModel!.name, secretKey, connectionId, providerConfigKey })
-                    : nodeActionSnippet({ actionName: flow.name, secretKey, connectionId, providerConfigKey, input: flow.input });
-        } else {
-            req = curlSnippet({
-                baseUrl,
-                endpoint: flow.endpoints[activeEndpointIndex],
-                secretKey,
-                connectionId,
-                providerConfigKey,
-                input: flow.input
+            const activeEndpointIndex = flow.endpoints.findIndex((endpoint) => {
+                const obj = Object.entries(endpoint)[0];
+                return obj[0] === flow.endpoint.verb && obj[1] === flow.endpoint.path;
             });
-        }
+            const outputModelName = Array.isArray(flow.returns) ? flow.returns[activeEndpointIndex] : flow.returns;
+            // This code is completely valid but webpack is complaining for some obscure reason
+            const outputModel = (flow.models as unknown as NangoModel[]).find((m) => m.name === outputModelName);
 
-        // Response
-        if (flow.type === 'sync') {
-            res = outputModel ? getSyncResponse(outputModel) : 'no response';
-        } else {
-            res = outputModel ? modelToString(outputModel) : 'no response';
-        }
+            const providerConfigKey = integration.integration.unique_key;
+            const secretKey = environmentAndAccount!.environment.secret_key;
 
-        return [req, res];
+            // Request
+            if (language === 'node') {
+                req =
+                    flow.type === 'sync'
+                        ? nodeSyncSnippet({ modelName: outputModel!.name, secretKey, connectionId, providerConfigKey })
+                        : nodeActionSnippet({ actionName: flow.name, secretKey, connectionId, providerConfigKey, input: flow.input });
+            } else {
+                req = await httpSnippet({
+                    baseUrl,
+                    endpoint: flow.endpoints[activeEndpointIndex],
+                    secretKey,
+                    connectionId,
+                    providerConfigKey,
+                    input: flow.input,
+                    language: language === 'curl' ? 'shell' : language!,
+                    languageSpec: language === 'javascript' ? 'fetch' : undefined
+                });
+            }
+
+            // Response
+            if (flow.type === 'sync') {
+                res = outputModel ? getSyncResponse(outputModel) : 'no response';
+            } else {
+                res = outputModel ? modelToString(outputModel) : 'no response';
+            }
+
+            setRequestSnippet(req);
+            setResponseSnippet(res);
+        };
+
+        void generate();
     }, [flow, language, baseUrl, environmentAndAccount, integration]);
 
     const queryParams = useMemo(() => {
@@ -203,10 +212,22 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="node" className="text-s">
-                                            Node
+                                            Node Client
                                         </SelectItem>
                                         <SelectItem value="curl" className="text-s">
                                             Curl
+                                        </SelectItem>
+                                        <SelectItem value="javascript" className="text-s">
+                                            Javascript
+                                        </SelectItem>
+                                        <SelectItem value="go" className="text-s">
+                                            Go
+                                        </SelectItem>
+                                        <SelectItem value="java" className="text-s">
+                                            Java
+                                        </SelectItem>
+                                        <SelectItem value="python" className="text-s">
+                                            Python
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -229,7 +250,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                             </div>
                         </header>
                         <div>
-                            <Prism noCopy language="json" className="px-0 py-2 transparent-code" colorScheme="dark">
+                            <Prism noCopy language="typescript" className="px-0 py-2 transparent-code" colorScheme="dark">
                                 {responseSnippet}
                             </Prism>
                         </div>
