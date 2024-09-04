@@ -129,7 +129,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
 
     if (instantRefresh) {
         const logCtx = await logContextGetter.create(
-            { operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
+            { operation: { type: 'auth', action: 'refresh_token' } },
             {
                 account,
                 environment,

@@ -406,7 +406,7 @@ class OnboardingController {
             }
 
             logCtx = await logContextGetter.create(
-                { operation: { type: 'action' }, message: 'Start action', expiresAt: defaultOperationExpiration.action() },
+                { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action() },
                 {
                     account,
                     environment,

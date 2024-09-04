@@ -19,7 +19,7 @@ class AppStoreAuthController {
             logCtx = await logContextGetter.create(
                 {
                     operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Create connection via App Store',
+                    meta: { authType: 'appstore' },
                     expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }

@@ -25,7 +25,7 @@ export async function externalPostConnection(
     }
 
     const logCtx = await logContextGetter.create(
-        { operation: { type: 'auth', action: 'post_connection' }, message: 'Start external post connection script' },
+        { operation: { type: 'auth', action: 'post_connection' } },
         {
             account,
             environment,

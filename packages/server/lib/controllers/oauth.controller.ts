@@ -63,7 +63,7 @@ class OAuthController {
             logCtx = await logContextGetter.create(
                 {
                     operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Create connection via OAuth',
+                    meta: { authType: 'oauth' },
                     expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }
@@ -276,7 +276,7 @@ class OAuthController {
             logCtx = await logContextGetter.create(
                 {
                     operation: { type: 'auth', action: 'create_connection' },
-                    message: 'Create connection via OAuth2 CC',
+                    meta: { authType: 'oauth2CC' },
                     expiresAt: defaultOperationExpiration.auth()
                 },
                 { account, environment }

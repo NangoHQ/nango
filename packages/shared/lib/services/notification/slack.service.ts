@@ -240,7 +240,7 @@ export class SlackService {
         }
 
         const logCtx = await this.logContextGetter.create(
-            { operation: { type: 'action' }, message: 'Start action' },
+            { operation: { type: 'action', action: 'run' } },
             {
                 account: adminEnvironment.account,
                 environment: adminEnvironment.environment,
@@ -410,7 +410,7 @@ export class SlackService {
         }
 
         const logCtx = await this.logContextGetter.create(
-            { operation: { type: 'action' }, message: 'Start action' },
+            { operation: { type: 'action', action: 'run' } },
             {
                 account: adminEnvironment.account,
                 environment: adminEnvironment.environment,
