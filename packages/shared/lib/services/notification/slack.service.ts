@@ -650,6 +650,19 @@ export class SlackService {
         });
     }
 
+    async closeAllOpenNotificationsForEnv(environment_id: number): Promise<void> {
+        await db.knex
+            .from<DBSlackNotification>(TABLE)
+            .where({
+                environment_id,
+                open: true
+            })
+            .update({
+                open: false,
+                updated_at: new Date()
+            });
+    }
+
     private getLogUrl({
         envName,
         originalActivityLogId,

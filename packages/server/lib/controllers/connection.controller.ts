@@ -10,7 +10,7 @@ import type {
     OAuth1Credentials,
     OAuth2ClientCredentials
 } from '@nangohq/types';
-import { configService, connectionService, errorManager, analytics, AnalyticsTypes, NangoError, accountService } from '@nangohq/shared';
+import { configService, connectionService, errorManager, analytics, AnalyticsTypes, NangoError, accountService, SlackService } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
@@ -177,6 +177,10 @@ class ConnectionController {
                 orchestrator,
                 logContextGetter
             });
+
+            // Kill all notifications associated with this env
+            const slackNotificationService = new SlackService({ orchestrator: getOrchestrator(), logContextGetter });
+            await slackNotificationService.closeAllOpenNotificationsForEnv(environment.id);
 
             res.status(204).send();
         } catch (err) {
