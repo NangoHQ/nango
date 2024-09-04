@@ -72,7 +72,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         syncType = syncConfig.sync_type?.toLowerCase() === SyncType.INCREMENTAL.toLowerCase() && lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
 
         logCtx = await logContextGetter.create(
-            { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+            { operation: { type: 'sync', action: 'run' } },
             {
                 account: team,
                 environment,
@@ -328,14 +328,14 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
         // any changes while the sync is running
         await setLastSyncDate(nangoProps.syncId, nangoProps.startedAt);
 
-        await slackService.removeFailingConnection(
+        await slackService.removeFailingConnection({
             connection,
-            nangoProps.syncConfig.sync_name,
-            'sync',
-            nangoProps.activityLogId as unknown as string,
-            nangoProps.environmentId,
-            nangoProps.provider
-        );
+            name: nangoProps.syncConfig.sync_name,
+            type: 'sync',
+            originalActivityLogId: nangoProps.activityLogId as unknown as string,
+            environment_id: nangoProps.environmentId,
+            provider: nangoProps.provider
+        });
 
         await errorNotificationService.sync.clear({
             sync_id: nangoProps.syncId,

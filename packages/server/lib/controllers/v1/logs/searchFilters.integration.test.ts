@@ -80,7 +80,7 @@ describe('POST /logs/filters', () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
 
         const logCtx = await logContextGetter.create(
-            { message: 'test 1', operation: { type: 'proxy' } },
+            { operation: { type: 'proxy', action: 'call' } },
             { account, environment: env, integration: { id: 1, name: 'hello', provider: 'github' } }
         );
         await logCtx.info('test info');
@@ -104,7 +104,7 @@ describe('POST /logs/filters', () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
 
         const logCtx = await logContextGetter.create(
-            { message: 'test 1', operation: { type: 'proxy' } },
+            { operation: { type: 'proxy', action: 'call' } },
             { account, environment: env, integration: { id: 1, name: 'hello', provider: 'github' } }
         );
         await logCtx.info('test info');
@@ -129,7 +129,7 @@ describe('POST /logs/filters', () => {
         const env2 = await seeders.seedAccountEnvAndUser();
 
         const logCtx = await logContextGetter.create(
-            { message: 'test 1', operation: { type: 'proxy' } },
+            { operation: { type: 'proxy', action: 'call' } },
             { account, environment: env, integration: { id: 1, name: 'hello', provider: 'github' } }
         );
         await logCtx.info('test info');

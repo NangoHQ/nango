@@ -111,14 +111,14 @@ export async function handleActionSuccess({ nangoProps }: { nangoProps: NangoPro
         environment_id: nangoProps.environmentId,
         provider_config_key: nangoProps.providerConfigKey
     };
-    await slackService.removeFailingConnection(
+    await slackService.removeFailingConnection({
         connection,
-        nangoProps.syncConfig.sync_name,
-        'action',
-        nangoProps.activityLogId as unknown as string,
-        nangoProps.environmentId,
-        nangoProps.provider
-    );
+        name: nangoProps.syncConfig.sync_name,
+        type: 'action',
+        originalActivityLogId: nangoProps.activityLogId as unknown as string,
+        environment_id: nangoProps.environmentId,
+        provider: nangoProps.provider
+    });
 
     void bigQueryClient.insert({
         executionType: 'action',

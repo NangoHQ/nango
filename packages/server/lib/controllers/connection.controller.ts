@@ -21,7 +21,7 @@ import {
     connectionRefreshSuccess as connectionRefreshSuccessHook,
     connectionRefreshFailed as connectionRefreshFailedHook
 } from '../hooks/hooks.js';
-import { getOrchestrator, getOrchestratorClient } from '../utils/utils.js';
+import { getOrchestrator } from '../utils/utils.js';
 
 export type { ConnectionList };
 
@@ -136,35 +136,6 @@ class ConnectionController {
         }
     }
 
-    async deleteConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environment = res.locals['environment'];
-            const connectionId = req.params['connectionId'] as string;
-            const providerConfigKey = req.query['provider_config_key'] as string;
-
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
-
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            if (connection == null) {
-                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName: environment.name });
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            await connectionService.deleteConnection(connection, providerConfigKey, environment.id, orchestrator);
-
-            res.status(204).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async deleteAdminConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
@@ -199,10 +170,17 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.deleteConnection(connection, integration_key, info?.environmentId as number, orchestrator);
+            await connectionService.deleteConnection({
+                connection,
+                providerConfigKey: integration_key,
+                environmentId: info!.environmentId,
+                orchestrator,
+                logContextGetter
+            });
 
-            const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
-            await slackNotificationService.closeAllOpenNotifications(environment.id);
+            // Kill all notifications associated with this env
+            const slackNotificationService = new SlackService({ orchestrator: getOrchestrator(), logContextGetter });
+            await slackNotificationService.closeAllOpenNotificationsForEnv(environment.id);
 
             res.status(204).send();
         } catch (err) {

@@ -73,7 +73,7 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
     const logCtx = await logContextGetter.create(
         {
             operation: { type: 'auth', action: 'create_connection' },
-            message: 'Create connection via TBA',
+            meta: { authType: 'tba' },
             expiresAt: defaultOperationExpiration.auth()
         },
         { account, environment }

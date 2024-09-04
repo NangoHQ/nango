@@ -225,8 +225,9 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
         res.locals['account'] = result.account;
         res.locals['environment'] = result.environment;
         next();
-    } catch {
-        res.status(401).send({ error: { code: 'unknown_key' } });
+    } catch (err) {
+        errorManager.report(err);
+        res.status(500).send({ error: { code: 'failed_to_fill_session' } });
         return;
     }
 }

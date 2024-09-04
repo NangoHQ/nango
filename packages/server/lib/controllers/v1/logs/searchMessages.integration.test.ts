@@ -68,7 +68,7 @@ describe('POST /logs/messages', () => {
     it('should search messages and get empty results', async () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'proxy' } }, { account, environment: env });
+        const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
         await logCtx.success();
 
         const res = await api.fetch('/api/v1/logs/messages', {
@@ -89,7 +89,7 @@ describe('POST /logs/messages', () => {
     it('should search messages and get one result', async () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'proxy' } }, { account, environment: env });
+        const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 
@@ -147,7 +147,7 @@ describe('POST /logs/messages', () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
         const env2 = await seeders.seedAccountEnvAndUser();
 
-        const logCtx = await logContextGetter.create({ message: 'test 1', operation: { type: 'proxy' } }, { account, environment: env });
+        const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
         await logCtx.info('test info');
         await logCtx.success();
 

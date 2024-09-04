@@ -1,5 +1,4 @@
 import db, { schema, dbNamespace } from '@nangohq/database';
-import type { SlackNotification } from '../../models/SlackNotification.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import environmentService from '../environment.service.js';
@@ -7,8 +6,8 @@ import { basePublicUrl, getLogger, stringToHash } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import type { OrchestratorClientInterface } from '../../clients/orchestrator.js';
-import { Orchestrator } from '../../clients/orchestrator.js';
+import type { Orchestrator } from '../../clients/orchestrator.js';
+import type { DBSlackNotification } from '@nangohq/types';
 
 const logger = getLogger('SlackService');
 const TABLE = dbNamespace + 'slack_notifications';
@@ -85,8 +84,8 @@ export class SlackService {
     private nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
     private env = 'prod';
 
-    constructor({ orchestratorClient, logContextGetter }: { orchestratorClient: OrchestratorClientInterface; logContextGetter: LogContextGetter }) {
-        this.orchestrator = new Orchestrator(orchestratorClient);
+    constructor({ orchestrator, logContextGetter }: { orchestrator: Orchestrator; logContextGetter: LogContextGetter }) {
+        this.orchestrator = orchestrator;
         this.logContextGetter = logContextGetter;
     }
 
@@ -111,12 +110,6 @@ export class SlackService {
         return slackConnection;
     }
 
-    private async getAdminEnvironmentId(): Promise<number> {
-        const info = await accountService.getAccountAndEnvironmentIdByUUID(this.nangoAdminUUID as string, this.env);
-
-        return info?.environmentId as number;
-    }
-
     /**
      * Send Duplicate Notification to Nango Admins
      * @desc append the account and environment information to the notification content,
@@ -132,7 +125,6 @@ export class SlackService {
         ts?: string
     ) {
         const nangoAdminConnection = await this.getNangoAdminConnection();
-
         if (!nangoAdminConnection) {
             return;
         }
@@ -170,7 +162,7 @@ export class SlackService {
      */
     private async updateNotificationWithTimestamp(id: number, ts: string) {
         await schema()
-            .from<SlackNotification>(TABLE)
+            .from<DBSlackNotification>(TABLE)
             .update({
                 slack_timestamp: ts
             })
@@ -184,7 +176,7 @@ export class SlackService {
      */
     private async updateNotificationWithAdminTimestamp(id: number, ts: string) {
         await schema()
-            .from<SlackNotification>(TABLE)
+            .from<DBSlackNotification>(TABLE)
             .update({
                 admin_slack_timestamp: ts
             })
@@ -205,7 +197,6 @@ export class SlackService {
      */
     async reportFailure(nangoConnection: NangoConnection, name: string, type: string, originalActivityLogId: string, environment_id: number, provider: string) {
         const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
-
         if (!slackNotificationsEnabled) {
             return;
         }
@@ -230,14 +221,18 @@ export class SlackService {
         }
 
         const slackConnectionId = generateSlackConnectionId(account.uuid, envName);
-        const nangoEnvironmentId = await this.getAdminEnvironmentId();
+
+        const adminEnvironment = await environmentService.getAccountAndEnvironment({ accountUuid: this.nangoAdminUUID!, envName: this.env });
+        if (!adminEnvironment) {
+            throw new Error('failed_to_get_admin_env');
+        }
 
         // we get the connection on the nango admin account to be able to send the notification
         const {
             success: connectionSuccess,
             error: slackConnectionError,
             response: slackConnection
-        } = await connectionService.getConnection(slackConnectionId, this.integrationKey, nangoEnvironmentId);
+        } = await connectionService.getConnection(slackConnectionId, this.integrationKey, adminEnvironment.environment.id);
 
         if (!connectionSuccess || !slackConnection) {
             logger.error(slackConnectionError);
@@ -245,10 +240,10 @@ export class SlackService {
         }
 
         const logCtx = await this.logContextGetter.create(
-            { operation: { type: 'action' }, message: 'Start action' },
+            { operation: { type: 'action', action: 'run' } },
             {
-                account,
-                environment: { id: environment_id, name: envName },
+                account: adminEnvironment.account,
+                environment: adminEnvironment.environment,
                 integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
                 connection: { id: slackConnection.id!, name: slackConnection.connection_id }
             }
@@ -398,12 +393,16 @@ export class SlackService {
             throw new Error('failed_to_get_account');
         }
 
-        const nangoEnvironmentId = await this.getAdminEnvironmentId();
+        const adminEnvironment = await environmentService.getAccountAndEnvironment({ accountUuid: this.nangoAdminUUID!, envName: this.env });
+        if (!adminEnvironment) {
+            throw new Error('failed_to_get_admin_env');
+        }
+
         const slackConnectionId = generateSlackConnectionId(account.uuid, envName);
         const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
             slackConnectionId,
             this.integrationKey,
-            nangoEnvironmentId
+            adminEnvironment.environment.id
         );
 
         if (!connectionSuccess || !slackConnection) {
@@ -411,10 +410,10 @@ export class SlackService {
         }
 
         const logCtx = await this.logContextGetter.create(
-            { operation: { type: 'action' }, message: 'Start action' },
+            { operation: { type: 'action', action: 'run' } },
             {
-                account,
-                environment: { id: environment_id, name: envName },
+                account: adminEnvironment.account,
+                environment: adminEnvironment.environment,
                 integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
                 connection: { id: slackConnection.id!, name: slackConnection.connection_id }
             }
@@ -453,28 +452,20 @@ export class SlackService {
      * and environment id and if so return the necessary information to be able
      * to update the notification.
      */
-    async hasOpenNotification(
-        nangoConnection: NangoConnection,
-        name: string,
-        type: string,
-        trx = db.knex
-    ): Promise<Pick<SlackNotification, 'id' | 'connection_list' | 'slack_timestamp' | 'admin_slack_timestamp'> | null> {
+    async hasOpenNotification(nangoConnection: NangoConnection, name: string, type: string, trx = db.knex): Promise<DBSlackNotification | null> {
         const hasOpenNotification = await trx
-            .select('id', 'connection_list', 'slack_timestamp', 'admin_slack_timestamp')
-            .from<SlackNotification>(TABLE)
+            .select<DBSlackNotification>('*')
+            .from<DBSlackNotification>(TABLE)
             .forUpdate()
             .where({
                 open: true,
                 environment_id: nangoConnection.environment_id,
                 name,
                 type
-            });
+            })
+            .first();
 
-        if (!hasOpenNotification || !hasOpenNotification.length) {
-            return null;
-        }
-
-        return hasOpenNotification[0];
+        return hasOpenNotification || null;
     }
 
     /**
@@ -482,9 +473,9 @@ export class SlackService {
      * @desc create a new notification for the given name and environment id
      * and return the id of the created notification.
      */
-    async createNotification(nangoConnection: NangoConnection, name: string, type: string, trx = db.knex): Promise<Pick<SlackNotification, 'id'> | null> {
+    async createNotification(nangoConnection: NangoConnection, name: string, type: string, trx = db.knex): Promise<Pick<DBSlackNotification, 'id'> | null> {
         const result = await trx
-            .from<SlackNotification>(TABLE)
+            .from<DBSlackNotification>(TABLE)
             .insert({
                 open: true,
                 environment_id: nangoConnection.environment_id,
@@ -550,7 +541,7 @@ export class SlackService {
                     success: true,
                     error: null,
                     response: {
-                        id: id as number,
+                        id,
                         isOpen: true,
                         slack_timestamp: isOpen.slack_timestamp as string,
                         admin_slack_timestamp: isOpen.admin_slack_timestamp as string,
@@ -561,19 +552,16 @@ export class SlackService {
 
             connection_list.push(nangoConnection.id as number);
 
-            await trx
-                .from<SlackNotification>(TABLE)
-                .where({ id: id as number })
-                .update({
-                    connection_list,
-                    updated_at: new Date()
-                });
+            await trx.from<DBSlackNotification>(TABLE).where({ id }).update({
+                connection_list,
+                updated_at: new Date()
+            });
 
             return {
                 success: true,
                 error: null,
                 response: {
-                    id: id as number,
+                    id,
                     isOpen: true,
                     slack_timestamp: isOpen.slack_timestamp as string,
                     admin_slack_timestamp: isOpen.admin_slack_timestamp as string,
@@ -590,20 +578,27 @@ export class SlackService {
      * resolution to the slack channel.
      */
 
-    async removeFailingConnection(
-        nangoConnection: NangoConnection,
-        name: string,
-        type: string,
-        originalActivityLogId: string | null,
-        environment_id: number,
-        provider: string
-    ): Promise<void> {
+    async removeFailingConnection({
+        connection: nangoConnection,
+        name,
+        type,
+        originalActivityLogId,
+        environment_id,
+        provider
+    }: {
+        connection: NangoConnection;
+        name: string;
+        type: string;
+        originalActivityLogId: string | null;
+        environment_id: number;
+        provider: string;
+    }): Promise<void> {
         await db.knex.transaction(async (trx) => {
             const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
-
             if (!slackNotificationsEnabled) {
                 return;
             }
+
             const lockKey = stringToHash(`${nangoConnection.environment_id}-${name}-${type}-remove`);
 
             const { rows } = await trx.raw<{ rows: { pg_try_advisory_xact_lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?);`, [lockKey]);
@@ -614,7 +609,6 @@ export class SlackService {
             }
 
             const isOpen = await this.hasOpenNotification(nangoConnection, name, type, trx);
-
             if (!isOpen) {
                 return;
             }
@@ -631,8 +625,8 @@ export class SlackService {
             connection_list.splice(index, 1);
 
             await trx
-                .from<SlackNotification>(TABLE)
-                .where({ id: id as number })
+                .from<DBSlackNotification>(TABLE)
+                .where({ id })
                 .update({
                     open: connection_list.length > 0,
                     connection_list,
@@ -656,9 +650,9 @@ export class SlackService {
         });
     }
 
-    async closeAllOpenNotifications(environment_id: number): Promise<void> {
-        await schema()
-            .from<SlackNotification>(TABLE)
+    async closeAllOpenNotificationsForEnv(environment_id: number): Promise<void> {
+        await db.knex
+            .from<DBSlackNotification>(TABLE)
             .where({
                 environment_id,
                 open: true
@@ -752,5 +746,32 @@ export class SlackService {
         }
 
         return '';
+    }
+
+    public async closeOpenNotificationForConnection({ connectionId, environmentId }: { connectionId: number; environmentId: number }) {
+        await db.knex.transaction(async (trx) => {
+            const rows = await trx
+                .select('*')
+                .from<DBSlackNotification>(TABLE)
+                .forUpdate()
+                .where({
+                    open: true,
+                    environment_id: environmentId
+                })
+                .whereRaw(`connection_list && '{${connectionId}}'`);
+
+            for (const row of rows) {
+                const connectionIds = row.connection_list.filter((id) => id !== connectionId);
+
+                await trx
+                    .from<DBSlackNotification>(TABLE)
+                    .where({ id: row.id })
+                    .update({
+                        open: connectionIds.length > 0,
+                        connection_list: connectionIds,
+                        updated_at: new Date()
+                    });
+            }
+        });
     }
 }

@@ -44,7 +44,7 @@ export async function exec({ orchestrator }: { orchestrator: Orchestrator }): Pr
             continue;
         }
         const logCtx = await logContextGetter.create(
-            { operation: { type: 'sync', action: 'pause' }, message: 'Sync' },
+            { operation: { type: 'sync', action: 'pause' } },
             {
                 account: { id: sync.account_id, name: sync.account_name },
                 environment: { id: sync.environment_id, name: sync.environment_name },

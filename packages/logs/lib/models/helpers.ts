@@ -1,5 +1,5 @@
 import { nanoid } from '@nangohq/utils';
-import type { MessageRow, OperationRow, OperationRowInsert } from '@nangohq/types';
+import type { ConcatOperationList, MessageRow, OperationRow, OperationRowInsert } from '@nangohq/types';
 import { z } from 'zod';
 import type { estypes } from '@elastic/elasticsearch';
 import { defaultOperationExpiration } from '../env.js';
@@ -22,6 +22,7 @@ export function getFormattedOperation(
 ): OperationRow {
     return {
         ...getFormattedMessage(data as unknown as MessageRow),
+        message: operationTypeToMessage[`${data.operation.type}:${data.operation.action}` as ConcatOperationList],
         id: data.id || nanoid(),
         operation: data.operation,
 
@@ -117,3 +118,23 @@ export function createCursor({ sort }: estypes.SearchHit): string {
 export function parseCursor(str: string): any[] {
     return JSON.parse(Buffer.from(str, 'base64').toString('utf8'));
 }
+
+export const operationTypeToMessage: Record<ConcatOperationList, string> = {
+    'action:run': 'Action execution',
+    'admin:impersonation': 'Admin logged into another account',
+    'auth:create_connection': 'Create connection',
+    'auth:post_connection': 'Post connection script execution',
+    'auth:refresh_token': 'Token refresh',
+    'deploy:custom': 'Deploying custom scripts',
+    'deploy:prebuilt': 'Deploying pre-built flow',
+    'proxy:call': 'Proxy call',
+    'sync:cancel': 'Sync execution canceled',
+    'sync:init': 'Sync initialization',
+    'sync:pause': 'Sync schedule paused',
+    'sync:request_run_full': 'Sync execution triggered (full)',
+    'sync:request_run': 'Sync execution triggered (incremental)',
+    'sync:run': 'Sync execution',
+    'sync:unpause': 'Sync schedule started',
+    'webhook:incoming': 'Received a webhook',
+    'webhook:outgoing': 'Forwarding Webhook'
+};

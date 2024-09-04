@@ -275,7 +275,7 @@ const initDb = async () => {
     if (!env) throw new Error('Environment not created');
 
     const logCtx = await logContextGetter.create(
-        { operation: { type: 'sync', action: 'run' }, message: 'Sync' },
+        { operation: { type: 'sync', action: 'run' } },
         { account: { id: env.account_id, name: '' }, environment: { id: env.id, name: env.name } }
     );
 

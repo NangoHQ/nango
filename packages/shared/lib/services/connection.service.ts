@@ -54,6 +54,7 @@ import type { KVStore } from '../utils/kvstore/KVStore.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
+import { SlackService } from './notification/slack.service.js';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -798,18 +799,32 @@ class ConnectionService {
         return [...new Set(connections.map((config) => config.connection_id))];
     }
 
-    public async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number, orchestrator: Orchestrator): Promise<number> {
+    public async deleteConnection({
+        connection,
+        providerConfigKey,
+        environmentId,
+        orchestrator,
+        logContextGetter
+    }: {
+        connection: Connection;
+        providerConfigKey: string;
+        environmentId: number;
+        orchestrator: Orchestrator;
+        logContextGetter: LogContextGetter;
+    }): Promise<number> {
         const del = await db.knex
             .from<Connection>(`_nango_connections`)
             .where({
                 connection_id: connection.connection_id,
                 provider_config_key: providerConfigKey,
-                environment_id,
+                environment_id: environmentId,
                 deleted: false
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
         await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
+        const slackService = new SlackService({ logContextGetter, orchestrator });
+        await slackService.closeOpenNotificationForConnection({ connectionId: connection.id!, environmentId });
 
         return del;
     }
@@ -890,7 +905,7 @@ class ConnectionService {
 
             if ((!success && error) || !response) {
                 const logCtx = await logContextGetter.create(
-                    { operation: { type: 'auth', action: 'refresh_token' }, message: 'Token refresh error' },
+                    { operation: { type: 'auth', action: 'refresh_token' } },
                     {
                         account,
                         environment,

@@ -46,9 +46,6 @@ import {
     getEmailByExpiredToken
 } from './controllers/v1/account/index.js';
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
-import { setMetadata } from './controllers/connection/setMetadata.js';
-import { updateMetadata } from './controllers/connection/updateMetadata.js';
-import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
 import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
@@ -82,9 +79,14 @@ import { deleteIntegrationPublic } from './controllers/config/providerConfigKey/
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
 import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
+import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
 import { patchFlowDisable } from './controllers/v1/flows/id/patchDisable.js';
 import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
+import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
+import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
+import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
+import { deleteConnection } from './controllers/v1/connection/deleteConnection.js';
 
 export const router = express.Router();
 
@@ -163,11 +165,11 @@ publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind
 publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deleteIntegrationPublic);
 publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 publicAPI.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
-publicAPI.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
+publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);
 publicAPI.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
 publicAPI.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadataLegacy.bind(connectionController));
-publicAPI.route('/connection/metadata').post(apiAuth, setMetadata);
-publicAPI.route('/connection/metadata').patch(apiAuth, updateMetadata);
+publicAPI.route('/connection/metadata').post(apiAuth, postPublicMetadata);
+publicAPI.route('/connection/metadata').patch(apiAuth, patchPublicMetadata);
 publicAPI.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 publicAPI.route('/sync/deploy').post(apiAuth, postDeploy);
@@ -265,7 +267,7 @@ web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(co
 
 web.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
 web.route('/api/v1/connection/:connectionId').get(webAuth, getConnectionWeb);
-web.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
+web.route('/api/v1/connection/:connectionId').delete(webAuth, deleteConnection);
 web.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 
 web.route('/api/v1/user').get(webAuth, getUser);

@@ -90,7 +90,7 @@ class AccountController {
             }
 
             logCtx = await logContextGetter.create(
-                { operation: { type: 'admin', action: 'impersonation' }, message: 'Admin logged into another account' },
+                { operation: { type: 'admin', action: 'impersonation' } },
                 {
                     account,
                     environment,

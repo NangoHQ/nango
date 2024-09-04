@@ -407,33 +407,6 @@ export function useGetConnectionDetailsAPI(env: string) {
     };
 }
 
-export function useDeleteConnectionAPI(env: string) {
-    const signout = useSignout();
-
-    return async (connectionId: string, providerConfigKey: string) => {
-        try {
-            const res = await apiFetch(
-                `/api/v1/connection/${encodeURIComponent(connectionId)}?env=${env}&provider_config_key=${encodeURIComponent(providerConfigKey)}`,
-                {
-                    method: 'DELETE'
-                }
-            );
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 204) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useRequestPasswordResetAPI() {
     return async (email: string) => {
         try {
