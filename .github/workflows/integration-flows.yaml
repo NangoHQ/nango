@@ -49,12 +49,13 @@ jobs:
                         find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations/$dir {} +
                         cd nango-integrations
                         NANGO_CLI_UPGRADE_MODE=ignore nango compile
-                        cd ../../
 
                         # run tests if applicable
                         integration="${dir%/}"
-                        pushd ../tests/integration-templates
+                        pushd ../../tests/integration-templates
                         bash generate-and-run-tests.bash $integration
                         popd
+
+                        cd ../../
                     fi
                   done
