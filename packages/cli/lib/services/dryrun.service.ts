@@ -1,4 +1,5 @@
 import promptly from 'promptly';
+import fs from 'node:fs';
 import chalk from 'chalk';
 
 import type { NangoConnection, NangoProps, RunnerOutput } from '@nangohq/shared';
@@ -25,6 +26,7 @@ interface RunArgs extends GlobalOptions {
     metadata?: Metadata;
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
+    saveResponses?: boolean;
 }
 
 export class DryRunService {
@@ -290,6 +292,7 @@ export class DryRunService {
                 syncId: 'dryrun-sync',
                 lastSyncDate: lastSyncDate as Date,
                 dryRun: true,
+                saveResponses: options.saveResponses || false,
                 logMessages,
                 stubbedMetadata,
                 syncConfig,
@@ -303,6 +306,10 @@ export class DryRunService {
                 },
                 startedAt: new Date()
             };
+            if (options.saveResponses) {
+                nangoProps.rawSaveOutput = [];
+                nangoProps.rawDeleteOutput = [];
+            }
             console.log('---');
             const results = await this.runScript({
                 syncName,
@@ -370,6 +377,25 @@ export class DryRunService {
                         displayBatch();
                     } else {
                         break;
+                    }
+                }
+
+                if (options.saveResponses) {
+                    const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY']}${providerConfigKey}`;
+                    if (!fs.existsSync(directoryName)) {
+                        fs.mkdirSync(`${directoryName}/mocks`, { recursive: true });
+                    }
+                    if (!fs.existsSync(`${directoryName}/mocks/${syncName}`)) {
+                        fs.mkdirSync(`${directoryName}/mocks/${syncName}`, { recursive: true });
+                    }
+                    if (nangoProps.rawSaveOutput) {
+                        const filePath = `${directoryName}/mocks/${syncName}/batchSave.json`;
+                        fs.writeFileSync(filePath, JSON.stringify(nangoProps.rawSaveOutput, null, 2));
+                    }
+
+                    if (nangoProps.rawDeleteOutput) {
+                        const filePath = `${directoryName}/mocks/${syncName}/batchDelete.json`;
+                        fs.writeFileSync(filePath, JSON.stringify(nangoProps.rawDeleteOutput, null, 2));
                     }
                 }
             }

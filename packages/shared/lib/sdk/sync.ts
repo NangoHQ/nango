@@ -1,4 +1,5 @@
 import https from 'node:https';
+import fs from 'node:fs';
 import { Nango, getUserAgent } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
@@ -319,7 +320,10 @@ export interface NangoProps {
     track_deletes?: boolean;
     attributes?: object | undefined;
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
+    rawSaveOutput?: unknown[] | undefined;
+    rawDeleteOutput?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
+    saveResponses?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
@@ -357,6 +361,7 @@ export class NangoAction {
     environmentName?: string;
     syncJobId?: number;
     dryRun?: boolean;
+    saveResponses?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig?: SyncConfig;
@@ -401,6 +406,7 @@ export class NangoAction {
 
         if (config.dryRun) {
             this.dryRun = config.dryRun;
+            this.saveResponses = config.saveResponses || false;
         }
 
         if (config.environmentName) {
@@ -482,7 +488,40 @@ export class NangoAction {
         }
 
         if (this.dryRun) {
-            return this.nango.proxy(config);
+            const proxyResponse = await this.nango.proxy(config);
+            if (this.saveResponses) {
+                const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY']}${config.providerConfigKey}`;
+                if (directoryName) {
+                    const fileName = config.endpoint.replace('/', '');
+                    if (!fs.existsSync(directoryName)) {
+                        fs.mkdirSync(directoryName);
+                        fs.mkdirSync(`${directoryName}/mocks`);
+                    }
+                    let filePath = `${directoryName}/mocks/${fileName}.json`;
+                    if (config.paginate) {
+                        const paginateType = config.method.toLowerCase();
+                        if (!fs.existsSync(`${directoryName}/mocks/paginate/${paginateType}`)) {
+                            fs.mkdirSync(`${directoryName}/mocks/paginate/${paginateType}`, { recursive: true });
+                        }
+                        if (!fs.existsSync(`${directoryName}/mocks/paginate/${paginateType}/${this.syncConfig?.sync_name}`)) {
+                            fs.mkdirSync(`${directoryName}/mocks/paginate/${paginateType}/${this.syncConfig?.sync_name}`, { recursive: true });
+                        }
+                        if (fileName.includes('/')) {
+                            const fileNameParts = fileName.split('/');
+                            fileNameParts.pop();
+                            const additionalPath = fileNameParts.join('/');
+                            fs.mkdirSync(`${directoryName}/mocks/paginate/${paginateType}/${this.syncConfig?.sync_name}/${additionalPath}`, {
+                                recursive: true
+                            });
+                        }
+                        filePath = `${directoryName}/mocks/paginate/${paginateType}/${this.syncConfig?.sync_name}/${fileName}.json`;
+                    }
+                    const responsePath = config.paginate?.response_path;
+                    const paginateData = responsePath ? proxyResponse.data[responsePath] : proxyResponse.data;
+                    fs.writeFileSync(filePath, JSON.stringify(paginateData, null, 2));
+                }
+            }
+            return proxyResponse;
         } else {
             const { connectionId, providerConfigKey } = config;
             const connection = await this.getConnection(providerConfigKey, connectionId);
@@ -580,6 +619,20 @@ export class NangoAction {
         if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
             const connection = await this.nango.getConnection(providerConfigKey, connectionId);
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
+            if (this.saveResponses) {
+                const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY']}${providerConfigKey}`;
+                if (directoryName) {
+                    if (!fs.existsSync(directoryName)) {
+                        fs.mkdirSync(`${directoryName}/mocks`, { recursive: true });
+                    }
+                    if (!fs.existsSync(`${directoryName}/mocks/nango`)) {
+                        fs.mkdirSync(`${directoryName}/mocks/nango`, { recursive: true });
+                    }
+                    const filePath = `${directoryName}/mocks/nango/getConnection.json`;
+                    const { metadata, connection_config } = connection;
+                    fs.writeFileSync(filePath, JSON.stringify({ metadata, connection_config }, null, 2));
+                }
+            }
             return connection;
         }
 
@@ -808,6 +861,8 @@ export class NangoSync extends NangoAction {
         counts: { updated: 0, added: 0, deleted: 0 },
         messages: []
     };
+    rawSaveOutput?: unknown[];
+    rawDeleteOutput?: unknown[];
     stubbedMetadata?: Metadata | undefined = undefined;
 
     private batchSize = 1000;
@@ -825,6 +880,14 @@ export class NangoSync extends NangoAction {
 
         if (config.logMessages) {
             this.logMessages = config.logMessages;
+        }
+
+        if (config.rawSaveOutput) {
+            this.rawSaveOutput = config.rawSaveOutput;
+        }
+
+        if (config.rawDeleteOutput) {
+            this.rawDeleteOutput = config.rawDeleteOutput;
         }
 
         if (config.stubbedMetadata) {
@@ -885,6 +948,9 @@ export class NangoSync extends NangoAction {
             }
             if (this.logMessages && this.logMessages.counts) {
                 this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
+            }
+            if (this.rawSaveOutput && Array.isArray(this.rawSaveOutput)) {
+                this.rawSaveOutput.push(...results);
             }
             return null;
         }
@@ -951,6 +1017,9 @@ export class NangoSync extends NangoAction {
             }
             if (this.logMessages && this.logMessages.counts) {
                 this.logMessages.counts.deleted = Number(this.logMessages.counts.deleted) + results.length;
+            }
+            if (this.rawDeleteOutput && Array.isArray(this.rawDeleteOutput)) {
+                this.rawDeleteOutput.push(...results);
             }
             return null;
         }
