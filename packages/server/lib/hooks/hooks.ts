@@ -51,9 +51,6 @@ export const connectionCreationStartCapCheck = async ({
     }
 
     const scriptConfigs = await getSyncConfigsWithConnections(providerConfigKey, environmentId);
-    if (scriptConfigs.length <= 0) {
-        return false;
-    }
 
     for (const script of scriptConfigs) {
         const { connections } = script;
