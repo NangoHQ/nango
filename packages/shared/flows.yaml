@@ -630,7 +630,7 @@ integrations:
                 schedulingType: null | string
                 userId: number
                 metadata:
-                    ___string: any
+                    __string: any
                 description: string | null
                 hidden: boolean
                 slug: string
