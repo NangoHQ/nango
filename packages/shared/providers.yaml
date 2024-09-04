@@ -3552,6 +3552,13 @@ zoho-mail:
 zoho-bigin:
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-bigin
+zoho-people:
+    categories:
+        - hr
+    alias: zoho
+    proxy:
+        base_url: https://people.zoho.com
+    docs: https://docs.nango.dev/integrations/all/zoho-people
 zoom:
     categories:
         - video

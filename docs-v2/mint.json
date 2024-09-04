@@ -551,6 +551,7 @@
                 "integrations/all/zoho-inventory",
                 "integrations/all/zoho-invoice",
                 "integrations/all/zoho-mail",
+                "integrations/all/zoho-people",
                 "integrations/all/zoom",
                 "integrations/all/zoominfo"
             ]
