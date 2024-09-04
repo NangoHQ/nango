@@ -1,0 +1,111 @@
+import { jest, expect, it, describe } from "@jest/globals";
+import type { NangoSync } from "../models.js";
+
+import fetchData from "../<%= integration %>/syncs/<%= syncName %>.js";
+
+let batchSaveData: any = null;
+<% if (typeof batchSave !== 'undefined') { %>
+const { default: batchSaveDataRaw } = await import(`../<%= integration %>/mocks/<%= syncName %>/batchSave.json`);
+batchSaveData = batchSaveDataRaw;
+<% } %>
+
+let batchDeleteData: any = null;
+<% if (typeof batchDelete !== 'undefined') { %>
+const { default: batchDeleteDataRaw } = await import(`../<%= integration %>/mocks/<%= syncName %>/batchDelete.json`);
+batchDeleteData = batchDeleteDataRaw;
+<% } %>
+
+let getConnection: null | unknown = null;
+<% if (typeof nango.getConnection !== 'undefined' && nango.getConnection) { %>
+const { default: getConnectionData } = await import("../<%= integration %>/mocks/nango/getConnection.json", { assert: { type: "json" } });
+getConnection = getConnectionData;
+<% } %>
+
+let paginateGet = false;
+<% if (typeof paginate !== 'undefined' && paginate.get) { %>
+    paginateGet = true;
+<% } %>
+let paginatePost = false;
+<% if (typeof paginate !== 'undefined' && paginate.post) { %>
+    paginatePost = true;
+<% } %>
+let paginatePatch = false;
+<% if (typeof paginate !== 'undefined' && paginate.patch) { %>
+    paginatePatch = true;
+<% } %>
+let paginatePut = false;
+<% if (typeof paginate !== 'undefined' && paginate.put) { %>
+    paginatePut = true;
+<% } %>
+let paginateDelete = false;
+<% if (typeof paginate !== 'undefined' && paginate.delete) { %>
+    paginateDelete = true;
+<% } %>
+
+describe("<%= integration %> <%= syncName %> tests", () => {
+  const nangoMock = {
+    lastSyncDate: null,
+    log: jest.fn()
+  } as unknown as NangoSync;
+
+  if (batchSaveData) {
+    nangoMock.batchSave = jest.fn().mockReturnValue(batchSaveData) as NangoSync['batchSave'];
+  }
+
+  if (batchDeleteData) {
+    nangoMock.batchDelete = jest.fn().mockReturnValue(batchDeleteData) as NangoSync['batchDelete'];
+  }
+
+  if (getConnection) {
+    nangoMock.getConnection = jest.fn().mockReturnValue(getConnection) as NangoSync['getConnection'];
+  }
+
+  if (paginateGet || paginatePost || paginatePatch || paginatePut || paginateDelete) {
+      nangoMock.paginate = jest.fn().mockImplementation(async function* (args: any) {
+        const { endpoint, method = 'GET' } = args;
+        switch(method) {
+            case 'GET':
+                const { default: paginateDataGet } = await import(`../<%= integration %>/mocks/paginate/get/<%= syncName %>${endpoint}.json`, { assert: { type: "json" } });
+                paginateGet = paginateDataGet;
+                yield paginateGet;
+                break;
+            case 'POST':
+                const { default: paginateDataPost } = await import(`../<%= integration %>/mocks/paginate/post/<%= syncName %>${endpoint}.json`, { assert: { type: "json" } });
+                paginatePost = paginateDataPost;
+                yield paginatePost;
+                break;
+            case 'PATCH':
+                const { default: paginateDataPatch } = await import(`../<%= integration %>/mocks/paginate/patch/<%= syncName %>${endpoint}.json`, { assert: { type: "json" } });
+                paginatePatch = paginateDataPatch;
+                yield paginatePatch;
+                break;
+            case 'PUT':
+                const { default: paginateDataPut } = await import(`../<%= integration %>/mocks/paginate/put/<%= syncName %>${endpoint}.json`, { assert: { type: "json" } });
+                paginatePut = paginateDataPut;
+                yield paginatePut;
+                break;
+            case 'DELETE':
+                const { default: paginateDataDelete } = await import(`../<%= integration %>/mocks/paginate/delete/<%= syncName %>${endpoint}.json`, { assert: { type: "json" } });
+                paginateDelete = paginateDataDelete;
+                yield paginateDelete;
+                break;
+        }
+    }) as NangoSync['paginate'];
+  }
+
+  it("should get, map correctly the data and batchSave the result", async () => {
+    await fetchData(nangoMock);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(nangoMock.batchSave).toHaveBeenCalledWith(batchSaveData, "<%= modelName %>");
+  });
+
+  if (batchDeleteData && batchDeleteData.length > 0) {
+    it("should get, map correctly the data and batchDelete the result", async () => {
+      await fetchData(nangoMock);
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(nangoMock.batchDelete).toHaveBeenCalledWith(batchDeleteData, "<%= modelName %>");
+    });
+  }
+});
