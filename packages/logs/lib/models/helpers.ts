@@ -97,6 +97,7 @@ export function getFormattedMessage(data: Partial<MessageRow>, { meta }: FormatM
     };
 }
 
+// TODO: remove once not used by persist anymore
 export const oldLevelToNewLevel = {
     debug: 'debug',
     info: 'info',
