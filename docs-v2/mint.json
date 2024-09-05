@@ -357,6 +357,7 @@
                 "integrations/all/confluence",
                 "integrations/all/contentful",
                 "integrations/all/contentstack",
+                "integrations/all/coupa-compass",
                 "integrations/all/coros",
                 "integrations/all/datev",
                 "integrations/all/deel",
