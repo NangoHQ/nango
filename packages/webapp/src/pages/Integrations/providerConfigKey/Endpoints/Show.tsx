@@ -56,7 +56,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
                     if (lenA > lenB) return 1;
                     else if (lenA < lenB) return -1;
 
-                    // Sort by verb
+                    // Sort by method
                     if (a.endpoint.method === 'GET' && b.endpoint.method !== 'GET') return -1;
                     else if (a.endpoint.method === 'POST' && b.endpoint.method === 'PUT') return -1;
                     else if (a.endpoint.method === 'PUT' && b.endpoint.method === 'PATCH') return -1;
@@ -76,7 +76,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
             return;
         }
 
-        const method = searchParams.get('verb');
+        const method = searchParams.get('method');
         const path = searchParams.get('path');
         if (!method || !path) {
             return;

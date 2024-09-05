@@ -3,7 +3,7 @@ import { HttpLabel } from '../../../../../components/HttpLabel';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { Tag } from '../../../../../components/ui/label/Tag';
 import type { NangoSyncConfigWithEndpoint } from './List';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { GetIntegration, NangoModel } from '@nangohq/types';
 import { fieldToTypescript, getSyncResponse, modelToString } from '../../../../../utils/scripts';
 import { curlSnippet, nodeActionSnippet, nodeSyncSnippet } from '../../../../../utils/language-snippets';
@@ -18,14 +18,14 @@ const syncDefaultQueryParams = [
     {
         name: 'modified_after',
         type: 'string',
-        description: `Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records modified after this timestamp are returned, otherwise all records are returned.`,
+        description: `A timestamp (e.g., 2023-05-31T11:46:13.390Z) used to fetch records modified after this date and time. If not provided, all records are returned. The modified_after parameter is less precise than cursor, as multiple records may share the same modification timestamp.`,
         optional: true
     },
     { name: 'limit', type: 'number', description: `The maximum number of records to return per page. Defaults to 100.`, optional: true },
     {
         name: 'cursor',
         type: 'string',
-        description: `Each record from this method comes with a synchronization cursor in _nango_metadata.cursor. Save the last fetched record's cursor to track how far you've synced. By providing the cursor to this endpoint, you'll continue syncing from where you left off, receiving only post-cursor changes. This same cursor is used to paginate through the results of this endpoint.`,
+        description: `A marker used to fetch records modified after a specific point in time. If not provided, all records are returned. Each record includes a cursor value found in _nango_metadata.cursor. Save the cursor from the last record retrieved to track your sync progress. Use the cursor parameter together with the limit parameter to paginate through records. The cursor is more precise than modified_after, as it can differentiate between records with the same modification timestamp.`,
         optional: true
     },
     {
@@ -40,6 +40,7 @@ const connectionId = '<CONNECTION_ID>';
 export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['data']; flow: NangoSyncConfigWithEndpoint }> = ({ integration, flow }) => {
     const env = useStore((state) => state.env);
     const baseUrl = useStore((state) => state.baseUrl);
+    const [openConfiguration, setOpenConfiguration] = useState(false);
 
     const { environmentAndAccount } = useEnvironment(env);
     const [language, setLanguage] = useLocalStorage<'node' | 'curl'>('nango:snippet:language', 'node');
@@ -108,11 +109,15 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                     <div>{flow.description}</div>
                 </div>
                 <div className="flex-shrink-0 content-center">
-                    <ScriptSettings flow={flow} integration={integration} />
+                    <ScriptSettings flow={flow} integration={integration} open={openConfiguration} setOpen={setOpenConfiguration} />
                 </div>
             </header>
 
-            {!flow.enabled && <Info variant="warning">This endpoint is disabled. To enable it, go to settings</Info>}
+            {!flow.enabled && (
+                <Info variant="warning">
+                    This endpoint is disabled. To enable it, go to <button onClick={() => setOpenConfiguration(true)}>Endpoint Configuration</button>
+                </Info>
+            )}
 
             <main className="flex gap-10">
                 <div className="w-1/2 flex flex-col gap-10">

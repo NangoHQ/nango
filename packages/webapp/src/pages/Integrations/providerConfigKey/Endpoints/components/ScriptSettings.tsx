@@ -14,17 +14,21 @@ import { apiFlowUpdateFrequency, apiPreBuiltUpgrade } from '../../../../../hooks
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
 import { mutate } from 'swr';
+import { Link } from 'react-router-dom';
 
 const drawerWidth = '630px';
 // To sync with patchFrequency
 const frequencyRegex =
     /^(?<every>every )?((?<amount>[0-9]+)?\s?(?<unit>(m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/;
 
-export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['data']; flow: NangoSyncConfigWithEndpoint }> = ({ integration, flow }) => {
+export const ScriptSettings: React.FC<{
+    integration: GetIntegration['Success']['data'];
+    flow: NangoSyncConfigWithEndpoint;
+    open: boolean;
+    setOpen: (value: boolean) => void;
+}> = ({ integration, flow, open, setOpen }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
-
-    const [open, setOpen] = useState(false);
 
     // Upgrade
     const [openUpgrade, setOpenUpgrade] = useState(false);
@@ -122,25 +126,32 @@ export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['
             <DrawerTrigger asChild>
                 <Button variant={'zombie'} className="text-text-light-gray">
                     <GearIcon />
-                    Settings
+                    Endpoint Configuration
                 </Button>
             </DrawerTrigger>
             <DrawerContent className={cn(openFrequency && 'hidden')}>
-                {' '}
                 {/** hack otherwise we can't interact with the modal */}
-                <div className={`w-[630px] relative h-screen ml-16 mt-9  select-text`}>
-                    <div className="absolute -left-10">
+                <div className={`w-[630px] relative h-screen px-16 mt-9 select-text`}>
+                    <div className="absolute left-5">
                         <DrawerClose title="Close" className="w-7 h-7 flex items-center justify-center text-text-light-gray hover:text-white focus:text-white">
                             <ArrowLeftIcon className="" />
                         </DrawerClose>
                     </div>
-                    <h2 className="text-xl font-semibold">Script Settings</h2>
+                    <h2 className="text-xl font-semibold">Endpoint Configuration</h2>
                     <div className="flex flex-wrap gap-10 pt-7">
-                        <InfoBloc title="Enabled" className="min-w-[250px]">
+                        <div className="text-s text-text-light-gray">
+                            Nango endpoints are powered by integration scripts. Some of the following configurations can only be changed by modifying this
+                            underlying script. If the source is a template, you will need to extend it to change certain configurations (
+                            <Link to="https://docs.nango.dev/customize/guides/extend-an-integration-template" className="underline">
+                                guide
+                            </Link>
+                            ).
+                        </div>
+                        <InfoBloc title="Enabled" className="min-w-[230px]">
                             <ScriptToggle flow={flow} integration={integration} />
                         </InfoBloc>
                         {flow.is_public ? (
-                            <InfoBloc title="Source" className="min-w-[250px]">
+                            <InfoBloc title="Source" className="min-w-[240px]">
                                 <div className="flex flex-col gap-1">
                                     <div>
                                         Template{' '}
@@ -206,19 +217,19 @@ export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['
                                 </div>
                             </InfoBloc>
                         ) : (
-                            <InfoBloc title="Source" className="min-w-[250px]">
+                            <InfoBloc title="Source" className="min-w-[230px]">
                                 Custom v{flow.version}
                             </InfoBloc>
                         )}
-                        <InfoBloc title="Script Type" className="min-w-[250px]">
+                        <InfoBloc title="Script Type" className="min-w-[230px]">
                             {isSync ? 'Sync' : 'Action'}
                         </InfoBloc>
                         {isSync && (
                             <>
-                                <InfoBloc title="Sync Type" className="min-w-[250px]">
+                                <InfoBloc title="Sync Type" className="min-w-[230px]">
                                     {flow.sync_type === 'FULL' ? 'Full refresh only' : 'Incremental sync'}
                                 </InfoBloc>
-                                <InfoBloc title="Sync Frequency" className="min-w-[250px]">
+                                <InfoBloc title="Sync Frequency" className="min-w-[230px]">
                                     <div className="capitalize">{flow.runs}</div>
                                     {!flow.is_public && (
                                         <Tooltip.Tooltip delayDuration={0}>
@@ -273,27 +284,27 @@ export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['
                                         </Dialog>
                                     )}
                                 </InfoBloc>
-                                <InfoBloc title="Sync Metadata" className="min-w-[250px]">
+                                <InfoBloc title="Sync Metadata" className="min-w-[230px]">
                                     {flow.input ? (
                                         <code className="font-code text-xs border border-border-gray rounded-md px-1">{flow.input.name}</code>
                                     ) : (
                                         'n/a'
                                     )}
                                 </InfoBloc>
-                                <InfoBloc title="Detect Deletions" className="min-w-[250px]">
+                                <InfoBloc title="Detect Deletions" className="min-w-[230px]">
                                     {flow.track_deletes === true ? 'Yes' : 'No'}
                                 </InfoBloc>
                                 {flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0 && (
-                                    <InfoBloc title="Webhooks Subscriptions" className="min-w-[250px]">
+                                    <InfoBloc title="Webhooks Subscriptions" className="min-w-[230px]">
                                         {flow.webhookSubscriptions.join(', ')}
                                     </InfoBloc>
                                 )}
-                                <InfoBloc title="Starts on new connection" className="min-w-[250px]">
+                                <InfoBloc title="Starts on new connection" className="min-w-[230px]">
                                     {flow.auto_start === true ? 'Yes' : 'No'}
                                 </InfoBloc>
                             </>
                         )}
-                        <InfoBloc title="Necessary scopes" className="min-w-[250px]">
+                        <InfoBloc title="Necessary scopes" className="min-w-[230px]">
                             {flow.scopes && flow.scopes.length > 0
                                 ? flow.scopes.map((scope) => (
                                       <div className="font-code text-xs border border-border-gray rounded-md px-1" key={scope}>

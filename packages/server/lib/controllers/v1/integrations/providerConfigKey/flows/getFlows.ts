@@ -83,8 +83,6 @@ function hasSimilarFlow(templateFlow: NangoSyncConfig, list: NangoSyncConfig[]):
         if (containsSameEndpoint(flow, templateFlow)) {
             return flow;
         }
-
-        continue;
     }
     return false;
 }
