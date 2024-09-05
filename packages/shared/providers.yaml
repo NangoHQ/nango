@@ -755,7 +755,7 @@ coupa-compass:
         grant_type: client_credentials
     proxy:
         base_url: https://${connectionConfig.instanceDomain}
-    docs: https://docs.nango.dev/integrations/all/fiserv
+    docs: https://docs.nango.dev/integrations/all/coupa-compass
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     categories:
