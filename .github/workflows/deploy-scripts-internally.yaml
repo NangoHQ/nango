@@ -34,7 +34,7 @@ jobs:
 
                     cd /tmp/nango-temp/nango-integrations
                     npm install zod soap botbuilder
-                    nango admin:deploy-internal template-$integration
+                    nango admin:deploy-internal template-$integration || true
 
                     cd -
                     rm -rf /tmp/nango-temp
