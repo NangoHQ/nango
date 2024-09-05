@@ -37,11 +37,13 @@ export const getIntegrationFlows = asyncWrapper<GetIntegrationFlows>(async (req,
     const templateFlows: NangoSyncConfig[] = [...(template?.actions || []), ...(template?.syncs || [])];
     const finalFlows: NangoSyncConfig[] = [...dbFlows];
 
+    // Find flows that could conflict with the templates
+    // e.g: similar model or similar endpoint
+    // A similar flow could be the same flow --and most of time is-- (e.g: a template that was enabled), but a customer could simply have a something different with the same endpoint
     for (const templateFlow of templateFlows) {
         const similar = hasSimilarFlow(templateFlow, dbFlows);
         if (similar) {
             if (templateFlow.version && templateFlow.version !== similar.version) {
-                console.log(templateFlow.version, similar.version);
                 similar.upgrade_version = templateFlow.version;
             }
             continue;
@@ -67,6 +69,7 @@ function containsSameEndpoint(flowA: NangoSyncConfig, flowB: NangoSyncConfig) {
     }
     return false;
 }
+
 function hasSimilarFlow(templateFlow: NangoSyncConfig, list: NangoSyncConfig[]): NangoSyncConfig | false {
     const modelsName = new Set<string>(templateFlow.returns.map((model) => model));
 

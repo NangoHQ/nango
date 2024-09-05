@@ -16,7 +16,9 @@ import { useStore } from '../../../../../store';
 import { mutate } from 'swr';
 
 const drawerWidth = '630px';
-const frequencyRegex = /^(?<every>every )?(?<amount>[0-9])?\s?(?<unit>(m|mins?|minutes?|h|hrs?|hours?|d|days?))$/;
+// To sync with patchFrequency
+const frequencyRegex =
+    /^(?<every>every )?((?<amount>[0-9]+)?\s?(?<unit>(m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/;
 
 export const ScriptSettings: React.FC<{ integration: GetIntegration['Success']['data']; flow: NangoSyncConfigWithEndpoint }> = ({ integration, flow }) => {
     const { toast } = useToast();

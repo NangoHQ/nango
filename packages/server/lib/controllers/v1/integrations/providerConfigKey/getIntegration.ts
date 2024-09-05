@@ -48,7 +48,6 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
 
     if (template.auth_mode === 'CUSTOM' && integration.custom) {
         const { private_key } = integration.custom;
-        // custom['private_key'] = Buffer.from(custom['private_key'] as string, 'base64').toString('ascii');
         const hash = `${integration.custom['app_id']}${private_key}${integration.app_link}`;
         webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
     }

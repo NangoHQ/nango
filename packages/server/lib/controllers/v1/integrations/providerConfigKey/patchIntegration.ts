@@ -4,11 +4,13 @@ import type { PatchIntegration } from '@nangohq/types';
 import { configService } from '@nangohq/shared';
 import { z } from 'zod';
 
+import { providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { validationParams } from './getIntegration.js';
 
+const privateKey = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
 const validationBody = z
     .object({
-        integrationId: validationParams.shape.providerConfigKey.optional()
+        integrationId: providerConfigKeySchema.optional()
     })
     .strict()
     .or(
@@ -28,7 +30,7 @@ const validationBody = z
                         authType: z.enum(['APP']),
                         appId: z.string().min(1).max(255),
                         appLink: z.string().min(1),
-                        privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY----')
+                        privateKey
                     })
                     .strict(),
                 z
@@ -38,7 +40,7 @@ const validationBody = z
                         clientSecret: z.string().min(1),
                         appId: z.string().min(1).max(255),
                         appLink: z.string().min(1),
-                        privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY----')
+                        privateKey
                     })
                     .strict()
             ],
@@ -80,7 +82,6 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
 
     const body: PatchIntegration['Body'] = valBody.data;
 
-    const copy = { ...integration };
     // Rename
     if ('integrationId' in body && body.integrationId) {
         const exists = await configService.getIdByProviderConfigKey(environment.id, body.integrationId);
@@ -89,29 +90,29 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             return;
         }
 
-        copy.unique_key = body.integrationId;
+        integration.unique_key = body.integrationId;
     }
 
     // Credentials
     if ('authType' in body) {
         if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
-            copy.oauth_client_id = body.clientId;
-            copy.oauth_client_secret = body.clientSecret;
-            copy.oauth_scopes = body.scopes || '';
+            integration.oauth_client_id = body.clientId;
+            integration.oauth_client_secret = body.clientSecret;
+            integration.oauth_scopes = body.scopes || '';
         } else if (body.authType === 'APP') {
-            copy.oauth_client_id = body.appId;
-            copy.oauth_client_secret = body.privateKey;
-            copy.app_link = body.appLink;
+            integration.oauth_client_id = body.appId;
+            integration.oauth_client_secret = body.privateKey;
+            integration.app_link = body.appLink;
         } else if (body.authType === 'CUSTOM') {
-            copy.oauth_client_id = body.clientId;
-            copy.oauth_client_secret = body.clientSecret;
-            copy.oauth_client_id = body.appId;
-            copy.app_link = body.appLink;
-            copy.custom = { private_key: body.privateKey };
+            integration.oauth_client_id = body.clientId;
+            integration.oauth_client_secret = body.clientSecret;
+            integration.oauth_client_id = body.appId;
+            integration.app_link = body.appLink;
+            integration.custom = { private_key: body.privateKey };
         }
     }
 
-    const update = await configService.editProviderConfig(copy);
+    const update = await configService.editProviderConfig(integration);
 
     res.status(200).send({
         data: {

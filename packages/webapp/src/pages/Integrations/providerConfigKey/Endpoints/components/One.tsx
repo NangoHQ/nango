@@ -50,7 +50,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
 
         const activeEndpointIndex = flow.endpoints.findIndex((endpoint) => {
             const obj = Object.entries(endpoint)[0];
-            return obj[0] === flow.endpoint.verb && obj[1] === flow.endpoint.path;
+            return obj[0] === flow.endpoint.method && obj[1] === flow.endpoint.path;
         });
         const outputModelName = Array.isArray(flow.returns) ? flow.returns[activeEndpointIndex] : flow.returns;
         // This code is completely valid but webpack is complaining for some obscure reason
@@ -206,7 +206,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                                             Node
                                         </SelectItem>
                                         <SelectItem value="curl" className="text-s">
-                                            Curl
+                                            curl
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>

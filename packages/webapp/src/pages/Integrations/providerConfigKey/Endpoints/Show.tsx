@@ -40,7 +40,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
                     tmp[groupName] = group;
                 }
 
-                group.push({ ...flow, endpoint: { verb: entries[0] as HTTP_VERB, path: entries[1] } });
+                group.push({ ...flow, endpoint: { method: entries[0] as HTTP_VERB, path: entries[1] } });
             }
         }
 
@@ -57,10 +57,10 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
                     else if (lenA < lenB) return -1;
 
                     // Sort by verb
-                    if (a.endpoint.verb === 'GET' && b.endpoint.verb !== 'GET') return -1;
-                    else if (a.endpoint.verb === 'POST' && b.endpoint.verb === 'PUT') return -1;
-                    else if (a.endpoint.verb === 'PUT' && b.endpoint.verb === 'PATCH') return -1;
-                    else if (a.endpoint.verb === 'PATCH' && b.endpoint.verb === 'DELETE') return -1;
+                    if (a.endpoint.method === 'GET' && b.endpoint.method !== 'GET') return -1;
+                    else if (a.endpoint.method === 'POST' && b.endpoint.method === 'PUT') return -1;
+                    else if (a.endpoint.method === 'PUT' && b.endpoint.method === 'PATCH') return -1;
+                    else if (a.endpoint.method === 'PATCH' && b.endpoint.method === 'DELETE') return -1;
 
                     // Finally sort alphabetically
                     return a.endpoint.path > b.endpoint.path ? 1 : -1;
@@ -76,17 +76,17 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
             return;
         }
 
-        const verb = searchParams.get('verb');
+        const method = searchParams.get('verb');
         const path = searchParams.get('path');
-        if (!verb || !path) {
+        if (!method || !path) {
             return;
         }
 
         for (const flow of data.flows) {
             for (const endpointObj of flow.endpoints) {
                 const endpoint = Object.entries(endpointObj)[0];
-                if (endpoint[0] === verb && endpoint[1] === path) {
-                    return { ...flow, endpoint: { verb: verb as HTTP_VERB, path } };
+                if (endpoint[0] === method && endpoint[1] === path) {
+                    return { ...flow, endpoint: { method: method as HTTP_VERB, path } };
                 }
             }
         }

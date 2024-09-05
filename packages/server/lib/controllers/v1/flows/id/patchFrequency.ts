@@ -8,7 +8,13 @@ import { z } from 'zod';
 
 const orchestrator = getOrchestrator();
 export const validationBody = validationBodyBase.extend({
-    frequency: z.string().regex(/^(?<every>every )?(?<amount>[0-9])?\s?(?<unit>(m|mins?|minutes?|h|hrs?|hours?|d|days?))$/)
+    // To sync with ScriptSettings
+    // Test: https://regex101.com/r/gJBaKt
+    frequency: z
+        .string()
+        .regex(
+            /^(?<every>every )?((?<amount>[0-9]+)?\s?(?<unit>(m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/
+        )
 });
 
 export const patchFlowFrequency = asyncWrapper<PatchFlowFrequency>(async (req, res) => {
