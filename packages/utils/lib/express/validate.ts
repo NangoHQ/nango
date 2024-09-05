@@ -63,7 +63,16 @@ export function requireEmptyBody(req: Request<any>) {
  */
 export function requireEmptyQuery(req: Request<any>, { withEnv }: { withEnv: boolean } = { withEnv: false }) {
     const val = z
-        .object(withEnv ? { env: z.string().max(250).min(1) } : {})
+        .object(
+            withEnv
+                ? {
+                      env: z
+                          .string()
+                          .regex(/^[a-zA-Z0-9_-]+$/)
+                          .max(255)
+                  }
+                : {}
+        )
         .strict()
         .safeParse(req.query);
     if (val.success) {

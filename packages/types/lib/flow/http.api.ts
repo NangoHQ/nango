@@ -28,7 +28,7 @@ export type PostPreBuiltDeploy = Endpoint<{
         scriptName: string;
         type: ScriptTypeLiteral;
     };
-    Error: ApiError<'unknown_provider'> | ApiError<'resource_capped'> | ApiError<'failed_to_deploy', Error[]> | ApiError<'unknown_flow'>;
+    Error: ApiError<'unknown_provider'> | ApiError<'failed_to_deploy', Error[]> | ApiError<'unknown_flow'>;
     Success: {
         data: {
             id: number;

@@ -451,6 +451,11 @@ cal-com-v2:
         base_url: https://api.cal.com/v2
         headers:
             Authorization: Bearer ${apiKey}
+        paginate:
+            type: cursor
+            cursor_name_in_request: cursor
+            cursor_path_in_response: data.data.nextCursor
+            limit_name_in_request: limit
         retry:
             at: 'X-RateLimit-Reset'
         verification:

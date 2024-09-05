@@ -20,7 +20,6 @@ import type {
     ConnectionList,
     CreateConnectionOAuth1,
     CreateConnectionOAuth2,
-    GetRecordsRequestConfig,
     Integration,
     IntegrationWithCreds,
     ListRecordsRequestConfig,
@@ -409,50 +408,6 @@ export class Nango {
      *      GET ENVIRONMENT VARIABLES
      * =======
      */
-
-    /**
-     * @deprecated Use listRecords() instead.
-     */
-    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<(T & { _nango_metadata: RecordMetadata })[]> {
-        const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter } = config;
-        validateSyncRecordConfiguration(config);
-
-        const order = config?.order === 'asc' ? 'asc' : 'desc';
-
-        let sortBy = 'id';
-        switch (config.sortBy) {
-            case 'createdAt':
-                sortBy = 'created_at';
-                break;
-            case 'updatedAt':
-                sortBy = 'updated_at';
-                break;
-        }
-
-        if (includeNangoMetadata) {
-            console.warn(
-                `The includeNangoMetadata option will be deprecated soon and will be removed in a future release. Each record now has a _nango_metadata property which includes the same properties.`
-            );
-        }
-        const includeMetadata = includeNangoMetadata || false;
-
-        const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${
-            sortBy || ''
-        }&include_nango_metadata=${includeMetadata}${filter ? `&filter=${filter}` : ''}`;
-
-        const headers: Record<string, string | number | boolean> = {
-            'Connection-Id': connectionId,
-            'Provider-Config-Key': providerConfigKey
-        };
-
-        const options = {
-            headers: this.enrichHeaders(headers)
-        };
-
-        const response = await this.http.get(url, options);
-
-        return response.data;
-    }
 
     /**
      * Returns the synced data, ordered by modification date ascending

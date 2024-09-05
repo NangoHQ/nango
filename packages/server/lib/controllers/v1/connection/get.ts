@@ -5,18 +5,19 @@ import type { Connection, GetConnection, IntegrationConfig } from '@nangohq/type
 import { connectionService, configService, errorNotificationService } from '@nangohq/shared';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
+import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 
 const queryStringValidation = z
     .object({
-        provider_config_key: z.string().min(1),
+        provider_config_key: providerConfigKeySchema,
         force_refresh: z.union([z.literal('true'), z.literal('false')]).optional(),
-        env: z.string().max(250).min(1)
+        env: envSchema
     })
     .strict();
 
 const paramValidation = z
     .object({
-        connectionId: z.string().min(1)
+        connectionId: connectionIdSchema
     })
     .strict();
 
@@ -28,7 +29,6 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     }
 
     const queryParamValues = queryStringValidation.safeParse(req.query);
-
     if (!queryParamValues.success) {
         res.status(400).send({
             error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) }
@@ -129,7 +129,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
 
     if (instantRefresh) {
         const logCtx = await logContextGetter.create(
-            { operation: { type: 'auth', action: 'refresh_token' }, message: 'Get connection web' },
+            { operation: { type: 'auth', action: 'refresh_token' } },
             {
                 account,
                 environment,

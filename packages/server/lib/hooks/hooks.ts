@@ -25,7 +25,7 @@ import type {
     RecentlyFailedConnection
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
-import { getOrchestrator, getOrchestratorClient } from '../utils/utils.js';
+import { getOrchestrator } from '../utils/utils.js';
 import type { TbaCredentials, IntegrationConfig, Template as ProviderTemplate, DBEnvironment } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
@@ -52,17 +52,15 @@ export const connectionCreationStartCapCheck = async ({
 
     const scriptConfigs = await getSyncConfigsWithConnections(providerConfigKey, environmentId);
 
-    if (scriptConfigs.length > 0) {
-        for (const script of scriptConfigs) {
-            const { connections } = script;
+    for (const script of scriptConfigs) {
+        const { connections } = script;
 
-            if (connections && connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
-                logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-                const analyticsType =
-                    creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
-                void analytics.trackByEnvironmentId(analyticsType, environmentId);
-                return true;
-            }
+        if (connections && connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+            logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
+            const analyticsType =
+                creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
+            void analytics.trackByEnvironmentId(analyticsType, environmentId);
+            return true;
         }
     }
 
@@ -140,9 +138,16 @@ export const connectionRefreshSuccess = async ({
         connection_id: connection.id
     });
 
-    const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
+    const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
 
-    await slackNotificationService.removeFailingConnection(connection, connection.connection_id, 'auth', null, environment.id, config.provider);
+    await slackNotificationService.removeFailingConnection({
+        connection,
+        name: connection.connection_id,
+        type: 'auth',
+        originalActivityLogId: null,
+        environment_id: environment.id,
+        provider: config.provider
+    });
 };
 
 export const connectionRefreshFailed = async ({
@@ -183,7 +188,7 @@ export const connectionRefreshFailed = async ({
         logCtx
     });
 
-    const slackNotificationService = new SlackService({ orchestratorClient: getOrchestratorClient(), logContextGetter });
+    const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
 
     await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
 };

@@ -36,7 +36,7 @@ describe('mapping', () => {
         const today = new Date();
         // Log to automatically create an index
         const id = nanoid();
-        await createOperation(getFormattedOperation({ id, message: 'hello', operation: { type: 'action' }, createdAt: today.toISOString() }));
+        await createOperation(getFormattedOperation({ id, operation: { type: 'action', action: 'run' }, createdAt: today.toISOString() }));
         await update({ id, data: { state: 'failed', createdAt: today.toISOString() } });
 
         // Should have created a today index
@@ -56,7 +56,7 @@ describe('mapping', () => {
 
         // Log to automatically create an index
         const id = nanoid();
-        await createOperation(getFormattedOperation({ id, message: 'hello', operation: { type: 'action' }, createdAt: yesterday.toISOString() }));
+        await createOperation(getFormattedOperation({ id, operation: { type: 'action', action: 'run' }, createdAt: yesterday.toISOString() }));
         await update({ id, data: { state: 'failed', createdAt: yesterday.toISOString() } });
 
         // Should have created a yesterday index

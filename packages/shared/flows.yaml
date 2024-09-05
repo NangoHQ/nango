@@ -607,6 +607,169 @@ integrations:
                 id: string
             BamboohrResponseStatus:
                 status: string
+    cal-com-v2:
+        syncs:
+            events:
+                sync_type: full
+                track_deletes: true
+                runs: every hour
+                endpoint: GET /events
+                output: Event
+                description: Retrieve all upcoming events per a user
+            event-types:
+                sync_type: full
+                track_deletes: true
+                runs: every hour
+                endpoint: GET /event/types
+                output: EventType
+                description: Retrieve all event types per a user
+        models:
+            EventType:
+                id: string
+                teamId: null | number
+                schedulingType: null | string
+                userId: number
+                metadata:
+                    __string: any
+                description: string | null
+                hidden: boolean
+                slug: string
+                length: number
+                title: string
+                requiresConfirmation: boolean
+                position: number
+                offsetStart: number
+                profileId: string | null
+                eventName: string | null
+                parentId: number | null
+                timeZone: string | null
+                periodType: string
+                periodStartDate: string | null
+                periodEndDate: string | null
+                periodDays: number | null
+                periodCountCalendarDays: number | null
+                lockTimeZoneToggleOnBookingPage: boolean
+                requiresBookerEmailVerification: boolean
+                disableGuests: boolean
+                hideCalendarNotes: boolean
+                minimumBookingNotice: number
+                beforeEventBuffer: number
+                afterEventBuffer: number
+                seatsPerTimeSlot: number | null
+                onlyShowFirstAvailableSlot: boolean
+                seatsShowAttendees: boolean
+                seatsShowAvailabilityCount: boolean
+                scheduleId: number | null
+                price: number
+                currency: string
+                slotInterval: number | null,
+                successRedirectUrl: string | null
+                isInstantEvent: boolean
+                aiPhoneCallConfig: string | null
+                assignAllTeamMembers: boolean
+                recurringEvent: boolean | null
+                locations:
+                    - type: string
+                bookingFields: string | null
+                useEventTypeDestinationCalendarEmail: boolean
+                secondaryEmailId: string | null
+                bookingLimits: boolean | null
+                durationLimits: boolean | null
+                hashedLink: string | null
+                children:
+                    - __string: any
+                hosts:
+                    - __string: any
+                userIds: number[]
+            User:
+                username: string
+                name: string
+                weekStart: string
+                organizationId: number
+                avatarUrl: string
+                profile:
+                    username: string
+                    id: number
+                    userId: number
+                    uid: string
+                    name: string
+                    organizationId: number
+                    organization:
+                        id: number
+                        slug: string
+                        name: string
+                        metadata:
+                            __string: any
+                    upId: string
+                    image: string
+                    brandColor: string
+                    darkBrandColor: string
+                    theme: string
+                    bookerLayouts:
+                        __string: any
+                bookerUrl: string
+            Attendee:
+                id: number
+                email: string
+                name: string
+                timeZone: string
+                locale: string
+                bookingId: number
+            Event:
+                id: string
+                title: string
+                userPrimaryEmail: string
+                description: string
+                customInputs:
+                    __string: any
+                startTime: string
+                endTime: string
+                attendees: Attendee[]
+                metadata:
+                    __string: any
+                uid: string
+                recurringEventId: string
+                location: string
+                eventType:
+                    slug: string
+                    id: number
+                    eventName: string
+                    price: number
+                    recurringEvent:
+                        __string: any
+                    currency: string
+                    metadata:
+                        __string: any
+                    seatsShowAttendees:
+                        __string: any
+                    seatsShowAvailabilityCount:
+                        __string: any
+                    team:
+                        __string: any
+                status:
+                    __string: any
+                paid: boolean
+                payment:
+                    - __string: any
+                references:
+                    - id: number
+                      type: string
+                      uid: string
+                      meetingId: string
+                      thirdPartyRecurringEventId: string
+                      meetingPassword: string
+                      meetingUrl: string
+                      bookingId: number
+                      externalCalendarId: string
+                      deleted:
+                          __string: string
+                      credentialId: number
+                isRecorded: boolean
+                seatsReferences:
+                    - __string: any
+                user: User
+                rescheduled:
+                    __string: any
     calendly:
         syncs:
             events:

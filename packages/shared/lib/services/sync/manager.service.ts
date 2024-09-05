@@ -229,7 +229,7 @@ export class SyncManagerService {
         const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
 
         const logCtx = await logContextGetter.create(
-            { operation: { type: 'sync', action: syncCommandToOperation[command] }, message: '' },
+            { operation: { type: 'sync', action: syncCommandToOperation[command] } },
             { account, environment, integration: { id: provider!.id!, name: provider!.unique_key, provider: provider!.provider } }
         );
 

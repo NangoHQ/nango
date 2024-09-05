@@ -1,19 +1,20 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { ApiError, UpdateMetadata, MetadataBody } from '@nangohq/types';
 import { connectionService } from '@nangohq/shared';
 import type { Connection } from '@nangohq/shared';
+import { connectionIdSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 
 const validation = z
     .object({
-        connection_id: z.union([z.string().min(1), z.array(z.string().min(1))]),
-        provider_config_key: z.string().min(1),
+        connection_id: z.union([connectionIdSchema, z.array(connectionIdSchema)]),
+        provider_config_key: providerConfigKeySchema,
         metadata: z.record(z.unknown())
     })
     .strict();
 
-export const updateMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
+export const patchPublicMetadata = asyncWrapper<UpdateMetadata>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

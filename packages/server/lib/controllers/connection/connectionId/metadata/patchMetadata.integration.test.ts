@@ -1,13 +1,13 @@
-import { multipleMigrations } from '@nangohq/database';
 import { connectionService, seeders } from '@nangohq/shared';
+import { multipleMigrations } from '@nangohq/database';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runServer, shouldBeProtected } from '../../utils/tests.js';
+import { runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
 const endpoint = '/connection/metadata';
 
-describe(`POST ${endpoint}`, () => {
+describe(`PATCH ${endpoint}`, () => {
     beforeAll(async () => {
         await multipleMigrations();
 
@@ -19,7 +19,7 @@ describe(`POST ${endpoint}`, () => {
 
     it('should be protected', async () => {
         const res = await api.fetch(endpoint, {
-            method: 'POST',
+            method: 'PATCH',
             body: {
                 connection_id: '1',
                 provider_config_key: 'test',
@@ -30,11 +30,10 @@ describe(`POST ${endpoint}`, () => {
         shouldBeProtected(res);
     });
 
-    it('should validate body with an empty connection_id', async () => {
-        const env = await seeders.createEnvironmentSeed();
-
+    it('should validate body with an empty connection id', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
-            method: 'POST',
+            method: 'PATCH',
             token: env.secret_key,
             body: {
                 connection_id: '',
@@ -48,8 +47,8 @@ describe(`POST ${endpoint}`, () => {
                 code: 'invalid_body',
                 errors: [
                     {
-                        code: 'too_small',
-                        message: 'String must contain at least 1 character(s)',
+                        code: 'invalid_string',
+                        message: 'Invalid',
                         path: ['connection_id']
                     }
                 ]
@@ -62,7 +61,7 @@ describe(`POST ${endpoint}`, () => {
         const env = await seeders.createEnvironmentSeed();
 
         const res = await api.fetch(endpoint, {
-            method: 'POST',
+            method: 'PATCH',
             token: env.secret_key,
             body: {
                 connection_id: 'abc',
@@ -76,8 +75,8 @@ describe(`POST ${endpoint}`, () => {
                 code: 'invalid_body',
                 errors: [
                     {
-                        code: 'too_small',
-                        message: 'String must contain at least 1 character(s)',
+                        code: 'invalid_string',
+                        message: 'Invalid',
                         path: ['provider_config_key']
                     }
                 ]
@@ -93,7 +92,7 @@ describe(`POST ${endpoint}`, () => {
         const provider_config_key = 'test';
 
         const res = await api.fetch(endpoint, {
-            method: 'POST',
+            method: 'PATCH',
             token: env.secret_key,
             body: {
                 connection_id,
@@ -118,7 +117,7 @@ describe(`POST ${endpoint}`, () => {
         const provider_config_key = 'test';
 
         const res = await api.fetch(endpoint, {
-            method: 'POST',
+            method: 'PATCH',
             token: env.secret_key,
             body: {
                 connection_id,
@@ -136,10 +135,11 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toBe(404);
     });
 
-    it('Should replace existing metadata, overwriting anything existing', async () => {
+    it('Should update metadata and not overwrite', async () => {
         const env = await seeders.createEnvironmentSeed();
-        await seeders.createConfigSeed(env, 'test-replace', 'google');
-        const connections = await seeders.createConnectionSeed(env, 'test-replace');
+        const unique_key = 'test-update';
+        await seeders.createConfigSeed(env, unique_key, 'google');
+        const connections = await seeders.createConnectionSeed(env, unique_key);
 
         const { connection_id, provider_config_key } = connections;
 
@@ -149,7 +149,7 @@ describe(`POST ${endpoint}`, () => {
         };
 
         const res = await api.fetch(endpoint, {
-            method: 'POST',
+            method: 'PATCH',
             token: env.secret_key,
             body: {
                 connection_id,
@@ -158,7 +158,7 @@ describe(`POST ${endpoint}`, () => {
             }
         });
 
-        expect(res.res.status).toBe(201);
+        expect(res.res.status).toBe(200);
         expect(res.json).toEqual({
             connection_id,
             provider_config_key,
@@ -174,7 +174,7 @@ describe(`POST ${endpoint}`, () => {
         };
 
         const resTwo = await api.fetch(endpoint, {
-            method: 'POST',
+            method: 'PATCH',
             token: env.secret_key,
             body: {
                 connection_id,
@@ -183,7 +183,7 @@ describe(`POST ${endpoint}`, () => {
             }
         });
 
-        expect(resTwo.res.status).toBe(201);
+        expect(resTwo.res.status).toBe(200);
         expect(resTwo.json).toEqual({
             connection_id,
             provider_config_key,
@@ -191,6 +191,6 @@ describe(`POST ${endpoint}`, () => {
         });
 
         const { response: connectionTwo } = await connectionService.getConnection(connection_id, provider_config_key, env.id);
-        expect(connectionTwo?.metadata).toEqual(newMetadata);
+        expect(connectionTwo?.metadata).toEqual({ ...initialMetadata, ...newMetadata });
     });
 });
