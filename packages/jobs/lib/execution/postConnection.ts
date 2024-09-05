@@ -27,6 +27,12 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
 
+        await logCtx.info(`Starting post connection script '${task.postConnectionName}'`, {
+            postConnection: task.postConnectionName,
+            connection: task.connection.connection_id,
+            integration: task.connection.provider_config_key
+        });
+
         const syncConfig: SyncConfig = {
             sync_name: task.postConnectionName,
             file_location: task.fileLocation,

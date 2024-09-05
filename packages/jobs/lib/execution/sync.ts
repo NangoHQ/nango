@@ -96,16 +96,16 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             throw new Error(`Failed to create sync job for sync: ${task.syncId}. TaskId: ${task.id}`);
         }
 
-        if (task.debug) {
-            await logCtx.info('Starting sync', {
-                syncType: syncType,
-                syncName: task.syncName,
-                syncId: task.syncId,
-                syncJobId: syncJob.id,
-                attempt: task.attempt,
-                executionId: task.id
-            });
-        }
+        await logCtx.info(`Starting sync '${task.syncName}'`, {
+            syncName: task.syncName,
+            syncType,
+            connection: task.connection.connection_id,
+            integration: task.connection.provider_config_key,
+            syncId: task.syncId,
+            syncJobId: syncJob.id,
+            attempt: task.attempt,
+            executionId: task.id
+        });
 
         const nangoProps: NangoProps = {
             scriptType: 'sync',
@@ -164,6 +164,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             environment,
             runTime: 0,
             models: syncConfig?.models || [],
+            version: syncConfig?.version,
             error
         });
         return Err(error);
@@ -200,6 +201,12 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             environment_id: nangoProps.environmentId,
             provider_config_key: nangoProps.providerConfigKey
         };
+
+        const syncPayload = {
+            scriptVersion: nangoProps.syncConfig.version || 'unknown',
+            records: {} as Record<string, SyncResult>,
+            runTimeSecs: runTime
+        };
         for (const model of nangoProps.syncConfig.models) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
@@ -234,6 +241,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                     activityLogId: nangoProps.activityLogId!,
                     models: [model],
                     runTime,
+                    version: nangoProps.syncConfig.version,
                     error: new NangoError('sync_job_update_failure', { syncJobId: nangoProps.syncJobId, model })
                 });
                 return;
@@ -257,20 +265,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 deleted = (result?.['deleted'] as unknown as number) ?? 0;
             }
 
-            const successMessage =
-                `The ${nangoProps.syncConfig.sync_type} sync "${nangoProps.syncConfig.sync_name}" has been completed for ${model} model.` +
-                (nangoProps.syncConfig.version ? ` The version integration script version ran was ${nangoProps.syncConfig.version}.` : '');
-
-            const addedMessage = added > 0 ? `${added} added record${added === 1 ? '' : 's'}` : '';
-            const updatedMessage = updated > 0 ? `${updated} updated record${updated === 1 ? '' : 's'}` : '';
-            const deletedMessage = deleted > 0 ? `${deleted} deleted record${deleted === 1 ? '' : 's'}` : '';
-
-            const resultMessageParts = [addedMessage, updatedMessage, deletedMessage].filter(Boolean);
-            const resultMessage = resultMessageParts.length
-                ? `The result was ${resultMessageParts.join(', ')}.`
-                : 'The external API returned did not return any new or updated data so nothing was inserted or updated.';
-
-            const fullMessage = `${successMessage} ${resultMessage}`;
+            syncPayload.records[model] = { added, updated, deleted };
 
             const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
             if (webhookSettings) {
@@ -295,11 +290,9 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 }
             }
 
-            await logCtx.info(fullMessage);
-
             await telemetry.log(
                 LogTypes.SYNC_SUCCESS,
-                fullMessage,
+                `${nangoProps.syncConfig.sync_type} sync '${nangoProps.syncConfig.sync_name}' for model ${model} was completed successfully`,
                 LogActionEnum.SYNC,
                 {
                     model,
@@ -320,6 +313,15 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 `syncId:${nangoProps.syncId}`
             );
         }
+
+        await logCtx.enrichOperation({
+            meta: syncPayload
+        });
+
+        await logCtx.info(
+            `${nangoProps.syncConfig.sync_type?.replace(/^./, (c) => c.toUpperCase())} sync '${nangoProps.syncConfig.sync_name}' completed successfully`,
+            syncPayload
+        );
 
         await updateSyncJobStatus(nangoProps.syncJobId, SyncStatus.SUCCESS);
 
@@ -385,6 +387,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
             failureSource: ErrorSourceEnum.CUSTOMER,
             isCancel: false,
+            version: nangoProps.syncConfig.version,
             error: new NangoError('sync_script_failure', { error: err instanceof Error ? err.message : err })
         });
     }
@@ -418,6 +421,7 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         failureSource: ErrorSourceEnum.CUSTOMER,
         isCancel: false,
+        version: nangoProps.syncConfig.version,
         error
     });
 }
@@ -476,6 +480,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             isCancel,
             failureSource: ErrorSourceEnum.CUSTOMER,
             runTime: 0,
+            version: syncConfig.version,
             error: new NangoError('sync_script_failure', task.reason)
         });
         const setSuccess = await orchestratorClient.succeed({ taskId: task.id, output: {} });
@@ -507,6 +512,7 @@ async function onFailure({
     debug,
     models,
     runTime,
+    version,
     isCancel,
     failureSource,
     error
@@ -524,6 +530,7 @@ async function onFailure({
     debug: boolean;
     models: string[];
     runTime: number;
+    version: string | undefined;
     isCancel?: boolean;
     failureSource?: ErrorSourceEnum;
     error: NangoError;
@@ -589,7 +596,12 @@ async function onFailure({
 
     await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
 
-    await logCtx.error(error.message, { error });
+    await logCtx.enrichOperation({
+        error,
+        meta: {
+            scriptVersion: version
+        }
+    });
     if (isCancel) {
         await logCtx.cancel();
     } else {

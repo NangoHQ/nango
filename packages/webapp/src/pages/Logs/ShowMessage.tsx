@@ -24,9 +24,9 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
             pl.response = message.response;
         }
         if (message.error) {
-            pl.error = message.error.message;
-            if (message.error.name === 'NangoError') {
-                pl.errorPayload = message.error.payload;
+            pl.error = { message: message.error.message };
+            if (message.error.payload) {
+                pl.error.payload = message.error.payload;
             }
         }
         return pl;
