@@ -30,7 +30,7 @@ export default async function runAction(nango: NangoAction, input: NetsuitePayme
         body.status = { id: input.status };
     }
     if (input.applyTo) {
-        body.apply = { items: input.applyTo.map((id) => ({ doc: id })) };
+        body.apply = { items: input.applyTo.map((id) => ({ doc: { id } })) };
     }
     if (input.description) {
         body.memo = input.description;

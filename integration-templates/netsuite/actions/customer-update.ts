@@ -50,7 +50,7 @@ export default async function runAction(nango: NangoAction, input: NetsuiteCusto
         body.defaultTaxReg = input.taxNumber;
     }
     if (Object.keys(address).length > 0) {
-        body.addressBook = { items: [address] };
+        body.addressBook = { items: [{ addressBookAddress: address }] };
     }
 
     await nango.patch({

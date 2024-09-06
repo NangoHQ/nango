@@ -14,9 +14,19 @@ import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
 import { stringifyAndTruncateLog } from './utils.js';
-import type { DBTeam } from '@nangohq/types';
+import type { DBTeam, MessageRowInsert } from '@nangohq/types';
 
 const logger = getLogger('SDK');
+
+export const oldLevelToNewLevel = {
+    debug: 'debug',
+    info: 'info',
+    warn: 'warn',
+    error: 'error',
+    verbose: 'debug',
+    silly: 'debug',
+    http: 'info'
+} as const;
 
 /*
  *
@@ -504,7 +514,7 @@ export class NangoAction {
                     if (log.level === 'debug') {
                         return;
                     }
-                    await this.sendLogToPersist(log.message, { level: log.level, timestamp: new Date(log.createdAt).getTime() });
+                    await this.sendLogToPersist(log);
                 })
             );
 
@@ -676,9 +686,20 @@ export class NangoAction {
             return;
         }
 
-        const content = stringifyAndTruncateLog(args, 99_000);
+        const [message, payload] = args;
 
-        await this.sendLogToPersist(content, { level, timestamp: Date.now() });
+        // arrays are not supported in the log meta, so we convert them to objects
+        const meta = Array.isArray(payload) ? Object.fromEntries(payload.map((e, i) => [i, e])) : payload || null;
+
+        await this.sendLogToPersist({
+            type: 'log',
+            level: oldLevelToNewLevel[level],
+            source: 'user',
+            message: stringifyAndTruncateLog(message, 99_000),
+            meta,
+            createdAt: new Date().toISOString(),
+            environmentId: this.environmentId
+        });
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
@@ -766,7 +787,7 @@ export class NangoAction {
         }
     }
 
-    private async sendLogToPersist(content: string, options: { level: LogLevel; timestamp: number }) {
+    private async sendLogToPersist(log: MessageRowInsert) {
         let response: AxiosResponse;
         try {
             response = await retryWithBackoff(
@@ -775,13 +796,12 @@ export class NangoAction {
                         method: 'POST',
                         url: `/environment/${this.environmentId}/log`,
                         headers: {
-                            Authorization: `Bearer ${this.nango.secretKey}`
+                            Authorization: `Bearer ${this.nango.secretKey}`,
+                            'Content-Type': 'application/json'
                         },
                         data: {
                             activityLogId: this.activityLogId,
-                            level: options.level ?? 'info',
-                            timestamp: options.timestamp,
-                            msg: content
+                            log
                         }
                     });
                 },
@@ -928,7 +948,8 @@ export class NangoSync extends NangoAction {
                         `Records invalid format. Please make sure you are sending an array of objects that each contain an 'id' property with type string`
                     );
                 } else {
-                    throw new Error(`Failed to save records: ${JSON.stringify(response.data)}`);
+                    const message = 'error' in response.data && 'message' in response.data.error ? response.data.error.message : JSON.stringify(response.data);
+                    throw new Error(message);
                 }
             }
         }
@@ -988,7 +1009,8 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot delete records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
+                const message = 'error' in response.data && 'message' in response.data.error ? response.data.error.message : JSON.stringify(response.data);
+                throw new Error(message);
             }
         }
         return true;
@@ -1047,7 +1069,8 @@ export class NangoSync extends NangoAction {
                     `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
                     this.stringify()
                 );
-                throw new Error(`cannot update records for sync '${this.syncId}': ${JSON.stringify(response.data)}`);
+                const message = 'error' in response.data && 'message' in response.data.error ? response.data.error.message : JSON.stringify(response.data);
+                throw new Error(message);
             }
         }
         return true;

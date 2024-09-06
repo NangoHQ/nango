@@ -744,6 +744,18 @@ coros-sandbox:
     proxy:
         base_url: https://opentest.coros.com
     docs: https://docs.nango.dev/integrations/all/coros
+coupa-compass:
+    categories:
+        - payment
+        - invoicing
+    auth_mode: OAUTH2_CC
+    scope_separator: ' '
+    token_url: https://${connectionConfig.instanceDomain}/oauth2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.instanceDomain}
+    docs: https://docs.nango.dev/integrations/all/coupa-compass
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     categories:
@@ -3557,6 +3569,13 @@ zoho-mail:
 zoho-bigin:
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-bigin
+zoho-people:
+    categories:
+        - hr
+    alias: zoho
+    proxy:
+        base_url: https://people.zoho.com
+    docs: https://docs.nango.dev/integrations/all/zoho-people
 zoom:
     categories:
         - video
