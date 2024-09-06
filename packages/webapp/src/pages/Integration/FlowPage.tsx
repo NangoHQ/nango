@@ -200,6 +200,13 @@ export default function FlowPage(props: FlowPageProps) {
         let unit = '';
 
         switch (frequencyUnit) {
+            case 'seconds':
+            case 'second':
+            case 'secs':
+            case 'sec':
+            case 's':
+                unit = 'seconds';
+                break;
             case 'minutes':
             case 'minute':
             case 'min':
@@ -223,16 +230,16 @@ export default function FlowPage(props: FlowPageProps) {
 
         setModalConfirmationButton('primary');
 
-        if (unit === 'minutes' && parseInt(frequencyWithoutEvery) < 5) {
+        if (unit === 'seconds' && parseInt(frequencyWithoutEvery) < 30) {
             setModalTitle('Invalid frequency');
-            setModalContent('The minimum frequency is 5 minutes.');
+            setModalContent('The minimum frequency is 30 seconds.');
             setModalVisible(true);
             return;
         }
 
         if (unit === '') {
             setModalTitle('Invalid frequency unit');
-            setModalContent(`The unit "${frequencyUnit}" is not a valid time unit. Valid units are minutes, hours, and days.`);
+            setModalContent(`The unit "${frequencyUnit}" is not a valid time unit. Valid units are seconds, minutes, hours, and days.`);
             setModalVisible(true);
             return;
         }
