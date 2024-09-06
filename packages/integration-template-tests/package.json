@@ -5,7 +5,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "generate": "tsx tests/generate-tests.ts",
+        "generate": "tsx lib/generate-tests.ts",
         "test": "vitest run"
     },
     "keywords": [],
