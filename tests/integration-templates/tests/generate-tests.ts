@@ -21,48 +21,40 @@ for (const integration in integrations) {
 }
 
 function generateSyncTest(integration: string, syncName: string, modelName: string) {
-    const data: Record<string, string | Record<string, string | boolean>> = {
+    const data: {
+        integration: string;
+        syncName: string;
+        modelName: string;
+        paginate: Record<string, boolean>;
+        [key: string]: any;
+    } = {
         integration,
         syncName,
-        modelName
+        modelName,
+        paginate: {}
     };
 
-    if (fs.existsSync(path.resolve(__dirname, `../nango-integrations/${integration}/mocks/${syncName}/batchDelete.json`))) {
+    const basePath = path.resolve(__dirname, `../nango-integrations/${integration}/mocks`);
+
+    if (fs.existsSync(path.join(basePath, `${syncName}/batchDelete.json`))) {
         data['batchDelete'] = 'batchDelete';
     }
 
-    if (fs.existsSync(path.resolve(__dirname, `../nango-integrations/${integration}/mocks/${syncName}/batchSave.json`))) {
+    if (fs.existsSync(path.join(basePath, `${syncName}/batchSave.json`))) {
         data['batchSave'] = 'batchSave';
     }
 
-    if (fs.existsSync(path.resolve(__dirname, `../nango-integrations/${integration}/mocks/paginate/get/${syncName}`))) {
-        data['paginate'] = {};
-        data['paginate']['get'] = true;
-    }
+    const paginateMethods = ['get', 'post', 'delete', 'put', 'patch'];
+    data['paginate'] = {};
 
-    if (fs.existsSync(path.resolve(__dirname, `../nango-integrations/${integration}/mocks/paginate/post/${syncName}`))) {
-        data['paginate'] = {};
-        data['paginate']['post'] = true;
-    }
+    paginateMethods.forEach((method) => {
+        if (fs.existsSync(path.join(basePath, `paginate/${method}/${syncName}`))) {
+            data['paginate'][method] = true;
+        }
+    });
 
-    if (fs.existsSync(path.resolve(__dirname, `../nango-integrations/${integration}/mocks/paginate/delete/${syncName}`))) {
-        data['paginate'] = {};
-        data['paginate']['delete'] = true;
-    }
-
-    if (fs.existsSync(path.resolve(__dirname, `../nango-integrations/${integration}/mocks/paginate/put/${syncName}`))) {
-        data['paginate'] = {};
-        data['paginate']['put'] = true;
-    }
-
-    if (fs.existsSync(path.resolve(__dirname, `../nango-integrations/${integration}/mocks/paginate/patch/${syncName}`))) {
-        data['paginate'] = {};
-        data['paginate']['patch'] = true;
-    }
-
-    if (fs.existsSync(path.resolve(__dirname, `../nango-integrations/${integration}/mocks/nango/getConnection.json`))) {
-        data['nango'] = {};
-        data['nango']['getConnection'] = 'getConnection';
+    if (fs.existsSync(path.join(basePath, 'nango/getConnection.json'))) {
+        data['nango'] = { getConnection: 'getConnection' };
     }
 
     console.log(`Data: ${JSON.stringify(data, null, 2)}`);
