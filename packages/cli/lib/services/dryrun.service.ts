@@ -1,8 +1,8 @@
 import promptly from 'promptly';
 import chalk from 'chalk';
 
-import type { NangoConnection, NangoProps, RunnerOutput } from '@nangohq/shared';
-import type { Metadata, ScriptFileType } from '@nangohq/types';
+import type { NangoProps, RunnerOutput } from '@nangohq/shared';
+import type { Metadata, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
 import { cloudHost, stagingHost, NangoError, localFileService, validateData, NangoSync, formatScriptError, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
@@ -97,52 +97,64 @@ export class DryRunService {
             return;
         }
 
-        let providerConfigKey = options.optionalProviderConfigKey;
+        if (options.optionalProviderConfigKey && !response.parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
+            console.log(chalk.red(`Integration "${options.optionalProviderConfigKey}" does not exists`));
+            return;
+        }
+
+        let providerConfigKey: string | undefined;
         let isPostConnectionScript = false;
 
-        if (!providerConfigKey) {
-            providerConfigKey = response.parsed.integrations.find((integration) =>
-                [...integration.syncs, ...integration.actions].find((sync) => sync.name === syncName)
-            )?.providerConfigKey;
-
-            if (!providerConfigKey) {
-                providerConfigKey =
-                    response.parsed.integrations.find((integration) => {
-                        if (integration.postConnectionScripts && integration.postConnectionScripts.length > 0) {
-                            return integration.postConnectionScripts.some((postConnectionScript) => postConnectionScript === syncName);
-                        } else {
-                            return false;
-                        }
-                    })?.providerConfigKey || '';
-                isPostConnectionScript = true;
+        // Find the appropriate script to run
+        let syncInfo: ParsedNangoSync | ParsedNangoAction | undefined;
+        for (const integration of response.parsed.integrations) {
+            if (options.optionalProviderConfigKey && integration.providerConfigKey !== options.optionalProviderConfigKey) {
+                continue;
             }
 
-            if (!providerConfigKey) {
-                console.log(
-                    chalk.red(
-                        `Provider config key not found, please check that the provider exists for this sync name: ${syncName} by going to the Nango dashboard. (and pass it in as --integration-id)`
-                    )
-                );
-                return;
+            // Priority for syncs and actions
+            for (const script of [...integration.syncs, ...integration.actions]) {
+                if (script.name !== syncName) {
+                    continue;
+                }
+                if (syncInfo) {
+                    console.log(chalk.red(`Multiple integrations contain a script named "${syncName}". Please use "--integration-id"`));
+                    return;
+                }
+                syncInfo = script;
+                providerConfigKey = integration.providerConfigKey;
+            }
+
+            // If nothing that could still be a post connection script
+            if (!syncInfo) {
+                for (const script of integration.postConnectionScripts) {
+                    if (script !== syncName) {
+                        continue;
+                    }
+                    if (isPostConnectionScript) {
+                        console.log(chalk.red(`Multiple integrations contain a post connection script named "${syncName}". Please use "--integration-id"`));
+                        return;
+                    }
+                    isPostConnectionScript = true;
+                    providerConfigKey = integration.providerConfigKey;
+                }
             }
         }
 
-        const foundConfig = response.parsed.integrations.find((integration) => {
-            const syncsArray = integration.syncs || [];
-            const actionsArray = integration.actions || [];
-
-            return [...syncsArray, ...actionsArray].some((sync) => sync.name === syncName);
-        });
-
-        const syncInfo = foundConfig
-            ? (foundConfig.syncs || []).find((sync) => sync.name === syncName) || (foundConfig.actions || []).find((action) => action.name === syncName)
-            : null;
-
-        if (debug) {
-            printDebug(`Provider config key found to be ${providerConfigKey}`);
+        if ((!syncInfo && !isPostConnectionScript) || !providerConfigKey) {
+            console.log(
+                chalk.red(
+                    `No script matched "${syncName}"${options.optionalProviderConfigKey ? ` for integration "${options.optionalProviderConfigKey}"` : ''}`
+                )
+            );
+            return;
         }
 
-        const nangoConnection = (await getConnection(
+        if (debug && syncInfo) {
+            printDebug(`Found integration ${providerConfigKey}, ${syncInfo.type} ${syncInfo.name} `);
+        }
+
+        const nangoConnection = await getConnection(
             providerConfigKey,
             connectionId,
             {
@@ -150,8 +162,7 @@ export class DryRunService {
                 'Nango-Is-Dry-Run': true
             },
             debug
-        )) as unknown as NangoConnection;
-
+        );
         if (!nangoConnection) {
             console.log(chalk.red('Connection not found'));
             return;
