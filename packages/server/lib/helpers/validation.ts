@@ -14,7 +14,7 @@ export const scriptNameSchema = z
     .max(255);
 export const connectionIdSchema = z
     .string()
-    .regex(/^[a-zA-Z0-9,.;:=+@${}"'\\/_-]+$/) // For legacy reason (some people are stringifying json and passing email)
+    .regex(/^[a-zA-Z0-9,.;:=+~[\]@${}"'\\/_ -]+$/) // For legacy reason (some people are stringifying json and passing email)
     .max(255);
 export const envSchema = z
     .string()

@@ -48,6 +48,12 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         if (operation.response) {
             pl.response = operation.response;
         }
+        if (operation.error) {
+            pl.error = { message: operation.error.message };
+            if (operation.error.payload) {
+                pl.error.payload = operation.error.payload;
+            }
+        }
         return pl;
     }, [operation?.meta, operation?.request, operation?.response]);
 

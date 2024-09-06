@@ -110,13 +110,6 @@ export class Orchestrator {
         });
         const startTime = Date.now();
         try {
-            await logCtx.info(`Starting action '${actionName}'`, {
-                input,
-                action: actionName,
-                connection: connection.connection_id,
-                integration: connection.provider_config_key
-            });
-
             let parsedInput = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
@@ -188,13 +181,14 @@ export class Orchestrator {
                 formattedError = new NangoError('action_failure', { error: errorToObject(err) });
             }
 
-            const content = `The action failed`;
+            const content = `Action '${actionName}' failed`;
             await logCtx.error(content, {
                 error: formattedError,
                 action: actionName,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
             });
+            await logCtx.enrichOperation({ error: formattedError });
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -278,13 +272,6 @@ export class Orchestrator {
         );
 
         try {
-            await logCtx.info('Starting webhook workflow', {
-                input,
-                webhook: webhookName,
-                connection: connection.connection_id,
-                integration: connection.provider_config_key
-            });
-
             let parsedInput = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
@@ -347,6 +334,7 @@ export class Orchestrator {
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
             });
+            await logCtx.enrichOperation({ error: formattedError });
             await logCtx.failed();
 
             errorManager.report(err, {
@@ -396,12 +384,6 @@ export class Orchestrator {
         });
         const startTime = Date.now();
         try {
-            await logCtx.info(`Starting post connection script`, {
-                postConnection: name,
-                connection: connection.connection_id,
-                integration: connection.provider_config_key
-            });
-
             const groupKey: string = 'post-connection-script';
             const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
@@ -472,6 +454,7 @@ export class Orchestrator {
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
             });
+            await logCtx.enrichOperation({ error: formattedError });
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -770,7 +753,7 @@ export class Orchestrator {
             return Err(error);
         }
 
-        if (intervalMs < ms('5m')) {
+        if (intervalMs < ms('30s')) {
             const error = new NangoError('sync_interval_too_short');
             return Err(error);
         }

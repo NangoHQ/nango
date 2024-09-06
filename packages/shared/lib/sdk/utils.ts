@@ -1,17 +1,16 @@
 import safeStringify from 'fast-safe-stringify';
 
-export function stringifyAndTruncateLog(args: any[], maxSize: number = 99_000) {
-    let msg = '';
-
-    if (typeof args[0] === 'string') {
-        msg = args.shift();
+export function stringifyAndTruncateLog(value: any, maxSize: number = 99_000): string {
+    if (value === null) {
+        return 'null';
+    }
+    if (value === undefined) {
+        return 'undefined';
     }
 
-    if (args.length > 0) {
-        msg += ` ${args.map((arg) => safeStringify.stableStringify(arg, undefined, undefined, { depthLimit: 10, edgesLimit: 20 }))}`;
-    }
+    let msg = typeof value === 'string' ? value : safeStringify.stableStringify(value, undefined, undefined, { depthLimit: 10, edgesLimit: 20 });
 
-    if (msg.length > maxSize) {
+    if (msg && msg.length > maxSize) {
         msg = `${msg.substring(0, maxSize)}... (truncated)`;
     }
 

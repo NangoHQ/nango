@@ -15,7 +15,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
-import type { LogsBuffer } from '@nangohq/types';
+import type { MessageRowInsert } from '@nangohq/types';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -130,7 +130,7 @@ class ProxyController {
                     if (log.level === 'debug' && !isDebug) {
                         return;
                     }
-                    await logCtx!.log({ type: 'log', ...log });
+                    await logCtx!.log(log);
                 })
             );
 
@@ -371,7 +371,7 @@ class ProxyController {
         isDebug: boolean;
     }) {
         try {
-            const logs: LogsBuffer[] = [];
+            const logs: MessageRowInsert[] = [];
             const headers = proxyService.constructHeaders(config, method, url);
 
             if (isDebug) {
@@ -401,7 +401,7 @@ class ProxyController {
                     if (log.level === 'debug' && !isDebug) {
                         return;
                     }
-                    await logCtx.log({ type: 'log', ...log });
+                    await logCtx.log(log);
                 })
             );
 
