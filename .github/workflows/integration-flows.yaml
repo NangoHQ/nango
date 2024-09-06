@@ -49,6 +49,8 @@ jobs:
 
                         # run tests if applicable
                         if [ "$has_mocks" = true ]; then
+                            # remove existing tests to re-generate them
+                            rm -rf ../nango-integrations/$dir/tests
                             cp -r ../nango-integrations ../../../packages/integration-template-tests
                             pushd ../../../packages/integration-template-tests
                             npm run generate
