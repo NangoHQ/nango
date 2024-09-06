@@ -23,7 +23,10 @@ import type {
     AppStoreCredentials,
     UnauthCredentials,
     CustomCredentials,
-    TbaCredentials
+    TbaCredentials,
+    RecordMetadata,
+    RecordLastAction,
+    NangoRecord
 } from '@nangohq/types';
 
 export type {
@@ -53,6 +56,7 @@ export type {
     TbaCredentials
 };
 export type { HTTP_VERB, NangoSyncEndpoint };
+export type { RecordMetadata, RecordLastAction, NangoRecord };
 
 export interface NangoProps {
     host?: string;
@@ -100,19 +104,6 @@ export interface ProxyConfiguration {
 
 export type FilterAction = 'added' | 'updated' | 'deleted' | 'ADDED' | 'UPDATED' | 'DELETED';
 export type CombinedFilterAction = `${FilterAction},${FilterAction}`;
-
-export interface GetRecordsRequestConfig {
-    providerConfigKey: string;
-    connectionId: string;
-    model: string;
-    delta?: string;
-    offset?: number;
-    limit?: number;
-    sortBy?: 'updatedAt' | 'createdAt' | 'id';
-    order?: 'asc' | 'desc';
-    includeNangoMetadata?: boolean;
-    filter?: FilterAction | CombinedFilterAction;
-}
 
 export interface ListRecordsRequestConfig {
     providerConfigKey: string;
@@ -269,16 +260,6 @@ export interface NangoSyncConfig {
     sync_type?: SyncType;
     nango_yaml_version?: string;
     webhookSubscriptions?: string[];
-}
-
-export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED';
-
-export interface RecordMetadata {
-    first_seen_at: string;
-    last_seen_at: string;
-    last_action: LastAction;
-    deleted_at: string | null;
-    cursor: string;
 }
 
 export interface SyncResult {
