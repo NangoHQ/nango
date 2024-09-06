@@ -753,7 +753,7 @@ export class Orchestrator {
             return Err(error);
         }
 
-        if (intervalMs < ms('5m')) {
+        if (intervalMs < ms('30s')) {
             const error = new NangoError('sync_interval_too_short');
             return Err(error);
         }
