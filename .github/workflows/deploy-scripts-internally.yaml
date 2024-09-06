@@ -34,7 +34,14 @@ jobs:
 
                     cd /tmp/nango-temp/nango-integrations
                     npm install zod soap botbuilder
-                    nango admin:deploy-internal template-$integration || true
+
+                    response=$(nango admin:deploy-internal template-$integration)
+
+                    echo "$response" | jq '.error.code' | grep -q "unknown_provider_config"
+                    if [ $? -eq 0 ]; then
+                      echo "Error: Unknown provider config for $integration"
+                      return true
+                    fi
 
                     cd -
                     rm -rf /tmp/nango-temp
