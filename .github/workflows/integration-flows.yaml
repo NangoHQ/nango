@@ -33,10 +33,6 @@ jobs:
                   npm install -g ./packages/cli
                   NANGO_CLI_UPGRADE_MODE=ignore nango version --debug
 
-            - name: Prep for integration tests
-              working-directory: tests/integration-templates
-              run: npm i
-
             - name: Compile & Test with Nango
               run: |
                   set -e
@@ -53,8 +49,8 @@ jobs:
 
                         # run tests if applicable
                         if [ "$has_mocks" = true ]; then
-                            cp -r ../nango-integrations ../../../tests/integration-templates
-                            pushd ../../../tests/integration-templates
+                            cp -r ../nango-integrations ../../../packages/integration-template-tests
+                            pushd ../../../packages/integration-template-tests
                             npm run generate
                             npm run test
                             popd
