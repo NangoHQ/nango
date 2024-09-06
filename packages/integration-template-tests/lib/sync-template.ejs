@@ -64,31 +64,36 @@ describe("<%= integration %> <%= syncName %> tests", () => {
       nangoMock.paginate = vi.fn().mockImplementation(async function* (args: any) {
         const { endpoint, method = 'GET' } = args;
         switch(method) {
-            case 'GET':
+            case 'GET': {
                 const { default: paginateDataGet } = await import(`../<%= integration %>/mocks/paginate/get/<%= syncName %>${endpoint}.json`, { assert: { type: "json" } });
                 paginateGet = paginateDataGet;
                 yield paginateGet;
                 break;
-            case 'POST':
+            }
+            case 'POST': {
                 const { default: paginateDataPost } = await import(`../<%= integration %>/mocks/paginate/post/<%= syncName %>${endpoint}.json`, { assert: { type: "json" } });
                 paginatePost = paginateDataPost;
                 yield paginatePost;
                 break;
-            case 'PATCH':
+            }
+            case 'PATCH': {
                 const { default: paginateDataPatch } = await import(`../<%= integration %>/mocks/paginate/patch/<%= syncName %>${endpoint}.json`, { assert: { type: "json" } });
                 paginatePatch = paginateDataPatch;
                 yield paginatePatch;
                 break;
-            case 'PUT':
+            }
+            case 'PUT': {
                 const { default: paginateDataPut } = await import(`../<%= integration %>/mocks/paginate/put/<%= syncName %>${endpoint}.json`, { assert: { type: "json" } });
                 paginatePut = paginateDataPut;
                 yield paginatePut;
                 break;
-            case 'DELETE':
+            }
+            case 'DELETE': {
                 const { default: paginateDataDelete } = await import(`../<%= integration %>/mocks/paginate/delete/<%= syncName %>${endpoint}.json`, { assert: { type: "json" } });
                 paginateDelete = paginateDataDelete;
                 yield paginateDelete;
                 break;
+            }
         }
     }) as NangoSync['paginate'];
   }

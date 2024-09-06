@@ -20,7 +20,13 @@ mkdir -p $TEMP_DIRECTORY/nango-integrations
 cp -r integration-templates/$INTEGRATION $TEMP_DIRECTORY/nango-integrations
 
 mv $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/nango.yaml $TEMP_DIRECTORY/nango-integrations/nango.yaml
+
+# new tests will be generated
+if [ -d $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/tests ]; then
+    rm -rf $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/tests
+fi
 [ -f $TEMP_DIRECTORY/nango-integrations/*.ts ] && mv $TEMP_DIRECTORY/nango-integrations/*.ts $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/
+
 
 pushd $TEMP_DIRECTORY/nango-integrations
 npx nango generate
@@ -30,7 +36,10 @@ cp -r $TEMP_DIRECTORY/nango-integrations ./packages/integration-template-tests/n
 pushd ./packages/integration-template-tests
 npm run generate
 npm run test
+
+# keep tests around for posterity
+cp -r nango-integrations/tests ../../integration-templates/$INTEGRATION
+
 rm -rf nango-integrations
 popd
-
 rm -rf $TEMP_DIRECTORY
