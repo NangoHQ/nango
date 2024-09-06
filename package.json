@@ -22,7 +22,8 @@
         "packages/data-ingestion",
         "packages/types",
         "packages/database",
-        "packages/webhooks"
+        "packages/webhooks",
+        "packages/integration-template-tests"
     ],
     "scripts": {
         "create:migration": "cd packages/database/lib && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",

@@ -279,9 +279,9 @@ program
     .alias('scc')
     .description('Verify the parsed sync config and output the object for verification')
     .action(async function (this: Command) {
-        const { autoConfirm } = this.opts();
+        const { autoConfirm, debug } = this.opts();
         const fullPath = process.cwd();
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm });
+        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
         const { success, error, response } = parse(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
 
         if (!success || !response?.parsed) {

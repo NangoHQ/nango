@@ -1,4 +1,4 @@
-import { jest, expect, it, describe } from "@jest/globals";
+import { vi, expect, it, describe } from "vitest";
 import type { NangoSync } from "../models.js";
 
 import fetchData from "../<%= integration %>/syncs/<%= syncName %>.js";
@@ -45,23 +45,23 @@ let paginateDelete = false;
 describe("<%= integration %> <%= syncName %> tests", () => {
   const nangoMock = {
     lastSyncDate: null,
-    log: jest.fn()
+    log: vi.fn()
   } as unknown as NangoSync;
 
   if (batchSaveData) {
-    nangoMock.batchSave = jest.fn().mockReturnValue(batchSaveData) as NangoSync['batchSave'];
+    nangoMock.batchSave = vi.fn().mockReturnValue(batchSaveData) as NangoSync['batchSave'];
   }
 
   if (batchDeleteData) {
-    nangoMock.batchDelete = jest.fn().mockReturnValue(batchDeleteData) as NangoSync['batchDelete'];
+    nangoMock.batchDelete = vi.fn().mockReturnValue(batchDeleteData) as NangoSync['batchDelete'];
   }
 
   if (getConnection) {
-    nangoMock.getConnection = jest.fn().mockReturnValue(getConnection) as NangoSync['getConnection'];
+    nangoMock.getConnection = vi.fn().mockReturnValue(getConnection) as NangoSync['getConnection'];
   }
 
   if (paginateGet || paginatePost || paginatePatch || paginatePut || paginateDelete) {
-      nangoMock.paginate = jest.fn().mockImplementation(async function* (args: any) {
+      nangoMock.paginate = vi.fn().mockImplementation(async function* (args: any) {
         const { endpoint, method = 'GET' } = args;
         switch(method) {
             case 'GET':

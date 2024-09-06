@@ -6,25 +6,19 @@
     "main": "index.js",
     "scripts": {
         "generate": "tsx tests/generate-tests.ts",
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+        "test": "vitest run"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@types/js-yaml": "^4.0.9",
         "ejs": "^3.1.10",
-        "jest": "29.7.0",
         "js-yaml": "4.1.0",
-        "nock": "13.5.4",
-        "ts-jest": "29.1.2",
-        "ts-loader": "9.5.1",
         "tsx": "^4.19.0"
     },
     "devDependencies": {
-        "@jest/globals": "^29.7.0",
         "@types/ejs": "^3.1.2",
-        "@types/jest": "29.5.12",
-        "@types/node": "20.12.7"
+        "@types/js-yaml": "^4.0.9",
+        "vitest": "1.6.0"
     }
 }
