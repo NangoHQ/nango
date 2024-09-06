@@ -111,8 +111,11 @@ export async function persistRecords({
             await logCtx.error(`Found duplicate key '${nonUniqueKey}' for model ${model}. The record was ignored.`);
         }
 
-        await logCtx.info('Batched successfully', { persistType, updatedResults });
-
+        const total = summary.addedKeys.length + summary.updatedKeys.length + (summary.deletedKeys?.length || 0);
+        await logCtx.info(`Successfully batched ${total} record${total > 1 ? 's' : ''}`, {
+            persistType,
+            updatedResults
+        });
         await updateSyncJobResult(syncJobId, updatedResults, model);
 
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);

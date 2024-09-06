@@ -46,6 +46,12 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
+        await logCtx.info(`Starting action '${task.actionName}'`, {
+            input: task.input,
+            action: task.actionName,
+            connection: task.connection.connection_id,
+            integration: task.connection.provider_config_key
+        });
 
         const nangoProps: NangoProps = {
             scriptType: 'action',
