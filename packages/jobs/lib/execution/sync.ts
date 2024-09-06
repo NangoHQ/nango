@@ -78,7 +78,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
                 environment,
                 integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                 connection: { id: task.connection.id, name: task.connection.connection_id },
-                syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
+                syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name },
+                meta: { scriptVersion: syncConfig.version }
             }
         );
 
@@ -164,7 +165,6 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             environment,
             runTime: 0,
             models: syncConfig?.models || [],
-            version: syncConfig?.version,
             error
         });
         return Err(error);
@@ -203,7 +203,6 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
         };
 
         const syncPayload = {
-            scriptVersion: nangoProps.syncConfig.version || 'unknown',
             records: {} as Record<string, SyncResult>,
             runTimeSecs: runTime
         };
@@ -241,7 +240,6 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                     activityLogId: nangoProps.activityLogId!,
                     models: [model],
                     runTime,
-                    version: nangoProps.syncConfig.version,
                     error: new NangoError('sync_job_update_failure', { syncJobId: nangoProps.syncJobId, model })
                 });
                 return;
@@ -387,7 +385,6 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
             failureSource: ErrorSourceEnum.CUSTOMER,
             isCancel: false,
-            version: nangoProps.syncConfig.version,
             error: new NangoError('sync_script_failure', { error: err instanceof Error ? err.message : err })
         });
     }
@@ -421,7 +418,6 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         failureSource: ErrorSourceEnum.CUSTOMER,
         isCancel: false,
-        version: nangoProps.syncConfig.version,
         error
     });
 }
@@ -480,7 +476,6 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             isCancel,
             failureSource: ErrorSourceEnum.CUSTOMER,
             runTime: 0,
-            version: syncConfig.version,
             error: new NangoError('sync_script_failure', task.reason)
         });
         const setSuccess = await orchestratorClient.succeed({ taskId: task.id, output: {} });
@@ -512,7 +507,6 @@ async function onFailure({
     debug,
     models,
     runTime,
-    version,
     isCancel,
     failureSource,
     error
@@ -530,7 +524,6 @@ async function onFailure({
     debug: boolean;
     models: string[];
     runTime: number;
-    version: string | undefined;
     isCancel?: boolean;
     failureSource?: ErrorSourceEnum;
     error: NangoError;
@@ -596,12 +589,7 @@ async function onFailure({
 
     await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
 
-    await logCtx.enrichOperation({
-        error,
-        meta: {
-            scriptVersion: version
-        }
-    });
+    await logCtx.enrichOperation({ error });
     if (isCancel) {
         await logCtx.cancel();
     } else {
