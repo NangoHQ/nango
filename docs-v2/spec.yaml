@@ -260,8 +260,15 @@ paths:
                       type: string
                   description: The integration ID that you created in Nango.
             responses:
-                '204':
-                    description: Successfully deleled an integration
+                '200':
+                    description: Successfully deleted an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
                 '400':
                     description: Invalid request
                     content:

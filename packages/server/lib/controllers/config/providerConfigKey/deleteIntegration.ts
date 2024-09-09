@@ -4,15 +4,13 @@ import type { DeleteIntegrationPublic } from '@nangohq/types';
 import { configService } from '@nangohq/shared';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { z } from 'zod';
+import { providerConfigKeySchema } from '../../../helpers/validation.js';
 
 const orchestrator = getOrchestrator();
 
 export const validationParams = z
     .object({
-        providerConfigKey: z
-            .string()
-            .regex(/[a-zA-Z0-9-]+/)
-            .max(255)
+        providerConfigKey: providerConfigKeySchema
     })
     .strict();
 

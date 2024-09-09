@@ -4,17 +4,9 @@ import type { DeleteIntegration } from '@nangohq/types';
 import { configService } from '@nangohq/shared';
 
 import { getOrchestrator } from '../../../../utils/utils.js';
-import { z } from 'zod';
+import { validationParams } from './getIntegration.js';
 
 const orchestrator = getOrchestrator();
-export const validationParams = z
-    .object({
-        providerConfigKey: z
-            .string()
-            .regex(/[a-zA-Z0-9-]+/)
-            .max(255)
-    })
-    .strict();
 
 export const deleteIntegration = asyncWrapper<DeleteIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
