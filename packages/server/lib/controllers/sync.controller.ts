@@ -764,7 +764,8 @@ class SyncController {
             if (frequency) {
                 const interval = getInterval(frequency, new Date());
                 if (interval instanceof Error) {
-                    res.status(400).send({ message: 'frequency must have a valid format (https://github.com/vercel/ms)' });
+                    const error = new NangoError(interval.message);
+                    res.status(400).send({ message: error.message });
                     return;
                 }
                 newFrequency = interval.interval;

@@ -2,8 +2,8 @@ import { expect, describe, it } from 'vitest';
 import { getInterval, isJsOrTsType } from './helpers.js';
 
 describe('Nango Config Interval tests', () => {
-    it('throws error when interval is less than 5 minutes', () => {
-        const interval = getInterval('every 4m', new Date());
+    it('throws error when interval is less than 30 seconds', () => {
+        const interval = getInterval('every 20s', new Date());
         expect(interval).toStrictEqual(new Error('sync_interval_too_short'));
     });
 
