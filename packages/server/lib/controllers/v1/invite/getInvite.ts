@@ -23,7 +23,7 @@ export const getInvite = asyncWrapper<GetInvite>(async (req, res) => {
     const val = validation.safeParse(req.params);
     if (!val.success) {
         res.status(400).send({
-            error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }
+            error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(val.error) }
         });
         return;
     }
@@ -31,7 +31,7 @@ export const getInvite = asyncWrapper<GetInvite>(async (req, res) => {
     const data: GetInvite['Params'] = val.data;
     const invitation = await getInvitation(data.id);
     if (!invitation) {
-        res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exists or is expired' } });
+        res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
         return;
     }
 
