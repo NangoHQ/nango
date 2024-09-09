@@ -19,7 +19,7 @@ jobs:
 
             - name: Install nango CLI
               run: |
-                  npm install -g nango
+                  npm install -g ./packages/cli
 
             - name: Process and deploy integrations
               run: |
@@ -37,7 +37,7 @@ jobs:
 
                     response=$(nango admin:deploy-internal template-"$integration")
 
-                    echo "$response" | jq '.error.code' | grep -q "unknown_provider_config"
+                    echo "$response" | grep -q "unknown_provider_config"
                     if [ $? -eq 0 ]; then
                       echo "Warning: Unknown provider config for $integration"
                       continue
