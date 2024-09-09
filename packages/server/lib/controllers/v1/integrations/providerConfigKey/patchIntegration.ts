@@ -101,14 +101,16 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             integration.oauth_scopes = body.scopes || '';
         } else if (body.authType === 'APP') {
             integration.oauth_client_id = body.appId;
-            integration.oauth_client_secret = body.privateKey;
+            // This is a legacy thing
+            integration.oauth_client_secret = Buffer.from(body.privateKey).toString('base64');
             integration.app_link = body.appLink;
         } else if (body.authType === 'CUSTOM') {
             integration.oauth_client_id = body.clientId;
             integration.oauth_client_secret = body.clientSecret;
             integration.oauth_client_id = body.appId;
             integration.app_link = body.appLink;
-            integration.custom = { private_key: body.privateKey };
+            // This is a legacy thing
+            integration.custom = { private_key: Buffer.from(body.privateKey).toString('base64') };
         }
     }
 
