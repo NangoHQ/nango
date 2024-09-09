@@ -12,7 +12,7 @@ Pre-requisite: creation of an integration and at least one connection ([step-by-
 
 Nango uses [actions](/understand/concepts/actions) to perform workflows involving external APIs. Workflows can involve arbitrary series of API requests & data transformations. For common use cases, [templates](/understand/concepts/templates) are available to let you get started fast.
 
-Select your integration in the _Integrations_ tab, and navigate to the _Scripts_ tab. Available action templates will appear in the _Action Scripts_ section. Select the relevant one and enable it with the toggle.
+Select your integration in the _Integrations_ tab, and navigate to the _Endpoints_ tab. Available action templates will appear in the endpoint list. Select the relevant one and enable it with the toggle.
 
 <Tip>
 Is there no template for your API? Or none matching your exact use case?
@@ -52,7 +52,7 @@ const result = await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION-ID>', 
 </Tabs>
 
 <Tip>
- If you consume the API (vs. the SDK), you can use the standard endpoint (above) or a unique generated endpoint described in the _API Reference_ tab of your integration in the Nango UI. The generated endpoint documents the specific parameters & responses of each action.
+ If you consume the API (vs. the SDK), you can use the standard endpoint (above) or a unique generated endpoint described in the _Endpoints_ tab of your integration in the Nango UI. The generated endpoint documents the specific parameters & responses of each action.
 </Tip>
 
 

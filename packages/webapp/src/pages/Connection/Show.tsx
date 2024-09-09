@@ -199,15 +199,12 @@ We could not retrieve and/or refresh your access token due to the following erro
             <div className="mx-auto">
                 <div className="flex gap-4 justify-between">
                     <div className="flex gap-6">
-                        <Link to={`/${env}/integration/${connectionResponse.connection.provider_config_key}`}>
-                            {connectionResponse?.provider && (
-                                <IntegrationLogo
-                                    provider={connectionResponse.provider}
-                                    height={24}
-                                    width={24}
-                                    classNames="cursor-pointer p-1 border border-border-gray rounded-xl"
-                                />
-                            )}
+                        <Link to={`/${env}/integrations/${connectionResponse.connection.provider_config_key}`}>
+                            <div className="shrink-0">
+                                <div className="w-[80px] h-[80px] p-4 border border-border-gray rounded-xl">
+                                    {connectionResponse.provider && <IntegrationLogo provider={connectionResponse.provider} height={16} width={16} />}
+                                </div>
+                            </div>
                         </Link>
                         <div className="mt-3">
                             <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">Connection</span>

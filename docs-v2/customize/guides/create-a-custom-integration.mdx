@@ -69,7 +69,7 @@ Learn more about actions configurations in the [reference](/reference/integratio
 
 ### Generate the integration script scaffolding
 
-Everytime that you modify the `nango.yaml` configuration, run: 
+Everytime that you modify the `nango.yaml` configuration, run:
 
 ```bash
 nango generate # (in `./nango-integrations`)
@@ -84,11 +84,11 @@ Before you plan to modify your integration scripts, run:
 nango dev # Keep the tab open
 ```
 
-This command starts a process that continuously compiles your integration scripts and prints code syntax errors. 
+This command starts a process that continuously compiles your integration scripts and prints code syntax errors.
 
 ### Write a sync script
 
-Open the generated sync script (named `[sync-name].ts`) which should contain the following scaffolding : 
+Open the generated sync script (named `[sync-name].ts`) which should contain the following scaffolding :
 
 ```typescript salesforce-contacts.ts
 import type { NangoSync, Contact } from '../../models';
@@ -154,7 +154,7 @@ function mapContacts(records: any[]): SalesforceContact[] {
 }
 ```
 
-In this integration script, the following Nango utilities are used: 
+In this integration script, the following Nango utilities are used:
 - `nango.lastSyncDate` is the last date at which the sync has run
 - `await nango.batchSave()` to persist external data in Nango's cache
 - `await nango.get()` to perform an API request (automatically authenticated by Nango)
@@ -166,7 +166,7 @@ Learn more about sync scripts: [understanding syncs](/understand/concepts/syncs)
 
 ### Write an action script
 
-Open the generated action script (named `[action-name].ts`) which should contain the following scaffolding : 
+Open the generated action script (named `[action-name].ts`) which should contain the following scaffolding :
 
 ```typescript salesforce-contact-fields.ts
 import type { NangoAction, FieldSchema } from '../../models';
@@ -221,7 +221,7 @@ function mapFields(fields: any) {
 }
 ```
 
-In this integration script, the following Nango utilities are used: 
+In this integration script, the following Nango utilities are used:
 - `await nango.get()` to perform an API request (automatically authenticated by Nango)
 - `nango.ActionError()` to report errors in the execution of the integration script
 - `await nango.log()` to print console logs (replaces `console.log()`)
@@ -249,16 +249,16 @@ By default, `dryrun` retrieves connections from your `Dev` environment.
 
 # Deploy your integration scripts
 
-Nango provides multiple cloud environments so you can test your integration scripts more thoroughly before releasing them to customers. 
+Nango provides multiple cloud environments so you can test your integration scripts more thoroughly before releasing them to customers.
 
-To deploy all integration scripts at once, run ([reference](/reference/cli)): 
+To deploy all integration scripts at once, run ([reference](/reference/cli)):
 ```bash
 nango deploy dev # Deploy to your Development environment
 # or
 nango deploy prod # Deploy to your Production environment
 ```
 
-In the Nango UI, navigate to the _Scripts_ tab of the relevant integration(s) to verify the deployment succeeded. 
+In the Nango UI, navigate to the _Endpoints_ tab of the relevant integration(s) to verify the deployment succeeded.
 
 <Tip>
 Learn more about [scripts](/understand/concepts/scripts).
