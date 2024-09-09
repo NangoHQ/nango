@@ -1901,6 +1901,24 @@ mailchimp:
         response_type: code
     docs: https://docs.nango.dev/integrations/all/mailchimp
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
+manatal:
+    auth_mode: API_KEY
+    categories:
+        - crm
+        - hr
+    proxy:
+        base_url: https://api.manatal.com/open/v3
+        verification:
+            method: GET
+            endpoint: /users
+        headers:
+            Authorization: Token ${apiKey}
+        paginate:
+            type: link
+            limit_name_in_request: page_size
+            link_path_in_response_body: next
+            response_path: results
+    docs: https://docs.nango.dev/integrations/all/manatal
 marketo:
     auth_mode: OAUTH2_CC
     proxy:
@@ -2681,6 +2699,18 @@ sharepoint-online:
         - communication
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/sharepoint-online
+shipstation:
+    categories:
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://ssapi.shipstation.com
+        retry:
+            after: 'X-Rate-Limit-Reset'
+        verification:
+            method: GET
+            endpoint: /users
+    docs: https://docs.nango.dev/integrations/all/shipstation
 shopify:
     categories:
         - e-commerce
