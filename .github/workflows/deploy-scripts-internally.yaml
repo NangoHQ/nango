@@ -6,7 +6,7 @@ on:
             - master
 
 concurrency:
-    group: templates-${{ github.event.pull_request.number || github.ref }}
+    group: deploy-templates-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
 jobs:
@@ -32,6 +32,7 @@ jobs:
 
             - name: Process and deploy integrations
               run: |
+                  set +e
                   dirs=$(find integration-templates -maxdepth 1 -type d | tail -n +2)
                   for dir in $dirs; do
                     integration=$(basename "$dir")
@@ -50,6 +51,9 @@ jobs:
                     if [ $? -eq 0 ]; then
                       echo "Warning: Unknown provider config for $integration"
                       continue
+                    else
+                      echo "Error in deployment for $integration: $response"
+                      exit 1
                     fi
 
                     cd -
