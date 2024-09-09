@@ -889,7 +889,7 @@ export class NangoSync extends NangoAction {
             metrics.increment(metrics.Types.RUNNER_INVALID_SYNCS_RECORDS);
 
             if (this.dryRun) {
-                await this.log('Invalid action input. Use `--validation` option to see the details', { level: 'warn' });
+                await this.log('Invalid record payload. Use `--validation` option to see the details', { level: 'warn' });
             } else {
                 await this.log('Invalid record payload', { data: record, validation, model }, { level: 'warn' });
             }
