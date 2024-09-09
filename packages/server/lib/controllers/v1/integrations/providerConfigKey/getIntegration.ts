@@ -41,15 +41,14 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
     let webhookSecret: string | null = null;
 
     if (template.auth_mode === 'APP' && integration.oauth_client_secret) {
-        // const client_secret = Buffer.from(integration.oauth_client_secret, 'base64').toString('ascii');
+        integration.oauth_client_secret = Buffer.from(integration.oauth_client_secret, 'base64').toString('ascii');
         const hash = `${integration.oauth_client_id}${integration.oauth_client_secret}${integration.app_link}`;
         webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
     }
 
     if (template.auth_mode === 'CUSTOM' && integration.custom) {
-        const { private_key } = integration.custom;
-        // custom['private_key'] = Buffer.from(custom['private_key'] as string, 'base64').toString('ascii');
-        const hash = `${integration.custom['app_id']}${private_key}${integration.app_link}`;
+        integration.custom['private_key'] = Buffer.from(integration.custom['private_key'] as string, 'base64').toString('ascii');
+        const hash = `${integration.custom['app_id']}${integration.custom['private_key']}${integration.app_link}`;
         webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
     }
 

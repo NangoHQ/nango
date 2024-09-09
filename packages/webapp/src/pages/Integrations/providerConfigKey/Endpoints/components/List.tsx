@@ -8,7 +8,7 @@ import { HelpFooter } from '../../../components/HelpFooter';
 import { ScriptToggle } from '../../../components/ScriptToggle';
 import { useStore } from '../../../../../store';
 
-export type NangoSyncConfigWithEndpoint = NangoSyncConfig & { endpoint: { verb: HTTP_VERB; path: string } };
+export type NangoSyncConfigWithEndpoint = NangoSyncConfig & { endpoint: { method: HTTP_VERB; path: string } };
 
 export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['data']; byGroup: { name: string; flows: NangoSyncConfigWithEndpoint[] }[] }> = ({
     integration,
@@ -48,7 +48,9 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                 {byGroup.map(({ name, flows }) => {
                     return (
                         <div key={name}>
-                            <div className="bg-active-gray capitalize py-1 px-2 text-sm rounded-sm font-semibold">{name}</div>
+                            {(byGroup.length > 1 || (byGroup.length == 1 && name !== 'others')) && (
+                                <div className="bg-active-gray capitalize py-1 px-2 text-sm rounded-sm font-semibold">{name}</div>
+                            )}
                             <Table.Table className="table-fixed">
                                 <Table.Header>
                                     <Table.Row>

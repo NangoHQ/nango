@@ -20,7 +20,8 @@ export type ResDefaultErrors =
     | ApiError<'feature_disabled'>
     | ApiError<'missing_auth_header'>
     | ApiError<'generic_error_support', undefined, string>
-    | ApiError<'server_error'>;
+    | ApiError<'server_error'>
+    | ApiError<'resource_capped'>;
 
 export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /**

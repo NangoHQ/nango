@@ -46,6 +46,15 @@ import type { AxiosInstance } from 'axios';
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import type { DBTeam } from '@nangohq/types';
+export declare const oldLevelToNewLevel: {
+    readonly debug: "debug";
+    readonly info: "info";
+    readonly warn: "warn";
+    readonly error: "error";
+    readonly verbose: "debug";
+    readonly silly: "debug";
+    readonly http: "info";
+};
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 interface GenericFormData {

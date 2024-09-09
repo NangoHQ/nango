@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.9] - 2024-09-06
+
+### Added
+
+- *(integrations)* [nan-1598] add cal-v2 syncs (#2667) by @khaliqgant
+- *(connection)* Delete also clean opened slack notification (#2666) by @bodinsamuel
+- Add support for full log message in persist API (#2659) by @TBonnin
+- *(integrations)* Add support for zoho-people (#2684) by @hassan254-prog
+- *(integrations)* Add support for coupa compass (#2683) by @hassan254-prog
+
+### Changed
+
+- *(docs)* Github app oauth doc improvements (#2673) by @khaliqgant
+- *(deps-dev)* Bump @blakeembrey/template from 1.1.0 to 1.2.0 (#2672) by @dependabot[bot]
+- Update count of supported APIs (#2676) by @rguldener
+- Refactor persist API to use same pattern as other services (#2658) by @TBonnin
+- Pass full log messages from scripts (#2660) by @TBonnin
+- Improve syncs log messages (#2687) by @TBonnin
+- Lower mininum frequency interval to 30s (#2690) by @TBonnin
+
+### Fixed
+
+- *(logs)* Update operation messages + icons (#2670) by @bodinsamuel
+- *(integrations)* Fix cal yaml (#2675) by @khaliqgant
+- *(capping)* Reup capping on connection creation (#2674) by @bodinsamuel
+- *(node-client)* Sync record types (#2679) by @bodinsamuel
+- *(Netsuite)* Use expandSubResources to fetch all subentities (#2680) by @TBonnin
+- Connectionid validation (#2688) by @bodinsamuel
+- *(demo)* Reup fetch data (#2689) by @bodinsamuel
+
 ## [v0.42.8] - 2024-09-03
 
 ### Added
@@ -1807,6 +1837,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.9]: https://github.com/NangoHQ/nango/compare/v0.42.8..v0.42.9
 [v0.42.8]: https://github.com/NangoHQ/nango/compare/v0.42.7..v0.42.8
 [v0.42.7]: https://github.com/NangoHQ/nango/compare/v0.42.6..v0.42.7
 [v0.42.6]: https://github.com/NangoHQ/nango/compare/v0.42.5..v0.42.6

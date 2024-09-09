@@ -97,7 +97,7 @@ export default class Nango {
 
         if (!res.ok) {
             const errorResponse = await res.json();
-            throw new AuthError(errorResponse.error, errorResponse.type);
+            throw new AuthError(errorResponse.error.message, errorResponse.error.code);
         }
 
         return res.json();
@@ -309,7 +309,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error, errorResponse.type);
+                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
             }
 
             return res.json();
@@ -330,7 +330,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error, errorResponse.type);
+                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
             }
 
             return res.json();
@@ -351,7 +351,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error, errorResponse.type);
+                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
             }
 
             return res.json();
@@ -372,7 +372,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error, errorResponse.type);
+                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
             }
 
             return res.json();
@@ -393,7 +393,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error, errorResponse.type);
+                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
             }
 
             return res.json();
@@ -414,7 +414,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error, errorResponse.type);
+                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
             }
 
             return res.json();

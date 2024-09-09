@@ -14,6 +14,7 @@ import { cloudHost, stagingHost, NANGO_VERSION } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { state } from './state.js';
 import https from 'node:https';
+import type { NangoConnection } from '@nangohq/types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -216,20 +217,25 @@ export async function upgradeAction(debug = false) {
     }
 }
 
-export async function getConnection(providerConfigKey: string, connectionId: string, setHeaders?: Record<string, string | boolean>, debug = false) {
+export async function getConnection(
+    providerConfigKey: string,
+    connectionId: string,
+    setHeaders?: Record<string, string | boolean>,
+    debug = false
+): Promise<NangoConnection | undefined> {
     const url = process.env['NANGO_HOSTPORT'] + `/connection/${connectionId}`;
     const headers = enrichHeaders(setHeaders);
     if (debug) {
         printDebug(`getConnection endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
     }
-    return await http
-        .get(url, { params: { provider_config_key: providerConfigKey }, headers })
-        .then((res) => {
-            return res.data;
-        })
-        .catch((err: unknown) => {
-            console.log(`❌ ${err instanceof AxiosError ? JSON.stringify(err.response?.data.error) : JSON.stringify(err, ['message'])}`);
-        });
+
+    try {
+        const res = await http.get(url, { params: { provider_config_key: providerConfigKey }, headers });
+        return res.data;
+    } catch (err) {
+        console.log(`❌ ${err instanceof AxiosError ? JSON.stringify(err.response?.data.error) : JSON.stringify(err, ['message'])}`);
+        return;
+    }
 }
 
 export async function getConfig(providerConfigKey: string, debug = false) {

@@ -17,24 +17,40 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
+            - name: Install Node.js
+              uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+
             - name: Install nango CLI
               run: |
-                  npm install -g nango
+                  npm ci
+                  npm run ts-build
+                  npm install -g ./packages/cli
+                  NANGO_CLI_UPGRADE_MODE=ignore nango version --debug
 
             - name: Process and deploy integrations
               run: |
                   dirs=$(find integration-templates -maxdepth 1 -type d | tail -n +2)
                   for dir in $dirs; do
-                    integration=$(basename $dir)
+                    integration=$(basename "$dir")
 
-                    mkdir -p /tmp/nango-temp/nango-integrations/$integration
+                    mkdir -p "/tmp/nango-temp/nango-integrations/$integration"
 
-                    cp $dir/nango.yaml /tmp/nango-temp/nango-integrations/
-                    cp -r $dir/* /tmp/nango-temp/nango-integrations/$integration/
+                    cp "$dir/nango.yaml" /tmp/nango-temp/nango-integrations/
+                    cp -r "$dir"/* "/tmp/nango-temp/nango-integrations/$integration/"
 
                     cd /tmp/nango-temp/nango-integrations
                     npm install zod soap botbuilder
-                    nango admin:deploy-internal template-$integration
+
+                    response=$(nango admin:deploy-internal template-"$integration")
+
+                    echo "$response" | grep -q "unknown_provider_config"
+                    if [ $? -eq 0 ]; then
+                      echo "Warning: Unknown provider config for $integration"
+                      continue
+                    fi
 
                     cd -
                     rm -rf /tmp/nango-temp

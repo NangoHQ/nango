@@ -92,7 +92,7 @@ export function getInterval(runs: string, date: Date): IntervalResponse | Error 
         return new Error('sync_interval_invalid');
     }
 
-    if (ms(interval) < ms('5m')) {
+    if (ms(interval) < ms('30s')) {
         return new Error('sync_interval_too_short');
     }
 

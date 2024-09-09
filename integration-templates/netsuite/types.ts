@@ -2,18 +2,6 @@ export interface NSAPI_GetResponse<T> {
     data: T;
 }
 
-export interface NSAPI_GetResponses<T> {
-    data: {
-        items: T[];
-        hasMore: boolean;
-        links: NSAPI_Links;
-    };
-}
-
-export interface NSAPI_Links {
-    links: { rel?: string; href?: string }[];
-}
-
 export interface NS_Address {
     addr1?: string;
     addr2?: string;
@@ -22,6 +10,7 @@ export interface NS_Address {
     country?: { id: string };
     state?: { id: string };
 }
+
 export interface NS_Customer {
     id: string;
     externalId?: string;
@@ -30,7 +19,9 @@ export interface NS_Customer {
     defaultTaxReg?: string;
     phone?: string;
     addressBook: {
-        items: NS_Address[];
+        items: {
+            addressBookAddress: NS_Address;
+        }[];
     };
 }
 
@@ -105,6 +96,6 @@ export interface NS_Payment {
         refName?: string;
     };
     apply?: {
-        items: { doc: string }[];
+        items: { doc: { id: string } }[];
     };
 }

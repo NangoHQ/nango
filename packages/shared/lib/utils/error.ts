@@ -429,7 +429,7 @@ export class NangoError extends Error {
 
             case 'sync_interval_too_short':
                 this.status = 400;
-                this.message = 'Sync interval is too short. The minimum interval is 5 minutes.';
+                this.message = 'Sync interval is too short. The minimum interval is 30 seconds.';
                 break;
 
             case 'provider_not_on_account':

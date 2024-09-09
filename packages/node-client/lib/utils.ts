@@ -1,6 +1,6 @@
 import os from 'os';
 
-import type { ProxyConfiguration, GetRecordsRequestConfig } from './types.js';
+import type { ProxyConfiguration, ListRecordsRequestConfig } from './types.js';
 import { NANGO_VERSION } from './version.js';
 
 /**
@@ -23,8 +23,8 @@ export const validateProxyConfiguration = (config: ProxyConfiguration) => {
  * @param config - Configuration object for fetching sync records
  * @throws If required parameters are missing in the configuration
  */
-export const validateSyncRecordConfiguration = (config: GetRecordsRequestConfig) => {
-    const requiredParams: (keyof GetRecordsRequestConfig)[] = ['model', 'providerConfigKey', 'connectionId'];
+export const validateSyncRecordConfiguration = (config: ListRecordsRequestConfig) => {
+    const requiredParams: (keyof ListRecordsRequestConfig)[] = ['model', 'providerConfigKey', 'connectionId'];
 
     requiredParams.forEach((param) => {
         if (typeof config[param] === 'undefined') {

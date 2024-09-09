@@ -239,6 +239,7 @@ export default function IntegrationCreate() {
 
         if (integration != null) {
             setIntegration(integration);
+            setServerErrorMessage('');
             setUpConnectionConfigParams(integration);
             setAuthMode(integration.authMode);
         }

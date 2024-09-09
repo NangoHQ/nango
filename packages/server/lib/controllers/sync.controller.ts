@@ -21,8 +21,6 @@ import {
     getAttributes,
     flowService,
     getActionOrModelByEndpoint,
-    getSyncsBySyncConfigId,
-    updateFrequency,
     findSyncByConnections,
     setFrequency,
     getSyncAndActionConfigsBySyncNameAndConfigId,
@@ -650,48 +648,6 @@ class SyncController {
         }
     }
 
-    public async updateFrequency(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { environment } = res.locals;
-            const syncConfigId = req.params['syncId'];
-            const { frequency } = req.body;
-
-            if (!syncConfigId) {
-                res.status(400).send({ message: 'Missing sync config id' });
-
-                return;
-            }
-
-            if (!frequency) {
-                res.status(400).send({ message: 'Missing frequency' });
-
-                return;
-            }
-
-            const syncs = await getSyncsBySyncConfigId(environment.id, Number(syncConfigId));
-            const setFrequency = `every ${frequency}`;
-            for (const sync of syncs) {
-                const updated = await orchestrator.updateSyncFrequency({
-                    syncId: sync.id,
-                    interval: setFrequency,
-                    syncName: sync.name,
-                    environmentId: environment.id
-                });
-
-                if (updated.isErr()) {
-                    const error = new NangoError('failed_to_update_frequency', { syncId: sync.id, frequency: setFrequency });
-                    errorManager.errResFromNangoErr(res, error);
-                    return;
-                }
-            }
-            await updateFrequency(Number(syncConfigId), setFrequency);
-
-            res.sendStatus(200);
-        } catch (e) {
-            next(e);
-        }
-    }
-
     public async deleteSync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const syncId = req.params['syncId'];
@@ -764,7 +720,8 @@ class SyncController {
             if (frequency) {
                 const interval = getInterval(frequency, new Date());
                 if (interval instanceof Error) {
-                    res.status(400).send({ message: 'frequency must have a valid format (https://github.com/vercel/ms)' });
+                    const error = new NangoError(interval.message);
+                    res.status(400).send({ message: error.message });
                     return;
                 }
                 newFrequency = interval.interval;

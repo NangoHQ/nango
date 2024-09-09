@@ -252,31 +252,22 @@ class OnboardingController {
                 return;
             }
 
+            const syncCommandOption: Parameters<typeof syncManager.runSyncCommand>[0] = {
+                recordsService,
+                orchestrator,
+                environment,
+                providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
+                syncNames: [DEMO_SYNC_NAME],
+                command: SyncCommand.UNPAUSE,
+                logContextGetter,
+                connectionId: req.body.connectionId,
+                initiator: 'demo'
+            };
             if (status.length <= 0) {
                 // If for any reason we don't have a sync, because of a partial state
                 logger.info(`[demo] no sync were found ${environment.id}`);
-                await syncManager.runSyncCommand({
-                    recordsService,
-                    orchestrator,
-                    environment,
-                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
-                    syncNames: [DEMO_SYNC_NAME],
-                    command: SyncCommand.RUN_FULL,
-                    logContextGetter,
-                    connectionId: req.body.connectionId,
-                    initiator: 'demo'
-                });
-                await syncManager.runSyncCommand({
-                    recordsService,
-                    orchestrator,
-                    environment,
-                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
-                    syncNames: [DEMO_SYNC_NAME],
-                    command: SyncCommand.UNPAUSE,
-                    logContextGetter,
-                    connectionId: req.body.connectionId,
-                    initiator: 'demo'
-                });
+                await syncManager.runSyncCommand({ ...syncCommandOption, command: SyncCommand.UNPAUSE });
+                await syncManager.runSyncCommand({ ...syncCommandOption, command: SyncCommand.RUN_FULL });
 
                 res.status(200).json({ retry: true });
                 return;
@@ -288,20 +279,11 @@ class OnboardingController {
                 return;
             }
 
-            if (!job.nextScheduledSyncAt && job.jobStatus === SyncStatus.PAUSED) {
+            if (!job.nextScheduledSyncAt && job.status === SyncStatus.PAUSED) {
                 // If the sync has never run
                 logger.info(`[demo] no job were found ${environment.id}`);
-                await syncManager.runSyncCommand({
-                    recordsService,
-                    orchestrator,
-                    environment,
-                    providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
-                    syncNames: [DEMO_SYNC_NAME],
-                    command: SyncCommand.RUN_FULL,
-                    logContextGetter,
-                    connectionId: req.body.connectionId,
-                    initiator: 'demo'
-                });
+                await syncManager.runSyncCommand({ ...syncCommandOption, command: SyncCommand.UNPAUSE });
+                await syncManager.runSyncCommand({ ...syncCommandOption, command: SyncCommand.RUN_FULL });
             }
 
             if (job.jobStatus === SyncStatus.SUCCESS) {

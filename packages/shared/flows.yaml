@@ -630,7 +630,7 @@ integrations:
                 schedulingType: null | string
                 userId: number
                 metadata:
-                    ___string: any
+                    __string: any
                 description: string | null
                 hidden: boolean
                 slug: string
@@ -699,14 +699,14 @@ integrations:
                         slug: string
                         name: string
                         metadata:
-                            ___string: any
+                            __string: any
                     upId: string
                     image: string
                     brandColor: string
                     darkBrandColor: string
                     theme: string
                     bookerLayouts:
-                        ___string: any
+                        __string: any
                 bookerUrl: string
             Attendee:
                 id: number
@@ -721,12 +721,12 @@ integrations:
                 userPrimaryEmail: string
                 description: string
                 customInputs:
-                    ___string: any
+                    __string: any
                 startTime: string
                 endTime: string
                 attendees: Attendee[]
                 metadata:
-                    ___string: any
+                    __string: any
                 uid: string
                 recurringEventId: string
                 location: string
@@ -736,21 +736,21 @@ integrations:
                     eventName: string
                     price: number
                     recurringEvent:
-                        ___string: any
+                        __string: any
                     currency: string
                     metadata:
-                        ___string: any
+                        __string: any
                     seatsShowAttendees:
-                        ___string: any
+                        __string: any
                     seatsShowAvailabilityCount:
-                        ___string: any
+                        __string: any
                     team:
-                        ___string: any
+                        __string: any
                 status:
-                    ___string: any
+                    __string: any
                 paid: boolean
                 payment:
-                    - ___string: any
+                    - __string: any
                 references:
                     - id: number
                       type: string
@@ -762,14 +762,14 @@ integrations:
                       bookingId: number
                       externalCalendarId: string
                       deleted:
-                          ___string: string
+                          __string: string
                       credentialId: number
                 isRecorded: boolean
                 seatsReferences:
-                    - ___string: any
+                    - __string: any
                 user: User
                 rescheduled:
-                    ___string: any
+                    __string: any
     calendly:
         syncs:
             events:

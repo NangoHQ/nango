@@ -10,7 +10,7 @@ export function asyncWrapper<TEndpoint extends Endpoint<any>, Locals extends Rec
         res: Response<TEndpoint['Reply'], Locals>,
         next: NextFunction
     ) => Promise<void> | void
-): RequestHandler<any, TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring'], Locals> {
+): RequestHandler<any, TEndpoint['Reply'], any, any, any> {
     return (req, res, next) => {
         const active = tracer.scope().active();
         active?.setTag('http.route', req.route?.path || req.originalUrl);

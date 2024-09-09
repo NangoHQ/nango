@@ -1,20 +1,21 @@
-import type { Request, Response, NextFunction } from 'express';
-import { errorManager } from '@nangohq/shared';
 import { connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '../hooks/hooks.js';
+import { asyncWrapper } from '../utils/asyncWrapper.js';
+import type { ApiError, Endpoint } from '@nangohq/types';
 
-export const authCheck = async (req: Request, res: Response, next: NextFunction) => {
-    const environmentId = res.locals['environment']!.id;
-    const account = res.locals['account']!.id;
+export const resourceCapping = asyncWrapper<Endpoint<{ Method: 'POST'; Path: ''; Success: any; Error: ApiError<'resource_capped'> }>>(
+    async (req, res, next) => {
+        const { environment, account } = res.locals;
 
-    const { providerConfigKey } = req.params;
+        const { providerConfigKey } = req.params;
 
-    if (account.is_capped && providerConfigKey) {
-        const isCapped = await connectionCreationStartCapCheckHook({ providerConfigKey, environmentId, creationType: 'create' });
-        if (isCapped) {
-            errorManager.errRes(res, 'resource_capped');
-            return;
+        if (account.is_capped && providerConfigKey) {
+            const isCapped = await connectionCreationStartCapCheckHook({ providerConfigKey, environmentId: environment.id, creationType: 'create' });
+            if (isCapped) {
+                res.status(400).send({ error: { code: 'resource_capped', message: 'Reached maximum number of connections with scripts enabled' } });
+                return;
+            }
         }
-    }
 
-    next();
-};
+        next();
+    }
+);

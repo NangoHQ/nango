@@ -154,7 +154,7 @@ class ConfigService {
     async createProviderConfig(config: ProviderConfig): Promise<ProviderConfig | null> {
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
         const res = await db.knex.from<ProviderConfig>(`_nango_configs`).insert(configToInsert).returning('*');
-        return res.length > 0 ? res[0]! : null;
+        return res[0] ?? null;
     }
 
     async createEmptyProviderConfig(provider: string, environment_id: number): Promise<ProviderConfig> {
