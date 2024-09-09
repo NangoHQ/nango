@@ -59,8 +59,8 @@ export function legacyModelToObject(model: NangoSyncModel) {
 export function modelToString(model: NangoSyncModel | NangoModel) {
     if (isNewModel(model)) {
         return `    {
-${fieldsToTypescript({ fields: model.fields }).join('\n').replace(/^/gm, '    ')}
-    }`;
+${fieldsToTypescript({ fields: model.fields }).join('\n').replace(/^/gm, '  ')}
+}`;
     } else {
         return stringifyObject(legacyModelToObject(model), { indent: '  ', singleQuotes: false });
     }
