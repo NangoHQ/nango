@@ -2699,6 +2699,18 @@ sharepoint-online:
         - communication
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/sharepoint-online
+shipstation:
+    categories:
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://ssapi.shipstation.com
+        retry:
+            after: 'X-Rate-Limit-Reset'
+        verification:
+            method: GET
+            endpoint: /users
+    docs: https://docs.nango.dev/integrations/all/shipstation
 shopify:
     categories:
         - e-commerce
