@@ -42,7 +42,7 @@ export default function IntegrationList() {
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Integrations</h2>
                 {integrations.length > 0 && (
                     <Link
-                        to={`/${env}/integration/create`}
+                        to={`/${env}/integrations/create`}
                         className="flex items-center mt-auto px-4 h-8 rounded-md text-sm text-black bg-white hover:bg-gray-300"
                     >
                         <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
@@ -66,7 +66,7 @@ export default function IntegrationList() {
                                         uniqueKey !== integrations.at(-1)?.uniqueKey ? 'border-b border-border-gray' : ''
                                     } min-h-[4em] px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
                                     onClick={() => {
-                                        navigate(`/${env}/integration/${uniqueKey}`);
+                                        navigate(`/${env}/integrations/${uniqueKey}`);
                                     }}
                                 >
                                     <div className="flex items-center w-2/3 gap-2 py-2 truncate">
@@ -92,7 +92,7 @@ export default function IntegrationList() {
                     <h2 className="text-2xl text-center w-full">Configure a new integration</h2>
                     <div className="my-2 text-gray-400">Before exchanging data with an external API, you need to configure it on Nango.</div>
                     <Link
-                        to={`/${env}/integration/create`}
+                        to={`/${env}/integrations/create`}
                         className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300"
                     >
                         <span className="flex">

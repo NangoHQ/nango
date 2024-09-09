@@ -7,6 +7,7 @@ import type { TbaAuthorization, TbaCredentials } from '@nangohq/types';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionTest as connectionTestHook } from '../../hooks/hooks.js';
+import { providerConfigKeySchema } from '../../helpers/validation.js';
 
 const bodyValidation = z
     .object({
@@ -30,7 +31,7 @@ const queryStringValidation = z
 
 const paramValidation = z
     .object({
-        providerConfigKey: z.string().nonempty()
+        providerConfigKey: providerConfigKeySchema
     })
     .strict();
 

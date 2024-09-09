@@ -4,10 +4,12 @@ import { PlusSmallIcon } from '@heroicons/react/24/outline';
 import { X } from '@geist-ui/icons';
 
 import useSet from '../../../hooks/useSet';
+import { Input } from './Input';
 
 type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
     defaultValue?: string;
     selectedScopes?: string[];
+    onScopeChange?: (values: string) => void;
     addToScopesSet?: (scope: string) => void;
     removeFromSelectedSet?: (scope: string) => void;
 };
@@ -17,6 +19,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
         className,
         defaultValue,
         selectedScopes: optionalSelectedScopes,
+        onScopeChange,
         addToScopesSet: optionalAddToScopesSet,
         removeFromSelectedSet: optionalRemoveFromSelectedSet,
         ...props
@@ -52,6 +55,12 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
             });
         }
     }, [defaultScopes, addToScopesSet, optionalAddToScopesSet]);
+
+    useEffect(() => {
+        if (onScopeChange) {
+            onScopeChange(scopes.join(','));
+        }
+    }, [scopes, onScopeChange]);
 
     function handleEnter(e: KeyboardEvent<HTMLInputElement>) {
         //quick check for empty inputs
@@ -90,18 +99,18 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     }
 
     return (
-        <>
+        <div className="flex flex-col gap-2 grow">
             {!readOnly && (
                 <>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 grow">
                         <input onInvalid={showInvalid} value={scopes.join(',')} {...props} hidden />
-                        <input
+                        <Input
                             ref={ref}
                             value={enteredValue}
                             onChange={(e) => setEnteredValue(e.currentTarget.value)}
                             onKeyDown={handleEnter}
                             placeholder={scopes.length ? '' : 'Find the list of scopes in the documentation of the external API provider.'}
-                            className="border-border-gray bg-active-gray text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                            variant={'flat'}
                         />
                     </div>
                     {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
@@ -131,7 +140,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                     })}
                 </div>
             )}
-        </>
+        </div>
     );
 });
 
