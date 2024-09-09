@@ -46,7 +46,6 @@ import {
     getEmailByExpiredToken
 } from './controllers/v1/account/index.js';
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
-import { putUpgradePreBuilt } from './controllers/v1/flow/preBuilt/putUpgrade.js';
 import type { ApiError } from '@nangohq/types';
 import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
@@ -73,9 +72,17 @@ import { postManagedSignup } from './controllers/v1/account/managed/postSignup.j
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getEnvJs } from './controllers/v1/getEnvJs.js';
 import { getListIntegrations } from './controllers/config/getListIntegrations.js';
-import { deleteIntegrationPublic } from './controllers/config/providerConfigKey/deleteIntegration.js';
+import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
+import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
-import { postPreBuiltDeploy } from './controllers/v1/flow/preBuilt/postDeploy.js';
+import { deleteIntegrationPublic } from './controllers/config/providerConfigKey/deleteIntegration.js';
+import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
+import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
+import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
+import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
+import { patchFlowDisable } from './controllers/v1/flows/id/patchDisable.js';
+import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
+import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
@@ -252,14 +259,13 @@ web.route('/api/v1/environment/webhook/settings').patch(webAuth, patchSettings);
 web.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
-web.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
-web.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
-web.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
-web.route('/api/v1/integration/name').put(webAuth, configController.editProviderConfigName.bind(connectionController));
-web.route('/api/v1/integration').post(webAuth, configController.createProviderConfig.bind(configController));
-web.route('/api/v1/integration/new').post(webAuth, configController.createEmptyProviderConfig.bind(configController));
-web.route('/api/v1/integration/:providerConfigKey').delete(webAuth, deleteIntegration);
-web.route('/api/v1/integration/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
+web.route('/api/v1/integrations').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
+web.route('/api/v1/integrations/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
+web.route('/api/v1/integrations').post(webAuth, postIntegration);
+web.route('/api/v1/integrations/:providerConfigKey').get(webAuth, getIntegration);
+web.route('/api/v1/integrations/:providerConfigKey').patch(webAuth, patchIntegration);
+web.route('/api/v1/integrations/:providerConfigKey').delete(webAuth, deleteIntegration);
+web.route('/api/v1/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
 
 web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 
@@ -276,13 +282,13 @@ web.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.
 web.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
 web.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
-web.route('/api/v1/sync/:syncId/frequency').put(webAuth, syncController.updateFrequency.bind(syncController));
 web.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
-web.route('/api/v1/flow/pre-built/deploy').post(webAuth, postPreBuiltDeploy);
-web.route('/api/v1/flow/pre-built/upgrade').put(webAuth, putUpgradePreBuilt);
+web.route('/api/v1/flows/pre-built/deploy').post(webAuth, postPreBuiltDeploy);
+web.route('/api/v1/flows/pre-built/upgrade').put(webAuth, putUpgradePreBuilt);
 web.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
-web.route('/api/v1/flow/:id/disable').patch(webAuth, flowController.disableFlow.bind(flowController));
-web.route('/api/v1/flow/:id/enable').patch(webAuth, flowController.enableFlow.bind(flowController));
+web.route('/api/v1/flows/:id/disable').patch(webAuth, patchFlowDisable);
+web.route('/api/v1/flows/:id/enable').patch(webAuth, patchFlowEnable);
+web.route('/api/v1/flows/:id/frequency').patch(webAuth, patchFlowFrequency);
 web.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 web.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));

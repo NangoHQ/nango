@@ -5,6 +5,7 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getAndReconcileDifferences } from '@nangohq/shared';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
+import { providerConfigKeySchema } from '../../../helpers/validation.js';
 
 const orchestrator = getOrchestrator();
 
@@ -68,7 +69,7 @@ export const flowConfig = z
             )
             .optional(),
         syncName: z.string(),
-        providerConfigKey: z.string(),
+        providerConfigKey: providerConfigKeySchema,
         fileBody,
         version: z.string().optional(),
         track_deletes: z.boolean().optional().default(false),
@@ -80,7 +81,7 @@ export const flowConfigs = z.array(flowConfig);
 export const postConnectionScriptsByProvider = z.array(
     z
         .object({
-            providerConfigKey: z.string().min(1).max(255),
+            providerConfigKey: providerConfigKeySchema,
             scripts: z.array(z.object({ name: z.string().min(1).max(255), fileBody }).strict())
         })
         .strict()

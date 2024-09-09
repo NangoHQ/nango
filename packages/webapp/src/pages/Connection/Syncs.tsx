@@ -52,7 +52,7 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                             <Table.Head className="w-[80px]">Status</Table.Head>
                             <Table.Head className="w-[80px]">Frequency</Table.Head>
                             <Table.Head className="w-[120px]">Last Sync Start</Table.Head>
-                            <Table.Head className="w-[120px]">Next Sync Start</Table.Head>
+                            <Table.Head className="w-[130px]">Next Sync Start</Table.Head>
                             <Table.Head className="w-[120px]">Last Run</Table.Head>
                             <Table.Head className="w-[40px]"></Table.Head>
                         </Table.Row>

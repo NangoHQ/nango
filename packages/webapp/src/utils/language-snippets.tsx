@@ -60,15 +60,23 @@ ${modelToString(input)}`;
     return snippet;
 }
 
-export function curlSnippet(
-    baseUrl: string,
-    endpoint: string | NangoSyncEndpoint | NangoSyncEndpoint[],
-    secretKey: string,
-    connectionId: string,
-    providerConfigKey: string,
-    input?: NangoModel | NangoSyncModel,
+export function curlSnippet({
+    baseUrl,
+    endpoint,
+    secretKey,
+    connectionId,
+    providerConfigKey,
+    input,
     method = 'GET'
-) {
+}: {
+    baseUrl: string;
+    endpoint: string | NangoSyncEndpoint | NangoSyncEndpoint[];
+    secretKey: string;
+    connectionId: string;
+    providerConfigKey: string;
+    input?: NangoModel | NangoSyncModel;
+    method?: string;
+}) {
     let curlMethod: HTTP_VERB = method as HTTP_VERB;
     const secretKeyDisplay = isProd() ? maskedKey : secretKey;
     if (typeof endpoint !== 'string') {

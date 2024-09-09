@@ -36,7 +36,7 @@ export const FetchBloc: React.FC<{
         if (language === Language.Node) {
             return nodeSyncSnippet({ modelName: model, secretKey, connectionId, providerConfigKey });
         } else if (language === Language.cURL) {
-            return curlSnippet(baseUrl, endpointSync, secretKey, connectionId, providerConfigKey);
+            return curlSnippet({ baseUrl, endpoint: endpointSync, secretKey, connectionId, providerConfigKey });
         }
         return '';
     }, [language, baseUrl, secretKey, connectionId, providerConfigKey]);

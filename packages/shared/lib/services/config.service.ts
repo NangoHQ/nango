@@ -151,31 +151,30 @@ class ConfigService {
         return configs.map((config) => config.unique_key);
     }
 
-    async createProviderConfig(config: ProviderConfig): Promise<void | Pick<ProviderConfig, 'id'>[]> {
+    async createProviderConfig(config: ProviderConfig): Promise<ProviderConfig | null> {
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
-        return db.knex.from<ProviderConfig>(`_nango_configs`).insert(configToInsert, ['id']);
+        const res = await db.knex.from<ProviderConfig>(`_nango_configs`).insert(configToInsert).returning('*');
+        return res[0] ?? null;
     }
 
-    async createEmptyProviderConfig(provider: string, environment_id: number): Promise<Pick<ProviderConfig, 'id' | 'unique_key'>> {
+    async createEmptyProviderConfig(provider: string, environment_id: number): Promise<ProviderConfig> {
         const exists = await db.knex
             .count<{ count: string }>('*')
             .from<ProviderConfig>(`_nango_configs`)
             .where({ provider, environment_id, deleted: false })
             .first();
 
-        const config = {
+        const config = await this.createProviderConfig({
             environment_id,
             unique_key: exists?.count === '0' ? provider : `${provider}-${nanoid(4).toLocaleLowerCase()}`,
             provider
-        };
+        } as ProviderConfig);
 
-        const id = await this.createProviderConfig(config as ProviderConfig);
-
-        if (!id || id.length === 0) {
+        if (!config) {
             throw new NangoError('unknown_provider_config');
         }
 
-        return { id: id[0]?.id, unique_key: config.unique_key } as Pick<ProviderConfig, 'id' | 'unique_key'>;
+        return config;
     }
 
     async deleteProviderConfig({
@@ -212,7 +211,7 @@ class ConfigService {
     async editProviderConfig(config: ProviderConfig) {
         return db.knex
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: config.unique_key, environment_id: config.environment_id, deleted: false })
+            .where({ id: config.id!, environment_id: config.environment_id, deleted: false })
             .update(encryptionManager.encryptProviderConfig(config));
     }
 
@@ -296,11 +295,11 @@ class ConfigService {
             unique_key: fromConfig.unique_key
         });
 
-        if (!providerConfigResponse || providerConfigResponse.length === 0 || !providerConfigResponse[0] || !providerConfigResponse[0].id) {
+        if (!providerConfigResponse) {
             return null;
         }
 
-        return { copiedToId: providerConfigResponse[0].id, copiedFromId: foundConfigId };
+        return { copiedToId: providerConfigResponse.id!, copiedFromId: foundConfigId };
     }
 }
 
