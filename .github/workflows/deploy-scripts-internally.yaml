@@ -17,9 +17,18 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
+            - name: Install Node.js
+              uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+
             - name: Install nango CLI
               run: |
+                  npm ci
+                  npm run ts-build
                   npm install -g ./packages/cli
+                  NANGO_CLI_UPGRADE_MODE=ignore nango version --debug
 
             - name: Process and deploy integrations
               run: |
