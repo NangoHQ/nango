@@ -6,7 +6,7 @@ on:
             - master
 
 concurrency:
-    group: templates-${{ github.event.pull_request.number || github.ref }}
+    group: deploy-templates-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
 jobs:
