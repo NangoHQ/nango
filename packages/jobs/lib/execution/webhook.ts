@@ -57,6 +57,13 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
 
+        await logCtx.info(`Starting webhook '${task.webhookName}'`, {
+            input: task.input,
+            webhook: task.webhookName,
+            connection: task.connection.connection_id,
+            integration: task.connection.provider_config_key
+        });
+
         syncJob = await createSyncJob({
             sync_id: sync.id,
             type: SyncType.INCREMENTAL,

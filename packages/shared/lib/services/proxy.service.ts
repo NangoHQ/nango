@@ -12,12 +12,12 @@ import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvid
 import configService from './config.service.js';
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import type { LogsBuffer, Template as ProviderTemplate } from '@nangohq/types';
+import type { MessageRowInsert, Template as ProviderTemplate } from '@nangohq/types';
 
 const logger = getLogger('Proxy');
 
 interface Logs {
-    logs: LogsBuffer[];
+    logs: MessageRowInsert[];
 }
 
 interface RouteResponse {
@@ -45,17 +45,18 @@ class ProxyService {
         externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration,
         internalConfig: InternalProxyConfiguration
     ): ServiceResponse<ApplicationConstructedProxyConfiguration> & Logs {
-        const logs: LogsBuffer[] = [];
+        const logs: MessageRowInsert[] = [];
         let data = externalConfig.data;
         const { endpoint: passedEndpoint, providerConfigKey, connectionId, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
         const { connection, provider } = internalConfig;
 
         if (!passedEndpoint && !baseUrlOverride) {
-            logs.push({ level: 'error', createdAt: new Date().toISOString(), message: 'Proxy: a API URL endpoint is missing.' });
+            logs.push({ type: 'log', level: 'error', createdAt: new Date().toISOString(), message: 'Proxy: a API URL endpoint is missing.' });
             return { success: false, error: new NangoError('missing_endpoint'), response: null, logs };
         }
         if (!connectionId) {
             logs.push({
+                type: 'log',
                 level: 'error',
                 createdAt: new Date().toISOString(),
                 message: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
@@ -64,6 +65,7 @@ class ProxyService {
         }
         if (!providerConfigKey) {
             logs.push({
+                type: 'log',
                 level: 'error',
                 createdAt: new Date().toISOString(),
                 message: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
@@ -72,6 +74,7 @@ class ProxyService {
         }
 
         logs.push({
+            type: 'log',
             level: 'debug',
             createdAt: new Date().toISOString(),
             message: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
@@ -119,6 +122,7 @@ class ProxyService {
         }
 
         logs.push({
+            type: 'log',
             level: 'debug',
             createdAt: new Date().toISOString(),
             message: 'Proxy: token retrieved successfully'
@@ -133,6 +137,7 @@ class ProxyService {
 
         if (!template || ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride)) {
             logs.push({
+                type: 'log',
                 level: 'error',
                 createdAt: new Date().toISOString(),
                 message: `The proxy is either not supported for the provider ${provider} or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).`
@@ -142,6 +147,7 @@ class ProxyService {
         }
 
         logs.push({
+            type: 'log',
             level: 'debug',
             createdAt: new Date().toISOString(),
             message: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy?.base_url}`
@@ -152,6 +158,7 @@ class ProxyService {
         }
 
         logs.push({
+            type: 'log',
             level: 'debug',
             createdAt: new Date().toISOString(),
             message: `Endpoint set to ${endpoint} with retries set to ${retries} ${retryOn ? `and retryOn set to ${retryOn}` : ''}`
@@ -194,7 +201,7 @@ class ProxyService {
     }
 
     public retryHandler = async (error: AxiosError, type: 'at' | 'after', retryHeader: string): Promise<RetryHandlerResponse & Logs> => {
-        const logs: LogsBuffer[] = [];
+        const logs: MessageRowInsert[] = [];
 
         if (type === 'at') {
             const resetTimeEpoch = error.response?.headers[retryHeader] || error.response?.headers[retryHeader.toLowerCase()];
@@ -209,6 +216,7 @@ class ProxyService {
                     const content = `Rate limit reset time was parsed successfully, retrying after ${waitDuration} seconds`;
 
                     logs.push({
+                        type: 'http',
                         level: 'error',
                         createdAt: new Date().toISOString(),
                         message: content
@@ -229,6 +237,7 @@ class ProxyService {
                 const content = `Retry header was parsed successfully, retrying after ${retryAfter} seconds`;
 
                 logs.push({
+                    type: 'http',
                     level: 'error',
                     createdAt: new Date().toISOString(),
                     message: content
@@ -250,7 +259,12 @@ class ProxyService {
      * @param {AxiosError} error
      * @param {attemptNumber} number
      */
-    public retry = async (config: ApplicationConstructedProxyConfiguration, logs: LogsBuffer[], error: AxiosError, attemptNumber: number): Promise<boolean> => {
+    public retry = async (
+        config: ApplicationConstructedProxyConfiguration,
+        logs: MessageRowInsert[],
+        error: AxiosError,
+        attemptNumber: number
+    ): Promise<boolean> => {
         if (
             error.response?.status.toString().startsWith('5') ||
             // Note that Github issues a 403 for both rate limits and improper scopes
@@ -264,7 +278,7 @@ class ProxyService {
                 const retryHeader = config.retryHeader.at ? config.retryHeader.at : config.retryHeader.after;
 
                 const { shouldRetry, logs: retryActivityLogs } = await this.retryHandler(error, type, retryHeader as string);
-                retryActivityLogs.forEach((a: LogsBuffer) => logs.push(a));
+                retryActivityLogs.forEach((l: MessageRowInsert) => logs.push(l));
                 return shouldRetry;
             }
 
@@ -273,7 +287,7 @@ class ProxyService {
                 const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;
 
                 const { shouldRetry, logs: retryActivityLogs } = await this.retryHandler(error, type, retryHeader as string);
-                retryActivityLogs.forEach((a: LogsBuffer) => logs.push(a));
+                retryActivityLogs.forEach((l: MessageRowInsert) => logs.push(l));
                 return shouldRetry;
             }
 
@@ -284,6 +298,7 @@ class ProxyService {
             }`;
 
             logs.push({
+                type: 'http',
                 level: 'error',
                 createdAt: new Date().toISOString(),
                 message: content
@@ -361,7 +376,7 @@ class ProxyService {
     }
 
     private async request(config: ApplicationConstructedProxyConfiguration, options: AxiosRequestConfig): Promise<RouteResponse & Logs> {
-        const logs: LogsBuffer[] = [];
+        const logs: MessageRowInsert[] = [];
         try {
             const response: AxiosResponse = await backOff(
                 () => {
@@ -370,7 +385,7 @@ class ProxyService {
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, config, logs) }
             );
 
-            const handling = this.handleResponse(config, options.url!);
+            const handling = this.handleResponse(response, config, options.url!);
             return { response, logs: [...logs, ...handling.logs] };
         } catch (err) {
             const handling = this.handleErrorResponse(err, options.url!, config);
@@ -537,17 +552,24 @@ class ProxyService {
         return headers;
     }
 
-    private handleResponse(config: ApplicationConstructedProxyConfiguration, url: string): Logs {
+    private handleResponse(response: AxiosResponse, config: ApplicationConstructedProxyConfiguration, url: string): Logs {
         const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
 
         return {
             logs: [
                 {
+                    type: 'http',
                     level: 'info',
                     createdAt: new Date().toISOString(),
-                    message: `${config.method.toUpperCase()} request to ${url} was successful`,
-                    meta: {
-                        headers: JSON.stringify(safeHeaders)
+                    message: `${config.method.toUpperCase()} ${url} was successful`,
+                    request: {
+                        method: config.method,
+                        url,
+                        headers: safeHeaders
+                    },
+                    response: {
+                        code: response.status,
+                        headers: response.headers as Record<string, string>
                     }
                 }
             ]
@@ -555,14 +577,24 @@ class ProxyService {
     }
 
     private handleErrorResponse(error: unknown, url: string, config: ApplicationConstructedProxyConfiguration): Logs {
-        const logs: LogsBuffer[] = [];
+        const logs: MessageRowInsert[] = [];
 
         if (isAxiosError(error)) {
             const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
             logs.push({
+                type: 'http',
                 level: 'error',
                 createdAt: new Date().toISOString(),
                 message: `${config.method.toUpperCase()} request to ${url} failed`,
+                request: {
+                    method: config.method,
+                    url,
+                    headers: safeHeaders
+                },
+                response: {
+                    code: error.response?.status || 500,
+                    headers: error.response?.headers as Record<string, string>
+                },
                 error: {
                     name: error.name,
                     message: error.message,
@@ -579,6 +611,7 @@ class ProxyService {
             });
         } else {
             logs.push({
+                type: 'http',
                 level: 'error',
                 createdAt: new Date().toISOString(),
                 message: `${config.method.toUpperCase()} request to ${url} failed`,

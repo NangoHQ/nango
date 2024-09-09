@@ -17,7 +17,7 @@ export default async function runAction(nango: NangoAction, input: NetsuitePayme
         currency: { id: input.currency },
         tranId: input.paymentReference,
         status: { id: input.status },
-        apply: { items: input.applyTo.map((id) => ({ doc: id })) }
+        apply: { items: input.applyTo.map((id) => ({ doc: { id } })) }
     };
     if (input.description) {
         body.memo = input.description;

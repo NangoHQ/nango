@@ -3,7 +3,7 @@ import proxyService from './proxy.service.js';
 import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, OAuth2Credentials } from '../models/index.js';
 import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import type { LogsBuffer } from '@nangohq/types';
+import type { MessageRowInsert } from '@nangohq/types';
 
 describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct a header using an api key with multiple headers', () => {
@@ -579,7 +579,8 @@ describe('Proxy service configure', () => {
         expect(error).toBeDefined();
         expect(error?.message).toContain('missing_endpoint');
         expect(logs.length).toBe(1);
-        expect(logs[0]).toStrictEqual<LogsBuffer>({
+        expect(logs[0]).toStrictEqual<MessageRowInsert>({
+            type: 'log',
             level: 'error',
             createdAt: expect.any(String),
             message: 'Proxy: a API URL endpoint is missing.'
@@ -612,7 +613,8 @@ describe('Proxy service configure', () => {
         expect(error).toBeDefined();
         expect(error?.message).toContain("Missing param 'connection_id'.");
         expect(logs.length).toBe(1);
-        expect(logs[0]).toStrictEqual<LogsBuffer>({
+        expect(logs[0]).toStrictEqual<MessageRowInsert>({
+            type: 'log',
             level: 'error',
             createdAt: expect.any(String),
             message:
@@ -646,7 +648,8 @@ describe('Proxy service configure', () => {
         expect(error).toBeDefined();
         expect(error?.message).toContain('missing_provider_config_key');
         expect(logs.length).toBe(1);
-        expect(logs[0]).toStrictEqual<LogsBuffer>({
+        expect(logs[0]).toStrictEqual<MessageRowInsert>({
+            type: 'log',
             level: 'error',
             createdAt: expect.any(String),
             message:
@@ -680,7 +683,8 @@ describe('Proxy service configure', () => {
         expect(error).toBeDefined();
         expect(error?.message).toContain('proxy is either not supported');
         expect(logs.length).toBe(3);
-        expect(logs[2]).toStrictEqual<LogsBuffer>({
+        expect(logs[2]).toStrictEqual<MessageRowInsert>({
+            type: 'log',
             level: 'error',
             createdAt: expect.any(String),
             message:

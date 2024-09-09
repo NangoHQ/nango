@@ -459,12 +459,19 @@ describe('Log', () => {
         expect(mock).toHaveBeenCalledWith({
             data: {
                 activityLogId: '1',
-                level: 'error',
-                msg: 'hello',
-                timestamp: expect.any(Number)
+                log: {
+                    type: 'log',
+                    level: 'error',
+                    message: 'hello',
+                    createdAt: expect.any(String),
+                    environmentId: 1,
+                    meta: null,
+                    source: 'user'
+                }
             },
             headers: {
-                Authorization: 'Bearer ***'
+                Authorization: 'Bearer ***',
+                'Content-Type': 'application/json'
             },
             method: 'POST',
             url: '/environment/1/log'
