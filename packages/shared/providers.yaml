@@ -219,6 +219,32 @@ auth0:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/auth0
+avalara:
+    categories:
+        - legal
+    auth_mode: BASIC
+    proxy:
+        headers:
+            X-Avalara-Client: ${connectionConfig.avalaraClient}
+            Content-Type: application/json
+        base_url: https://rest.avatax.com/api/v2
+        verification:
+            method: GET
+            endpoint: /utilities/subscriptions
+    docs: https://docs.nango.dev/integrations/all/avalara
+avalara-sandbox:
+    categories:
+        - legal
+    auth_mode: BASIC
+    proxy:
+        headers:
+            X-Avalara-Client: ${connectionConfig.avalaraClient}
+            Content-Type: application/json
+        base_url: https://sandbox-rest.avatax.com/api/v2
+        verification:
+            method: GET
+            endpoint: /utilities/subscriptions
+    docs: https://docs.nango.dev/integrations/all/avalara
 aws:
     categories:
         - dev-tools
@@ -854,6 +880,17 @@ discord:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/discord
+discourse:
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.defaultHost}
+        headers:
+            Api-Username: ${connectionConfig.apiUsername}
+            Api-Key: ${apiKey}
+            Accept: application/json
+    docs: https://docs.nango.dev/integrations/all/discourse
 docusign:
     categories:
         - legal
