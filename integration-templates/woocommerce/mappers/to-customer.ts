@@ -2,10 +2,10 @@ import type { Customer } from '../../models';
 import type { WooCommerceCustomer } from '../types';
 
 /**
- * Converts a WooCommerceOrder object to a slim Order object.
- * Only includes essential properties mapped from WooCommerceOrder.
- * @param customer The WooCommerceOrder object to convert.
- * @returns Order object representing WooCommerce order information.
+ * Converts a WooCommerceCustomer object to a slim Customer object.
+ * Only includes essential properties mapped from WooCommerceCustomer.
+ * @param customer The WooCommerceCustomer object to convert.
+ * @returns Customer object representing WooCommerce customer information.
  */
 export function toCustomer(customer: WooCommerceCustomer): Customer {
     return {
