@@ -74,7 +74,11 @@ export class SyncManagerService {
             if (!syncData.enabled) {
                 continue;
             }
-            const sync = await createSync(nangoConnectionId, syncName);
+            const syncConfig = await getSyncConfigByParams(nangoConnection.environment_id, syncName, providerConfigKey);
+            if (!syncConfig) {
+                continue;
+            }
+            const sync = await createSync(nangoConnectionId, syncConfig);
             if (sync) {
                 await orchestrator.scheduleSync({
                     nangoConnection,
@@ -100,22 +104,26 @@ export class SyncManagerService {
         logCtx?: LogContext
     ): Promise<boolean> {
         try {
-            const syncConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
+            const providerConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
+            if (!providerConfig) {
+                throw new Error(`Provider config not found for ${providerConfigKey} in environment ${environmentId}`);
+            }
             if (debug) {
                 await logCtx?.debug(`Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
             for (const connection of connections) {
-                const syncExists = await getSyncByIdAndName(connection.id as number, syncName);
-
-                if (syncExists) {
+                const syncConfig = await getSyncConfigByParams(connection.environment_id, syncName, providerConfigKey);
+                if (!syncConfig) {
                     continue;
                 }
-
-                const createdSync = await createSync(connection.id as number, syncName);
+                const createdSync = await createSync(connection.id as number, syncConfig);
+                if (!createdSync) {
+                    continue;
+                }
                 await orchestrator.scheduleSync({
                     nangoConnection: connection,
-                    sync: createdSync as Sync,
-                    providerConfig: syncConfig as ProviderConfig,
+                    sync: createdSync,
+                    providerConfig: providerConfig,
                     syncName,
                     syncData: { ...sync, returns: sync.models, input: '' } as NangoIntegrationData,
                     logContextGetter,
