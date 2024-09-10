@@ -34,12 +34,12 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                         Start syncing models for <span className="capitalize">{provider}</span> on the Sync Configuration tab.
                     </div>
                     <Link
-                        to={`/${env}/integration/${connection?.provider_config_key}#scripts`}
+                        to={`/${env}/integrations/${connection.provider_config_key}`}
                         className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300"
                     >
                         <span className="flex">
                             <AdjustmentsHorizontalIcon className="flex h-5 w-5 mr-3" />
-                            Script Configuration
+                            Integration Configuration
                         </span>
                     </Link>
                 </div>
