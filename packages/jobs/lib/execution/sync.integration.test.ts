@@ -326,7 +326,7 @@ async function seeds(records: UnencryptedRecordData[], trackDeletes: boolean) {
         throw new Error('Failed to create connection');
     }
 
-    const sync = await seeders.createSyncSeeds(connection.id);
+    const sync = await seeders.createSyncSeeds(connection.id, env.id);
     if (!sync.id) {
         throw new Error('Failed to create sync');
     }

@@ -71,8 +71,26 @@ describe('Auto Idle Demo', async () => {
             accountId: 0
         });
         const connection = conn[0]!.connection;
-        const sync = (await createSync(connection.id!, DEMO_SYNC_NAME))!;
         const now = new Date();
+        const syncConfig: SyncConfig = {
+            id: 1,
+            environment_id: env.id,
+            sync_name: DEMO_SYNC_NAME,
+            type: 'sync',
+            file_location: 'file_location',
+            nango_config_id: 1,
+            models: ['model'],
+            model_schema: [{ name: 'model', fields: [{ name: 'field', type: 'type' }] }],
+            active: true,
+            runs: 'runs',
+            track_deletes: false,
+            auto_start: false,
+            webhook_subscriptions: [],
+            enabled: true,
+            created_at: now,
+            updated_at: now
+        };
+        const sync = (await createSync(connection.id!, syncConfig))!;
         const scheduleName = `environment:${env.id}:sync:${sync.id}`;
         await orchestratorService.getClient().recurring({
             name: scheduleName,
