@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight } from '@geist-ui/icons';
 import { Language, Steps, endpointSync, model } from './utils';
 import Button from '../../components/ui/button/Button';
 import { useEffect, useMemo, useState } from 'react';
-import { curlSnippet, nodeSyncSnippet } from '../../utils/language-snippets';
+import { httpSnippet, nodeSyncSnippet } from '../../utils/language-snippets';
 import { useStore } from '../../store';
 import { CopyButton } from '../../components/ui/button/CopyButton';
 import Spinner from '../../components/ui/Spinner';
@@ -29,16 +29,18 @@ export const FetchBloc: React.FC<{
     const [error, setError] = useState<string | null>(null);
     const [pollingInterval, setPollingInterval] = useState<Interval | undefined>(undefined);
     const [show, setShow] = useState(true);
+    const [snippet, setSnippet] = useState('');
 
     const baseUrl = useStore((state) => state.baseUrl);
 
-    const snippet = useMemo<string>(() => {
-        if (language === Language.Node) {
-            return nodeSyncSnippet({ modelName: model, secretKey, connectionId, providerConfigKey });
-        } else if (language === Language.cURL) {
-            return curlSnippet({ baseUrl, endpoint: endpointSync, secretKey, connectionId, providerConfigKey });
-        }
-        return '';
+    useEffect(() => {
+        void (async () => {
+            if (language === Language.Node) {
+                setSnippet(nodeSyncSnippet({ modelName: model, secretKey, connectionId, providerConfigKey }));
+            } else if (language === Language.cURL) {
+                setSnippet(await httpSnippet({ baseUrl, endpoint: { GET: endpointSync }, secretKey, connectionId, providerConfigKey, language: 'shell' }));
+            }
+        })();
     }, [language, baseUrl, secretKey, connectionId, providerConfigKey]);
 
     useEffect(() => {
