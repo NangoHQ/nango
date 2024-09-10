@@ -46,12 +46,15 @@ jobs:
                     npm install zod soap botbuilder
 
                     response=$(nango admin:deploy-internal template-"$integration")
+                    exit_code=$?
 
                     echo "$response" | grep -q "unknown_provider_config"
                     if [ $? -eq 0 ]; then
                       echo "Warning: Unknown provider config for $integration"
                       continue
-                    else
+                    fi
+
+                    if [ $exit_code -ne 0 ]; then
                       echo "Error in deployment for $integration: $response"
                       exit 1
                     fi
