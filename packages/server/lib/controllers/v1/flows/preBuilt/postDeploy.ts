@@ -6,12 +6,13 @@ import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, deployPreBuilt, flowService, syncManager } from '@nangohq/shared';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { flowConfig } from '../../../sync/deploy/postConfirmation.js';
+import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
 const validation = z
     .object({
-        provider: z.string().min(1).max(255),
-        providerConfigKey: z.string().min(1).max(255),
-        scriptName: z.string().min(1).max(255),
+        provider: providerSchema,
+        providerConfigKey: providerConfigKeySchema,
+        scriptName: scriptNameSchema,
         type: flowConfig.shape.type
     })
     .strict();
@@ -45,7 +46,7 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
     }
 
     if (account.is_capped) {
-        const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: body.providerConfigKey, environmentId, type: 'activate' });
+        const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: body.providerConfigKey, environmentId, type: 'deploy' });
         if (isCapped) {
             res.status(400).send({ error: { code: 'resource_capped' } });
             return;

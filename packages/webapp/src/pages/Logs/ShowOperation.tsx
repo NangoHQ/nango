@@ -131,7 +131,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="text-gray-400 text-s font-code truncate">
                         {operation.integrationName ? (
                             <Link
-                                to={`/${env}/integration/${operation.integrationName}`}
+                                to={`/${env}/integrations/${operation.integrationName}`}
                                 target="_blank"
                                 className="flex gap-2.5 items-center hover:text-white"
                             >

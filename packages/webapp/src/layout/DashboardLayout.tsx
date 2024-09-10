@@ -4,6 +4,7 @@ import type { LeftNavBarItems } from '../components/LeftNavBar';
 import LeftNavBar from '../components/LeftNavBar';
 import TopNavBar from '../components/TopNavBar';
 import { cn } from '../utils/utils';
+import { forwardRef } from 'react';
 
 interface DashboardLayoutI {
     children: React.ReactNode;
@@ -12,7 +13,7 @@ interface DashboardLayoutI {
     className?: ClassValue;
 }
 
-export default function DashboardLayout({ children, selectedItem, fullWidth = false, className }: DashboardLayoutI) {
+const DashboardLayout = forwardRef<HTMLDivElement, DashboardLayoutI>(function DashboardLayout({ children, selectedItem, fullWidth = false, className }, ref) {
     return (
         <div className="h-full min-h-screen flex bg-pure-black">
             <div className="absolute w-screen z-20">
@@ -25,10 +26,12 @@ export default function DashboardLayout({ children, selectedItem, fullWidth = fa
                 <div className="h-[57px] w-full">
                     <TopNavBar />
                 </div>
-                <div className="h-full overflow-auto">
+                <div className="h-full overflow-auto" ref={ref}>
                     <div className={cn('flex-grow h-auto mx-auto', fullWidth ? 'w-full' : 'w-[976px] py-8', className)}>{children}</div>
                 </div>
             </div>
         </div>
     );
-}
+});
+
+export default DashboardLayout;

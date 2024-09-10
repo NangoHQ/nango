@@ -96,8 +96,8 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
         for (const syncName in integration) {
             const sync: NangoSyncConfig = integration[syncName] as unknown as NangoSyncConfig;
             const models: NangoSyncModel[] = [];
+            const syncReturns = Array.isArray(sync.returns) ? sync.returns : [sync.returns];
             if (sync.returns) {
-                const syncReturns = Array.isArray(sync.returns) ? sync.returns : [sync.returns];
                 syncReturns.forEach((model) => {
                     const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
                     if (modelFields) {
@@ -117,7 +117,7 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 type: sync.type || 'sync',
                 auto_start: sync.auto_start === false ? false : true,
                 attributes: sync.attributes || {},
-                returns: sync.returns,
+                returns: syncReturns,
                 models: models || [],
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
@@ -576,7 +576,7 @@ function buildActions({
             version: action.version || null,
             last_deployed: action.updated_at || null,
             attributes: action.attributes || {},
-            returns: action.output as string[],
+            returns: Array.isArray(action.output) ? action.output : action.output ? [action.output] : [],
             description: action?.description || action?.metadata?.description || '',
             scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
             input: inputModel,

@@ -71,7 +71,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
 
             res.status(400).send({
                 errorLog,
-                provider: null,
+                provider: null, // TODO: fix this
                 connection: errorConnection
             });
         } else {

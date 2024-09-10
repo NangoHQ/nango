@@ -16,6 +16,7 @@ export interface Config {
 }
 
 class FlowService {
+    // TODO: cache this
     public getAllAvailableFlows(): Config {
         try {
             const flowPath = path.join(dirname(import.meta.url), '../../flows.yaml');
@@ -32,6 +33,7 @@ class FlowService {
         }
     }
 
+    // TODO: cache this
     public getAllAvailableFlowsAsStandardConfig(): StandardNangoConfig[] {
         const config = this.getAllAvailableFlows();
         const { integrations: allIntegrations } = config;

@@ -34,12 +34,12 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                         Start syncing models for <span className="capitalize">{provider}</span> on the Sync Configuration tab.
                     </div>
                     <Link
-                        to={`/${env}/integration/${connection?.provider_config_key}#scripts`}
+                        to={`/${env}/integrations/${connection.provider_config_key}`}
                         className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300"
                     >
                         <span className="flex">
                             <AdjustmentsHorizontalIcon className="flex h-5 w-5 mr-3" />
-                            Script Configuration
+                            Integration Configuration
                         </span>
                     </Link>
                 </div>
@@ -52,7 +52,7 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                             <Table.Head className="w-[80px]">Status</Table.Head>
                             <Table.Head className="w-[80px]">Frequency</Table.Head>
                             <Table.Head className="w-[120px]">Last Sync Start</Table.Head>
-                            <Table.Head className="w-[120px]">Next Sync Start</Table.Head>
+                            <Table.Head className="w-[130px]">Next Sync Start</Table.Head>
                             <Table.Head className="w-[120px]">Last Run</Table.Head>
                             <Table.Head className="w-[40px]"></Table.Head>
                         </Table.Row>

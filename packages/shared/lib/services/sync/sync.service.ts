@@ -391,26 +391,6 @@ export const getSyncsBySyncConfigId = async (environmentId: number, syncConfigId
     return results;
 };
 
-export const getSyncsByConnectionIdsAndEnvironmentIdAndSyncName = async (connectionIds: string[], environmentId: number, syncName: string): Promise<Sync[]> => {
-    const results = await schema()
-        .select(`${TABLE}.id`)
-        .from<Sync>(TABLE)
-        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
-        .whereIn('_nango_connections.connection_id', connectionIds)
-        .andWhere({
-            name: syncName,
-            environment_id: environmentId,
-            [`${TABLE}.deleted`]: false,
-            [`_nango_connections.deleted`]: false
-        });
-
-    if (Array.isArray(results) && results.length > 0) {
-        return results;
-    }
-
-    return [];
-};
-
 export const getAndReconcileDifferences = async ({
     environmentId,
     flows,

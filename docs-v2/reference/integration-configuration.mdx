@@ -358,13 +358,13 @@ These changes can have significant impacts, in particular, if you:
 
 Unless you sync configuration specifies `auto_start=false`, the deployment will kick off the data synchronization between the external API and Nango, for all relevant connections.
 
-This change will be reflected in the Nango UI in _Integrations_ > _select your integration_ > _Script_ tab.
+This change will be reflected in the Nango UI in _Integrations_ > _select your integration_ > _Endpoints_ tab.
 
 ### Removing a sync
 
 Removing a sync will erase all the cached data related to that sync, for all relevant connections. The synced records will no longer be accessive via the Nango API & SDKs.
 
-This change will be reflected in the Nango UI in _Integrations_ > _select your integration_ > _Script_ tab.
+This change will be reflected in the Nango UI in _Integrations_ > _select your integration_ > _Endpoints_ tab.
 
 <Warning>
 Changing the integration ID in your configuration is the equivalent of deleting the sync with the old integration ID, and creating a new one. So, the data cached by the old sync will be deleted (for all relevant connections).
@@ -374,7 +374,7 @@ Changing the integration ID in your configuration is the equivalent of deleting 
 
 Removing an action will cause the failure of any request to trigger this action.
 
-This change will be reflected in the Nango UI in _Integrations_ > _select your integration_ > _Script_ tab.
+This change will be reflected in the Nango UI in _Integrations_ > _select your integration_ > _Endpoints_ tab.
 
 ### Changing a model or script
 
