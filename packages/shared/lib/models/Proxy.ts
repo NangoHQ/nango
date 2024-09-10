@@ -4,12 +4,25 @@ import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials, TbaCredent
 import type { Connection } from './Connection.js';
 import type { Template as ProviderTemplate } from '@nangohq/types';
 
+export interface File {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    size: number;
+    destination: string;
+    filename: string;
+    path: string;
+    buffer: Buffer;
+}
+
 interface BaseProxyConfiguration {
     providerConfigKey: string;
     connectionId: string;
     endpoint: string;
     retries?: number;
     data?: unknown;
+    files?: File[];
     headers?: Record<string, string>;
     params?: string | Record<string, string | number>;
     paramsSerializer?: ParamsSerializerOptions;

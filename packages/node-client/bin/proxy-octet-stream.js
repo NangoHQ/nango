@@ -7,8 +7,6 @@ const nango = new Nango({ host: 'http://localhost:3003', secretKey: args[0] });
 const filePath = './test.pdf';
 const fileName = filePath.split('/').pop();
 const buffer = fs.readFileSync(filePath);
-const formData = new FormData();
-formData.append('file', new Blob([buffer]), fileName);
 
 nango
     .proxy({
@@ -16,10 +14,11 @@ nango
         connectionId: 'u',
         baseUrlOverride: 'http://localhost:3009',
         method: 'POST',
-        endpoint: '/upload/multipart',
-        data: formData,
+        endpoint: '/upload/octet-stream',
+        data: buffer,
         headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'application/octet-stream',
+            'X-File-Name': fileName
         }
     })
     .then((response) => {

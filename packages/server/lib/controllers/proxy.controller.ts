@@ -8,7 +8,7 @@ import url from 'url';
 import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
-import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration } from '@nangohq/shared';
+import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration, File } from '@nangohq/shared';
 import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
 import { metrics, getLogger, axiosInstance as axios, getHeaders } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
@@ -65,6 +65,10 @@ class ProxyController {
 
             const rawBodyFlag = await featureFlags.isEnabled('proxy:rawbody', 'global', false);
             const data = rawBodyFlag ? req.rawBody : req.body;
+            let files: File[] = [];
+            if (Array.isArray(req.files)) {
+                files = req.files as File[];
+            }
 
             const externalConfig: UserProvidedProxyConfiguration = {
                 endpoint,
@@ -72,6 +76,7 @@ class ProxyController {
                 connectionId,
                 retries: retries ? Number(retries) : 0,
                 data,
+                files,
                 headers,
                 baseUrlOverride,
                 decompress: decompress === 'true' ? true : false,
