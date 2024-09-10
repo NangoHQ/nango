@@ -7,7 +7,7 @@ integrations:
                 endpoint: /customers
                 sync_type: full
                 scopes: read
-                track_deletes: false
+                track_deletes: true
                 runs: every day
                 auto_start: true
                 output: Customer
