@@ -68,7 +68,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
             });
         }
 
-        return groups;
+        return groups.sort((a, b) => a.name.localeCompare(b.name));
     }, [data]);
 
     const currentFlow = useMemo<NangoSyncConfigWithEndpoint | undefined>(() => {
