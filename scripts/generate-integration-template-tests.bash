@@ -27,7 +27,6 @@ if [ -d $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/tests ]; then
 fi
 [ -f $TEMP_DIRECTORY/nango-integrations/*.ts ] && mv $TEMP_DIRECTORY/nango-integrations/*.ts $TEMP_DIRECTORY/nango-integrations/$INTEGRATION/
 
-export NANGO_CLI_UPGRADE_MODE=ignore
 
 pushd $TEMP_DIRECTORY/nango-integrations
 npx nango generate
