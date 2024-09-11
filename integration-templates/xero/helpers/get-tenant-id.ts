@@ -7,8 +7,13 @@ export async function getTenantId(nango: NangoAction | NangoSync) {
         return connection.connection_config['tenant_id'];
     }
 
-    const tenants = await nango.get({
+    const connections = await nango.get({
         endpoint: 'connections'
     });
-    return tenants.data[0]['tenantId'];
+
+    if (connections.data.length === 1) {
+        return connections.data[0]['tenantId'];
+    } else {
+        throw new Error('Multiple tenants found. Please reauthenticate to set the tenant id.');
+    }
 }
