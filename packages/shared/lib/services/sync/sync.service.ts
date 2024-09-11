@@ -370,12 +370,13 @@ export const findSyncByConnections = async (connectionIds: number[], sync_name: 
     return [];
 };
 
-export const getSyncsBySyncConfigId = async (syncConfigId: number): Promise<Sync[]> => {
+export const getSyncsBySyncConfigId = async (environmentId: number, syncConfigId: number): Promise<Sync[]> => {
     const results = await schema()
         .select('sync_name', `${TABLE}.id`)
         .from<Sync>(TABLE)
         .join(SYNC_CONFIG_TABLE, `${TABLE}.sync_config_id`, `${SYNC_CONFIG_TABLE}.id`)
         .where({
+            [`${SYNC_CONFIG_TABLE}.environment_id`]: environmentId,
             [`${SYNC_CONFIG_TABLE}.id`]: syncConfigId,
             [`${TABLE}.deleted`]: false,
             [`${SYNC_CONFIG_TABLE}.deleted`]: false,

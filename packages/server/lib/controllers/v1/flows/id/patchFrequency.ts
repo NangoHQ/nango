@@ -55,7 +55,7 @@ export const patchFlowFrequency = asyncWrapper<PatchFlowFrequency>(async (req, r
         return;
     }
 
-    const syncs = await getSyncsBySyncConfigId(valParams.data.id);
+    const syncs = await getSyncsBySyncConfigId(environment.id, valParams.data.id);
     for (const sync of syncs) {
         const updated = await orchestrator.updateSyncFrequency({
             syncId: sync.id,
