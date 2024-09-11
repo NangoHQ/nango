@@ -110,8 +110,6 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         return null;
     }
 
-    console.log(v1Flow);
-
     return (
         <Routes>
             <Route path="/" element={<EndpointsList byGroup={byGroup} v1Flow={v1Flow} integration={integration} />} />

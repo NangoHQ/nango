@@ -24,7 +24,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
 }) => {
     const env = useStore((state) => state.env);
 
-    if (byGroup.length <= 0) {
+    if (byGroup.length <= 0 && v1Flow.length <= 0) {
         return (
             <EmptyState
                 title="No available endpoints"
