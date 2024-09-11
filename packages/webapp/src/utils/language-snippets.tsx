@@ -62,6 +62,7 @@ ${modelToString(input)}`;
     return snippet;
 }
 
+const languageToSpec: Record<string, string> = { javascript: 'fetch', php: 'guzzle' };
 export async function httpSnippet({
     baseUrl,
     endpoint,
@@ -69,7 +70,6 @@ export async function httpSnippet({
     connectionId,
     providerConfigKey,
     language,
-    languageSpec,
     input
 }: {
     baseUrl: string;
@@ -78,7 +78,6 @@ export async function httpSnippet({
     connectionId: string;
     providerConfigKey: string;
     language: TargetId;
-    languageSpec?: string;
     input?: NangoModel | NangoSyncModel;
 }) {
     const [method, path] = Object.entries(endpoint)[0];
@@ -103,5 +102,5 @@ export async function httpSnippet({
         queryString: []
     });
 
-    return (await snippet.convert(language, languageSpec)) as string;
+    return (await snippet.convert(language, languageToSpec[language], { checkErrors: true })) as string;
 }

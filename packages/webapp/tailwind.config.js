@@ -26,7 +26,7 @@ module.exports = {
 
                 'orange-light': '#FFD19A',
                 'orange-base': '#EC9455',
-                'orange-base-35': '#F5AE73',
+                'orange-base-35': '#F5AE7359',
                 'orange-dark': '#F76B15',
 
                 // ---

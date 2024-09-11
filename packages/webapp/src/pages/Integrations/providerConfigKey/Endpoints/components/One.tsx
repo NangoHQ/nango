@@ -43,7 +43,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
     const [openConfiguration, setOpenConfiguration] = useState(false);
 
     const { environmentAndAccount } = useEnvironment(env);
-    const [language, setLanguage] = useLocalStorage<'node' | 'curl' | 'go' | 'javascript'>('nango:snippet:language', 'node');
+    const [language, setLanguage] = useLocalStorage<'node' | 'curl' | 'go' | 'javascript' | 'java' | 'php' | 'python'>('nango:snippet:language', 'node');
     const [requestSnippet, setRequestSnippet] = useState('');
     const [responseSnippet, setResponseSnippet] = useState('');
 
@@ -77,8 +77,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                     connectionId,
                     providerConfigKey,
                     input: flow.input,
-                    language: language === 'curl' ? 'shell' : language!,
-                    languageSpec: language === 'javascript' ? 'fetch' : undefined
+                    language: language === 'curl' ? 'shell' : language!
                 });
             }
 
@@ -124,7 +123,10 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
 
             {!flow.enabled && (
                 <Info variant="warning">
-                    This endpoint is disabled. To enable it, go to <button onClick={() => setOpenConfiguration(true)}>Endpoint Configuration</button>
+                    This endpoint is disabled. To enable it, go to{' '}
+                    <button onClick={() => setOpenConfiguration(true)} className="underline">
+                        Endpoint Configuration
+                    </button>
                 </Info>
             )}
 
@@ -233,6 +235,9 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                                         </SelectItem>
                                         <SelectItem value="python" className="text-s">
                                             Python
+                                        </SelectItem>
+                                        <SelectItem value="php" className="text-s">
+                                            PHP
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
