@@ -64,10 +64,10 @@ function generateSyncTest(integration: string, syncName: string, modelName: stri
 
     const result = ejs.render(templateSource, data);
 
-    if (!fs.existsSync(path.resolve(__dirname, '../nango-integrations/tests'))) {
-        fs.mkdirSync(path.resolve(__dirname, '../nango-integrations/tests'), { recursive: true });
+    if (!fs.existsSync(path.resolve(__dirname, `../nango-integrations/${integration}/tests`))) {
+        fs.mkdirSync(path.resolve(__dirname, `../nango-integrations/${integration}/tests`), { recursive: true });
     }
-    const outputPath = path.resolve(__dirname, `../nango-integrations/tests/${data['integration']}-${data['syncName']}.test.ts`);
+    const outputPath = path.resolve(__dirname, `../nango-integrations/${integration}/tests/${data['integration']}-${data['syncName']}.test.ts`);
     fs.writeFileSync(outputPath, result);
 
     console.log(`Test file 'tests/${data['integration']}-${data['syncName']}.test.ts' created successfully.`);

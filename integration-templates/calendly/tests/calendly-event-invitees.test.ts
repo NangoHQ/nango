@@ -1,21 +1,21 @@
 import { vi, expect, it, describe } from 'vitest';
 import type { NangoSync } from '../models.js';
 
-import fetchData from '../calendly/syncs/event-invitees.js';
+import fetchData from '../syncs/event-invitees.js';
 
 let batchSaveData: any = null;
 
-const { default: batchSaveDataRaw } = await import(`../calendly/mocks/event-invitees/batchSave.json`);
+const { default: batchSaveDataRaw } = await import(`../mocks/event-invitees/batchSave.json`);
 batchSaveData = batchSaveDataRaw;
 
 let batchDeleteData: any = null;
 
-const { default: batchDeleteDataRaw } = await import(`../calendly/mocks/event-invitees/batchDelete.json`);
+const { default: batchDeleteDataRaw } = await import(`../mocks/event-invitees/batchDelete.json`);
 batchDeleteData = batchDeleteDataRaw;
 
 let getConnection: null | unknown = null;
 
-const { default: getConnectionData } = await import('../calendly/mocks/nango/getConnection.json', { assert: { type: 'json' } });
+const { default: getConnectionData } = await import('../mocks/nango/getConnection.json', { assert: { type: 'json' } });
 getConnection = getConnectionData;
 
 let paginateGet = false;
@@ -53,39 +53,31 @@ describe('calendly event-invitees tests', () => {
             const { endpoint, method = 'GET' } = args;
             switch (method) {
                 case 'GET': {
-                    const { default: paginateDataGet } = await import(`../calendly/mocks/paginate/get/event-invitees${endpoint}.json`, {
-                        assert: { type: 'json' }
-                    });
+                    const { default: paginateDataGet } = await import(`../mocks/paginate/get/event-invitees${endpoint}.json`, { assert: { type: 'json' } });
                     paginateGet = paginateDataGet;
                     yield paginateGet;
                     break;
                 }
                 case 'POST': {
-                    const { default: paginateDataPost } = await import(`../calendly/mocks/paginate/post/event-invitees${endpoint}.json`, {
-                        assert: { type: 'json' }
-                    });
+                    const { default: paginateDataPost } = await import(`../mocks/paginate/post/event-invitees${endpoint}.json`, { assert: { type: 'json' } });
                     paginatePost = paginateDataPost;
                     yield paginatePost;
                     break;
                 }
                 case 'PATCH': {
-                    const { default: paginateDataPatch } = await import(`../calendly/mocks/paginate/patch/event-invitees${endpoint}.json`, {
-                        assert: { type: 'json' }
-                    });
+                    const { default: paginateDataPatch } = await import(`../mocks/paginate/patch/event-invitees${endpoint}.json`, { assert: { type: 'json' } });
                     paginatePatch = paginateDataPatch;
                     yield paginatePatch;
                     break;
                 }
                 case 'PUT': {
-                    const { default: paginateDataPut } = await import(`../calendly/mocks/paginate/put/event-invitees${endpoint}.json`, {
-                        assert: { type: 'json' }
-                    });
+                    const { default: paginateDataPut } = await import(`../mocks/paginate/put/event-invitees${endpoint}.json`, { assert: { type: 'json' } });
                     paginatePut = paginateDataPut;
                     yield paginatePut;
                     break;
                 }
                 case 'DELETE': {
-                    const { default: paginateDataDelete } = await import(`../calendly/mocks/paginate/delete/event-invitees${endpoint}.json`, {
+                    const { default: paginateDataDelete } = await import(`../mocks/paginate/delete/event-invitees${endpoint}.json`, {
                         assert: { type: 'json' }
                     });
                     paginateDelete = paginateDataDelete;

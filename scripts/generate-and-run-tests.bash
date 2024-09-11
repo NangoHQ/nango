@@ -38,7 +38,7 @@ npm run generate
 npm run test
 
 # keep tests around for posterity
-cp -r nango-integrations/tests ../../integration-templates/$INTEGRATION
+cp -r nango-integrations/$INTEGRATION/tests ../../integration-templates/$INTEGRATION
 
 rm -rf nango-integrations
 popd
