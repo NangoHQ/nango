@@ -105,12 +105,10 @@ describe("<%= integration %> <%= syncName %> tests", () => {
     expect(nangoMock.batchSave).toHaveBeenCalledWith(batchSaveData, "<%= modelName %>");
   });
 
-  if (batchDeleteData && batchDeleteData.length > 0) {
-    it("should get, map correctly the data and batchDelete the result", async () => {
+  it.runIf(batchDeleteData && batchDeleteData.length > 0)("should get, map correctly the data and batchDelete the result", async () => {
       await fetchData(nangoMock);
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(nangoMock.batchDelete).toHaveBeenCalledWith(batchDeleteData, "<%= modelName %>");
-    });
-  }
+  });
 });

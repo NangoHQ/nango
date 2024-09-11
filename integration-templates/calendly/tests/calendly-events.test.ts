@@ -93,12 +93,10 @@ describe('calendly events tests', () => {
         expect(nangoMock.batchSave).toHaveBeenCalledWith(batchSaveData, 'Event');
     });
 
-    if (batchDeleteData && batchDeleteData.length > 0) {
-        it('should get, map correctly the data and batchDelete the result', async () => {
-            await fetchData(nangoMock);
+    it.runIf(batchDeleteData && batchDeleteData.length > 0)('should get, map correctly the data and batchDelete the result', async () => {
+        await fetchData(nangoMock);
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            expect(nangoMock.batchDelete).toHaveBeenCalledWith(batchDeleteData, 'Event');
-        });
-    }
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(nangoMock.batchDelete).toHaveBeenCalledWith(batchDeleteData, 'Event');
+    });
 });
