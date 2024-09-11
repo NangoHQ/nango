@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '@nangohq/database';
-import type { Sync, Job as SyncJob } from '../../models/Sync.js';
+import type { Sync, SyncConfig, Job as SyncJob } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import type { ActiveLogIds, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences, SyncTypeLiteral } from '@nangohq/types';
@@ -21,7 +21,6 @@ const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
-const CONNECTIONS_TABLE = dbNamespace + 'connections';
 
 /**
  * Sync Service
@@ -48,20 +47,21 @@ export const getById = async (id: string): Promise<Sync | null> => {
     return result[0];
 };
 
-export const createSync = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {
-    const existingSync = await getSyncByIdAndName(nangoConnectionId, name);
+export const createSync = async (nangoConnectionId: number, syncConfig: SyncConfig): Promise<Sync | null> => {
+    const existingSync = await getSyncByIdAndName(nangoConnectionId, syncConfig.sync_name);
 
-    if (existingSync) {
+    if (existingSync || !syncConfig.id) {
         return null;
     }
 
     const sync: Omit<Sync, 'created_at' | 'updated_at'> = {
         id: uuidv4(),
         nango_connection_id: nangoConnectionId,
-        name,
+        name: syncConfig.sync_name,
         frequency: null,
         last_sync_date: null,
-        last_fetched_at: null
+        last_fetched_at: null,
+        sync_config_id: syncConfig.id
     };
 
     const result = await schema().from<Sync>(TABLE).insert(sync).returning('*');
@@ -374,13 +374,8 @@ export const getSyncsBySyncConfigId = async (environmentId: number, syncConfigId
     const results = await schema()
         .select('sync_name', `${TABLE}.id`)
         .from<Sync>(TABLE)
-        // Sync table doesn't have a unique foreign key to sync config
-        // so we need to join on the name
-        // and verify the sync connection environment
-        .join(SYNC_CONFIG_TABLE, `${TABLE}.name`, `${SYNC_CONFIG_TABLE}.sync_name`)
-        .join(CONNECTIONS_TABLE, `${CONNECTIONS_TABLE}.id`, `${TABLE}.nango_connection_id`)
+        .join(SYNC_CONFIG_TABLE, `${TABLE}.sync_config_id`, `${SYNC_CONFIG_TABLE}.id`)
         .where({
-            [`${CONNECTIONS_TABLE}.environment_id`]: environmentId,
             [`${SYNC_CONFIG_TABLE}.environment_id`]: environmentId,
             [`${SYNC_CONFIG_TABLE}.id`]: syncConfigId,
             [`${TABLE}.deleted`]: false,
@@ -625,9 +620,7 @@ export async function findDemoSyncs(): Promise<PausableSyncs[]> {
             );
         })
         .join('_nango_sync_configs', function () {
-            this.on('_nango_sync_configs.environment_id', '_nango_environments.id')
-                .on('_nango_sync_configs.nango_config_id', '_nango_configs.id')
-                .on('_nango_sync_configs.sync_name', '_nango_syncs.name')
+            this.on('_nango_sync_configs.id', '_nango_syncs.sync_config_id')
                 .onVal('_nango_sync_configs.type', 'sync')
                 .onVal('_nango_sync_configs.deleted', false)
                 .onVal('_nango_sync_configs.active', true);

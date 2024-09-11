@@ -1,9 +1,9 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
-import type { AuthCredentials, Sync, Job as SyncJob } from '@nangohq/shared';
+import type { AuthCredentials, Sync, SyncConfig, Job as SyncJob } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
-import { environmentService, connectionService, createSync, createSyncJob, SyncType, SyncStatus, accountService } from '@nangohq/shared';
+import { environmentService, connectionService, createSync, createSyncJob, SyncType, SyncStatus, accountService, configService } from '@nangohq/shared';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { migrate as migrateRecords } from '@nangohq/records';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
@@ -246,6 +246,7 @@ describe('Persist API', () => {
 });
 
 const initDb = async () => {
+    const now = new Date();
     const env = await environmentService.createEnvironment(0, 'testEnv');
     if (!env) throw new Error('Environment not created');
 
@@ -253,6 +254,40 @@ const initDb = async () => {
         { operation: { type: 'sync', action: 'run' } },
         { account: { id: env.account_id, name: '' }, environment: { id: env.id, name: env.name } }
     );
+
+    const providerConfig = await configService.createProviderConfig({
+        unique_key: 'provider-test',
+        provider: 'google',
+        environment_id: env.id,
+        oauth_client_id: '',
+        oauth_client_secret: '',
+        created_at: now,
+        updated_at: now
+    });
+    if (!providerConfig) throw new Error('Provider config not created');
+
+    const [syncConfig] = await db.knex
+        .from<SyncConfig>(`_nango_sync_configs`)
+        .insert({
+            environment_id: env.id,
+            sync_name: Math.random().toString(36).substring(7),
+            type: 'sync',
+            file_location: 'file_location',
+            nango_config_id: providerConfig.id,
+            version: '1',
+            active: true,
+            runs: 'runs',
+            track_deletes: false,
+            auto_start: false,
+            webhook_subscriptions: [],
+            enabled: true,
+            created_at: now,
+            updated_at: now,
+            models: ['model'],
+            model_schema: []
+        } as SyncConfig)
+        .returning('*');
+    if (!syncConfig) throw new Error('Sync config not created');
 
     const connectionRes = await connectionService.upsertConnection({
         connectionId: `conn-test`,
@@ -269,7 +304,7 @@ const initDb = async () => {
     const connection = await connectionService.getConnectionById(connectionId);
     if (!connection) throw new Error('Connection not found');
 
-    const sync = await createSync(connectionId, 'sync-test');
+    const sync = await createSync(connectionId, syncConfig);
     if (!sync?.id) throw new Error('Sync not created');
 
     const syncJob = await createSyncJob({

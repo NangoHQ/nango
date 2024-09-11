@@ -27,7 +27,7 @@ describe('Auto Idle Demo', async () => {
 
     it('should pause schedule', async () => {
         const connName = nanoid();
-        const config = await configService.createProviderConfig({
+        const providerConfig = await configService.createProviderConfig({
             unique_key: DEMO_GITHUB_CONFIG_KEY,
             provider: 'github',
             environment_id: env.id,
@@ -36,12 +36,14 @@ describe('Auto Idle Demo', async () => {
             created_at: new Date(),
             updated_at: new Date()
         });
-        await db.knex
+        if (!providerConfig) throw new Error('Config not created');
+
+        const [syncConfig] = await db.knex
             .from<SyncConfig>('_nango_sync_configs')
             .insert({
                 created_at: new Date(),
                 sync_name: DEMO_SYNC_NAME,
-                nango_config_id: config!.id!,
+                nango_config_id: providerConfig.id!,
                 file_location: '_LOCAL_FILE_',
                 version: '1',
                 models: ['GithubIssueDemo'],
@@ -60,7 +62,9 @@ describe('Auto Idle Demo', async () => {
                 is_public: false,
                 enabled: true
             })
-            .returning('id');
+            .returning('*');
+        if (!syncConfig) throw new Error('Sync config not created');
+
         const conn = await connectionService.upsertConnection({
             connectionId: connName,
             providerConfigKey: DEMO_GITHUB_CONFIG_KEY,
@@ -71,8 +75,10 @@ describe('Auto Idle Demo', async () => {
             accountId: 0
         });
         const connection = conn[0]!.connection;
-        const sync = (await createSync(connection.id!, DEMO_SYNC_NAME))!;
         const now = new Date();
+        const sync = await createSync(connection.id!, syncConfig);
+        if (!sync) throw new Error('Sync not created');
+
         const scheduleName = `environment:${env.id}:sync:${sync.id}`;
         await orchestratorService.getClient().recurring({
             name: scheduleName,

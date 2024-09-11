@@ -38,6 +38,7 @@ export interface Sync extends TimestampsAndDeleted {
     };
     frequency: string | null;
     last_fetched_at: Date | null;
+    sync_config_id: number;
 }
 
 export interface Action extends TimestampsAndDeleted {
