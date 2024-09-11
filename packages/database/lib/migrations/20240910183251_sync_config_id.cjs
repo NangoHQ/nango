@@ -15,6 +15,7 @@ exports.up = function (knex) {
             WHERE syncs.name = sync_configs.sync_name
               AND syncs.nango_connection_id = connections.id
               AND sync_configs.environment_id = connections.environment_id
+              AND sync_configs.type = 'sync'
               AND syncs.sync_config_id IS NULL;
         `);
         });
