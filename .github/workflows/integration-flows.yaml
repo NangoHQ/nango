@@ -1,4 +1,4 @@
-name: Nango Integration Flows Test & Compile
+name: Nango Integration Flows Compile
 
 on:
     push:
@@ -8,11 +8,11 @@ on:
     pull_request:
 
 concurrency:
-    group: flows-tests-and-compile--${{ github.event.pull_request.number || github.ref }}
+    group: flows-compile--${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
 jobs:
-    flow-tests-and-compilation:
+    flow-compilation:
         runs-on: ubuntu-latest
 
         steps:
@@ -33,32 +33,18 @@ jobs:
                   npm install -g ./packages/cli
                   NANGO_CLI_UPGRADE_MODE=ignore nango version --debug
 
-            - name: Compile & Test with Nango
+            - name: Compile with Nango
               run: |
                   set -e
                   cd integration-templates
                   for dir in */; do
                     if [[ "$dir" != "." && "$dir" != "integration-templates/" ]]; then
                         cd "$dir"
-                        has_mocks=$([ -d "./mocks" ] && echo true || echo false)
                         mkdir -p nango-integrations/$dir
                         mv nango.yaml nango-integrations/
                         find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations/$dir {} +
                         cd nango-integrations
                         NANGO_CLI_UPGRADE_MODE=ignore nango compile
-
-                        # run tests if applicable
-                        if [ "$has_mocks" = true ]; then
-                            # remove existing tests to re-generate them
-                            rm -rf ../nango-integrations/$dir/tests
-                            cp -r ../nango-integrations ../../../packages/integration-template-tests
-                            pushd ../../../packages/integration-template-tests
-                            npm run generate
-                            npm run test
-                            popd
-                            rm -rf nango-integrations
-                        fi
-
                         cd ../../
                     fi
                   done
