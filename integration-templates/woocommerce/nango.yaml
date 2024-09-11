@@ -1,0 +1,41 @@
+integrations:
+    woocommerce:
+        syncs:
+            customers:
+                description: |
+                    Periodically fetches all the Woo customers.
+                endpoint: /customers
+                sync_type: full
+                scopes: read
+                track_deletes: true
+                runs: every day
+                auto_start: true
+                output: Customer
+
+            orders:
+                description: |
+                    Periodically fetches all the Woo orders.
+                endpoint: /orders
+                sync_type: incremental
+                scopes: read
+                track_deletes: false
+                runs: every 5 minutes
+                auto_start: true
+                output: Order
+
+models:
+    Customer:
+        id: string
+        name: string
+        email: string
+        is_paying_customer: boolean
+        created_at: string
+        modified_at: string
+
+    Order:
+        id: string
+        status: string
+        total_amount: number
+        currency: string
+        created_at: string
+        modified_at: string
