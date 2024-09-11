@@ -6,7 +6,7 @@ export const providerSchema = z
     .max(255);
 export const providerConfigKeySchema = z
     .string()
-    .regex(/^[a-zA-Z0-9_-]+$/)
+    .regex(/^[a-zA-Z0-9~:.@ _-]+$/) // For legacy reason (some people are using special characters)
     .max(255);
 export const scriptNameSchema = z
     .string()
