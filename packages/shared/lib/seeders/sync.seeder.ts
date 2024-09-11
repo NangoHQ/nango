@@ -2,11 +2,28 @@ import db from '@nangohq/database';
 import * as syncService from '../services/sync/sync.service.js';
 import configService from '../services/config.service.js';
 import type { Sync, SyncConfig } from '../models/Sync.js';
+import type { Config as ProviderConfig } from '../models/Provider.js';
 
-export const createSyncSeeds = async (connectionId: number, envId: number): Promise<Sync> => {
+export const createSyncSeeds = async ({
+    connectionId,
+    envId,
+    providerConfigKey,
+    trackDeletes,
+    models
+}: {
+    connectionId: number;
+    envId: number;
+    providerConfigKey: string;
+    trackDeletes: boolean;
+    models: string[];
+}): Promise<{
+    providerConfig: ProviderConfig;
+    syncConfig: SyncConfig;
+    sync: Sync;
+}> => {
     const now = new Date();
     const providerConfig = await configService.createProviderConfig({
-        unique_key: Math.random().toString(36).substring(7),
+        unique_key: providerConfigKey,
         provider: Math.random().toString(36).substring(7),
         environment_id: envId,
         oauth_client_id: '',
@@ -24,16 +41,16 @@ export const createSyncSeeds = async (connectionId: number, envId: number): Prom
             type: 'sync',
             file_location: 'file_location',
             nango_config_id: providerConfig.id,
-            version: '1',
+            version: '0',
             active: true,
             runs: 'runs',
-            track_deletes: false,
+            track_deletes: trackDeletes,
             auto_start: false,
             webhook_subscriptions: [],
             enabled: true,
             created_at: now,
             updated_at: now,
-            models: ['model'],
+            models: models,
             model_schema: []
         } as SyncConfig)
         .returning('*');
@@ -42,7 +59,11 @@ export const createSyncSeeds = async (connectionId: number, envId: number): Prom
     const sync = await syncService.createSync(connectionId, syncConfig);
     if (!sync) throw new Error('Sync not created');
 
-    return sync;
+    return {
+        providerConfig,
+        syncConfig,
+        sync
+    };
 };
 
 export const deleteAllSyncSeeds = async (): Promise<void> => {

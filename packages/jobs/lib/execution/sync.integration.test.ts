@@ -326,48 +326,13 @@ async function seeds(records: UnencryptedRecordData[], trackDeletes: boolean) {
         throw new Error('Failed to create connection');
     }
 
-    const sync = await seeders.createSyncSeeds(connection.id, env.id);
-    if (!sync.id) {
-        throw new Error('Failed to create sync');
-    }
-
-    const config = await seeders.createConfigSeed(env, providerConfigKey, 'google');
-    if (!config?.id) {
-        throw new Error('Failed to create config');
-    }
-
-    const syncConfig: SyncConfig = {
-        id: Math.floor(Math.random() * 1000),
-        sync_name: sync.name,
-        file_location: '',
-        models: [model],
-        track_deletes: trackDeletes,
-        type: 'sync',
-        attributes: {},
-        is_public: false,
-        version: '0',
-        active: true,
-        auto_start: false,
-        enabled: true,
-        environment_id: env.id,
-        model_schema: [],
-        nango_config_id: config.id,
-        runs: '',
-        webhook_subscriptions: [],
-        created_at: new Date(),
-        updated_at: new Date()
-    };
-    const syncConfigIds = await db.knex
-        .from<SyncConfig>('_nango_sync_configs')
-        .insert(
-            [syncConfig].map((syncConfig) => {
-                return { ...syncConfig, model_schema: JSON.stringify(syncConfig.model_schema) as any };
-            })
-        )
-        .returning('id');
-    if (!syncConfigIds[0]) {
-        throw new Error('Failed to create sync config');
-    }
+    const { syncConfig, sync } = await seeders.createSyncSeeds({
+        connectionId: connection.id,
+        envId: env.id,
+        providerConfigKey,
+        trackDeletes,
+        models: [model]
+    });
 
     const job = await seeders.createSyncJobSeeds(sync.id);
     if (!job.id) {
