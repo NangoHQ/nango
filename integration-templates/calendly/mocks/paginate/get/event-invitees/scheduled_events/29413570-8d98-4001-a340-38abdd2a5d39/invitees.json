@@ -1,0 +1,41 @@
+[
+    {
+        "cancel_url": "https://calendly.com/cancellations/50ede944-20e8-4bb5-82ae-a9a74f4a091e",
+        "created_at": "2023-07-28T17:29:45.962070Z",
+        "email": "ool@gmail.com",
+        "event": "https://api.calendly.com/scheduled_events/29413570-8d98-4001-a340-38abdd2a5d39",
+        "first_name": null,
+        "invitee_scheduled_by": null,
+        "last_name": null,
+        "name": "My Name",
+        "new_invitee": null,
+        "no_show": null,
+        "old_invitee": null,
+        "payment": null,
+        "questions_and_answers": [
+            {
+                "answer": "Nango Sync ",
+                "position": 0,
+                "question": "Please share anything that will help prepare for our meeting."
+            }
+        ],
+        "reconfirmation": null,
+        "reschedule_url": "https://calendly.com/reschedulings/50ede944-20e8-4bb5-82ae-a9a74f4a091e",
+        "rescheduled": false,
+        "routing_form_submission": null,
+        "scheduling_method": null,
+        "status": "active",
+        "text_reminder_number": null,
+        "timezone": "America/Los_Angeles",
+        "tracking": {
+            "utm_campaign": null,
+            "utm_source": null,
+            "utm_medium": null,
+            "utm_content": null,
+            "utm_term": null,
+            "salesforce_uuid": null
+        },
+        "updated_at": "2023-07-28T17:29:45.962070Z",
+        "uri": "https://api.calendly.com/scheduled_events/29413570-8d98-4001-a340-38abdd2a5d39/invitees/50ede944-20e8-4bb5-82ae-a9a74f4a091e"
+    }
+]

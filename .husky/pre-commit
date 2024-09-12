@@ -2,5 +2,7 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 node ./scripts/flows.js
+bash ./scripts/create-all-integration-tests.bash
+git add ./integration-templates/*/tests/*.test.ts
 git add ./packages/shared/flows.yaml
 npx lint-staged --allow-empty

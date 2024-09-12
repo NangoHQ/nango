@@ -1,0 +1,47 @@
+[
+    {
+        "cancel_url": "https://calendly.com/cancellations/4f0334e1-25ed-46bd-95da-b0f64fa55914",
+        "cancellation": {
+            "canceled_by": "MockName LastName",
+            "canceler_type": "host",
+            "created_at": "2023-06-01T17:42:02.351705Z",
+            "reason": null
+        },
+        "created_at": "2023-05-31T17:22:51.385182Z",
+        "email": "ool@gmail.com",
+        "event": "https://api.calendly.com/scheduled_events/74f1d379-72e8-40fb-a790-3620a56ce275",
+        "first_name": null,
+        "invitee_scheduled_by": null,
+        "last_name": null,
+        "name": "My Name",
+        "new_invitee": null,
+        "no_show": null,
+        "old_invitee": null,
+        "payment": null,
+        "questions_and_answers": [
+            {
+                "answer": "More talk around AIProduct & Nango stuff",
+                "position": 0,
+                "question": "Please share anything that will help prepare for our meeting."
+            }
+        ],
+        "reconfirmation": null,
+        "reschedule_url": "https://calendly.com/reschedulings/4f0334e1-25ed-46bd-95da-b0f64fa55914",
+        "rescheduled": false,
+        "routing_form_submission": null,
+        "scheduling_method": null,
+        "status": "canceled",
+        "text_reminder_number": null,
+        "timezone": "America/Los_Angeles",
+        "tracking": {
+            "utm_campaign": null,
+            "utm_source": null,
+            "utm_medium": null,
+            "utm_content": null,
+            "utm_term": null,
+            "salesforce_uuid": null
+        },
+        "updated_at": "2023-06-01T17:42:02.403931Z",
+        "uri": "https://api.calendly.com/scheduled_events/74f1d379-72e8-40fb-a790-3620a56ce275/invitees/4f0334e1-25ed-46bd-95da-b0f64fa55914"
+    }
+]

@@ -1,0 +1,241 @@
+[
+    {
+        "calendar_event": {
+            "external_id": "ubq3hdhf4o13b6npm01vt3nd58",
+            "kind": "google"
+        },
+        "created_at": "2023-05-23T19:44:04.692300Z",
+        "end_time": "2023-05-25T18:30:00.000000Z",
+        "event_guests": [],
+        "event_memberships": [
+            {
+                "buffered_end_time": "2023-05-25T18:30:00.000000Z",
+                "buffered_start_time": "2023-05-25T18:00:00.000000Z",
+                "user": "https://api.calendly.com/users/111",
+                "user_email": "myname@nango.dev",
+                "user_name": "MockName LastName"
+            }
+        ],
+        "event_type": "https://api.calendly.com/event_types/707093d8-ed80-463b-b341-ee56cc339c75",
+        "invitees_counter": {
+            "active": 1,
+            "limit": 1,
+            "total": 1
+        },
+        "location": {
+            "join_url": "https://calendly.com/events/0aafdb96-9a9d-46bb-b667-72e0d38c6d1f/google_meet",
+            "status": "pushed",
+            "type": "google_conference"
+        },
+        "meeting_notes_html": null,
+        "meeting_notes_plain": null,
+        "name": "30 Minute Meeting",
+        "start_time": "2023-05-25T18:00:00.000000Z",
+        "status": "active",
+        "updated_at": "2023-05-23T19:44:05.964741Z",
+        "uri": "https://api.calendly.com/scheduled_events/0aafdb96-9a9d-46bb-b667-72e0d38c6d1f"
+    },
+    {
+        "calendar_event": {
+            "external_id": "46fbbct95c26r6bd31hcl22g74",
+            "kind": "google"
+        },
+        "cancellation": {
+            "canceled_by": "MockName LastName",
+            "canceler_type": "host",
+            "created_at": "2023-06-01T17:42:02.351705Z",
+            "reason": null
+        },
+        "created_at": "2023-05-31T17:22:51.361772Z",
+        "end_time": "2023-06-01T18:30:00.000000Z",
+        "event_guests": [],
+        "event_memberships": [
+            {
+                "buffered_end_time": "2023-06-01T18:30:00.000000Z",
+                "buffered_start_time": "2023-06-01T18:00:00.000000Z",
+                "user": "https://api.calendly.com/users/111",
+                "user_email": "myname@nango.dev",
+                "user_name": "MockName LastName"
+            }
+        ],
+        "event_type": "https://api.calendly.com/event_types/707093d8-ed80-463b-b341-ee56cc339c75",
+        "invitees_counter": {
+            "active": 0,
+            "limit": 1,
+            "total": 1
+        },
+        "location": {
+            "join_url": "https://calendly.com/events/74f1d379-72e8-40fb-a790-3620a56ce275/google_meet",
+            "status": "pushed",
+            "type": "google_conference"
+        },
+        "meeting_notes_html": null,
+        "meeting_notes_plain": null,
+        "name": "30 Minute Meeting",
+        "start_time": "2023-06-01T18:00:00.000000Z",
+        "status": "canceled",
+        "updated_at": "2023-06-01T17:42:03.360731Z",
+        "uri": "https://api.calendly.com/scheduled_events/74f1d379-72e8-40fb-a790-3620a56ce275"
+    },
+    {
+        "calendar_event": {
+            "external_id": "n1la9g0vli7o26rcum22fuh33g",
+            "kind": "google"
+        },
+        "created_at": "2023-06-09T18:20:00.862980Z",
+        "end_time": "2023-06-12T18:00:00.000000Z",
+        "event_guests": [],
+        "event_memberships": [
+            {
+                "buffered_end_time": "2023-06-12T18:00:00.000000Z",
+                "buffered_start_time": "2023-06-12T17:30:00.000000Z",
+                "user": "https://api.calendly.com/users/111",
+                "user_email": "myname@nango.dev",
+                "user_name": "MockName LastName"
+            }
+        ],
+        "event_type": "https://api.calendly.com/event_types/707093d8-ed80-463b-b341-ee56cc339c75",
+        "invitees_counter": {
+            "active": 1,
+            "limit": 1,
+            "total": 1
+        },
+        "location": {
+            "join_url": "https://calendly.com/events/7ab23fe1-3047-4a16-9325-93a19e73cb42/google_meet",
+            "status": "pushed",
+            "type": "google_conference"
+        },
+        "meeting_notes_html": null,
+        "meeting_notes_plain": null,
+        "name": "30 Minute Meeting",
+        "start_time": "2023-06-12T17:30:00.000000Z",
+        "status": "active",
+        "updated_at": "2023-06-09T18:20:02.249423Z",
+        "uri": "https://api.calendly.com/scheduled_events/7ab23fe1-3047-4a16-9325-93a19e73cb42"
+    },
+    {
+        "calendar_event": {
+            "external_id": "gh4l0r650bqsamfo31qtqr7vl0",
+            "kind": "google"
+        },
+        "cancellation": {
+            "canceled_by": "Ben Fake",
+            "canceler_type": "invitee",
+            "created_at": "2023-07-21T16:47:30.220527Z",
+            "reason": "A team member is not available on tuesday. "
+        },
+        "created_at": "2023-07-21T16:37:03.581120Z",
+        "end_time": "2023-07-25T11:30:00.000000Z",
+        "event_guests": [],
+        "event_memberships": [
+            {
+                "buffered_end_time": "2023-07-25T11:30:00.000000Z",
+                "buffered_start_time": "2023-07-25T11:00:00.000000Z",
+                "user": "https://api.calendly.com/users/111",
+                "user_email": "myname@nango.dev",
+                "user_name": "MockName LastName"
+            }
+        ],
+        "event_type": "https://api.calendly.com/event_types/707093d8-ed80-463b-b341-ee56cc339c75",
+        "invitees_counter": {
+            "active": 0,
+            "limit": 1,
+            "total": 1
+        },
+        "location": {
+            "join_url": "https://calendly.com/events/05559332-7490-4e69-807c-f0373703a08d/google_meet",
+            "status": "pushed",
+            "type": "google_conference"
+        },
+        "meeting_notes_html": null,
+        "meeting_notes_plain": null,
+        "name": "30 Minute Meeting",
+        "start_time": "2023-07-25T11:00:00.000000Z",
+        "status": "canceled",
+        "updated_at": "2023-07-21T16:47:30.249298Z",
+        "uri": "https://api.calendly.com/scheduled_events/05559332-7490-4e69-807c-f0373703a08d"
+    },
+    {
+        "calendar_event": {
+            "external_id": "gh4l0r650bqsamfo31qtqr7vl0",
+            "kind": "google"
+        },
+        "created_at": "2023-07-21T16:47:30.268433Z",
+        "end_time": "2023-07-27T12:00:00.000000Z",
+        "event_guests": [
+            {
+                "created_at": "2023-07-21T16:37:03.664257Z",
+                "email": "foo@gmail.com",
+                "updated_at": "2023-07-21T16:47:30.382496Z"
+            },
+            {
+                "created_at": "2023-07-21T16:37:03.661876Z",
+                "email": "goo@gmail.com",
+                "updated_at": "2023-07-21T16:47:30.377146Z"
+            }
+        ],
+        "event_memberships": [
+            {
+                "buffered_end_time": "2023-07-27T12:00:00.000000Z",
+                "buffered_start_time": "2023-07-27T11:30:00.000000Z",
+                "user": "https://api.calendly.com/users/111",
+                "user_email": "myname@nango.dev",
+                "user_name": "MockName LastName"
+            }
+        ],
+        "event_type": "https://api.calendly.com/event_types/707093d8-ed80-463b-b341-ee56cc339c75",
+        "invitees_counter": {
+            "active": 1,
+            "limit": 1,
+            "total": 1
+        },
+        "location": {
+            "join_url": "https://calendly.com/events/c51384f5-3327-48b9-9859-0ede73c260db/google_meet",
+            "status": "pushed",
+            "type": "google_conference"
+        },
+        "meeting_notes_html": null,
+        "meeting_notes_plain": null,
+        "name": "30 Minute Meeting",
+        "start_time": "2023-07-27T11:30:00.000000Z",
+        "status": "active",
+        "updated_at": "2023-07-21T16:47:32.670115Z",
+        "uri": "https://api.calendly.com/scheduled_events/c51384f5-3327-48b9-9859-0ede73c260db"
+    },
+    {
+        "calendar_event": {
+            "external_id": "5bon88uitburikb91nd2i4lkto",
+            "kind": "google"
+        },
+        "created_at": "2023-07-28T17:29:45.938468Z",
+        "end_time": "2023-08-03T18:00:00.000000Z",
+        "event_guests": [],
+        "event_memberships": [
+            {
+                "buffered_end_time": "2023-08-03T18:00:00.000000Z",
+                "buffered_start_time": "2023-08-03T17:30:00.000000Z",
+                "user": "https://api.calendly.com/users/111",
+                "user_email": "myname@nango.dev",
+                "user_name": "MockName LastName"
+            }
+        ],
+        "event_type": "https://api.calendly.com/event_types/707093d8-ed80-463b-b341-ee56cc339c75",
+        "invitees_counter": {
+            "active": 1,
+            "limit": 1,
+            "total": 1
+        },
+        "location": {
+            "join_url": "https://calendly.com/events/29413570-8d98-4001-a340-38abdd2a5d39/google_meet",
+            "status": "pushed",
+            "type": "google_conference"
+        },
+        "meeting_notes_html": null,
+        "meeting_notes_plain": null,
+        "name": "30 Minute Meeting",
+        "start_time": "2023-08-03T17:30:00.000000Z",
+        "status": "active",
+        "updated_at": "2023-07-28T17:29:48.203524Z",
+        "uri": "https://api.calendly.com/scheduled_events/29413570-8d98-4001-a340-38abdd2a5d39"
+    }
+]
