@@ -71,6 +71,7 @@ class ConnectionService {
 
     public async upsertConnection({
         connectionId,
+        connectionToken,
         providerConfigKey,
         provider,
         parsedRawCredentials,
@@ -80,6 +81,7 @@ class ConnectionService {
         metadata
     }: {
         connectionId: string;
+        connectionToken?: string | null | undefined;
         providerConfigKey: string;
         provider: string;
         parsedRawCredentials: AuthCredentials;
@@ -88,13 +90,14 @@ class ConnectionService {
         accountId: number;
         metadata?: Metadata | null;
     }): Promise<ConnectionUpsertResponse[]> {
-        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environmentId);
         const config_id = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
+        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environmentId);
 
         if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
+                connection_token: connectionToken,
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig || storedConnection.connection_config,
                 environment_id: environmentId,
@@ -120,6 +123,7 @@ class ConnectionService {
             .insert(
                 encryptionManager.encryptConnection({
                     connection_id: connectionId,
+                    connection_token: connectionToken,
                     provider_config_key: providerConfigKey,
                     config_id: config_id as number,
                     credentials: parsedRawCredentials,

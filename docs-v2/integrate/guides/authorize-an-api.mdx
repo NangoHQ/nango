@@ -79,11 +79,11 @@ Initiate the authorization flow ([reference](/reference/sdks/frontend#collect-an
 
 <Tab title="OAuth">
 
-For OAuth, the `nango.auth()` method will trigger the OAuth flow in a popup, to let the user log in to their external account.
+For OAuth, the `nango.authentication()` method will trigger the OAuth flow in a popup, to let the user log in to their external account.
 
 ```js
 nango
-    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
+    .auth('<INTEGRATION-ID>')
     .then((result) => {
         // Show success UI.
     })

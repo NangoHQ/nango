@@ -53,7 +53,11 @@ class OAuthController {
         const accountId = account.id;
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
-        let connectionId = req.query['connection_id'] as string | undefined;
+
+        const connectionToken = crypto.randomUUID();
+        const receivedConnectionId = !!req.query['connection_id'];
+        const connectionId = (req.query['connection_id'] || connectionToken) as string;
+
         const wsClientId = req.query['ws_client_id'] as string | undefined;
         const userScope = req.query['user_scope'] as string | undefined;
 
@@ -84,21 +88,13 @@ class OAuthController {
             const authorizationParams = req.query['authorization_params'] != null ? getAdditionalAuthorizationParams(req.query['authorization_params']) : {};
             const overrideCredentials = req.query['credentials'] != null ? getAdditionalAuthorizationParams(req.query['credentials']) : {};
 
-            if (connectionId == null) {
-                const error = WSErrBuilder.MissingConnectionId();
-                await logCtx.error(error.message);
-                await logCtx.failed();
-
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
-            } else if (providerConfigKey == null) {
+            if (!providerConfigKey) {
                 const error = WSErrBuilder.MissingProviderConfigKey();
                 await logCtx.error(error.message);
                 await logCtx.failed();
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
-
-            connectionId = connectionId.toString();
 
             const hmacEnabled = await hmacService.isEnabled(environmentId);
             if (hmacEnabled) {
@@ -110,7 +106,10 @@ class OAuthController {
 
                     return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
                 }
-                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
+
+                const verified = await (receivedConnectionId
+                    ? hmacService.verify(hmac, environmentId, providerConfigKey, connectionId)
+                    : hmacService.verify(hmac, environmentId, providerConfigKey));
 
                 if (!verified) {
                     const error = WSErrBuilder.InvalidHmac();
@@ -150,6 +149,7 @@ class OAuthController {
                 providerConfigKey: providerConfigKey,
                 provider: config.provider,
                 connectionId: connectionId,
+                connectionToken,
                 callbackUrl: callbackUrl,
                 authMode: template.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
@@ -828,6 +828,7 @@ class OAuthController {
         const { code } = req.query;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
+        const connectionToken = session.connectionToken;
         const channel = session.webSocketClientId;
         const callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
@@ -926,6 +927,7 @@ class OAuthController {
                 provider: session.provider,
                 providerConfigKey,
                 connectionId,
+                connectionToken,
                 additionalTokenParams,
                 code,
                 scopes: config.oauth_scopes,
@@ -951,7 +953,7 @@ class OAuthController {
                 rawCredentials = accessToken.token;
             }
 
-            await logCtx.info('Token response received', { provider: session.provider, providerConfigKey, connectionId });
+            await logCtx.info('Token response received', { provider: session.provider, providerConfigKey, connectionId, connectionToken });
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
 
@@ -1060,6 +1062,7 @@ class OAuthController {
 
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
+                connectionToken,
                 providerConfigKey,
                 provider: session.provider,
                 parsedRawCredentials,
@@ -1136,7 +1139,7 @@ class OAuthController {
 
             await logCtx.success();
 
-            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
+            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending, connectionToken);
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
             errorManager.report(err, {

@@ -18,14 +18,13 @@ Store the `connectionId` & `integrationId` in your database to retrieve the user
 
 ```ts Frontend: Trigger the OAuth flow.
 const integrationId = 'zendesk';
-const connectionId = 'user123';
 
 // Shows authorization popup to the user.
-const result = await nango.auth(integrationId, connectionId);
+const result = await nango.auth(integrationId);
 
 if (result.ok) {
     // The auth flow succeeded. The integration is set up!
-    saveToDatabase(connectionId, integrationId);
+    saveToDatabase(result.connectionToken, integrationId);
 }
 ```
 

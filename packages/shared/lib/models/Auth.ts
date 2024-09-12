@@ -21,6 +21,7 @@ export interface OAuthSession {
     providerConfigKey: string;
     provider: string;
     connectionId: string;
+    connectionToken?: string | undefined;
     callbackUrl: string;
     authMode: AuthModeType;
     id: string;

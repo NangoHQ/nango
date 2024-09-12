@@ -97,11 +97,6 @@ class EnvironmentController {
                 return;
             }
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
-                return;
-            }
-
             if (environment.hmac_enabled && environment.hmac_key) {
                 const digest = await hmacService.digest(environment.id, providerConfigKey as string, connectionId as string);
                 res.status(200).send({ hmac_digest: digest });

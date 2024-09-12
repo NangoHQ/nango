@@ -8,7 +8,7 @@ Before moving to production, you must ensure nobody else can create a new connec
 
 Add a secret HMAC key (large, random value) in your _Environment Settings_ tab in the Nango UI.
 
-Generate the HMAC signature in your backend and pass it to your frontend before you make `nango.auth` calls.
+Generate the HMAC signature in your backend and pass it to your frontend before you make `nango.authentication` calls.
 
 The HMAC signature can be generated with the following code:
 
@@ -148,16 +148,16 @@ $digest = hash_hmac('sha256', $message, $hmacKey);
 Your backend should keep the secret HMAC key private and not reveal it to your frontend or end users.
 </Info>
 
-In the frontend, pass the HMAC signature in `nango.auth()` ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
+In the frontend, pass the HMAC signature in `nango.authentication()` ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
 
 ```ts
-nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', { hmac: '<HMAC-DIGEST>' });
+nango.authentication('<INTEGRATION-ID>', { hmac: '<HMAC-DIGEST>' });
 ```
 
-Enable the HMAC checkbox in the _Environment Settings_ tab in the Nango UI. 
+Enable the HMAC checkbox in the _Environment Settings_ tab in the Nango UI.
 
 <Warning>
-Nango will reject auth calls without a proper HMAC signature, so make sure your code is ready before you flip the switch! 
+Nango will reject auth calls without a proper HMAC signature, so make sure your code is ready before you flip the switch!
 </Warning>
 
 <Tip>
