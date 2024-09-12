@@ -151,7 +151,7 @@ export const ScriptSettings: React.FC<{
                             <ScriptToggle flow={flow} integration={integration} />
                         </InfoBloc>
                         {flow.is_public ? (
-                            <InfoBloc title="Source" className="min-w-[240px]">
+                            <InfoBloc title="Source" className="min-w-[230px]">
                                 <div className="flex flex-col gap-1">
                                     <div>
                                         Template{' '}

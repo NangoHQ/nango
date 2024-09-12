@@ -3,8 +3,8 @@ import { Skeleton } from '../../../../components/ui/Skeleton';
 import { useGetIntegrationFlows } from '../../../../hooks/useIntegration';
 import { useStore } from '../../../../store';
 import { useMemo } from 'react';
-import type { GetIntegration, HTTP_VERB } from '@nangohq/types';
-import type { NangoSyncConfigWithEndpoint } from './components/List';
+import type { GetIntegration, HTTP_VERB, NangoSyncConfig } from '@nangohq/types';
+import type { FlowGroup, NangoSyncConfigWithEndpoint } from './components/List';
 import { EndpointsList } from './components/List';
 import { EndpointOne } from './components/One';
 import PageNotFound from '../../../PageNotFound';
@@ -16,12 +16,13 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
     const [searchParams] = useSearchParams();
     const { data, loading } = useGetIntegrationFlows(env, providerConfigKey!);
 
-    const byGroup = useMemo(() => {
+    const { byGroup, v1Flow } = useMemo<{ byGroup: FlowGroup[]; v1Flow: NangoSyncConfig[] }>(() => {
         if (!data) {
-            return [];
+            return { byGroup: [], v1Flow: [] };
         }
 
         // Create groups
+        const v1Flow = [];
         const tmp: Record<string, NangoSyncConfigWithEndpoint[]> = {};
         for (const flow of data.flows) {
             for (const endpoint of flow.endpoints) {
@@ -42,10 +43,14 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
 
                 group.push({ ...flow, endpoint: { method: entries[0] as HTTP_VERB, path: entries[1] } });
             }
+
+            if (flow.endpoints.length <= 0) {
+                v1Flow.push(flow);
+            }
         }
 
         // Sort flows inside the groups
-        const groups: { name: string; flows: NangoSyncConfigWithEndpoint[] }[] = [];
+        const groups: FlowGroup[] = [];
         for (const group of Object.entries(tmp)) {
             groups.push({
                 name: group[0],
@@ -68,7 +73,8 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
             });
         }
 
-        return groups;
+        groups.sort((a, b) => a.name.localeCompare(b.name));
+        return { byGroup: groups, v1Flow };
     }, [data]);
 
     const currentFlow = useMemo<NangoSyncConfigWithEndpoint | undefined>(() => {
@@ -106,7 +112,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
 
     return (
         <Routes>
-            <Route path="/" element={<EndpointsList byGroup={byGroup} integration={integration} />} />
+            <Route path="/" element={<EndpointsList byGroup={byGroup} v1Flow={v1Flow} integration={integration} />} />
             <Route path="/endpoint" element={currentFlow && <EndpointOne flow={currentFlow} integration={integration} />} />
             <Route path="*" element={<PageNotFound />} />
         </Routes>
