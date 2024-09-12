@@ -420,7 +420,7 @@ class ProxyController {
         logCtx: LogContext
     ) {
         const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
-        await logCtx.http(`${error.request?.method.toUpperCase()} ${url} failed with status '${error.response?.status}'`, {
+        await logCtx.http(`${config.method.toUpperCase()} ${url} failed with status '${error.response?.status}'`, {
             meta: {
                 content: errorContent
             },
