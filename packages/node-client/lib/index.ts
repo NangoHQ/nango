@@ -705,6 +705,10 @@ export class Nango {
             ...customPrefixedHeaders
         };
 
+        if (customHeaders?.['Content-Type']) {
+            headers['Content-Type'] = customHeaders['Content-Type'];
+        }
+
         if (retries) {
             headers['Retries'] = retries;
         }

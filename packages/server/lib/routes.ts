@@ -110,16 +110,18 @@ if (isTest) {
     webAuth = apiAuth;
 }
 
+const bodyLimit = '75mb';
 router.use(
     express.json({
-        limit: '75mb',
+        limit: bodyLimit,
         verify: (req: Request, _, buf) => {
             req.rawBody = buf.toString();
         }
     })
 );
-router.use(bodyParser.raw({ type: 'text/xml' }));
-router.use(express.urlencoded({ extended: true }));
+router.use(bodyParser.raw({ type: 'application/octet-stream', limit: bodyLimit }));
+router.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
+router.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
 const upload = multer({ storage: multer.memoryStorage() });
 
