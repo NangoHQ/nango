@@ -170,6 +170,12 @@ class ProxyService {
             Object.keys(data as any).forEach((key) => {
                 formData.append(key, (data as any)[key]);
             });
+            for (const file of externalConfig.files || []) {
+                formData.append(file.fieldname, file.buffer, {
+                    filename: file.originalname,
+                    contentType: file.mimetype
+                });
+            }
 
             data = formData;
         }
