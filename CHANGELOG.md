@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.10] - 2024-09-12
+
+### Added
+
+- *(api docs)* Add linkedin api page gotcha for refresh tokens (#2697) by @khaliqgant
+- *(integrations)* Add support for manatal (#2692) by @hilmia
+- Integration UI revamp (#2594) by @bodinsamuel
+- *(integrations)* Add support for shipstation (#2700) by @hassan254-prog
+- *(integrations)* Add support for Discourse (#2699) by @hassan254-prog
+- *(integrations)* Add support for avalara (#2701) by @hassan254-prog
+- *(integration-templates)* Add woocommerce integration templates (#2703) by @hassan254-prog
+- *(migration)* Add sync_config_id column to sync_config table (#2711) by @TBonnin
+- *(integration-templates)* [nan 1643] dynamic tests against integration templates (#2678) by @khaliqgant
+
+### Changed
+
+- Scripts v2 (#2702) by @bodinsamuel
+- Use new sync_config_id column in sync table (#2712) by @TBonnin
+- *(deps)* Bump express from 4.19.2 to 4.20.0 (#2715) by @dependabot[bot]
+- *(deps)* Bump body-parser from 1.20.2 to 1.20.3 (#2714) by @dependabot[bot]
+
+### Fixed
+
+- Show version in NPM publish github action title (#2693) by @TBonnin
+- *(internal-integrations)* [nan-1629] continue on error (#2685) by @khaliqgant
+- *(internal-deployment)* Error is a string not json (#2695) by @khaliqgant
+- *(internal-deployment)* Fix nango install (#2696) by @khaliqgant
+- *(cli)* Handle conflicting script names (#2691) by @bodinsamuel
+- *(internal-deployment)* Fix concurrency name & error exit logic (#2698) by @khaliqgant
+- *(ui)* Improve code snippets (#2677) by @bodinsamuel
+- *(api)* Wrong handling for createProvider return type (#2704) by @bodinsamuel
+- *(integration-template-upload)* [nan-1629] update exit code specific logic and don't bail on success (#2705) by @khaliqgant
+- *(xero-auth)* [nan-1684] handle multiple tenants (#2706) by @khaliqgant
+- *(ui)* Script v2 feedback (#2707) by @bodinsamuel
+- *(ui)* Correctly show v1 when there is no template (#2710) by @bodinsamuel
+- Allow special characters in provider config key (#2713) by @TBonnin
+- Axios error request method can be undefined (#2716) by @TBonnin
+- *(proxy)* File upload via multipart/form-data or application/octet-stream (#2708) by @TBonnin
+
 ## [v0.42.9] - 2024-09-06
 
 ### Added
@@ -1837,6 +1876,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.10]: https://github.com/NangoHQ/nango/compare/v0.42.9..v0.42.10
 [v0.42.9]: https://github.com/NangoHQ/nango/compare/v0.42.8..v0.42.9
 [v0.42.8]: https://github.com/NangoHQ/nango/compare/v0.42.7..v0.42.8
 [v0.42.7]: https://github.com/NangoHQ/nango/compare/v0.42.6..v0.42.7
