@@ -1226,6 +1226,7 @@ integrations:
                 sync_type: full
                 runs: every 1 hour
                 output: User
+                track_deletes: true
         models:
             User:
                 id: number
