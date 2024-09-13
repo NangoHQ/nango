@@ -456,6 +456,7 @@
                 "integrations/all/netsuite",
                 "integrations/all/next-cloud",
                 "integrations/all/notion",
+                "integrations/all/odoo",
                 "integrations/all/okta",
                 "integrations/all/one-drive",
                 "integrations/all/one-note",
