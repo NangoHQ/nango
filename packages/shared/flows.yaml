@@ -1219,10 +1219,10 @@ integrations:
                     atlas_doc_format: object
     discourse:
         syncs:
-            users:
+            active-users:
                 description: |
                     Fetches a list of active users from Discourse.
-                endpoint: /discourse/users
+                endpoint: /discourse/active-users
                 sync_type: full
                 runs: every 1 hour
                 output: User
@@ -1232,7 +1232,6 @@ integrations:
                 id: number
                 username: string
                 name: string
-                active: boolean
                 admin: boolean
     evaluagent:
         syncs:

@@ -12,7 +12,6 @@ export function toUser(user: DiscourseUser): User {
         id: user.id,
         username: user.username,
         name: user.name,
-        active: user.active,
         admin: user.admin
     };
 }
