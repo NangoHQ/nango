@@ -1,5 +1,5 @@
 {
-    "name": "ui-connect",
+    "name": "@nangohq/ui-connect",
     "private": true,
     "version": "0.0.0",
     "type": "module",
