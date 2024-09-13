@@ -5,11 +5,9 @@ integrations:
                 runs: every day
                 track_deletes: true
                 description: |
-                    Sync all the content of google drive from a selected file or
-                    folders. PDF files won't be parsed but rather should be fetched
-                    via the proxy using the "google-drive-fetch-pdf" action.
-                    Details: full sync, supports deletes, goes back all time. Metadata
-                    required to filter on a particular folder, or file(s). Metadata
+                    Sync the metadata of a specified file or folders from Google Drive,
+                    handling both individual files and nested folders.
+                    Metadata required to filter on a particular folder, or file(s). Metadata
                     fields should be {"files": ["<some-id>"]} OR
                     {"folders": ["<some-id>"]}. The ID should be able to be provided
                     by using the Google Picker API
@@ -18,20 +16,21 @@ integrations:
                     (https://developers.google.com/drive/picker/reference/results)
                 input: DocumentMetadata
                 auto_start: false
-                version: 1.0.1
+                version: 1.0.2
                 output: Document
                 sync_type: full
                 endpoint: GET /google-drive/documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
-            fetch-pdf:
+            fetch-document:
                 input: string
                 description: |
-                    Fetch PDF data given an ID using a responseStream, chunk the data
-                    into a buffer and return a base64 encoded string that can later
-                    be converted into a PDF using an external tool.
+                    Fetches the content of a file given its ID, processes the data using
+                    a response stream, and encodes it into a base64 string. This base64-encoded
+                    string can be used to recreate the file in its original format using an external tool.
                 output: string
-                endpoint: POST /google-drive/fetch-pdf
+                version: 1.0.1
+                endpoint: GET /google-drive/fetch-document
                 scopes: https://www.googleapis.com/auth/drive.readonly
 models:
     DocumentMetadata:
@@ -40,5 +39,4 @@ models:
     Document:
         id: string
         url: string
-        content: string
         title: string
