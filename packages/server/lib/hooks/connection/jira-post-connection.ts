@@ -14,6 +14,7 @@ export default async function execute(nango: Nango) {
     }
 
     const cloudId = response.data[0].id;
+    const baseUrl = response.data[0].url;
 
     const accountResponse = await nango.proxy({
         endpoint: `ex/jira/${cloudId}/rest/api/3/myself`,
@@ -22,11 +23,11 @@ export default async function execute(nango: Nango) {
     });
 
     if (axios.isAxiosError(accountResponse) || !accountResponse || !accountResponse.data || accountResponse.data.length === 0) {
-        await nango.updateConnectionConfig({ cloudId });
+        await nango.updateConnectionConfig({ cloudId, baseUrl });
         return;
     }
 
     const { accountId } = accountResponse.data;
 
-    await nango.updateConnectionConfig({ cloudId, accountId });
+    await nango.updateConnectionConfig({ cloudId, baseUrl, accountId });
 }
