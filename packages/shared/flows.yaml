@@ -1217,6 +1217,22 @@ integrations:
                 body:
                     storage: object
                     atlas_doc_format: object
+    discourse:
+        syncs:
+            users:
+                description: |
+                    Fetches a list of active users from Discourse.
+                endpoint: /discourse/users
+                sync_type: full
+                runs: every 1 hour
+                output: User
+        models:
+            User:
+                id: number
+                username: string
+                name: string
+                active: boolean
+                admin: boolean
     evaluagent:
         syncs:
             users:
