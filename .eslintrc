@@ -193,6 +193,35 @@
                 // unnecessary when bundling
                 "import/extensions": "off"
             }
+        },
+        {
+            "files": [
+                "packages/ui-connect/**/*.tsx"
+            ],
+            "plugins": [
+                "react",
+                "react-hooks"
+            ],
+            "extends": [
+                "plugin:react-hooks/recommended",
+                "plugin:react/recommended",
+                "plugin:react/jsx-runtime",
+            ],
+            "env": {
+                "browser": true,
+                "es6": true,
+                "node": false
+            },
+            "parserOptions": {
+                "ecmaVersion": 2018,
+                "sourceType": "module",
+                "ecmaFeatures": {
+                    "impliedStrict": true,
+                    "jsx": true
+                },
+                "project": "tsconfig.json"
+            },
+            "rules": {}
         }
     ]
 }
