@@ -26,17 +26,6 @@ class UserController {
             next(err);
         }
     }
-
-    async suspend(req: Request, res: Response<any, never>, next: NextFunction) {
-        try {
-            const userId = req.params['userId'];
-
-            await userService.suspendUser(Number(userId));
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
 }
 
 export default new UserController();
