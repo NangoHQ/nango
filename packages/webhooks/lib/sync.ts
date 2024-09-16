@@ -12,6 +12,8 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import type { LogContext } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
+import { Ok } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
 
 dayjs.extend(utc);
 
@@ -39,13 +41,13 @@ export const sendSync = async ({
     responseResults?: SyncResult;
     success: boolean;
     logCtx?: LogContext | undefined;
-} & ({ success: true; responseResults: SyncResult } | { success: false; error: ErrorPayload })): Promise<void> => {
+} & ({ success: true; responseResults: SyncResult } | { success: false; error: ErrorPayload })): Promise<Result<void>> => {
     if (!webhookSettings) {
-        return;
+        return Ok(undefined);
     }
 
     if (!shouldSend({ success, type: 'sync', webhookSettings, operation })) {
-        return;
+        return Ok(undefined);
     }
 
     const bodyBase: NangoSyncWebhookBodyBase = {
@@ -69,7 +71,7 @@ export const sendSync = async ({
         if (!webhookSettings.on_sync_completion_always && noChanges) {
             await logCtx?.info('There were no added, updated, or deleted results. No webhook sent, as per your environment settings');
 
-            return;
+            return Ok(undefined);
         }
 
         finalBody = {
@@ -103,7 +105,7 @@ export const sendSync = async ({
         { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
-    await deliver({
+    return deliver({
         webhooks,
         body: finalBody,
         webhookType: 'sync',
