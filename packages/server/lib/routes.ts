@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import multer from 'multer';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
+import providerController from './controllers/provider.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
 import unAuthController from './controllers/unauth.controller.js';
@@ -163,6 +164,10 @@ publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.a
 publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustomer.bind(accountController));
 
 // API routes (API key auth).
+// @deprecated
+publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
+// @deprecated
+publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
 publicAPI.route('/providers').get(apiAuth, getPublicProviders);
 publicAPI.route('/providers/:provider').get(apiAuth, getPublicProvider);
 publicAPI.route('/config').get(apiAuth, getListIntegrations);
