@@ -14,7 +14,14 @@ export interface TokenUrlObject {
     NONE?: string;
 }
 
-export interface Template {
+export interface ProviderAlias {
+    alias?: string;
+    proxy: {
+        base_url?: string;
+    };
+}
+
+export interface Provider {
     auth_mode: AuthModeType;
     proxy?: {
         base_url: string;
@@ -52,7 +59,7 @@ export interface Template {
     connection_configuration?: string[];
 }
 
-export interface TemplateOAuth2 extends Template {
+export interface TemplateOAuth2 extends Provider {
     auth_mode: 'OAUTH2' | 'CUSTOM';
 
     disable_pkce?: boolean; // Defaults to false (=PKCE used) if not provided
@@ -73,7 +80,7 @@ export interface TemplateOAuth2 extends Template {
     token_request_auth_method?: 'basic' | 'custom';
 }
 
-export interface TemplateOAuth1 extends Template {
+export interface TemplateOAuth1 extends Provider {
     auth_mode: 'OAUTH1';
 
     request_url: string;

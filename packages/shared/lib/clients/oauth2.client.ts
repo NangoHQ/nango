@@ -1,5 +1,5 @@
 import type { Config as ProviderConfig, OAuth2Credentials, Connection } from '../models/index.js';
-import type { TemplateOAuth2 as ProviderTemplateOAuth2, Template as ProviderTemplate } from '@nangohq/types';
+import type { Provider, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
 import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2';
 import { AuthorizationCode } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
@@ -14,7 +14,7 @@ import type { Merge } from 'type-fest';
 
 export function getSimpleOAuth2ClientConfig(
     providerConfig: ProviderConfig,
-    template: ProviderTemplate,
+    template: Provider,
     connectionConfig: Record<string, string>
 ): Merge<ModuleOptions, { http: WreckHttpOptions }> {
     const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['OAUTH2'] as string);

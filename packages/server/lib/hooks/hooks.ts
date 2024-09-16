@@ -26,7 +26,7 @@ import type {
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import { getOrchestrator } from '../utils/utils.js';
-import type { TbaCredentials, IntegrationConfig, Template as ProviderTemplate, DBEnvironment } from '@nangohq/types';
+import type { TbaCredentials, IntegrationConfig, DBEnvironment, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
@@ -160,7 +160,7 @@ export const connectionRefreshFailed = async ({
 }: {
     connection: Connection;
     environment: DBEnvironment;
-    template: ProviderTemplate;
+    template: Provider;
     config: IntegrationConfig;
     authError: { type: string; description: string };
     logCtx: LogContext;
@@ -195,7 +195,7 @@ export const connectionRefreshFailed = async ({
 
 export const connectionTest = async (
     provider: string,
-    template: ProviderTemplate,
+    template: Provider,
     credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials,
     connectionId: string,
     providerConfigKey: string,

@@ -10,7 +10,7 @@ import {
     getConnectionMetadataFromTokenResponse,
     missesInterpolationParamInObject
 } from '../utils/utils.js';
-import type { DBEnvironment, DBTeam, Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
+import type { DBEnvironment, DBTeam, Provider, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
 import type {
     Config as ProviderConfig,
     OAuthSession,
@@ -36,7 +36,8 @@ import {
     AnalyticsTypes,
     hmacService,
     ErrorSourceEnum,
-    interpolateObjectValues
+    interpolateObjectValues,
+    getProvider
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -135,10 +136,8 @@ class OAuthController {
 
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            let template: ProviderTemplate;
-            try {
-                template = configService.getTemplate(config.provider);
-            } catch {
+            const template = getProvider(config.provider);
+            if (!template) {
                 const error = WSErrBuilder.UnknownProviderTemplate(config.provider);
                 await logCtx.error(error.message);
                 await logCtx.failed();
@@ -328,7 +327,14 @@ class OAuthController {
                 return;
             }
 
-            const template = configService.getTemplate(config.provider);
+            const template = getProvider(config.provider);
+            if (!template) {
+                await logCtx.error('Unknown provider template');
+                await logCtx.failed();
+                res.status(404).send({ error: { code: 'unknown_provider_template' } });
+                return;
+            }
+
             const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['OAUTH2'] as string);
 
             if (template.auth_mode !== 'OAUTH2_CC') {
@@ -582,7 +588,7 @@ class OAuthController {
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
-        } catch (err: any) {
+        } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
             const error = WSErrBuilder.UnknownError();
@@ -604,7 +610,7 @@ class OAuthController {
     }
 
     private async appRequest(
-        template: ProviderTemplate,
+        template: Provider,
         providerConfig: ProviderConfig,
         session: OAuthSession,
         res: Response,
@@ -662,7 +668,7 @@ class OAuthController {
     // in a first step and will get called back there. We need to manually include the state
     // param there, otherwise we won't be able to identify the user in the callback
     private async oauth1Request(
-        template: ProviderTemplate,
+        template: Provider,
         config: ProviderConfig,
         session: OAuthSession,
         res: Response,
@@ -774,7 +780,14 @@ class OAuthController {
         try {
             await logCtx.debug('Received callback', { providerConfigKey, connectionId });
 
-            const template = configService.getTemplate(session.provider);
+            const template = getProvider(session.provider);
+            if (!template) {
+                const error = WSErrBuilder.UnknownProviderTemplate(session.provider);
+                await logCtx.error(error.message);
+                await logCtx.failed();
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            }
+
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
@@ -783,6 +796,8 @@ class OAuthController {
 
             if (!environment || !account) {
                 const error = WSErrBuilder.EnvironmentOrAccountNotFound();
+                await logCtx.error(error.message);
+                await logCtx.failed();
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
@@ -1183,7 +1198,7 @@ class OAuthController {
     }
 
     private async oauth1Callback(
-        template: ProviderTemplate,
+        template: Provider,
         config: ProviderConfig,
         session: OAuthSession,
         req: Request,

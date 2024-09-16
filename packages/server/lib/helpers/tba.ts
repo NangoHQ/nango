@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { OAuthSession } from '@nangohq/shared';
-import type { Template as ProviderTemplate, IntegrationConfig as ProviderConfig } from '@nangohq/types';
+import type { Provider, IntegrationConfig as ProviderConfig } from '@nangohq/types';
 import { interpolateStringFromObject } from '@nangohq/shared';
 import { generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode } from '@nangohq/utils';
 
@@ -11,7 +11,7 @@ export async function makeAccessTokenRequest({
     oauth_verifier,
     session
 }: {
-    template: ProviderTemplate;
+    template: Provider;
     config: ProviderConfig;
     oauth_token: string;
     oauth_verifier: string;

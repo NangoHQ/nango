@@ -9,6 +9,24 @@ servers:
     - url: http://localhost:3003
       description: Local server
 paths:
+    /providers:
+        get:
+            description: Returns a list of all available providers
+            responses:
+                '200':
+                    description: Successfully returned a list of available providers
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Provider'
+                                            title: Provider
     /config:
         get:
             description: Returns a list of integrations
@@ -1539,3 +1557,138 @@ paths:
             responses:
                 '200':
                     description: The response exactly as returned by the external API
+
+components:
+  schemas:
+    TokenUrlObject:
+      properties:
+        OAUTH1:
+          title: TokenUrlObject.OAUTH1
+          type: string
+        OAUTH2:
+          title: TokenUrlObject.OAUTH2
+          type: string
+        OAUTH2CC:
+          title: TokenUrlObject.OAUTH2CC
+          type: string
+        BASIC:
+          title: TokenUrlObject.BASIC
+          type: string
+        API_KEY:
+          title: TokenUrlObject.API_KEY
+          type: string
+        APP_STORE:
+          title: TokenUrlObject.APP_STORE
+          type: string
+        CUSTOM:
+          title: TokenUrlObject.CUSTOM
+          type: string
+        APP:
+          title: TokenUrlObject.APP
+          type: string
+        NONE:
+          title: TokenUrlObject.NONE
+          type: string
+      additionalProperties: false
+      title: TokenUrlObject
+      type: object
+    Provider:
+      properties:
+        name:
+            type: string
+        auth_mode:
+          type: string
+          enum: ['OAUTH1','OAUTH2','OAUTH2_CC','BASIC','API_KEY','APP_STORE','CUSTOM','APP','NONE','TBA','TABLEAU']
+        proxy:
+          properties:
+            base_url:
+              type: string
+            headers:
+              title: Provider.proxy.headers
+            query:
+              properties:
+                api_key:
+                  type: string
+              required:
+                - api_key
+              additionalProperties: false
+              type: object
+            retry:
+              title: Provider.proxy.retry
+            decompress:
+              type: boolean
+            paginate:
+              anyOf: []
+            verification:
+              properties:
+                method:
+                  title: Provider.proxy.verification.method
+                endpoint:
+                  type: string
+                base_url_override:
+                  type: string
+                headers:
+                  title: Provider.proxy.verification.headers
+              required:
+                - method
+                - endpoint
+              additionalProperties: false
+              type: object
+          required:
+            - base_url
+          additionalProperties: false
+          type: object
+        authorization_url:
+          type: string
+        authorization_url_encode:
+          type: boolean
+        access_token_url:
+          type: string
+        authorization_params:
+          title: Provider.authorization_params
+        scope_separator:
+          type: string
+        default_scopes:
+          items:
+            type: string
+          type: array
+        token_url:
+          anyOf:
+            - type: string
+            - $ref: '#/components/schemas/TokenUrlObject'
+        token_params:
+          title: Provider.token_params
+        authorization_url_replacements:
+          title: Provider.authorization_url_replacements
+        redirect_uri_metadata:
+          items:
+            type: string
+          type: array
+        token_response_metadata:
+          items:
+            type: string
+          type: array
+        docs:
+          type: string
+        token_expiration_buffer:
+          type: number
+        webhook_routing_script:
+          type: string
+        webhook_user_defined_secret:
+          type: boolean
+        post_connection_script:
+          type: string
+        categories:
+          items:
+            type: string
+          type: array
+        connection_configuration:
+          items:
+            type: string
+          type: array
+      required:
+        - auth_mode
+        - name
+      additionalProperties: false
+      title: Provider
+      type: object

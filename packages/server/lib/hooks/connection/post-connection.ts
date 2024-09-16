@@ -1,6 +1,6 @@
 import type { AxiosError, AxiosResponse } from 'axios';
 import type { RecentlyCreatedConnection, Connection, ConnectionConfig, HTTP_VERB, UserProvidedProxyConfiguration } from '@nangohq/shared';
-import { LogActionEnum, LogTypes, proxyService, connectionService, configService, telemetry } from '@nangohq/shared';
+import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry, getProvider } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
@@ -85,8 +85,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             }
         };
 
-        const template = configService.getTemplate(provider);
-
+        const template = getProvider(provider);
         if (!template || !template['post_connection_script']) {
             return;
         }

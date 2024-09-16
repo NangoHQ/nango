@@ -15,15 +15,14 @@ import type { ConnectionConfig, Connection, StoredConnection, NangoConnection } 
 import type {
     Metadata,
     ActiveLogIds,
-    Template as ProviderTemplate,
+    Provider,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     AuthModeType,
     TbaCredentials,
     TableauCredentials,
     MaybePromise,
     DBTeam,
-    DBEnvironment,
-    Template
+    DBEnvironment
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -55,6 +54,7 @@ import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
 import { SlackService } from './notification/slack.service.js';
+import { getProvider } from './providers.js';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -851,7 +851,7 @@ class ConnectionService {
             logCtx: LogContext;
             authError: { type: string; description: string };
             environment: DBEnvironment;
-            template: ProviderTemplate;
+            template: Provider;
             config: ProviderConfig;
         }) => Promise<void>;
     }): Promise<Result<Connection, NangoError>> {
@@ -886,7 +886,11 @@ class ConnectionService {
             return Err(error);
         }
 
-        const template: ProviderTemplate = configService.getTemplate(config?.provider);
+        const template = getProvider(config?.provider);
+        if (!template) {
+            const error = new NangoError('unknown_provider_config');
+            return Err(error);
+        }
 
         if (
             connection?.credentials?.type === 'OAUTH2' ||
@@ -1192,7 +1196,7 @@ class ConnectionService {
     }
 
     public async getAppStoreCredentials(
-        template: ProviderTemplate,
+        template: Provider,
         connectionConfig: Connection['connection_config'],
         privateKey: string
     ): Promise<ServiceResponse<AppStoreCredentials>> {
@@ -1246,7 +1250,7 @@ class ConnectionService {
     public async getAppCredentialsAndFinishConnection(
         connectionId: string,
         integration: ProviderConfig,
-        template: ProviderTemplate,
+        template: Provider,
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
@@ -1278,7 +1282,7 @@ class ConnectionService {
     }
 
     public async getAppCredentials(
-        template: ProviderTemplate,
+        template: Provider,
         config: ProviderConfig,
         connectionConfig: Connection['connection_config']
     ): Promise<ServiceResponse<AppCredentials>> {
@@ -1389,7 +1393,7 @@ class ConnectionService {
     }
 
     public async getTableauCredentials(
-        template: Template,
+        template: Provider,
         patName: string,
         patSecret: string,
         connectionConfig: Record<string, string>,
@@ -1533,7 +1537,7 @@ class ConnectionService {
     private async getNewCredentials(
         connection: Connection,
         providerConfig: ProviderConfig,
-        template: ProviderTemplate
+        template: Provider
     ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials>> {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);

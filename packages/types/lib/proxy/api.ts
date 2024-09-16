@@ -2,7 +2,7 @@ import type { ParamsSerializerOptions } from 'axios';
 import type { EndpointMethod } from '../api.js';
 import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials } from '../auth/api.js';
 import type { Connection } from '../connection/db.js';
-import type { Template as ProviderTemplate } from '../integration/template.js';
+import type { Provider } from '../integration/template.js';
 
 export interface BaseProxyConfiguration {
     providerConfigKey: string;
@@ -30,7 +30,7 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
     method: EndpointMethod;
     provider: string;
     token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
-    template: ProviderTemplate;
+    template: Provider;
     connection: Connection;
 }
 

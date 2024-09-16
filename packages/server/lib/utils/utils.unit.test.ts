@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { getConnectionMetadataFromTokenResponse, parseConnectionConfigParamsFromTemplate, getAdditionalAuthorizationParams } from './utils.js';
-import type { Template as ProviderTemplate } from '@nangohq/types';
+import type { Provider } from '@nangohq/types';
 
 describe('Utils unit tests', () => {
     it('Should parse config params in authorization_url', () => {
@@ -117,9 +117,10 @@ describe('Utils unit tests', () => {
     });
 
     it('Should extract metadata from token response based on template', () => {
-        const template: ProviderTemplate = {
+        const template: Provider = {
+            auth_mode: 'OAUTH2',
             token_response_metadata: ['incoming_webhook.url', 'ok', 'bot_user_id', 'scope']
-        } as ProviderTemplate;
+        };
 
         const params = {
             ok: true,
@@ -145,9 +146,10 @@ describe('Utils unit tests', () => {
     });
 
     it('Should extract metadata from token response based on template and if it does not exist not fail', () => {
-        const template: ProviderTemplate = {
+        const template: Provider = {
+            auth_mode: 'OAUTH2',
             token_response_metadata: ['incoming_webhook.url', 'ok']
-        } as ProviderTemplate;
+        };
 
         const params = {
             scope: 'chat:write,channels:read,team.billing:read,users:read,channels:history,channels:join,incoming-webhook',
@@ -164,9 +166,10 @@ describe('Utils unit tests', () => {
     });
 
     it('Should not extract metadata from an empty token response', () => {
-        const template: ProviderTemplate = {
+        const template: Provider = {
+            auth_mode: 'OAUTH2',
             token_response_metadata: ['incoming_webhook.url', 'ok']
-        } as ProviderTemplate;
+        };
 
         const params = {};
 

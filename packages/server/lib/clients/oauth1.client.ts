@@ -1,5 +1,5 @@
 import oAuth1 from 'oauth';
-import type { IntegrationConfig, TemplateOAuth1 as ProviderTemplateOAuth1, Template as ProviderTemplate } from '@nangohq/types';
+import type { IntegrationConfig, Provider, TemplateOAuth1 as ProviderTemplateOAuth1 } from '@nangohq/types';
 
 interface OAuth1RequestTokenResult {
     request_token: string;
@@ -19,7 +19,7 @@ export class OAuth1Client {
     private config: IntegrationConfig;
     private authConfig: ProviderTemplateOAuth1;
 
-    constructor(config: IntegrationConfig, template: ProviderTemplate, callbackUrl: string) {
+    constructor(config: IntegrationConfig, template: Provider, callbackUrl: string) {
         this.config = config;
 
         this.authConfig = template as ProviderTemplateOAuth1;

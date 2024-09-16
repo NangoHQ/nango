@@ -1,5 +1,15 @@
 import type { Request, Response, NextFunction } from 'express';
-import { errorManager, analytics, AnalyticsTypes, configService, connectionService, hmacService, ErrorSourceEnum, LogActionEnum } from '@nangohq/shared';
+import {
+    errorManager,
+    analytics,
+    AnalyticsTypes,
+    configService,
+    connectionService,
+    hmacService,
+    ErrorSourceEnum,
+    LogActionEnum,
+    getProvider
+} from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
@@ -66,7 +76,13 @@ class UnAuthController {
                 return;
             }
 
-            const template = configService.getTemplate(config.provider);
+            const template = getProvider(config.provider);
+            if (!template) {
+                await logCtx.error('Unknown provider template');
+                await logCtx.failed();
+                res.status(404).send({ error: { code: 'unknown_provider_template' } });
+                return;
+            }
 
             if (template.auth_mode !== 'NONE') {
                 await logCtx.error('Provider does not support Unauthenticated', { provider: config.provider });

@@ -9,7 +9,8 @@ import {
     connectionService,
     LogActionEnum,
     telemetry,
-    LogTypes
+    LogTypes,
+    getProvider
 } from '@nangohq/shared';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -86,7 +87,14 @@ class AppAuthController {
 
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            const template = configService.getTemplate(config.provider);
+            const template = getProvider(config.provider);
+            if (!template) {
+                await logCtx.error('Unknown provider template');
+                await logCtx.failed();
+                res.status(404).send({ error: { code: 'unknown_provider_template' } });
+                return;
+            }
+
             const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['APP'] as string);
 
             if (template.auth_mode !== 'APP') {

@@ -1,7 +1,7 @@
 import type { Merge } from 'type-fest';
 import type { ApiTimestamps, Endpoint } from '../api';
 import type { IntegrationConfig } from './db';
-import type { Template } from './template';
+import type { Provider } from './template';
 import type { AuthModeType } from '../auth/api';
 import type { NangoModel, NangoSyncEndpoint, ScriptTypeLiteral } from '../nangoYaml';
 import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';
@@ -42,7 +42,7 @@ export type GetIntegration = Endpoint<{
     Success: {
         data: {
             integration: ApiIntegration;
-            template: Template;
+            template: Provider;
             meta: {
                 connectionsCount: number;
                 webhookUrl: string | null;

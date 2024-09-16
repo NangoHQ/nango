@@ -6,8 +6,8 @@ export type TbaAuthorization = Endpoint<{
     Body: {
         token_id: string;
         token_secret: string;
-        oauth_client_id_override?: string;
-        oauth_client_secret_override?: string;
+        oauth_client_id_override?: string | undefined;
+        oauth_client_secret_override?: string | undefined;
     };
     QueryParams: {
         connectionId: string;
@@ -21,6 +21,7 @@ export type TbaAuthorization = Endpoint<{
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
         | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
         | ApiError<'invalid_credentials'>;
     Success: {
@@ -48,6 +49,7 @@ export type TableauAuthorization = Endpoint<{
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
         | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
         | ApiError<'invalid_credentials'>;
     Success: {

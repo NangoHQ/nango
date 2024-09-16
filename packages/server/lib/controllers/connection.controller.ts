@@ -1,16 +1,18 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Config as ProviderConfig, OAuth2Credentials, AuthCredentials, ConnectionList, ConnectionUpsertResponse } from '@nangohq/shared';
 import db from '@nangohq/database';
-import type {
-    TbaCredentials,
-    Template as ProviderTemplate,
-    ApiKeyCredentials,
-    BasicApiCredentials,
-    ConnectionConfig,
-    OAuth1Credentials,
-    OAuth2ClientCredentials
-} from '@nangohq/types';
-import { configService, connectionService, errorManager, analytics, AnalyticsTypes, NangoError, accountService, SlackService } from '@nangohq/shared';
+import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials } from '@nangohq/types';
+import {
+    configService,
+    connectionService,
+    errorManager,
+    analytics,
+    AnalyticsTypes,
+    NangoError,
+    accountService,
+    SlackService,
+    getProvider
+} from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
@@ -188,25 +190,6 @@ class ConnectionController {
         }
     }
 
-    listProviders(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const providers = Object.entries(configService.getTemplates())
-                .map((providerProperties: [string, ProviderTemplate]) => {
-                    const [provider, properties] = providerProperties;
-                    return {
-                        name: provider,
-                        defaultScopes: properties.default_scopes,
-                        authMode: properties.auth_mode,
-                        categories: properties.categories
-                    };
-                })
-                .sort((a, b) => a.name.localeCompare(b.name));
-            res.status(200).send(providers);
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async setMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
@@ -301,7 +284,11 @@ class ConnectionController {
                 }
             }
 
-            const template = configService.getTemplate(provider);
+            const template = getProvider(provider);
+            if (!template) {
+                res.status(404).send({ error: { code: 'unknown_provider_template' } });
+                return;
+            }
 
             let updatedConnection: ConnectionUpsertResponse | undefined;
 

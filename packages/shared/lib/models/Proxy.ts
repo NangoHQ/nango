@@ -2,7 +2,7 @@ import type { ParamsSerializerOptions } from 'axios';
 import type { HTTP_VERB } from './Generic.js';
 import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials, TbaCredentials, TableauCredentials } from './Auth.js';
 import type { Connection } from './Connection.js';
-import type { Template as ProviderTemplate } from '@nangohq/types';
+import type { Provider } from '@nangohq/types';
 
 export interface File {
     fieldname: string;
@@ -43,7 +43,7 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
     method: HTTP_VERB;
     provider: string;
     token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials | TbaCredentials | TableauCredentials;
-    template: ProviderTemplate;
+    template: Provider;
     connection: Connection;
 }
 

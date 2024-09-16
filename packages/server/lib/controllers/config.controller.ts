@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
 import type { StandardNangoConfig, Config as ProviderConfig, IntegrationWithCreds, Integration as ProviderIntegration, NangoSyncConfig } from '@nangohq/shared';
 import { isHosted } from '@nangohq/utils';
-import type { Template as ProviderTemplate, AuthModeType } from '@nangohq/types';
+import type { AuthModeType } from '@nangohq/types';
 import {
     flowService,
     errorManager,
@@ -15,7 +15,9 @@ import {
     getActionsByProviderConfigKey,
     getFlowConfigsByParams,
     getGlobalWebhookReceiveUrl,
-    getSyncConfigsAsStandardConfig
+    getSyncConfigsAsStandardConfig,
+    getProvider,
+    getProviders
 } from '@nangohq/shared';
 import { parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import type { RequestLocals } from '../utils/express.js';
@@ -121,7 +123,7 @@ class ConfigController {
 
             const integrations = await Promise.all(
                 configs.map(async (config: ProviderConfig) => {
-                    const template = configService.getTemplates()[config.provider];
+                    const template = getProvider(config.provider);
                     const activeFlows = await getFlowConfigsByParams(environment.id, config.unique_key);
 
                     const integration: Integration = {
@@ -153,24 +155,25 @@ class ConfigController {
         }
     }
 
-    listProvidersFromYaml(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const providers = Object.entries(configService.getTemplates())
-                .map((providerProperties: [string, ProviderTemplate]) => {
-                    const [provider, properties] = providerProperties;
-                    return {
-                        name: provider,
-                        defaultScopes: properties.default_scopes,
-                        authMode: properties.auth_mode,
-                        categories: properties.categories,
-                        docs: properties.docs
-                    };
-                })
-                .sort((a, b) => a.name.localeCompare(b.name));
-            res.status(200).send(providers);
-        } catch (err) {
-            next(err);
+    listProvidersFromYaml(_: Request, res: Response<any, Required<RequestLocals>>) {
+        const providers = getProviders();
+        if (!providers) {
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
         }
+        const list = Object.entries(providers)
+            .map((providerProperties) => {
+                const [provider, properties] = providerProperties;
+                return {
+                    name: provider,
+                    defaultScopes: properties.default_scopes,
+                    authMode: properties.auth_mode,
+                    categories: properties.categories,
+                    docs: properties.docs
+                };
+            })
+            .sort((a, b) => a.name.localeCompare(b.name));
+        res.status(200).send(list);
     }
 
     /**
@@ -190,13 +193,17 @@ class ConfigController {
             }
 
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
-
             if (!config) {
                 errorManager.errRes(res, 'unknown_provider_config');
                 return;
             }
 
-            const providerTemplate = configService.getTemplate(config.provider);
+            const providerTemplate = getProvider(config.provider);
+            if (!providerTemplate) {
+                errorManager.errRes(res, 'unknown_provider_template');
+                return;
+            }
+
             const authMode = providerTemplate.auth_mode;
 
             let client_secret = config.oauth_client_secret;
@@ -319,12 +326,12 @@ class ConfigController {
 
             const provider = req.body['provider'];
 
-            if (!configService.checkProviderTemplateExists(provider)) {
+            const providerTemplate = getProvider(provider);
+            if (!providerTemplate) {
                 errorManager.errRes(res, 'unknown_provider_template');
                 return;
             }
 
-            const providerTemplate = configService.getTemplate(provider);
             const authMode = providerTemplate.auth_mode;
 
             if ((authMode === 'OAUTH1' || authMode === 'OAUTH2' || authMode === 'CUSTOM') && req.body['oauth_client_id'] == null) {
@@ -447,7 +454,12 @@ class ConfigController {
 
             const provider = req.body['provider'];
 
-            const template = configService.getTemplate(provider as string);
+            const template = getProvider(provider as string);
+            if (!template) {
+                errorManager.errRes(res, 'unknown_provider_template');
+                return;
+            }
+
             const authMode = template.auth_mode;
 
             if (authMode === 'API_KEY' || authMode === 'BASIC') {

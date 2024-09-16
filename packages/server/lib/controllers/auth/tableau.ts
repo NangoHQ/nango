@@ -10,7 +10,8 @@ import {
     connectionService,
     errorManager,
     ErrorSourceEnum,
-    LogActionEnum
+    LogActionEnum,
+    getProvider
 } from '@nangohq/shared';
 import type { TableauAuthorization } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
@@ -105,7 +106,14 @@ export const tableauAuthorization = asyncWrapper<TableauAuthorization>(async (re
             return;
         }
 
-        const template = configService.getTemplate(config.provider);
+        const template = getProvider(config.provider);
+        if (!template) {
+            await logCtx.error('Unknown provider template');
+            await logCtx.failed();
+            res.status(404).send({ error: { code: 'unknown_provider_template' } });
+            return;
+        }
+
         if (template.auth_mode !== 'TABLEAU') {
             await logCtx.error('Provider does not support Tableau auth', { provider: config.provider });
             await logCtx.failed();

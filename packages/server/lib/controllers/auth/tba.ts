@@ -2,7 +2,7 @@ import { z } from 'zod';
 import tracer from 'dd-trace';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP } from '@nangohq/utils';
-import { analytics, configService, AnalyticsTypes, getConnectionConfig, connectionService } from '@nangohq/shared';
+import { analytics, configService, AnalyticsTypes, getConnectionConfig, connectionService, getProvider } from '@nangohq/shared';
 import type { TbaAuthorization, TbaCredentials } from '@nangohq/types';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -52,8 +52,8 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
         });
         return;
     }
-    const paramVal = paramValidation.safeParse(req.params);
 
+    const paramVal = paramValidation.safeParse(req.params);
     if (!paramVal.success) {
         res.status(400).send({
             error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramVal.error) }
@@ -63,7 +63,7 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
 
     const { account, environment } = res.locals;
 
-    const body = val.data;
+    const body: TbaAuthorization['Body'] = val.data;
 
     const { token_id: tokenId, token_secret: tokenSecret, oauth_client_id_override, oauth_client_secret_override } = body;
 
@@ -102,7 +102,13 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
         return;
     }
 
-    const template = configService.getTemplate(config.provider);
+    const template = getProvider(config.provider);
+    if (!template) {
+        await logCtx.error('Unknown provider template');
+        await logCtx.failed();
+        res.status(404).send({ error: { code: 'unknown_provider_template' } });
+        return;
+    }
 
     if (template.auth_mode !== 'TBA') {
         await logCtx.error('Provider does not support TBA auth', { provider: config.provider });

@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import type { Request } from 'express';
 import type { User } from '@nangohq/shared';
-import type { Template as ProviderTemplate } from '@nangohq/types';
+import type { Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
@@ -69,7 +69,7 @@ export function getAdditionalAuthorizationParams(params: any): Record<string, st
 /**
  * A helper function to extract the additional connection metadata returned from the Provider in the callback request.
  */
-export function getConnectionMetadataFromCallbackRequest(queryParams: any, template: ProviderTemplate): Record<string, string> {
+export function getConnectionMetadataFromCallbackRequest(queryParams: any, template: Provider): Record<string, string> {
     if (!queryParams || !template.redirect_uri_metadata) {
         return {};
     }
@@ -86,7 +86,7 @@ export function getConnectionMetadataFromCallbackRequest(queryParams: any, templ
  * A helper function to extract the additional connection metadata returned from the Provider in the token response.
  * It can parse booleans or strings only
  */
-export function getConnectionMetadataFromTokenResponse(params: any, template: ProviderTemplate): Record<string, any> {
+export function getConnectionMetadataFromTokenResponse(params: any, template: Provider): Record<string, any> {
     if (!params || !template.token_response_metadata) {
         return {};
     }
@@ -122,7 +122,7 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
     return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
 }
 
-export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
+export function parseConnectionConfigParamsFromTemplate(template: Provider): string[] {
     if (
         template.token_url ||
         template.authorization_url ||

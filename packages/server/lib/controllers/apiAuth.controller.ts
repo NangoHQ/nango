@@ -10,7 +10,8 @@ import {
     getConnectionConfig,
     hmacService,
     ErrorSourceEnum,
-    LogActionEnum
+    LogActionEnum,
+    getProvider
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
@@ -86,7 +87,13 @@ class ApiAuthController {
                 return;
             }
 
-            const template = configService.getTemplate(config.provider);
+            const template = getProvider(config.provider);
+            if (!template) {
+                await logCtx.error('Unknown provider template');
+                await logCtx.failed();
+                res.status(404).send({ error: { code: 'unknown_provider_template' } });
+                return;
+            }
 
             if (template.auth_mode !== 'API_KEY') {
                 await logCtx.error('Provider does not support API key auth', { provider: config.provider });
@@ -267,7 +274,13 @@ class ApiAuthController {
 
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            const template = configService.getTemplate(config.provider);
+            const template = getProvider(config.provider);
+            if (!template) {
+                await logCtx.error('Unknown provider template');
+                await logCtx.failed();
+                res.status(404).send({ error: { code: 'unknown_provider_template' } });
+                return;
+            }
 
             if (template.auth_mode !== 'BASIC') {
                 await logCtx.error('Provider does not support Basic API auth', { provider: config.provider });

@@ -2,19 +2,17 @@ import { isAxiosError } from 'axios';
 import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
 import OAuth from 'oauth-1.0a';
 import * as crypto from 'node:crypto';
-import { axiosInstance as axios, getLogger, SIGNATURE_METHOD } from '@nangohq/utils';
+import { axiosInstance as axios, SIGNATURE_METHOD } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
-import configService from './config.service.js';
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import type { MessageRowInsert, Template as ProviderTemplate } from '@nangohq/types';
-
-const logger = getLogger('Proxy');
+import type { MessageRowInsert } from '@nangohq/types';
+import { getProvider } from './providers.js';
 
 interface Logs {
     logs: MessageRowInsert[];
@@ -128,11 +126,10 @@ class ProxyService {
             message: 'Proxy: token retrieved successfully'
         });
 
-        let template: ProviderTemplate | undefined;
-        try {
-            template = configService.getTemplate(provider);
-        } catch {
-            logger.error('failed to getTemplate');
+        const template = getProvider(provider);
+        if (!template) {
+            logs.push({ type: 'log', level: 'error', createdAt: new Date().toISOString(), message: `Provider ${provider} does not exist` });
+            return { success: false, error: new NangoError('unknown_provider_template'), response: null, logs };
         }
 
         if (!template || ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride)) {

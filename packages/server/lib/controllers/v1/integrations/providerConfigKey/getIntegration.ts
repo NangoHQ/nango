@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { GetIntegration } from '@nangohq/types';
-import { configService, connectionService, getGlobalWebhookReceiveUrl } from '@nangohq/shared';
+import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { z } from 'zod';
 import { integrationToApi } from '../../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
@@ -37,7 +37,12 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
         return;
     }
 
-    const template = configService.getTemplate(integration.provider);
+    const template = getProvider(integration.provider);
+    if (!template) {
+        res.status(400).send({ error: { code: 'not_found', message: 'Provider does not exist' } });
+        return;
+    }
+
     let webhookSecret: string | null = null;
 
     if (template.auth_mode === 'APP' && integration.oauth_client_secret) {
