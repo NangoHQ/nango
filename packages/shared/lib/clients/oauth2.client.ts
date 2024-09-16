@@ -1,5 +1,5 @@
 import type { Config as ProviderConfig, OAuth2Credentials, Connection } from '../models/index.js';
-import type { Provider, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
+import type { Provider, ProviderOAuth2 } from '@nangohq/types';
 import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2';
 import { AuthorizationCode } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
@@ -23,7 +23,7 @@ export function getSimpleOAuth2ClientConfig(
 
     const headers = { 'User-Agent': 'Nango' };
 
-    const authConfig = template as ProviderTemplateOAuth2;
+    const authConfig = template as ProviderOAuth2;
 
     return {
         client: {
@@ -60,7 +60,7 @@ export function getSimpleOAuth2ClientConfig(
 export async function getFreshOAuth2Credentials(
     connection: Connection,
     config: ProviderConfig,
-    template: ProviderTemplateOAuth2
+    template: ProviderOAuth2
 ): Promise<ServiceResponse<OAuth2Credentials>> {
     const credentials = connection.credentials as OAuth2Credentials;
     if (credentials.config_override && credentials.config_override.client_id && credentials.config_override.client_secret) {

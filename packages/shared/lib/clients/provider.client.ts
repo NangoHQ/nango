@@ -1,6 +1,6 @@
 import braintree from 'braintree';
 import type { Config as ProviderConfig, Connection, AuthorizationTokenResponse, RefreshTokenResponse } from '../models/index.js';
-import type { TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
+import type { ProviderOAuth2 } from '@nangohq/types';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
@@ -66,7 +66,7 @@ class ProviderClient {
         }
     }
 
-    public async refreshToken(template: ProviderTemplateOAuth2, config: ProviderConfig, connection: Connection): Promise<object> {
+    public async refreshToken(template: ProviderOAuth2, config: ProviderConfig, connection: Connection): Promise<object> {
         if (connection.credentials.type !== 'OAUTH2') {
             throw new NangoError('wrong_credentials_type');
         }

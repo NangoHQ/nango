@@ -32,7 +32,7 @@ export type * from './notification/active-logs/db.js';
 export type * from './connection/api/get.js';
 export type * from './integration/api.js';
 export type * from './integration/db.js';
-export type * from './integration/template.js';
+export type * from './providers/provider.js';
 export type * from './auth/api.js';
 export type * from './auth/db.js';
 export type * from './auth/http.api.js';

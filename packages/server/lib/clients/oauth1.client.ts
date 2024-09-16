@@ -1,5 +1,5 @@
 import oAuth1 from 'oauth';
-import type { IntegrationConfig, Provider, TemplateOAuth1 as ProviderTemplateOAuth1 } from '@nangohq/types';
+import type { IntegrationConfig, Provider, ProviderOAuth1 } from '@nangohq/types';
 
 interface OAuth1RequestTokenResult {
     request_token: string;
@@ -17,12 +17,12 @@ interface OAuth1RequestTokenResult {
 export class OAuth1Client {
     private client: oAuth1.OAuth;
     private config: IntegrationConfig;
-    private authConfig: ProviderTemplateOAuth1;
+    private authConfig: ProviderOAuth1;
 
     constructor(config: IntegrationConfig, template: Provider, callbackUrl: string) {
         this.config = config;
 
-        this.authConfig = template as ProviderTemplateOAuth1;
+        this.authConfig = template as ProviderOAuth1;
         const headers = { 'User-Agent': 'Nango' };
 
         this.client = new oAuth1.OAuth(

@@ -1,7 +1,7 @@
 import type { Merge } from 'type-fest';
 import type { ApiTimestamps, Endpoint } from '../api';
 import type { IntegrationConfig } from './db';
-import type { Provider } from './template';
+import type { Provider } from '../providers/provider';
 import type { AuthModeType } from '../auth/api';
 import type { NangoModel, NangoSyncEndpoint, ScriptTypeLiteral } from '../nangoYaml';
 import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';

@@ -10,7 +10,7 @@ import {
     getConnectionMetadataFromTokenResponse,
     missesInterpolationParamInObject
 } from '../utils/utils.js';
-import type { DBEnvironment, DBTeam, Provider, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
+import type { DBEnvironment, DBTeam, Provider, ProviderOAuth2 } from '@nangohq/types';
 import type {
     Config as ProviderConfig,
     OAuthSession,
@@ -204,7 +204,7 @@ class OAuthController {
 
             if (template.auth_mode === 'OAUTH2') {
                 return this.oauth2Request({
-                    template: template as ProviderTemplateOAuth2,
+                    template: template as ProviderOAuth2,
                     providerConfig: config,
                     session,
                     res,
@@ -361,7 +361,7 @@ class OAuthController {
                 success,
                 error,
                 response: credentials
-            } = await connectionService.getOauthClientCredentials(template as ProviderTemplateOAuth2, client_id, client_secret, connectionConfig);
+            } = await connectionService.getOauthClientCredentials(template as ProviderOAuth2, client_id, client_secret, connectionConfig);
 
             if (!success || !credentials) {
                 await logCtx.error('Error during OAuth2 client credentials creation', { error, provider: config.provider });
@@ -452,7 +452,7 @@ class OAuthController {
         userScope,
         logCtx
     }: {
-        template: ProviderTemplateOAuth2;
+        template: ProviderOAuth2;
         providerConfig: ProviderConfig;
         session: OAuthSession;
         res: Response;
@@ -803,7 +803,7 @@ class OAuthController {
             }
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
-                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, environment, account, logCtx);
+                return this.oauth2Callback(template as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
             } else if (session.authMode === 'OAUTH1') {
                 return this.oauth1Callback(template, config, session, req, res, environment, account, logCtx);
             }
@@ -831,7 +831,7 @@ class OAuthController {
     }
 
     private async oauth2Callback(
-        template: ProviderTemplateOAuth2,
+        template: ProviderOAuth2,
         config: ProviderConfig,
         session: OAuthSession,
         req: Request,

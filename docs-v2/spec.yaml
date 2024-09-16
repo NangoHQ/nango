@@ -26,7 +26,6 @@ paths:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/Provider'
-                                            title: Provider
     /config:
         get:
             description: Returns a list of integrations
@@ -805,6 +804,8 @@ paths:
                                                     example: "v2"
                                                 webhookSubscriptions:
                                                     type: array
+                                                    items:
+                                                        type: string
                                     actions:
                                         type: array
                                         items:
@@ -870,6 +871,8 @@ paths:
                                                     example: "v2"
                                     postConnectionScripts:
                                         type: array
+                                        items:
+                                            type: string
                                     provider:
                                         type: string
                                         example: "github"
@@ -1563,36 +1566,27 @@ components:
     TokenUrlObject:
       properties:
         OAUTH1:
-          title: TokenUrlObject.OAUTH1
           type: string
         OAUTH2:
-          title: TokenUrlObject.OAUTH2
           type: string
         OAUTH2CC:
-          title: TokenUrlObject.OAUTH2CC
           type: string
         BASIC:
-          title: TokenUrlObject.BASIC
           type: string
         API_KEY:
-          title: TokenUrlObject.API_KEY
           type: string
         APP_STORE:
-          title: TokenUrlObject.APP_STORE
           type: string
         CUSTOM:
-          title: TokenUrlObject.CUSTOM
           type: string
         APP:
-          title: TokenUrlObject.APP
           type: string
         NONE:
-          title: TokenUrlObject.NONE
           type: string
       additionalProperties: false
-      title: TokenUrlObject
       type: object
-    Provider:
+
+    BaseProvider:
       properties:
         name:
             type: string
@@ -1604,7 +1598,7 @@ components:
             base_url:
               type: string
             headers:
-              title: Provider.proxy.headers
+              type: object
             query:
               properties:
                 api_key:
@@ -1614,7 +1608,12 @@ components:
               additionalProperties: false
               type: object
             retry:
-              title: Provider.proxy.retry
+              type: object
+              properties:
+                at:
+                    type: string
+                after:
+                    type: string
             decompress:
               type: boolean
             paginate:
@@ -1622,13 +1621,13 @@ components:
             verification:
               properties:
                 method:
-                  title: Provider.proxy.verification.method
+                  type: string
                 endpoint:
                   type: string
                 base_url_override:
                   type: string
                 headers:
-                  title: Provider.proxy.verification.headers
+                  type: object
               required:
                 - method
                 - endpoint
@@ -1645,7 +1644,7 @@ components:
         access_token_url:
           type: string
         authorization_params:
-          title: Provider.authorization_params
+          type: object
         scope_separator:
           type: string
         default_scopes:
@@ -1657,9 +1656,9 @@ components:
             - type: string
             - $ref: '#/components/schemas/TokenUrlObject'
         token_params:
-          title: Provider.token_params
+          type: object
         authorization_url_replacements:
-          title: Provider.authorization_url_replacements
+          type: object
         redirect_uri_metadata:
           items:
             type: string
@@ -1690,5 +1689,100 @@ components:
         - auth_mode
         - name
       additionalProperties: false
-      title: Provider
       type: object
+    ProviderOAuth2:
+      properties:
+        auth_mode:
+          enum:
+            - OAUTH2
+            - CUSTOM
+          type: string
+        token_params:
+          properties:
+            grant_type:
+              enum:
+                - authorization_code
+                - client_credentials
+              type: string
+          additionalProperties: false
+          type: object
+        disable_pkce:
+          type: boolean
+        refresh_params:
+          properties:
+            grant_type:
+              enum:
+                - refresh_token
+              type: string
+          required:
+            - grant_type
+          additionalProperties: false
+          type: object
+        authorization_method:
+          type: string
+          enum:
+            - body
+            - header
+        body_format:
+          type: string
+          enum:
+            - form
+            - json
+        refresh_url:
+          type: string
+        expires_in_unit:
+          enum:
+            - milliseconds
+          type: string
+        token_request_auth_method:
+          enum:
+            - basic
+            - custom
+          type: string
+      required:
+        - auth_mode
+      additionalProperties: false
+      type: object
+    ProviderOAuth1:
+      properties:
+        auth_mode:
+          enum:
+            - OAUTH1
+          type: string
+        request_url:
+          type: string
+        request_params:
+          type: object
+        request_http_method:
+          enum:
+            - GET
+            - PUT
+            - POST
+          type: string
+        token_http_method:
+          enum:
+            - GET
+            - PUT
+            - POST
+          type: string
+        signature_method:
+          enum:
+            - HMAC-SHA1
+            - RSA-SHA1
+            - PLAINTEXT
+          type: string
+      required:
+        - auth_mode
+        - request_url
+        - signature_method
+      additionalProperties: false
+      type: object
+
+    Provider:
+      anyOf:
+        - $ref: '#/components/schemas/BaseProvider'
+          title: 'Default'
+        - $ref: '#/components/schemas/ProviderOAuth1'
+          title: 'Oauth1'
+        - $ref: '#/components/schemas/ProviderOAuth2'
+          title: 'Oauth2'

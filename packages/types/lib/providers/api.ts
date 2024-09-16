@@ -1,5 +1,5 @@
 import type { Endpoint } from '../api';
-import type { Provider } from '../integration/template';
+import type { Provider } from './provider';
 
 export type GetPublicProviders = Endpoint<{
     Method: 'GET';

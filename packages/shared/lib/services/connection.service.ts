@@ -16,7 +16,7 @@ import type {
     Metadata,
     ActiveLogIds,
     Provider,
-    TemplateOAuth2 as ProviderTemplateOAuth2,
+    ProviderOAuth2,
     AuthModeType,
     TbaCredentials,
     TableauCredentials,
@@ -902,7 +902,7 @@ class ConnectionService {
                 connectionId: connection.connection_id,
                 environmentId: environment.id,
                 providerConfig: config,
-                template: template as ProviderTemplateOAuth2,
+                template: template as ProviderOAuth2,
                 environment_id: environment.id,
                 instantRefresh
             });
@@ -965,7 +965,7 @@ class ConnectionService {
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderTemplateOAuth2): AuthCredentials {
+    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderOAuth2): AuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
@@ -1074,7 +1074,7 @@ class ConnectionService {
         connectionId: string;
         environmentId: number;
         providerConfig: ProviderConfig;
-        template: ProviderTemplateOAuth2;
+        template: ProviderOAuth2;
         environment_id: number;
         instantRefresh?: boolean;
     }): Promise<
@@ -1323,7 +1323,7 @@ class ConnectionService {
     }
 
     public async getOauthClientCredentials(
-        template: ProviderTemplateOAuth2,
+        template: ProviderOAuth2,
         client_id: string,
         client_secret: string,
         connectionConfig: Record<string, string>
@@ -1517,7 +1517,7 @@ class ConnectionService {
         connection: Connection,
         credentials: OAuth2Credentials,
         providerConfig: ProviderConfig,
-        template: ProviderTemplateOAuth2,
+        template: ProviderOAuth2,
         instantRefresh: boolean
     ): Promise<boolean> {
         const refreshCondition =
@@ -1540,7 +1540,7 @@ class ConnectionService {
         template: Provider
     ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials>> {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
-            const rawCreds = await providerClient.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
+            const rawCreds = await providerClient.refreshToken(template as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
@@ -1550,7 +1550,7 @@ class ConnectionService {
                 success,
                 error,
                 response: credentials
-            } = await this.getOauthClientCredentials(template as ProviderTemplateOAuth2, client_id, client_secret, connection.connection_config);
+            } = await this.getOauthClientCredentials(template as ProviderOAuth2, client_id, client_secret, connection.connection_config);
 
             if (!success || !credentials) {
                 return { success, error, response: null };
@@ -1588,7 +1588,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: credentials };
         } else {
-            const { success, error, response: creds } = await getFreshOAuth2Credentials(connection, providerConfig, template as ProviderTemplateOAuth2);
+            const { success, error, response: creds } = await getFreshOAuth2Credentials(connection, providerConfig, template as ProviderOAuth2);
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }
