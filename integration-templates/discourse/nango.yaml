@@ -1,0 +1,17 @@
+integrations:
+    discourse:
+        syncs:
+            active-users:
+                description: |
+                    Fetches a list of active users from Discourse.
+                endpoint: /discourse/active-users
+                sync_type: full
+                runs: every 1 hour
+                output: User
+                track_deletes: true
+models:
+    User:
+        id: number
+        username: string
+        name: string
+        admin: boolean

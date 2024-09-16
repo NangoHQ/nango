@@ -267,6 +267,7 @@
                         "integrations/integration-templates/checkr-partner",
                         "integrations/integration-templates/checkr-partner-staging",
                         "integrations/integration-templates/clari-copilot",
+                        "integrations/integration-templates/discourse",
                         "integrations/integration-templates/expensify",
                         "integrations/integration-templates/exact-online",
                         "integrations/integration-templates/evaluagent",
