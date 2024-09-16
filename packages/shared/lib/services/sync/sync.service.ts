@@ -639,11 +639,14 @@ export async function findDemoSyncs(): Promise<PausableSyncs[]> {
     return syncs;
 }
 
-export async function findRecentlyDeletedSync(): Promise<{ id: string; environmentId: number }[]> {
+export async function findRecentlyDeletedSync(): Promise<{ id: string; environmentId: number; connectionId: number; models: string[] }[]> {
     const q = db.knex
         .from('_nango_syncs')
-        .select<{ id: string; environmentId: number }[]>('_nango_syncs.id', '_nango_connections.environment_id')
+        .select<
+            { id: string; environmentId: number; connectionId: number; models: string[] }[]
+        >('_nango_syncs.id', '_nango_connections.environment_id', '_nango_connections.id', '_nango_sync_configs.models')
         .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
+        .join('_nango_sync_configs', '_nango_sync_configs.id', '_nango_syncs.sync_config_id')
         .where(db.knex.raw("_nango_syncs.deleted_at >  NOW() - INTERVAL '6h'"));
     return await q;
 }

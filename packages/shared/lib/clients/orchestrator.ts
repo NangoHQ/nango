@@ -27,12 +27,12 @@ import { SyncCommand } from '../models/index.js';
 import tracer from 'dd-trace';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { isSyncJobRunning } from '../services/sync/job.service.js';
-import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
+import { getSyncConfigRaw, getSyncConfigBySyncId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 export interface RecordsServiceInterface {
-    deleteRecordsBySyncId({ syncId }: { syncId: string }): Promise<{ totalDeletedRecords: number }>;
+    deleteRecordsBySyncId({ connectionId, model, syncId }: { connectionId: number; model: string; syncId: string }): Promise<{ totalDeletedRecords: number }>;
 }
 
 export interface OrchestratorClientInterface {
@@ -540,6 +540,7 @@ export class Orchestrator {
     }
 
     async runSyncCommand({
+        connectionId,
         syncId,
         command,
         environmentId,
@@ -547,6 +548,7 @@ export class Orchestrator {
         recordsService,
         initiator
     }: {
+        connectionId: number;
         syncId: string;
         command: SyncCommand;
         environmentId: number;
@@ -584,8 +586,11 @@ export class Orchestrator {
                     await cancelling(syncId);
 
                     await clearLastSyncDate(syncId);
-                    const del = await recordsService.deleteRecordsBySyncId({ syncId });
-                    await logCtx.info(`Records for the sync were deleted successfully`, del);
+                    const syncConfig = await getSyncConfigBySyncId(syncId);
+                    for (const model of syncConfig?.models || []) {
+                        const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, model });
+                        await logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                    }
 
                     res = await this.client.executeSync({ scheduleName });
                     break;
