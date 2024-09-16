@@ -2176,6 +2176,21 @@ notion:
             limit_name_in_request: page_size
             response_path: results
     docs: https://docs.nango.dev/integrations/all/notion
+odoo:
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/authorize
+    token_url: https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}
+    docs: https://docs.nango.dev/integrations/all/odoo
 okta:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/authorize
