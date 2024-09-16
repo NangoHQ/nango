@@ -681,14 +681,13 @@ describe('Proxy service configure', () => {
         expect(success).toBe(false);
         expect(response).toBeNull();
         expect(error).toBeDefined();
-        expect(error?.message).toContain('proxy is either not supported');
+        expect(error?.message).toContain("No Provider Template matching the 'provider' parameter.");
         expect(logs.length).toBe(3);
         expect(logs[2]).toStrictEqual<MessageRowInsert>({
             type: 'log',
             level: 'error',
             createdAt: expect.any(String),
-            message:
-                'The proxy is either not supported for the provider unknown or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).'
+            message: 'Provider unknown does not exist'
         });
     });
 
