@@ -285,7 +285,6 @@ web.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionCo
 web.route('/api/v1/user').get(webAuth, getUser);
 web.route('/api/v1/user').patch(webAuth, patchUser);
 web.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));
-web.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.bind(userController));
 
 web.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));

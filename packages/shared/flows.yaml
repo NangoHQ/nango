@@ -1217,6 +1217,22 @@ integrations:
                 body:
                     storage: object
                     atlas_doc_format: object
+    discourse:
+        syncs:
+            active-users:
+                description: |
+                    Fetches a list of active users from Discourse.
+                endpoint: /discourse/active-users
+                sync_type: full
+                runs: every 1 hour
+                output: User
+                track_deletes: true
+        models:
+            User:
+                id: number
+                username: string
+                name: string
+                admin: boolean
     evaluagent:
         syncs:
             users:
@@ -2917,7 +2933,7 @@ integrations:
                 organizationPath: string | null | undefined
                 isAdmin: boolean | null
                 department: string | null
-    netsuite:
+    netsuite-tba:
         syncs:
             customers:
                 version: 1.0.0

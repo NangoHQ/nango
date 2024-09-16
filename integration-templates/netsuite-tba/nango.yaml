@@ -1,5 +1,5 @@
 integrations:
-    netsuite:
+    netsuite-tba:
         syncs:
             # Customers
             customers:
