@@ -6,7 +6,7 @@ import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyn
 import connectionService from '../../connection.service.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
-import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType } from '../../../models/Sync.js';
+import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType, Sync } from '../../../models/Sync.js';
 import type { DBEnvironment, DBTeam, IncomingFlowConfig, IncomingPreBuiltFlowConfig, NangoModel, PostConnectionScriptByProvider } from '@nangohq/types';
 import { postConnectionScriptService } from '../post-connection.service.js';
 import { NangoError } from '../../../utils/error.js';
@@ -22,6 +22,7 @@ import type { Config } from '../../../models/Provider.js';
 import type { NangoSyncConfig } from '../../../models/NangoConfig.js';
 
 const TABLE = dbNamespace + 'sync_configs';
+const SYNC_TABLE = dbNamespace + 'syncs';
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 
 const nameOfType = 'sync/action';
@@ -159,8 +160,8 @@ export async function deploy({
             await postConnectionScriptService.update({ environment, account, postConnectionScriptsByProvider });
         }
 
-        if (idsToMarkAsInactive.length > 0) {
-            await db.knex.from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInactive);
+        for (const id of idsToMarkAsInactive) {
+            await markSyncConfigAsInactive(id);
         }
 
         await logCtx.info(`Successfully deployed ${flows.length} script${flows.length > 1 ? 's' : ''}`, {
@@ -268,33 +269,41 @@ export async function upgradePreBuilt({
     delete flowData.id;
 
     try {
-        const [syncId] = await db.knex.from<SyncConfig>(TABLE).insert(flowData).returning('id');
+        const [newSyncConfig] = await db.knex.from<SyncConfig>(TABLE).insert(flowData).returning('id');
 
         const endpoints: SyncEndpoint[] = [];
-        if (flow.endpoints) {
-            flow.endpoints.forEach((endpoint, endpointIndex) => {
-                const method = Object.keys(endpoint)[0] as HTTP_VERB;
-                const path = endpoint[method] as string;
-                const res: SyncEndpoint = {
-                    sync_config_id: syncId?.id as number,
-                    method,
-                    path,
-                    created_at: now,
-                    updated_at: now
-                };
-                const model = flowData.models[endpointIndex] as string;
-                if (model) {
-                    res.model = model;
-                }
-                endpoints.push(res);
-            });
-        }
 
-        if (endpoints.length > 0) {
-            await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
-        }
+        const newSyncConfigId = newSyncConfig?.id;
+        if (newSyncConfigId) {
+            // update sync_config_id in syncs table
+            await db.knex.from<Sync>(SYNC_TABLE).update({ sync_config_id: newSyncConfigId }).where('sync_config_id', syncConfig.id);
 
-        await db.knex.from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', [syncConfig.id]);
+            // update endpoints
+            if (flow.endpoints) {
+                flow.endpoints.forEach((endpoint, endpointIndex) => {
+                    const method = Object.keys(endpoint)[0] as HTTP_VERB;
+                    const path = endpoint[method] as string;
+                    const res: SyncEndpoint = {
+                        sync_config_id: newSyncConfigId,
+                        method,
+                        path,
+                        created_at: now,
+                        updated_at: now
+                    };
+                    const model = flowData.models[endpointIndex] as string;
+                    if (model) {
+                        res.model = model;
+                    }
+                    endpoints.push(res);
+                });
+            }
+
+            if (endpoints.length > 0) {
+                await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+            }
+
+            await db.knex.from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', [syncConfig.id]);
+        }
 
         await logCtx.info('Successfully deployed', { nameOfType, configs: name });
         await logCtx.success();
@@ -363,7 +372,7 @@ export async function deployPreBuilt({
 
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
 
-    const idsToMarkAsInvactive = [];
+    const idsToMarkAsInactive = [];
     const insertData: SyncConfig[] = [];
     let nango_config_id: number;
     let provider_config_key: string;
@@ -425,11 +434,11 @@ export async function deployPreBuilt({
             bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
 
             if (runs) {
-                const syncsConfig = await getSyncsByProviderConfigAndSyncName(environment.id, provider_config_key, sync_name);
-                for (const syncConfig of syncsConfig) {
-                    const interval = syncConfig.frequency || runs;
+                const syncs = await getSyncsByProviderConfigAndSyncName(environment.id, provider_config_key, sync_name);
+                for (const sync of syncs) {
+                    const interval = sync.frequency || runs;
                     const res = await orchestrator.updateSyncFrequency({
-                        syncId: syncConfig.id,
+                        syncId: sync.id,
                         interval,
                         syncName: sync_name,
                         environmentId: environment.id,
@@ -437,7 +446,7 @@ export async function deployPreBuilt({
                     });
                     if (res.isErr()) {
                         const error = new NangoError('error_updating_sync_schedule_frequency', {
-                            syncId: syncConfig.id,
+                            syncId: sync.id,
                             environmentId: environment.id,
                             interval
                         });
@@ -496,7 +505,7 @@ export async function deployPreBuilt({
 
         if (oldConfigs.length > 0) {
             const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
-            idsToMarkAsInvactive.push(...ids);
+            idsToMarkAsInactive.push(...ids);
         }
 
         const created_at = new Date();
@@ -551,17 +560,17 @@ export async function deployPreBuilt({
     const isPublic = configs.every((config) => config.is_public);
 
     try {
-        const syncIds = await db.knex.from<SyncConfig>(TABLE).insert(insertData).returning('id');
+        const syncConfigs = await db.knex.from<SyncConfig>(TABLE).insert(insertData).returning('id');
 
         flowReturnData.forEach((flow, index) => {
-            const row = syncIds[index];
+            const row = syncConfigs[index];
             if (row) {
                 flow.id = row.id;
             }
         });
 
         const endpoints: SyncEndpoint[] = [];
-        syncIds.forEach((row, index) => {
+        syncConfigs.forEach((row, index) => {
             const sync = configs[index] as IncomingPreBuiltFlowConfig;
             if (sync.endpoints && row.id) {
                 sync.endpoints.forEach((endpoint, endpointIndex) => {
@@ -587,8 +596,8 @@ export async function deployPreBuilt({
             await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
         }
 
-        if (idsToMarkAsInvactive.length > 0) {
-            await db.knex.from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);
+        for (const id of idsToMarkAsInactive) {
+            await markSyncConfigAsInactive(id);
         }
 
         let content;
@@ -701,12 +710,12 @@ async function compileDeployInfo({
         }
 
         if (runs) {
-            const syncsConfig = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
+            const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
 
-            for (const syncConfig of syncsConfig) {
-                const interval = syncConfig.frequency || runs;
+            for (const sync of syncs) {
+                const interval = sync.frequency || runs;
                 const res = await orchestrator.updateSyncFrequency({
-                    syncId: syncConfig.id,
+                    syncId: sync.id,
                     interval,
                     syncName,
                     environmentId: environment_id,
@@ -714,7 +723,7 @@ async function compileDeployInfo({
                 });
                 if (res.isErr()) {
                     const error = new NangoError('error_updating_sync_schedule_frequency', {
-                        syncId: syncConfig.id,
+                        syncId: sync.id,
                         environmentId: environment_id,
                         interval
                     });
@@ -833,6 +842,31 @@ async function compileDeployInfo({
             }
         }
     };
+}
+
+async function markSyncConfigAsInactive(oldSyncConfigId: number): Promise<void> {
+    return await db.knex.transaction(async (trx) => {
+        // mark sync config as inactive
+        await trx.from<SyncConfig>(TABLE).update({ active: false }).where({ id: oldSyncConfigId });
+
+        // update sync_config_id in syncs table to point to active sync config
+        await trx.raw(
+            `
+            UPDATE nango._nango_syncs
+            SET sync_config_id = (
+                SELECT active_config.id
+                FROM nango._nango_sync_configs as old_config
+                JOIN nango._nango_sync_configs as active_config
+                ON old_config.sync_name = active_config.sync_name
+                AND old_config.nango_config_id = active_config.nango_config_id
+                AND old_config.environment_id = active_config.environment_id
+                WHERE old_config.id = ?
+                AND active_config.active = true
+            )
+            WHERE sync_config_id = ?`,
+            [oldSyncConfigId, oldSyncConfigId]
+        );
+    });
 }
 
 function findModelInModelSchema(fields: NangoModel['fields']) {
