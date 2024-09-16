@@ -213,7 +213,7 @@ async function onFailure({
     }
     const logCtx = await logContextGetter.get({ id: activityLogId });
     try {
-        await slackService.reportFailure(connection, syncName, 'sync', logCtx.id, connection.environment_id, provider);
+        await slackService.reportFailure(connection, syncName, 'action', logCtx.id, connection.environment_id, provider);
     } catch {
         errorManager.report('slack notification service reported a failure', {
             environmentId: connection.environment_id,
