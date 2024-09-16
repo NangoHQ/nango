@@ -1,7 +1,7 @@
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Config, Job, NangoConnection, NangoProps, Sync } from '@nangohq/shared';
+import type { Config, Job, NangoConnection, NangoProps, Sync, SyncConfig } from '@nangohq/shared';
 import {
     NangoError,
     SyncStatus,
@@ -26,6 +26,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let providerConfig: Config | undefined | null;
     let sync: Sync | undefined | null;
     let syncJob: Pick<Job, 'id'> | null = null;
+    let syncConfig: SyncConfig | null = null;
 
     try {
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
@@ -45,7 +46,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             throw new Error(`Sync not found for connection: ${task.connection.connection_id}`);
         }
 
-        const syncConfig = await getSyncConfigRaw({
+        syncConfig = await getSyncConfigRaw({
             environmentId: providerConfig.environment_id,
             config_id: providerConfig.id!,
             name: task.parentSyncName,
@@ -131,6 +132,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             providerConfigKey: task.connection.provider_config_key,
             runTime: 0,
             error,
+            syncConfig,
             environment: { id: task.connection.environment_id, name: environment?.name || 'unknown' },
             ...(account?.id && account?.name ? { team: { id: account.id, name: account.name } } : {})
         });
@@ -155,7 +157,8 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
         syncId: nangoProps.syncId!,
         content,
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        internalIntegrationId: nangoProps.syncConfig.nango_config_id
     });
 
     await updateSyncJobStatus(nangoProps.syncJobId!, SyncStatus.SUCCESS);
@@ -175,6 +178,7 @@ export async function handleWebhookError({ nangoProps, error }: { nangoProps: Na
         providerConfigKey: nangoProps.providerConfigKey,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
+        syncConfig: nangoProps.syncConfig,
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
         ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {})
     });
@@ -187,6 +191,7 @@ async function onFailure({
     syncId,
     syncName,
     syncJobId,
+    syncConfig,
     providerConfigKey,
     runTime,
     error
@@ -197,6 +202,7 @@ async function onFailure({
     syncId: string;
     syncJobId?: number | undefined;
     syncName: string;
+    syncConfig: SyncConfig | null;
     providerConfigKey: string;
     runTime: number;
     error: NangoError;
@@ -217,7 +223,8 @@ async function onFailure({
             syncId: syncId,
             content: error.message,
             runTimeInSeconds: runTime,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            internalIntegrationId: syncConfig?.nango_config_id || -1
         });
     }
 

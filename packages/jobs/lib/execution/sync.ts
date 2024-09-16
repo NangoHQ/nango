@@ -163,6 +163,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             debug: task.debug,
             team: team,
             environment,
+            syncConfig,
             runTime: 0,
             models: syncConfig?.models || [],
             error
@@ -240,6 +241,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                     activityLogId: nangoProps.activityLogId!,
                     models: [model],
                     runTime,
+                    syncConfig: nangoProps.syncConfig,
                     error: new NangoError('sync_job_update_failure', { syncJobId: nangoProps.syncJobId, model })
                 });
                 return;
@@ -357,7 +359,8 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             syncId: nangoProps.syncId,
             content: `The sync "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
             runTimeInSeconds: runTime,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            internalIntegrationId: nangoProps.syncConfig.nango_config_id
         });
 
         metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
@@ -380,6 +383,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             syncType,
             syncJobId: nangoProps.syncJobId!,
             activityLogId: nangoProps.activityLogId!,
+            syncConfig: nangoProps.syncConfig,
             debug: nangoProps.debug,
             models: nangoProps.syncConfig.models,
             runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
@@ -414,6 +418,7 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
         syncJobId: nangoProps.syncJobId!,
         activityLogId: nangoProps.activityLogId!,
         debug: nangoProps.debug,
+        syncConfig: nangoProps.syncConfig,
         models: nangoProps.syncConfig.models,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         failureSource: ErrorSourceEnum.CUSTOMER,
@@ -475,6 +480,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             models: [],
             isCancel,
             failureSource: ErrorSourceEnum.CUSTOMER,
+            syncConfig,
             runTime: 0,
             error: new NangoError('sync_script_failure', task.reason)
         });
@@ -506,6 +512,7 @@ async function onFailure({
     activityLogId,
     debug,
     models,
+    syncConfig,
     runTime,
     isCancel,
     failureSource,
@@ -525,6 +532,7 @@ async function onFailure({
     models: string[];
     runTime: number;
     isCancel?: boolean;
+    syncConfig: SyncConfig | null;
     failureSource?: ErrorSourceEnum;
     error: NangoError;
 }): Promise<void> {
@@ -544,7 +552,8 @@ async function onFailure({
             syncId: syncId,
             content: error.message,
             runTimeInSeconds: runTime,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            internalIntegrationId: syncConfig?.nango_config_id || -1
         });
     }
 

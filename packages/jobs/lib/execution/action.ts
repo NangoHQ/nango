@@ -1,7 +1,7 @@
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskAction } from '@nangohq/nango-orchestrator';
-import type { Config, NangoConnection, NangoProps } from '@nangohq/shared';
+import type { Config, NangoConnection, NangoProps, SyncConfig } from '@nangohq/shared';
 import {
     ErrorSourceEnum,
     LogActionEnum,
@@ -22,6 +22,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | undefined | null;
+    let syncConfig: SyncConfig | null = null;
     try {
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
@@ -35,7 +36,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        const syncConfig = await getSyncConfigRaw({
+        syncConfig = await getSyncConfigRaw({
             environmentId: providerConfig.environment_id,
             config_id: providerConfig.id!,
             name: task.actionName,
@@ -104,6 +105,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             activityLogId: task.activityLogId,
             runTime: 0,
             error,
+            syncConfig,
             environment: { id: task.connection.environment_id, name: environment?.name || 'unknown' },
             ...(account?.id && account?.name ? { team: { id: account.id, name: account.name } } : {})
         });
@@ -141,7 +143,8 @@ export async function handleActionSuccess({ nangoProps }: { nangoProps: NangoPro
         syncId: null as unknown as string,
         content: `The action "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        internalIntegrationId: nangoProps.syncConfig.nango_config_id
     });
 }
 
@@ -160,6 +163,7 @@ export async function handleActionError({ nangoProps, error }: { nangoProps: Nan
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
+        syncConfig: nangoProps.syncConfig,
         ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {})
     });
 }
@@ -172,6 +176,7 @@ async function onFailure({
     provider,
     providerConfigKey,
     activityLogId,
+    syncConfig,
     runTime,
     error
 }: {
@@ -182,6 +187,7 @@ async function onFailure({
     provider: string;
     providerConfigKey: string;
     activityLogId: string;
+    syncConfig: SyncConfig | null;
     runTime: number;
     error: NangoError;
 }): Promise<void> {
@@ -201,7 +207,8 @@ async function onFailure({
             syncId: null as unknown as string,
             content: error.message,
             runTimeInSeconds: runTime,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            internalIntegrationId: syncConfig?.nango_config_id || -1
         });
     }
     const logCtx = await logContextGetter.get({ id: activityLogId });

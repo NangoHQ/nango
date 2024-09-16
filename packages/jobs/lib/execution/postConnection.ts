@@ -12,6 +12,7 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
     let account: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | undefined | null;
+    let syncConfig: SyncConfig | null = null;
     try {
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
@@ -33,7 +34,7 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
             integration: task.connection.provider_config_key
         });
 
-        const syncConfig: SyncConfig = {
+        syncConfig = {
             sync_name: task.postConnectionName,
             file_location: task.fileLocation,
             models: [],
@@ -101,6 +102,7 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
             runTime: 0,
             error,
             environment: { id: task.connection.environment_id, name: environment?.name || 'unknown' },
+            syncConfig,
             ...(account?.id && account?.name ? { team: { id: account.id, name: account.name } } : {})
         });
         return Err(error);
@@ -124,7 +126,8 @@ export async function handlePostConnectionSuccess({ nangoProps }: { nangoProps: 
         syncId: nangoProps.syncId!,
         content,
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        internalIntegrationId: nangoProps.syncConfig.nango_config_id
     });
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     await logCtx.success();
@@ -144,6 +147,7 @@ export async function handlePostConnectionError({ nangoProps, error }: { nangoPr
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
+        syncConfig: nangoProps.syncConfig,
         ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {})
     });
 }
@@ -155,6 +159,7 @@ async function onFailure({
     syncName,
     providerConfigKey,
     activityLogId,
+    syncConfig,
     runTime,
     error
 }: {
@@ -164,6 +169,7 @@ async function onFailure({
     syncName: string;
     providerConfigKey: string;
     activityLogId: string;
+    syncConfig: SyncConfig | null;
     runTime: number;
     error: NangoError;
 }): Promise<void> {
@@ -183,7 +189,8 @@ async function onFailure({
             syncId: null as unknown as string,
             content: error.message,
             runTimeInSeconds: runTime,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            internalIntegrationId: syncConfig?.nango_config_id || -1
         });
     }
     const logCtx = await logContextGetter.get({ id: activityLogId });

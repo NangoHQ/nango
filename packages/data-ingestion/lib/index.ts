@@ -20,6 +20,7 @@ interface RunScriptRow {
     content: string;
     runTimeInSeconds: number;
     createdAt: number;
+    internalIntegrationId: number;
 }
 
 class BigQueryClient {
@@ -82,7 +83,8 @@ class BigQueryClient {
                         { name: 'syncId', type: 'STRING' },
                         { name: 'content', type: 'STRING' },
                         { name: 'runTimeInSeconds', type: 'FLOAT' },
-                        { name: 'createdAt', type: 'INTEGER' }
+                        { name: 'createdAt', type: 'INTEGER' },
+                        { name: 'internalIntegrationId', type: 'INTEGER' }
                     ]
                 }
             });
