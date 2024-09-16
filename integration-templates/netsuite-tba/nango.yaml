@@ -17,7 +17,7 @@ integrations:
             payments:
                 version: 1.0.0
                 description: |
-                    Fetches all payments in Netsuite
+                    Fetches all payments received from customers in Netsuite
                 runs: every hour
                 output: NetsuitePayment
                 sync_type: full
