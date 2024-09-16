@@ -43,7 +43,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
             },
             paginate: {
                 response_path: 'files'
-            }
+            },
+            retries: 10
         };
 
         // Fetch and process files from the folder
@@ -80,7 +81,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
                     endpoint: `drive/v3/files/${file}`,
                     params: {
                         fields: 'id, name, mimeType, webViewLink, parents'
-                    }
+                    },
+                    retries: 10
                 };
 
                 const documentResponse = await nango.get<GoogleDriveFileResponse>(config);
