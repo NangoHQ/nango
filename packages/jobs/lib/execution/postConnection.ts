@@ -190,7 +190,7 @@ async function onFailure({
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
-            internalIntegrationId: syncConfig?.nango_config_id || -1
+            internalIntegrationId: syncConfig?.nango_config_id || null
         });
     }
     const logCtx = await logContextGetter.get({ id: activityLogId });

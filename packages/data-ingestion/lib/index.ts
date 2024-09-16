@@ -20,7 +20,7 @@ interface RunScriptRow {
     content: string;
     runTimeInSeconds: number;
     createdAt: number;
-    internalIntegrationId: number;
+    internalIntegrationId: number | null;
 }
 
 class BigQueryClient {
