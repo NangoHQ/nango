@@ -8,8 +8,10 @@ import type { PostForgotPassword, PutResetPassword, PostSignin, PostSignup } fro
 import type { DeleteInvite, PostInvite } from './invitations/api';
 import type { GetUser, PatchUser } from './user/api';
 import type { GetListIntegrations } from './integration/api';
+import type { GetPublicProvider, GetPublicProviders } from './providers/api';
 
-export type APIEndpoints =
+export type PublicApiEndpoints = SetMetadata | UpdateMetadata | PostDeploy | PostDeployConfirmation | GetPublicProviders | GetPublicProvider;
+export type PrivateApiEndpoints =
     | PostSignup
     | PostSignin
     | GetTeam
@@ -27,11 +29,8 @@ export type APIEndpoints =
     | SearchMessages
     | SearchFilters
     | GetOnboardingStatus
-    | SetMetadata
-    | UpdateMetadata
-    | PostDeploy
-    | PostDeployConfirmation
     | GetListIntegrations;
+export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 
 /**
  * Automatically narrow endpoints type with Method + Path

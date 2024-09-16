@@ -583,7 +583,8 @@
                         {
                             "group": "Providers",
                             "pages": [
-                                "reference/api/providers/list"
+                                "reference/api/providers/list",
+                                "reference/api/providers/get"
                             ]
                         },
                         {

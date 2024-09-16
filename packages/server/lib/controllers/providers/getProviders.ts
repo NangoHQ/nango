@@ -1,24 +1,18 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
+import { zodErrorToHTTP } from '@nangohq/utils';
 import { providerConfigKeySchema } from '../../helpers/validation.js';
 import type { ApiProvider, GetPublicProviders } from '@nangohq/types';
 import { getProviders } from '@nangohq/shared';
 
 const queryStringValidation = z
     .object({
-        query: providerConfigKeySchema.optional()
+        search: providerConfigKeySchema.optional()
     })
     .strict();
 
 export const getPublicProviders = asyncWrapper<GetPublicProviders>((req, res) => {
-    const emptyBody = requireEmptyBody(req);
-    if (emptyBody) {
-        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(emptyBody.error) } });
-        return;
-    }
-
-    const queryValue = queryStringValidation.safeParse(req.params);
+    const queryValue = queryStringValidation.safeParse(req.query);
     if (!queryValue.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryValue.error) } });
         return;
@@ -32,8 +26,8 @@ export const getPublicProviders = asyncWrapper<GetPublicProviders>((req, res) =>
     }
 
     let filtered: ApiProvider[] = [];
-    if (queries.query) {
-        const reg = new RegExp(queries.query, 'i');
+    if (queries.search) {
+        const reg = new RegExp(queries.search, 'i');
         for (const providerName of Object.keys(providers)) {
             if (reg.test(providerName)) {
                 filtered.push({ ...providers[providerName]!, name: providerName });

@@ -26,6 +26,38 @@ paths:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/Provider'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+    /providers/{provider}:
+        get:
+            description: Returns a specific provider
+            parameters:
+                - name: provider
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The provider name
+            responses:
+                '200':
+                    description: Successfully returned a specific provider
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/Provider'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
     /config:
         get:
             description: Returns a list of integrations
@@ -1562,7 +1594,48 @@ paths:
                     description: The response exactly as returned by the external API
 
 components:
+
+  responses:
+    BadRequest:
+        description: Bad request
+        content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/StdError'
+    Unauthorized:
+        description: Unauthorized
+        content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/StdError'
+    NotFound:
+        description: Not Found
+        content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/StdError'
+
   schemas:
+    StdError:
+        type: object
+        additionalProperties: false
+        properties:
+            error:
+                type: object
+                additionalProperties: false
+                required:
+                    - code
+                properties:
+                    code:
+                        type: string
+                    message:
+                        type: string
+                    errors:
+                        type: array
+                        items:
+                            type: object
+
+
     TokenUrlObject:
       properties:
         OAUTH1:
