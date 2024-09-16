@@ -2933,7 +2933,7 @@ integrations:
                 organizationPath: string | null | undefined
                 isAdmin: boolean | null
                 department: string | null
-    netsuite:
+    netsuite-tba:
         syncs:
             customers:
                 version: 1.0.0
