@@ -31,8 +31,22 @@ describe('stringifyAndTruncateLog', () => {
         const str = stringifyAndTruncateLog({ foo: 1 });
         expect(str).toStrictEqual('{"foo":1}');
     });
+
     it('should handle array', () => {
         const str = stringifyAndTruncateLog([{ foo: 1 }, 2]);
         expect(str).toStrictEqual('[{"foo":1},2]');
+    });
+
+    it('should handle circular', () => {
+        const obj: Record<string, any> = { foo: 'bar' };
+        obj['circular'] = obj;
+        const str = stringifyAndTruncateLog(obj);
+        expect(str).toStrictEqual('{"circular":"[Circular]","foo":"bar"}');
+    });
+
+    it('should redac know keys', () => {
+        const obj: Record<string, any> = { Authorization: 'super secret key' };
+        const str = stringifyAndTruncateLog(obj);
+        expect(str).toStrictEqual('{"Authorization":"[Redacted]"}');
     });
 });
