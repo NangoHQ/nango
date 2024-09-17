@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import type { AxiosError } from 'axios';
-import { axiosInstance as axios, retryWithBackoff } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+import { Err, Ok, axiosInstance as axios, retryWithBackoff } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
 import type { WebhookTypes, SyncType, AuthOperationType, ExternalWebhook, DBEnvironment } from '@nangohq/types';
 
@@ -119,7 +120,7 @@ export const deliver = async ({
     logCtx?: LogContext | undefined;
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
-}): Promise<boolean> => {
+}): Promise<Result<void>> => {
     let success = true;
 
     for (const webhook of webhooks) {
@@ -159,5 +160,5 @@ export const deliver = async ({
         }
     }
 
-    return success;
+    return success ? Ok(undefined) : Err(new Error('Failed to send webhooks'));
 };

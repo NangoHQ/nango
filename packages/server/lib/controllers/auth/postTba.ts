@@ -3,11 +3,11 @@ import tracer from 'dd-trace';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP } from '@nangohq/utils';
 import { analytics, configService, AnalyticsTypes, getConnectionConfig, connectionService, getProvider } from '@nangohq/shared';
-import type { TbaAuthorization, TbaCredentials } from '@nangohq/types';
+import type { TbaCredentials, PostPublicTbaAuthorization } from '@nangohq/types';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionTest as connectionTestHook } from '../../hooks/hooks.js';
-import { providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 
 const bodyValidation = z
     .object({
@@ -20,12 +20,10 @@ const bodyValidation = z
 
 const queryStringValidation = z
     .object({
-        connection_id: z.string().nonempty(),
+        connection_id: connectionIdSchema,
         params: z.record(z.any()).optional(),
-        authorization_params: z.record(z.any()).optional(),
-        user_scope: z.string().optional(),
-        public_key: z.string().uuid(),
-        hmac: z.string().optional()
+        hmac: z.string().optional(),
+        public_key: z.string().uuid()
     })
     .strict();
 
@@ -35,7 +33,7 @@ const paramValidation = z
     })
     .strict();
 
-export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) => {
+export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorization>(async (req, res) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -45,7 +43,6 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
     }
 
     const queryStringVal = queryStringValidation.safeParse(req.query);
-
     if (!queryStringVal.success) {
         res.status(400).send({
             error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryStringVal.error) }
@@ -63,12 +60,12 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
 
     const { account, environment } = res.locals;
 
-    const body: TbaAuthorization['Body'] = val.data;
+    const body: PostPublicTbaAuthorization['Body'] = val.data;
 
     const { token_id: tokenId, token_secret: tokenSecret, oauth_client_id_override, oauth_client_secret_override } = body;
 
-    const { connection_id: connectionId, params } = queryStringVal.data;
-    const { providerConfigKey } = paramVal.data;
+    const { connection_id: connectionId, params, hmac }: PostPublicTbaAuthorization['Querystring'] = queryStringVal.data;
+    const { providerConfigKey }: PostPublicTbaAuthorization['Params'] = paramVal.data;
 
     const logCtx = await logContextGetter.create(
         {
@@ -80,14 +77,7 @@ export const tbaAuthorization = asyncWrapper<TbaAuthorization>(async (req, res) 
     );
     void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
-    await hmacCheck({
-        environment,
-        logCtx,
-        providerConfigKey,
-        connectionId,
-        hmac: queryStringVal.data.hmac,
-        res
-    });
+    await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
 
     const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 

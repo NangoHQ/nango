@@ -103,9 +103,9 @@ export class SchedulingChild {
                 // Try to acquire a lock to prevent multiple instances from scheduling at the same time
                 const lockSpan = tracer.startSpan('scheduler.scheduling.acquire_lock', { childOf: span });
                 const res = await tracer.scope().activate(lockSpan, async () => {
-                    return trx.raw('SELECT pg_try_advisory_xact_lock(?) AS lock_granted', [5003001106]);
+                    return trx.raw<{ rows: { lock_schedule: boolean }[] }>('SELECT pg_try_advisory_xact_lock(?) AS lock_schedule', [5003001106]);
                 });
-                const lockGranted = res?.rows.length > 0 ? res.rows[0].lock_granted : false;
+                const lockGranted = res?.rows.length > 0 ? res.rows[0]!.lock_schedule : false;
                 lockSpan.finish();
 
                 if (lockGranted) {

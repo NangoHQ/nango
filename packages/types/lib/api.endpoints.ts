@@ -8,9 +8,19 @@ import type { PostForgotPassword, PutResetPassword, PostSignin, PostSignup } fro
 import type { DeleteInvite, PostInvite } from './invitations/api';
 import type { GetUser, PatchUser } from './user/api';
 import type { GetListIntegrations } from './integration/api';
+import type { PostPublicTableauAuthorization, PostPublicTbaAuthorization, PostPublicUnauthenticatedAuthorization } from './auth/http.api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
 
-export type PublicApiEndpoints = SetMetadata | UpdateMetadata | PostDeploy | PostDeployConfirmation | GetPublicProviders | GetPublicProvider;
+export type PublicApiEndpoints =
+    | SetMetadata
+    | UpdateMetadata
+    | PostDeploy
+    | PostDeployConfirmation
+    | PostPublicTbaAuthorization
+    | PostPublicTableauAuthorization
+    | PostPublicUnauthenticatedAuthorization
+    | GetPublicProviders
+    | GetPublicProvider;
 export type PrivateApiEndpoints =
     | PostSignup
     | PostSignin

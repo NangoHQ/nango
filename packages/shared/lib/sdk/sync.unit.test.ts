@@ -458,24 +458,25 @@ describe('Log', () => {
         await nangoAction.log('hello', { level: 'error' });
 
         expect(mock).toHaveBeenCalledWith({
-            data: {
-                activityLogId: '1',
-                log: {
-                    type: 'log',
-                    level: 'error',
-                    message: 'hello',
-                    createdAt: expect.any(String),
-                    environmentId: 1,
-                    meta: null,
-                    source: 'user'
-                }
-            },
+            data: expect.any(String),
             headers: {
                 Authorization: 'Bearer ***',
                 'Content-Type': 'application/json'
             },
             method: 'POST',
             url: '/environment/1/log'
+        });
+        expect(JSON.parse((mock.mock.calls as any)[0][0].data)).toStrictEqual({
+            activityLogId: '1',
+            log: {
+                type: 'log',
+                level: 'error',
+                message: 'hello',
+                createdAt: expect.any(String),
+                environmentId: 1,
+                meta: null,
+                source: 'user'
+            }
         });
     });
 

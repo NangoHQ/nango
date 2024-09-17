@@ -501,9 +501,12 @@ export class SlackService {
         return await db.knex.transaction(async (trx) => {
             const lockKey = stringToHash(`${nangoConnection.environment_id}-${name}-${type}-add`);
 
-            const { rows } = await trx.raw<{ rows: { pg_try_advisory_xact_lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?);`, [lockKey]);
+            const { rows } = await trx.raw<{ rows: { lock_slack_add_connection: boolean }[] }>(
+                `SELECT pg_try_advisory_xact_lock(?) as lock_slack_add_connection`,
+                [lockKey]
+            );
 
-            if (!rows?.[0]?.pg_try_advisory_xact_lock) {
+            if (!rows?.[0]?.lock_slack_add_connection) {
                 logger.info(`addFailingConnection operation: ${lockKey} could not acquire lock, skipping`);
                 return { success: true, error: null, response: null };
             }
@@ -601,9 +604,12 @@ export class SlackService {
 
             const lockKey = stringToHash(`${nangoConnection.environment_id}-${name}-${type}-remove`);
 
-            const { rows } = await trx.raw<{ rows: { pg_try_advisory_xact_lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?);`, [lockKey]);
+            const { rows } = await trx.raw<{ rows: { lock_slack_remove_connection: boolean }[] }>(
+                `SELECT pg_try_advisory_xact_lock(?) as lock_slack_remove_connection`,
+                [lockKey]
+            );
 
-            if (!rows?.[0]?.pg_try_advisory_xact_lock) {
+            if (!rows?.[0]?.lock_slack_remove_connection) {
                 logger.info(`removeFailingConnection operation: ${lockKey} could not acquire lock, skipping`);
                 return;
             }

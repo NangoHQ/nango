@@ -13,12 +13,12 @@ import {
     LogActionEnum,
     getProvider
 } from '@nangohq/shared';
-import type { TableauAuthorization } from '@nangohq/types';
+import type { PostPublicTableauAuthorization } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 
 const bodyValidation = z
     .object({
@@ -30,10 +30,8 @@ const bodyValidation = z
 
 const queryStringValidation = z
     .object({
-        connection_id: z.string().nonempty(),
+        connection_id: connectionIdSchema,
         params: z.record(z.any()).optional(),
-        authorization_params: z.record(z.any()).optional(),
-        user_scope: z.string().optional(),
         public_key: z.string().uuid(),
         hmac: z.string().optional()
     })
@@ -45,7 +43,7 @@ const paramValidation = z
     })
     .strict();
 
-export const tableauAuthorization = asyncWrapper<TableauAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -71,10 +69,10 @@ export const tableauAuthorization = asyncWrapper<TableauAuthorization>(async (re
     }
 
     const { account, environment } = res.locals;
-    const { pat_name: patName, pat_secret: patSecret, content_url: contentUrl } = val.data;
-    const { connection_id: connectionId } = queryStringVal.data;
-    const { providerConfigKey } = paramVal.data;
-    const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+    const { pat_name: patName, pat_secret: patSecret, content_url: contentUrl }: PostPublicTableauAuthorization['Body'] = val.data;
+    const { connection_id: connectionId, params, hmac }: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
+    const { providerConfigKey }: PostPublicTableauAuthorization['Params'] = paramVal.data;
+    const connectionConfig = params ? getConnectionConfig(params) : {};
 
     let logCtx: LogContext | undefined;
 
@@ -94,7 +92,7 @@ export const tableauAuthorization = asyncWrapper<TableauAuthorization>(async (re
             logCtx,
             providerConfigKey,
             connectionId,
-            hmac: queryStringVal.data.hmac,
+            hmac,
             res
         });
 

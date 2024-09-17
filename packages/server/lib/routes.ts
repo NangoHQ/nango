@@ -5,7 +5,6 @@ import configController from './controllers/config.controller.js';
 import providerController from './controllers/provider.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
-import unAuthController from './controllers/unauth.controller.js';
 import appStoreAuthController from './controllers/appStoreAuth.controller.js';
 import authMiddleware from './middleware/access.middleware.js';
 import userController from './controllers/user.controller.js';
@@ -51,8 +50,8 @@ import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
-import { tbaAuthorization } from './controllers/auth/tba.js';
-import { tableauAuthorization } from './controllers/auth/tableau.js';
+import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
+import { postPublicTableauAuthorization } from './controllers/auth/postTableau.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -89,6 +88,7 @@ import { deletePublicConnection } from './controllers/connection/connectionId/de
 import { deleteConnection } from './controllers/v1/connection/deleteConnection.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
+import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
 
 export const router = express.Router();
 
@@ -155,9 +155,11 @@ publicAPI.route('/oauth2/auth/:providerConfigKey').post(apiPublicAuth, oauthCont
 publicAPI.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
 publicAPI.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
 publicAPI.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
-publicAPI.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, tbaAuthorization);
-publicAPI.route('/auth/tableau/:providerConfigKey').post(apiPublicAuth, tableauAuthorization);
-publicAPI.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
+publicAPI.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, postPublicTbaAuthorization);
+publicAPI.route('/auth/tableau/:providerConfigKey').post(apiPublicAuth, postPublicTableauAuthorization);
+publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(apiPublicAuth, postPublicUnauthenticated);
+// @deprecated
+publicAPI.route('/unauth/:providerConfigKey').post(apiPublicAuth, postPublicUnauthenticated);
 
 // API Admin routes
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));

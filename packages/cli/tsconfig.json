@@ -9,10 +9,11 @@
             "path": "../shared"
         },
         {
-            "path": "../nango-yaml"
+            "path": "../types"
         },
+        {
+            "path": "../nango-yaml"
+        }
     ],
-    "include": [
-        "lib/**/*"
-    ]
+    "include": ["lib/**/*"]
 }
