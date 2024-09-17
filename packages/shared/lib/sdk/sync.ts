@@ -9,12 +9,20 @@ import axios, { AxiosError } from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
-import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangohq/utils';
+import {
+    getLogger,
+    httpRetryStrategy,
+    metrics,
+    retryWithBackoff,
+    MAX_LOG_PAYLOAD,
+    stringifyAndTruncateMessage,
+    stringifyObject,
+    truncateJsonString
+} from '@nangohq/utils';
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
-import { MAX_LOG_PAYLOAD, stringifyAndTruncateMessage, stringifyObject, truncateJsonString } from './utils.js';
 import type { DBTeam, MessageRowInsert } from '@nangohq/types';
 
 const logger = getLogger('SDK');

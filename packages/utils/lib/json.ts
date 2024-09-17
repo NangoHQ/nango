@@ -1,5 +1,5 @@
 import safeStringify from 'fast-safe-stringify';
-import truncateJson from 'truncate-json';
+import truncateJsonPkg from 'truncate-json';
 
 export const MAX_LOG_PAYLOAD = 99_000; // in  bytes
 
@@ -38,5 +38,9 @@ export function stringifyAndTruncateMessage(value: any, maxSize: number = MAX_LO
 }
 
 export function truncateJsonString(value: string, maxSize: number = MAX_LOG_PAYLOAD): string {
-    return truncateJson(value, maxSize).jsonString;
+    return truncateJsonPkg(value, maxSize).jsonString;
+}
+
+export function truncateJson(value: Record<string, any>, maxSize: number = MAX_LOG_PAYLOAD) {
+    return JSON.parse(truncateJsonPkg(JSON.stringify(value), maxSize).jsonString);
 }

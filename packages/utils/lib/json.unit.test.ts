@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { stringifyAndTruncateMessage } from './utils.js';
+import { stringifyAndTruncateMessage } from './json.js';
 
 describe('stringifyAndTruncateMessage', () => {
     it('should not break a small string', () => {
