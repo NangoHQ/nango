@@ -36,8 +36,8 @@ export function stringifyAndTruncateValue(value: any, maxSize: number = MAX_LOG_
 
     let msg = typeof value === 'string' ? value : truncateJsonString(stringifyObject(value), maxSize);
 
-    if (msg && msg.length > MAX_LOG_PAYLOAD) {
-        msg = `${msg.substring(0, MAX_LOG_PAYLOAD)}... (truncated)`;
+    if (msg && msg.length > maxSize) {
+        msg = `${msg.substring(0, maxSize)}... (truncated)`;
     }
 
     return msg;

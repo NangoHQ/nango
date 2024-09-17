@@ -14,7 +14,7 @@ describe('stringifyAndTruncateValue', () => {
 
     it('should limit an object', () => {
         const str = stringifyAndTruncateValue({ foo: 'bar' }, 10);
-        expect(str).toStrictEqual('{"foo":"ba... (truncated)');
+        expect(str).toStrictEqual('{}');
     });
 
     it('should handle undefined', () => {
