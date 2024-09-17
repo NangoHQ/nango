@@ -3,6 +3,9 @@ import truncateJsonPkg from 'truncate-json';
 
 export const MAX_LOG_PAYLOAD = 99_000; // in  bytes
 
+/**
+ * Safely stringify an object (mostly handle circular ref and known problematic keys)
+ */
 export function stringifyObject(value: any): string {
     return safeStringify.stableStringify(
         value,
@@ -20,7 +23,10 @@ export function stringifyObject(value: any): string {
     );
 }
 
-export function stringifyAndTruncateMessage(value: any, maxSize: number = MAX_LOG_PAYLOAD): string {
+/**
+ * Stringify and truncate unknown value
+ */
+export function stringifyAndTruncateValue(value: any, maxSize: number = MAX_LOG_PAYLOAD): string {
     if (value === null) {
         return 'null';
     }
@@ -37,10 +43,18 @@ export function stringifyAndTruncateMessage(value: any, maxSize: number = MAX_LO
     return msg;
 }
 
-export function truncateJsonString(value: string, maxSize: number = MAX_LOG_PAYLOAD): string {
-    return truncateJsonPkg(value, maxSize).jsonString;
-}
-
+/**
+ * Truncate a JSON
+ * Will entirely remove properties that are too big
+ */
 export function truncateJson(value: Record<string, any>, maxSize: number = MAX_LOG_PAYLOAD) {
     return JSON.parse(truncateJsonPkg(JSON.stringify(value), maxSize).jsonString);
+}
+
+/**
+ * Truncate a JSON as string
+ * Will entirely remove properties that are too big
+ */
+export function truncateJsonString(value: string, maxSize: number = MAX_LOG_PAYLOAD): string {
+    return truncateJsonPkg(value, maxSize).jsonString;
 }

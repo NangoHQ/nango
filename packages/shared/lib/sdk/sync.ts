@@ -15,7 +15,7 @@ import {
     metrics,
     retryWithBackoff,
     MAX_LOG_PAYLOAD,
-    stringifyAndTruncateMessage,
+    stringifyAndTruncateValue,
     stringifyObject,
     truncateJsonString
 } from '@nangohq/utils';
@@ -728,7 +728,7 @@ export class NangoAction {
             type: 'log',
             level: oldLevelToNewLevel[level],
             source: 'user',
-            message: stringifyAndTruncateMessage(message),
+            message: stringifyAndTruncateValue(message),
             meta,
             createdAt: new Date().toISOString(),
             environmentId: this.environmentId

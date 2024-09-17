@@ -1,52 +1,52 @@
 import { describe, expect, it } from 'vitest';
-import { stringifyAndTruncateMessage } from './json.js';
+import { stringifyAndTruncateValue } from './json.js';
 
-describe('stringifyAndTruncateMessage', () => {
+describe('stringifyAndTruncateValue', () => {
     it('should not break a small string', () => {
-        const str = stringifyAndTruncateMessage('hello');
+        const str = stringifyAndTruncateValue('hello');
         expect(str).toStrictEqual('hello');
     });
 
     it('should limit a string', () => {
-        const str = stringifyAndTruncateMessage('hello', 2);
+        const str = stringifyAndTruncateValue('hello', 2);
         expect(str).toStrictEqual('he... (truncated)');
     });
 
     it('should limit an object', () => {
-        const str = stringifyAndTruncateMessage({ foo: 'bar' }, 10);
+        const str = stringifyAndTruncateValue({ foo: 'bar' }, 10);
         expect(str).toStrictEqual('{"foo":"ba... (truncated)');
     });
 
     it('should handle undefined', () => {
-        const str = stringifyAndTruncateMessage(undefined);
+        const str = stringifyAndTruncateValue(undefined);
         expect(str).toStrictEqual('undefined');
     });
 
     it('should handle null', () => {
-        const str = stringifyAndTruncateMessage(null);
+        const str = stringifyAndTruncateValue(null);
         expect(str).toStrictEqual('null');
     });
 
     it('should handle object', () => {
-        const str = stringifyAndTruncateMessage({ foo: 1 });
+        const str = stringifyAndTruncateValue({ foo: 1 });
         expect(str).toStrictEqual('{"foo":1}');
     });
 
     it('should handle array', () => {
-        const str = stringifyAndTruncateMessage([{ foo: 1 }, 2]);
+        const str = stringifyAndTruncateValue([{ foo: 1 }, 2]);
         expect(str).toStrictEqual('[{"foo":1},2]');
     });
 
     it('should handle circular', () => {
         const obj: Record<string, any> = { foo: 'bar' };
         obj['circular'] = obj;
-        const str = stringifyAndTruncateMessage(obj);
+        const str = stringifyAndTruncateValue(obj);
         expect(str).toStrictEqual('{"circular":"[Circular]","foo":"bar"}');
     });
 
     it('should redac known keys', () => {
         const obj: Record<string, any> = { Authorization: 'super secret key' };
-        const str = stringifyAndTruncateMessage(obj);
+        const str = stringifyAndTruncateValue(obj);
         expect(str).toStrictEqual('{"Authorization":"[Redacted]"}');
     });
 });
