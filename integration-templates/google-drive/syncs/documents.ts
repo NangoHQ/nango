@@ -1,23 +1,15 @@
-import type { NangoSync, Document } from '../../models';
+import type { NangoSync, Document, ProxyConfiguration } from '../../models';
+import type { GoogleDriveFileResponse, Metadata } from '../types';
 
-interface GoogleDriveFileResponse {
-    id: string;
-    name: string;
-    mimeType: string;
-    webViewLink: string;
-}
-
-interface Metadata {
-    files?: string[];
-    folders?: string[];
-}
-
-const mimeTypeMapping: Record<string, string> = {
-    'application/vnd.google-apps.document': 'text/plain',
-    'application/vnd.google-apps.spreadsheet': 'text/csv',
-    'application/vnd.google-apps.presentation': 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-};
-
+/**
+ * Fetches and processes documents from Google Drive, saving their metadata in batches.
+ * For detailed endpoint documentation, refer to:
+ *
+ * https://developers.google.com/drive/api/reference/rest/v3/files/get
+ * @param nango - An instance of NangoSync used for API interactions and metadata management.
+ * @returns A promise that resolves when all documents are fetched and saved.
+ * @throws Error if metadata is missing or if there is an issue during the fetching or saving of documents.
+ */
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const metadata = await nango.getMetadata<Metadata>();
 
@@ -25,17 +17,24 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
         throw new Error('Metadata for files or folders is required.');
     }
 
+    // Initialize folders to process and a set to keep track of processed folders
     const initialFolders = metadata?.folders ? [...metadata.folders] : [];
     const processedFolders = new Set<string>();
     const batchSize = 100;
     let batch: Document[] = [];
 
+    /**
+     * Processes a folder by fetching and processing its files.
+     *
+     * @param folderId - The ID of the folder to process.
+     */
     async function processFolder(folderId: string) {
         if (processedFolders.has(folderId)) return;
         processedFolders.add(folderId);
 
+        // Query to fetch files in the current folder
         const query = `('${folderId}' in parents) and trashed = false`;
-        const proxyConfiguration = {
+        const proxyConfiguration: ProxyConfiguration = {
             endpoint: `drive/v3/files`,
             params: {
                 fields: 'files(id, name, mimeType, webViewLink, parents), nextPageToken',
@@ -44,50 +43,53 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
             },
             paginate: {
                 response_path: 'files'
-            }
+            },
+            retries: 10
         };
 
+        // Fetch and process files from the folder
         for await (const files of nango.paginate<GoogleDriveFileResponse>(proxyConfiguration)) {
             for (const file of files) {
                 if (file.mimeType === 'application/vnd.google-apps.folder') {
-                    await processFolder(file.id);
-                } else if (file.mimeType === 'application/vnd.google-apps.document' || file.mimeType === 'application/pdf') {
-                    const content = await fetchDocumentContent(nango, file, file.mimeType);
+                    await processFolder(file.id); // Recursively process subfolders
+                } else {
                     batch.push({
                         id: file.id,
                         url: file.webViewLink,
-                        content: content || '',
                         title: file.name
                     });
 
                     if (batch.length === batchSize) {
                         await nango.batchSave<Document>(batch, 'Document');
-                        batch = [];
+                        batch = []; // Clear batch after saving
                     }
                 }
             }
         }
     }
 
+    // Start processing initial folders
     for (const folderId of initialFolders) {
         await processFolder(folderId);
     }
 
+    // Process individual files specified in metadata
     if (metadata?.files) {
         for (const file of metadata.files) {
             try {
-                const documentResponse = await nango.get({
+                const config: ProxyConfiguration = {
                     endpoint: `drive/v3/files/${file}`,
                     params: {
                         fields: 'id, name, mimeType, webViewLink, parents'
-                    }
-                });
-                const content = await fetchDocumentContent(nango, documentResponse.data, documentResponse.data.mimeType);
+                    },
+                    retries: 10
+                };
+
+                const documentResponse = await nango.get<GoogleDriveFileResponse>(config);
 
                 batch.push({
                     id: documentResponse.data.id,
                     url: documentResponse.data.webViewLink,
-                    content: content || '',
                     title: documentResponse.data.name
                 });
 
@@ -103,35 +105,5 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
 
     if (batch.length > 0) {
         await nango.batchSave<Document>(batch, 'Document');
-    }
-}
-
-async function fetchDocumentContent(nango: NangoSync, doc: GoogleDriveFileResponse, mimeType: string): Promise<string | null> {
-    try {
-        if (mimeType === 'application/vnd.google-apps.spreadsheet') {
-            const contentResponse = await nango.get({
-                endpoint: `drive/v3/files/${doc.id}/export`,
-                params: {
-                    mimeType: 'text/csv'
-                },
-                responseType: 'text'
-            });
-            return contentResponse.data;
-        } else if (mimeType === 'application/pdf') {
-            return '';
-        } else {
-            const exportType = mimeTypeMapping[mimeType] || 'text/plain';
-            const contentResponse = await nango.get({
-                endpoint: `drive/v3/files/${doc.id}/export`,
-                params: {
-                    mimeType: exportType
-                }
-            });
-
-            return contentResponse.data;
-        }
-    } catch (e) {
-        await nango.log(`Error fetching content for ${doc.name}: ${e}`);
-        return null;
     }
 }
