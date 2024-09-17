@@ -37,7 +37,7 @@ export function apiFetch(baseUrl: string) {
             (TEndpoint['Body'] extends never ? { body?: never } : { body: TEndpoint['Body'] }) &
             (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] })
     ): Promise<{ res: Response; json: APIEndpointsPicker<TMethod, TPath>['Reply'] }> {
-        const search = new URLSearchParams(query);
+        const search = new URLSearchParams(query as Record<string, any>);
         const url = new URL(`${baseUrl}${path}?${search.toString()}`);
         const headers = new Headers();
 
