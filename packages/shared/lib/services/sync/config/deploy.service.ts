@@ -161,7 +161,7 @@ export async function deploy({
         }
 
         for (const id of idsToMarkAsInactive) {
-            await markSyncConfigAsInactive(id);
+            await switchActiveSyncConfig(id);
         }
 
         await logCtx.info(`Successfully deployed ${flows.length} script${flows.length > 1 ? 's' : ''}`, {
@@ -269,41 +269,42 @@ export async function upgradePreBuilt({
     delete flowData.id;
 
     try {
-        const [newSyncConfig] = await db.knex.from<SyncConfig>(TABLE).insert(flowData).returning('id');
+        const [newSyncConfig] = await db.knex.from<SyncConfig>(TABLE).insert(flowData).returning('*');
 
+        if (!newSyncConfig?.id) {
+            throw new NangoError('error_creating_sync_config');
+        }
+        const newSyncConfigId = newSyncConfig.id;
         const endpoints: SyncEndpoint[] = [];
 
-        const newSyncConfigId = newSyncConfig?.id;
-        if (newSyncConfigId) {
-            // update sync_config_id in syncs table
-            await db.knex.from<Sync>(SYNC_TABLE).update({ sync_config_id: newSyncConfigId }).where('sync_config_id', syncConfig.id);
+        // update sync_config_id in syncs table
+        await db.knex.from<Sync>(SYNC_TABLE).update({ sync_config_id: newSyncConfigId }).where('sync_config_id', syncConfig.id);
 
-            // update endpoints
-            if (flow.endpoints) {
-                flow.endpoints.forEach((endpoint, endpointIndex) => {
-                    const method = Object.keys(endpoint)[0] as HTTP_VERB;
-                    const path = endpoint[method] as string;
-                    const res: SyncEndpoint = {
-                        sync_config_id: newSyncConfigId,
-                        method,
-                        path,
-                        created_at: now,
-                        updated_at: now
-                    };
-                    const model = flowData.models[endpointIndex] as string;
-                    if (model) {
-                        res.model = model;
-                    }
-                    endpoints.push(res);
-                });
-            }
-
-            if (endpoints.length > 0) {
-                await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
-            }
-
-            await db.knex.from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', [syncConfig.id]);
+        // update endpoints
+        if (flow.endpoints) {
+            flow.endpoints.forEach((endpoint, endpointIndex) => {
+                const method = Object.keys(endpoint)[0] as HTTP_VERB;
+                const path = endpoint[method] as string;
+                const res: SyncEndpoint = {
+                    sync_config_id: newSyncConfigId,
+                    method,
+                    path,
+                    created_at: now,
+                    updated_at: now
+                };
+                const model = flowData.models[endpointIndex] as string;
+                if (model) {
+                    res.model = model;
+                }
+                endpoints.push(res);
+            });
         }
+
+        if (endpoints.length > 0) {
+            await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+        }
+
+        await db.knex.from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', [syncConfig.id]);
 
         await logCtx.info('Successfully deployed', { nameOfType, configs: name });
         await logCtx.success();
@@ -560,7 +561,7 @@ export async function deployPreBuilt({
     const isPublic = configs.every((config) => config.is_public);
 
     try {
-        const syncConfigs = await db.knex.from<SyncConfig>(TABLE).insert(insertData).returning('id');
+        const syncConfigs = await db.knex.from<SyncConfig>(TABLE).insert(insertData).returning('*');
 
         flowReturnData.forEach((flow, index) => {
             const row = syncConfigs[index];
@@ -597,7 +598,7 @@ export async function deployPreBuilt({
         }
 
         for (const id of idsToMarkAsInactive) {
-            await markSyncConfigAsInactive(id);
+            await switchActiveSyncConfig(id);
         }
 
         let content;
@@ -844,7 +845,7 @@ async function compileDeployInfo({
     };
 }
 
-async function markSyncConfigAsInactive(oldSyncConfigId: number): Promise<void> {
+async function switchActiveSyncConfig(oldSyncConfigId: number): Promise<void> {
     return await db.knex.transaction(async (trx) => {
         // mark sync config as inactive
         await trx.from<SyncConfig>(TABLE).update({ active: false }).where({ id: oldSyncConfigId });
@@ -857,11 +858,11 @@ async function markSyncConfigAsInactive(oldSyncConfigId: number): Promise<void> 
                 SELECT active_config.id
                 FROM nango._nango_sync_configs as old_config
                 JOIN nango._nango_sync_configs as active_config
-                ON old_config.sync_name = active_config.sync_name
-                AND old_config.nango_config_id = active_config.nango_config_id
-                AND old_config.environment_id = active_config.environment_id
+                    ON old_config.sync_name = active_config.sync_name
+                    AND old_config.nango_config_id = active_config.nango_config_id
+                    AND old_config.environment_id = active_config.environment_id
                 WHERE old_config.id = ?
-                AND active_config.active = true
+                    AND active_config.active = true
             )
             WHERE sync_config_id = ?`,
             [oldSyncConfigId, oldSyncConfigId]
