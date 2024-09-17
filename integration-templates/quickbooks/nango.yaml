@@ -7,7 +7,6 @@ integrations:
                 runs: every hour
                 output: Customer
                 sync_type: incremental
-                track_deletes: true
                 scopes: com.intuit.quickbooks.accounting
                 endpoint: GET /quickbooks/customers
             accounts:
@@ -16,7 +15,6 @@ integrations:
                 runs: every hour
                 output: Account
                 sync_type: incremental
-                track_deletes: true
                 scopes: com.intuit.quickbooks.accounting
                 endpoint: GET /quickbooks/accounts
             payments:
@@ -25,7 +23,6 @@ integrations:
                 runs: every hour
                 output: Payment
                 sync_type: incremental
-                track_deletes: true
                 scopes: com.intuit.quickbooks.accounting
                 endpoint: GET /quickbooks/payments
             items:
@@ -34,7 +31,6 @@ integrations:
                 runs: every hour
                 output: Item
                 sync_type: incremental
-                track_deletes: true
                 scopes: com.intuit.quickbooks.accounting
                 endpoint: GET /quickbooks/items
             invoices:
@@ -43,7 +39,6 @@ integrations:
                 runs: every hour
                 output: Invoice
                 sync_type: incremental
-                track_deletes: true
                 scopes: com.intuit.quickbooks.accounting
                 endpoint: GET /quickbooks/invoices
         actions:
