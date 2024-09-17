@@ -155,7 +155,7 @@ export default function IntegrationCreate() {
             };
         }
 
-        if (authMode === 'OAUTH2' || authMode === 'TBA') {
+        if (authMode === 'OAUTH2') {
             credentials = {
                 oauth_client_id_override: oAuthClientId,
                 oauth_client_secret_override: oAuthClientSecret
@@ -185,10 +185,17 @@ export default function IntegrationCreate() {
 
         if (authMode === 'TBA') {
             credentials = {
-                ...credentials,
+                oauth_client_id_override: oAuthClientId,
+                oauth_client_secret_override: oAuthClientSecret,
                 token_id: tokenId,
                 token_secret: tokenSecret
             };
+            if (oauthSelectedScopes.length > 0) {
+                params = {
+                    ...params,
+                    oauth_scopes_override: oauthSelectedScopes.join(',')
+                };
+            }
         }
 
         if (authMode === 'TABLEAU') {
@@ -200,7 +207,7 @@ export default function IntegrationCreate() {
         }
 
         nango[authMode === 'NONE' ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
-            user_scope: selectedScopes || [],
+            user_scope: authMode === 'NONE' ? undefined : selectedScopes || [],
             params,
             authorization_params: authorizationParams || {},
             hmac: hmacDigest || '',

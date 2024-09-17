@@ -1,17 +1,18 @@
 import type { ApiError, Endpoint } from '../api';
-import type { ConnectionConfig } from '../connection/db';
 
-export type TbaAuthorization = Endpoint<{
+export type PostPublicTbaAuthorization = Endpoint<{
     Method: 'POST';
     Body: {
         token_id: string;
         token_secret: string;
-        oauth_client_id_override?: string;
-        oauth_client_secret_override?: string;
+        oauth_client_id_override?: string | undefined;
+        oauth_client_secret_override?: string | undefined;
     };
-    QueryParams: {
-        connectionId: string;
-        connectionConfig: ConnectionConfig;
+    Querystring: {
+        connection_id: string;
+        public_key: string;
+        params?: Record<string, any> | undefined;
+        hmac?: string | undefined;
     };
     Params: {
         providerConfigKey: string;
@@ -29,21 +30,45 @@ export type TbaAuthorization = Endpoint<{
     };
 }>;
 
-export type TableauAuthorization = Endpoint<{
+export type PostPublicTableauAuthorization = Endpoint<{
     Method: 'POST';
     Body: {
         pat_name: string;
         pat_secret: string;
-        content_url?: string;
+        content_url?: string | undefined;
     };
-    QueryParams: {
-        connectionId: string;
-        connectionConfig: ConnectionConfig;
+    Querystring: {
+        connection_id: string;
+        public_key: string;
+        params?: Record<string, any> | undefined;
+        hmac?: string | undefined;
     };
     Params: {
         providerConfigKey: string;
     };
     Path: '/auth/tableau';
+    Error:
+        | ApiError<'invalid_body'>
+        | ApiError<'invalid_query_params'>
+        | ApiError<'unknown_provider_config'>
+        | ApiError<'invalid_auth_mode'>
+        | ApiError<'invalid_credentials'>;
+    Success: {
+        providerConfigKey: string;
+        connectionId: string;
+    };
+}>;
+
+export type PostPublicUnauthenticatedAuthorization = Endpoint<{
+    Method: 'POST';
+    Querystring: {
+        connection_id: string;
+        hmac?: string | undefined;
+    };
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/unauthenticated';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>

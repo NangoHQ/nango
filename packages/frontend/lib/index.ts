@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2023 Nango, all rights reserved.
  */
+import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 
 const prodHost = 'https://api.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
@@ -86,7 +87,7 @@ export default class Nango {
      * @returns A promise that resolves with the authentication result
      */
     public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResult> {
-        const url = this.hostBaseUrl + `/unauth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
+        const url = this.hostBaseUrl + `/auth/unauthenticated/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
         const res = await fetch(url, {
             method: 'POST',
@@ -96,11 +97,11 @@ export default class Nango {
         });
 
         if (!res.ok) {
-            const errorResponse = await res.json();
-            throw new AuthError(errorResponse.error.message, errorResponse.error.code);
+            const errorResponse = (await res.json()) as PostPublicUnauthenticatedAuthorization['Errors'];
+            throw new AuthError(errorResponse.error.message || errorResponse.error.code, errorResponse.error.code);
         }
 
-        return res.json();
+        return (await res.json()) as PostPublicUnauthenticatedAuthorization['Success'];
     }
 
     /**
