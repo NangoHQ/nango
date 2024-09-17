@@ -521,7 +521,7 @@ export class NangoAction {
             const { response, logs } = await proxyService.route(proxyConfig, {
                 existingActivityLogId: this.activityLogId as string,
                 connection,
-                provider: this.provider as string
+                providerName: this.provider as string
             });
 
             // We batch save, since we have buffered the createdAt it shouldn't impact order

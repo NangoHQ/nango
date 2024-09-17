@@ -37,7 +37,7 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface InternalProxyConfiguration {
-    provider: string;
+    providerName: string;
     connection: Connection;
     existingActivityLogId?: string | null | undefined;
 }

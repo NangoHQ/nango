@@ -9,12 +9,12 @@ describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct a header using an api key with multiple headers', () => {
         const config = {
             endpoint: 'https://api.nangostarter.com',
-            provider: 'test',
+            providerName: 'test',
             providerConfigKey: 'test',
             connectionId: 'test',
             token: { apiKey: 'sweet-secret-token' },
             method: 'GET' as HTTP_VERB,
-            template: {
+            provider: {
                 auth_mode: 'API_KEY',
                 authorization_url: 'https://api.nangostarter.com',
                 token_url: 'https://api.nangostarter.com',
@@ -27,7 +27,7 @@ describe('Proxy service Construct Header Tests', () => {
                 }
             },
             connection: {
-                conectionConfig: {
+                connection_config: {
                     insance_url: 'bar'
                 }
             }
@@ -43,7 +43,7 @@ describe('Proxy service Construct Header Tests', () => {
 
     it('Should correctly construct headers for Basic auth', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'BASIC'
             },
             token: {
@@ -61,7 +61,7 @@ describe('Proxy service Construct Header Tests', () => {
 
     it('Should correctly construct headers for Basic auth with no password', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'BASIC'
             },
             token: {
@@ -78,7 +78,7 @@ describe('Proxy service Construct Header Tests', () => {
 
     it('Should correctly construct headers for Basic auth + any custom headers', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'BASIC',
                 proxy: {
                     headers: {
@@ -102,7 +102,7 @@ describe('Proxy service Construct Header Tests', () => {
 
     it('Should correctly construct headers with an Authorization override', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'BASIC'
             },
             token: {
@@ -123,7 +123,7 @@ describe('Proxy service Construct Header Tests', () => {
 
     it('Should correctly construct headers for default auth', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'SomeOtherMode'
             },
             token: 'testtoken'
@@ -138,7 +138,7 @@ describe('Proxy service Construct Header Tests', () => {
 
     it('Should correctly insert headers with dynamic values for oauth', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
                     headers: {
@@ -159,7 +159,7 @@ describe('Proxy service Construct Header Tests', () => {
 
     it('Should correctly merge provided headers', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
                     headers: {
@@ -185,7 +185,7 @@ describe('Proxy service Construct Header Tests', () => {
 
     it('Should construct headers for an api key', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
                     headers: {
@@ -214,7 +214,7 @@ describe('Proxy service Construct Header Tests', () => {
 describe('Proxy service Construct URL Tests', () => {
     it('should correctly construct url with no trailing slash and no leading slash', () => {
         const config = {
-            template: {
+            provider: {
                 proxy: {
                     base_url: 'https://example.com'
                 }
@@ -230,7 +230,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('should correctly construct url with trailing slash in base and leading slash in endpoint', () => {
         const config = {
-            template: {
+            provider: {
                 proxy: {
                     base_url: 'https://example.com/'
                 }
@@ -246,7 +246,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('should correctly construct url with baseUrlOverride', () => {
         const config = {
-            template: {
+            provider: {
                 proxy: {
                     base_url: 'https://example.com/'
                 }
@@ -264,7 +264,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('should correctly construct url with baseUrlOverride with no leading slash', () => {
         const config = {
-            template: {
+            provider: {
                 proxy: {
                     base_url: 'https://example.com/'
                 }
@@ -282,7 +282,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
@@ -305,7 +305,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.key property', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
@@ -327,7 +327,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property with existing query params', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
@@ -349,7 +349,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('Should insert a proxy query and a headers', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
@@ -387,7 +387,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('Should handle Proxy base URL interpolation with connection configuration param', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
                     base_url: 'https://www.zohoapis.${connectionConfig.extension}'
@@ -407,7 +407,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('Should handle Proxy base URL interpolation with connection metadata param', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
                     base_url: '${metadata.instance_url}'
@@ -427,7 +427,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('Should handle Proxy base URL interpolation where connection configuration param is present', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
                     base_url: '${connectionConfig.api_base_url_for_customer} || https://api.gong.io'
@@ -447,7 +447,7 @@ describe('Proxy service Construct URL Tests', () => {
 
     it('Should handle Proxy base URL interpolation where connection configuration param is absent', () => {
         const config = {
-            template: {
+            provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
                     base_url: '${connectionConfig.api_base_url_for_customer}||https://api.gong.io'
@@ -561,7 +561,7 @@ describe('Proxy service configure', () => {
             endpoint: ''
         };
         const internalConfig: InternalProxyConfiguration = {
-            provider: 'provider-1',
+            providerName: 'provider-1',
             connection: {
                 environment_id: 1,
                 connection_id: 'connection-1',
@@ -595,7 +595,7 @@ describe('Proxy service configure', () => {
             endpoint: 'https://example.com'
         };
         const internalConfig: InternalProxyConfiguration = {
-            provider: 'provider-1',
+            providerName: 'provider-1',
             connection: {
                 environment_id: 1,
                 connection_id: 'connection-1',
@@ -630,7 +630,7 @@ describe('Proxy service configure', () => {
             endpoint: 'https://example.com'
         };
         const internalConfig: InternalProxyConfiguration = {
-            provider: 'provider-1',
+            providerName: 'provider-1',
             connection: {
                 environment_id: 1,
                 connection_id: 'connection-1',
@@ -665,7 +665,7 @@ describe('Proxy service configure', () => {
             endpoint: 'https://example.com'
         };
         const internalConfig: InternalProxyConfiguration = {
-            provider: 'unknown',
+            providerName: 'unknown',
             connection: {
                 environment_id: 1,
                 connection_id: 'connection-1',
@@ -706,7 +706,7 @@ describe('Proxy service configure', () => {
             responseType: 'blob'
         };
         const internalConfig: InternalProxyConfiguration = {
-            provider: 'github',
+            providerName: 'github',
             connection: {
                 environment_id: 1,
                 connection_id: 'connection-1',
@@ -723,7 +723,7 @@ describe('Proxy service configure', () => {
         expect(response).toMatchObject({
             endpoint: '/api/test',
             method: 'GET',
-            template: {
+            provider: {
                 auth_mode: 'OAUTH2',
                 authorization_url: 'https://github.com/login/oauth/authorize',
                 token_url: 'https://github.com/login/oauth/access_token',
@@ -733,7 +733,7 @@ describe('Proxy service configure', () => {
                 docs: 'https://docs.nango.dev/integrations/all/github'
             },
             token: '',
-            provider: 'github',
+            providerName: 'github',
             providerConfigKey: 'provider-config-key-1',
             connectionId: 'connection-1',
             headers: {

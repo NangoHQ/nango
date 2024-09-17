@@ -42,7 +42,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
 
         const internalConfig: InternalProxyConfiguration = {
             connection,
-            provider: providerName
+            providerName
         };
 
         const externalConfig: UserProvidedProxyConfiguration = {
