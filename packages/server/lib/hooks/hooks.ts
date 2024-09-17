@@ -155,12 +155,12 @@ export const connectionRefreshFailed = async ({
     logCtx,
     authError,
     environment,
-    template,
+    provider,
     config
 }: {
     connection: Connection;
     environment: DBEnvironment;
-    template: Provider;
+    provider: Provider;
     config: IntegrationConfig;
     authError: { type: string; description: string };
     logCtx: LogContext;
@@ -179,7 +179,7 @@ export const connectionRefreshFailed = async ({
         connection,
         environment,
         webhookSettings,
-        auth_mode: template.auth_mode,
+        auth_mode: provider.auth_mode,
         operation: 'refresh',
         error: authError,
         success: false,
@@ -194,8 +194,8 @@ export const connectionRefreshFailed = async ({
 };
 
 export const connectionTest = async (
-    provider: string,
-    template: Provider,
+    providerName: string,
+    provider: Provider,
     credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials,
     connectionId: string,
     providerConfigKey: string,
@@ -203,7 +203,7 @@ export const connectionTest = async (
     connection_config: ConnectionConfig,
     tracer: Tracer
 ): Promise<Result<boolean, NangoError>> => {
-    const providerVerification = template?.proxy?.verification;
+    const providerVerification = provider?.proxy?.verification;
 
     if (!providerVerification) {
         return Ok(true);
@@ -235,9 +235,9 @@ export const connectionTest = async (
     const configBody: ApplicationConstructedProxyConfiguration = {
         endpoint,
         method: method?.toUpperCase() as HTTP_VERB,
-        template,
+        provider,
         token: credentials,
-        provider: provider,
+        providerName: providerName,
         providerConfigKey,
         connectionId,
         headers: {
@@ -255,7 +255,7 @@ export const connectionTest = async (
     }
 
     const internalConfig: InternalProxyConfiguration = {
-        provider,
+        providerName,
         connection
     };
 

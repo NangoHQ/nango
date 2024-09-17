@@ -87,17 +87,17 @@ class AppAuthController {
 
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            const template = getProvider(config.provider);
-            if (!template) {
+            const provider = getProvider(config.provider);
+            if (!provider) {
                 await logCtx.error('Unknown provider template');
                 await logCtx.failed();
                 res.status(404).send({ error: { code: 'unknown_provider_template' } });
                 return;
             }
 
-            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['APP'] as string);
+            const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['APP'] as string);
 
-            if (template.auth_mode !== 'APP') {
+            if (provider.auth_mode !== 'APP') {
                 await logCtx.error('Provider does not support app creation', { provider: config.provider });
                 await logCtx.failed();
 
@@ -137,7 +137,7 @@ class AppAuthController {
                 return;
             }
 
-            const { success, error, response: credentials } = await connectionService.getAppCredentials(template, config, connectionConfig);
+            const { success, error, response: credentials } = await connectionService.getAppCredentials(provider, config, connectionConfig);
 
             if (!success || !credentials) {
                 await logCtx.error('Error during app token retrieval call', { error });
@@ -151,7 +151,7 @@ class AppAuthController {
                         environmentId: String(environment.id),
                         providerConfigKey: String(providerConfigKey),
                         connectionId: String(connectionId),
-                        authMode: String(template.auth_mode),
+                        authMode: String(provider.auth_mode),
                         level: 'error'
                     }
                 );
@@ -210,7 +210,7 @@ class AppAuthController {
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
-                authMode: String(template.auth_mode)
+                authMode: String(provider.auth_mode)
             });
 
             return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);

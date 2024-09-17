@@ -67,15 +67,15 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             return;
         }
 
-        const template = getProvider(config.provider);
-        if (!template) {
+        const provider = getProvider(config.provider);
+        if (!provider) {
             await logCtx.error('Unknown provider template');
             await logCtx.failed();
             res.status(404).send({ error: { code: 'unknown_provider_template' } });
             return;
         }
 
-        if (template.auth_mode !== 'NONE') {
+        if (provider.auth_mode !== 'NONE') {
             await logCtx.error('Provider does not support Unauthenticated', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });

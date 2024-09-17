@@ -34,15 +34,15 @@ async function execute(
         return;
     }
 
-    const template = getProvider(integration.provider);
+    const provider = getProvider(integration.provider);
 
     const { environment, account } = environmentAndAccountLookup;
 
-    if (!template || !template['webhook_routing_script']) {
+    if (!provider || !provider['webhook_routing_script']) {
         return;
     }
 
-    const webhookRoutingScript = template['webhook_routing_script'];
+    const webhookRoutingScript = provider['webhook_routing_script'];
     const handler = handlers[webhookRoutingScript];
 
     if (!handler) {

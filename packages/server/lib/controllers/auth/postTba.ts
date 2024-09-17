@@ -92,15 +92,15 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         return;
     }
 
-    const template = getProvider(config.provider);
-    if (!template) {
+    const provider = getProvider(config.provider);
+    if (!provider) {
         await logCtx.error('Unknown provider template');
         await logCtx.failed();
         res.status(404).send({ error: { code: 'unknown_provider_template' } });
         return;
     }
 
-    if (template.auth_mode !== 'TBA') {
+    if (provider.auth_mode !== 'TBA') {
         await logCtx.error('Provider does not support TBA auth', { provider: config.provider });
         await logCtx.failed();
 
@@ -141,7 +141,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
 
     const connectionResponse = await connectionTestHook(
         config.provider,
-        template,
+        provider,
         tbaCredentials,
         connectionId,
         providerConfigKey,

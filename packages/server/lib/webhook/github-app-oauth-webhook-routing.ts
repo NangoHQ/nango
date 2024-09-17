@@ -74,8 +74,8 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             return;
         }
 
-        const template = getProvider(integration.provider);
-        if (!template) {
+        const provider = getProvider(integration.provider);
+        if (!provider) {
             logger.error('unknown provider');
             return;
         }
@@ -110,7 +110,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
             integration,
-            template,
+            provider,
             connectionConfig as ConnectionConfig,
             logCtx,
             connCreatedHook

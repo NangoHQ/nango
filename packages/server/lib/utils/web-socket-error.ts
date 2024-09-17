@@ -87,10 +87,10 @@ export function TokenError(): WSErr {
     };
 }
 
-export function UnknownProviderTemplate(providerTemplate: string): WSErr {
+export function UnknownProviderTemplate(providerName: string): WSErr {
     return {
         type: 'unknown_config_key',
-        message: `No Provider Configuration with key "${providerTemplate}".`
+        message: `No Provider Configuration with key "${providerName}".`
     };
 }
 

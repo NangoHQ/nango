@@ -28,9 +28,9 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
     decompress?: boolean;
     method: EndpointMethod;
-    provider: string;
+    providerName: string;
     token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
-    template: Provider;
+    provider: Provider;
     connection: Connection;
 }
 
@@ -39,7 +39,7 @@ export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text'
 export interface InternalProxyConfiguration {
     provider: string;
     connection: Connection;
-    existingActivityLogId?: number | null;
+    existingActivityLogId?: string | null | undefined;
 }
 
 export interface RetryHeaderConfig {

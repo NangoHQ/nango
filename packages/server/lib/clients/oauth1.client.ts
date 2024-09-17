@@ -19,10 +19,10 @@ export class OAuth1Client {
     private config: IntegrationConfig;
     private authConfig: ProviderOAuth1;
 
-    constructor(config: IntegrationConfig, template: Provider, callbackUrl: string) {
+    constructor(config: IntegrationConfig, provider: Provider, callbackUrl: string) {
         this.config = config;
 
-        this.authConfig = template as ProviderOAuth1;
+        this.authConfig = provider as ProviderOAuth1;
         const headers = { 'User-Agent': 'Nango' };
 
         this.client = new oAuth1.OAuth(

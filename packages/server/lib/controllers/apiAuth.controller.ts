@@ -87,15 +87,15 @@ class ApiAuthController {
                 return;
             }
 
-            const template = getProvider(config.provider);
-            if (!template) {
+            const provider = getProvider(config.provider);
+            if (!provider) {
                 await logCtx.error('Unknown provider template');
                 await logCtx.failed();
                 res.status(404).send({ error: { code: 'unknown_provider_template' } });
                 return;
             }
 
-            if (template.auth_mode !== 'API_KEY') {
+            if (provider.auth_mode !== 'API_KEY') {
                 await logCtx.error('Provider does not support API key auth', { provider: config.provider });
                 await logCtx.failed();
 
@@ -121,7 +121,7 @@ class ApiAuthController {
 
             const connectionResponse = await connectionTestHook(
                 config.provider,
-                template,
+                provider,
                 credentials,
                 connectionId,
                 providerConfigKey,
@@ -174,7 +174,7 @@ class ApiAuthController {
             const prettyError = stringifyError(err, { pretty: true });
 
             if (logCtx) {
-                connectionCreationFailedHook(
+                void connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,
@@ -274,15 +274,15 @@ class ApiAuthController {
 
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            const template = getProvider(config.provider);
-            if (!template) {
+            const provider = getProvider(config.provider);
+            if (!provider) {
                 await logCtx.error('Unknown provider template');
                 await logCtx.failed();
                 res.status(404).send({ error: { code: 'unknown_provider_template' } });
                 return;
             }
 
-            if (template.auth_mode !== 'BASIC') {
+            if (provider.auth_mode !== 'BASIC') {
                 await logCtx.error('Provider does not support Basic API auth', { provider: config.provider });
                 await logCtx.failed();
 
@@ -299,7 +299,7 @@ class ApiAuthController {
 
             const connectionResponse = await connectionTestHook(
                 config.provider,
-                template,
+                provider,
                 credentials,
                 connectionId,
                 providerConfigKey,
@@ -352,7 +352,7 @@ class ApiAuthController {
             const prettyError = stringifyError(err, { pretty: true });
 
             if (logCtx) {
-                connectionCreationFailedHook(
+                void connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
                         environment,

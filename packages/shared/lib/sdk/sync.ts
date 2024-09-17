@@ -744,12 +744,12 @@ export class NangoAction {
     }
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
-        const template = getProvider(this.provider as string);
-        if (!template) {
+        const provider = getProvider(this.provider as string);
+        if (!provider) {
             throw new NangoError('unknown_provider_template_in_config');
         }
 
-        const templatePaginationConfig = template.proxy?.paginate;
+        const templatePaginationConfig = provider.proxy?.paginate;
 
         if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {
             throw Error('There was no pagination configuration for this integration or configuration passed in.');

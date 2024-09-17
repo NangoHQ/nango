@@ -17,14 +17,9 @@ export function getProviders() {
     return providers;
 }
 
-export function checkProviderExists(provider: string) {
-    getProviders();
-    return providers && provider in providers;
-}
-
-export function getProvider(provider: string): Provider | null {
-    getProviders();
-    return providers && provider in providers ? providers[provider]! : null;
+export function getProvider(providerName: string): Provider | null {
+    const providers = getProviders();
+    return providers?.[providerName] ?? null;
 }
 
 function getProvidersPath() {

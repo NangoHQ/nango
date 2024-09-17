@@ -104,15 +104,15 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             return;
         }
 
-        const template = getProvider(config.provider);
-        if (!template) {
+        const provider = getProvider(config.provider);
+        if (!provider) {
             await logCtx.error('Unknown provider template');
             await logCtx.failed();
             res.status(404).send({ error: { code: 'unknown_provider_template' } });
             return;
         }
 
-        if (template.auth_mode !== 'TABLEAU') {
+        if (provider.auth_mode !== 'TABLEAU') {
             await logCtx.error('Provider does not support Tableau auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
@@ -125,7 +125,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             success,
             error,
             response: credentials
-        } = await connectionService.getTableauCredentials(template, patName, patSecret, connectionConfig, contentUrl);
+        } = await connectionService.getTableauCredentials(provider, patName, patSecret, connectionConfig, contentUrl);
 
         if (!success || !credentials) {
             await logCtx.error('Error during Tableau credentials creation', { error, provider: config.provider });

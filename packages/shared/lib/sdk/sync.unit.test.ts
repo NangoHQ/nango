@@ -143,14 +143,14 @@ describe('Pagination', () => {
     });
 
     it('Throws error if there is no pagination config in provider template', async () => {
-        const template: Provider = {
+        const provider: Provider = {
             auth_mode: 'OAUTH2',
             proxy: { base_url: '' },
             authorization_url: '',
             token_url: ''
         };
         (await import('@nangohq/node')).Nango.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
-        vi.spyOn(providerService, 'getProvider').mockImplementation(() => template);
+        vi.spyOn(providerService, 'getProvider').mockImplementation(() => provider);
 
         const expectedErrorMessage = 'There was no pagination configuration for this integration or configuration passed in';
         await expect(() => nangoAction.paginate({ endpoint: '' }).next()).rejects.toThrowError(expectedErrorMessage);
@@ -408,8 +408,8 @@ describe('Pagination', () => {
     });
 
     const stubProviderTemplate = (paginationConfig: CursorPagination | OffsetPagination | LinkPagination) => {
-        const template: Provider = buildTemplate(paginationConfig);
-        vi.spyOn(providerService, 'getProvider').mockImplementation(() => template);
+        const provider: Provider = buildTemplate(paginationConfig);
+        vi.spyOn(providerService, 'getProvider').mockImplementation(() => provider);
     };
 
     const buildTemplate = (paginationConfig: CursorPagination | OffsetPagination | LinkPagination): Provider => {

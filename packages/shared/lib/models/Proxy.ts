@@ -41,18 +41,18 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
     decompress?: boolean;
     method: HTTP_VERB;
-    provider: string;
+    providerName: string;
     token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials | TbaCredentials | TableauCredentials;
-    template: Provider;
+    provider: Provider;
     connection: Connection;
 }
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface InternalProxyConfiguration {
-    provider: string;
+    providerName: string;
     connection: Connection;
-    existingActivityLogId?: string | null;
+    existingActivityLogId?: string | null | undefined;
 }
 
 export interface RetryHeaderConfig {

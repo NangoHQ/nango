@@ -14,16 +14,16 @@ import type { Merge } from 'type-fest';
 
 export function getSimpleOAuth2ClientConfig(
     providerConfig: ProviderConfig,
-    template: Provider,
+    provider: Provider,
     connectionConfig: Record<string, string>
 ): Merge<ModuleOptions, { http: WreckHttpOptions }> {
-    const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['OAUTH2'] as string);
+    const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['OAUTH2'] as string);
     const tokenUrl = makeUrl(templateTokenUrl, connectionConfig);
-    const authorizeUrl = makeUrl(template.authorization_url!, connectionConfig, template.authorization_url_encode);
+    const authorizeUrl = makeUrl(provider.authorization_url!, connectionConfig, provider.authorization_url_encode);
 
     const headers = { 'User-Agent': 'Nango' };
 
-    const authConfig = template as ProviderOAuth2;
+    const authConfig = provider as ProviderOAuth2;
 
     return {
         client: {
@@ -52,7 +52,7 @@ export function getSimpleOAuth2ClientConfig(
             authorizationMethod: authConfig.authorization_method || 'body',
             bodyFormat: authConfig.body_format || 'form',
             // @ts-expect-error seems unused ?
-            scopeSeparator: template.scope_separator || ' '
+            scopeSeparator: provider.scope_separator || ' '
         }
     };
 }
@@ -60,7 +60,7 @@ export function getSimpleOAuth2ClientConfig(
 export async function getFreshOAuth2Credentials(
     connection: Connection,
     config: ProviderConfig,
-    template: ProviderOAuth2
+    provider: ProviderOAuth2
 ): Promise<ServiceResponse<OAuth2Credentials>> {
     const credentials = connection.credentials as OAuth2Credentials;
     if (credentials.config_override && credentials.config_override.client_id && credentials.config_override.client_secret) {
@@ -70,8 +70,8 @@ export async function getFreshOAuth2Credentials(
             oauth_client_secret: credentials.config_override.client_secret
         };
     }
-    const simpleOAuth2ClientConfig = getSimpleOAuth2ClientConfig(config, template, connection.connection_config);
-    if (template.token_request_auth_method === 'basic') {
+    const simpleOAuth2ClientConfig = getSimpleOAuth2ClientConfig(config, provider, connection.connection_config);
+    if (provider.token_request_auth_method === 'basic') {
         const headers = {
             ...simpleOAuth2ClientConfig.http?.headers,
             Authorization: 'Basic ' + Buffer.from(config.oauth_client_id + ':' + config.oauth_client_secret).toString('base64')
@@ -86,10 +86,10 @@ export async function getFreshOAuth2Credentials(
     });
 
     let additionalParams = {};
-    if (template.refresh_params) {
-        additionalParams = template.refresh_params;
-    } else if (template.token_params) {
-        additionalParams = template.token_params;
+    if (provider.refresh_params) {
+        additionalParams = provider.refresh_params;
+    } else if (provider.token_params) {
+        additionalParams = provider.token_params;
     }
 
     let rawNewAccessToken: AccessToken;
