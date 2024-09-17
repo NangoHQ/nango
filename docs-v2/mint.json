@@ -302,6 +302,7 @@
                         "integrations/integration-templates/woocommerce",
                         "integrations/integration-templates/workable",
                         "integrations/integration-templates/xero",
+                        "integrations/integration-templates/quickbooks",
                         "integrations/integration-templates/zendesk",
                         "integrations/integration-templates/zoho-crm",
                         "integrations/integration-templates/zoho-mail"
