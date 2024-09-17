@@ -44,7 +44,7 @@ describe('stringifyAndTruncateLog', () => {
         expect(str).toStrictEqual('{"circular":"[Circular]","foo":"bar"}');
     });
 
-    it('should redac know keys', () => {
+    it('should redac known keys', () => {
         const obj: Record<string, any> = { Authorization: 'super secret key' };
         const str = stringifyAndTruncateLog(obj);
         expect(str).toStrictEqual('{"Authorization":"[Redacted]"}');
