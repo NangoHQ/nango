@@ -141,7 +141,7 @@ class ErrorManager {
         this.errResFromNangoErr(res, err);
     }
 
-    public handleGenericError(err: any, _: Request, res: Response, tracer: Tracer): void {
+    public handleGenericError(err: any, _: Request, res: Response, tracer?: Tracer): void {
         const errorId = uuid.v4();
         let nangoErr: NangoError;
         if (!(err instanceof Error)) {

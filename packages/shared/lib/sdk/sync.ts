@@ -14,7 +14,7 @@ import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
-import { stringifyAndTruncateLog } from './utils.js';
+import { stringifyAndTruncateLog, stringifyObject } from './utils.js';
 import type { DBTeam, MessageRowInsert } from '@nangohq/types';
 
 const logger = getLogger('SDK');
@@ -824,10 +824,10 @@ export class NangoAction {
                             Authorization: `Bearer ${this.nango.secretKey}`,
                             'Content-Type': 'application/json'
                         },
-                        data: {
+                        data: stringifyObject({
                             activityLogId: this.activityLogId,
                             log
-                        }
+                        })
                     });
                 },
                 { retry: httpRetryStrategy }

@@ -37,8 +37,8 @@ export async function exec(): Promise<void> {
 
     // Lock to prevent multiple instances of this cron job from running at the same time
     await db.knex.transaction(async (trx) => {
-        const { rows } = await trx.raw<{ rows: { pg_try_advisory_xact_lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?);`, [lockKey]);
-        if (!rows?.[0]?.pg_try_advisory_xact_lock) {
+        const { rows } = await trx.raw<{ rows: { lock_refresh_tokens: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?) as lock_refresh_tokens`, [lockKey]);
+        if (!rows?.[0]?.lock_refresh_tokens) {
             logger.info(`${cronName} could not acquire lock, skipping`);
             return;
         }
