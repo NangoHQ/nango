@@ -1302,6 +1302,10 @@ class ConnectionService {
             iss: (config?.custom ? config.custom['app_id'] : config.oauth_client_id) as string
         };
 
+        if (!payload['iss'] && connectionConfig['app_id']) {
+            payload['iss'] = connectionConfig['app_id'];
+        }
+
         const { success, error, response: rawCredentials } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
 
         if (!success || !rawCredentials) {

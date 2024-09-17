@@ -15,7 +15,7 @@ import SecretInput from '../../../../../components/ui/input/SecretInput';
 import type { EnvironmentAndAccount } from '@nangohq/server';
 
 export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
-    data: { integration, template },
+    data: { integration, meta, template },
     environment
 }) => {
     const { toast } = useToast();
@@ -102,8 +102,18 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
                         <CopyButton text={`${environment.webhook_receive_url}/${integration.unique_key}`} />
                     </InfoBloc>
 
+                    {meta.webhookSecret && (
+                        <InfoBloc
+                            title="Webhook Secret"
+                            help={<p>Input this secret into the &quot;Webhook secret (optional)&quot; field in the Webhook section</p>}
+                        >
+                            <div>{meta.webhookSecret}</div>
+                            <CopyButton text={meta.webhookSecret} />
+                        </InfoBloc>
+                    )}
+
                     {template.webhook_user_defined_secret && (
-                        <InfoBloc title="Webhook Secret" help={<p>`Obtain the Webhook Secret from on the developer portal of the Integration Provider</p>}>
+                        <InfoBloc title="Webhook Secret" help={<p>Obtain the Webhook Secret from on the developer portal of the Integration Provider</p>}>
                             <SecretInput
                                 copy={true}
                                 id="incoming_webhook_secret"
