@@ -14,7 +14,7 @@ import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
-import { stringifyAndTruncateLog, stringifyObject } from './utils.js';
+import { MAX_LOG_PAYLOAD, stringifyAndTruncateMessage, stringifyObject, truncateJsonString } from './utils.js';
 import type { DBTeam, MessageRowInsert } from '@nangohq/types';
 
 const logger = getLogger('SDK');
@@ -720,7 +720,7 @@ export class NangoAction {
             type: 'log',
             level: oldLevelToNewLevel[level],
             source: 'user',
-            message: stringifyAndTruncateLog(message, 99_000),
+            message: stringifyAndTruncateMessage(message),
             meta,
             createdAt: new Date().toISOString(),
             environmentId: this.environmentId
@@ -817,6 +817,15 @@ export class NangoAction {
         try {
             response = await retryWithBackoff(
                 async () => {
+                    let data = stringifyObject({ activityLogId: this.activityLogId, log });
+
+                    // We try to keep log object under an acceptable size, before reaching network
+                    // The idea is to always log something instead of silently crashing without overloading persist
+                    if (data.length > MAX_LOG_PAYLOAD) {
+                        log.message += ` ... (truncated, payload was too large)`;
+                        data = truncateJsonString(stringifyObject({ activityLogId: this.activityLogId, log }), MAX_LOG_PAYLOAD);
+                    }
+
                     return await this.persistApi({
                         method: 'POST',
                         url: `/environment/${this.environmentId}/log`,
@@ -824,10 +833,7 @@ export class NangoAction {
                             Authorization: `Bearer ${this.nango.secretKey}`,
                             'Content-Type': 'application/json'
                         },
-                        data: stringifyObject({
-                            activityLogId: this.activityLogId,
-                            log
-                        })
+                        data
                     });
                 },
                 { retry: httpRetryStrategy }
