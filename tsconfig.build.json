@@ -50,7 +50,7 @@
             "path": "packages/shared"
         },
         {
-            "path": "packages/ui-connect"
+            "path": "packages/connect-ui"
         },
         {
             "path": "packages/webapp"

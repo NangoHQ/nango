@@ -196,7 +196,7 @@
         },
         {
             "files": [
-                "packages/ui-connect/**/*.tsx"
+                "packages/connect-ui/**/*.tsx"
             ],
             "plugins": [
                 "react",

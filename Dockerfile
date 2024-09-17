@@ -32,7 +32,7 @@ COPY packages/scheduler/package.json ./packages/scheduler/package.json
 COPY packages/server/package.json ./packages/server/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
 COPY packages/types/package.json ./packages/types/package.json
-COPY packages/ui-connect/package.json ./packages/ui-connect/package.json
+COPY packages/connect-ui/package.json ./packages/connect-ui/package.json
 COPY packages/utils/package.json ./packages/utils/package.json
 COPY packages/webapp/package.json ./packages/webapp/package.json
 COPY packages/webhooks/package.json ./packages/webhooks/package.json
@@ -65,7 +65,7 @@ ENV REACT_APP_PUBLIC_SENTRY_KEY $sentry_key
 # Build the frontend
 RUN true \
   && npm run -w @nangohq/webapp build \
-  && npm run -w @nangohq/ui-connect build
+  && npm run -w @nangohq/connect-ui build
 
 # Clean src
 RUN true \
