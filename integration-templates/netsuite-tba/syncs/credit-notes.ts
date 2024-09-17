@@ -6,6 +6,7 @@ const retries = 3;
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     const proxyConfig: ProxyConfiguration = {
+        // https://system.netsuite.com/help/helpcenter/en_US/APIs/REST_API_Browser/record/v1/2022.1/index.html#tag-creditMemo
         endpoint: '/creditmemo',
         retries
     };
