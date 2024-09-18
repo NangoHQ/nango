@@ -89,7 +89,7 @@ class ApiAuthController {
 
             const provider = getProvider(config.provider);
             if (!provider) {
-                await logCtx.error('Unknown provider template');
+                await logCtx.error('Unknown provider');
                 await logCtx.failed();
                 res.status(404).send({ error: { code: 'unknown_provider_template' } });
                 return;
@@ -276,7 +276,7 @@ class ApiAuthController {
 
             const provider = getProvider(config.provider);
             if (!provider) {
-                await logCtx.error('Unknown provider template');
+                await logCtx.error('Unknown provider');
                 await logCtx.failed();
                 res.status(404).send({ error: { code: 'unknown_provider_template' } });
                 return;
