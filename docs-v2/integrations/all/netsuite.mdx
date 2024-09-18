@@ -82,12 +82,12 @@ from the access token step. The account ID value can be found from your [Netsuit
 -   If done programmatically using the Nango frontend sdk:
 ```js
 nango.auth('netsuite-tba', connectionId, {
-  params: { accountId: values.accountId },
+  params: { accountId: ACCOUNT_ID },
   credentials: {
-    token_id: values.tokenId,
-    token_secret: values.tokenSecret,
-    oauth_client_id_override: values.clientId,
-    oauth_client_secret_override: values.clientSecret,
+    token_id: TOKEN_ID,
+    token_secret: TOKEN_SECRET,
+    oauth_client_id_override: CLIENT_ID,
+    oauth_client_secret_override: CLIENT_SECRET,
   }
 })
 ```
