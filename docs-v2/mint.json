@@ -581,6 +581,13 @@
                         "reference/api/authentication",
                         "reference/api/rate-limits",
                         {
+                            "group": "Providers",
+                            "pages": [
+                                "reference/api/providers/list",
+                                "reference/api/providers/get"
+                            ]
+                        },
+                        {
                             "group": "Integrations",
                             "pages": [
                                 "reference/api/integration/list",

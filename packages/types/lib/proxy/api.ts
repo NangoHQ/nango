@@ -2,7 +2,7 @@ import type { ParamsSerializerOptions } from 'axios';
 import type { EndpointMethod } from '../api.js';
 import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials } from '../auth/api.js';
 import type { Connection } from '../connection/db.js';
-import type { Template as ProviderTemplate } from '../integration/template.js';
+import type { Provider } from '../providers/provider.js';
 
 export interface BaseProxyConfiguration {
     providerConfigKey: string;
@@ -28,18 +28,18 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
     decompress?: boolean;
     method: EndpointMethod;
-    provider: string;
+    providerName: string;
     token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
-    template: ProviderTemplate;
+    provider: Provider;
     connection: Connection;
 }
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface InternalProxyConfiguration {
-    provider: string;
+    providerName: string;
     connection: Connection;
-    existingActivityLogId?: number | null;
+    existingActivityLogId?: string | null | undefined;
 }
 
 export interface RetryHeaderConfig {

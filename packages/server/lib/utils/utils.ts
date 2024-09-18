@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import type { Request } from 'express';
 import type { User } from '@nangohq/shared';
-import type { Template as ProviderTemplate } from '@nangohq/types';
+import type { Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
@@ -69,12 +69,12 @@ export function getAdditionalAuthorizationParams(params: any): Record<string, st
 /**
  * A helper function to extract the additional connection metadata returned from the Provider in the callback request.
  */
-export function getConnectionMetadataFromCallbackRequest(queryParams: any, template: ProviderTemplate): Record<string, string> {
-    if (!queryParams || !template.redirect_uri_metadata) {
+export function getConnectionMetadataFromCallbackRequest(queryParams: any, provider: Provider): Record<string, string> {
+    if (!queryParams || !provider.redirect_uri_metadata) {
         return {};
     }
 
-    const whitelistedKeys = template.redirect_uri_metadata;
+    const whitelistedKeys = provider.redirect_uri_metadata;
 
     // Filter out non-strings & non-whitelisted keys.
     const arr = Object.entries(queryParams).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
@@ -86,12 +86,12 @@ export function getConnectionMetadataFromCallbackRequest(queryParams: any, templ
  * A helper function to extract the additional connection metadata returned from the Provider in the token response.
  * It can parse booleans or strings only
  */
-export function getConnectionMetadataFromTokenResponse(params: any, template: ProviderTemplate): Record<string, any> {
-    if (!params || !template.token_response_metadata) {
+export function getConnectionMetadataFromTokenResponse(params: any, provider: Provider): Record<string, any> {
+    if (!params || !provider.token_response_metadata) {
         return {};
     }
 
-    const whitelistedKeys = template.token_response_metadata;
+    const whitelistedKeys = provider.token_response_metadata;
 
     const getValueFromDotNotation = (obj: any, key: string): any => {
         return key.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);
@@ -122,32 +122,32 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
     return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
 }
 
-export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
+export function parseConnectionConfigParamsFromTemplate(provider: Provider): string[] {
     if (
-        template.token_url ||
-        template.authorization_url ||
-        template.proxy?.base_url ||
-        template.proxy?.headers ||
-        template.proxy?.verification ||
-        template.authorization_params ||
-        template.token_params
+        provider.token_url ||
+        provider.authorization_url ||
+        provider.proxy?.base_url ||
+        provider.proxy?.headers ||
+        provider.proxy?.verification ||
+        provider.authorization_params ||
+        provider.token_params
     ) {
         const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
-        const tokenUrlMatches = typeof template.token_url === 'string' ? template.token_url.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
-        const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
-        const authorizationParamsMatches = template.authorization_params
-            ? Object.values(template.authorization_params).flatMap((param) =>
+        const tokenUrlMatches = typeof provider.token_url === 'string' ? provider.token_url.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
+        const authorizationUrlMatches = provider.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const authorizationParamsMatches = provider.authorization_params
+            ? Object.values(provider.authorization_params).flatMap((param) =>
                   typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []
               )
             : [];
 
-        const tokenParamsMatches = template.token_params
-            ? Object.values(template.token_params).flatMap((param) => (typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []))
+        const tokenParamsMatches = provider.token_params
+            ? Object.values(provider.token_params).flatMap((param) => (typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []))
             : [];
 
-        const proxyBaseUrlMatches = template.proxy?.base_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
-        const proxyHeaderMatches = template.proxy?.headers
-            ? Array.from(new Set(Object.values(template.proxy.headers).flatMap((header) => header.match(/\${connectionConfig\.([^{}]*)}/g) || [])))
+        const proxyBaseUrlMatches = provider.proxy?.base_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const proxyHeaderMatches = provider.proxy?.headers
+            ? Array.from(new Set(Object.values(provider.proxy.headers).flatMap((header) => header.match(/\${connectionConfig\.([^{}]*)}/g) || [])))
             : [];
         const proxyMatches = [...proxyBaseUrlMatches, ...proxyHeaderMatches].filter(
             // we ignore config params in proxy attributes that are also in the
@@ -156,14 +156,14 @@ export function parseConnectionConfigParamsFromTemplate(template: ProviderTempla
             // - connection_configuration - this is what is parsed from the post connection script
             (param) =>
                 ![
-                    ...(template.token_response_metadata || []),
-                    ...(template.redirect_uri_metadata || []),
-                    ...(template.connection_configuration || [])
+                    ...(provider.token_response_metadata || []),
+                    ...(provider.redirect_uri_metadata || []),
+                    ...(provider.connection_configuration || [])
                 ].includes(cleanParamName(param))
         );
         const proxyVerificationMatches =
-            template.proxy?.verification?.endpoint.match(/\${connectionConfig\.([^{}]*)}/g) ||
-            template.proxy?.verification?.base_url_override?.match(/\${connectionConfig\.([^{}]*)}/g) ||
+            provider.proxy?.verification?.endpoint.match(/\${connectionConfig\.([^{}]*)}/g) ||
+            provider.proxy?.verification?.base_url_override?.match(/\${connectionConfig\.([^{}]*)}/g) ||
             [];
 
         return [

@@ -1,12 +1,7 @@
-import type { Config as ProviderConfig, TemplateAlias as ProviderTemplateAlias } from '../models/Provider.js';
+import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { Connection } from '../models/Connection.js';
-import type { Template as ProviderTemplate } from '@nangohq/types';
 import db from '@nangohq/database';
-import yaml from 'js-yaml';
-import fs from 'fs';
-import path from 'path';
 import { isCloud, nanoid } from '@nangohq/utils';
-import { dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import syncManager from './sync/manager.service.js';
@@ -15,61 +10,6 @@ import environmentService from '../services/environment.service.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
 
 class ConfigService {
-    templates: Record<string, ProviderTemplate> | null;
-
-    constructor() {
-        this.templates = this.getTemplatesFromFile();
-    }
-
-    private getTemplatesFromFile() {
-        const templatesPath = () => {
-            // find the providers.yaml file
-            // recursively searching in parent directories
-            const findProvidersYaml = (dir: string): string => {
-                const providersYamlPath = path.join(dir, 'providers.yaml');
-                if (fs.existsSync(providersYamlPath)) {
-                    return providersYamlPath;
-                }
-                const parentDir = path.dirname(dir);
-                if (parentDir === dir) {
-                    throw new NangoError('providers_yaml_not_found');
-                }
-                return findProvidersYaml(parentDir);
-            };
-            return findProvidersYaml(dirname());
-        };
-
-        try {
-            const fileEntries = yaml.load(fs.readFileSync(templatesPath()).toString()) as Record<string, ProviderTemplate | ProviderTemplateAlias>;
-
-            if (fileEntries == null) {
-                throw new NangoError('provider_template_loading_failed');
-            }
-
-            for (const key in fileEntries) {
-                const entry = fileEntries[key] as ProviderTemplateAlias | undefined;
-
-                if (entry?.alias) {
-                    let hasOverrides = false;
-                    let templateOverrides: ProviderTemplateAlias;
-                    if (Object.keys(fileEntries[key] as ProviderTemplate).length > 0) {
-                        const { alias, ...overrides } = entry;
-                        hasOverrides = true;
-                        templateOverrides = overrides;
-                    }
-                    const aliasData = fileEntries[entry.alias] as ProviderTemplate;
-                    if (hasOverrides) {
-                        fileEntries[key] = { ...aliasData, ...templateOverrides! };
-                    }
-                }
-            }
-
-            return fileEntries as Record<string, ProviderTemplate>;
-        } catch (_) {
-            return null;
-        }
-    }
-
     async getById(id: number): Promise<ProviderConfig | null> {
         const result = await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).first();
 
@@ -220,33 +160,6 @@ class ConfigService {
             .from<ProviderConfig>(`_nango_configs`)
             .where({ unique_key: providerConfigKey, environment_id, deleted: false })
             .update({ unique_key: newUniqueKey });
-    }
-
-    checkProviderTemplateExists(provider: string) {
-        if (this.templates == null) {
-            throw new NangoError('provider_template_loading_failed');
-        }
-        return provider in this.templates;
-    }
-
-    getTemplate(provider: string): ProviderTemplate {
-        if (this.templates == null) {
-            throw new NangoError('unknown_provider_template_in_config');
-        }
-        const template = this.templates[provider];
-
-        if (template == null) {
-            throw new NangoError('unknown_provider_template_in_config');
-        }
-
-        return template;
-    }
-
-    getTemplates(): Record<string, ProviderTemplate> {
-        if (this.templates == null) {
-            throw new NangoError('provider_template_loading_failed');
-        }
-        return this.templates;
     }
 
     async getConfigIdByProvider(provider: string, environment_id: number): Promise<{ id: number; unique_key: string } | null> {

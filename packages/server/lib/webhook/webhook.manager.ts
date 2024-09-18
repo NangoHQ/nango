@@ -1,4 +1,4 @@
-import { externalWebhookService, configService, environmentService, telemetry, LogTypes, LogActionEnum } from '@nangohq/shared';
+import { externalWebhookService, configService, environmentService, telemetry, LogTypes, LogActionEnum, getProvider } from '@nangohq/shared';
 import { internalNango } from './internal-nango.js';
 import { getLogger } from '@nangohq/utils';
 import * as webhookHandlers from './index.js';
@@ -34,15 +34,15 @@ async function execute(
         return;
     }
 
-    const template = configService.getTemplate(integration.provider);
+    const provider = getProvider(integration.provider);
 
     const { environment, account } = environmentAndAccountLookup;
 
-    if (!template || !template['webhook_routing_script']) {
+    if (!provider || !provider['webhook_routing_script']) {
         return;
     }
 
-    const webhookRoutingScript = template['webhook_routing_script'];
+    const webhookRoutingScript = provider['webhook_routing_script'];
     const handler = handlers[webhookRoutingScript];
 
     if (!handler) {

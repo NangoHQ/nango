@@ -17,13 +17,6 @@ export interface Config extends TimestampsAndDeleted {
     custom?: Record<string, string>;
 }
 
-export interface TemplateAlias {
-    alias?: string;
-    proxy: {
-        base_url?: string;
-    };
-}
-
 export interface IntegrationWithCreds extends Integration {
     client_id: string;
     client_secret: string;

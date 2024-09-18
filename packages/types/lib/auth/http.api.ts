@@ -22,6 +22,7 @@ export type PostPublicTbaAuthorization = Endpoint<{
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
         | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
         | ApiError<'invalid_credentials'>;
     Success: {
@@ -51,6 +52,7 @@ export type PostPublicTableauAuthorization = Endpoint<{
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
         | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
         | ApiError<'invalid_credentials'>;
     Success: {
@@ -73,6 +75,7 @@ export type PostPublicUnauthenticatedAuthorization = Endpoint<{
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
         | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
         | ApiError<'invalid_credentials'>;
     Success: {

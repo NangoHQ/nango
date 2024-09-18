@@ -10,7 +10,7 @@ import {
     getConnectionMetadataFromTokenResponse,
     missesInterpolationParamInObject
 } from '../utils/utils.js';
-import type { DBEnvironment, DBTeam, Template as ProviderTemplate, TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
+import type { DBEnvironment, DBTeam, Provider, ProviderOAuth2 } from '@nangohq/types';
 import type {
     Config as ProviderConfig,
     OAuthSession,
@@ -36,7 +36,8 @@ import {
     AnalyticsTypes,
     hmacService,
     ErrorSourceEnum,
-    interpolateObjectValues
+    interpolateObjectValues,
+    getProvider
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -135,10 +136,8 @@ class OAuthController {
 
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            let template: ProviderTemplate;
-            try {
-                template = configService.getTemplate(config.provider);
-            } catch {
+            const provider = getProvider(config.provider);
+            if (!provider) {
                 const error = WSErrBuilder.UnknownProviderTemplate(config.provider);
                 await logCtx.error(error.message);
                 await logCtx.failed();
@@ -151,7 +150,7 @@ class OAuthController {
                 provider: config.provider,
                 connectionId: connectionId,
                 callbackUrl: callbackUrl,
-                authMode: template.auth_mode,
+                authMode: provider.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1(),
                 connectionConfig,
@@ -195,7 +194,7 @@ class OAuthController {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
-            if (template.auth_mode !== 'APP' && (config.oauth_client_id == null || config.oauth_client_secret == null)) {
+            if (provider.auth_mode !== 'APP' && (config.oauth_client_id == null || config.oauth_client_secret == null)) {
                 const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
                 await logCtx.error(error.message);
                 await logCtx.failed();
@@ -203,9 +202,9 @@ class OAuthController {
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
-            if (template.auth_mode === 'OAUTH2') {
+            if (provider.auth_mode === 'OAUTH2') {
                 return this.oauth2Request({
-                    template: template as ProviderTemplateOAuth2,
+                    provider: provider as ProviderOAuth2,
                     providerConfig: config,
                     session,
                     res,
@@ -216,13 +215,13 @@ class OAuthController {
                     userScope,
                     logCtx
                 });
-            } else if (template.auth_mode === 'APP' || template.auth_mode === 'CUSTOM') {
-                return this.appRequest(template, config, session, res, authorizationParams, logCtx);
-            } else if (template.auth_mode === 'OAUTH1') {
-                return this.oauth1Request(template, config, session, res, callbackUrl, environmentId, logCtx);
+            } else if (provider.auth_mode === 'APP' || provider.auth_mode === 'CUSTOM') {
+                return this.appRequest(provider, config, session, res, authorizationParams, logCtx);
+            } else if (provider.auth_mode === 'OAUTH1') {
+                return this.oauth1Request(provider, config, session, res, callbackUrl, environmentId, logCtx);
             }
 
-            const error = WSErrBuilder.UnknownAuthMode(template.auth_mode);
+            const error = WSErrBuilder.UnknownAuthMode(provider.auth_mode);
             await logCtx.error(error.message);
             await logCtx.failed();
 
@@ -328,10 +327,17 @@ class OAuthController {
                 return;
             }
 
-            const template = configService.getTemplate(config.provider);
-            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['OAUTH2'] as string);
+            const provider = getProvider(config.provider);
+            if (!provider) {
+                await logCtx.error('Unknown provider');
+                await logCtx.failed();
+                res.status(404).send({ error: { code: 'unknown_provider_template' } });
+                return;
+            }
 
-            if (template.auth_mode !== 'OAUTH2_CC') {
+            const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
+
+            if (provider.auth_mode !== 'OAUTH2_CC') {
                 await logCtx.error('Provider does not support OAuth2 client credentials creation', { provider: config.provider });
                 await logCtx.failed();
 
@@ -355,7 +361,7 @@ class OAuthController {
                 success,
                 error,
                 response: credentials
-            } = await connectionService.getOauthClientCredentials(template as ProviderTemplateOAuth2, client_id, client_secret, connectionConfig);
+            } = await connectionService.getOauthClientCredentials(provider as ProviderOAuth2, client_id, client_secret, connectionConfig);
 
             if (!success || !credentials) {
                 await logCtx.error('Error during OAuth2 client credentials creation', { error, provider: config.provider });
@@ -435,7 +441,7 @@ class OAuthController {
     }
 
     private async oauth2Request({
-        template,
+        provider,
         providerConfig,
         session,
         res,
@@ -446,7 +452,7 @@ class OAuthController {
         userScope,
         logCtx
     }: {
-        template: ProviderTemplateOAuth2;
+        provider: ProviderOAuth2;
         providerConfig: ProviderConfig;
         session: OAuthSession;
         res: Response;
@@ -457,15 +463,14 @@ class OAuthController {
         userScope?: string | undefined;
         logCtx: LogContext;
     }) {
-        const oauth2Template = template;
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
-        const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['OAUTH2'] as string);
+        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
         try {
-            if (missesInterpolationParam(template.authorization_url!, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(template.authorization_url!, JSON.stringify(connectionConfig));
+            if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig(provider.authorization_url!, JSON.stringify(connectionConfig));
 
                 await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
@@ -481,7 +486,7 @@ class OAuthController {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
 
-            if (template.authorization_params && missesInterpolationParamInObject(template.authorization_params, connectionConfig)) {
+            if (provider.authorization_params && missesInterpolationParamInObject(provider.authorization_params, connectionConfig)) {
                 const error = WSErrBuilder.InvalidConnectionConfig('authorization_params', JSON.stringify(connectionConfig));
                 await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
@@ -489,7 +494,7 @@ class OAuthController {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
 
-            if (template.token_params && missesInterpolationParamInObject(template.token_params, connectionConfig)) {
+            if (provider.token_params && missesInterpolationParamInObject(provider.token_params, connectionConfig)) {
                 const error = WSErrBuilder.InvalidConnectionConfig('token_params', JSON.stringify(connectionConfig));
                 await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
@@ -497,15 +502,15 @@ class OAuthController {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
             if (
-                oauth2Template.token_params == undefined ||
-                oauth2Template.token_params.grant_type == undefined ||
-                oauth2Template.token_params.grant_type == 'authorization_code'
+                provider.token_params == undefined ||
+                provider.token_params.grant_type == undefined ||
+                provider.token_params.grant_type == 'authorization_code'
             ) {
-                let allAuthParams: Record<string, string | undefined> = interpolateObjectValues(oauth2Template.authorization_params || {}, connectionConfig);
+                let allAuthParams: Record<string, string | undefined> = interpolateObjectValues(provider.authorization_params || {}, connectionConfig);
 
                 // We always implement PKCE, no matter whether the server requires it or not,
                 // unless it has been explicitly turned off for this template
-                if (!template.disable_pkce) {
+                if (!provider.disable_pkce) {
                     const h = crypto
                         .createHash('sha256')
                         .update(session.codeVerifier)
@@ -528,20 +533,20 @@ class OAuthController {
                 await oAuthSessionService.create(session);
 
                 const simpleOAuthClient = new simpleOauth2.AuthorizationCode(
-                    oauth2Client.getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig)
+                    oauth2Client.getSimpleOAuth2ClientConfig(providerConfig, provider, connectionConfig)
                 );
 
                 let authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
-                    scope: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' ') : '',
+                    scope: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(provider.scope_separator || ' ') : '',
                     state: session.id,
                     ...allAuthParams
                 });
 
-                if (template.authorization_url_replacements) {
-                    const urlReplacements = template.authorization_url_replacements || {};
+                if (provider.authorization_url_replacements) {
+                    const urlReplacements = provider.authorization_url_replacements || {};
 
-                    Object.keys(template.authorization_url_replacements).forEach((key) => {
+                    Object.keys(provider.authorization_url_replacements).forEach((key) => {
                         const replacement = urlReplacements[key];
                         if (typeof replacement === 'string') {
                             authorizationUri = authorizationUri.replace(key, replacement);
@@ -555,7 +560,7 @@ class OAuthController {
                     providerConfigKey: String(providerConfigKey),
                     provider: String(providerConfig.provider),
                     connectionId: String(connectionId),
-                    authMode: String(template.auth_mode)
+                    authMode: String(provider.auth_mode)
                 });
 
                 await logCtx.info('Redirecting', {
@@ -564,25 +569,25 @@ class OAuthController {
                     connectionId,
                     allAuthParams,
                     connectionConfig,
-                    grantType: oauth2Template.token_params?.grant_type as string,
-                    scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' ') : ''
+                    grantType: provider.token_params?.grant_type as string,
+                    scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
                 });
 
                 res.redirect(authorizationUri);
             } else {
-                const grantType = oauth2Template.token_params.grant_type;
+                const grantType = provider.token_params.grant_type;
                 const error = WSErrBuilder.UnknownGrantType(grantType);
 
                 await logCtx.error('Redirecting', {
                     grantType,
-                    basicAuthEnabled: template.token_request_auth_method === 'basic',
+                    basicAuthEnabled: provider.token_request_auth_method === 'basic',
                     connectionConfig
                 });
                 await logCtx.failed();
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
-        } catch (err: any) {
+        } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
             const error = WSErrBuilder.UnknownError();
@@ -604,7 +609,7 @@ class OAuthController {
     }
 
     private async appRequest(
-        template: ProviderTemplate,
+        provider: Provider,
         providerConfig: ProviderConfig,
         session: OAuthSession,
         res: Response,
@@ -623,8 +628,8 @@ class OAuthController {
         session.connectionConfig = connectionConfig as Record<string, string>;
 
         try {
-            if (missesInterpolationParam(template.authorization_url!, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(template.authorization_url!, JSON.stringify(connectionConfig));
+            if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig(provider.authorization_url!, JSON.stringify(connectionConfig));
 
                 await logCtx.error(error.message, { ...connectionConfig });
                 await logCtx.failed();
@@ -634,7 +639,7 @@ class OAuthController {
 
             await oAuthSessionService.create(session);
 
-            const appUrl = interpolateStringFromObject(template.authorization_url!, {
+            const appUrl = interpolateStringFromObject(provider.authorization_url!, {
                 connectionConfig
             });
 
@@ -662,7 +667,7 @@ class OAuthController {
     // in a first step and will get called back there. We need to manually include the state
     // param there, otherwise we won't be able to identify the user in the callback
     private async oauth1Request(
-        template: ProviderTemplate,
+        provider: Provider,
         config: ProviderConfig,
         session: OAuthSession,
         res: Response,
@@ -681,7 +686,7 @@ class OAuthController {
 
         await logCtx.info('OAuth callback URL was retrieved', { url: oAuth1CallbackURL });
 
-        const oAuth1Client = new OAuth1Client(config, template, oAuth1CallbackURL);
+        const oAuth1Client = new OAuth1Client(config, provider, oAuth1CallbackURL);
 
         let tokenResult: OAuth1RequestTokenResult | undefined;
         try {
@@ -718,7 +723,7 @@ class OAuthController {
             providerConfigKey: String(providerConfigKey),
             provider: config.provider,
             connectionId: String(connectionId),
-            authMode: String(template.auth_mode)
+            authMode: String(provider.auth_mode)
         });
 
         // All worked, let's redirect the user to the authorization page
@@ -774,7 +779,14 @@ class OAuthController {
         try {
             await logCtx.debug('Received callback', { providerConfigKey, connectionId });
 
-            const template = configService.getTemplate(session.provider);
+            const provider = getProvider(session.provider);
+            if (!provider) {
+                const error = WSErrBuilder.UnknownProviderTemplate(session.provider);
+                await logCtx.error(error.message);
+                await logCtx.failed();
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            }
+
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
@@ -783,14 +795,16 @@ class OAuthController {
 
             if (!environment || !account) {
                 const error = WSErrBuilder.EnvironmentOrAccountNotFound();
+                await logCtx.error(error.message);
+                await logCtx.failed();
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             }
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
-                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, environment, account, logCtx);
+                return this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
             } else if (session.authMode === 'OAUTH1') {
-                return this.oauth1Callback(template, config, session, req, res, environment, account, logCtx);
+                return this.oauth1Callback(provider, config, session, req, res, environment, account, logCtx);
             }
 
             const error = WSErrBuilder.UnknownAuthMode(session.authMode);
@@ -816,7 +830,7 @@ class OAuthController {
     }
 
     private async oauth2Callback(
-        template: ProviderTemplateOAuth2,
+        provider: ProviderOAuth2,
         config: ProviderConfig,
         session: OAuthSession,
         req: Request,
@@ -829,7 +843,7 @@ class OAuthController {
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;
-        const callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, template);
+        const callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, provider);
 
         const installationId = req.query['installation_id'] as string | undefined;
 
@@ -837,8 +851,8 @@ class OAuthController {
             const error = WSErrBuilder.InvalidCallbackOAuth2();
             await logCtx.error(error.message, {
                 scopes: config.oauth_scopes,
-                basicAuthEnabled: template.token_request_auth_method === 'basic',
-                tokenParams: template.token_params as string
+                basicAuthEnabled: provider.token_request_auth_method === 'basic',
+                tokenParams: provider.token_params as string
             });
             await logCtx.failed();
 
@@ -847,7 +861,7 @@ class OAuthController {
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
-                authMode: String(template.auth_mode),
+                authMode: String(provider.auth_mode),
                 level: 'error'
             });
 
@@ -856,7 +870,7 @@ class OAuthController {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
-                    auth_mode: template.auth_mode,
+                    auth_mode: provider.auth_mode,
                     error: {
                         type: 'invalid_callback',
                         description: error.message
@@ -898,24 +912,24 @@ class OAuthController {
             config.oauth_scopes = session.connectionConfig['oauth_scopes'];
         }
 
-        const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
+        const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, session.connectionConfig));
 
         let additionalTokenParams: Record<string, string | undefined> = {};
-        if (template.token_params !== undefined) {
+        if (provider.token_params !== undefined) {
             // We need to remove grant_type, simpleOAuth2 handles that for us
-            const deepCopy = JSON.parse(JSON.stringify(template.token_params));
+            const deepCopy = JSON.parse(JSON.stringify(provider.token_params));
             additionalTokenParams = interpolateObjectValues(deepCopy, session.connectionConfig);
         }
 
         // We always implement PKCE, no matter whether the server requires it or not,
         // unless it has been explicitly disabled for this provider template
-        if (!template.disable_pkce) {
+        if (!provider.disable_pkce) {
             additionalTokenParams['code_verifier'] = session.codeVerifier;
         }
 
         const headers: Record<string, string> = {};
 
-        if (template.token_request_auth_method === 'basic') {
+        if (provider.token_request_auth_method === 'basic') {
             headers['Authorization'] = 'Basic ' + Buffer.from(config.oauth_client_id + ':' + config.oauth_client_secret).toString('base64');
         }
 
@@ -929,11 +943,11 @@ class OAuthController {
                 additionalTokenParams,
                 code,
                 scopes: config.oauth_scopes,
-                basicAuthEnabled: template.token_request_auth_method === 'basic',
-                tokenParams: template.token_params
+                basicAuthEnabled: provider.token_request_auth_method === 'basic',
+                tokenParams: provider.token_params
             });
 
-            const tokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url?.['OAUTH2'] as string);
+            const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(config, tokenUrl, code as string, session.callbackUrl, session.codeVerifier);
@@ -953,7 +967,7 @@ class OAuthController {
 
             await logCtx.info('Token response received', { provider: session.provider, providerConfigKey, connectionId });
 
-            const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
+            const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, provider);
 
             let parsedRawCredentials: OAuth2Credentials;
 
@@ -972,7 +986,7 @@ class OAuthController {
                         providerConfigKey: String(providerConfigKey),
                         provider: String(config.provider),
                         connectionId: String(connectionId),
-                        authMode: String(template.auth_mode),
+                        authMode: String(provider.auth_mode),
                         level: 'error'
                     }
                 );
@@ -982,7 +996,7 @@ class OAuthController {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
                         account,
-                        auth_mode: template.auth_mode,
+                        auth_mode: provider.auth_mode,
                         error: {
                             type: 'unable_to_parse_token_response',
                             description: 'OAuth2 token request failed, response from the server could not be parsed'
@@ -1000,7 +1014,7 @@ class OAuthController {
 
             let pending = false;
 
-            if (template.auth_mode === 'CUSTOM' && !connectionConfig['installation_id'] && !installationId) {
+            if (provider.auth_mode === 'CUSTOM' && !connectionConfig['installation_id'] && !installationId) {
                 pending = true;
 
                 const custom = config.custom as Record<string, string>;
@@ -1012,7 +1026,7 @@ class OAuthController {
                 };
             }
 
-            if (template.auth_mode === 'CUSTOM' && installationId) {
+            if (provider.auth_mode === 'CUSTOM' && installationId) {
                 connectionConfig = {
                     ...connectionConfig,
                     installation_id: installationId
@@ -1069,27 +1083,27 @@ class OAuthController {
             });
 
             await logCtx.debug(
-                `OAuth connection successful${template.auth_mode === 'CUSTOM' && !installationId ? ' and request for app approval is pending' : ''}`,
+                `OAuth connection successful${provider.auth_mode === 'CUSTOM' && !installationId ? ' and request for app approval is pending' : ''}`,
                 {
                     additionalTokenParams,
                     code,
                     scopes: config.oauth_scopes,
-                    basicAuthEnabled: template.token_request_auth_method === 'basic',
-                    tokenParams: template.token_params
+                    basicAuthEnabled: provider.token_request_auth_method === 'basic',
+                    tokenParams: provider.token_params
                 }
             );
 
             if (updatedConnection) {
                 await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
                 // don't initiate a sync if custom because this is the first step of the oauth flow
-                const initiateSync = template.auth_mode === 'CUSTOM' ? false : true;
+                const initiateSync = provider.auth_mode === 'CUSTOM' ? false : true;
                 const runPostConnectionScript = true;
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: template.auth_mode,
+                        auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation
                     },
                     session.provider,
@@ -1099,7 +1113,7 @@ class OAuthController {
                 );
             }
 
-            if (template.auth_mode === 'CUSTOM' && installationId) {
+            if (provider.auth_mode === 'CUSTOM' && installationId) {
                 pending = false;
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
@@ -1119,7 +1133,7 @@ class OAuthController {
                 await connectionService.getAppCredentialsAndFinishConnection(
                     connectionId,
                     config,
-                    template,
+                    provider,
                     connectionConfig as ConnectionConfig,
                     logCtx,
                     connCreatedHook
@@ -1131,7 +1145,7 @@ class OAuthController {
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
-                authMode: String(template.auth_mode)
+                authMode: String(provider.auth_mode)
             });
 
             await logCtx.success();
@@ -1154,7 +1168,7 @@ class OAuthController {
                 providerConfigKey: String(providerConfigKey),
                 provider: String(config.provider),
                 connectionId: String(connectionId),
-                authMode: String(template.auth_mode),
+                authMode: String(provider.auth_mode),
                 level: 'error'
             });
 
@@ -1167,7 +1181,7 @@ class OAuthController {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
-                    auth_mode: template.auth_mode,
+                    auth_mode: provider.auth_mode,
                     error: {
                         type: 'unknown',
                         description: error.message + '\n' + prettyError
@@ -1183,7 +1197,7 @@ class OAuthController {
     }
 
     private async oauth1Callback(
-        template: ProviderTemplate,
+        provider: Provider,
         config: ProviderConfig,
         session: OAuthSession,
         req: Request,
@@ -1196,7 +1210,7 @@ class OAuthController {
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;
-        const metadata = getConnectionMetadataFromCallbackRequest(req.query, template);
+        const metadata = getConnectionMetadataFromCallbackRequest(req.query, provider);
 
         if (!oauth_token || !oauth_verifier) {
             const error = WSErrBuilder.InvalidCallbackOAuth1();
@@ -1208,7 +1222,7 @@ class OAuthController {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
-                    auth_mode: template.auth_mode,
+                    auth_mode: provider.auth_mode,
                     error: {
                         type: 'invalid_callback',
                         description: error.message
@@ -1224,7 +1238,7 @@ class OAuthController {
 
         const oauth_token_secret = session.requestTokenSecret!;
 
-        const oAuth1Client = new OAuth1Client(config, template, '');
+        const oAuth1Client = new OAuth1Client(config, provider, '');
         oAuth1Client
             .getOAuthAccessToken(oauth_token as string, oauth_token_secret, oauth_verifier as string)
             .then(async (accessTokenResult) => {
@@ -1247,7 +1261,7 @@ class OAuthController {
                     providerConfigKey: String(providerConfigKey),
                     provider: String(config.provider),
                     connectionId: String(connectionId),
-                    authMode: String(template.auth_mode)
+                    authMode: String(provider.auth_mode)
                 });
 
                 if (updatedConnection) {
@@ -1263,7 +1277,7 @@ class OAuthController {
                             connection: updatedConnection.connection,
                             environment,
                             account,
-                            auth_mode: template.auth_mode,
+                            auth_mode: provider.auth_mode,
                             operation: updatedConnection.operation
                         },
                         session.provider,
@@ -1294,7 +1308,7 @@ class OAuthController {
                     providerConfigKey: String(providerConfigKey),
                     provider: String(config.provider),
                     connectionId: String(connectionId),
-                    authMode: String(template.auth_mode),
+                    authMode: String(provider.auth_mode),
                     level: 'error'
                 });
 
@@ -1307,7 +1321,7 @@ class OAuthController {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                         environment,
                         account,
-                        auth_mode: template.auth_mode,
+                        auth_mode: provider.auth_mode,
                         error: {
                             type: 'unknown',
                             description: error.message + '\n' + prettyError

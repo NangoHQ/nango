@@ -1,10 +1,11 @@
 import type { AxiosError, AxiosResponse } from 'axios';
-import type { RecentlyCreatedConnection, Connection, ConnectionConfig, HTTP_VERB, UserProvidedProxyConfiguration } from '@nangohq/shared';
-import { LogActionEnum, LogTypes, proxyService, connectionService, configService, telemetry } from '@nangohq/shared';
+import type { RecentlyCreatedConnection, Connection, ConnectionConfig, UserProvidedProxyConfiguration } from '@nangohq/shared';
+import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry, getProvider } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks.js';
+import type { InternalProxyConfiguration } from '@nangohq/types';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
@@ -18,7 +19,7 @@ export interface InternalNango {
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
-async function execute(createdConnection: RecentlyCreatedConnection, provider: string, logContextGetter: LogContextGetter) {
+async function execute(createdConnection: RecentlyCreatedConnection, providerName: string, logContextGetter: LogContextGetter) {
     const { connection: upsertedConnection, environment, account } = createdConnection;
     let logCtx: LogContext | undefined;
     try {
@@ -39,16 +40,16 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
         const { value: connection } = credentialResponse;
 
-        const internalConfig = {
+        const internalConfig: InternalProxyConfiguration = {
             connection,
-            provider
+            providerName
         };
 
-        const externalConfig = {
+        const externalConfig: UserProvidedProxyConfiguration = {
             endpoint: '',
             connectionId: connection.connection_id,
             providerConfigKey: connection.provider_config_key,
-            method: 'GET' as HTTP_VERB,
+            method: 'GET',
             data: {}
         };
 
@@ -65,7 +66,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             proxy: async ({ method, endpoint, data, headers, params }: UserProvidedProxyConfiguration) => {
                 const finalExternalConfig: UserProvidedProxyConfiguration = {
                     ...externalConfig,
-                    method: method || externalConfig.method,
+                    method: method || externalConfig.method || 'GET',
                     endpoint,
                     headers: headers || {},
                     params: params || {}
@@ -85,13 +86,12 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             }
         };
 
-        const template = configService.getTemplate(provider);
-
-        if (!template || !template['post_connection_script']) {
+        const provider = getProvider(providerName);
+        if (!provider || !provider['post_connection_script']) {
             return;
         }
 
-        const postConnectionScript = template['post_connection_script'];
+        const postConnectionScript = provider['post_connection_script'];
         const handler = handlers[postConnectionScript];
 
         if (handler) {
@@ -100,7 +100,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                 {
                     account,
                     environment,
-                    integration: { id: upsertedConnection.config_id!, name: upsertedConnection.provider_config_key, provider },
+                    integration: { id: upsertedConnection.config_id!, name: upsertedConnection.provider_config_key, provider: providerName },
                     connection: { id: upsertedConnection.id!, name: upsertedConnection.connection_id }
                 }
             );
@@ -128,7 +128,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                     environmentId: String(environment.id),
                     connectionId: upsertedConnection.connection_id,
                     providerConfigKey: upsertedConnection.provider_config_key,
-                    provider: provider,
+                    provider: providerName,
                     level: 'error'
                 });
             }
@@ -138,7 +138,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             environmentId: String(environment.id),
             connectionId: upsertedConnection.connection_id,
             providerConfigKey: upsertedConnection.provider_config_key,
-            provider: provider,
+            provider: providerName,
             level: 'error'
         });
 

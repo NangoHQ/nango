@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { configService } from '@nangohq/shared';
+import { getProvider, getProviders } from '@nangohq/shared';
 import type { RequestLocals } from '../utils/express.js';
 
 class ProviderController {
@@ -9,12 +9,12 @@ class ProviderController {
 
     listProviders(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            let templates = configService.templates ?? {};
+            let templates = getProviders();
             const query = req.query['query'] as string | undefined;
 
             if (query) {
                 templates = Object.fromEntries(
-                    Object.entries(templates).filter((entry) => {
+                    Object.entries(templates!).filter((entry) => {
                         return entry[0].toLowerCase().includes(query.toLowerCase());
                     })
                 );
@@ -33,7 +33,7 @@ class ProviderController {
             const providerKey = req.params['provider'] as string;
 
             res.status(200).send({
-                provider: configService.templates?.[providerKey]
+                provider: getProvider(providerKey)
             });
         } catch (err) {
             next(err);

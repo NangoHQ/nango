@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import type { PostIntegration } from '@nangohq/types';
-import { AnalyticsTypes, analytics, configService } from '@nangohq/shared';
+import { AnalyticsTypes, analytics, configService, getProvider } from '@nangohq/shared';
 import { integrationToApi } from '../../../formatters/integration.js';
 import { providerSchema } from '../../../helpers/validation.js';
 
@@ -28,7 +28,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
     }
 
     const body: PostIntegration['Body'] = valBody.data;
-    if (!configService.checkProviderTemplateExists(body.provider)) {
+    if (!getProvider(body.provider)) {
         res.status(400).send({
             error: { code: 'invalid_body', message: 'invalid provider' }
         });

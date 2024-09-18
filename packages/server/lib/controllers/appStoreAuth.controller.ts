@@ -1,6 +1,16 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { AuthCredentials } from '@nangohq/shared';
-import { errorManager, analytics, AnalyticsTypes, configService, connectionService, hmacService, ErrorSourceEnum, LogActionEnum } from '@nangohq/shared';
+import {
+    errorManager,
+    analytics,
+    AnalyticsTypes,
+    configService,
+    connectionService,
+    hmacService,
+    ErrorSourceEnum,
+    LogActionEnum,
+    getProvider
+} from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
@@ -71,9 +81,15 @@ class AppStoreAuthController {
                 return;
             }
 
-            const template = configService.getTemplate(config.provider);
+            const provider = getProvider(config.provider);
+            if (!provider) {
+                await logCtx.error('Unknown provider');
+                await logCtx.failed();
+                res.status(404).send({ error: { code: 'unknown_provider_template' } });
+                return;
+            }
 
-            if (template.auth_mode !== 'APP_STORE') {
+            if (provider.auth_mode !== 'APP_STORE') {
                 await logCtx.error('Provider does not support API key auth', { provider: config.provider });
                 await logCtx.failed();
 
@@ -110,7 +126,7 @@ class AppStoreAuthController {
                 scope
             };
 
-            const { success, error, response: credentials } = await connectionService.getAppStoreCredentials(template, connectionConfig, privateKey);
+            const { success, error, response: credentials } = await connectionService.getAppStoreCredentials(provider, connectionConfig, privateKey);
 
             if (!success || !credentials) {
                 void connectionCreationFailedHook(

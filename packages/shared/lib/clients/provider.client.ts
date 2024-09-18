@@ -1,6 +1,6 @@
 import braintree from 'braintree';
 import type { Config as ProviderConfig, Connection, AuthorizationTokenResponse, RefreshTokenResponse } from '../models/index.js';
-import type { TemplateOAuth2 as ProviderTemplateOAuth2 } from '@nangohq/types';
+import type { ProviderOAuth2 } from '@nangohq/types';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
@@ -66,7 +66,7 @@ class ProviderClient {
         }
     }
 
-    public async refreshToken(template: ProviderTemplateOAuth2, config: ProviderConfig, connection: Connection): Promise<object> {
+    public async refreshToken(provider: ProviderOAuth2, config: ProviderConfig, connection: Connection): Promise<object> {
         if (connection.credentials.type !== 'OAUTH2') {
             throw new NangoError('wrong_credentials_type');
         }
@@ -86,7 +86,7 @@ class ProviderClient {
             case 'coros':
             case 'coros-sandbox':
                 return this.refreshCorosToken(
-                    template.refresh_url as string,
+                    provider.refresh_url as string,
                     credentials.access_token,
                     credentials.refresh_token!,
                     config.oauth_client_id,
@@ -94,19 +94,19 @@ class ProviderClient {
                 );
             case 'figma':
             case 'figjam':
-                return this.refreshFigmaToken(template.refresh_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+                return this.refreshFigmaToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
-                return this.refreshFacebookToken(template.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
+                return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             case 'tiktok-accounts':
                 return this.refreshTiktokAccountsToken(
-                    template.refresh_url as string,
+                    provider.refresh_url as string,
                     credentials.refresh_token as string,
                     config.oauth_client_id,
                     config.oauth_client_secret
                 );
             case 'stripe-app':
             case 'stripe-app-sandbox':
-                return this.refreshStripeAppToken(template.token_url as string, credentials.refresh_token!, config.oauth_client_secret);
+                return this.refreshStripeAppToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
