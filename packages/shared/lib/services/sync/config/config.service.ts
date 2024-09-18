@@ -558,6 +558,23 @@ export async function getSyncConfigByJobId(job_id: number): Promise<SyncConfig |
     return result;
 }
 
+export async function getSyncConfigBySyncId(syncId: string): Promise<SyncConfig | null> {
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .select(`${TABLE}.*`)
+        .join('_nango_syncs', `${TABLE}.id`, '_nango_syncs.sync_config_id')
+        .where({
+            '_nango_syncs.id': syncId
+        })
+        .first();
+
+    if (!result) {
+        return null;
+    }
+
+    return result;
+}
+
 export async function getAttributes(provider_config_key: string, sync_name: string): Promise<object | null> {
     const result = await schema()
         .from<SyncConfig>(TABLE)

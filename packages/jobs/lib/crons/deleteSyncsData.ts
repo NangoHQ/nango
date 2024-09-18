@@ -34,11 +34,13 @@ export async function exec(): Promise<void> {
     await db.knex.transaction(async (trx) => {
         // Because it's slow and create deadlocks
         // we need to acquire a Lock that prevents any other duplicate cron to execute the same thing
-        const { rows } = await trx.raw<{ rows: { pg_try_advisory_xact_lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?);`, [123456789]);
-        if (!rows || rows.length <= 0 || !rows[0]!.pg_try_advisory_xact_lock) {
+        const { rows } = await trx.raw<{ rows: { delete_syncs: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?) as delete_syncs`, [123456789]);
+        if (!rows || rows.length <= 0 || !rows[0]!.delete_syncs) {
             logger.info(`[deleteSyncs] could not acquire lock, skipping`);
             return;
         }
+
+        // NB: we are not using trx again, we only care about the lock
 
         const syncs = await findRecentlyDeletedSync();
 
@@ -64,8 +66,12 @@ export async function exec(): Promise<void> {
 
             // ----
             // hard delete records
-            const res = await records.deleteRecordsBySyncId({ syncId: sync.id, limit: limitRecords });
-            metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_RECORDS, res.totalDeletedRecords);
+            let deletedRecords = 0;
+            for (const model of sync.models) {
+                const res = await records.deleteRecordsBySyncId({ connectionId: sync.connectionId, model, syncId: sync.id, limit: limitRecords });
+                deletedRecords += res.totalDeletedRecords;
+            }
+            metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_RECORDS, deletedRecords);
         }
     });
 

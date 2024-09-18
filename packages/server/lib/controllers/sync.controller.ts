@@ -571,6 +571,7 @@ class SyncController {
             }
 
             const result = await orchestrator.runSyncCommand({
+                connectionId: connection.id!,
                 syncId: sync_id,
                 command,
                 environmentId: environment.id,
