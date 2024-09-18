@@ -33,8 +33,5 @@
             "path": "../orchestrator"
         }
     ],
-    "include": [
-        "lib/**/*",
-        "../utils/lib/vitest.d.ts",
-    ]
+    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
 }
