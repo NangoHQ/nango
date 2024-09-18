@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.11] - 2024-09-18
+
+### Added
+
+- Add index for sync_config_id column in sync table (#2719) by @TBonnin
+- *(big-query)* [nan-1664] add internalintegrationid to bigquery tables (#2729) by @khaliqgant
+- *(integration)* Add support for odoo (#2725) by @hassan254-prog
+- *(integration-templates)* Add discourse integration template (#2722) by @hassan254-prog
+- *(netsuite-tba)* [nan-1736] add endpoints and clarify payments endpoint (#2734) by @khaliqgant
+- *(api)* Unauthenticated standard endpoint (#2735) by @bodinsamuel
+- *(integration-templates)* Improve google-drive templates (#2727) by @hassan254-prog
+- *(api)* GET /providers, GET /providers/:provider (#2732) by @bodinsamuel
+- Connect ui (#2721) by @bodinsamuel
+
+### Changed
+
+- *(requestLoggerMiddleware)* Log body when error (#2718) by @TBonnin
+- Trace sending webhook when sync completes (#2726) by @TBonnin
+- Rename netsuite-tba in docs (#2733) by @bodinsamuel
+- Typo in self-hosting instructions (#2738) by @amikofalvy
+- *(deps-dev)* Bump vite from 5.3.1 to 5.4.6 (#2742) by @dependabot[bot]
+
+### Fixed
+
+- *(hooks)* Update jira hook (#2720) by @hassan254-prog
+- *(api)* Remove unused suspend user (#2723) by @bodinsamuel
+- Rename netsuite integrations template to netsuite-tba (#2724) by @TBonnin
+- *(connectionId)* Missing char in regex by @bodinsamuel
+- *(github-app-oauth)* [nan-1733] GitHub app missing secret and update iss in case the app-id is missing (#2730) by @khaliqgant
+- *(sdk)* Handle circular json in log() (#2731) by @bodinsamuel
+- *(db)* Identify pg lock (#2739) by @bodinsamuel
+- *(syncs table)* Sync_config_id must be updated when new deploy (#2736) by @TBonnin
+- Slow records deletion query (#2737) by @TBonnin
+- *(log)* Handle large payload (#2740) by @bodinsamuel
+
 ## [v0.42.10] - 2024-09-12
 
 ### Added
@@ -1876,6 +1911,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.11]: https://github.com/NangoHQ/nango/compare/v0.42.10..v0.42.11
 [v0.42.10]: https://github.com/NangoHQ/nango/compare/v0.42.9..v0.42.10
 [v0.42.9]: https://github.com/NangoHQ/nango/compare/v0.42.8..v0.42.9
 [v0.42.8]: https://github.com/NangoHQ/nango/compare/v0.42.7..v0.42.8
