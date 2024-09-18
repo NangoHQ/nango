@@ -55,6 +55,7 @@ import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
 import { SlackService } from './notification/slack.service.js';
 import { getProvider } from './providers.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -67,6 +68,10 @@ class ConnectionService {
 
     constructor(locking: Locking) {
         this.locking = locking;
+    }
+
+    public generateConnectionId(): string {
+        return uuidv4();
     }
 
     public async upsertConnection({

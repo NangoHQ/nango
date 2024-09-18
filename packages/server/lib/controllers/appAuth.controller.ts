@@ -58,21 +58,16 @@ class AppAuthController {
 
         void analytics.track(AnalyticsTypes.PRE_APP_AUTH, account.id);
 
-        const { providerConfigKey, connectionId, webSocketClientId: wsClientId } = session;
+        const { providerConfigKey, connectionId: receivedConnectionId, webSocketClientId: wsClientId } = session;
         const logCtx = await logContextGetter.get({ id: session.activityLogId });
 
         try {
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
-
                 return;
             }
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
-
-                return;
-            }
+            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
@@ -226,12 +221,12 @@ class AppAuthController {
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {
                 environmentId: String(environment.id),
                 providerConfigKey: String(providerConfigKey),
-                connectionId: String(connectionId)
+                connectionId: String(receivedConnectionId)
             });
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey },
                     environment,
                     account,
                     auth_mode: 'APP',
@@ -245,7 +240,7 @@ class AppAuthController {
                 logCtx
             );
 
-            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
+            return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.UnknownError(prettyError));
         }
     }
 }
