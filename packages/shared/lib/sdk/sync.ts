@@ -1,6 +1,5 @@
 import https from 'node:https';
 import { Nango, getUserAgent } from '@nangohq/node';
-import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
 import * as responseSaver from './response.saver.js';
 import proxyService from '../services/proxy.service.js';
@@ -9,13 +8,22 @@ import axios, { AxiosError } from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
 import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
-import { getLogger, httpRetryStrategy, metrics, retryWithBackoff } from '@nangohq/utils';
+import {
+    getLogger,
+    httpRetryStrategy,
+    metrics,
+    retryWithBackoff,
+    MAX_LOG_PAYLOAD,
+    stringifyAndTruncateValue,
+    stringifyObject,
+    truncateJsonString
+} from '@nangohq/utils';
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
-import { stringifyAndTruncateLog, stringifyObject } from './utils.js';
 import type { DBTeam, MessageRowInsert } from '@nangohq/types';
+import { getProvider } from '../services/providers.js';
 
 const logger = getLogger('SDK');
 
@@ -521,7 +529,7 @@ export class NangoAction {
             const { response, logs } = await proxyService.route(proxyConfig, {
                 existingActivityLogId: this.activityLogId as string,
                 connection,
-                provider: this.provider as string
+                providerName: this.provider as string
             });
 
             // We batch save, since we have buffered the createdAt it shouldn't impact order
@@ -720,7 +728,7 @@ export class NangoAction {
             type: 'log',
             level: oldLevelToNewLevel[level],
             source: 'user',
-            message: stringifyAndTruncateLog(message, 99_000),
+            message: stringifyAndTruncateValue(message),
             meta,
             createdAt: new Date().toISOString(),
             environmentId: this.environmentId
@@ -744,14 +752,18 @@ export class NangoAction {
     }
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
-        const template = configService.getTemplate(this.provider as string);
-        const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
+        const provider = getProvider(this.provider as string);
+        if (!provider) {
+            throw new NangoError('unknown_provider_template_in_config');
+        }
+
+        const templatePaginationConfig = provider.proxy?.paginate;
 
         if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {
             throw Error('There was no pagination configuration for this integration or configuration passed in.');
         }
 
-        const paginationConfig: Pagination = {
+        const paginationConfig = {
             ...(templatePaginationConfig || {}),
             ...(config.paginate || {})
         } as Pagination;
@@ -760,7 +772,7 @@ export class NangoAction {
 
         config.method = config.method || 'GET';
 
-        const configMethod: string = config.method.toLocaleLowerCase();
+        const configMethod = config.method.toLocaleLowerCase();
         const passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
 
         const updatedBodyOrParams: Record<string, any> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, any>) ?? {};
@@ -817,6 +829,15 @@ export class NangoAction {
         try {
             response = await retryWithBackoff(
                 async () => {
+                    let data = stringifyObject({ activityLogId: this.activityLogId, log });
+
+                    // We try to keep log object under an acceptable size, before reaching network
+                    // The idea is to always log something instead of silently crashing without overloading persist
+                    if (data.length > MAX_LOG_PAYLOAD) {
+                        log.message += ` ... (truncated, payload was too large)`;
+                        data = truncateJsonString(stringifyObject({ activityLogId: this.activityLogId, log }), MAX_LOG_PAYLOAD);
+                    }
+
                     return await this.persistApi({
                         method: 'POST',
                         url: `/environment/${this.environmentId}/log`,
@@ -824,10 +845,7 @@ export class NangoAction {
                             Authorization: `Bearer ${this.nango.secretKey}`,
                             'Content-Type': 'application/json'
                         },
-                        data: stringifyObject({
-                            activityLogId: this.activityLogId,
-                            log
-                        })
+                        data
                     });
                 },
                 { retry: httpRetryStrategy }

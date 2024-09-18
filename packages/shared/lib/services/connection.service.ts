@@ -15,15 +15,14 @@ import type { ConnectionConfig, Connection, StoredConnection, NangoConnection } 
 import type {
     Metadata,
     ActiveLogIds,
-    Template as ProviderTemplate,
-    TemplateOAuth2 as ProviderTemplateOAuth2,
+    Provider,
+    ProviderOAuth2,
     AuthModeType,
     TbaCredentials,
     TableauCredentials,
     MaybePromise,
     DBTeam,
-    DBEnvironment,
-    Template
+    DBEnvironment
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -55,6 +54,7 @@ import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
 import { SlackService } from './notification/slack.service.js';
+import { getProvider } from './providers.js';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -851,7 +851,7 @@ class ConnectionService {
             logCtx: LogContext;
             authError: { type: string; description: string };
             environment: DBEnvironment;
-            template: ProviderTemplate;
+            provider: Provider;
             config: ProviderConfig;
         }) => Promise<void>;
     }): Promise<Result<Connection, NangoError>> {
@@ -886,7 +886,11 @@ class ConnectionService {
             return Err(error);
         }
 
-        const template: ProviderTemplate = configService.getTemplate(config?.provider);
+        const provider = getProvider(config?.provider);
+        if (!provider) {
+            const error = new NangoError('unknown_provider_config');
+            return Err(error);
+        }
 
         if (
             connection?.credentials?.type === 'OAUTH2' ||
@@ -898,7 +902,7 @@ class ConnectionService {
                 connectionId: connection.connection_id,
                 environmentId: environment.id,
                 providerConfig: config,
-                template: template as ProviderTemplateOAuth2,
+                provider: provider as ProviderOAuth2,
                 environment_id: environment.id,
                 instantRefresh
             });
@@ -926,7 +930,7 @@ class ConnectionService {
                             description: error!.message
                         },
                         environment,
-                        template,
+                        provider,
                         config
                     });
                 }
@@ -961,7 +965,7 @@ class ConnectionService {
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderTemplateOAuth2): AuthCredentials {
+    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderOAuth2): AuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
@@ -1063,14 +1067,14 @@ class ConnectionService {
         connectionId,
         environmentId,
         providerConfig,
-        template,
+        provider,
         environment_id,
         instantRefresh = false
     }: {
         connectionId: string;
         environmentId: number;
         providerConfig: ProviderConfig;
-        template: ProviderTemplateOAuth2;
+        provider: ProviderOAuth2;
         environment_id: number;
         instantRefresh?: boolean;
     }): Promise<
@@ -1096,7 +1100,7 @@ class ConnectionService {
                 connection,
                 connection.credentials as OAuth2Credentials,
                 providerConfig,
-                template,
+                provider,
                 instantRefresh
             );
 
@@ -1150,7 +1154,7 @@ class ConnectionService {
                 provider: providerConfig.provider
             });
 
-            const { success, error, response: newCredentials } = await this.getNewCredentials(connectionToRefresh, providerConfig, template);
+            const { success, error, response: newCredentials } = await this.getNewCredentials(connectionToRefresh, providerConfig, provider);
             if (!success || !newCredentials) {
                 await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${error?.message}`, LogActionEnum.AUTH, {
                     environmentId: String(environment_id),
@@ -1192,11 +1196,11 @@ class ConnectionService {
     }
 
     public async getAppStoreCredentials(
-        template: ProviderTemplate,
+        provider: Provider,
         connectionConfig: Connection['connection_config'],
         privateKey: string
     ): Promise<ServiceResponse<AppStoreCredentials>> {
-        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['APP_STORE'] as string);
+        const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['APP_STORE'] as string);
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
 
         const now = Math.floor(Date.now() / 1000);
@@ -1208,8 +1212,8 @@ class ConnectionService {
             iss: connectionConfig['issuerId']
         };
 
-        if (template.authorization_params && template.authorization_params['audience']) {
-            payload['aud'] = template.authorization_params['audience'];
+        if (provider.authorization_params && provider.authorization_params['audience']) {
+            payload['aud'] = provider.authorization_params['audience'];
         }
 
         if (connectionConfig['scope']) {
@@ -1246,12 +1250,12 @@ class ConnectionService {
     public async getAppCredentialsAndFinishConnection(
         connectionId: string,
         integration: ProviderConfig,
-        template: ProviderTemplate,
+        provider: Provider,
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
     ): Promise<void> {
-        const { success, error, response: credentials } = await this.getAppCredentials(template, integration, connectionConfig);
+        const { success, error, response: credentials } = await this.getAppCredentials(provider, integration, connectionConfig);
 
         if (!success || !credentials) {
             logger.error(error);
@@ -1278,11 +1282,11 @@ class ConnectionService {
     }
 
     public async getAppCredentials(
-        template: ProviderTemplate,
+        provider: Provider,
         config: ProviderConfig,
         connectionConfig: Connection['connection_config']
     ): Promise<ServiceResponse<AppCredentials>> {
-        const templateTokenUrl = typeof template.token_url === 'string' ? template.token_url : (template.token_url!['APP'] as string);
+        const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['APP'] as string);
 
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
         const privateKeyBase64 = config?.custom ? config.custom['private_key'] : config.oauth_client_secret;
@@ -1323,30 +1327,30 @@ class ConnectionService {
     }
 
     public async getOauthClientCredentials(
-        template: ProviderTemplateOAuth2,
+        provider: ProviderOAuth2,
         client_id: string,
         client_secret: string,
         connectionConfig: Record<string, string>
     ): Promise<ServiceResponse<OAuth2ClientCredentials>> {
-        const strippedTokenUrl = typeof template.token_url === 'string' ? template.token_url.replace(/connectionConfig\./g, '') : '';
+        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
 
-        let tokenParams = template.token_params && Object.keys(template.token_params).length > 0 ? new URLSearchParams(template.token_params).toString() : '';
+        let tokenParams = provider.token_params && Object.keys(provider.token_params).length > 0 ? new URLSearchParams(provider.token_params).toString() : '';
 
         if (connectionConfig['oauth_scopes']) {
-            const scope = connectionConfig['oauth_scopes'].split(',').join(template.scope_separator || ' ');
+            const scope = connectionConfig['oauth_scopes'].split(',').join(provider.scope_separator || ' ');
             tokenParams += (tokenParams ? '&' : '') + `scope=${encodeURIComponent(scope)}`;
         }
 
         const headers: Record<string, string> = {};
         const params = new URLSearchParams();
 
-        const bodyFormat = template.body_format || 'form';
+        const bodyFormat = provider.body_format || 'form';
         headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
 
-        if (template.token_request_auth_method === 'basic') {
+        if (provider.token_request_auth_method === 'basic') {
             headers['Authorization'] = 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64');
-        } else if (template.token_request_auth_method === 'custom') {
+        } else if (provider.token_request_auth_method === 'custom') {
             params.append('username', client_id);
             params.append('password', client_secret);
         } else {
@@ -1375,7 +1379,7 @@ class ConnectionService {
                 return { success: false, error: new NangoError('invalid_client_credentials'), response: null };
             }
 
-            const parsedCreds = this.parseRawCredentials(data, 'OAUTH2_CC', template) as OAuth2ClientCredentials;
+            const parsedCreds = this.parseRawCredentials(data, 'OAUTH2_CC', provider) as OAuth2ClientCredentials;
 
             parsedCreds.client_id = client_id;
             parsedCreds.client_secret = client_secret;
@@ -1393,13 +1397,13 @@ class ConnectionService {
     }
 
     public async getTableauCredentials(
-        template: Template,
+        provider: Provider,
         patName: string,
         patSecret: string,
         connectionConfig: Record<string, string>,
         contentUrl?: string
     ): Promise<ServiceResponse<TableauCredentials>> {
-        const strippedTokenUrl = typeof template.token_url === 'string' ? template.token_url.replace(/connectionConfig\./g, '') : '';
+        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig)).toString();
         const postBody = {
             credentials: {
@@ -1517,7 +1521,7 @@ class ConnectionService {
         connection: Connection,
         credentials: OAuth2Credentials,
         providerConfig: ProviderConfig,
-        template: ProviderTemplateOAuth2,
+        provider: ProviderOAuth2,
         instantRefresh: boolean
     ): Promise<boolean> {
         const refreshCondition =
@@ -1525,9 +1529,9 @@ class ConnectionService {
             (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
 
         let tokenExpirationCondition =
-            refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
+            refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || 15 * 60));
 
-        if ((template.auth_mode === 'OAUTH2' || credentials?.type === 'OAUTH2') && providerConfig.provider !== 'facebook') {
+        if ((provider.auth_mode === 'OAUTH2' || credentials?.type === 'OAUTH2') && providerConfig.provider !== 'facebook') {
             tokenExpirationCondition = Boolean(credentials.refresh_token && tokenExpirationCondition);
         }
 
@@ -1537,50 +1541,50 @@ class ConnectionService {
     private async getNewCredentials(
         connection: Connection,
         providerConfig: ProviderConfig,
-        template: ProviderTemplate
+        provider: Provider
     ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials>> {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
-            const rawCreds = await providerClient.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
+            const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
-        } else if (template.auth_mode === 'OAUTH2_CC') {
+        } else if (provider.auth_mode === 'OAUTH2_CC') {
             const { client_id, client_secret } = connection.credentials as OAuth2ClientCredentials;
             const {
                 success,
                 error,
                 response: credentials
-            } = await this.getOauthClientCredentials(template as ProviderTemplateOAuth2, client_id, client_secret, connection.connection_config);
+            } = await this.getOauthClientCredentials(provider as ProviderOAuth2, client_id, client_secret, connection.connection_config);
 
             if (!success || !credentials) {
                 return { success, error, response: null };
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (template.auth_mode === 'APP_STORE') {
+        } else if (provider.auth_mode === 'APP_STORE') {
             const { private_key } = connection.credentials as AppStoreCredentials;
-            const { success, error, response: credentials } = await this.getAppStoreCredentials(template, connection.connection_config, private_key);
+            const { success, error, response: credentials } = await this.getAppStoreCredentials(provider, connection.connection_config, private_key);
 
             if (!success || !credentials) {
                 return { success, error, response: null };
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (template.auth_mode === 'APP' || (template.auth_mode === 'CUSTOM' && connection?.credentials?.type !== 'OAUTH2')) {
-            const { success, error, response: credentials } = await this.getAppCredentials(template, providerConfig, connection.connection_config);
+        } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection?.credentials?.type !== 'OAUTH2')) {
+            const { success, error, response: credentials } = await this.getAppCredentials(provider, providerConfig, connection.connection_config);
 
             if (!success || !credentials) {
                 return { success, error, response: null };
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (template.auth_mode === 'TABLEAU') {
+        } else if (provider.auth_mode === 'TABLEAU') {
             const { pat_name, pat_secret, content_url } = connection.credentials as TableauCredentials;
             const {
                 success,
                 error,
                 response: credentials
-            } = await this.getTableauCredentials(template, pat_name, pat_secret, connection.connection_config, content_url);
+            } = await this.getTableauCredentials(provider, pat_name, pat_secret, connection.connection_config, content_url);
 
             if (!success || !credentials) {
                 return { success, error, response: null };
@@ -1588,7 +1592,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: credentials };
         } else {
-            const { success, error, response: creds } = await getFreshOAuth2Credentials(connection, providerConfig, template as ProviderTemplateOAuth2);
+            const { success, error, response: creds } = await getFreshOAuth2Credentials(connection, providerConfig, provider as ProviderOAuth2);
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }

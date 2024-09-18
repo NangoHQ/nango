@@ -124,7 +124,7 @@ class ProxyController {
             const internalConfig: InternalProxyConfiguration = {
                 existingActivityLogId: logCtx.id,
                 connection,
-                provider: providerConfig.provider
+                providerName: providerConfig.provider
             };
 
             const { success, error, response: proxyConfig, logs } = proxyService.configure(externalConfig, internalConfig);
@@ -202,7 +202,7 @@ class ProxyController {
         const url = proxyService.constructUrl(configBody);
         let decompress = false;
 
-        if (configBody.decompress === true || configBody.template.proxy?.decompress === true) {
+        if (configBody.decompress === true || configBody.provider.proxy?.decompress === true) {
             decompress = true;
         }
 

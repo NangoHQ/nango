@@ -57,6 +57,7 @@ export async function exec({ orchestrator }: { orchestrator: Orchestrator }): Pr
         logger.info(`[autoidle] pausing ${sync.id}`);
 
         const res = await orchestrator.runSyncCommand({
+            connectionId: sync.connection_unique_id,
             syncId: sync.id,
             command: SyncCommand.PAUSE,
             environmentId: sync.environment_id,

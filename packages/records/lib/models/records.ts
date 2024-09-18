@@ -325,14 +325,27 @@ export async function update({
     }
 }
 
-export async function deleteRecordsBySyncId({ syncId, limit = 5000 }: { syncId: string; limit?: number }): Promise<{ totalDeletedRecords: number }> {
+export async function deleteRecordsBySyncId({
+    connectionId,
+    model,
+    syncId,
+    limit = 5000
+}: {
+    connectionId: number;
+    model: string;
+    syncId: string;
+    limit?: number;
+}): Promise<{ totalDeletedRecords: number }> {
     let totalDeletedRecords = 0;
     let deletedRecords = 0;
     do {
+        // records table is partitioned by connection_id and model
+        // to avoid table scan, we must filter by connection_id and model
         deletedRecords = await db
             .from(RECORDS_TABLE)
+            .where({ connection_id: connectionId, model })
             .whereIn('id', function (sub) {
-                void sub.select('id').from(RECORDS_TABLE).where({ sync_id: syncId }).limit(limit);
+                void sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(limit);
             })
             .del();
         totalDeletedRecords += deletedRecords;

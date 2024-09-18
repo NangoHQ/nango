@@ -2,19 +2,17 @@ import { isAxiosError } from 'axios';
 import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
 import OAuth from 'oauth-1.0a';
 import * as crypto from 'node:crypto';
-import { axiosInstance as axios, getLogger, SIGNATURE_METHOD } from '@nangohq/utils';
+import { axiosInstance as axios, SIGNATURE_METHOD } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
-import configService from './config.service.js';
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import type { MessageRowInsert, Template as ProviderTemplate } from '@nangohq/types';
-
-const logger = getLogger('Proxy');
+import type { MessageRowInsert } from '@nangohq/types';
+import { getProvider } from './providers.js';
 
 interface Logs {
     logs: MessageRowInsert[];
@@ -48,7 +46,7 @@ class ProxyService {
         const logs: MessageRowInsert[] = [];
         let data = externalConfig.data;
         const { endpoint: passedEndpoint, providerConfigKey, connectionId, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
-        const { connection, provider } = internalConfig;
+        const { connection, providerName } = internalConfig;
 
         if (!passedEndpoint && !baseUrlOverride) {
             logs.push({ type: 'log', level: 'error', createdAt: new Date().toISOString(), message: 'Proxy: a API URL endpoint is missing.' });
@@ -128,19 +126,18 @@ class ProxyService {
             message: 'Proxy: token retrieved successfully'
         });
 
-        let template: ProviderTemplate | undefined;
-        try {
-            template = configService.getTemplate(provider);
-        } catch {
-            logger.error('failed to getTemplate');
+        const provider = getProvider(providerName);
+        if (!provider) {
+            logs.push({ type: 'log', level: 'error', createdAt: new Date().toISOString(), message: `Provider ${providerName} does not exist` });
+            return { success: false, error: new NangoError('unknown_provider_template'), response: null, logs };
         }
 
-        if (!template || ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride)) {
+        if (!provider || ((!provider.proxy || !provider.proxy.base_url) && !baseUrlOverride)) {
             logs.push({
                 type: 'log',
                 level: 'error',
                 createdAt: new Date().toISOString(),
-                message: `The proxy is either not supported for the provider ${provider} or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).`
+                message: `The proxy is either not supported for the provider ${providerName} or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).`
             });
 
             return { success: false, error: new NangoError('missing_base_api_url'), response: null, logs };
@@ -150,11 +147,11 @@ class ProxyService {
             type: 'log',
             level: 'debug',
             createdAt: new Date().toISOString(),
-            message: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy?.base_url}`
+            message: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || provider.proxy?.base_url}`
         });
 
-        if (!baseUrlOverride && template.proxy?.base_url && endpoint.includes(template.proxy.base_url)) {
-            endpoint = endpoint.replace(template.proxy.base_url, '');
+        if (!baseUrlOverride && provider.proxy?.base_url && endpoint.includes(provider.proxy.base_url)) {
+            endpoint = endpoint.replace(provider.proxy.base_url, '');
         }
 
         logs.push({
@@ -183,9 +180,9 @@ class ProxyService {
         const configBody: ApplicationConstructedProxyConfiguration = {
             endpoint,
             method: method?.toUpperCase() as HTTP_VERB,
-            template,
+            provider,
             token: token || '',
-            provider: provider,
+            providerName,
             providerConfigKey,
             connectionId,
             headers: headers as Record<string, string>,
@@ -288,9 +285,9 @@ class ProxyService {
                 return shouldRetry;
             }
 
-            if (config.template.proxy && config.template.proxy.retry && (config.template.proxy.retry.at || config.template.proxy.retry.after)) {
-                const type = config.template.proxy.retry.at ? 'at' : 'after';
-                const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;
+            if (config.provider.proxy && config.provider.proxy.retry && (config.provider.proxy.retry.at || config.provider.proxy.retry.after)) {
+                const type = config.provider.proxy.retry.at ? 'at' : 'after';
+                const retryHeader = config.provider.proxy.retry.at ? config.provider.proxy.retry.at : config.provider.proxy.retry.after;
 
                 const { shouldRetry, logs: retryActivityLogs } = await this.retryHandler(error, type, retryHeader as string);
                 retryActivityLogs.forEach((l: MessageRowInsert) => logs.push(l));
@@ -406,7 +403,7 @@ class ProxyService {
      */
     public constructUrl(config: ApplicationConstructedProxyConfiguration) {
         const { connection } = config;
-        const { template: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
+        const { provider: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
 
         let apiBase = config.baseUrlOverride || templateApiBase;
 
@@ -426,8 +423,8 @@ class ProxyService {
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
         let endpoint = apiEndpoint.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
 
-        if (config.template.auth_mode === 'API_KEY' && 'proxy' in config.template && 'query' in config.template.proxy) {
-            const apiKeyProp = Object.keys(config.template.proxy.query)[0];
+        if (config.provider.auth_mode === 'API_KEY' && 'proxy' in config.provider && 'query' in config.provider.proxy) {
+            const apiKeyProp = Object.keys(config.provider.proxy.query)[0];
             const token = config.token as ApiKeyCredentials;
             endpoint += endpoint.includes('?') ? '&' : '?';
             endpoint += `${apiKeyProp}=${token.apiKey}`;
@@ -448,7 +445,7 @@ class ProxyService {
     public constructHeaders(config: ApplicationConstructedProxyConfiguration, method: HTTP_VERB, url: string): Record<string, string> {
         let headers = {};
 
-        switch (config.template.auth_mode) {
+        switch (config.provider.auth_mode) {
             case 'BASIC':
                 {
                     const token = config.token as BasicApiCredentials;
@@ -477,13 +474,13 @@ class ProxyService {
 
         // even if the auth mode isn't api key a header might exist in the proxy
         // so inject it if so
-        if ('proxy' in config.template && 'headers' in config.template.proxy) {
-            headers = Object.entries(config.template.proxy.headers).reduce(
+        if ('proxy' in config.provider && 'headers' in config.provider.proxy) {
+            headers = Object.entries(config.provider.proxy.headers).reduce(
                 (acc: Record<string, string>, [key, value]: [string, string]) => {
                     // allows oauth2 acessToken key to be interpolated and injected
                     // into the header in addition to api key values
                     let tokenPair;
-                    switch (config.template.auth_mode) {
+                    switch (config.provider.auth_mode) {
                         case 'OAUTH2':
                             if (value.includes('connectionConfig')) {
                                 value = value.replace(/connectionConfig\./g, '');
@@ -514,7 +511,7 @@ class ProxyService {
             );
         }
 
-        if (config.template.auth_mode === 'TBA') {
+        if (config.provider.auth_mode === 'TBA') {
             const credentials = config.connection.credentials as TbaCredentials;
             const consumerKey: string = credentials.config_override['client_id'] || config.connection.connection_config['oauth_client_id'];
             const consumerSecret: string = credentials.config_override['client_secret'] || config.connection.connection_config['oauth_client_secret'];

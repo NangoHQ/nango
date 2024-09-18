@@ -9,6 +9,55 @@ servers:
     - url: http://localhost:3003
       description: Local server
 paths:
+    /providers:
+        get:
+            description: Returns a list of all available providers
+            responses:
+                '200':
+                    description: Successfully returned a list of available providers
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Provider'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+    /providers/{provider}:
+        get:
+            description: Returns a specific provider
+            parameters:
+                - name: provider
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The provider name
+            responses:
+                '200':
+                    description: Successfully returned a specific provider
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/Provider'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
     /config:
         get:
             description: Returns a list of integrations
@@ -787,6 +836,8 @@ paths:
                                                     example: "v2"
                                                 webhookSubscriptions:
                                                     type: array
+                                                    items:
+                                                        type: string
                                     actions:
                                         type: array
                                         items:
@@ -852,6 +903,8 @@ paths:
                                                     example: "v2"
                                     postConnectionScripts:
                                         type: array
+                                        items:
+                                            type: string
                                     provider:
                                         type: string
                                         example: "github"
@@ -1539,3 +1592,270 @@ paths:
             responses:
                 '200':
                     description: The response exactly as returned by the external API
+
+components:
+
+  responses:
+    BadRequest:
+        description: Bad request
+        content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/StdError'
+    Unauthorized:
+        description: Unauthorized
+        content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/StdError'
+    NotFound:
+        description: Not Found
+        content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/StdError'
+
+  schemas:
+    StdError:
+        type: object
+        additionalProperties: false
+        properties:
+            error:
+                type: object
+                additionalProperties: false
+                required:
+                    - code
+                properties:
+                    code:
+                        type: string
+                    message:
+                        type: string
+                    errors:
+                        type: array
+                        items:
+                            type: object
+
+
+    TokenUrlObject:
+      properties:
+        OAUTH1:
+          type: string
+        OAUTH2:
+          type: string
+        OAUTH2CC:
+          type: string
+        BASIC:
+          type: string
+        API_KEY:
+          type: string
+        APP_STORE:
+          type: string
+        CUSTOM:
+          type: string
+        APP:
+          type: string
+        NONE:
+          type: string
+      additionalProperties: false
+      type: object
+
+    BaseProvider:
+      properties:
+        name:
+            type: string
+        auth_mode:
+          type: string
+          enum: ['OAUTH1','OAUTH2','OAUTH2_CC','BASIC','API_KEY','APP_STORE','CUSTOM','APP','NONE','TBA','TABLEAU']
+        proxy:
+          properties:
+            base_url:
+              type: string
+            headers:
+              type: object
+            query:
+              properties:
+                api_key:
+                  type: string
+              required:
+                - api_key
+              additionalProperties: false
+              type: object
+            retry:
+              type: object
+              properties:
+                at:
+                    type: string
+                after:
+                    type: string
+            decompress:
+              type: boolean
+            paginate:
+              anyOf: []
+            verification:
+              properties:
+                method:
+                  type: string
+                endpoint:
+                  type: string
+                base_url_override:
+                  type: string
+                headers:
+                  type: object
+              required:
+                - method
+                - endpoint
+              additionalProperties: false
+              type: object
+          required:
+            - base_url
+          additionalProperties: false
+          type: object
+        authorization_url:
+          type: string
+        authorization_url_encode:
+          type: boolean
+        access_token_url:
+          type: string
+        authorization_params:
+          type: object
+        scope_separator:
+          type: string
+        default_scopes:
+          items:
+            type: string
+          type: array
+        token_url:
+          anyOf:
+            - type: string
+            - $ref: '#/components/schemas/TokenUrlObject'
+        token_params:
+          type: object
+        authorization_url_replacements:
+          type: object
+        redirect_uri_metadata:
+          items:
+            type: string
+          type: array
+        token_response_metadata:
+          items:
+            type: string
+          type: array
+        docs:
+          type: string
+        token_expiration_buffer:
+          type: number
+        webhook_routing_script:
+          type: string
+        webhook_user_defined_secret:
+          type: boolean
+        post_connection_script:
+          type: string
+        categories:
+          items:
+            type: string
+          type: array
+        connection_configuration:
+          items:
+            type: string
+          type: array
+      required:
+        - auth_mode
+        - name
+      additionalProperties: false
+      type: object
+    ProviderOAuth2:
+      properties:
+        auth_mode:
+          enum:
+            - OAUTH2
+            - CUSTOM
+          type: string
+        token_params:
+          properties:
+            grant_type:
+              enum:
+                - authorization_code
+                - client_credentials
+              type: string
+          additionalProperties: false
+          type: object
+        disable_pkce:
+          type: boolean
+        refresh_params:
+          properties:
+            grant_type:
+              enum:
+                - refresh_token
+              type: string
+          required:
+            - grant_type
+          additionalProperties: false
+          type: object
+        authorization_method:
+          type: string
+          enum:
+            - body
+            - header
+        body_format:
+          type: string
+          enum:
+            - form
+            - json
+        refresh_url:
+          type: string
+        expires_in_unit:
+          enum:
+            - milliseconds
+          type: string
+        token_request_auth_method:
+          enum:
+            - basic
+            - custom
+          type: string
+      required:
+        - auth_mode
+      additionalProperties: false
+      type: object
+    ProviderOAuth1:
+      properties:
+        auth_mode:
+          enum:
+            - OAUTH1
+          type: string
+        request_url:
+          type: string
+        request_params:
+          type: object
+        request_http_method:
+          enum:
+            - GET
+            - PUT
+            - POST
+          type: string
+        token_http_method:
+          enum:
+            - GET
+            - PUT
+            - POST
+          type: string
+        signature_method:
+          enum:
+            - HMAC-SHA1
+            - RSA-SHA1
+            - PLAINTEXT
+          type: string
+      required:
+        - auth_mode
+        - request_url
+        - signature_method
+      additionalProperties: false
+      type: object
+
+    Provider:
+      anyOf:
+        - $ref: '#/components/schemas/BaseProvider'
+          title: 'Default'
+        - $ref: '#/components/schemas/ProviderOAuth1'
+          title: 'Oauth1'
+        - $ref: '#/components/schemas/ProviderOAuth2'
+          title: 'Oauth2'

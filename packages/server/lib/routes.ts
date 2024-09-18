@@ -86,6 +86,8 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
 import { deleteConnection } from './controllers/v1/connection/deleteConnection.js';
+import { getPublicProviders } from './controllers/providers/getProviders.js';
+import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
 
 export const router = express.Router();
@@ -164,8 +166,12 @@ publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.a
 publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustomer.bind(accountController));
 
 // API routes (API key auth).
+// @deprecated
 publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
+// @deprecated
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
+publicAPI.route('/providers').get(apiAuth, getPublicProviders);
+publicAPI.route('/providers/:provider').get(apiAuth, getPublicProvider);
 publicAPI.route('/config').get(apiAuth, getListIntegrations);
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));

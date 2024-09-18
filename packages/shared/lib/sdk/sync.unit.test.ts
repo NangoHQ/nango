@@ -3,8 +3,9 @@ import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
 import type { Config, SyncConfig } from '../models/index.js';
-import type { Template } from '@nangohq/types';
+import type { Provider } from '@nangohq/types';
 import configService from '../services/config.service.js';
+import * as providerService from '../services/providers.js';
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
 import type { NangoProps } from './sync.js';
 import { NangoAction, NangoSync } from './sync.js';
@@ -142,14 +143,14 @@ describe('Pagination', () => {
     });
 
     it('Throws error if there is no pagination config in provider template', async () => {
-        const template: Template = {
+        const provider: Provider = {
             auth_mode: 'OAUTH2',
             proxy: { base_url: '' },
             authorization_url: '',
             token_url: ''
         };
         (await import('@nangohq/node')).Nango.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
-        vi.spyOn(configService, 'getTemplate').mockImplementation(() => template);
+        vi.spyOn(providerService, 'getProvider').mockImplementation(() => provider);
 
         const expectedErrorMessage = 'There was no pagination configuration for this integration or configuration passed in';
         await expect(() => nangoAction.paginate({ endpoint: '' }).next()).rejects.toThrowError(expectedErrorMessage);
@@ -407,11 +408,11 @@ describe('Pagination', () => {
     });
 
     const stubProviderTemplate = (paginationConfig: CursorPagination | OffsetPagination | LinkPagination) => {
-        const template: Template = buildTemplate(paginationConfig);
-        vi.spyOn(configService, 'getTemplate').mockImplementation(() => template);
+        const provider: Provider = buildTemplate(paginationConfig);
+        vi.spyOn(providerService, 'getProvider').mockImplementation(() => provider);
     };
 
-    const buildTemplate = (paginationConfig: CursorPagination | OffsetPagination | LinkPagination): Template => {
+    const buildTemplate = (paginationConfig: CursorPagination | OffsetPagination | LinkPagination): Provider => {
         return {
             auth_mode: 'OAUTH2',
             proxy: { base_url: 'https://api.github.com/', paginate: paginationConfig },

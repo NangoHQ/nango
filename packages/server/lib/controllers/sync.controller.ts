@@ -31,7 +31,7 @@ import {
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import type { LastAction } from '@nangohq/records';
-import { getHeaders, isHosted } from '@nangohq/utils';
+import { getHeaders, isHosted, truncateJson } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -303,7 +303,7 @@ class SyncController {
                     integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                     connection: { id: connection.id!, name: connection.connection_id },
                     syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name },
-                    meta: { input }
+                    meta: truncateJson({ input })
                 }
             );
 
@@ -571,6 +571,7 @@ class SyncController {
             }
 
             const result = await orchestrator.runSyncCommand({
+                connectionId: connection.id!,
                 syncId: sync_id,
                 command,
                 environmentId: environment.id,

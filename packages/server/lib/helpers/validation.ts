@@ -4,6 +4,10 @@ export const providerSchema = z
     .string()
     .regex(/^[a-zA-Z0-9_-]+$/)
     .max(255);
+export const providerNameSchema = z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/)
+    .max(255);
 export const providerConfigKeySchema = z
     .string()
     .regex(/^[a-zA-Z0-9~:.@ _-]+$/) // For legacy reason (some people are using special characters)

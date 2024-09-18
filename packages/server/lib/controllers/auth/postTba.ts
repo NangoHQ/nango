@@ -2,8 +2,8 @@ import { z } from 'zod';
 import tracer from 'dd-trace';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP } from '@nangohq/utils';
-import { analytics, configService, AnalyticsTypes, getConnectionConfig, connectionService } from '@nangohq/shared';
-import type { PostPublicTbaAuthorization, TbaCredentials } from '@nangohq/types';
+import { analytics, configService, AnalyticsTypes, getConnectionConfig, connectionService, getProvider } from '@nangohq/shared';
+import type { TbaCredentials, PostPublicTbaAuthorization } from '@nangohq/types';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionTest as connectionTestHook } from '../../hooks/hooks.js';
@@ -92,9 +92,15 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         return;
     }
 
-    const template = configService.getTemplate(config.provider);
+    const provider = getProvider(config.provider);
+    if (!provider) {
+        await logCtx.error('Unknown provider');
+        await logCtx.failed();
+        res.status(404).send({ error: { code: 'unknown_provider_template' } });
+        return;
+    }
 
-    if (template.auth_mode !== 'TBA') {
+    if (provider.auth_mode !== 'TBA') {
         await logCtx.error('Provider does not support TBA auth', { provider: config.provider });
         await logCtx.failed();
 
@@ -135,7 +141,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
 
     const connectionResponse = await connectionTestHook(
         config.provider,
-        template,
+        provider,
         tbaCredentials,
         connectionId,
         providerConfigKey,

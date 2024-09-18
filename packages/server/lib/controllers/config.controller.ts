@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
 import type { StandardNangoConfig, Config as ProviderConfig, IntegrationWithCreds, Integration as ProviderIntegration, NangoSyncConfig } from '@nangohq/shared';
 import { isHosted } from '@nangohq/utils';
-import type { Template as ProviderTemplate, AuthModeType } from '@nangohq/types';
+import type { AuthModeType } from '@nangohq/types';
 import {
     flowService,
     errorManager,
@@ -15,7 +15,9 @@ import {
     getActionsByProviderConfigKey,
     getFlowConfigsByParams,
     getGlobalWebhookReceiveUrl,
-    getSyncConfigsAsStandardConfig
+    getSyncConfigsAsStandardConfig,
+    getProvider,
+    getProviders
 } from '@nangohq/shared';
 import { parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import type { RequestLocals } from '../utils/express.js';
@@ -121,11 +123,11 @@ class ConfigController {
 
             const integrations = await Promise.all(
                 configs.map(async (config: ProviderConfig) => {
-                    const template = configService.getTemplates()[config.provider];
+                    const provider = getProvider(config.provider);
                     const activeFlows = await getFlowConfigsByParams(environment.id, config.unique_key);
 
                     const integration: Integration = {
-                        authMode: template?.auth_mode || 'APP',
+                        authMode: provider?.auth_mode || 'APP',
                         uniqueKey: config.unique_key,
                         provider: config.provider,
                         scripts: activeFlows.length,
@@ -133,8 +135,8 @@ class ConfigController {
                         creationDate: config.created_at
                     };
 
-                    if (template && template.auth_mode !== 'APP' && template.auth_mode !== 'CUSTOM') {
-                        integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template);
+                    if (provider && provider.auth_mode !== 'APP' && provider.auth_mode !== 'CUSTOM') {
+                        integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);
                     }
 
                     return integration;
@@ -153,24 +155,25 @@ class ConfigController {
         }
     }
 
-    listProvidersFromYaml(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const providers = Object.entries(configService.getTemplates())
-                .map((providerProperties: [string, ProviderTemplate]) => {
-                    const [provider, properties] = providerProperties;
-                    return {
-                        name: provider,
-                        defaultScopes: properties.default_scopes,
-                        authMode: properties.auth_mode,
-                        categories: properties.categories,
-                        docs: properties.docs
-                    };
-                })
-                .sort((a, b) => a.name.localeCompare(b.name));
-            res.status(200).send(providers);
-        } catch (err) {
-            next(err);
+    listProvidersFromYaml(_: Request, res: Response<any, Required<RequestLocals>>) {
+        const providers = getProviders();
+        if (!providers) {
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
         }
+        const list = Object.entries(providers)
+            .map((providerProperties) => {
+                const [provider, properties] = providerProperties;
+                return {
+                    name: provider,
+                    defaultScopes: properties.default_scopes,
+                    authMode: properties.auth_mode,
+                    categories: properties.categories,
+                    docs: properties.docs
+                };
+            })
+            .sort((a, b) => a.name.localeCompare(b.name));
+        res.status(200).send(list);
     }
 
     /**
@@ -190,14 +193,18 @@ class ConfigController {
             }
 
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
-
             if (!config) {
                 errorManager.errRes(res, 'unknown_provider_config');
                 return;
             }
 
-            const providerTemplate = configService.getTemplate(config.provider);
-            const authMode = providerTemplate.auth_mode;
+            const provider = getProvider(config.provider);
+            if (!provider) {
+                errorManager.errRes(res, 'unknown_provider_template');
+                return;
+            }
+
+            const authMode = provider.auth_mode;
 
             let client_secret = config.oauth_client_secret;
             let webhook_secret = null;
@@ -225,7 +232,7 @@ class ConfigController {
                 };
             });
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
-            const hasWebhook = providerTemplate.webhook_routing_script;
+            const hasWebhook = provider.webhook_routing_script;
             const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
             const connection_count = connections.length;
             let webhookUrl: string | null = null;
@@ -249,9 +256,9 @@ class ConfigController {
                       has_webhook: Boolean(hasWebhook),
                       webhook_secret,
                       connections,
-                      docs: providerTemplate.docs,
+                      docs: provider.docs,
                       connection_count,
-                      has_webhook_user_defined_secret: providerTemplate.webhook_user_defined_secret,
+                      has_webhook_user_defined_secret: provider.webhook_user_defined_secret,
                       webhook_url: webhookUrl
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
@@ -317,15 +324,15 @@ class ConfigController {
                 return;
             }
 
-            const provider = req.body['provider'];
+            const providerName = req.body['provider'];
 
-            if (!configService.checkProviderTemplateExists(provider)) {
+            const provider = getProvider(providerName);
+            if (!provider) {
                 errorManager.errRes(res, 'unknown_provider_template');
                 return;
             }
 
-            const providerTemplate = configService.getTemplate(provider);
-            const authMode = providerTemplate.auth_mode;
+            const authMode = provider.auth_mode;
 
             if ((authMode === 'OAUTH1' || authMode === 'OAUTH2' || authMode === 'CUSTOM') && req.body['oauth_client_id'] == null) {
                 errorManager.errRes(res, 'missing_client_id');
@@ -392,7 +399,7 @@ class ConfigController {
 
             const config: ProviderConfig = {
                 unique_key: uniqueConfigKey,
-                provider: provider,
+                provider: providerName,
                 oauth_client_id,
                 oauth_client_secret,
                 oauth_scopes: oauth_scopes
@@ -445,10 +452,15 @@ class ConfigController {
                 return;
             }
 
-            const provider = req.body['provider'];
+            const providerName = req.body['provider'];
 
-            const template = configService.getTemplate(provider as string);
-            const authMode = template.auth_mode;
+            const provider = getProvider(providerName as string);
+            if (!provider) {
+                errorManager.errRes(res, 'unknown_provider_template');
+                return;
+            }
+
+            const authMode = provider.auth_mode;
 
             if (authMode === 'API_KEY' || authMode === 'BASIC') {
                 errorManager.errRes(res, 'provider_config_edit_not_allowed');
@@ -473,7 +485,7 @@ class ConfigController {
 
             let oauth_client_secret = req.body['oauth_client_secret'] ?? null;
 
-            if (template.auth_mode === 'APP') {
+            if (provider.auth_mode === 'APP') {
                 if (!oauth_client_secret.includes('BEGIN RSA PRIVATE KEY')) {
                     errorManager.errRes(res, 'invalid_app_secret');
                     return;
@@ -483,7 +495,7 @@ class ConfigController {
 
             const custom = req.body['custom'] ?? null;
 
-            if (template.auth_mode === 'CUSTOM') {
+            if (provider.auth_mode === 'CUSTOM') {
                 const { private_key } = custom;
 
                 if (!private_key.includes('BEGIN RSA PRIVATE KEY')) {
@@ -503,7 +515,7 @@ class ConfigController {
             await configService.editProviderConfig({
                 ...oldConfig,
                 unique_key: uniqueKey,
-                provider: provider,
+                provider: providerName,
                 oauth_client_id: req.body['oauth_client_id'],
                 oauth_client_secret,
                 oauth_scopes: req.body['oauth_scopes'],

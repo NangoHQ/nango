@@ -4,7 +4,7 @@ import { requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
-import { AnalyticsTypes, analytics, configService, connectionService, errorManager } from '@nangohq/shared';
+import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getProvider } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -67,8 +67,15 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             return;
         }
 
-        const template = configService.getTemplate(config.provider);
-        if (template.auth_mode !== 'NONE') {
+        const provider = getProvider(config.provider);
+        if (!provider) {
+            await logCtx.error('Unknown provider');
+            await logCtx.failed();
+            res.status(404).send({ error: { code: 'unknown_provider_template' } });
+            return;
+        }
+
+        if (provider.auth_mode !== 'NONE') {
             await logCtx.error('Provider does not support Unauthenticated', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });

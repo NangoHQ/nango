@@ -1,6 +1,6 @@
 import get from 'lodash-es/get.js';
 import type { Config as ProviderConfig, Connection, ConnectionConfig, ConnectionUpsertResponse } from '@nangohq/shared';
-import { environmentService, connectionService, configService } from '@nangohq/shared';
+import { environmentService, connectionService, getProvider } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
 import type { WebhookHandler } from './types.js';
@@ -74,7 +74,11 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             return;
         }
 
-        const template = configService.getTemplate(integration.provider);
+        const provider = getProvider(integration.provider);
+        if (!provider) {
+            logger.error('unknown provider');
+            return;
+        }
 
         const activityLogId = connection.connection_config['pendingLog'];
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -106,7 +110,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
             integration,
-            template,
+            provider,
             connectionConfig as ConnectionConfig,
             logCtx,
             connCreatedHook
