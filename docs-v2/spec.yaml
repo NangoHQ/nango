@@ -61,7 +61,7 @@ paths:
     /config:
         get:
             deprecated: true
-            description: Returns a list of integrations. Deprecated, pease use `GET /integrations`
+            description: Returns a list of integrations. Deprecated, please use `GET /integrations`
             responses:
                 '200':
                     description: Successfully returned a list of integrations

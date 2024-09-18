@@ -149,6 +149,7 @@ const publicAPICorsHandler = cors({
 publicAPI.use(publicAPICorsHandler);
 publicAPI.options('*', publicAPICorsHandler); // Pre-flight
 
+// API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
@@ -167,14 +168,17 @@ publicAPI.route('/unauth/:providerConfigKey').post(apiPublicAuth, postPublicUnau
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
 publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustomer.bind(accountController));
 
-// API routes (API key auth).
+// API routes (Secret key auth).
 // @deprecated
 publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
 // @deprecated
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
 publicAPI.route('/providers').get(apiAuth, getPublicProviders);
 publicAPI.route('/providers/:provider').get(apiAuth, getPublicProvider);
+
+// @deprecated
 publicAPI.route('/config').get(apiAuth, getPublicListIntegrationsLegacy);
+// @deprecated
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
