@@ -60,6 +60,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
     /config:
         get:
+            deprecated: true
             description: Returns a list of integrations. Deprecated, pease use `GET /integrations`
             responses:
                 '200':
