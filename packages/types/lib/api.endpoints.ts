@@ -7,7 +7,7 @@ import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api';
 import type { PostForgotPassword, PutResetPassword, PostSignin, PostSignup } from './account/api';
 import type { DeleteInvite, PostInvite } from './invitations/api';
 import type { GetUser, PatchUser } from './user/api';
-import type { GetListIntegrations } from './integration/api';
+import type { DeletePublicIntegration, GetPublicIntegration, GetPublicListIntegrations, GetPublicListIntegrationsLegacy } from './integration/api';
 import type { PostPublicTableauAuthorization, PostPublicTbaAuthorization, PostPublicUnauthenticatedAuthorization } from './auth/http.api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
 
@@ -20,7 +20,11 @@ export type PublicApiEndpoints =
     | PostPublicTableauAuthorization
     | PostPublicUnauthenticatedAuthorization
     | GetPublicProviders
-    | GetPublicProvider;
+    | GetPublicProvider
+    | GetPublicListIntegrationsLegacy
+    | GetPublicListIntegrations
+    | GetPublicIntegration
+    | DeletePublicIntegration;
 export type PrivateApiEndpoints =
     | PostSignup
     | PostSignin
@@ -38,8 +42,7 @@ export type PrivateApiEndpoints =
     | GetOperation
     | SearchMessages
     | SearchFilters
-    | GetOnboardingStatus
-    | GetListIntegrations;
+    | GetOnboardingStatus;
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 
 /**

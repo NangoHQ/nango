@@ -591,7 +591,9 @@
                             "group": "Integrations",
                             "pages": [
                                 "reference/api/integration/list",
+                                "reference/api/integration/listLegacy",
                                 "reference/api/integration/get",
+                                "reference/api/integration/getLegacy",
                                 "reference/api/integration/create",
                                 "reference/api/integration/update",
                                 "reference/api/integration/delete"

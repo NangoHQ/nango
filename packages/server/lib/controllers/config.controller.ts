@@ -231,6 +231,7 @@ class ConfigController {
                     description: metadata?.description
                 };
             });
+
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
             const hasWebhook = provider.webhook_routing_script;
             const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);

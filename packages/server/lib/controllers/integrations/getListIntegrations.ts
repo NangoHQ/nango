@@ -1,10 +1,10 @@
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetPublicListIntegrationsLegacy } from '@nangohq/types';
+import type { GetPublicListIntegrations } from '@nangohq/types';
 import { configService } from '@nangohq/shared';
 import { integrationToPublicApi } from '../../formatters/integration.js';
 
-export const getPublicListIntegrationsLegacy = asyncWrapper<GetPublicListIntegrationsLegacy>(async (req, res) => {
+export const getPublicListIntegrations = asyncWrapper<GetPublicListIntegrations>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -13,9 +13,10 @@ export const getPublicListIntegrationsLegacy = asyncWrapper<GetPublicListIntegra
 
     const { environment } = res.locals;
     const configs = await configService.listProviderConfigs(environment.id);
-    const results = configs.map((config) => {
-        return integrationToPublicApi(config);
-    });
 
-    res.status(200).send({ configs: results });
+    res.status(200).send({
+        data: configs.map((config) => {
+            return integrationToPublicApi(config);
+        })
+    });
 });

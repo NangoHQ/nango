@@ -5,7 +5,7 @@ import { isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
-const endpoint = '/config';
+const endpoint = '/integrations';
 
 describe(`GET ${endpoint}`, () => {
     beforeAll(async () => {
@@ -50,7 +50,7 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
         expect(res.json).toStrictEqual<typeof res.json>({
-            configs: []
+            data: []
         });
     });
 
@@ -63,7 +63,7 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
         expect(res.json).toStrictEqual<typeof res.json>({
-            configs: [
+            data: [
                 {
                     provider: 'github',
                     unique_key: 'github',
@@ -85,7 +85,7 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
         expect(res.json).toStrictEqual<typeof res.json>({
-            configs: []
+            data: []
         });
     });
 });

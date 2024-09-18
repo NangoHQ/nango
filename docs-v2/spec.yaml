@@ -60,7 +60,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
     /config:
         get:
-            description: Returns a list of integrations
+            description: Returns a list of integrations. Deprecated, pease use `GET /integrations`
             responses:
                 '200':
                     description: Successfully returned a list of integrations
@@ -74,17 +74,7 @@ paths:
                                     configs:
                                         type: array
                                         items:
-                                            type: object
-                                            required:
-                                                - unique_key
-                                                - provider
-                                            properties:
-                                                unique_key:
-                                                    type: string
-                                                    description: The integration ID that you created in Nango.
-                                                provider:
-                                                    type: string
-                                                    description: The Nango API Configuration.
+                                            $ref: '#/components/schemas/Integration'
         post:
             description: Create a new integration
             requestBody:
@@ -212,9 +202,11 @@ paths:
                                 properties:
                                     message:
                                         type: string
+
     /config/{providerConfigKey}:
         get:
-            description: Returns a specific integration
+            deprecated: true
+            description: Returns a specific integration. Deprecated, please use `GET /integrations/{uniqueKey}`
             parameters:
                 - name: providerConfigKey
                   in: path
@@ -336,6 +328,58 @@ paths:
                                 properties:
                                     message:
                                         type: string
+    /integrations:
+        get:
+            description: Returns a list of integrations
+            responses:
+                '200':
+                    description: Successfully returned an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Integration'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+    /integrations/{uniqueKey}:
+        get:
+            description: Returns a specific integration
+            parameters:
+                - name: uniqueKey
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The integration ID (unique_key) that you created in Nango.
+            responses:
+                '200':
+                    description: Successfully returned an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/Integration'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
     /connection:
         get:
             description: Returns a list of connections without credentials
@@ -1859,3 +1903,30 @@ components:
           title: 'Oauth1'
         - $ref: '#/components/schemas/ProviderOAuth2'
           title: 'Oauth2'
+
+    Integration:
+        type: object
+        additionalProperties: false
+        required:
+            - unique_key
+            - provider
+            - created_at
+            - updated_at
+        properties:
+            unique_key:
+                type: string
+                description: The integration ID that you created in Nango.
+            provider:
+                type: string
+                description: The Nango API Configuration.
+            logo:
+                type: string
+                description: Absolute path to the logo of this integration (svg)
+            created_at:
+                type: string
+                format: date
+                description: When it was created
+            updated_at:
+                type: string
+                format: date
+                description: Last time it was updated

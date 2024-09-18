@@ -1,11 +1,11 @@
 import { multipleMigrations } from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
-const endpoint = '/config';
+const endpoint = '/integrations/:uniqueKey';
 
 describe(`GET ${endpoint}`, () => {
     beforeAll(async () => {
@@ -18,7 +18,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch(endpoint, { method: 'GET' });
+        const res = await api.fetch(endpoint, { method: 'GET', params: { uniqueKey: 'github' } });
 
         shouldBeProtected(res);
     });
@@ -45,12 +45,12 @@ describe(`GET ${endpoint}`, () => {
     it('should list empty', async () => {
         const env = await seeders.createEnvironmentSeed();
 
-        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key });
+        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' } });
 
-        isSuccess(res.json);
-        expect(res.res.status).toBe(200);
+        isError(res.json);
+        expect(res.res.status).toBe(404);
         expect(res.json).toStrictEqual<typeof res.json>({
-            configs: []
+            error: { code: 'not_found', message: 'Integration does not exist' }
         });
     });
 
@@ -58,20 +58,18 @@ describe(`GET ${endpoint}`, () => {
         const env = await seeders.createEnvironmentSeed();
         await seeders.createConfigSeed(env, 'github', 'github');
 
-        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key });
+        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' } });
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
         expect(res.json).toStrictEqual<typeof res.json>({
-            configs: [
-                {
-                    provider: 'github',
-                    unique_key: 'github',
-                    logo: 'http://localhost:3003/images/template-logos/github.svg',
-                    created_at: expect.toBeIsoDate(),
-                    updated_at: expect.toBeIsoDate()
-                }
-            ]
+            data: {
+                provider: 'github',
+                unique_key: 'github',
+                logo: 'http://localhost:3003/images/template-logos/github.svg',
+                created_at: expect.toBeIsoDate(),
+                updated_at: expect.toBeIsoDate()
+            }
         });
     });
 
@@ -80,12 +78,9 @@ describe(`GET ${endpoint}`, () => {
         const env2 = await seeders.createEnvironmentSeed();
         await seeders.createConfigSeed(env2, 'github', 'github');
 
-        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key });
+        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' } });
 
-        isSuccess(res.json);
-        expect(res.res.status).toBe(200);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            configs: []
-        });
+        isError(res.json);
+        expect(res.res.status).toBe(404);
     });
 });
