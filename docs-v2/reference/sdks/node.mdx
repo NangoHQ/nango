@@ -125,7 +125,7 @@ await nango.getProvider(<NAME>)
 Returns a list of integrations.
 
 ```js
-await nango.listIntegrationsV2()
+await nango.listIntegrations()
 ```
 
 **Example Response**
@@ -133,7 +133,7 @@ await nango.listIntegrationsV2()
 <Expandable>
 ```json
 {
-    "data": [
+    "configs": [
         {
             "unique_key": "slack-nango-community",
             "provider": "slack",

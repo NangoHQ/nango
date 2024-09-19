@@ -35,7 +35,7 @@ export type GetPublicIntegration = Endpoint<{
     Method: 'GET';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
-    Querystring: { include?: ('credentials' | 'webhook')[] | undefined };
+    Querystring: { include?: 'webhook'[] | undefined };
     Success: { data: ApiPublicIntegration };
 }>;
 

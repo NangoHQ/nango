@@ -12,9 +12,18 @@ export const validationParams = z
     })
     .strict();
 
+const valInclude = z.enum(['webhook']);
 const validationQuery = z
     .object({
-        include: z.array(z.enum(['credentials', 'webhook'])).optional()
+        include: z
+            .union([
+                z
+                    .string()
+                    .transform((v) => [v])
+                    .pipe(z.array(valInclude)),
+                z.array(valInclude)
+            ])
+            .optional()
     })
     .strict();
 
@@ -35,7 +44,6 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
     const params: GetPublicIntegration['Params'] = valParams.data;
     const query: GetPublicIntegration['Querystring'] = valQuery.data;
 
-    console.log(query, req.query);
     const queryInclude = new Set(query.include || []);
 
     const integration = await configService.getProviderConfig(params.uniqueKey, environment.id);

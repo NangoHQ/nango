@@ -81,7 +81,7 @@ describe(`GET ${endpoint}`, () => {
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
-        expect(res.json.data.webhook_url).toStrictEqual('efe');
+        expect(res.json.data.webhook_url).toStrictEqual(null);
     });
 
     it('should not list other env', async () => {
