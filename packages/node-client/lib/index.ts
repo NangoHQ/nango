@@ -13,7 +13,12 @@ import type {
     OAuth2ClientCredentials,
     TbaCredentials,
     TableauCredentials,
-    UnauthCredentials
+    UnauthCredentials,
+    GetPublicProviders,
+    GetPublicProvider,
+    GetPublicListIntegrations,
+    GetPublicListIntegrationsLegacy,
+    GetPublicIntegration
 } from '@nangohq/types';
 import type {
     Connection,
@@ -33,7 +38,7 @@ import type {
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
 } from './types.js';
-import { getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
+import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 export const stagingHost = 'https://api-staging.nango.dev';
 export const prodHost = 'https://api.nango.dev';
@@ -104,6 +109,30 @@ export class Nango {
         });
     }
 
+    /****************
+     * Providers
+     *****************/
+    /**
+     * Returns a list of all available providers
+     * @returns A promise that resolves with an object containing an array of providers
+     */
+    public async listProviders(queries: GetPublicProviders['Querystring']): Promise<GetPublicProviders['Success']> {
+        const url = new URL(`${this.serverUrl}/providers`);
+        addQueryParams(url, queries);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders({}) });
+        return response.data;
+    }
+
+    /**
+     * Returns a specific provider
+     * @returns A promise that resolves with an object containing a provider
+     */
+    public async getProvider(params: GetPublicProvider['Params']): Promise<GetPublicProvider['Success']> {
+        const response = await this.http.get(`${this.serverUrl}/providers/${params.provider}`, { headers: this.enrichHeaders({}) });
+        return response.data;
+    }
+
     /**
      * =======
      * INTEGRATIONS
@@ -118,9 +147,21 @@ export class Nango {
     /**
      * Returns a list of integrations
      * @returns A promise that resolves with an object containing an array of integration configurations
+     * @deprecated Use `listIntegrationsV2()`
      */
-    public async listIntegrations(): Promise<{ configs: Pick<Integration, 'unique_key' | 'provider'>[] }> {
+    public async listIntegrations(): Promise<GetPublicListIntegrationsLegacy['Success']> {
         const url = `${this.serverUrl}/config`;
+        const response = await this.http.get(url, { headers: this.enrichHeaders({}) });
+
+        return response.data;
+    }
+
+    /**
+     * Returns a list of integrations
+     * @returns A promise that resolves with an object containing an array of integrations
+     */
+    public async listIntegrationsV2(): Promise<GetPublicListIntegrations['Success']> {
+        const url = `${this.serverUrl}/integrations`;
         const response = await this.http.get(url, { headers: this.enrichHeaders({}) });
 
         return response.data;
@@ -131,6 +172,7 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param includeIntegrationCredentials - An optional flag indicating whether to include integration credentials in the response. Default is false
      * @returns A promise that resolves with an object containing an integration configuration
+     * @deprecated Use `getIntegrationV2()`
      */
     public async getIntegration(
         providerConfigKey: string,
@@ -138,6 +180,22 @@ export class Nango {
     ): Promise<{ config: Integration | IntegrationWithCreds }> {
         const url = `${this.serverUrl}/config/${providerConfigKey}`;
         const response = await this.http.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredentials } });
+        return response.data;
+    }
+
+    /**
+     * Returns a specific integration
+     * @param uniqueKey - The key identifying the provider configuration on Nango
+     * @returns A promise that resolves with an object containing an integration
+     */
+    public async getIntegrationV2(
+        uniqueKey: GetPublicIntegration['Params']['uniqueKey'],
+        queries?: GetPublicIntegration['Querystring']
+    ): Promise<GetPublicIntegration['Success']> {
+        const url = new URL(`${this.serverUrl}/integrations/${uniqueKey}`);
+        addQueryParams(url, queries);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 

@@ -8,7 +8,12 @@ import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incom
 import type { JSONSchema7 } from 'json-schema';
 import type { SyncType } from '../scripts/syncs/api';
 
-export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider'>, ApiTimestamps> & { logo: string };
+export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider'>, ApiTimestamps> & {
+    logo: string;
+} & ApiPublicIntegrationInclude;
+export interface ApiPublicIntegrationInclude {
+    webhook_url?: string | null;
+}
 
 export type GetPublicListIntegrationsLegacy = Endpoint<{
     Method: 'GET';
@@ -17,6 +22,7 @@ export type GetPublicListIntegrationsLegacy = Endpoint<{
         configs: ApiPublicIntegration[];
     };
 }>;
+
 export type GetPublicListIntegrations = Endpoint<{
     Method: 'GET';
     Path: '/integrations';
@@ -29,6 +35,7 @@ export type GetPublicIntegration = Endpoint<{
     Method: 'GET';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
+    Querystring: { include?: ('credentials' | 'webhook')[] | undefined };
     Success: { data: ApiPublicIntegration };
 }>;
 
