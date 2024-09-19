@@ -27,7 +27,7 @@ export const getPublicProvider = asyncWrapper<GetPublicProvider>((req, res) => {
     const params: GetPublicProvider['Params'] = valParams.data;
     const provider = getProvider(params.provider);
     if (!provider) {
-        res.status(404).send({ error: { code: 'not_found', message: 'Unknown provider' } });
+        res.status(404).send({ error: { code: 'not_found', message: `Unknown provider ${params.provider}` } });
         return;
     }
 

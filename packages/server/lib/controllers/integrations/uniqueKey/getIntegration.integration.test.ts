@@ -50,7 +50,7 @@ describe(`GET ${endpoint}`, () => {
         isError(res.json);
         expect(res.res.status).toBe(404);
         expect(res.json).toStrictEqual<typeof res.json>({
-            error: { code: 'not_found', message: 'Integration does not exist' }
+            error: { code: 'not_found', message: 'Integration "github" does not exist' }
         });
     });
 
