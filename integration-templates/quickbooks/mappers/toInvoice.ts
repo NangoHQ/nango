@@ -1,6 +1,7 @@
 import type { Invoice, CreateInvoice, UpdateInvoice } from '../../models';
 import type { QuickBooksInvoice, LineInvoice } from '../types';
 import { toDate } from '../utils/toDate.js';
+import { mapReference } from '../utils/mapRefrence.js';
 
 /**
  * Converts a QuickBooksInvoice object to an Invoice object.
@@ -48,7 +49,7 @@ export function toInvoice(invoice: QuickBooksInvoice): Invoice {
  * @returns {QuickBooksInvoice} - The mapped QuickBooks invoice object.
  */
 export function toQuickBooksInvoice(invoice: CreateInvoice): QuickBooksInvoice {
-    const quickBooksInvoice: any = {};
+    const quickBooksInvoice: Partial<QuickBooksInvoice> = {};
 
     // Handle update scenarios if applicable
     if ('id' in invoice && 'sync_token' in invoice) {
@@ -58,11 +59,9 @@ export function toQuickBooksInvoice(invoice: CreateInvoice): QuickBooksInvoice {
         quickBooksInvoice.sparse = true;
     }
 
-    if (invoice.customer_ref) {
-        quickBooksInvoice.CustomerRef = {
-            value: invoice.customer_ref.value,
-            name: invoice.customer_ref.name
-        };
+    const customerRef = mapReference(invoice.customer_ref);
+    if (customerRef) {
+        quickBooksInvoice.CustomerRef = customerRef;
     }
 
     if (invoice.due_date) {
@@ -71,7 +70,7 @@ export function toQuickBooksInvoice(invoice: CreateInvoice): QuickBooksInvoice {
 
     if (invoice.line) {
         quickBooksInvoice.Line = invoice.line.map((line) => {
-            const qbLine: any = {};
+            const qbLine: Partial<LineInvoice> = {};
             qbLine.DetailType = line.detail_type;
             qbLine.Amount = line.amount_cents / 100;
 
@@ -79,7 +78,7 @@ export function toQuickBooksInvoice(invoice: CreateInvoice): QuickBooksInvoice {
                 qbLine.SalesItemLineDetail = {
                     ItemRef: {
                         value: line.sales_item_line_detail.item_ref.value,
-                        name: line.sales_item_line_detail.item_ref.name
+                        name: line.sales_item_line_detail.item_ref.name ?? ''
                     }
                 };
 
@@ -100,23 +99,19 @@ export function toQuickBooksInvoice(invoice: CreateInvoice): QuickBooksInvoice {
                 qbLine.Description = line.description;
             }
 
-            return qbLine;
+            return qbLine as LineInvoice;
         });
     }
 
-    if (invoice.currency_ref) {
-        quickBooksInvoice.CurrencyRef = {
-            value: invoice.currency_ref.value,
-            name: invoice.currency_ref.name
-        };
+    const currencyRef = mapReference(invoice.currency_ref);
+    if (currencyRef) {
+        quickBooksInvoice.CurrencyRef = currencyRef;
     }
 
-    if (invoice.project_ref) {
-        quickBooksInvoice.ProjectRef = {
-            value: invoice.project_ref.value,
-            name: invoice.project_ref.name
-        };
+    const projectRef = mapReference(invoice.project_ref);
+    if (projectRef) {
+        quickBooksInvoice.ProjectRef = projectRef;
     }
 
-    return quickBooksInvoice;
+    return quickBooksInvoice as QuickBooksInvoice;
 }

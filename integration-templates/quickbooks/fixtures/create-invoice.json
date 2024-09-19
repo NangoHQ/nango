@@ -1,7 +1,6 @@
 {
     "customer_ref": {
-        "value": "1",
-        "name": "John Doe"
+        "value": "1"
     },
     "line": [
         {
@@ -29,12 +28,12 @@
             },
             "quantity": 1,
             "unit_price_cents": 1500,
+            "discount_rate": 10,
             "description": "Purchase of Widget B"
         }
     ],
     "due_date": "2024-10-01",
     "currency_ref": {
-        "value": "USD",
-        "name": "US Dollar"
+        "value": "USD"
     }
 }

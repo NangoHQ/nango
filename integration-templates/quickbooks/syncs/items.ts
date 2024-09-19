@@ -1,6 +1,6 @@
 import type { NangoSync, Item } from '../../models';
 import type { QuickBooksItem } from '../types';
-import paginate from '../helpers/paginate.js';
+import { paginate } from '../helpers/paginate.js';
 import { toItem } from '../mappers/toItem.js';
 import type { PaginationParams } from '../helpers/paginate';
 

@@ -15,8 +15,6 @@ import { toQuickBooksCreditMemo, toCreditMemo } from '../mappers/toCreditMemo.js
  * @returns {Promise<CreditMemo>} - Returns the created credit memo object from QuickBooks.
  */
 export default async function runAction(nango: NangoAction, input: UpdateCreditMemo): Promise<CreditMemo> {
-    const companyId = await getCompany(nango);
-
     // Validate if input is present
     if (!input) {
         throw new nango.ActionError({
@@ -31,6 +29,7 @@ export default async function runAction(nango: NangoAction, input: UpdateCreditM
         });
     }
 
+    const companyId = await getCompany(nango);
     // Map the credit memo input to the QuickBooks credit memo structure
     const quickBooksInvoice = toQuickBooksCreditMemo(input);
 

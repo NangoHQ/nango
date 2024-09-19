@@ -1,5 +1,5 @@
 {
-    "sync_token": "2",
+    "sync_token": "4",
     "id": "170",
     "line": [
         {
@@ -13,7 +13,7 @@
             },
             "quantity": 2,
             "unit_price_cents": 25,
-            "description": "Purchase of Widget A"
+            "description": "Purchase of Widget Ab"
         }
     ],
     "customer_ref": {

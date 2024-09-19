@@ -15,8 +15,6 @@ import { toQuickBooksAccount, toAccount } from '../mappers/toAccount.js';
  * @returns {Promise<Account>} - Returns the created account object from QuickBooks.
  */
 export default async function runAction(nango: NangoAction, input: UpdateAccount): Promise<Account> {
-    const companyId = await getCompany(nango);
-
     // Validate if input is present
     if (!input) {
         throw new nango.ActionError({
@@ -31,6 +29,7 @@ export default async function runAction(nango: NangoAction, input: UpdateAccount
         });
     }
 
+    const companyId = await getCompany(nango);
     // Map the account input to the QuickBooks account structure
     const quickBooksAccount = toQuickBooksAccount(input);
 

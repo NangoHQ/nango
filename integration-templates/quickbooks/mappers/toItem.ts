@@ -1,6 +1,7 @@
 import type { Item, CreateItem, UpdateItem } from '../../models';
 import type { QuickBooksItem } from '../types';
 import { toDate } from '../utils/toDate.js';
+import { mapReference } from '../utils/mapRefrence.js';
 
 /**
  * Converts a QuickBooksItem object to a Item object.
@@ -34,7 +35,7 @@ export function toItem(item: QuickBooksItem): Item {
  * @returns {QuickBooksItem} - The mapped QuickBooks item object.
  */
 export function toQuickBooksItem(item: CreateItem | UpdateItem): QuickBooksItem {
-    const quickBooksItem: any = {};
+    const quickBooksItem: Partial<QuickBooksItem> = {};
 
     if ('id' in item && 'sync_token' in item) {
         const updateItem = item;
@@ -75,35 +76,20 @@ export function toQuickBooksItem(item: CreateItem | UpdateItem): QuickBooksItem 
         quickBooksItem.QtyOnHand = item.qty_on_hand;
     }
 
-    if (item.income_accountRef) {
-        quickBooksItem.IncomeAccountRef = {};
-        if (item.income_accountRef.name) {
-            quickBooksItem.IncomeAccountRef.name = item.income_accountRef.name;
-        }
-        if (item.income_accountRef.value) {
-            quickBooksItem.IncomeAccountRef.value = item.income_accountRef.value;
-        }
+    const incomeAccountRef = mapReference(item.income_accountRef);
+    if (incomeAccountRef) {
+        quickBooksItem.IncomeAccountRef = incomeAccountRef;
     }
 
-    if (item.asset_accountRef) {
-        quickBooksItem.AssetAccountRef = {};
-        if (item.asset_accountRef.name) {
-            quickBooksItem.AssetAccountRef.name = item.asset_accountRef.name;
-        }
-        if (item.asset_accountRef.value) {
-            quickBooksItem.AssetAccountRef.value = item.asset_accountRef.value;
-        }
+    const assetAccountRef = mapReference(item.asset_accountRef);
+    if (assetAccountRef) {
+        quickBooksItem.AssetAccountRef = assetAccountRef;
     }
 
-    if (item.expense_accountRef) {
-        quickBooksItem.ExpenseAccountRef = {};
-        if (item.expense_accountRef.name) {
-            quickBooksItem.ExpenseAccountRef.name = item.expense_accountRef.name;
-        }
-        if (item.expense_accountRef.value) {
-            quickBooksItem.ExpenseAccountRef.value = item.expense_accountRef.value;
-        }
+    const expenseAccountRef = mapReference(item.expense_accountRef);
+    if (expenseAccountRef) {
+        quickBooksItem.ExpenseAccountRef = expenseAccountRef;
     }
 
-    return quickBooksItem;
+    return quickBooksItem as QuickBooksItem;
 }

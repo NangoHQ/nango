@@ -15,8 +15,6 @@ import { toQuickBooksCustomer, toCustomer } from '../mappers/toCustomer.js';
  * @returns {Promise<Customer>} - Returns the created customer object from QuickBooks.
  */
 export default async function runAction(nango: NangoAction, input: CreateCustomer): Promise<Customer> {
-    const companyId = await getCompany(nango);
-
     // Validate if input is present
     if (!input) {
         throw new nango.ActionError({
@@ -31,6 +29,7 @@ export default async function runAction(nango: NangoAction, input: CreateCustome
         });
     }
 
+    const companyId = await getCompany(nango);
     // Map the customer input to the QuickBooks customer structure
     const quickBooksCustomer = toQuickBooksCustomer(input);
 

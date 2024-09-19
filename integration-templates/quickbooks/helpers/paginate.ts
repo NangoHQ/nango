@@ -18,9 +18,9 @@ export interface PaginationParams {
  * @param params Configuration parameters for pagination, including the model, pagination params, and additional filters.
  * @returns An async generator that yields arrays of results from each page.
  */
-async function* paginate<T>(
+export async function* paginate<T>(
     nango: NangoSync,
-    { model, initialPage = 1, maxResults = 10, additionalFilter = '' }: PaginationParams
+    { model, initialPage = 1, maxResults = 100, additionalFilter = '' }: PaginationParams
 ): AsyncGenerator<T[], void, undefined> {
     if (!model) {
         throw new Error("'model' parameter is required.");
@@ -114,5 +114,3 @@ function addIncrementalFilter(query: string, lastSyncDate: Date): string {
     const formattedDate = lastSyncDate.toISOString();
     return `${query} WHERE Metadata.LastUpdatedTime > '${formattedDate}'`;
 }
-
-export default paginate;

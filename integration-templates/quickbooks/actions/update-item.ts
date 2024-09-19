@@ -15,8 +15,6 @@ import { toQuickBooksItem, toItem } from '../mappers/toItem.js';
  * @returns {Promise<Item>} - Returns the created customer object from QuickBooks.
  */
 export default async function runAction(nango: NangoAction, input: UpdateItem): Promise<Item> {
-    const companyId = await getCompany(nango);
-
     // Validate if input is present
     if (!input) {
         throw new nango.ActionError({
@@ -31,6 +29,7 @@ export default async function runAction(nango: NangoAction, input: UpdateItem): 
         });
     }
 
+    const companyId = await getCompany(nango);
     // Map the customer input to the QuickBooks customer structure
     const quickBooksItem = toQuickBooksItem(input);
 

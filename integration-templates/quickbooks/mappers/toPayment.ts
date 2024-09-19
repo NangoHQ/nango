@@ -1,5 +1,6 @@
 import type { Payment, CreatePayment } from '../../models';
 import type { QuickBooksPayment } from '../types';
+import { mapReference } from '../utils/mapRefrence.js';
 
 /**
  * Converts a QuickBooksPayment object to a Payment object.
@@ -29,32 +30,26 @@ export function toPayment(quickBooksPayment: QuickBooksPayment): Payment {
  * @returns {QuickBooksPayment} - The mapped QuickBooks payment object.
  */
 export function toQuickBooksPayment(payment: CreatePayment): QuickBooksPayment {
-    const quickBooksPayment: any = {};
+    const quickBooksPayment: Partial<QuickBooksPayment> = {};
 
-    if (payment.customer_ref) {
-        quickBooksPayment.CustomerRef = {
-            value: payment.customer_ref.value,
-            name: payment.customer_ref.name
-        };
+    const customerRef = mapReference(payment.customer_ref);
+    if (customerRef) {
+        quickBooksPayment.CustomerRef = customerRef;
     }
 
     if (payment.total_amount_cents) {
         quickBooksPayment.TotalAmt = payment.total_amount_cents / 100;
     }
 
-    if (payment.currency_ref) {
-        quickBooksPayment.CurrencyRef = {
-            value: payment.currency_ref.value,
-            name: payment.currency_ref.name
-        };
+    const currencyRef = mapReference(payment.currency_ref);
+    if (currencyRef) {
+        quickBooksPayment.CurrencyRef = currencyRef;
     }
 
-    if (payment.project_ref) {
-        quickBooksPayment.ProjectRef = {
-            value: payment.project_ref.value,
-            name: payment.project_ref.name
-        };
+    const projectRef = mapReference(payment.project_ref);
+    if (projectRef) {
+        quickBooksPayment.ProjectRef = projectRef;
     }
 
-    return quickBooksPayment;
+    return quickBooksPayment as QuickBooksPayment;
 }

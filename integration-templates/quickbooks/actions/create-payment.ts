@@ -15,8 +15,6 @@ import { toQuickBooksPayment, toPayment } from '../mappers/toPayment.js';
  * @returns {Promise<Payment>} - Returns the created invoice object from QuickBooks.
  */
 export default async function runAction(nango: NangoAction, input: CreatePayment): Promise<Payment> {
-    const companyId = await getCompany(nango);
-
     // Validate if input is present
     if (!input) {
         throw new nango.ActionError({
@@ -37,6 +35,7 @@ export default async function runAction(nango: NangoAction, input: CreatePayment
         });
     }
 
+    const companyId = await getCompany(nango);
     // Map the invoice input to the QuickBooks invoice structure
     const quickBooksPayment = toQuickBooksPayment(input);
 

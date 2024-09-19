@@ -71,7 +71,7 @@ export interface QuickBooksCustomer {
     TaxExemptionReasonId?: number;
 }
 
-interface ReferenceType {
+export interface ReferenceType {
     value: string;
     name?: string;
 }
@@ -87,6 +87,13 @@ interface EmailAddress {
 
 interface TelephoneNumber {
     FreeFormNumber?: string;
+}
+
+export type PhysicalAddressCreation = Omit<PhysicalAddress, 'Id'>;
+
+export interface CreateQuickbooksCustomer extends Omit<QuickBooksCustomer, 'BillAddr' | 'ShipAddr'> {
+    BillAddr?: PhysicalAddressCreation;
+    ShipAddr?: PhysicalAddressCreation;
 }
 
 export interface PhysicalAddress {
@@ -233,6 +240,7 @@ interface SalesItemLineDetail {
     TaxCodeRef?: ReferenceType;
     Qty?: number;
     UnitPrice?: number;
+    DiscountRate?: number;
     ItemRef: ReferenceType;
 }
 

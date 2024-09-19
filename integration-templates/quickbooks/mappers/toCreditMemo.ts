@@ -1,5 +1,6 @@
 import type { CreditMemo, CreateCreditMemo, UpdateCreditMemo } from '../../models';
 import type { QuickBooksCreditMemo, LineInvoice } from '../types';
+import { mapReference } from '../utils/mapRefrence.js';
 
 /**
  * Converts a QuickBooksCreditMemo object to a CreditMemo object.
@@ -47,7 +48,7 @@ export function toCreditMemo(creditMemo: QuickBooksCreditMemo): CreditMemo {
  * @returns {QuickBooksCreditMemo} - The mapped QuickBooks creditMemo object.
  */
 export function toQuickBooksCreditMemo(creditMemo: CreateCreditMemo): QuickBooksCreditMemo {
-    const quickBooksCreditMemo: any = {};
+    const quickBooksCreditMemo: Partial<QuickBooksCreditMemo> = {};
 
     // Handle update scenarios if applicable
     if ('id' in creditMemo && 'sync_token' in creditMemo) {
@@ -57,16 +58,14 @@ export function toQuickBooksCreditMemo(creditMemo: CreateCreditMemo): QuickBooks
         quickBooksCreditMemo.sparse = true;
     }
 
-    if (creditMemo.customer_ref) {
-        quickBooksCreditMemo.CustomerRef = {
-            value: creditMemo.customer_ref.value,
-            name: creditMemo.customer_ref.name
-        };
+    const customerRef = mapReference(creditMemo.customer_ref);
+    if (customerRef) {
+        quickBooksCreditMemo.CustomerRef = customerRef;
     }
 
     if (creditMemo.line) {
         quickBooksCreditMemo.Line = creditMemo.line.map((line) => {
-            const qbLine: any = {};
+            const qbLine: Partial<LineInvoice> = {};
             qbLine.DetailType = line.detail_type;
             qbLine.Amount = line.amount_cents / 100;
 
@@ -74,7 +73,7 @@ export function toQuickBooksCreditMemo(creditMemo: CreateCreditMemo): QuickBooks
                 qbLine.SalesItemLineDetail = {
                     ItemRef: {
                         value: line.sales_item_line_detail.item_ref.value,
-                        name: line.sales_item_line_detail.item_ref.name
+                        name: line.sales_item_line_detail.item_ref.name ?? ''
                     }
                 };
 
@@ -91,23 +90,19 @@ export function toQuickBooksCreditMemo(creditMemo: CreateCreditMemo): QuickBooks
                 qbLine.Description = line.description;
             }
 
-            return qbLine;
+            return qbLine as LineInvoice;
         });
     }
 
-    if (creditMemo.currency_ref) {
-        quickBooksCreditMemo.CurrencyRef = {
-            value: creditMemo.currency_ref.value,
-            name: creditMemo.currency_ref.name
-        };
+    const currencyRef = mapReference(creditMemo.currency_ref);
+    if (currencyRef) {
+        quickBooksCreditMemo.CurrencyRef = currencyRef;
     }
 
-    if (creditMemo.project_ref) {
-        quickBooksCreditMemo.ProjectRef = {
-            value: creditMemo.project_ref.value,
-            name: creditMemo.project_ref.name
-        };
+    const projectRef = mapReference(creditMemo.project_ref);
+    if (projectRef) {
+        quickBooksCreditMemo.ProjectRef = projectRef;
     }
 
-    return quickBooksCreditMemo;
+    return quickBooksCreditMemo as QuickBooksCreditMemo;
 }

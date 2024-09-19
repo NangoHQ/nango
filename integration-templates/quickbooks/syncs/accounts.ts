@@ -1,6 +1,6 @@
 import type { NangoSync, Account } from '../../models';
 import type { QuickBooksAccount } from '../types';
-import paginate from '../helpers/paginate.js';
+import { paginate } from '../helpers/paginate.js';
 import { toAccount } from '../mappers/toAccount.js';
 import type { PaginationParams } from '../helpers/paginate';
 

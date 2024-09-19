@@ -1,6 +1,6 @@
 import type { NangoSync, Invoice } from '../../models';
 import type { QuickBooksInvoice } from '../types';
-import paginate from '../helpers/paginate.js';
+import { paginate } from '../helpers/paginate.js';
 import { toInvoice } from '../mappers/toInvoice.js';
 import type { PaginationParams } from '../helpers/paginate';
 

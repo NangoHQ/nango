@@ -1,6 +1,6 @@
 {
     "track_qty_onHand": true,
-    "name": "Timber Test 1",
+    "name": "Timber Test 4",
     "qty_on_hand": 10,
     "income_accountRef": {
         "name": "Sales of Product Income",
