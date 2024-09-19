@@ -33,13 +33,13 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
 
     const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
     if (!integration) {
-        res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
+        res.status(404).send({ error: { code: 'not_found', message: `Integration "${params.providerConfigKey}" does not exist` } });
         return;
     }
 
     const provider = getProvider(integration.provider);
     if (!provider) {
-        res.status(400).send({ error: { code: 'not_found', message: 'Provider does not exist' } });
+        res.status(400).send({ error: { code: 'not_found', message: `Provider "${integration.provider}" does not exist` } });
         return;
     }
 

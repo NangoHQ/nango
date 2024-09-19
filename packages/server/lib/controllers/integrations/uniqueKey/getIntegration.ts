@@ -30,7 +30,7 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
 
     const integration = await configService.getProviderConfig(params.uniqueKey, environment.id);
     if (!integration) {
-        res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
+        res.status(404).send({ error: { code: 'not_found', message: `Integration "${params.uniqueKey}" does not exist` } });
         return;
     }
 
