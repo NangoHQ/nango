@@ -8,17 +8,31 @@ import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incom
 import type { JSONSchema7 } from 'json-schema';
 import type { SyncType } from '../scripts/syncs/api';
 
-export type GetListIntegrations = Endpoint<{
+export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider'>, ApiTimestamps> & { logo: string };
+
+export type GetPublicListIntegrationsLegacy = Endpoint<{
     Method: 'GET';
     Path: '/config';
     Success: {
-        configs: {
-            provider: string;
-            unique_key: string;
-        }[];
+        configs: ApiPublicIntegration[];
     };
 }>;
-export type DeleteIntegrationPublic = Endpoint<{
+export type GetPublicListIntegrations = Endpoint<{
+    Method: 'GET';
+    Path: '/integrations';
+    Success: {
+        data: ApiPublicIntegration[];
+    };
+}>;
+
+export type GetPublicIntegration = Endpoint<{
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey';
+    Params: { uniqueKey: string };
+    Success: { data: ApiPublicIntegration };
+}>;
+
+export type DeletePublicIntegration = Endpoint<{
     Method: 'DELETE';
     Path: '/config/:providerConfigKey';
     Params: { providerConfigKey: string };

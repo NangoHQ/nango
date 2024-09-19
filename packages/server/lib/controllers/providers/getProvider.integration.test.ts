@@ -45,7 +45,7 @@ describe(`GET ${route}`, () => {
 
         isError(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
-            error: { code: 'not_found', message: 'Unknown provider' }
+            error: { code: 'not_found', message: 'Unknown provider foobar' }
         });
     });
 });

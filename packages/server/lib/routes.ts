@@ -70,11 +70,11 @@ import { securityMiddlewares } from './middleware/security.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getEnvJs } from './controllers/v1/getEnvJs.js';
-import { getListIntegrations } from './controllers/config/getListIntegrations.js';
+import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
 import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
-import { deleteIntegrationPublic } from './controllers/config/providerConfigKey/deleteIntegration.js';
+import { deletePublicIntegration } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
 import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
@@ -89,6 +89,8 @@ import { deleteConnection } from './controllers/v1/connection/deleteConnection.j
 import { getPublicProviders } from './controllers/providers/getProviders.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
+import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
+import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 
 export const router = express.Router();
 
@@ -147,6 +149,7 @@ const publicAPICorsHandler = cors({
 publicAPI.use(publicAPICorsHandler);
 publicAPI.options('*', publicAPICorsHandler); // Pre-flight
 
+// API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
@@ -165,18 +168,24 @@ publicAPI.route('/unauth/:providerConfigKey').post(apiPublicAuth, postPublicUnau
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
 publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustomer.bind(accountController));
 
-// API routes (API key auth).
+// API routes (Secret key auth).
 // @deprecated
 publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
 // @deprecated
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
 publicAPI.route('/providers').get(apiAuth, getPublicProviders);
 publicAPI.route('/providers/:provider').get(apiAuth, getPublicProvider);
-publicAPI.route('/config').get(apiAuth, getListIntegrations);
+
+// @deprecated
+publicAPI.route('/config').get(apiAuth, getPublicListIntegrationsLegacy);
+// @deprecated
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
-publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deleteIntegrationPublic);
+publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegration);
+publicAPI.route('/integrations').get(apiAuth, getPublicListIntegrations);
+publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
+
 publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 publicAPI.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);

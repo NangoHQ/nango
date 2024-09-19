@@ -1,6 +1,6 @@
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { DeleteIntegrationPublic } from '@nangohq/types';
+import type { DeletePublicIntegration } from '@nangohq/types';
 import { configService } from '@nangohq/shared';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { z } from 'zod';
@@ -14,7 +14,7 @@ export const validationParams = z
     })
     .strict();
 
-export const deleteIntegrationPublic = asyncWrapper<DeleteIntegrationPublic>(async (req, res) => {
+export const deletePublicIntegration = asyncWrapper<DeletePublicIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -30,7 +30,7 @@ export const deleteIntegrationPublic = asyncWrapper<DeleteIntegrationPublic>(asy
     }
 
     const { environment } = res.locals;
-    const params: DeleteIntegrationPublic['Params'] = valParams.data;
+    const params: DeletePublicIntegration['Params'] = valParams.data;
 
     const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
     if (!integration) {
