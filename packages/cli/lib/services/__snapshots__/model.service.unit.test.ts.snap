@@ -331,7 +331,7 @@ export declare class NangoAction {
      */
     setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<object>>;
     getMetadata<T = Metadata>(): Promise<T>;
-    getWebhookURL(): Promise<string | undefined>;
+    getWebhookURL(): Promise<string | null | undefined>;
     /**
      * @deprecated please use getMetadata instead.
      */
