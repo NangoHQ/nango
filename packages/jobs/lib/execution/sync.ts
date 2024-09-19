@@ -315,7 +315,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
 
             await telemetry.log(
                 LogTypes.SYNC_SUCCESS,
-                `${nangoProps.syncConfig.sync_type} sync '${nangoProps.syncConfig.sync_name}' for model ${model} was completed successfully`,
+                `${nangoProps.syncConfig.sync_type || 'The'} sync '${nangoProps.syncConfig.sync_name}' for model ${model} was completed successfully`,
                 LogActionEnum.SYNC,
                 {
                     model,
@@ -342,7 +342,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
         });
 
         await logCtx.info(
-            `${nangoProps.syncConfig.sync_type?.replace(/^./, (c) => c.toUpperCase())} sync '${nangoProps.syncConfig.sync_name}' completed successfully`,
+            `${nangoProps.syncConfig.sync_type ? nangoProps.syncConfig.sync_type.replace(/^./, (c) => c.toUpperCase()) : 'The '} sync '${nangoProps.syncConfig.sync_name}' completed successfully`,
             syncPayload
         );
 
