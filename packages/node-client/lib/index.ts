@@ -146,25 +146,15 @@ export class Nango {
 
     /**
      * Returns a list of integrations
-     * @returns A promise that resolves with an object containing an array of integration configurations
-     * @deprecated Use `listIntegrationsV2()`
-     */
-    public async listIntegrations(): Promise<GetPublicListIntegrationsLegacy['Success']> {
-        const url = `${this.serverUrl}/config`;
-        const response = await this.http.get(url, { headers: this.enrichHeaders({}) });
-
-        return response.data;
-    }
-
-    /**
-     * Returns a list of integrations
      * @returns A promise that resolves with an object containing an array of integrations
      */
-    public async listIntegrationsV2(): Promise<GetPublicListIntegrations['Success']> {
+    public async listIntegrations(): Promise<GetPublicListIntegrationsLegacy['Success']> {
         const url = `${this.serverUrl}/integrations`;
         const response = await this.http.get(url, { headers: this.enrichHeaders({}) });
 
-        return response.data;
+        const tmp: GetPublicListIntegrations['Success'] = response.data;
+        // To avoid deprecating this method we emulate legacy format
+        return { configs: tmp.data };
     }
 
     /**
