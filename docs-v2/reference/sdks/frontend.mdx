@@ -58,7 +58,7 @@ You store end-user credentials with the `nango.auth` method. It creates a [conne
 For OAuth, this will open a modal to let the user log in to their external account.
 
 ```js
-const result = await nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>').catch((error) => {
+const result = await nango.auth('<INTEGRATION-ID>').catch((error) => {
 ...
 });
 ```
@@ -70,7 +70,7 @@ const result = await nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>').catch((er
 For API key authorization, pass the end-user's previously-collected API key directly in the parameters.
 
 ```js
-const result = await nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+const result = await nango.auth('<INTEGRATION-ID>', {
     credentials: { apiKey: '<END-USER-API-KEY>' }
 }).catch((error) => {
     ...
@@ -84,7 +84,7 @@ const result = await nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
 For Basic Auth, pass the end-user's previously-collected username & password in the parameters.
 
 ```js
-const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+const result = nango.auth('<INTEGRATION-ID>', {
     credentials: { username: '<END-USER-API-KEY>', password: '<END-USER-PASSWORD>' }
 }).catch((error) => {
     ...
@@ -100,7 +100,7 @@ const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
     The integration ID that you can find in the integration settings on the Nango UI.
   </ResponseField>
 
-  <ResponseField name="connectionId" type="string" required>
+  <ResponseField name="connectionId" type="string">
     The connection ID that you can find in the _Connections_ tab on the Nango UI.
   </ResponseField>
 

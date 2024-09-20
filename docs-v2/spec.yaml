@@ -439,15 +439,14 @@ paths:
                         schema:
                             type: object
                             required:
-                                - connection_id
                                 - provider_config_key
                             properties:
-                                connection_id:
-                                    type: string
-                                    description: The connection ID used to create the connection.
                                 provider_config_key:
                                     type: string
                                     description: The integration ID that you created on Nango.
+                                connection_id:
+                                    type: string
+                                    description: The connection ID used to create the connection.
                                 access_token:
                                     type: string
                                     description: (OAuth 2, required) Existing access token.
