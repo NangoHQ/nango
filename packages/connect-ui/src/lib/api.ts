@@ -74,6 +74,7 @@ export class APIError extends Error {
 /******************
  * ENDPOINTS
  ********************/
+
 export async function getIntegrations() {
     const { json, res } = await fetchApi<GetPublicListIntegrations>('/integrations', {});
     if (res.status !== 200 || isError(json)) {
