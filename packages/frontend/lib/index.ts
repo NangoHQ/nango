@@ -27,9 +27,9 @@ export interface AuthResult {
     isPending?: boolean;
 }
 
-interface AuthOptions {
+type AuthOptions = {
     detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed
-}
+} & (ConnectionConfig | OAuth2ClientCredentials | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials);
 
 export default class Nango {
     private hostBaseUrl: string;
@@ -82,11 +82,24 @@ export default class Nango {
     /**
      * Creates a new unauthenticated connection using the specified provider configuration key and connection ID
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param connectionId -  The ID of the connection
+     * @param connectionId -  Optional. The ID of the connection
      * @param connectionConfig - Optional. Additional configuration for the connection
      * @returns A promise that resolves with the authentication result
      */
-    public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResult> {
+    public async create(providerConfigKey: string, connectionConfig?: ConnectionConfig): Promise<AuthResult>;
+    public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResult>;
+    public async create(
+        providerConfigKey: string,
+        connectionIdOrConnectionConfig?: string | ConnectionConfig,
+        moreConnectionConfig?: ConnectionConfig
+    ): Promise<AuthResult> {
+        let connectionId: string | null = null;
+        let connectionConfig: ConnectionConfig | undefined = moreConnectionConfig;
+        if (typeof connectionIdOrConnectionConfig === 'string') {
+            connectionId = connectionIdOrConnectionConfig;
+        } else {
+            connectionConfig = connectionIdOrConnectionConfig;
+        }
         const url = this.hostBaseUrl + `/auth/unauthenticated/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
         const res = await fetch(url, {
@@ -107,16 +120,23 @@ export default class Nango {
     /**
      * Initiates the authorization process for a connection
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param connectionId - The ID of the connection for which to authorize
+     * @param connectionId - Optional. The ID of the connection for which to authorize
      * @param options - Optional. Additional options for authorization
      * @returns A promise that resolves with the authorization result
      */
-    public auth(
-        providerConfigKey: string,
-        connectionId: string,
-        options?: (ConnectionConfig | OAuth2ClientCredentials | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials) &
-            AuthOptions
-    ): Promise<AuthResult> {
+    public auth(providerConfigKey: string, options?: AuthOptions): Promise<AuthResult>;
+    public auth(providerConfigKey: string, connectionId: string, options?: AuthOptions): Promise<AuthResult>;
+    public auth(providerConfigKey: string, connectionIdOrOptions?: string | AuthOptions, moreOptions?: AuthOptions): Promise<AuthResult> {
+        let connectionId: string | null = null;
+        let options: AuthOptions | undefined = moreOptions;
+        if (typeof connectionIdOrOptions === 'string') {
+            connectionId = connectionIdOrOptions;
+        } else {
+            options = {
+                ...options,
+                ...connectionIdOrOptions
+            };
+        }
         if (
             options &&
             'credentials' in options &&
@@ -286,7 +306,7 @@ export default class Nango {
      */
     private async customAuth(
         providerConfigKey: string,
-        connectionId: string,
+        connectionId: string | null,
         connectionConfigWithCredentials: ConnectionConfig,
         connectionConfig?: ConnectionConfig
     ): Promise<AuthResult> {
@@ -430,7 +450,7 @@ export default class Nango {
      * @param connectionConfig - Optional. Additional configuration for the connection
      * @returns The generated query string
      */
-    private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
+    private toQueryString(connectionId: string | null, connectionConfig?: ConnectionConfig): string {
         const query: string[] = [];
 
         if (connectionId) {

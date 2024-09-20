@@ -54,7 +54,7 @@ class OAuthController {
         const accountId = account.id;
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
-        let connectionId = req.query['connection_id'] as string | undefined;
+        const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
         const userScope = req.query['user_scope'] as string | undefined;
 
@@ -77,7 +77,7 @@ class OAuthController {
                 environmentId: String(environmentId),
                 accountId: String(accountId),
                 providerConfigKey: String(providerConfigKey),
-                connectionId: String(connectionId)
+                connectionId: String(receivedConnectionId)
             });
 
             const callbackUrl = await getOauthCallbackUrl(environmentId);
@@ -85,22 +85,13 @@ class OAuthController {
             const authorizationParams = req.query['authorization_params'] != null ? getAdditionalAuthorizationParams(req.query['authorization_params']) : {};
             const overrideCredentials = req.query['credentials'] != null ? getAdditionalAuthorizationParams(req.query['credentials']) : {};
 
-            if (connectionId == null) {
-                const error = WSErrBuilder.MissingConnectionId();
-                await logCtx.error(error.message);
-                await logCtx.failed();
-
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
-            } else if (providerConfigKey == null) {
+            if (providerConfigKey == null) {
                 const error = WSErrBuilder.MissingProviderConfigKey();
                 await logCtx.error(error.message);
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
             }
-
-            connectionId = connectionId.toString();
-
             const hmacEnabled = await hmacService.isEnabled(environmentId);
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
@@ -109,18 +100,20 @@ class OAuthController {
                     await logCtx.error(error.message);
                     await logCtx.failed();
 
-                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                    return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
                 }
-                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
+                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, receivedConnectionId);
 
                 if (!verified) {
                     const error = WSErrBuilder.InvalidHmac();
                     await logCtx.error(error.message);
                     await logCtx.failed();
 
-                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                    return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
                 }
             }
+
+            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
             await logCtx.info('Authorization URL request from the client');
 
@@ -240,18 +233,18 @@ class OAuthController {
                 environmentId,
                 metadata: {
                     providerConfigKey,
-                    connectionId
+                    connectionId: receivedConnectionId
                 }
             });
 
-            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
+            return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.UnknownError(prettyError));
         }
     }
 
     public async oauth2RequestCC(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         const { environment, account } = res.locals;
         const { providerConfigKey } = req.params;
-        const connectionId = req.query['connection_id'] as string | undefined;
+        const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
         const body = req.body;
 
@@ -288,12 +281,6 @@ class OAuthController {
                 return;
             }
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
-
-                return;
-            }
-
             const hmacEnabled = await hmacService.isEnabled(environment.id);
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
@@ -305,7 +292,7 @@ class OAuthController {
 
                     return;
                 }
-                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, connectionId);
+                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, receivedConnectionId);
                 if (!verified) {
                     await logCtx.error('Invalid HMAC');
                     await logCtx.failed();
@@ -315,6 +302,8 @@ class OAuthController {
                     return;
                 }
             }
+
+            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
@@ -408,7 +397,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
                     environment,
                     account,
                     auth_mode: 'OAUTH2_CC',
@@ -432,7 +421,7 @@ class OAuthController {
                 environmentId: environment.id,
                 metadata: {
                     providerConfigKey,
-                    connectionId
+                    connectionId: receivedConnectionId
                 }
             });
 
@@ -712,8 +701,8 @@ class OAuthController {
         const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult, oAuth1CallbackURL);
 
         await logCtx.info('Successfully requested token. Redirecting...', {
-            providerConfigKey: session.providerConfigKey,
-            connectionId: session.connectionId,
+            providerConfigKey,
+            connectionId,
             redirectUrl
         });
 
@@ -1158,8 +1147,8 @@ class OAuthController {
                 operation: LogActionEnum.AUTH,
                 environmentId: session.environmentId,
                 metadata: {
-                    providerConfigKey: session.providerConfigKey,
-                    connectionId: session.connectionId
+                    providerConfigKey,
+                    connectionId
                 }
             });
 

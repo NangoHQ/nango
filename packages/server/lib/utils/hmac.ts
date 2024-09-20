@@ -14,7 +14,7 @@ export async function hmacCheck({
     environment: DBEnvironment;
     logCtx: LogContext;
     providerConfigKey: string;
-    connectionId: string;
+    connectionId: string | undefined;
     hmac: string | undefined;
     res: Response;
 }) {
@@ -28,7 +28,7 @@ export async function hmacCheck({
 
             return;
         }
-        const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, connectionId);
+        const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, ...(connectionId ? [connectionId] : []));
         if (!verified) {
             await logCtx.error('Invalid HMAC');
             await logCtx.failed();
