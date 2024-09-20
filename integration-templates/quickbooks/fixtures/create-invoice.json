@@ -1,0 +1,39 @@
+{
+    "customer_ref": {
+        "value": "1"
+    },
+    "line": [
+        {
+            "detail_type": "SalesItemLineDetail",
+            "amount_cents": 5000,
+            "sales_item_line_detail": {
+                "item_ref": {
+                    "value": "10",
+                    "name": "Widget A"
+                }
+            },
+            "quantity": 2,
+            "unit_price_cents": 2500,
+            "discount_rate": 10,
+            "description": "Purchase of Widget A"
+        },
+        {
+            "detail_type": "SalesItemLineDetail",
+            "amount_cents": 1500,
+            "sales_item_line_detail": {
+                "item_ref": {
+                    "value": "9",
+                    "name": "Widget B"
+                }
+            },
+            "quantity": 1,
+            "unit_price_cents": 1500,
+            "discount_rate": 10,
+            "description": "Purchase of Widget B"
+        }
+    ],
+    "due_date": "2024-10-01",
+    "currency_ref": {
+        "value": "USD"
+    }
+}
