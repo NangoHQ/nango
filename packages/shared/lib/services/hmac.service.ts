@@ -21,8 +21,9 @@ class HmacService {
         return key;
     }
 
-    async verify(expectedDigest: string, id: number, ...values: string[]): Promise<boolean> {
-        const actualDigest = await this.digest(id, ...values);
+    async verify(expectedDigest: string, id: number, ...values: (string | undefined)[]): Promise<boolean> {
+        const definedValues: string[] = values.flatMap((v) => (v === undefined ? [] : [v]));
+        const actualDigest = await this.digest(id, ...definedValues);
         return expectedDigest === actualDigest;
     }
 

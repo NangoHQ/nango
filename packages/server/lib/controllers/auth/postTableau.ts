@@ -30,7 +30,7 @@ const bodyValidation = z
 
 const queryStringValidation = z
     .object({
-        connection_id: connectionIdSchema,
+        connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
         public_key: z.string().uuid(),
         hmac: z.string().optional()
@@ -70,7 +70,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
     const { account, environment } = res.locals;
     const { pat_name: patName, pat_secret: patSecret, content_url: contentUrl }: PostPublicTableauAuthorization['Body'] = val.data;
-    const { connection_id: connectionId, params, hmac }: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
+    const { connection_id: receivedConnectionId, params, hmac }: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTableauAuthorization['Params'] = paramVal.data;
     const connectionConfig = params ? getConnectionConfig(params) : {};
 
@@ -91,7 +91,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             environment,
             logCtx,
             providerConfigKey,
-            connectionId,
+            connectionId: receivedConnectionId,
             hmac,
             res
         });
@@ -138,6 +138,8 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
         await logCtx.info('Tableau credentials creation was successful');
         await logCtx.success();
+
+        const connectionId = receivedConnectionId || connectionService.generateConnectionId();
         const [updatedConnection] = await connectionService.upsertTableauConnection({
             connectionId,
             providerConfigKey,
@@ -172,7 +174,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
                 environment,
                 account,
                 auth_mode: 'TABLEAU',
@@ -196,7 +198,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             environmentId: environment.id,
             metadata: {
                 providerConfigKey,
-                connectionId
+                connectionId: receivedConnectionId
             }
         });
 

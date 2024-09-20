@@ -253,12 +253,9 @@ class ConnectionController {
     async createConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { environment, account } = res.locals;
-            const { connection_id, provider_config_key, metadata, connection_config } = req.body;
+            const { provider_config_key, metadata, connection_config } = req.body;
 
-            if (!connection_id) {
-                errorManager.errRes(res, 'missing_connection');
-                return;
-            }
+            const connectionId = (req.body['connection_id'] as string) || connectionService.generateConnectionId();
 
             if (!provider_config_key) {
                 errorManager.errRes(res, 'missing_provider_config');
@@ -359,7 +356,7 @@ class ConnectionController {
                 };
 
                 const [imported] = await connectionService.importOAuthConnection({
-                    connectionId: connection_id,
+                    connectionId,
                     providerConfigKey: provider_config_key,
                     provider: providerName,
                     metadata,
@@ -422,7 +419,7 @@ class ConnectionController {
                 };
 
                 const [imported] = await connectionService.importOAuthConnection({
-                    connectionId: connection_id,
+                    connectionId,
                     providerConfigKey: provider_config_key,
                     provider: providerName,
                     metadata,
@@ -471,7 +468,7 @@ class ConnectionController {
                 };
 
                 const [imported] = await connectionService.importOAuthConnection({
-                    connectionId: connection_id,
+                    connectionId,
                     providerConfigKey: provider_config_key,
                     provider: providerName,
                     metadata,
@@ -513,7 +510,7 @@ class ConnectionController {
                     );
                 };
                 const [imported] = await connectionService.importApiAuthConnection({
-                    connectionId: connection_id,
+                    connectionId,
                     providerConfigKey: provider_config_key,
                     provider: providerName,
                     metadata,
@@ -555,7 +552,7 @@ class ConnectionController {
                 };
 
                 const [imported] = await connectionService.importApiAuthConnection({
-                    connectionId: connection_id,
+                    connectionId,
                     providerConfigKey: provider_config_key,
                     provider: providerName,
                     metadata,
@@ -602,7 +599,7 @@ class ConnectionController {
                 }
 
                 const [imported] = await connectionService.upsertConnection({
-                    connectionId: connection_id,
+                    connectionId,
                     providerConfigKey: provider_config_key,
                     provider: providerName,
                     parsedRawCredentials: credentials as unknown as AuthCredentials,
@@ -650,7 +647,7 @@ class ConnectionController {
                 }
 
                 const [imported] = await connectionService.upsertTbaConnection({
-                    connectionId: connection_id,
+                    connectionId,
                     providerConfigKey: provider_config_key,
                     credentials: tbaCredentials,
                     connectionConfig: {
@@ -670,7 +667,7 @@ class ConnectionController {
                 }
             } else if (provider.auth_mode === 'NONE') {
                 const [imported] = await connectionService.upsertUnauthConnection({
-                    connectionId: connection_id,
+                    connectionId,
                     providerConfigKey: provider_config_key,
                     provider: providerName,
                     environment,
@@ -702,7 +699,10 @@ class ConnectionController {
                 );
             }
 
-            res.status(201).send(req.body);
+            res.status(201).send({
+                ...req.body,
+                connection_id: connectionId
+            });
         } catch (err) {
             next(err);
         }
