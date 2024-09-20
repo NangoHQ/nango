@@ -16,7 +16,7 @@ import {
     MAX_LOG_PAYLOAD,
     stringifyAndTruncateValue,
     stringifyObject,
-    truncateJsonString
+    truncateJson
 } from '@nangohq/utils';
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
@@ -836,13 +836,12 @@ export class NangoAction {
                     if (data.length > MAX_LOG_PAYLOAD) {
                         log.message += ` ... (truncated, payload was too large)`;
                         // Truncating can remove mandatory field so we only try to truncate meta
-                        data = stringifyObject({
-                            activityLogId: this.activityLogId,
-                            log: {
-                                ...log,
-                                meta: JSON.parse(truncateJsonString(stringifyObject(log.meta), MAX_LOG_PAYLOAD - 1000)) as MessageRowInsert['meta']
-                            }
-                        });
+                        if (log.meta) {
+                            data = stringifyObject({
+                                activityLogId: this.activityLogId,
+                                log: { ...log, meta: truncateJson(log.meta) as MessageRowInsert['meta'] }
+                            });
+                        }
                     }
 
                     return await this.persistApi({
