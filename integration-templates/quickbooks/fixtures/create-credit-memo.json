@@ -1,0 +1,25 @@
+{
+    "customer_ref": {
+        "value": "73",
+        "name": "John Doe"
+    },
+    "line": [
+        {
+            "detail_type": "SalesItemLineDetail",
+            "amount_cents": 5000,
+            "sales_item_line_detail": {
+                "item_ref": {
+                    "value": "9",
+                    "name": "Widget A"
+                }
+            },
+            "quantity": 2,
+            "unit_price_cents": 2500,
+            "description": "Purchase of Widget A"
+        }
+    ],
+    "currency_ref": {
+        "value": "USD",
+        "name": "US Dollar"
+    }
+}
