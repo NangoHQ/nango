@@ -27,7 +27,7 @@ class ApiAuthController {
     async apiKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         const { account, environment } = res.locals;
         const { providerConfigKey } = req.params;
-        const connectionId = req.query['connection_id'] as string | undefined;
+        const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
         let logCtx: LogContext | undefined;
@@ -48,12 +48,6 @@ class ApiAuthController {
                 return;
             }
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
-
-                return;
-            }
-
             const hmacEnabled = await hmacService.isEnabled(environment.id);
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
@@ -65,7 +59,7 @@ class ApiAuthController {
 
                     return;
                 }
-                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, connectionId);
+                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, receivedConnectionId);
                 if (!verified) {
                     await logCtx.error('Invalid HMAC');
                     await logCtx.failed();
@@ -75,6 +69,8 @@ class ApiAuthController {
                     return;
                 }
             }
+
+            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
@@ -176,7 +172,7 @@ class ApiAuthController {
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                        connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
                         auth_mode: 'API_KEY',
@@ -199,7 +195,7 @@ class ApiAuthController {
                 environmentId: environment.id,
                 metadata: {
                     providerConfigKey,
-                    connectionId
+                    receivedConnectionId
                 }
             });
 
@@ -210,7 +206,7 @@ class ApiAuthController {
     async basic(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         const { account, environment } = res.locals;
         const { providerConfigKey } = req.params;
-        const connectionId = req.query['connection_id'] as string | undefined;
+        const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
         let logCtx: LogContext | undefined;
@@ -232,12 +228,6 @@ class ApiAuthController {
                 return;
             }
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
-
-                return;
-            }
-
             const hmacEnabled = await hmacService.isEnabled(environment.id);
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
@@ -249,7 +239,7 @@ class ApiAuthController {
 
                     return;
                 }
-                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, connectionId);
+                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, receivedConnectionId);
                 if (!verified) {
                     await logCtx.error('Invalid HMAC');
                     await logCtx.failed();
@@ -258,6 +248,8 @@ class ApiAuthController {
                     return;
                 }
             }
+
+            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
             const { username = '', password = '' } = req.body;
 
@@ -354,7 +346,7 @@ class ApiAuthController {
             if (logCtx) {
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                        connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
                         environment,
                         account,
                         auth_mode: 'API_KEY',
@@ -377,7 +369,7 @@ class ApiAuthController {
                 environmentId: environment.id,
                 metadata: {
                     providerConfigKey,
-                    connectionId
+                    connectionId: receivedConnectionId
                 }
             });
 

@@ -12,7 +12,7 @@ import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.j
 
 const queryStringValidation = z
     .object({
-        connection_id: connectionIdSchema,
+        connection_id: connectionIdSchema.optional(),
         public_key: z.string().uuid(),
         user_scope: z.string().optional(),
         hmac: z.string().optional()
@@ -45,7 +45,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
     }
 
     const { account, environment } = res.locals;
-    const { connection_id: connectionId, hmac }: PostPublicUnauthenticatedAuthorization['Querystring'] = queryStringVal.data;
+    const { connection_id: receivedConnectionId, hmac }: PostPublicUnauthenticatedAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicUnauthenticatedAuthorization['Params'] = paramVal.data;
 
     let logCtx: LogContext | undefined;
@@ -57,7 +57,9 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         );
         void analytics.track(AnalyticsTypes.PRE_UNAUTH, account.id);
 
-        await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+        await hmacCheck({ environment, logCtx, providerConfigKey, connectionId: receivedConnectionId, hmac, res });
+
+        const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
@@ -118,7 +120,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
 
         void connectionCreationFailed(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
                 environment,
                 account,
                 auth_mode: 'NONE',

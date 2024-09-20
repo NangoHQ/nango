@@ -1,0 +1,12 @@
+{
+    "display_name": "John Doe 3",
+    "id": "74",
+    "sync_token": "8",
+    "ship_address": {
+        "line1": "456 Market St",
+        "line2": "Apt 12",
+        "city": "Anywhere",
+        "postal_code": "10005",
+        "country": "USA"
+    }
+}

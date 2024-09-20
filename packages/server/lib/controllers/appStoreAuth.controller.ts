@@ -21,7 +21,7 @@ class AppStoreAuthController {
     async auth(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         const { environment, account } = res.locals;
         const { providerConfigKey } = req.params;
-        const connectionId = req.query['connection_id'] as string | undefined;
+        const receivedConnectionId = req.query['connection_id'] as string | undefined;
 
         let logCtx: LogContext | undefined;
 
@@ -42,12 +42,6 @@ class AppStoreAuthController {
                 return;
             }
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
-
-                return;
-            }
-
             const hmacEnabled = await hmacService.isEnabled(environment.id);
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
@@ -59,7 +53,7 @@ class AppStoreAuthController {
 
                     return;
                 }
-                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, connectionId);
+                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, receivedConnectionId);
                 if (!verified) {
                     await logCtx.error('Invalid HMAC');
                     await logCtx.failed();
@@ -69,6 +63,8 @@ class AppStoreAuthController {
                     return;
                 }
             }
+
+            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
@@ -185,7 +181,7 @@ class AppStoreAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId!, provider_config_key: providerConfigKey! },
+                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
                     environment,
                     account,
                     auth_mode: 'APP_STORE',
@@ -209,7 +205,7 @@ class AppStoreAuthController {
                 environmentId: environment.id,
                 metadata: {
                     providerConfigKey,
-                    connectionId
+                    connectionId: receivedConnectionId
                 }
             });
 
