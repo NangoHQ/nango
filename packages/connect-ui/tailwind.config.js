@@ -48,6 +48,9 @@ export default {
                 'border-gray-400': '#323439',
                 'text-light': '#A9ACB3',
                 ring: '#A9ACB3'
+            },
+            boxShadow: {
+                card: '-3.2px -3.2px 10.399px 0px rgba(198, 198, 198, 0.20), 4.8px 4.8px 28.797px 0px rgba(198, 198, 198, 0.20)'
             }
         }
     },

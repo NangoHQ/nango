@@ -229,6 +229,7 @@
                 "@typescript-eslint/no-non-null-assertion": "error",
                 "@typescript-eslint/no-explicit-any": "error",
                 "@typescript-eslint/only-throw-error": "error",
+                "react/prop-types": "off",
                 "import/order": [
                     "error",
                     {

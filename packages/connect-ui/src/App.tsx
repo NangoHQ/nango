@@ -4,10 +4,10 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 import { ErrorFallback } from './components/ErrorFallback.js';
 import { queryClient } from './lib/query.js';
-import { Integrations } from './views/Integrations.js';
+import { IntegrationsList } from './views/IntegrationsList.js';
 
 const rootRoute = createRootRoute({
-    component: Integrations
+    component: IntegrationsList
 });
 
 const routeTree = rootRoute.addChildren([]);
