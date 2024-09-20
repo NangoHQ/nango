@@ -12,14 +12,14 @@ function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     return res;
 }
 
-export async function fetchApi<T extends Endpoint<{ Path: any; Success: any; Method: any; Querystring?: any }>>(
-    path: T['Path'],
-    opts: (T['Method'] extends 'GET' ? { method?: T['Method'] } : { method: T['Method'] }) &
-        (T['Body'] extends never ? { body?: undefined } : { body: T['Body'] }) &
-        (T['Querystring'] extends never ? { query?: undefined } : { query: T['Querystring'] }) &
-        (T['Params'] extends never ? { params?: never } : { params: T['Params'] }),
+export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: any; Method: any; Querystring?: any }>>(
+    path: TEndpoint['Path'],
+    opts: (TEndpoint['Method'] extends 'GET' ? { method?: TEndpoint['Method'] } : { method: TEndpoint['Method'] }) &
+        (TEndpoint['Body'] extends never ? { body?: undefined } : { body: TEndpoint['Body'] }) &
+        (TEndpoint['Querystring'] extends never ? { query?: undefined } : { query: TEndpoint['Querystring'] }) &
+        (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }),
     method?: RequestInit['method']
-): Promise<{ res: Response; json: T['Reply'] }> {
+): Promise<TEndpoint['Success']> {
     const url = new URL(API_HOSTNAME);
     url.pathname = opts.params ? uriParamsReplacer(path, opts.params) : path;
 
@@ -51,21 +51,26 @@ export async function fetchApi<T extends Endpoint<{ Path: any; Success: any; Met
         headers
     });
 
-    let json: T | undefined;
+    let json: TEndpoint['Reply'] | undefined;
     if (res.status !== 204) {
-        json = (await res.json()) as T;
+        json = (await res.json()) as TEndpoint['Reply'];
+    }
+    if (res.status !== 200 || isError(json)) {
+        throw new APIError({ res, json });
     }
 
-    return { res, json: json || {} };
+    return json || {};
 }
 
-export function isError<TType extends Endpoint<{ Path: any; Success: any; Method: any }>['Reply']>(json: TType): json is Exclude<TType, { data: any }> {
+export function isError<TEndpoint extends Endpoint<{ Path: any; Success: any; Method: any }>['Reply']>(
+    json: TEndpoint
+): json is Exclude<TEndpoint, { data: any }> {
     return json && 'error' in (json as any);
 }
 
 export class APIError extends Error {
     details;
-    constructor(details: { res: Response; json: Record<string, any> | ApiError<any> }) {
+    constructor(details: { res: Response; json: Record<string, any> | ApiError<any> | undefined }) {
         super('err');
         this.details = details;
     }
@@ -76,19 +81,9 @@ export class APIError extends Error {
  ********************/
 
 export async function getIntegrations() {
-    const { json, res } = await fetchApi<GetPublicListIntegrations>('/integrations', {});
-    if (res.status !== 200 || isError(json)) {
-        throw new APIError({ res, json });
-    }
-
-    return json;
+    return await fetchApi<GetPublicListIntegrations>('/integrations', {});
 }
 
 export async function getProvider(params: GetPublicProvider['Params']) {
-    const { json, res } = await fetchApi<GetPublicProvider>(`/providers/:provider`, { params });
-    if (res.status !== 200 || isError(json)) {
-        throw new APIError({ res, json });
-    }
-
-    return json;
+    return await fetchApi<GetPublicProvider>(`/providers/:provider`, { params });
 }

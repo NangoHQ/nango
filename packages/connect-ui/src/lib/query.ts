@@ -10,7 +10,7 @@ export const queryClient = new QueryClient({
             staleTime: 60 * 1000 * 5,
             retry: 0,
             retryDelay: (attemptIndex) => {
-                return Math.min(2000 * 2 ** attemptIndex, 30000);
+                return Math.min(2000 * 2 * attemptIndex, 30000);
             }
         }
     }
