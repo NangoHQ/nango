@@ -835,7 +835,9 @@ export class NangoAction {
                     // The idea is to always log something instead of silently crashing without overloading persist
                     if (data.length > MAX_LOG_PAYLOAD) {
                         log.message += ` ... (truncated, payload was too large)`;
-                        data = truncateJsonString(stringifyObject({ activityLogId: this.activityLogId, log }), MAX_LOG_PAYLOAD);
+                        // Truncating can remove mandatory field so we only try to truncate meta
+                        const meta = JSON.parse(truncateJsonString(stringifyObject(log.meta), MAX_LOG_PAYLOAD - 1000)) as MessageRowInsert['meta'];
+                        data = stringifyObject({ activityLogId: this.activityLogId, log: { ...log, meta } });
                     }
 
                     return await this.persistApi({
