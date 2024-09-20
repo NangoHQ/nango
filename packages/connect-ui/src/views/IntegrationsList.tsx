@@ -1,4 +1,4 @@
-import { IconArrowLeft, IconArrowRight, IconX } from '@tabler/icons-react';
+import { IconArrowRight, IconX } from '@tabler/icons-react';
 import { QueryErrorResetBoundary, useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -13,10 +13,7 @@ export const IntegrationsList: React.FC = () => {
     return (
         <div className="h-screen overflow-hidden">
             <header className="flex flex-col gap-8 p-10 ">
-                <div className="flex justify-between">
-                    <Button variant={'transparent'} className="gap-1" title="Close UI">
-                        <IconArrowLeft stroke={1} /> Back
-                    </Button>
+                <div className="flex justify-end">
                     <Button variant={'transparent'} title="Close UI" size={'icon'}>
                         <IconX stroke={1} />
                     </Button>
@@ -82,14 +79,14 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
 
     return (
         <div
-            className="flex justify-between items-center border-b py-5 px-5 rounded-md ring-offset-white focus-visible:ring-neutral-950 focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:outline-none"
+            className="group flex justify-between items-center border-b border-b-dark-100 py-5 px-5 transition-colors rounded-md ring-offset-white focus-visible:ring-neutral-950 focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:outline-none hover:bg-dark-100 focus:bg-dark-100"
             role="button"
             tabIndex={0}
             title={`Connect to ${integration.provider}`}
             onClick={onClick}
         >
             <div className="flex gap-3 items-center">
-                <div className="w-[50px] h-[50px] bg-white rounded-xl shadow-card p-2.5">
+                <div className="w-[50px] h-[50px] bg-white transition-colors rounded-xl shadow-card p-2.5 group-hover:bg-dark-100">
                     <img src={integration.logo} />
                 </div>
                 <div className="text-zinc-900">{integration.provider}</div>
