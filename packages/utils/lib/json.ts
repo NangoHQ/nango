@@ -48,7 +48,7 @@ export function stringifyAndTruncateValue(value: any, maxSize: number = MAX_LOG_
  * Will entirely remove properties that are too big
  */
 export function truncateJson(value: Record<string, any>, maxSize: number = MAX_LOG_PAYLOAD) {
-    return JSON.parse(truncateJsonPkg(JSON.stringify(value), maxSize).jsonString);
+    return JSON.parse(truncateJsonPkg(stringifyObject(value), maxSize).jsonString);
 }
 
 /**
