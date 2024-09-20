@@ -16,13 +16,8 @@ const valInclude = z.enum(['webhook']);
 const validationQuery = z
     .object({
         include: z
-            .union([
-                z
-                    .string()
-                    .transform((v) => [v])
-                    .pipe(z.array(valInclude)),
-                z.array(valInclude)
-            ])
+            .union([valInclude, z.array(valInclude)])
+            .transform((val) => (Array.isArray(val) ? val : val ? [val] : []))
             .optional()
     })
     .strict();

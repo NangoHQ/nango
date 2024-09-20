@@ -51,8 +51,8 @@ export function addQueryParams(url: URL, queries?: Record<string, any> | undefin
             for (const el of value) {
                 url.searchParams.set(name, el);
             }
-        } else {
-            url.searchParams.set(name, value || '');
+        } else if (value !== null && value !== undefined) {
+            url.searchParams.set(name, value);
         }
     });
 }
