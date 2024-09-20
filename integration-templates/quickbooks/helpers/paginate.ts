@@ -38,7 +38,6 @@ export async function* paginate<T>(
         await nango.log('Syncing records using the following query:', { queryWithPagination });
 
         const payload: ProxyConfiguration = {
-            baseUrlOverride: 'https://sandbox-quickbooks.api.intuit.com',
             endpoint: `/v3/company/${companyId}/query`,
             params: { query: queryWithPagination },
             retries: 10

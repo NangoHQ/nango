@@ -34,7 +34,6 @@ export default async function runAction(nango: NangoAction, input: UpdateCustome
     const quickBooksCustomer = toQuickBooksCustomer(input);
 
     const config: ProxyConfiguration = {
-        baseUrlOverride: 'https://sandbox-quickbooks.api.intuit.com',
         endpoint: `/v3/company/${companyId}/customer`,
         data: quickBooksCustomer
     };

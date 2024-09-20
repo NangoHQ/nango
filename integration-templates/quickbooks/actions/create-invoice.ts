@@ -61,7 +61,6 @@ export default async function runAction(nango: NangoAction, input: CreateInvoice
     const quickBooksInvoice = toQuickBooksInvoice(input);
 
     const config: ProxyConfiguration = {
-        baseUrlOverride: 'https://sandbox-quickbooks.api.intuit.com',
         endpoint: `/v3/company/${companyId}/invoice`,
         data: quickBooksInvoice
     };
