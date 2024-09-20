@@ -18,7 +18,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch(endpoint, { method: 'GET', params: { uniqueKey: 'github' } });
+        const res = await api.fetch(endpoint, { method: 'GET', params: { uniqueKey: 'github' }, query: {} });
 
         shouldBeProtected(res);
     });
@@ -45,7 +45,7 @@ describe(`GET ${endpoint}`, () => {
     it('should list empty', async () => {
         const env = await seeders.createEnvironmentSeed();
 
-        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' } });
+        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' }, query: {} });
 
         isError(res.json);
         expect(res.res.status).toBe(404);
@@ -58,7 +58,7 @@ describe(`GET ${endpoint}`, () => {
         const env = await seeders.createEnvironmentSeed();
         await seeders.createConfigSeed(env, 'github', 'github');
 
-        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' } });
+        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' }, query: {} });
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
@@ -73,12 +73,23 @@ describe(`GET ${endpoint}`, () => {
         });
     });
 
+    it('should get webhook', async () => {
+        const env = await seeders.createEnvironmentSeed();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' }, query: { include: ['webhook'] } });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+        expect(res.json.data.webhook_url).toStrictEqual(null);
+    });
+
     it('should not list other env', async () => {
         const env = await seeders.createEnvironmentSeed();
         const env2 = await seeders.createEnvironmentSeed();
         await seeders.createConfigSeed(env2, 'github', 'github');
 
-        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' } });
+        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' }, query: {} });
 
         isError(res.json);
         expect(res.res.status).toBe(404);

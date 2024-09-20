@@ -3,8 +3,18 @@ title: 'List all integrations'
 openapi: 'GET /integrations'
 ---
 
+<RequestExample>
+
+```ts Node Client
+const nango = new Nango({ secretKey });
+
+const response = await nango.listIntegrations();
+```
+
+</RequestExample>
+
 <ResponseExample>
-  ```json Example Response
+```json Example Response
 {
   "data": [
     {
@@ -23,5 +33,5 @@ openapi: 'GET /integrations'
     },
   ]
 }
-  ```
+```
 </ResponseExample>

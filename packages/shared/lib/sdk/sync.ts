@@ -6,7 +6,6 @@ import proxyService from '../services/proxy.service.js';
 import type { AxiosInstance } from 'axios';
 import axios, { AxiosError } from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
-import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import {
     getLogger,
@@ -22,7 +21,7 @@ import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
-import type { DBTeam, MessageRowInsert } from '@nangohq/types';
+import type { DBTeam, GetPublicIntegration, MessageRowInsert } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
 
 const logger = getLogger('SDK');
@@ -395,7 +394,7 @@ export class NangoAction {
         string,
         { connection: Connection; timestamp: number }
     >();
-    private memoizedIntegration: IntegrationWithCreds | undefined;
+    private memoizedIntegration: GetPublicIntegration['Success']['data'] | undefined;
 
     constructor(config: NangoProps, { persistApi }: { persistApi: AxiosInstance } = { persistApi: defaultPersistApi }) {
         this.connectionId = config.connectionId;
@@ -660,17 +659,17 @@ export class NangoAction {
         return (await this.getConnection(this.providerConfigKey, this.connectionId)).metadata as T;
     }
 
-    public async getWebhookURL(): Promise<string | undefined> {
+    public async getWebhookURL(): Promise<string | null | undefined> {
         this.exitSyncIfAborted();
         if (this.memoizedIntegration) {
             return this.memoizedIntegration.webhook_url;
         }
 
-        const { config: integration } = await this.nango.getIntegration(this.providerConfigKey, true);
+        const { data: integration } = await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, { include: ['webhook'] });
         if (!integration || !integration.provider) {
             throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
         }
-        this.memoizedIntegration = integration as IntegrationWithCreds;
+        this.memoizedIntegration = integration;
         return this.memoizedIntegration.webhook_url;
     }
 
