@@ -159,34 +159,38 @@ export class Nango {
 
     /**
      * Returns a specific integration
-     * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param includeIntegrationCredentials - An optional flag indicating whether to include integration credentials in the response. Default is false
-     * @returns A promise that resolves with an object containing an integration configuration
-     * @deprecated Use `getIntegrationV2()`
-     */
-    public async getIntegration(
-        providerConfigKey: string,
-        includeIntegrationCredentials: boolean = false
-    ): Promise<{ config: Integration | IntegrationWithCreds }> {
-        const url = `${this.serverUrl}/config/${providerConfigKey}`;
-        const response = await this.http.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredentials } });
-        return response.data;
-    }
-
-    /**
-     * Returns a specific integration
      * @param uniqueKey - The key identifying the provider configuration on Nango
      * @returns A promise that resolves with an object containing an integration
      */
-    public async getIntegrationV2(
-        uniqueKey: GetPublicIntegration['Params']['uniqueKey'],
+    public async getIntegration(
+        params: GetPublicIntegration['Params'],
         queries?: GetPublicIntegration['Querystring']
-    ): Promise<GetPublicIntegration['Success']> {
-        const url = new URL(`${this.serverUrl}/integrations/${uniqueKey}`);
-        addQueryParams(url, queries);
+    ): Promise<GetPublicIntegration['Success']>;
 
-        const response = await this.http.get(url.href, { headers: this.enrichHeaders({}) });
-        return response.data;
+    /**
+     * Returns a specific integration
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param includeIntegrationCredentials - An optional flag indicating whether to include integration credentials in the response. Default is false
+     * @returns A promise that resolves with an object containing an integration configuration
+     * @deprecated Use `getIntegration({ unique_key })`
+     */
+    public async getIntegration(providerConfigKey: string, includeIntegrationCredentials?: boolean): Promise<{ config: Integration | IntegrationWithCreds }>;
+
+    public async getIntegration(
+        params: string | GetPublicIntegration['Params'],
+        queries?: boolean | GetPublicIntegration['Querystring']
+    ): Promise<{ config: Integration | IntegrationWithCreds } | GetPublicIntegration['Success']> {
+        if (typeof params === 'string') {
+            const url = `${this.serverUrl}/config/${params}`;
+            const response = await this.http.get(url, { headers: this.enrichHeaders({}), params: { include_creds: queries } });
+            return response.data;
+        } else {
+            const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}`);
+            addQueryParams(url, queries as GetPublicIntegration['Querystring']);
+
+            const response = await this.http.get(url.href, { headers: this.enrichHeaders({}) });
+            return response.data;
+        }
     }
 
     /**

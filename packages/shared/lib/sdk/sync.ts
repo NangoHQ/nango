@@ -665,7 +665,7 @@ export class NangoAction {
             return this.memoizedIntegration.webhook_url;
         }
 
-        const { data: integration } = await this.nango.getIntegrationV2(this.providerConfigKey, { include: ['webhook'] });
+        const { data: integration } = await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, { include: ['webhook'] });
         if (!integration || !integration.provider) {
             throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
         }

@@ -97,7 +97,7 @@ await nango.listProviders()
 Returns a specific provider.
 
 ```js
-await nango.getProvider(<NAME>)
+await nango.getProvider({ provider: <NAME> })
 ```
 
 **Example Response**
@@ -158,18 +158,28 @@ await nango.listIntegrations()
 Returns a specific integration.
 
 ```js
-await nango.getIntegrationV2(<UNIQUE_KEY>, { include?: ['webhook'] });
+await nango.getIntegration({ unique_key: <UNIQUE_KEY> });
+
+// Deprecated
+await nango.getIntegration(<INTEGRATION-ID>);
 ```
 
 **Parameters**
 
 <Expandable>
-    <ResponseField name="uniqueKey" type="string" required>
-        The integration ID (`unique_key`)
+    <ResponseField name="unique_key" type="string" required>
+         The integration ID (`unique_key`)
+    </ResponseField>
+    <ResponseField name="include" type="array">
+        Include sensitive data. Allowed values: `webhook`
     </ResponseField>
 
-    <ResponseField name="include" type="array" required>
-        Include sensitive data. Allowed values: `webhook`
+    <ResponseField name="providerConfigKey" type="string" required deprecated>
+        The integration ID.
+    </ResponseField>
+
+    <ResponseField name="includeIntegrationCredentials" type="boolean" deprecated>
+        Defaults to `false`.
     </ResponseField>
 </Expandable>
 
@@ -184,54 +194,6 @@ await nango.getIntegrationV2(<UNIQUE_KEY>, { include?: ['webhook'] });
         "logo": "http://localhost:3003/images/template-logos/slack.svg",
         "created_at": "2023-10-16T08:45:26.241Z",
         "updated_at": "2023-10-16T08:45:26.241Z",
-    }
-}
-```
-</Expandable>
-
-### Get an integration (Deprecated)
-
-Returns a specific integration.
-
-```js
-await nango.getIntegration(<INTEGRATION-ID>);
-```
-
-**Parameters**
-
-<Expandable>
-    <ResponseField name="providerConfigKey" type="string" required>
-        The integration ID.
-    </ResponseField>
-
-    <ResponseField name="includeIntegrationCredentials" type="boolean">
-        Defaults to `false`.
-    </ResponseField>
-</Expandable>
-
-**Example Response**
-
-<Expandable>
-```json
-{
-    "config": {
-        "unique_key": "slack-nango-community",
-        "provider": "slack",
-        "syncs": [
-            {
-                "name": "slack-messages",
-                "created_at": "2023-10-16T08:45:26.241Z",
-                "updated_at": "2023-10-16T08:45:26.241Z",
-                "description": "Continuously fetch the latest Slack messages. Details: full refresh. Required scopes(s): channels:read, groups:read, mpim:read, im:read"
-            }
-        ],
-        "actions": [
-            {
-                "name": "github-list-repos-action",
-                "created_at": "2023-10-17T17:28:03.839Z",
-                "updated_at": "2023-10-17T17:28:03.839Z"
-            }
-        ]
     }
 }
 ```

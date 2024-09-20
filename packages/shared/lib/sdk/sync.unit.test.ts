@@ -49,7 +49,7 @@ describe('cache', () => {
         const nodeClient = (await import('@nangohq/node')).Nango;
         nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
         nodeClient.prototype.setMetadata = vi.fn().mockReturnValue({});
-        nodeClient.prototype.getIntegrationV2 = vi.fn().mockReturnValue({ data: { provider: 'github' } });
+        nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ data: { provider: 'github' } });
         vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, logs: [] }));
     });
     afterEach(() => {
@@ -92,7 +92,7 @@ describe('cache', () => {
         it('getWebhookURL should reuse integration', async () => {
             await nangoAction.getWebhookURL();
             await nangoAction.getWebhookURL();
-            expect(nango.getIntegrationV2).toHaveBeenCalledTimes(1);
+            expect(nango.getIntegration).toHaveBeenCalledTimes(1);
         });
     });
 });
