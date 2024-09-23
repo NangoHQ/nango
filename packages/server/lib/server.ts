@@ -8,9 +8,11 @@ import http from 'node:http';
 import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getServerPort, getWebsocketsPath } from '@nangohq/shared';
 import { getLogger, requestLoggerMiddleware } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
+import { KnexDatabase } from '@nangohq/database';
 import migrate from './utils/migrate.js';
 import { migrate as migrateRecords } from '@nangohq/records';
 import { start as migrateLogs } from '@nangohq/logs';
+import { migrate as migrateKeystore } from '@nangohq/keystore';
 
 import publisher from './clients/publisher.client.js';
 import { router } from './routes.js';
@@ -46,7 +48,9 @@ wss.on('connection', async (ws: WebSocket) => {
 // all trying to migrate the database at the same time. In this case, the
 // operator should run migrate.ts once before starting the service.
 if (NANGO_MIGRATE_AT_START === 'true') {
-    await migrate();
+    const db = new KnexDatabase({ timeoutMs: 0 }); // Disable timeout for migrations
+    await migrate(db);
+    await migrateKeystore(db.knex, db.schema());
     await migrateLogs();
     await migrateRecords();
 } else {
