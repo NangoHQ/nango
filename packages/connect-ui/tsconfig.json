@@ -25,6 +25,9 @@
     },
     "references": [
         {
+            "path": "../frontend"
+        },
+        {
             "path": "../types"
         }
     ],
