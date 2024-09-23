@@ -2214,6 +2214,21 @@ one-note:
         - productivity
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/one-note
+openai:
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.openai.com
+        headers:
+            Authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/models
+        retry:
+            after: 'x-ratelimit-reset-requests'
+    docs: https://docs.nango.dev/integrations/all/openai
 ory:
     categories:
         - other
