@@ -103,7 +103,7 @@ export const Go: React.FC = () => {
                 setLoading(false);
             }
         },
-        [integration]
+        [integration, loading]
     );
 
     useEffect(() => {
