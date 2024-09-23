@@ -338,6 +338,7 @@
                 "integrations/all/bigcommerce",
                 "integrations/all/bitbucket",
                 "integrations/all/bitdefender",
+                "integrations/all/bitly",
                 "integrations/all/blackbaud",
                 "integrations/all/boldsign",
                 "integrations/all/box",
