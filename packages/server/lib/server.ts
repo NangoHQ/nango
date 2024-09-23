@@ -50,7 +50,7 @@ wss.on('connection', async (ws: WebSocket) => {
 if (NANGO_MIGRATE_AT_START === 'true') {
     const db = new KnexDatabase({ timeoutMs: 0 }); // Disable timeout for migrations
     await migrate(db);
-    await migrateKeystore(db.knex, db.schema());
+    await migrateKeystore(db.knex);
     await migrateLogs();
     await migrateRecords();
 } else {

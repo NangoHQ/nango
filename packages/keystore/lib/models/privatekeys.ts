@@ -2,7 +2,7 @@ import * as crypto from 'crypto';
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err } from '@nangohq/utils';
-import type { EntityType, PrivateKey } from '../types.js';
+import type { EntityType, PrivateKey } from '@nangohq/types';
 import { getEncryption } from '../utils/encryption.js';
 
 export const PRIVATE_KEYS_TABLE = 'private_keys';
@@ -21,26 +21,28 @@ export class PrivateKeyError extends Error {
 export interface DbPrivateKey {
     readonly id: number;
     readonly display_name: string;
-    readonly encrypted: Buffer;
+    readonly account_id: number;
+    readonly environment_id: number;
+    readonly encrypted: Buffer | null;
     readonly hash: string;
     readonly created_at: Date;
-    readonly deleted_at: Date | null;
     readonly expires_at: Date | null;
     readonly last_access_at: Date | null;
     readonly entity_type: EntityType;
     readonly entity_id: number;
 }
-type DbInsertPrivateKey = Omit<DbPrivateKey, 'id' | 'created_at' | 'deleted_at' | 'last_access_at'>;
+type DbInsertPrivateKey = Omit<DbPrivateKey, 'id' | 'created_at' | 'last_access_at'>;
 
-export const DbPrivateKey = {
+const PrivateKeyMapper = {
     to: (key: PrivateKey): DbPrivateKey => {
         return {
             id: key.id,
             display_name: key.displayName,
+            account_id: key.accountId,
+            environment_id: key.environmentId,
             encrypted: key.encrypted,
             hash: key.hash,
             created_at: key.createdAt,
-            deleted_at: key.deletedAt,
             expires_at: key.expiresAt,
             last_access_at: key.lastAccessAt,
             entity_type: key.entityType,
@@ -51,10 +53,11 @@ export const DbPrivateKey = {
         return {
             id: dbKey.id,
             displayName: dbKey.display_name,
+            accountId: dbKey.account_id,
+            environmentId: dbKey.environment_id,
             encrypted: dbKey.encrypted,
             hash: dbKey.hash,
             createdAt: dbKey.created_at,
-            deletedAt: dbKey.deleted_at,
             expiresAt: dbKey.expires_at,
             lastAccessAt: dbKey.last_access_at,
             entityType: dbKey.entity_type,
@@ -65,15 +68,24 @@ export const DbPrivateKey = {
 
 export async function createPrivateKey(
     db: knex.Knex,
-    { displayName, entityType, entityId, ttlInMs }: Pick<PrivateKey, 'displayName' | 'entityType' | 'entityId'> & { ttlInMs?: number }
+    {
+        displayName,
+        entityType,
+        entityId,
+        accountId,
+        environmentId,
+        ttlInMs
+    }: Pick<PrivateKey, 'displayName' | 'entityType' | 'entityId' | 'accountId' | 'environmentId'> & { ttlInMs?: number },
+    options: { onlyStoreHash: boolean } = { onlyStoreHash: false }
 ): Promise<Result<string, PrivateKeyError>> {
     const now = new Date();
-    const prefix = entityType.slice(0, 4);
     const random = crypto.randomBytes(32).toString('hex');
-    const keyValue = `nango_${prefix}_${random}`;
+    const keyValue = `nango_${entityType}_${random}`;
     const key: DbInsertPrivateKey = {
         display_name: displayName,
-        encrypted: encryptValue(keyValue),
+        account_id: accountId,
+        environment_id: environmentId,
+        encrypted: options.onlyStoreHash ? null : encryptValue(keyValue),
         hash: hashValue(keyValue),
         expires_at: ttlInMs ? new Date(now.getTime() + ttlInMs) : null,
         entity_type: entityType,
@@ -86,15 +98,12 @@ export async function createPrivateKey(
     return Ok(keyValue);
 }
 
-export async function getPrivateKey(
-    db: knex.Knex,
-    { keyValue, entityType }: { keyValue: string; entityType: EntityType }
-): Promise<Result<PrivateKey, PrivateKeyError>> {
+export async function getPrivateKey(db: knex.Knex, keyValue: string): Promise<Result<PrivateKey, PrivateKeyError>> {
     const now = new Date();
     const [key] = await db
         .update({ last_access_at: now })
         .from<DbPrivateKey>(PRIVATE_KEYS_TABLE)
-        .where({ hash: hashValue(keyValue), entity_type: entityType, deleted_at: null })
+        .where({ hash: hashValue(keyValue) })
         .andWhere((builder) => builder.whereNull('expires_at').orWhere('expires_at', '>', now))
         .returning('*');
     if (!key) {
@@ -103,24 +112,22 @@ export async function getPrivateKey(
                 code: 'not_found',
                 message: `Private key not found`,
                 payload: {
-                    keyValue: keyValue.substring(0, 8),
-                    entityType
+                    keyValue: keyValue.substring(0, 8)
                 }
             })
         );
     }
-    return Ok(DbPrivateKey.from(key));
+    return Ok(PrivateKeyMapper.from(key));
 }
 
 export async function deletePrivateKey(
     db: knex.Knex,
     { keyValue, entityType }: { keyValue: string; entityType: EntityType }
 ): Promise<Result<void, PrivateKeyError>> {
-    const now = new Date();
     const [key] = await db
-        .update({ last_access_at: now, deleted_at: now })
+        .delete()
         .from<DbPrivateKey>(PRIVATE_KEYS_TABLE)
-        .where({ hash: hashValue(keyValue), entity_type: entityType, deleted_at: null })
+        .where({ hash: hashValue(keyValue), entity_type: entityType })
         .returning('*');
     if (!key) {
         return Err(new PrivateKeyError({ code: 'not_found', message: `Private key not found` }));
@@ -128,8 +135,8 @@ export async function deletePrivateKey(
     return Ok(undefined);
 }
 
-export function decryptPrivateKey(key: PrivateKey): Result<string, PrivateKeyError> {
-    return decryptValue(key.encrypted);
+export function decryptPrivateKey(key: PrivateKey): Result<string | null, PrivateKeyError> {
+    return key.encrypted ? decryptValue(key.encrypted) : Ok(null);
 }
 
 function encryptValue(keyValue: string): Buffer {

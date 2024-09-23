@@ -4,10 +4,11 @@ export type EntityType = (typeof entityTypes)[number];
 export interface PrivateKey {
     readonly id: number;
     readonly displayName: string;
-    readonly encrypted: Buffer;
+    readonly environmentId: number;
+    readonly accountId: number;
+    readonly encrypted: Buffer | null;
     readonly hash: string;
     readonly createdAt: Date;
-    readonly deletedAt: Date | null;
     readonly expiresAt: Date | null;
     readonly lastAccessAt: Date | null;
     readonly entityType: EntityType;

@@ -3,7 +3,7 @@ import type knex from 'knex';
 import { fileURLToPath } from 'node:url';
 import { logger } from '../utils/logger.js';
 
-export async function migrate(db: knex.Knex, schema: string): Promise<void> {
+export async function migrate(db: knex.Knex, migrationSchema: string = 'migrations'): Promise<void> {
     logger.info('[keystore] migration');
 
     const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
@@ -11,16 +11,16 @@ export async function migrate(db: knex.Knex, schema: string): Promise<void> {
     const migrationsConfig = {
         extension: isJS ? 'js' : 'ts',
         directory: 'migrations',
+        schemaName: migrationSchema,
         tableName: 'migrations_keystore',
-        loadExtensions: [isJS ? '.js' : '.ts'],
-        schemaName: schema
+        loadExtensions: [isJS ? '.js' : '.ts']
     };
 
     const filename = fileURLToPath(import.meta.url);
     const dirname = path.dirname(path.join(filename, '../../'));
     const dir = path.join(dirname, 'dist/db/migrations');
 
-    await db.raw(`CREATE SCHEMA IF NOT EXISTS ${schema}`);
+    await db.raw(`CREATE SCHEMA IF NOT EXISTS ${migrationSchema}`);
     const [, pendingMigrations] = (await db.migrate.list({ ...migrationsConfig, directory: dir })) as [unknown, string[]];
     if (pendingMigrations.length === 0) {
         logger.info('[keystore] nothing to do');
