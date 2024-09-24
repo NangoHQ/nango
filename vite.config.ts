@@ -18,5 +18,10 @@ export default defineConfig({
         chaiConfig: {
             truncateThreshold: 10000
         }
+    },
+    server: {
+        headers: {
+            'Cross-Origin-Embedder-Policy': 'unsafe-none'
+        }
     }
 });
