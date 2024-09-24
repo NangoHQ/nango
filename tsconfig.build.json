@@ -60,6 +60,9 @@
         },
         {
             "path": "packages/data-ingestion"
+        },
+        {
+            "path": "packages/keystore"
         }
     ]
 }

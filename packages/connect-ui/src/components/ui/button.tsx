@@ -1,4 +1,5 @@
 import { Slot } from '@radix-ui/react-slot';
+import { IconLoader2 } from '@tabler/icons-react';
 import { cva } from 'class-variance-authority';
 import * as React from 'react';
 
@@ -30,11 +31,17 @@ const buttonVariants = cva(
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
     asChild?: boolean;
+    loading?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, ...props }, ref) => {
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, loading, children, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+    return (
+        <Comp ref={ref} className={cn(buttonVariants({ variant, size, className }))} {...props} disabled={loading || props.disabled}>
+            {loading && <IconLoader2 className="mr-2 animate-spin" size={15} />}
+            {children}
+        </Comp>
+    );
 });
 Button.displayName = 'Button';
 

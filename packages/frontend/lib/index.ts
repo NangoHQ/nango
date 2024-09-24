@@ -12,10 +12,19 @@ const enum WSMessageType {
     Success = 'success'
 }
 
+export type AuthErrorType =
+    | 'missingPublicKey'
+    | 'blocked_by_browser'
+    | 'invalidHostUrl'
+    | 'windowIsOpened'
+    | 'missingCredentials'
+    | 'windowClosed'
+    | 'request_error'
+    | 'missing_ws_client_id';
 export class AuthError extends Error {
-    type: string;
+    type;
 
-    constructor(message: string, type: string) {
+    constructor(message: string, type: AuthErrorType) {
         super(message);
         this.type = type;
     }
@@ -31,16 +40,19 @@ type AuthOptions = {
     detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed
 } & (ConnectionConfig | OAuth2ClientCredentials | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials);
 
+type ErrorHandler = (errorType: AuthErrorType, errorDesc: string) => void;
+
 export default class Nango {
     private hostBaseUrl: string;
     private websocketsBaseUrl: string;
     private status: AuthorizationStatus;
     private publicKey: string;
     private debug = false;
-    public win: null | AuthorizationModal = null;
     private width: number | null = null;
     private height: number | null = null;
     private tm: null | NodeJS.Timer = null;
+
+    public win: AuthorizationModal | null = null;
 
     constructor(config: { host?: string; websocketsPath?: string; publicKey: string; width?: number; height?: number; debug?: boolean }) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
@@ -111,7 +123,7 @@ export default class Nango {
 
         if (!res.ok) {
             const errorResponse = (await res.json()) as PostPublicUnauthenticatedAuthorization['Errors'];
-            throw new AuthError(errorResponse.error.message || errorResponse.error.code, errorResponse.error.code);
+            throw new AuthError(errorResponse.error.message || errorResponse.error.code, 'request_error');
         }
 
         return (await res.json()) as PostPublicUnauthenticatedAuthorization['Success'];
@@ -159,7 +171,7 @@ export default class Nango {
             throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise<AuthResult>((resolve, reject) => {
             const successHandler = (providerConfigKey: string, connectionId: string, isPending = false) => {
                 if (this.status !== AuthorizationStatus.BUSY) {
                     return;
@@ -167,14 +179,15 @@ export default class Nango {
 
                 this.status = AuthorizationStatus.DONE;
 
-                return resolve({
+                resolve({
                     providerConfigKey: providerConfigKey,
                     connectionId: connectionId,
                     isPending
                 });
+                return;
             };
 
-            const errorHandler = (errorType: string, errorDesc: string) => {
+            const errorHandler: ErrorHandler = (errorType, errorDesc) => {
                 if (this.status !== AuthorizationStatus.BUSY) {
                     return;
                 }
@@ -182,12 +195,14 @@ export default class Nango {
                 this.status = AuthorizationStatus.DONE;
 
                 const error = new AuthError(errorDesc, errorType);
-                return reject(error);
+                reject(error);
+                return;
             };
 
             if (this.status === AuthorizationStatus.BUSY) {
-                const error = new AuthError('The authorization window is already opened', 'windowIsOppened');
+                const error = new AuthError('The authorization window is already opened', 'windowIsOpened');
                 reject(error);
+                return;
             }
 
             // Save authorization status (for handler)
@@ -202,23 +217,51 @@ export default class Nango {
                 { width: this.width, height: this.height },
                 this.debug
             );
-            if (options?.detectClosedAuthWindow || false) {
+
+            if (options?.detectClosedAuthWindow) {
                 this.tm = setInterval(() => {
-                    if (!this.win?.modal.window || this.win.modal.window.closed) {
-                        if (this.win?.isProcessingMessage === true) {
-                            // Modal is still processing a web socket message from the server
-                            // We ignore the window being closed for now
-                            return;
-                        }
-                        clearTimeout(this.tm as unknown as number);
-                        this.win = null;
-                        this.status = AuthorizationStatus.CANCELED;
-                        const error = new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed');
-                        reject(error);
+                    if (!this.win || !this.win.modal) {
+                        return;
                     }
+
+                    if (this.win.modal.window && !this.win.modal.window.closed) {
+                        return;
+                    }
+
+                    if (this.win.isProcessingMessage) {
+                        // Modal is still processing a web socket message from the server
+                        // We ignore the window being closed for now
+                        return;
+                    }
+
+                    clearInterval(this.tm as unknown as number);
+                    this.win = null;
+                    this.status = AuthorizationStatus.CANCELED;
+                    const error = new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed');
+                    reject(error);
                 }, 500);
             }
         });
+    }
+
+    /**
+     * Clear state of the frontend SDK
+     */
+    public clear() {
+        if (this.tm) {
+            clearInterval(this.tm as unknown as number);
+        }
+
+        if (this.win) {
+            try {
+                this.win.close();
+            } catch {
+                // do nothing
+            }
+            this.win = null;
+        }
+
+        this.status = AuthorizationStatus.IDLE;
     }
 
     /**
@@ -576,16 +619,18 @@ class AuthorizationModal {
     private features: Record<string, string | number>;
     private width = 500;
     private height = 600;
-    public modal: Window;
     private swClient: WebSocket;
     private debug: boolean;
+    private wsClientId: string | undefined;
+    private errorHandler: ErrorHandler;
+    public modal: Window | undefined;
     public isProcessingMessage = false;
 
     constructor(
         webSocketUrl: string,
         url: string,
         successHandler: (providerConfigKey: string, connectionId: string) => any,
-        errorHandler: (errorType: string, errorDesc: string) => any,
+        errorHandler: ErrorHandler,
         { width, height }: { width?: number | null; height?: number | null },
         debug?: boolean
     ) {
@@ -611,13 +656,12 @@ class AuthorizationModal {
             directories: 'no'
         };
 
-        this.modal = window.open('', '_blank', this.featuresToString())!;
-
         this.swClient = new WebSocket(webSocketUrl);
+        this.errorHandler = errorHandler;
 
         this.swClient.onmessage = (message: MessageEvent) => {
             this.isProcessingMessage = true;
-            this.handleMessage(message, successHandler, errorHandler);
+            this.handleMessage(message, successHandler);
             this.isProcessingMessage = false;
         };
     }
@@ -626,13 +670,8 @@ class AuthorizationModal {
      * Handles the messages received from the Nango server via WebSocket
      * @param message - The message event containing data from the server
      * @param successHandler - The success handler function to be called when a success message is received
-     * @param errorHandler - The error handler function to be called when an error message is received
      */
-    handleMessage(
-        message: MessageEvent,
-        successHandler: (providerConfigKey: string, connectionId: string) => any,
-        errorHandler: (errorType: string, errorDesc: string) => any
-    ) {
+    handleMessage(message: MessageEvent, successHandler: (providerConfigKey: string, connectionId: string) => any) {
         const data = JSON.parse(message.data);
 
         switch (data.message_type) {
@@ -641,8 +680,8 @@ class AuthorizationModal {
                     console.log(debugLogPrefix, 'Connection ack received. Opening modal...');
                 }
 
-                const wsClientId = data.ws_client_id;
-                this.open(wsClientId);
+                this.wsClientId = data.ws_client_id;
+                this.open();
                 break;
             }
             case WSMessageType.Error:
@@ -650,7 +689,7 @@ class AuthorizationModal {
                     console.log(debugLogPrefix, 'Error received. Rejecting authorization...');
                 }
 
-                errorHandler(data.error_type, data.error_desc);
+                this.errorHandler(data.error_type, data.error_desc);
                 this.swClient.close();
                 break;
             case WSMessageType.Success:
@@ -689,12 +728,21 @@ class AuthorizationModal {
 
     /**
      * Opens a modal window with the specified WebSocket client ID
-     * @param wsClientId - The WebSocket client ID to include in the URL
-     * @returns The modal object
      */
-    open(wsClientId: string) {
-        this.modal.location = this.url + '&ws_client_id=' + wsClientId;
-        return this.modal;
+    open() {
+        if (!this.wsClientId) {
+            this.errorHandler('missing_ws_client_id', 'Missing WS Client ID while opening modal');
+            return;
+        }
+
+        const popup = window.open(this.url + '&ws_client_id=' + this.wsClientId, '_blank', this.featuresToString());
+
+        if (!popup || popup.closed || typeof popup.closed == 'undefined') {
+            this.errorHandler('blocked_by_browser', 'Modal blocked by browser');
+            return;
+        }
+
+        this.modal = popup;
     }
 
     /**
@@ -710,5 +758,14 @@ class AuthorizationModal {
         }
 
         return featuresAsString.join(',');
+    }
+
+    /**
+     * Close modal, if opened
+     */
+    close() {
+        if (this.modal && !this.modal.closed) {
+            this.modal.close();
+        }
     }
 }

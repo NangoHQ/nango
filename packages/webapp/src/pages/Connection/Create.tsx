@@ -758,13 +758,13 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                     </div>
                                     <div className="mt-4">
                                         <label htmlFor="content_url" className="text-text-light-gray block text-sm font-semibold">
-                                            Conent Url
+                                            Content Url
                                         </label>
                                         <SecretInput
                                             copy={true}
                                             id="content_url"
                                             name="content_url"
-                                            placeholder="Conent Url"
+                                            placeholder="Content Url"
                                             value={contentUrl}
                                             setOptionalValue={setContentUrl}
                                         />
