@@ -1,5 +1,4 @@
-export const entityTypes = ['session', 'connection', 'environment'] as const;
-export type EntityType = (typeof entityTypes)[number];
+export type EntityType = 'session' | 'connection' | 'environment';
 
 export interface PrivateKey {
     readonly id: number;
