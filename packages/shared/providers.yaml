@@ -2185,7 +2185,7 @@ notion:
             'Notion-Version': '2022-06-28'
         paginate:
             type: cursor
-            cursor_path_in_response: start_cursor
+            cursor_path_in_response: next_cursor
             cursor_name_in_request: start_cursor
             limit_name_in_request: page_size
             response_path: results
