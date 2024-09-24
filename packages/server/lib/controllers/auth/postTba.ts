@@ -20,7 +20,7 @@ const bodyValidation = z
 
 const queryStringValidation = z
     .object({
-        connection_id: connectionIdSchema,
+        connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
         hmac: z.string().optional(),
         public_key: z.string().uuid()
@@ -64,7 +64,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
 
     const { token_id: tokenId, token_secret: tokenSecret, oauth_client_id_override, oauth_client_secret_override } = body;
 
-    const { connection_id: connectionId, params, hmac }: PostPublicTbaAuthorization['Querystring'] = queryStringVal.data;
+    const { connection_id: receivedConnectionId, params, hmac }: PostPublicTbaAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTbaAuthorization['Params'] = paramVal.data;
 
     const logCtx = await logContextGetter.create(
@@ -77,7 +77,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
     );
     void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
-    await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+    await hmacCheck({ environment, logCtx, providerConfigKey, connectionId: receivedConnectionId, hmac, res });
 
     const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
@@ -138,6 +138,8 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             tbaCredentials.config_override['client_secret'] = oauth_client_secret_override;
         }
     }
+
+    const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
     const connectionResponse = await connectionTestHook(
         config.provider,

@@ -32,7 +32,7 @@ const nango = new Nango({ secretKey: '<SECRET-KEY>' });
       </ResponseField>
 
       <ResponseField name="host" type="string">
-        Omitting the host points to Nango Cloud. For local development, use `http://localhost:3003`. Use your instance URL if self-hosting. 
+        Omitting the host points to Nango Cloud. For local development, use `http://localhost:3003`. Use your instance URL if self-hosting.
       </ResponseField>
     </Expandable>
   </ResponseField>
@@ -61,6 +61,63 @@ try {
 }
 ```
 
+# Providers
+
+### List all providers
+
+Returns a list of providers.
+
+```js
+await nango.listProviders()
+```
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "data": [
+        {
+            "name": "posthog",
+            "categories": ["dev-tools"],
+            "auth_mode": "API_KEY",
+            "proxy": {
+                "base_url": "https://api.posthog.com",
+            },
+            "docs": "https://docs.nango.dev/integrations/all/posthog"
+        }
+    ]
+}
+```
+</Expandable>
+
+
+### Get a provider
+
+Returns a specific provider.
+
+```js
+await nango.getProvider({ provider: <NAME> })
+```
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "data": {
+        "name": "posthog",
+        "categories": ["dev-tools"],
+        "auth_mode": "API_KEY",
+        "proxy": {
+            "base_url": "https://api.posthog.com",
+        },
+        "docs": "https://docs.nango.dev/integrations/all/posthog"
+    }
+}
+```
+</Expandable>
+
 # Integrations
 
 ### List all integrations
@@ -79,11 +136,17 @@ await nango.listIntegrations()
     "configs": [
         {
             "unique_key": "slack-nango-community",
-            "provider": "slack"
+            "provider": "slack",
+            "logo": "http://localhost:3003/images/template-logos/slack.svg",
+            "created_at": "2023-10-16T08:45:26.241Z",
+            "updated_at": "2023-10-16T08:45:26.241Z",
         },
         {
             "unique_key": "github-prod",
-            "provider": "github"
+            "provider": "github",
+            "logo": "http://localhost:3003/images/template-logos/github.svg",
+            "created_at": "2023-10-16T08:45:26.241Z",
+            "updated_at": "2023-10-16T08:45:26.241Z",
         },
     ]
 }
@@ -95,19 +158,29 @@ await nango.listIntegrations()
 Returns a specific integration.
 
 ```js
+await nango.getIntegration({ unique_key: <UNIQUE_KEY> });
+
+// Deprecated
 await nango.getIntegration(<INTEGRATION-ID>);
 ```
 
 **Parameters**
 
 <Expandable>
-    <ResponseField name="providerConfigKey" type="string" required>
+    <ResponseField name="unique_key" type="string" required>
+         The integration ID (`unique_key`)
+    </ResponseField>
+    <ResponseField name="include" type="array">
+        Include sensitive data. Allowed values: `webhook`
+    </ResponseField>
+
+    <ResponseField name="providerConfigKey" type="string" required deprecated>
         The integration ID.
     </ResponseField>
 
-    <ResponseField name="includeIntegrationCredentials" type="boolean">
-        Defaults to `false`. 
-    </ResponseField>   
+    <ResponseField name="includeIntegrationCredentials" type="boolean" deprecated>
+        Defaults to `false`.
+    </ResponseField>
 </Expandable>
 
 **Example Response**
@@ -115,24 +188,12 @@ await nango.getIntegration(<INTEGRATION-ID>);
 <Expandable>
 ```json
 {
-    "config": {
+    "data": {
         "unique_key": "slack-nango-community",
         "provider": "slack",
-        "syncs": [
-            {
-                "name": "slack-messages",
-                "created_at": "2023-10-16T08:45:26.241Z",
-                "updated_at": "2023-10-16T08:45:26.241Z",
-                "description": "Continuously fetch the latest Slack messages. Details: full refresh. Required scopes(s): channels:read, groups:read, mpim:read, im:read"
-            }
-        ],
-        "actions": [
-            {
-                "name": "github-list-repos-action",
-                "created_at": "2023-10-17T17:28:03.839Z",
-                "updated_at": "2023-10-17T17:28:03.839Z"
-            }
-        ]
+        "logo": "http://localhost:3003/images/template-logos/slack.svg",
+        "created_at": "2023-10-16T08:45:26.241Z",
+        "updated_at": "2023-10-16T08:45:26.241Z",
     }
 }
 ```
@@ -159,7 +220,7 @@ await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 
     <ResponseField name="credentials" type="Record<string, string>">
         The credentials to include depend on the specific integration that you want to create.
-    </ResponseField>   
+    </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
     <Expandable title="credentials" defaultOpen>
@@ -212,7 +273,7 @@ await nango.updateIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 
     <ResponseField name="credentials" type="Record<string, string>">
         The credentials to include depend on the specific integration that you want to create.
-    </ResponseField>   
+    </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
     <Expandable title="credentials" defaultOpen>
@@ -244,7 +305,7 @@ await nango.updateIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 ```
 </Expandable>
 
-### Delete an integration 
+### Delete an integration
 
 Deletes a specific integration.
 
@@ -329,7 +390,7 @@ await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 ```
 
 <Info>
-The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.). 
+The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.).
 
 If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/integrate/guides/proxy-requests-to-an-api)).
 </Info>
@@ -362,16 +423,16 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
 <Expandable>
 ```json
 {
-    "id": 18393,                                 
-    "created_at": "2023-03-08T09:43:03.725Z",     
-    "updated_at": "2023-03-08T09:43:03.725Z",     
-    "provider_config_key": "github",              
-    "connection_id": "1",                         
+    "id": 18393,
+    "created_at": "2023-03-08T09:43:03.725Z",
+    "updated_at": "2023-03-08T09:43:03.725Z",
+    "provider_config_key": "github",
+    "connection_id": "1",
     "credentials": {
-        "type": "OAUTH2",                         
-        "access_token": "gho_tsXLG73f....",       
-        "refresh_token": "gho_fjofu84u9....",     
-        "expires_at": "2024-03-08T09:43:03.725Z", 
+        "type": "OAUTH2",
+        "access_token": "gho_tsXLG73f....",
+        "refresh_token": "gho_fjofu84u9....",
+        "expires_at": "2024-03-08T09:43:03.725Z",
         "raw": { // Raw token response from the OAuth provider: Contents vary!
             "access_token": "gho_tsXLG73f....",
             "refresh_token": "gho_fjofu84u9....",
@@ -379,17 +440,17 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
             "scope": "public_repo,user"
         }
     },
-    "connection_config": {                       
+    "connection_config": {
         "subdomain": "myshop",
         "realmId": "XXXXX",
         "instance_id": "YYYYYYY"
-    },                      
-    "account_id": 0,                              
-    "metadata": {                                 
+    },
+    "account_id": 0,
+    "metadata": {
         "myProperty": "yes",
         "filter": "closed=true"
     }
-}                              
+}
 ```
 </Expandable>
 
@@ -729,8 +790,8 @@ Returns the synced data.
 import type { ModelName } from '<path-to-nango-integrations>/models'
 
 const records = await nango.listRecords<ModelName>({
-    providerConfigKey: '<INTEGRATION-ID>',    
-    connectionId: '<CONNECTION-ID>',                
+    providerConfigKey: '<INTEGRATION-ID>',
+    connectionId: '<CONNECTION-ID>',
     model: '<MODEL-NAME>'
 });
 ```
@@ -767,13 +828,13 @@ const records = await nango.listRecords<ModelName>({
       </ResponseField>
 
       <ResponseField name="limit" type="number">
-        The maximum number of records to return. Defaults to 100. 
+        The maximum number of records to return. Defaults to 100.
       </ResponseField>
 
       <ResponseField name="filter" type="string">
-        Filter to only show results that have been added or updated or deleted. 
+        Filter to only show results that have been added or updated or deleted.
 
-        Available options: added, updated, deleted 
+        Available options: added, updated, deleted
       </ResponseField>
 
       <ResponseField name="modifiedAfter" type="string">
@@ -831,7 +892,7 @@ const records = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC
         The integration ID.
     </ResponseField>
     <ResponseField name="syncs" type="string[]" required>
-        The name of the syncs to trigger. If the array is empty, all syncs are triggered. 
+        The name of the syncs to trigger. If the array is empty, all syncs are triggered.
     </ResponseField>
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, the sync will trigger for all relevant connections.
@@ -857,7 +918,7 @@ await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNEC
         The integration ID.
     </ResponseField>
     <ResponseField name="syncs" type="string[]" required>
-        The name of the syncs that should be triggered. 
+        The name of the syncs that should be triggered.
     </ResponseField>
     <ResponseField name="connectionId" type="string">
         The connection ID. If ommitted, the sync will trigger for all relevant connections.
@@ -883,7 +944,7 @@ await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNEC
         The integration ID.
     </ResponseField>
     <ResponseField name="syncs" type="string[]" required>
-        The name of the syncs that should be paused. 
+        The name of the syncs that should be paused.
     </ResponseField>
     <ResponseField name="connectionId" type="string">
         The connection ID. If ommitted, the sync will pause for all relevant connections.
@@ -955,7 +1016,7 @@ await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', 'SYNC_NAME', '<CON
         The name of the sync.
     </ResponseField>
     <ResponseField name="connectionId" type="string" required>
-        The connection ID. 
+        The connection ID.
     </ResponseField>
     <ResponseField name="frequency" type="string" required>
         The frequency you want to set (ex: 'every hour'). Set to `null` to revert to the default frequency.  Uses the https://github.com/vercel/ms notations. Min frequency: 5 minutes.
@@ -1014,7 +1075,7 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
         The integration ID.
     </ResponseField>
     <ResponseField name="connectionId" type="string" required>
-        The connection ID. 
+        The connection ID.
     </ResponseField>
     <ResponseField name="actionName" type="string" required>
         The name of the action to trigger.
@@ -1039,7 +1100,7 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
 Makes an HTTP request using the [proxy](/understand/concepts/proxy):
 
 ```js
-const config = { 
+const config = {
     endpoint: '/some-endpoint',
     providerConfigKey: '<INTEGRATION-ID>',
     connectionId: '<CONNECTION-ID>'
@@ -1064,7 +1125,7 @@ await nango.delete(config); // DELETE request
                 The integration ID (for credential injection).
             </ResponseField>
             <ResponseField name="connectionId" type="string" required>
-                The connection ID (for credential injection). 
+                The connection ID (for credential injection).
             </ResponseField>
             <ResponseField name="headers" type="Record<string, string>">
                 The headers of the request.
@@ -1088,7 +1149,7 @@ await nango.delete(config); // DELETE request
                 Override the decompress option when making requests. Optional, defaults to false
             </ResponseField>
             <ResponseField name="responseType" type="'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'">
-                The type of the response. 
+                The type of the response.
             </ResponseField>
         </Expandable>
     </ResponseField>

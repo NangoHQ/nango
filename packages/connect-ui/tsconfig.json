@@ -23,5 +23,10 @@
             "@/*": ["./src/*"]
         }
     },
+    "references": [
+        {
+            "path": "../types"
+        }
+    ],
     "include": ["src"]
 }

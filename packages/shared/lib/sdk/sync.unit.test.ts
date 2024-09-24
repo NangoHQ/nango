@@ -49,7 +49,7 @@ describe('cache', () => {
         const nodeClient = (await import('@nangohq/node')).Nango;
         nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
         nodeClient.prototype.setMetadata = vi.fn().mockReturnValue({});
-        nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
+        nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ data: { provider: 'github' } });
         vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, logs: [] }));
     });
     afterEach(() => {

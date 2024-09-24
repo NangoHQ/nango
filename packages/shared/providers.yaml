@@ -332,6 +332,20 @@ bitdefender:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/bitdefender
+bitly:
+    categories:
+        - marketing
+        - social
+    auth_mode: OAUTH2
+    authorization_url: https://bitly.com/oauth/authorize
+    token_url: https://api-ssl.bitly.com/oauth/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api-ssl.bitly.com
+    docs: https://docs.nango.dev/integrations/all/bitly
 blackbaud:
     categories:
         - crm

@@ -9,7 +9,7 @@ export type PostPublicTbaAuthorization = Endpoint<{
         oauth_client_secret_override?: string | undefined;
     };
     Querystring: {
-        connection_id: string;
+        connection_id?: string | undefined;
         public_key: string;
         params?: Record<string, any> | undefined;
         hmac?: string | undefined;
@@ -39,7 +39,7 @@ export type PostPublicTableauAuthorization = Endpoint<{
         content_url?: string | undefined;
     };
     Querystring: {
-        connection_id: string;
+        connection_id?: string | undefined;
         public_key: string;
         params?: Record<string, any> | undefined;
         hmac?: string | undefined;
@@ -64,7 +64,7 @@ export type PostPublicTableauAuthorization = Endpoint<{
 export type PostPublicUnauthenticatedAuthorization = Endpoint<{
     Method: 'POST';
     Querystring: {
-        connection_id: string;
+        connection_id?: string | undefined;
         hmac?: string | undefined;
     };
     Params: {
