@@ -12,6 +12,7 @@ import { useStore } from '../../../../../store';
 import TagsInput from '../../../../../components/ui/input/TagsInput';
 import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';
+import { mutate } from 'swr';
 
 export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
     data: { integration, template },
@@ -33,6 +34,7 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
         if ('error' in updated.json) {
             toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
         } else {
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`));
             toast({ title: 'Successfully updated integration', variant: 'success' });
         }
 
