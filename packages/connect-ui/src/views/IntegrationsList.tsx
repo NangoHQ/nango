@@ -7,16 +7,18 @@ import { ErrorBoundary } from 'react-error-boundary';
 import type { ApiPublicIntegration, GetPublicProvider } from '@nangohq/types';
 
 import { ErrorFallback } from '@/components/ErrorFallback';
+import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { getIntegrations, getProvider } from '@/lib/api';
+import { triggerClose } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 
 export const IntegrationsList: React.FC = () => {
     return (
-        <div className="h-screen overflow-hidden flex flex-col">
-            <header className="flex flex-col gap-8 p-10 ">
+        <Layout>
+            <header className="flex flex-col gap-4 p-10 ">
                 <div className="flex justify-end">
-                    <Button size={'icon'} title="Close UI" variant={'transparent'}>
+                    <Button size={'icon'} title="Close UI" variant={'transparent'} onClick={() => triggerClose()}>
                         <IconX stroke={1} />
                     </Button>
                 </div>
@@ -25,7 +27,7 @@ export const IntegrationsList: React.FC = () => {
                     <p className="text-dark-500">Please select an API integration from the list below.</p>
                 </div>
             </header>
-            <main className="h-full overflow-auto m-10 pt-1">
+            <main className="h-full overflow-auto m-9 mt-1 p-1">
                 <QueryErrorResetBoundary>
                     {({ reset }) => (
                         <ErrorBoundary fallbackRender={ErrorFallback} onReset={reset}>
@@ -36,7 +38,7 @@ export const IntegrationsList: React.FC = () => {
                     )}
                 </QueryErrorResetBoundary>
             </main>
-        </div>
+        </Layout>
     );
 };
 
@@ -89,7 +91,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
 
     return (
         <div
-            className="group flex justify-between items-center border-b border-b-dark-100 py-5 px-5 transition-colors rounded-md ring-offset-white focus-visible:ring-neutral-950 focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:outline-none hover:bg-dark-100 focus:bg-dark-100"
+            className=" group flex justify-between items-center border-b border-b-dark-100 py-5 px-5 transition-colors rounded-md ring-offset-white focus-visible:ring-neutral-950 focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:outline-none hover:bg-dark-100 focus:bg-dark-100"
             role="button"
             tabIndex={0}
             title={`Connect to ${integration.provider}`}
