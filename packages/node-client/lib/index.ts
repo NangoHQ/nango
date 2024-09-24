@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosInterceptorManager } from 'axios';
 import axios from 'axios';
 import https from 'node:https';
 
@@ -55,6 +55,16 @@ export enum SyncType {
 
 const defaultHttpsAgent = new https.Agent({ keepAlive: true });
 
+export interface AdminAxiosProps {
+    userAgent?: string;
+    interceptors?: {
+        request?: AxiosInterceptorManager<AxiosRequestConfig>;
+        response?: {
+            onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+        };
+    };
+}
+
 export class Nango {
     serverUrl: string;
     secretKey: string;
@@ -66,7 +76,7 @@ export class Nango {
     userAgent: string;
     http: AxiosInstance;
 
-    constructor(config: NangoProps, { userAgent }: { userAgent?: string } = {}) {
+    constructor(config: NangoProps, { userAgent, interceptors }: AdminAxiosProps = {}) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
 
@@ -107,6 +117,12 @@ export class Nango {
                 'User-Agent': this.userAgent
             }
         });
+
+        if (interceptors) {
+            if (interceptors.response) {
+                this.http.interceptors.response.use(interceptors.response.onFulfilled, undefined);
+            }
+        }
     }
 
     /****************

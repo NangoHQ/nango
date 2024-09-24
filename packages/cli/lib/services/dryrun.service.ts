@@ -1,8 +1,9 @@
 import promptly from 'promptly';
 import fs from 'node:fs';
+import type { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 
-import type { NangoProps, RunnerOutput } from '@nangohq/shared';
+import type { NangoProps, RunnerOutput, SyncConfig } from '@nangohq/shared';
 import type { Metadata, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
 import { cloudHost, stagingHost, NangoError, localFileService, validateData, NangoSync, formatScriptError, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
@@ -11,6 +12,7 @@ import { compileAllFiles } from './compile.service.js';
 import { parse } from './config.service.js';
 import { loadSchemaJson } from './model.service.js';
 import { displayValidationError } from '../utils/errors.js';
+import * as responseSaver from './response-saver.service.js';
 import * as vm from 'node:vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
@@ -108,7 +110,7 @@ export class DryRunService {
         let isPostConnectionScript = false;
 
         // Find the appropriate script to run
-        let syncInfo: ParsedNangoSync | ParsedNangoAction | undefined;
+        let scriptInfo: ParsedNangoSync | ParsedNangoAction | undefined;
         for (const integration of response.parsed.integrations) {
             if (options.optionalProviderConfigKey && integration.providerConfigKey !== options.optionalProviderConfigKey) {
                 continue;
@@ -119,16 +121,16 @@ export class DryRunService {
                 if (script.name !== syncName) {
                     continue;
                 }
-                if (syncInfo) {
+                if (scriptInfo) {
                     console.log(chalk.red(`Multiple integrations contain a script named "${syncName}". Please use "--integration-id"`));
                     return;
                 }
-                syncInfo = script;
+                scriptInfo = script;
                 providerConfigKey = integration.providerConfigKey;
             }
 
             // If nothing that could still be a post connection script
-            if (!syncInfo) {
+            if (!scriptInfo) {
                 for (const script of integration.postConnectionScripts) {
                     if (script !== syncName) {
                         continue;
@@ -143,7 +145,7 @@ export class DryRunService {
             }
         }
 
-        if ((!syncInfo && !isPostConnectionScript) || !providerConfigKey) {
+        if ((!scriptInfo && !isPostConnectionScript) || !providerConfigKey) {
             console.log(
                 chalk.red(
                     `No script matched "${syncName}"${options.optionalProviderConfigKey ? ` for integration "${options.optionalProviderConfigKey}"` : ''}`
@@ -152,8 +154,8 @@ export class DryRunService {
             return;
         }
 
-        if (debug && syncInfo) {
-            printDebug(`Found integration ${providerConfigKey}, ${syncInfo.type} ${syncInfo.name} `);
+        if (debug && scriptInfo) {
+            printDebug(`Found integration ${providerConfigKey}, ${scriptInfo.type} ${scriptInfo.name} `);
         }
 
         const nangoConnection = await getConnection(
@@ -199,7 +201,7 @@ export class DryRunService {
         }
 
         let type: ScriptFileType = 'syncs';
-        if (syncInfo?.type === 'action') {
+        if (scriptInfo?.type === 'action') {
             type = 'actions';
         } else if (isPostConnectionScript) {
             type = 'post-connection-scripts';
@@ -271,13 +273,14 @@ export class DryRunService {
         }
 
         try {
-            const syncConfig = {
+            const syncConfig: SyncConfig = {
+                id: -1,
                 sync_name: syncName,
                 file_location: '',
-                models: syncInfo?.output || [],
-                input: syncInfo?.input || undefined,
+                models: scriptInfo?.output || [],
+                input: scriptInfo?.input || undefined,
                 track_deletes: false,
-                type: syncInfo?.type || 'sync',
+                type: scriptInfo?.type || 'sync',
                 active: true,
                 auto_start: false,
                 enabled: true,
@@ -291,7 +294,7 @@ export class DryRunService {
                 updated_at: new Date()
             };
             const nangoProps: NangoProps = {
-                scriptType: syncInfo?.type || 'sync',
+                scriptType: scriptInfo?.type || 'sync',
                 host: process.env['NANGO_HOSTPORT'],
                 connectionId: nangoConnection.connection_id,
                 environmentId: nangoConnection.environment_id,
@@ -320,6 +323,13 @@ export class DryRunService {
             if (options.saveResponses) {
                 nangoProps.rawSaveOutput = [];
                 nangoProps.rawDeleteOutput = [];
+
+                nangoProps.axios = {
+                    response: {
+                        onFulfilled: (response: AxiosResponse) =>
+                            responseSaver.onAxiosRequestFulfilled({ response, providerConfigKey, connectionId: nangoConnection.connection_id })
+                    }
+                };
             }
             console.log('---');
             const results = await this.runScript({
