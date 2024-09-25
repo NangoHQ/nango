@@ -162,6 +162,7 @@ class ConfigController {
                 const [provider, properties] = providerProperties;
                 return {
                     name: provider,
+                    displayName: properties.display_name,
                     defaultScopes: properties.default_scopes,
                     authMode: properties.auth_mode,
                     categories: properties.categories,
