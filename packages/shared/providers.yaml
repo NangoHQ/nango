@@ -135,6 +135,7 @@ amplitude:
         base_url: https://amplitude.com
     docs: https://docs.nango.dev/integrations/all/amplitude
 anthropic:
+    display_name: Anthropic
     categories:
         - productivity
         - dev-tools
