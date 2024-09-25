@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { useStore } from '../../../../../store';
 import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';
+import { mutate } from 'swr';
 
 export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
     data: { integration },
@@ -32,6 +33,7 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
             toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
         } else {
             toast({ title: 'Successfully updated integration', variant: 'success' });
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`));
         }
 
         setLoading(false);
