@@ -1,7 +1,7 @@
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetPublicIntegration } from '@nangohq/types';
-import { configService } from '@nangohq/shared';
+import { zodErrorToHTTP } from '@nangohq/utils';
+import type { ApiPublicIntegrationInclude, GetPublicIntegration } from '@nangohq/types';
+import { configService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { z } from 'zod';
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { integrationToPublicApi } from '../../../formatters/integration.js';
@@ -12,10 +12,20 @@ export const validationParams = z
     })
     .strict();
 
+const valInclude = z.enum(['webhook']);
+const validationQuery = z
+    .object({
+        include: z
+            .union([valInclude, z.array(valInclude)])
+            .transform((val) => (Array.isArray(val) ? val : val ? [val] : []))
+            .optional()
+    })
+    .strict();
+
 export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (req, res) => {
-    const emptyQuery = requireEmptyQuery(req);
-    if (emptyQuery) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
+    const valQuery = validationQuery.safeParse(req.query);
+    if (!valQuery.success) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });
         return;
     }
 
@@ -27,6 +37,9 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
 
     const { environment } = res.locals;
     const params: GetPublicIntegration['Params'] = valParams.data;
+    const query: GetPublicIntegration['Querystring'] = valQuery.data;
+
+    const queryInclude = new Set(query.include || []);
 
     const integration = await configService.getProviderConfig(params.uniqueKey, environment.id);
     if (!integration) {
@@ -34,7 +47,18 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
         return;
     }
 
+    const provider = getProvider(integration.provider);
+    if (!provider) {
+        res.status(404).send({ error: { code: 'not_found', message: `Unknown provider ${integration.provider}` } });
+        return;
+    }
+
+    const include: ApiPublicIntegrationInclude = {};
+    if (queryInclude.has('webhook')) {
+        include.webhook_url = provider.webhook_routing_script ? `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${integration.provider}` : null;
+    }
+
     res.status(200).send({
-        data: integrationToPublicApi(integration)
+        data: integrationToPublicApi(integration, include)
     });
 });

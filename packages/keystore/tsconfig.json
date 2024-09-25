@@ -1,0 +1,9 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "lib",
+        "outDir": "dist"
+    },
+    "references": [{ "path": "../utils" }, { "path": "../types" }],
+    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
+}

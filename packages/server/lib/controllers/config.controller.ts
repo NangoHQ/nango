@@ -144,11 +144,7 @@ class ConfigController {
             );
 
             res.status(200).send({
-                integrations: integrations.sort((a: Integration, b: Integration) => {
-                    const creationDateA = a.creationDate || new Date(0);
-                    const creationDateB = b.creationDate || new Date(0);
-                    return creationDateB.getTime() - creationDateA.getTime();
-                })
+                integrations: integrations
             });
         } catch (err) {
             next(err);
@@ -166,6 +162,7 @@ class ConfigController {
                 const [provider, properties] = providerProperties;
                 return {
                     name: provider,
+                    displayName: properties.display_name,
                     defaultScopes: properties.default_scopes,
                     authMode: properties.auth_mode,
                     categories: properties.categories,

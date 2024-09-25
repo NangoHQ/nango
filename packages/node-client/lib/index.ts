@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosInterceptorManager } from 'axios';
 import axios from 'axios';
 import https from 'node:https';
 
@@ -13,7 +13,12 @@ import type {
     OAuth2ClientCredentials,
     TbaCredentials,
     TableauCredentials,
-    UnauthCredentials
+    UnauthCredentials,
+    GetPublicProviders,
+    GetPublicProvider,
+    GetPublicListIntegrations,
+    GetPublicListIntegrationsLegacy,
+    GetPublicIntegration
 } from '@nangohq/types';
 import type {
     Connection,
@@ -33,7 +38,7 @@ import type {
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
 } from './types.js';
-import { getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
+import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 export const stagingHost = 'https://api-staging.nango.dev';
 export const prodHost = 'https://api.nango.dev';
@@ -50,6 +55,16 @@ export enum SyncType {
 
 const defaultHttpsAgent = new https.Agent({ keepAlive: true });
 
+export interface AdminAxiosProps {
+    userAgent?: string;
+    interceptors?: {
+        request?: AxiosInterceptorManager<AxiosRequestConfig>;
+        response?: {
+            onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+        };
+    };
+}
+
 export class Nango {
     serverUrl: string;
     secretKey: string;
@@ -61,7 +76,7 @@ export class Nango {
     userAgent: string;
     http: AxiosInstance;
 
-    constructor(config: NangoProps, { userAgent }: { userAgent?: string } = {}) {
+    constructor(config: NangoProps, { userAgent, interceptors }: AdminAxiosProps = {}) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
 
@@ -102,6 +117,36 @@ export class Nango {
                 'User-Agent': this.userAgent
             }
         });
+
+        if (interceptors) {
+            if (interceptors.response) {
+                this.http.interceptors.response.use(interceptors.response.onFulfilled, undefined);
+            }
+        }
+    }
+
+    /****************
+     * Providers
+     *****************/
+    /**
+     * Returns a list of all available providers
+     * @returns A promise that resolves with an object containing an array of providers
+     */
+    public async listProviders(queries: GetPublicProviders['Querystring']): Promise<GetPublicProviders['Success']> {
+        const url = new URL(`${this.serverUrl}/providers`);
+        addQueryParams(url, queries);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders({}) });
+        return response.data;
+    }
+
+    /**
+     * Returns a specific provider
+     * @returns A promise that resolves with an object containing a provider
+     */
+    public async getProvider(params: GetPublicProvider['Params']): Promise<GetPublicProvider['Success']> {
+        const response = await this.http.get(`${this.serverUrl}/providers/${params.provider}`, { headers: this.enrichHeaders({}) });
+        return response.data;
     }
 
     /**
@@ -117,28 +162,51 @@ export class Nango {
 
     /**
      * Returns a list of integrations
-     * @returns A promise that resolves with an object containing an array of integration configurations
+     * @returns A promise that resolves with an object containing an array of integrations
      */
-    public async listIntegrations(): Promise<{ configs: Pick<Integration, 'unique_key' | 'provider'>[] }> {
-        const url = `${this.serverUrl}/config`;
+    public async listIntegrations(): Promise<GetPublicListIntegrationsLegacy['Success']> {
+        const url = `${this.serverUrl}/integrations`;
         const response = await this.http.get(url, { headers: this.enrichHeaders({}) });
 
-        return response.data;
+        const tmp: GetPublicListIntegrations['Success'] = response.data;
+        // To avoid deprecating this method we emulate legacy format
+        return { configs: tmp.data };
     }
+
+    /**
+     * Returns a specific integration
+     * @param uniqueKey - The key identifying the provider configuration on Nango
+     * @returns A promise that resolves with an object containing an integration
+     */
+    public async getIntegration(
+        params: GetPublicIntegration['Params'],
+        queries?: GetPublicIntegration['Querystring']
+    ): Promise<GetPublicIntegration['Success']>;
 
     /**
      * Returns a specific integration
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param includeIntegrationCredentials - An optional flag indicating whether to include integration credentials in the response. Default is false
      * @returns A promise that resolves with an object containing an integration configuration
+     * @deprecated Use `getIntegration({ unique_key })`
      */
+    public async getIntegration(providerConfigKey: string, includeIntegrationCredentials?: boolean): Promise<{ config: Integration | IntegrationWithCreds }>;
+
     public async getIntegration(
-        providerConfigKey: string,
-        includeIntegrationCredentials: boolean = false
-    ): Promise<{ config: Integration | IntegrationWithCreds }> {
-        const url = `${this.serverUrl}/config/${providerConfigKey}`;
-        const response = await this.http.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredentials } });
-        return response.data;
+        params: string | GetPublicIntegration['Params'],
+        queries?: boolean | GetPublicIntegration['Querystring']
+    ): Promise<{ config: Integration | IntegrationWithCreds } | GetPublicIntegration['Success']> {
+        if (typeof params === 'string') {
+            const url = `${this.serverUrl}/config/${params}`;
+            const response = await this.http.get(url, { headers: this.enrichHeaders({}), params: { include_creds: queries } });
+            return response.data;
+        } else {
+            const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}`);
+            addQueryParams(url, queries as GetPublicIntegration['Querystring']);
+
+            const response = await this.http.get(url.href, { headers: this.enrichHeaders({}) });
+            return response.data;
+        }
     }
 
     /**

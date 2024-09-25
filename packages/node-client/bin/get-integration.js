@@ -4,7 +4,7 @@ const args = process.argv.slice(2);
 const nango = new Nango({ host: 'http://localhost:3003', secretKey: args[0] });
 
 nango
-    .getIntegration(args[1], args[2])
+    .getIntegration({ uniqueKey: args[1] })
     .then((response) => {
         console.log(response);
     })

@@ -40,3 +40,19 @@ export function getUserAgent(userAgent?: string): string {
     const osVersion = os.release().replace(' ', '_');
     return `nango-node-client/${NANGO_VERSION} (${osName}/${osVersion}; node.js/${nodeVersion})${userAgent ? `; ${userAgent}` : ''}`;
 }
+
+export function addQueryParams(url: URL, queries?: Record<string, any> | undefined) {
+    if (!queries) {
+        return;
+    }
+
+    Object.entries(queries).forEach(([name, value]) => {
+        if (Array.isArray(value)) {
+            for (const el of value) {
+                url.searchParams.set(name, el);
+            }
+        } else if (value !== null && value !== undefined) {
+            url.searchParams.set(name, value);
+        }
+    });
+}

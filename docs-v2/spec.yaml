@@ -362,6 +362,14 @@ paths:
                   schema:
                       type: string
                   description: The integration ID (unique_key) that you created in Nango.
+                - name: include
+                  in: query
+                  schema:
+                      type: array
+                      items:
+                        type: string
+                        enum: [webhook]
+                  description: The integration ID (unique_key) that you created in Nango.
             responses:
                 '200':
                     description: Successfully returned an integration
@@ -1707,6 +1715,8 @@ components:
     BaseProvider:
       properties:
         name:
+            type: string
+        display_name:
             type: string
         auth_mode:
           type: string

@@ -8,7 +8,7 @@ integrations:
                 output: Customer
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /quickbooks/customers
+                endpoint: GET /customers
             accounts:
                 description: |
                     Fetches all accounts in QuickBooks. Handles both active and archived accounts, saving or deleting them based on their status.
@@ -16,7 +16,7 @@ integrations:
                 output: Account
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /quickbooks/accounts
+                endpoint: GET /accounts
             payments:
                 description: |
                     Fetches all payments in QuickBooks. Handles both active and voided payments, saving or deleting them based on their status.
@@ -24,7 +24,7 @@ integrations:
                 output: Payment
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /quickbooks/payments
+                endpoint: GET /payments
             items:
                 description: |
                     Fetches all items in QuickBooks. Handles both active and archived items, saving or deleting them based on their status.
@@ -32,7 +32,7 @@ integrations:
                 output: Item
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /quickbooks/items
+                endpoint: GET /items
             invoices:
                 description: |
                     Fetches all invoices in QuickBooks. Handles both active and voided invoices, saving or deleting them based on their status.
@@ -40,7 +40,7 @@ integrations:
                 output: Invoice
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /quickbooks/invoices
+                endpoint: GET /invoices
         actions:
             create-customer:
                 description: |
@@ -48,77 +48,77 @@ integrations:
                 input: CreateCustomer
                 scopes: com.intuit.quickbooks.accounting
                 output: Customer
-                endpoint: POST /quickbooks/customer
+                endpoint: POST /customers
             update-customer:
                 description: |
                     Update a single customer in QuickBooks.
                 input: UpdateCustomer
                 scopes: com.intuit.quickbooks.accounting
                 output: Customer
-                endpoint: PUT /quickbooks/customer
+                endpoint: PUT /customers
             create-item:
                 description: |
                     Creates a single item in QuickBooks.
                 input: CreateItem
                 scopes: com.intuit.quickbooks.accounting
                 output: Item
-                endpoint: POST /quickbooks/item
+                endpoint: POST /items
             update-item:
                 description: |
                     Update a single item in QuickBooks.
                 input: UpdateItem
                 scopes: com.intuit.quickbooks.accounting
                 output: Item
-                endpoint: PUT /quickbooks/item
+                endpoint: PUT /items
             create-account:
                 description: |
                     Creates a single account in QuickBooks.
                 input: CreateAccount
                 scopes: com.intuit.quickbooks.accounting
                 output: Account
-                endpoint: POST /quickbooks/account
+                endpoint: POST /accounts
             update-account:
                 description: |
                     Updates a single account in QuickBooks.
                 input: UpdateAccount
                 scopes: com.intuit.quickbooks.accounting
                 output: Account
-                endpoint: PUT /quickbooks/account
+                endpoint: PUT /accounts
             create-invoice:
                 description: |
                     Creates a single invoice in QuickBooks.
                 input: CreateInvoice
                 scopes: com.intuit.quickbooks.accounting
                 output: Invoice
-                endpoint: POST /quickbooks/invoice
+                endpoint: POST /invoices
             update-invoice:
                 description: |
                     Updates a single invoice in QuickBooks.
                 input: UpdateInvoice
                 scopes: com.intuit.quickbooks.accounting
                 output: Invoice
-                endpoint: PUT /quickbooks/invoice
+                endpoint: PUT /invoices
             create-credit-memo:
                 description: |
                     Creates a single credit memo in QuickBooks.
                 input: CreateCreditMemo
                 scopes: com.intuit.quickbooks.accounting
                 output: CreditMemo
-                endpoint: POST /quickbooks/credit-memo
+                endpoint: POST /credit-memos
             update-credit-memo:
                 description: |
                     Updates a single credit memo in QuickBooks.
                 input: UpdateCreditMemo
                 scopes: com.intuit.quickbooks.accounting
                 output: CreditMemo
-                endpoint: PUT /quickbooks/credit-memo
+                endpoint: PUT /credit-memos
             create-payment:
                 description: |
                     Creates a single payment in QuickBooks.
                 input: CreatePayment
                 scopes: com.intuit.quickbooks.accounting
                 output: Payment
-                endpoint: POST /quickbooks/payment
+                endpoint: POST /payments
 
 models:
     Updates:

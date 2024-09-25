@@ -196,7 +196,8 @@
         },
         {
             "files": [
-                "packages/connect-ui/**/*.tsx"
+                "packages/connect-ui/**/*.tsx",
+                "packages/connect-ui/**/*.ts"
             ],
             "plugins": [
                 "react",
@@ -219,9 +220,57 @@
                     "impliedStrict": true,
                     "jsx": true
                 },
-                "project": "tsconfig.json"
+                "project": "packages/connect-ui/tsconfig.json"
             },
-            "rules": {}
+            "rules": {
+                // unnecessary when bundling
+                "import/extensions": "off",
+                "@typescript-eslint/member-ordering": "error",
+                "@typescript-eslint/no-non-null-assertion": "error",
+                "@typescript-eslint/no-explicit-any": "error",
+                "@typescript-eslint/only-throw-error": "error",
+                "react/prop-types": "off",
+                "react/jsx-sort-props": [
+                    "error",
+                    {
+                        "callbacksLast": true,
+                        "shorthandFirst": true,
+                        "reservedFirst": true
+                    }
+                ],
+                "import/order": [
+                    "error",
+                    {
+                        "groups": [
+                            "builtin",
+                            "external",
+                            "unknown",
+                            "internal",
+                            "parent",
+                            "sibling",
+                            "type",
+                            "index",
+                            "object"
+                        ],
+                        "newlines-between": "always",
+                        "alphabetize": {
+                            "order": "asc"
+                        },
+                        "warnOnUnassignedImports": true,
+                        "pathGroups": [
+                            {
+                                "pattern": "@/**",
+                                "group": "parent"
+                            },
+                            {
+                                "pattern": "@nangohq/*",
+                                "group": "internal",
+                                "position": "after"
+                            }
+                        ]
+                    }
+                ]
+            }
         }
     ]
 }

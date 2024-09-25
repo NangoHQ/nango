@@ -1,12 +1,11 @@
 import https from 'node:https';
 import { Nango, getUserAgent } from '@nangohq/node';
+import type { AdminAxiosProps } from '@nangohq/node';
 import paginateService from '../services/paginate.service.js';
-import * as responseSaver from './response.saver.js';
 import proxyService from '../services/proxy.service.js';
-import type { AxiosInstance } from 'axios';
+import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig } from 'axios';
 import axios, { AxiosError } from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
-import type { IntegrationWithCreds } from '@nangohq/node';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import {
     getLogger,
@@ -16,13 +15,13 @@ import {
     MAX_LOG_PAYLOAD,
     stringifyAndTruncateValue,
     stringifyObject,
-    truncateJsonString
+    truncateJson
 } from '@nangohq/utils';
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
-import type { DBTeam, MessageRowInsert } from '@nangohq/types';
+import type { DBTeam, GetPublicIntegration, MessageRowInsert } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
 
 const logger = getLogger('SDK');
@@ -341,13 +340,19 @@ export interface NangoProps {
     rawSaveOutput?: unknown[] | undefined;
     rawDeleteOutput?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
-    saveResponses?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
     runnerFlags: RunnerFlags;
     debug: boolean;
     startedAt: Date;
+
+    axios?: {
+        request?: AxiosInterceptorManager<AxiosRequestConfig>;
+        response?: {
+            onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+        };
+    };
 }
 
 export interface EnvironmentVariable {
@@ -379,7 +384,6 @@ export class NangoAction {
     environmentName?: string;
     syncJobId?: number;
     dryRun?: boolean;
-    saveResponses?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig?: SyncConfig;
@@ -395,7 +399,7 @@ export class NangoAction {
         string,
         { connection: Connection; timestamp: number }
     >();
-    private memoizedIntegration: IntegrationWithCreds | undefined;
+    private memoizedIntegration: GetPublicIntegration['Success']['data'] | undefined;
 
     constructor(config: NangoProps, { persistApi }: { persistApi: AxiosInstance } = { persistApi: defaultPersistApi }) {
         this.connectionId = config.connectionId;
@@ -408,7 +412,9 @@ export class NangoAction {
             this.activityLogId = config.activityLogId;
         }
 
-        this.nango = new Nango({ isSync: true, ...config }, { userAgent: 'sdk' });
+        const axiosSettings: AdminAxiosProps = {
+            userAgent: 'sdk'
+        };
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -424,7 +430,14 @@ export class NangoAction {
 
         if (config.dryRun) {
             this.dryRun = config.dryRun;
-            this.saveResponses = config.saveResponses || false;
+
+            if (config.axios?.response) {
+                axiosSettings.interceptors = {
+                    response: {
+                        onFulfilled: config.axios.response.onFulfilled
+                    }
+                };
+            }
         }
 
         if (config.environmentName) {
@@ -450,6 +463,8 @@ export class NangoAction {
         if (config.syncConfig) {
             this.syncConfig = config.syncConfig;
         }
+
+        this.nango = new Nango({ isSync: true, ...config }, axiosSettings);
 
         if (this.dryRun !== true) {
             if (!this.activityLogId) throw new Error('Parameter activityLogId is required when not in dryRun');
@@ -506,17 +521,7 @@ export class NangoAction {
         }
 
         if (this.dryRun) {
-            const proxyResponse = await this.nango.proxy(config);
-            if (this.saveResponses) {
-                const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY']}${config.providerConfigKey}`;
-                responseSaver.saveResponse<AxiosResponse<T>>({
-                    directoryName,
-                    config,
-                    data: proxyResponse.data,
-                    syncConfig: this.syncConfig as SyncConfig
-                });
-            }
-            return proxyResponse;
+            return this.nango.proxy(config);
         } else {
             const { connectionId, providerConfigKey } = config;
             const connection = await this.getConnection(providerConfigKey, connectionId);
@@ -614,15 +619,6 @@ export class NangoAction {
         if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
             const connection = await this.nango.getConnection(providerConfigKey, connectionId);
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
-            if (this.saveResponses) {
-                const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY']}${providerConfigKey}`;
-                responseSaver.saveResponse<Pick<Connection, 'metadata' | 'connection_config'>>({
-                    directoryName,
-                    config: { endpoint: 'getConnection', providerConfigKey } as ProxyConfiguration,
-                    data: { metadata: connection.metadata as Metadata, connection_config: connection.connection_config },
-                    customFilePath: 'mocks/nango/getConnection.json'
-                });
-            }
             return connection;
         }
 
@@ -660,17 +656,17 @@ export class NangoAction {
         return (await this.getConnection(this.providerConfigKey, this.connectionId)).metadata as T;
     }
 
-    public async getWebhookURL(): Promise<string | undefined> {
+    public async getWebhookURL(): Promise<string | null | undefined> {
         this.exitSyncIfAborted();
         if (this.memoizedIntegration) {
             return this.memoizedIntegration.webhook_url;
         }
 
-        const { config: integration } = await this.nango.getIntegration(this.providerConfigKey, true);
+        const { data: integration } = await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, { include: ['webhook'] });
         if (!integration || !integration.provider) {
             throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
         }
-        this.memoizedIntegration = integration as IntegrationWithCreds;
+        this.memoizedIntegration = integration;
         return this.memoizedIntegration.webhook_url;
     }
 
@@ -835,7 +831,13 @@ export class NangoAction {
                     // The idea is to always log something instead of silently crashing without overloading persist
                     if (data.length > MAX_LOG_PAYLOAD) {
                         log.message += ` ... (truncated, payload was too large)`;
-                        data = truncateJsonString(stringifyObject({ activityLogId: this.activityLogId, log }), MAX_LOG_PAYLOAD);
+                        // Truncating can remove mandatory field so we only try to truncate meta
+                        if (log.meta) {
+                            data = stringifyObject({
+                                activityLogId: this.activityLogId,
+                                log: { ...log, meta: truncateJson(log.meta) as MessageRowInsert['meta'] }
+                            });
+                        }
                     }
 
                     return await this.persistApi({

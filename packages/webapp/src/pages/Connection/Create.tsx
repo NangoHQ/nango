@@ -205,14 +205,19 @@ export default function IntegrationCreate() {
                 content_url: contentUrl
             };
         }
-
-        nango[authMode === 'NONE' ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
+        const connectionConfig = {
             user_scope: authMode === 'NONE' ? undefined : selectedScopes || [],
             params,
             authorization_params: authorizationParams || {},
             hmac: hmacDigest || '',
             credentials
-        })
+        };
+        const getConnection =
+            authMode === 'NONE'
+                ? nango.create(target.integration_unique_key.value, target.connection_id.value, connectionConfig)
+                : nango.auth(target.integration_unique_key.value, target.connection_id.value, connectionConfig);
+
+        getConnection
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
@@ -753,13 +758,13 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                     </div>
                                     <div className="mt-4">
                                         <label htmlFor="content_url" className="text-text-light-gray block text-sm font-semibold">
-                                            Conent Url
+                                            Content Url
                                         </label>
                                         <SecretInput
                                             copy={true}
                                             id="content_url"
                                             name="content_url"
-                                            placeholder="Conent Url"
+                                            placeholder="Content Url"
                                             value={contentUrl}
                                             setOptionalValue={setContentUrl}
                                         />

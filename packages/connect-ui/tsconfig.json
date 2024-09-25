@@ -23,5 +23,13 @@
             "@/*": ["./src/*"]
         }
     },
-    "include": ["src"]
+    "references": [
+        {
+            "path": "../frontend"
+        },
+        {
+            "path": "../types"
+        }
+    ],
+    "include": ["src", "vite.config.ts"]
 }

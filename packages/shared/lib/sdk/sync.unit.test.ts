@@ -49,7 +49,7 @@ describe('cache', () => {
         const nodeClient = (await import('@nangohq/node')).Nango;
         nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
         nodeClient.prototype.setMetadata = vi.fn().mockReturnValue({});
-        nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
+        nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ data: { provider: 'github' } });
         vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, logs: [] }));
     });
     afterEach(() => {
@@ -144,10 +144,12 @@ describe('Pagination', () => {
 
     it('Throws error if there is no pagination config in provider template', async () => {
         const provider: Provider = {
+            display_name: 'test',
             auth_mode: 'OAUTH2',
             proxy: { base_url: '' },
             authorization_url: '',
-            token_url: ''
+            token_url: '',
+            docs: ''
         };
         (await import('@nangohq/node')).Nango.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
         vi.spyOn(providerService, 'getProvider').mockImplementation(() => provider);
@@ -414,10 +416,12 @@ describe('Pagination', () => {
 
     const buildTemplate = (paginationConfig: CursorPagination | OffsetPagination | LinkPagination): Provider => {
         return {
+            display_name: 'test',
             auth_mode: 'OAUTH2',
             proxy: { base_url: 'https://api.github.com/', paginate: paginationConfig },
             authorization_url: '',
-            token_url: ''
+            token_url: '',
+            docs: ''
         };
     };
 });
