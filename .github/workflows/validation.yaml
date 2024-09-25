@@ -30,4 +30,4 @@ jobs:
               run: |
                   cd scripts/validation/providers
                   npm i
-                  node validate.js
+                  npx tsx validate.ts
