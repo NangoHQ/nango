@@ -286,7 +286,7 @@ export interface NangoProps {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
         response?: {
             onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
-       };
+        };
     };
 }
 export interface EnvironmentVariable {
