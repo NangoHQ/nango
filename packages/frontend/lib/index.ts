@@ -1,26 +1,31 @@
 /*
- * Copyright (c) 2023 Nango, all rights reserved.
+ * Copyright (c) 2024 Nango, all rights reserved.
  */
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
+import type { ConnectUIProps } from './connectUI';
+import { ConnectUI } from './connectUI.js';
+import type {
+    ConnectionConfig,
+    ApiKeyCredentials,
+    AppStoreCredentials,
+    AuthErrorType,
+    AuthOptions,
+    AuthResult,
+    BasicApiCredentials,
+    ErrorHandler,
+    OAuth2ClientCredentials,
+    TBACredentials,
+    TableauCredentials,
+    OAuthCredentialsOverride
+} from './types';
+import { AuthorizationStatus, WSMessageType } from './types.js';
+
+export type * from './types';
+export * from './connectUI.js';
 
 const prodHost = 'https://api.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
 
-const enum WSMessageType {
-    ConnectionAck = 'connection_ack',
-    Error = 'error',
-    Success = 'success'
-}
-
-export type AuthErrorType =
-    | 'missingPublicKey'
-    | 'blocked_by_browser'
-    | 'invalidHostUrl'
-    | 'windowIsOpened'
-    | 'missingCredentials'
-    | 'windowClosed'
-    | 'request_error'
-    | 'missing_ws_client_id';
 export class AuthError extends Error {
     type;
 
@@ -29,18 +34,6 @@ export class AuthError extends Error {
         this.type = type;
     }
 }
-
-export interface AuthResult {
-    providerConfigKey: string;
-    connectionId: string;
-    isPending?: boolean;
-}
-
-type AuthOptions = {
-    detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed
-} & (ConnectionConfig | OAuth2ClientCredentials | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials);
-
-type ErrorHandler = (errorType: AuthErrorType, errorDesc: string) => void;
 
 export default class Nango {
     private hostBaseUrl: string;
@@ -157,7 +150,7 @@ export default class Nango {
                 !('oauth_client_secret_override' in options.credentials)) &&
             Object.keys(options.credentials).length > 0
         ) {
-            const credentials = options.credentials as BasicApiCredentials | ApiKeyCredentials;
+            const credentials = options.credentials;
             const { credentials: _, ...connectionConfig } = options as ConnectionConfig;
 
             return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
@@ -265,11 +258,29 @@ export default class Nango {
     }
 
     /**
+     * Open managed Connect UI
+     */
+    public openConnectUI(params: ConnectUIProps) {
+        const connect = new ConnectUI(params);
+        connect.open();
+        return connect;
+    }
+
+    /**
      * Converts the provided credentials to a Connection configuration object
      * @param credentials - The credentials to convert
      * @returns The connection configuration object
      */
-    private convertCredentialsToConfig(credentials: BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials): ConnectionConfig {
+    private convertCredentialsToConfig(
+        credentials:
+            | OAuthCredentialsOverride
+            | BasicApiCredentials
+            | ApiKeyCredentials
+            | AppStoreCredentials
+            | TBACredentials
+            | TableauCredentials
+            | OAuth2ClientCredentials
+    ): ConnectionConfig {
         const params: Record<string, string> = {};
 
         if ('username' in credentials) {
@@ -299,8 +310,8 @@ export default class Nango {
 
         if ('client_id' in credentials && 'client_secret' in credentials) {
             const oauth2CCCredentials: OAuth2ClientCredentials = {
-                client_id: credentials.client_id as string,
-                client_secret: credentials.client_secret as string
+                client_id: credentials.client_id,
+                client_secret: credentials.client_secret
             };
 
             return { params: oauth2CCCredentials } as unknown as ConnectionConfig;
@@ -308,16 +319,16 @@ export default class Nango {
 
         if ('token_id' in credentials && 'token_secret' in credentials) {
             const tbaCredentials: TBACredentials = {
-                token_id: credentials.token_id as string,
-                token_secret: credentials.token_secret as string
+                token_id: credentials.token_id,
+                token_secret: credentials.token_secret
             };
 
             if ('oauth_client_id_override' in credentials) {
-                tbaCredentials['oauth_client_id_override'] = credentials.oauth_client_id_override as string;
+                tbaCredentials['oauth_client_id_override'] = credentials.oauth_client_id_override;
             }
 
             if ('oauth_client_secret_override' in credentials) {
-                tbaCredentials['oauth_client_secret_override'] = credentials.oauth_client_secret_override as string;
+                tbaCredentials['oauth_client_secret_override'] = credentials.oauth_client_secret_override;
             }
 
             return { params: tbaCredentials } as unknown as ConnectionConfig;
@@ -325,12 +336,12 @@ export default class Nango {
 
         if ('pat_name' in credentials && 'pat_secret' in credentials) {
             const tableauCredentials: TableauCredentials = {
-                pat_name: credentials.pat_name as string,
-                pat_secret: credentials.pat_secret as string
+                pat_name: credentials.pat_name,
+                pat_secret: credentials.pat_secret
             };
 
             if ('content_url' in credentials) {
-                tableauCredentials['content_url'] = credentials.content_url as string;
+                tableauCredentials['content_url'] = credentials.content_url;
             }
 
             return { params: tableauCredentials } as unknown as ConnectionConfig;
@@ -548,67 +559,6 @@ export default class Nango {
 
         return query.length === 0 ? '' : '?' + query.join('&');
     }
-}
-
-interface ConnectionConfig {
-    params?: Record<string, string>;
-    hmac?: string;
-    user_scope?: string[];
-    authorization_params?: Record<string, string | undefined>;
-    credentials?:
-        | OAuthCredentialsOverride
-        | BasicApiCredentials
-        | ApiKeyCredentials
-        | AppStoreCredentials
-        | TBACredentials
-        | TableauCredentials
-        | OAuth2ClientCredentials;
-}
-
-interface OAuthCredentialsOverride {
-    oauth_client_id_override: string;
-    oauth_client_secret_override: string;
-}
-
-interface BasicApiCredentials {
-    username?: string;
-    password?: string;
-}
-
-interface ApiKeyCredentials {
-    apiKey?: string;
-}
-
-interface AppStoreCredentials {
-    privateKeyId: string;
-    issuerId: string;
-    privateKey: string;
-    scope?: string[];
-}
-
-interface TBACredentials {
-    token_id: string;
-    token_secret: string;
-    oauth_client_id_override?: string;
-    oauth_client_secret_override?: string;
-}
-
-interface TableauCredentials {
-    pat_name: string;
-    pat_secret: string;
-    content_url?: string;
-}
-
-interface OAuth2ClientCredentials {
-    client_id: string;
-    client_secret: string;
-}
-
-enum AuthorizationStatus {
-    IDLE,
-    BUSY,
-    CANCELED,
-    DONE
 }
 
 /**

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Loading } from '@geist-ui/core';
 import debounce from 'lodash/debounce';
@@ -17,13 +17,22 @@ import { MultiSelect } from '../../components/MultiSelect';
 import type { ConnectionList as Connection } from '@nangohq/server';
 
 import { useStore } from '../../store';
+import Button from '../../components/ui/button/Button';
+import { useEnvironment } from '../../hooks/useEnvironment';
+import { baseUrl } from '../../utils/utils';
+import type { ConnectUI } from '@nangohq/frontend';
+import Nango from '@nangohq/frontend';
+import { useUnmount } from 'react-use';
+import { globalEnv } from '../../utils/env';
 
 const defaultFilter = ['all'];
 
 export default function ConnectionList() {
+    const connectUI = useRef<ConnectUI>();
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
     const { data, error, errorNotifications } = useConnections(env);
+    const { environmentAndAccount } = useEnvironment(env);
 
     const [connections, setConnections] = useState<Connection[] | null>(null);
     const [filteredConnections, setFilteredConnections] = useState<Connection[]>([]);
@@ -32,6 +41,11 @@ export default function ConnectionList() {
     const [connectionSearch, setConnectionSearch] = useState<string>('');
     const [states, setStates] = useState<string[]>(defaultFilter);
 
+    useUnmount(() => {
+        if (connectUI.current) {
+            connectUI.current.close();
+        }
+    });
     useEffect(() => {
         if (data) {
             setConnections(data.connections);
@@ -95,6 +109,16 @@ export default function ConnectionList() {
         };
     }, [debouncedSearch]);
 
+    const onClickConnectUI = () => {
+        const nango = new Nango({
+            host: environmentAndAccount!.host || baseUrl(),
+            websocketsPath: environmentAndAccount!.environment.websockets_path || '',
+            publicKey: environmentAndAccount!.environment.public_key
+        });
+
+        connectUI.current = nango.openConnectUI({});
+    };
+
     if (error) {
         requestErrorToast();
         return (
@@ -144,15 +168,22 @@ export default function ConnectionList() {
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
-                {connections && connections.length > 0 && (
-                    <Link
-                        to={`/${env}/connections/create`}
-                        className="flex items-center mt-auto px-4 h-8 rounded-md text-sm text-black bg-white hover:bg-gray-300"
-                    >
-                        <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                        Add Connection
-                    </Link>
-                )}
+                <div className="flex gap-2">
+                    {globalEnv.features.connectUI && (
+                        <Button onClick={onClickConnectUI} variant={'emptyFaded'}>
+                            Open Connect UI (alpha)
+                        </Button>
+                    )}
+                    {connections && connections.length > 0 && (
+                        <Link
+                            to={`/${env}/connections/create`}
+                            className="flex items-center mt-auto px-4 h-8 rounded-md text-sm text-black bg-white hover:bg-gray-300"
+                        >
+                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
+                            Add Connection
+                        </Link>
+                    )}
+                </div>
             </div>
             {connections && connections.length > 0 && (
                 <>
