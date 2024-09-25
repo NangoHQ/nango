@@ -524,19 +524,7 @@ export class NangoAction {
         }
 
         if (this.dryRun) {
-            const proxyResponse = await this.nango.proxy(config);
-            if (this.saveResponses) {
-                /*
-                const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY']}${config.providerConfigKey}`;
-                responseSaver.saveResponse<AxiosResponse<T>>({
-                    directoryName,
-                    config,
-                    data: proxyResponse.data,
-                    syncConfig: this.syncConfig as SyncConfig
-                });
-                */
-            }
-            return proxyResponse;
+            return this.nango.proxy(config);
         } else {
             const { connectionId, providerConfigKey } = config;
             const connection = await this.getConnection(providerConfigKey, connectionId);
