@@ -24,11 +24,26 @@ console.log('parsed providers', Object.keys(providersJson));
 
 // Validation
 console.log('validating');
-if (validator(providersJson)) {
-    console.log('✅ done');
-    process.exit(0);
+validator(providersJson);
+if (validator.errors) {
+    console.error('error', validator.errors);
+    process.exit(1);
 }
 
-console.error('error', validator.errors);
+// Check if doc files exist
+console.log('Checking if docs files exist');
+const docsPath = path.join(__dirname, '../../../docs-v2/integrations/all');
 
-process.exit(1);
+for (const [providerKey, providerValue] of Object.entries(providersJson)) {
+    const filename = providerValue.docs.split('/').slice(-1)[0];
+    const mdx = `${filename}.mdx`;
+    const docFilePath = path.join(docsPath, mdx);
+
+    if (!fs.existsSync(docFilePath)) {
+        console.error(`Documentation file not found for provider: ${providerKey}`);
+        console.error(`Expected file: ${docFilePath}`);
+        process.exit(1);
+    }
+}
+
+console.log('All documentation files exist');

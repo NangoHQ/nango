@@ -5,6 +5,8 @@ import type { Provider } from '@nangohq/types';
 describe('Utils unit tests', () => {
     it('Should parse config params in authorization_url', () => {
         const params = parseConnectionConfigParamsFromTemplate({
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             authorization_url: 'https://api.${connectionConfig.auth}.com/oauth/authorize',
             token_url: 'n/a',
@@ -16,6 +18,8 @@ describe('Utils unit tests', () => {
     });
     it('Should parse config params in token_url', () => {
         const params = parseConnectionConfigParamsFromTemplate({
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'https://api.${connectionConfig.token}.com/oauth/access_token',
@@ -28,6 +32,8 @@ describe('Utils unit tests', () => {
 
     it('Should parse config params in proxy_url', () => {
         const params = parseConnectionConfigParamsFromTemplate({
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'n/a',
@@ -39,6 +45,8 @@ describe('Utils unit tests', () => {
     });
     it('Should ignore config param in proxy.base_url if in redirect_uri_metadata', () => {
         const params = parseConnectionConfigParamsFromTemplate({
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'n/a',
@@ -51,6 +59,8 @@ describe('Utils unit tests', () => {
     });
     it('Should ignore config param in proxy.base_url if in token_response_metadata', () => {
         const params = parseConnectionConfigParamsFromTemplate({
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'n/a',
@@ -63,6 +73,8 @@ describe('Utils unit tests', () => {
     });
     it('Should ignore config param in proxy.headers if in redirect_uri_metadata', () => {
         const params = parseConnectionConfigParamsFromTemplate({
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'n/a',
@@ -78,6 +90,8 @@ describe('Utils unit tests', () => {
     });
     it('Should ignore config param in proxy.headers if in token_response_metadata', () => {
         const params = parseConnectionConfigParamsFromTemplate({
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             authorization_url: 'n/a',
             token_url: 'n/a',
@@ -93,6 +107,8 @@ describe('Utils unit tests', () => {
     });
     it('Should not ignore param in token_response_metadata if also in authorization_url', () => {
         const params = parseConnectionConfigParamsFromTemplate({
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             authorization_url: 'https://${connectionConfig.provider_domain}.com/oauth/authorize',
             token_url: 'n/a',
@@ -105,6 +121,8 @@ describe('Utils unit tests', () => {
     });
     it('Should not ignore param in token_response_metadata if also in token_url', () => {
         const params = parseConnectionConfigParamsFromTemplate({
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             authorization_url: 'https://provider.com/oauth/authorize',
             token_url: 'https://${connectionConfig.some_domain}.com/oauth/access_token',
@@ -118,6 +136,8 @@ describe('Utils unit tests', () => {
 
     it('Should extract metadata from token response based on provider', () => {
         const provider: Provider = {
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             token_response_metadata: ['incoming_webhook.url', 'ok', 'bot_user_id', 'scope']
         };
@@ -147,6 +167,8 @@ describe('Utils unit tests', () => {
 
     it('Should extract metadata from token response based on template and if it does not exist not fail', () => {
         const provider: Provider = {
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             token_response_metadata: ['incoming_webhook.url', 'ok']
         };
@@ -167,6 +189,8 @@ describe('Utils unit tests', () => {
 
     it('Should not extract metadata from an empty token response', () => {
         const provider: Provider = {
+            display_name: 'test',
+            docs: '',
             auth_mode: 'OAUTH2',
             token_response_metadata: ['incoming_webhook.url', 'ok']
         };

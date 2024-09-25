@@ -1716,6 +1716,8 @@ components:
       properties:
         name:
             type: string
+        display_name:
+            type: string
         auth_mode:
           type: string
           enum: ['OAUTH1','OAUTH2','OAUTH2_CC','BASIC','API_KEY','APP_STORE','CUSTOM','APP','NONE','TBA','TABLEAU']

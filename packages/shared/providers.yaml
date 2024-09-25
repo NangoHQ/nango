@@ -359,6 +359,7 @@ bitdefender:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/bitdefender
 bitly:
+    display_name: Bitly
     categories:
         - marketing
         - social
@@ -639,7 +640,7 @@ checkr-partner:
         - checkr_account_id
     webhook_routing_script: checkrWebhookRouting
     post_connection_script: checkrPostConnection
-    docs: https://docs.nango.dev/integrations/all/checkr
+    docs: https://docs.nango.dev/integrations/all/checkr-partner
 checkr-partner-staging:
     display_name: Checkr Partner (staging)
     categories:
@@ -658,7 +659,7 @@ checkr-partner-staging:
         - checkr_account_id
     webhook_routing_script: checkrWebhookRouting
     post_connection_script: checkrPostConnection
-    docs: https://docs.nango.dev/integrations/all/checkr
+    docs: https://docs.nango.dev/integrations/all/checkr-partner
 checkout-com:
     display_name: Checkout.com
     categories:
@@ -1673,7 +1674,7 @@ hibob-service-user:
         verification:
             method: GET
             endpoint: /v1/company/named-lists
-    docs: https://apidocs.hibob.com/
+    docs: https://docs.nango.dev/integrations/all/hibob
 highlevel:
     display_name: HighLevel
     categories:
@@ -1722,7 +1723,7 @@ holded:
             endpoint: /invoicing/v1/contacts
     docs: https://docs.nango.dev/integrations/all/holded
 hubspot:
-    display_name: Hubspot
+    display_name: HubSpot
     categories:
         - marketing
         - support
@@ -2076,6 +2077,7 @@ listmonk:
         verification:
             method: GET
             endpoint: /lists
+    docs: https://docs.nango.dev/integrations/all/listmonk
 make:
     display_name: Make
     categories:
@@ -2410,6 +2412,7 @@ one-note:
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/one-note
 openai:
+    display_name: OpenAI
     categories:
         - productivity
         - dev-tools
@@ -2818,7 +2821,7 @@ refiner:
         base_url: https://api.refiner.io/v1
     docs: https://docs.nango.dev/integrations/all/refiner
 ring-central:
-    display_name: Ring Central
+    display_name: RingCentral
     categories:
         - support
     auth_mode: OAUTH2
@@ -2835,6 +2838,7 @@ ring-central:
         base_url: https://platform.ringcentral.com
     docs: https://docs.nango.dev/integrations/all/ring-central
 ring-central-sandbox:
+    display_name: RingCentral (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://platform.devtest.ringcentral.com/restapi/oauth/authorize
     token_url: https://platform.devtest.ringcentral.com/restapi/oauth/token
@@ -2892,6 +2896,7 @@ salesforce:
     post_connection_script: salesforcePostConnection
     docs: https://docs.nango.dev/integrations/all/salesforce
 salesforce-sandbox:
+    display_name: Salesforce (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://test.salesforce.com/services/oauth2/authorize
     token_url: https://test.salesforce.com/services/oauth2/token
@@ -2903,6 +2908,7 @@ salesforce-sandbox:
         base_url: ${connectionConfig.instance_url}
     docs: https://docs.nango.dev/integrations/all/salesforce
 salesforce-experience-cloud:
+    display_name: Salesforce Experience Cloud
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.my.site.com/services/oauth2/authorize
     token_url: https://${connectionConfig.subdomain}.my.site.com/services/oauth2/token
@@ -3651,9 +3657,10 @@ unanet:
             endpoint: /api/projects
     docs: https://docs.nango.dev/integrations/all/unanet
 unauthenticated:
+    display_name: Unauthenticated
     auth_mode: NONE
-    docs: https://docs.nango.dev/integrations/overview
     webhook_routing_script: unauthenticatedWebhookRouting
+    docs: https://docs.nango.dev/integrations/all/unauthenticated
 vimeo:
     display_name: Vimeo
     categories:
@@ -3934,6 +3941,7 @@ zoho:
             response_path: data
             offset_name_in_request: page
             limit_name_in_request: per_page
+    docs: https://docs.nango.dev/integrations/all/zoho
 zoho-books:
     display_name: Zoho Books
     alias: zoho
