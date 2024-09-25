@@ -846,7 +846,7 @@ async function compileDeployInfo({
 }
 
 async function switchActiveSyncConfig(oldSyncConfigId: number): Promise<void> {
-    return await db.knex.transaction(async (trx) => {
+    await db.knex.transaction(async (trx) => {
         // mark sync config as inactive
         await trx.from<SyncConfig>(TABLE).update({ active: false }).where({ id: oldSyncConfigId });
 

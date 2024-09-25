@@ -22,6 +22,7 @@ export interface ProviderAlias {
 }
 
 export interface BaseProvider {
+    display_name: string;
     auth_mode: AuthModeType;
     proxy?: {
         base_url: string;
@@ -50,7 +51,7 @@ export interface BaseProvider {
     authorization_url_replacements?: Record<string, string>;
     redirect_uri_metadata?: string[];
     token_response_metadata?: string[];
-    docs?: string;
+    docs: string;
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;

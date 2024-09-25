@@ -6,8 +6,12 @@
         "^[a-z0-9-]+$": {
             "type": "object",
             "additionalProperties": false,
+            "required": ["display_name", "docs"],
             "properties": {
                 "alias": {
+                    "type": "string"
+                },
+                "display_name": {
                     "type": "string"
                 },
                 "auth": {
