@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -112,7 +113,7 @@ function findConnectionConfigReferences(obj: Record<string, any>, path: string[]
             for (const match of matches) {
                 references.push({ path: [...path, key], key: match[1]! });
             }
-        } else if (typeof value === 'object') {
+        } else if (typeof value === 'object' && value) {
             references = references.concat(findConnectionConfigReferences(value, [...path, key]));
         }
     }
