@@ -2835,6 +2835,14 @@ refiner:
             Authorization: Bearer ${apiKey}
         base_url: https://api.refiner.io/v1
     docs: https://docs.nango.dev/integrations/all/refiner
+replicate:
+    display_name: Replicate
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://api.replicate.com
+    docs: https://docs.nango.dev/integrations/all/replicate
 ring-central:
     display_name: RingCentral
     categories:
