@@ -220,7 +220,7 @@
                     "impliedStrict": true,
                     "jsx": true
                 },
-                "project": "tsconfig.json"
+                "project": "packages/connect-ui/tsconfig.json"
             },
             "rules": {
                 // unnecessary when bundling
@@ -230,6 +230,14 @@
                 "@typescript-eslint/no-explicit-any": "error",
                 "@typescript-eslint/only-throw-error": "error",
                 "react/prop-types": "off",
+                "react/jsx-sort-props": [
+                    "error",
+                    {
+                        "callbacksLast": true,
+                        "shorthandFirst": true,
+                        "reservedFirst": true
+                    }
+                ],
                 "import/order": [
                     "error",
                     {
@@ -246,16 +254,16 @@
                         ],
                         "newlines-between": "always",
                         "alphabetize": {
-                            "order": "asc",
+                            "order": "asc"
                         },
                         "warnOnUnassignedImports": true,
                         "pathGroups": [
                             {
                                 "pattern": "@/**",
-                                "group": "parent",
+                                "group": "parent"
                             },
                             {
-                                "pattern": "@nangohq/**",
+                                "pattern": "@nangohq/*",
                                 "group": "internal",
                                 "position": "after"
                             }

@@ -23,6 +23,7 @@ COPY packages/nango-yaml/ packages/nango-yaml/
 COPY packages/records/ packages/records/
 COPY packages/scheduler/ packages/scheduler/
 COPY packages/orchestrator/ packages/orchestrator/
+COPY packages/keystore/ packages/keystore/
 
 RUN npm pkg delete scripts.prepare
 RUN npm ci --omit=dev
