@@ -177,6 +177,34 @@ amplitude:
         base_url: https://amplitude.com
     docs: https://docs.nango.dev/integrations/all/amplitude
 
+anthropic:
+    display_name: Anthropic
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.anthropic.com
+        headers:
+            x-api-key: ${apiKey}
+            anthropic-version: ${connectionConfig.version}
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/anthropic
+    connection_config:
+        version:
+            type: string
+            title: API Version
+            description: The version of the Anthropic API to use
+            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+            example: '2023-06-01'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Anthropic account
+
 apollo:
     display_name: Apollo
     categories:
@@ -3676,6 +3704,20 @@ refiner:
             title: API Key
             description: The API key for your Refiner account
 
+replicate:
+    display_name: Replicate
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://api.replicate.com
+    docs: https://docs.nango.dev/integrations/all/replicate
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Replicate account
+
 ring-central:
     display_name: RingCentral
     categories:
@@ -4300,7 +4342,7 @@ tableau:
             format: hostname
         version:
             type: string
-            title: Version
+            title: API Version
             description: The version of the Tableau API to use
 
 teamtailor:

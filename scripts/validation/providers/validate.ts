@@ -71,7 +71,7 @@ for (const [providerKey, provider] of Object.entries(providersJson)) {
                 console.error(
                     chalk.red('error'),
                     chalk.blue(providerKey),
-                    `References connectionConfig.${reference.key} at ${reference.path.join('.')} but it's not defined in "connection_config"`
+                    `"${reference.path.join('" > "')}" use "connectionConfig.${reference.key}", but it's not defined in "connection_config"`
                 );
                 error = true;
                 continue;

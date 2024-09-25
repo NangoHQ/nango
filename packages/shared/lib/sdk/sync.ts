@@ -1,9 +1,9 @@
 import https from 'node:https';
 import { Nango, getUserAgent } from '@nangohq/node';
+import type { AdminAxiosProps } from '@nangohq/node';
 import paginateService from '../services/paginate.service.js';
-import * as responseSaver from './response.saver.js';
 import proxyService from '../services/proxy.service.js';
-import type { AxiosInstance } from 'axios';
+import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig } from 'axios';
 import axios, { AxiosError } from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
@@ -340,13 +340,19 @@ export interface NangoProps {
     rawSaveOutput?: unknown[] | undefined;
     rawDeleteOutput?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
-    saveResponses?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
     runnerFlags: RunnerFlags;
     debug: boolean;
     startedAt: Date;
+
+    axios?: {
+        request?: AxiosInterceptorManager<AxiosRequestConfig>;
+        response?: {
+            onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+        };
+    };
 }
 
 export interface EnvironmentVariable {
@@ -378,7 +384,6 @@ export class NangoAction {
     environmentName?: string;
     syncJobId?: number;
     dryRun?: boolean;
-    saveResponses?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig?: SyncConfig;
@@ -407,7 +412,9 @@ export class NangoAction {
             this.activityLogId = config.activityLogId;
         }
 
-        this.nango = new Nango({ isSync: true, ...config }, { userAgent: 'sdk' });
+        const axiosSettings: AdminAxiosProps = {
+            userAgent: 'sdk'
+        };
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -423,7 +430,14 @@ export class NangoAction {
 
         if (config.dryRun) {
             this.dryRun = config.dryRun;
-            this.saveResponses = config.saveResponses || false;
+
+            if (config.axios?.response) {
+                axiosSettings.interceptors = {
+                    response: {
+                        onFulfilled: config.axios.response.onFulfilled
+                    }
+                };
+            }
         }
 
         if (config.environmentName) {
@@ -449,6 +463,8 @@ export class NangoAction {
         if (config.syncConfig) {
             this.syncConfig = config.syncConfig;
         }
+
+        this.nango = new Nango({ isSync: true, ...config }, axiosSettings);
 
         if (this.dryRun !== true) {
             if (!this.activityLogId) throw new Error('Parameter activityLogId is required when not in dryRun');
@@ -505,17 +521,7 @@ export class NangoAction {
         }
 
         if (this.dryRun) {
-            const proxyResponse = await this.nango.proxy(config);
-            if (this.saveResponses) {
-                const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY']}${config.providerConfigKey}`;
-                responseSaver.saveResponse<AxiosResponse<T>>({
-                    directoryName,
-                    config,
-                    data: proxyResponse.data,
-                    syncConfig: this.syncConfig as SyncConfig
-                });
-            }
-            return proxyResponse;
+            return this.nango.proxy(config);
         } else {
             const { connectionId, providerConfigKey } = config;
             const connection = await this.getConnection(providerConfigKey, connectionId);
@@ -613,15 +619,6 @@ export class NangoAction {
         if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
             const connection = await this.nango.getConnection(providerConfigKey, connectionId);
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
-            if (this.saveResponses) {
-                const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY']}${providerConfigKey}`;
-                responseSaver.saveResponse<Pick<Connection, 'metadata' | 'connection_config'>>({
-                    directoryName,
-                    config: { endpoint: 'getConnection', providerConfigKey } as ProxyConfiguration,
-                    data: { metadata: connection.metadata as Metadata, connection_config: connection.connection_config },
-                    customFilePath: 'mocks/nango/getConnection.json'
-                });
-            }
             return connection;
         }
 
