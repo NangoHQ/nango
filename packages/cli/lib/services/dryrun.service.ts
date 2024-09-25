@@ -306,7 +306,6 @@ export class DryRunService {
                 syncId: 'dryrun-sync',
                 lastSyncDate: lastSyncDate as Date,
                 dryRun: true,
-                saveResponses: options.saveResponses || false,
                 logMessages,
                 stubbedMetadata,
                 syncConfig,

@@ -340,7 +340,6 @@ export interface NangoProps {
     rawSaveOutput?: unknown[] | undefined;
     rawDeleteOutput?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
-    saveResponses?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig: SyncConfig;
@@ -385,7 +384,6 @@ export class NangoAction {
     environmentName?: string;
     syncJobId?: number;
     dryRun?: boolean;
-    saveResponses?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
     syncConfig?: SyncConfig;
@@ -432,7 +430,6 @@ export class NangoAction {
 
         if (config.dryRun) {
             this.dryRun = config.dryRun;
-            this.saveResponses = config.saveResponses || false;
 
             if (config.axios?.response) {
                 axiosSettings.interceptors = {
