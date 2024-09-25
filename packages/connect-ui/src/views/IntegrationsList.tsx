@@ -91,7 +91,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
 
     return (
         <div
-            className=" group flex justify-between items-center border-b border-b-dark-100 py-5 px-5 transition-colors rounded-md ring-offset-white focus-visible:ring-neutral-950 focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:outline-none hover:bg-dark-100 focus:bg-dark-100"
+            className="group flex justify-between items-center border-b border-b-dark-100 py-5 px-5 transition-colors rounded-md ring-offset-white focus-visible:ring-neutral-950 focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:outline-none hover:bg-dark-100 focus:bg-dark-100"
             role="button"
             tabIndex={0}
             title={`Connect to ${integration.provider}`}

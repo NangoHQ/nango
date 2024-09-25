@@ -116,7 +116,7 @@ export default function ConnectionList() {
             publicKey: environmentAndAccount!.environment.public_key
         });
 
-        connectUI.current = nango.openUI({});
+        connectUI.current = nango.openConnectUI({});
     };
 
     if (error) {

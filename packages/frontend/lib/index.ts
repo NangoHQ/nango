@@ -260,7 +260,7 @@ export default class Nango {
     /**
      * Open managed Connect UI
      */
-    public openUI(params: ConnectUIProps) {
+    public openConnectUI(params: ConnectUIProps) {
         const connect = new ConnectUI(params);
         connect.open();
         return connect;
