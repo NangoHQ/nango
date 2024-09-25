@@ -3,7 +3,7 @@ import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err } from '@nangohq/utils';
 import type { EntityType, PrivateKey } from '@nangohq/types';
-import { getEncryption } from '../utils/encryption.js';
+import { getEncryption, hashValue } from '../utils/encryption.js';
 
 export const PRIVATE_KEYS_TABLE = 'private_keys';
 
@@ -81,12 +81,13 @@ export async function createPrivateKey(
     const now = new Date();
     const random = crypto.randomBytes(32).toString('hex');
     const keyValue = `nango_${entityType}_${random}`;
+    const hash = await hashValue(keyValue);
     const key: DbInsertPrivateKey = {
         display_name: displayName,
         account_id: accountId,
         environment_id: environmentId,
         encrypted: options.onlyStoreHash ? null : encryptValue(keyValue),
-        hash: hashValue(keyValue),
+        hash,
         expires_at: ttlInMs ? new Date(now.getTime() + ttlInMs) : null,
         entity_type: entityType,
         entity_id: entityId
@@ -100,10 +101,11 @@ export async function createPrivateKey(
 
 export async function getPrivateKey(db: knex.Knex, keyValue: string): Promise<Result<PrivateKey, PrivateKeyError>> {
     const now = new Date();
+    const hash = await hashValue(keyValue);
     const [key] = await db
         .update({ last_access_at: now })
         .from<DbPrivateKey>(PRIVATE_KEYS_TABLE)
-        .where({ hash: hashValue(keyValue) })
+        .where({ hash })
         .andWhere((builder) => builder.whereNull('expires_at').orWhere('expires_at', '>', now))
         .returning('*');
     if (!key) {
@@ -124,11 +126,8 @@ export async function deletePrivateKey(
     db: knex.Knex,
     { keyValue, entityType }: { keyValue: string; entityType: EntityType }
 ): Promise<Result<void, PrivateKeyError>> {
-    const [key] = await db
-        .delete()
-        .from<DbPrivateKey>(PRIVATE_KEYS_TABLE)
-        .where({ hash: hashValue(keyValue), entity_type: entityType })
-        .returning('*');
+    const hash = await hashValue(keyValue);
+    const [key] = await db.delete().from<DbPrivateKey>(PRIVATE_KEYS_TABLE).where({ hash, entity_type: entityType }).returning('*');
     if (!key) {
         return Err(new PrivateKeyError({ code: 'not_found', message: `Private key not found` }));
     }
@@ -152,8 +151,4 @@ function decryptValue(encryptedValue: Buffer): Result<string, PrivateKeyError> {
         return Err(new PrivateKeyError({ code: 'invalid', message: 'Invalid encrypted value' }));
     }
     return Ok(encryption.decrypt(encrypted, iv, tag));
-}
-
-function hashValue(keyValue: string): string {
-    return keyValue;
 }

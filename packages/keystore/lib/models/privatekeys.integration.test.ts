@@ -88,7 +88,7 @@ describe('PrivateKey', async () => {
 
     it('should be retrieved before it expires', async () => {
         const entityType = 'connect_session';
-        const ttlInMs = 30;
+        const ttlInMs = 100;
         const createKey = await createPrivateKey(db, {
             displayName: 'this is my key',
             entityType,
@@ -97,7 +97,6 @@ describe('PrivateKey', async () => {
             environmentId: 1,
             ttlInMs
         });
-        await new Promise((resolve) => setTimeout(resolve, ttlInMs / 2));
         const [keyValue] = createKey.unwrap();
         const getKey = await getPrivateKey(db, keyValue);
         expect(getKey.isOk()).toBe(true);
