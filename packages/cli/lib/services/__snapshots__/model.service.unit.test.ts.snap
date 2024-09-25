@@ -42,7 +42,7 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 // ------ SDK
 
 import { Nango } from '@nangohq/node';
-import type { AxiosInstance } from 'axios';
+import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig } from 'axios';
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
 import type { DBTeam } from '@nangohq/types';
@@ -282,6 +282,12 @@ export interface NangoProps {
     runnerFlags: RunnerFlags;
     debug: boolean;
     startedAt: Date;
+    axios?: {
+        request?: AxiosInterceptorManager<AxiosRequestConfig>;
+        response?: {
+            onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+       };
+    };
 }
 export interface EnvironmentVariable {
     name: string;

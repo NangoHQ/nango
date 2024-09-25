@@ -402,7 +402,8 @@ export class DryRunService {
                 }
 
                 if (options.saveResponses) {
-                    const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY']}${providerConfigKey}`;
+                    const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
+                    const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
                     if (!fs.existsSync(`${directoryName}/mocks/${syncName}`)) {
                         fs.mkdirSync(`${directoryName}/mocks/${syncName}`, { recursive: true });
                     }

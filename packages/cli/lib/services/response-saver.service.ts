@@ -49,7 +49,7 @@ export function onAxiosRequestFulfilled({
         return response;
     }
     const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
-    const method = response.config.method || 'GET';
+    const method = response.config.method?.toLowerCase() || 'get';
 
     if (response.request.path.includes(`/connection/${connectionId}?provider_config_key=${providerConfigKey}`)) {
         const connection = response.data as Connection;
@@ -73,11 +73,13 @@ export function onAxiosRequestFulfilled({
     }
 
     const pathname = response.request.path.split('?')[0];
+    const strippedPath = pathname.replace('/', '');
 
     saveResponse<AxiosResponse>({
         directoryName,
         config: { endpoint: pathname, method },
-        data: response.data
+        data: response.data,
+        customFilePath: `mocks/nango/${method}/${strippedPath}.json`
     });
 
     return response;
