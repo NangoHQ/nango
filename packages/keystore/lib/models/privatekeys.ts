@@ -7,18 +7,18 @@ import { getEncryption } from '../utils/encryption.js';
 
 export const PRIVATE_KEYS_TABLE = 'private_keys';
 
-type PrivateKeyErrorCodes = 'not_found' | 'invalid' | 'creation_failed';
+type PrivateKeyErrorCode = 'not_found' | 'invalid' | 'creation_failed';
 export class PrivateKeyError extends Error {
-    public code: PrivateKeyErrorCodes;
+    public code: PrivateKeyErrorCode;
     public payload?: Record<string, unknown>;
-    constructor({ code, message, payload }: { code: PrivateKeyErrorCodes; message: string; payload?: Record<string, unknown> }) {
+    constructor({ code, message, payload }: { code: PrivateKeyErrorCode; message: string; payload?: Record<string, unknown> }) {
         super(message);
         this.code = code;
         this.payload = payload || {};
     }
 }
 
-export interface DbPrivateKey {
+interface DbPrivateKey {
     readonly id: number;
     readonly display_name: string;
     readonly account_id: number;
@@ -77,7 +77,7 @@ export async function createPrivateKey(
         ttlInMs
     }: Pick<PrivateKey, 'displayName' | 'entityType' | 'entityId' | 'accountId' | 'environmentId'> & { ttlInMs?: number },
     options: { onlyStoreHash: boolean } = { onlyStoreHash: false }
-): Promise<Result<string, PrivateKeyError>> {
+): Promise<Result<[string, PrivateKey], PrivateKeyError>> {
     const now = new Date();
     const random = crypto.randomBytes(32).toString('hex');
     const keyValue = `nango_${entityType}_${random}`;
@@ -95,7 +95,7 @@ export async function createPrivateKey(
     if (!dbKey) {
         return Err(new PrivateKeyError({ code: 'creation_failed', message: 'Failed to create private key' }));
     }
-    return Ok(keyValue);
+    return Ok([keyValue, PrivateKeyMapper.from(dbKey)]);
 }
 
 export async function getPrivateKey(db: knex.Knex, keyValue: string): Promise<Result<PrivateKey, PrivateKeyError>> {

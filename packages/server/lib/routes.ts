@@ -91,6 +91,7 @@ import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
+import { postConnectSessions } from './controllers/connect/postSessions.js';
 
 export const router = express.Router();
 
@@ -210,6 +211,8 @@ publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttribute
 publicAPI.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
 publicAPI.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bind(flowController));
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
+
+publicAPI.route('/connect/sessions').post(apiAuth, ...postConnectSessions);
 
 publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
 

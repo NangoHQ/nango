@@ -1,0 +1,102 @@
+import type knex from 'knex';
+import type { ConnectSession } from '@nangohq/types';
+import { Err, Ok } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+
+const CONNECT_SESSIONS_TABLE = 'connect_sessions';
+
+interface DbConnectSession {
+    readonly id: number;
+    readonly linked_profile_id: number;
+    readonly account_id: number;
+    readonly environment_id: number;
+    readonly created_at: Date;
+    readonly updated_at: Date | null;
+    readonly allowed_integrations: string[] | null;
+    readonly integrations_config_defaults: Record<string, { connectionConfig: Record<string, unknown> }> | null;
+}
+type DbInsertConnectSession = Omit<DbConnectSession, 'id' | 'created_at' | 'updated_at'>;
+
+const ConnectSessionMapper = {
+    to: (session: ConnectSession): DbConnectSession => {
+        return {
+            id: session.id,
+            linked_profile_id: session.linkedProfileId,
+            account_id: session.accountId,
+            environment_id: session.environmentId,
+            created_at: session.createdAt,
+            updated_at: session.updatedAt,
+            allowed_integrations: session.allowedIntegrations || null,
+            integrations_config_defaults: session.integrationsConfigDefaults || null
+        };
+    },
+    from: (dbSession: DbConnectSession): ConnectSession => {
+        return {
+            id: dbSession.id,
+            linkedProfileId: dbSession.linked_profile_id,
+            accountId: dbSession.account_id,
+            environmentId: dbSession.environment_id,
+            createdAt: dbSession.created_at,
+            updatedAt: dbSession.updated_at,
+            allowedIntegrations: dbSession.allowed_integrations || null,
+            integrationsConfigDefaults: dbSession.integrations_config_defaults || null
+        };
+    }
+};
+
+type ConnectSessionErrorCode = 'not_found' | 'creation_failed';
+export class ConnectSessionError extends Error {
+    public code: ConnectSessionErrorCode;
+    public payload?: Record<string, unknown>;
+    constructor({ code, message, payload }: { code: ConnectSessionErrorCode; message: string; payload?: Record<string, unknown> }) {
+        super(message);
+        this.code = code;
+        this.payload = payload || {};
+    }
+}
+
+export async function createConnectSession(
+    db: knex.Knex,
+    {
+        linkedProfileId,
+        accountId,
+        environmentId,
+        allowedIntegrations,
+        integrationsConfigDefaults
+    }: Pick<ConnectSession, 'linkedProfileId' | 'allowedIntegrations' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId'>
+): Promise<Result<ConnectSession, ConnectSessionError>> {
+    const dbSession: DbInsertConnectSession = {
+        linked_profile_id: linkedProfileId,
+        account_id: accountId,
+        environment_id: environmentId,
+        allowed_integrations: allowedIntegrations || null,
+        integrations_config_defaults: integrationsConfigDefaults || null
+    };
+    const [session] = await db.insert<DbConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
+    if (!session) {
+        return Err(
+            new ConnectSessionError({
+                code: 'creation_failed',
+                message: 'Failed to create connect session',
+                payload: { linkedProfileId, allowedIntegrations, integrationsConfigDefaults }
+            })
+        );
+    }
+    return Ok(ConnectSessionMapper.from(session));
+}
+
+export async function getConnectSession(db: knex.Knex, id: number): Promise<Result<ConnectSession, ConnectSessionError>> {
+    const session = await db<DbConnectSession>(CONNECT_SESSIONS_TABLE).where({ id }).first();
+    if (!session) {
+        return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found` }));
+    }
+    return Ok(ConnectSessionMapper.from(session));
+}
+
+export async function deleteConnectSession(db: knex.Knex, id: number): Promise<Result<void, ConnectSessionError>> {
+    const deleted = await db<DbConnectSession>(CONNECT_SESSIONS_TABLE).where({ id }).delete();
+    if (!deleted) {
+        return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found` }));
+    }
+    return Ok(undefined);
+}
