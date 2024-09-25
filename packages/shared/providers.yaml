@@ -1,4 +1,5 @@
 accelo:
+    display_name: Accelo
     categories:
         - invoicing
         - ticketing
@@ -16,6 +17,7 @@ accelo:
         base_url: https://${connectionConfig.subdomain}.api.accelo.com
     docs: https://docs.nango.dev/integrations/all/accelo
 adobe:
+    display_name: Adobe
     categories:
         - design
     auth_mode: OAUTH2
@@ -31,6 +33,7 @@ adobe:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/adobe
 affinity:
+    display_name: Affinity
     categories:
         - crm
     auth_mode: BASIC
@@ -38,6 +41,7 @@ affinity:
         base_url: https://api.affinity.co
     docs: https://docs.nango.dev/integrations/all/affinity
 aircall:
+    display_name: Aircall
     categories:
         - support
     auth_mode: OAUTH2
@@ -50,6 +54,7 @@ aircall:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/aircall
 airtable:
+    display_name: Airtable
     categories:
         - productivity
     auth_mode: OAUTH2
@@ -62,6 +67,7 @@ airtable:
         base_url: https://api.airtable.com
     docs: https://docs.nango.dev/integrations/all/airtable
 autodesk:
+    display_name: Autodesk
     categories:
         - design
     auth_mode: OAUTH2
@@ -81,6 +87,7 @@ autodesk:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/autodesk
 algolia:
+    display_name: Algolia
     categories:
         - search
     auth_mode: API_KEY
@@ -91,6 +98,7 @@ algolia:
             X-Algolia-API-Key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/algolia
 amazon:
+    display_name: Amazon
     categories:
         - dev-tools
         - e-commerce
@@ -107,6 +115,7 @@ amazon:
         base_url: https://api.amazon.com
     docs: https://docs.nango.dev/integrations/all/amazon
 anrok:
+    display_name: Anrok
     categories:
         - legal
     auth_mode: API_KEY
@@ -118,6 +127,7 @@ anrok:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/anrok
 amplitude:
+    display_name: Amplitude
     categories:
         - analytics
     auth_mode: BASIC
@@ -125,6 +135,7 @@ amplitude:
         base_url: https://amplitude.com
     docs: https://docs.nango.dev/integrations/all/amplitude
 apollo:
+    display_name: Apollo
     categories:
         - marketing
     auth_mode: API_KEY
@@ -134,12 +145,14 @@ apollo:
             api_key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/apollo
 apple-app-store:
+    display_name: Apple App Store
     auth_mode: APP_STORE
     token_url: https://api.appstoreconnect.apple.com/v1/apps
     authorization_params:
         audience: appstoreconnect-v1
     docs: https://docs.nango.dev/integrations/all/apple-app-store
 asana:
+    display_name: Asana
     categories:
         - productivity
         - ticketing
@@ -164,6 +177,7 @@ asana:
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/asana
 ashby:
+    display_name: Ashby
     categories:
         - ats
     auth_mode: BASIC
@@ -174,6 +188,7 @@ ashby:
             endpoint: apiKey.info
     docs: https://docs.nango.dev/integrations/all/ashby
 atlassian:
+    display_name: Atlassian
     categories:
         - dev-tools
     auth_mode: OAUTH2
@@ -193,6 +208,7 @@ atlassian:
         base_url: https://api.atlassian.com
     docs: https://docs.nango.dev/integrations/all/atlassian
 attio:
+    display_name: Attio
     categories:
         - crm
     auth_mode: OAUTH2
@@ -208,6 +224,7 @@ attio:
         base_url: https://app.attio.com
     docs: https://docs.nango.dev/integrations/all/attio
 auth0:
+    display_name: Auth0
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth0.com/authorize
     token_url: https://${connectionConfig.subdomain}.auth0.com/oauth/token
@@ -220,6 +237,7 @@ auth0:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/auth0
 avalara:
+    display_name: Avalara
     categories:
         - legal
     auth_mode: BASIC
@@ -233,6 +251,7 @@ avalara:
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
 avalara-sandbox:
+    display_name: Avalara (sandbox)
     categories:
         - legal
     auth_mode: BASIC
@@ -246,6 +265,7 @@ avalara-sandbox:
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
 aws:
+    display_name: AWS
     categories:
         - dev-tools
         - e-commerce
@@ -262,6 +282,7 @@ aws:
         - openid
     docs: https://docs.nango.dev/integrations/all/aws
 bamboohr:
+    display_name: BambooHR
     categories:
         - hr
     auth_mode: OAUTH2
@@ -277,6 +298,7 @@ bamboohr:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
     docs: https://docs.nango.dev/integrations/all/bamboohr
 bamboohr-basic:
+    display_name: BambooHR (basic auth)
     categories:
         - hr
     auth_mode: BASIC
@@ -287,6 +309,7 @@ bamboohr-basic:
             endpoint: /v1/meta/fields
     docs: https://docs.nango.dev/integrations/all/bamboohr
 battlenet:
+    display_name: Battle.net
     categories:
         - gaming
     auth_mode: OAUTH2
@@ -298,6 +321,7 @@ battlenet:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/battlenet
 bigcommerce:
+    display_name: BigCommerce
     categories:
         - e-commerce
     auth_mode: OAUTH2
@@ -315,6 +339,7 @@ bigcommerce:
         base_url: https://api.bigcommerce.com/stores/${connectionConfig.storeHash}
     docs: https://docs.nango.dev/integrations/all/bigcommerce
 bitbucket:
+    display_name: Bitbucket
     categories:
         - dev-tools
     auth_mode: OAUTH2
@@ -324,6 +349,7 @@ bitbucket:
         base_url: https://api.bitbucket.org
     docs: https://docs.nango.dev/integrations/all/bitbucket
 bitdefender:
+    display_name: Bitdefender
     categories:
         - other
     auth_mode: BASIC
@@ -347,6 +373,7 @@ bitly:
         base_url: https://api-ssl.bitly.com
     docs: https://docs.nango.dev/integrations/all/bitly
 blackbaud:
+    display_name: Blackbaud
     categories:
         - crm
     auth_mode: OAUTH2
@@ -362,6 +389,7 @@ blackbaud:
         base_url: https://api.sky.blackbaud.com
     docs: https://docs.nango.dev/integrations/all/blackbaud
 blandai:
+    display_name: BlandAI
     categories:
         - support
     auth_mode: API_KEY
@@ -371,6 +399,7 @@ blandai:
             Authorization: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/blandai
 boldsign:
+    display_name: BoldSign
     categories:
         - legal
     auth_mode: OAUTH2
@@ -386,6 +415,7 @@ boldsign:
         base_url: https://api.boldsign.com
     docs: https://docs.nango.dev/integrations/all/boldsign
 box:
+    display_name: Box
     categories:
         - knowledge-base
         - storage
@@ -396,6 +426,7 @@ box:
         base_url: https://api.box.com
     docs: https://docs.nango.dev/integrations/all/box
 braintree:
+    display_name: Braintree
     categories:
         - payment
     auth_mode: OAUTH2
@@ -410,6 +441,7 @@ braintree:
         - merchantId
     docs: https://docs.nango.dev/integrations/all/braintree
 braintree-sandbox:
+    display_name: Braintree (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
     token_url: https://api.sandbox.braintreegateway.com/oauth/access_tokens
@@ -422,6 +454,7 @@ braintree-sandbox:
         - merchantId
     docs: https://docs.nango.dev/integrations/all/braintree
 brex:
+    display_name: Brex
     categories:
         - banking
     auth_mode: OAUTH2
@@ -434,6 +467,7 @@ brex:
         base_url: https://platform.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
 brex-api-key:
+    display_name: Brex (api key)
     auth_mode: API_KEY
     proxy:
         headers:
@@ -441,6 +475,7 @@ brex-api-key:
         base_url: https://platform.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
 brex-staging:
+    display_name: Brex (staging)
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/token
@@ -448,6 +483,7 @@ brex-staging:
         base_url: https://platform.staging.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
 builder-io-private:
+    display_name: Builder.io (private)
     categories:
         - dev-tools
         - design
@@ -459,6 +495,7 @@ builder-io-private:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
 builder-io-public:
+    display_name: Builder.io (public)
     categories:
         - dev-tools
         - design
@@ -470,6 +507,7 @@ builder-io-public:
             apiKey: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
 cal-com-v1:
+    display_name: Cal.com (v1)
     categories:
         - productivity
     auth_mode: API_KEY
@@ -484,6 +522,7 @@ cal-com-v1:
             endpoint: /me
     docs: https://docs.nango.dev/integrations/all/cal-com
 cal-com-v2:
+    display_name: Cal.com (v2)
     categories:
         - productivity
     auth_mode: API_KEY
@@ -503,6 +542,7 @@ cal-com-v2:
             endpoint: /me
     docs: https://docs.nango.dev/integrations/all/cal-com
 calendly:
+    display_name: Calendly
     categories:
         - productivity
     auth_mode: OAUTH2
@@ -521,6 +561,7 @@ calendly:
         - owner
     docs: https://docs.nango.dev/integrations/all/calendly
 canny:
+    display_name: Canny
     categories:
         - support
     auth_mode: API_KEY
@@ -533,6 +574,7 @@ canny:
             endpoint: /boards/list
     docs: https://docs.nango.dev/integrations/all/canny
 certn:
+    display_name: Certn
     categories:
         - legal
     auth_mode: API_KEY
@@ -549,6 +591,7 @@ certn:
             endpoint: /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
 certn-partner:
+    display_name: Certn Partner
     categories:
         - legal
     auth_mode: OAUTH2_CC
@@ -566,6 +609,7 @@ certn-partner:
             endpoint: /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
 chargebee:
+    display_name: Chargebee
     categories:
         - payment
     auth_mode: BASIC
@@ -578,6 +622,7 @@ chargebee:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/chargebee
 checkr-partner:
+    display_name: Checkr Partner
     categories:
         - legal
     auth_mode: OAUTH2
@@ -596,6 +641,7 @@ checkr-partner:
     post_connection_script: checkrPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr
 checkr-partner-staging:
+    display_name: Checkr Partner (staging)
     categories:
         - legal
     auth_mode: OAUTH2
@@ -614,6 +660,7 @@ checkr-partner-staging:
     post_connection_script: checkrPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr
 checkout-com:
+    display_name: Checkout.com
     categories:
         - payment
     auth_mode: OAUTH2_CC
@@ -628,6 +675,7 @@ checkout-com:
         base_url: https://api.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com
 checkout-com-sandbox:
+    display_name: Checkout.com (sandbox)
     categories:
         - payment
     auth_mode: OAUTH2_CC
@@ -642,11 +690,13 @@ checkout-com-sandbox:
         base_url: https://api.sandbox.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com
 chorus:
+    display_name: Chorus
     auth_mode: BASIC
     proxy:
         base_url: https://chorus.ai
     docs: https://docs.nango.dev/integrations/all/chorus
 circle-so:
+    display_name: Circle.so
     categories:
         - communication
     auth_mode: API_KEY
@@ -656,6 +706,9 @@ circle-so:
             Authorization: Token ${apiKey}
     docs: https://docs.nango.dev/integrations/all/circle-so
 clari-copilot:
+    display_name: Clari Copilot
+    categories:
+        - marketing
     auth_mode: API_KEY
     proxy:
         headers:
@@ -664,6 +717,7 @@ clari-copilot:
         base_url: https://rest-api.copilot.clari.com
     docs: https://docs.nango.dev/integrations/all/clari-copilot
 clickup:
+    display_name: ClickUp
     categories:
         - productivity
         - ticketing
@@ -674,6 +728,7 @@ clickup:
         base_url: https://api.clickup.com
     docs: https://docs.nango.dev/integrations/all/clickup
 cloudentity:
+    display_name: Cloudentity
     auth_mode: OAUTH2_CC
     categories:
         - other
@@ -685,6 +740,7 @@ cloudentity:
         base_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}
     docs: https://docs.nango.dev/integrations/all/cloudentity
 close:
+    display_name: Close
     categories:
         - crm
     auth_mode: OAUTH2
@@ -698,6 +754,7 @@ close:
         base_url: https://api.close.com/api
     docs: https://docs.nango.dev/integrations/all/close
 coda:
+    display_name: Coda
     categories:
         - knowledge-base
         - productivity
@@ -708,6 +765,7 @@ coda:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/coda
 codeclimate:
+    display_name: Code Climate
     categories:
         - dev-tools
         - productivity
@@ -722,11 +780,13 @@ codeclimate:
             endpoint: /v1/user
     docs: https://docs.nango.dev/integrations/all/codeclimate
 confluence:
+    display_name: Confluence
     categories:
         - knowledge-base
     alias: jira
     docs: https://docs.nango.dev/integrations/all/confluence
 contentful:
+    display_name: Contentful
     categories:
         - dev-tools
         - design
@@ -746,6 +806,7 @@ contentful:
             after: X-Contentful-RateLimit-Reset
     docs: https://docs.nango.dev/integrations/all/contentful
 contentstack:
+    display_name: Contentstack
     categories:
         - cms
     auth_mode: OAUTH2
@@ -753,6 +814,7 @@ contentstack:
     token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
     docs: https://docs.nango.dev/integrations/all/contentstack
 coros:
+    display_name: Coros
     categories:
         - sports
     auth_mode: OAUTH2
@@ -771,6 +833,7 @@ coros:
         base_url: https://open.coros.com
     docs: https://docs.nango.dev/integrations/all/coros
 coros-sandbox:
+    display_name: Coros (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://opentest.coros.com/oauth2/authorize
     token_url: https://opentest.coros.com/oauth2/accesstoken
@@ -787,6 +850,7 @@ coros-sandbox:
         base_url: https://opentest.coros.com
     docs: https://docs.nango.dev/integrations/all/coros
 coupa-compass:
+    display_name: Coupa Compass
     categories:
         - payment
         - invoicing
@@ -800,6 +864,7 @@ coupa-compass:
     docs: https://docs.nango.dev/integrations/all/coupa-compass
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
+    display_name: Datev
     categories:
         - legal
         - payroll
@@ -823,6 +888,7 @@ datev:
         base_url: https://api.datev.de
     docs: https://docs.nango.dev/integrations/all/datev
 deel:
+    display_name: Deel
     categories:
         - hr
     auth_mode: OAUTH2
@@ -839,6 +905,7 @@ deel:
         base_url: https://api.letsdeel.com
     docs: https://docs.nango.dev/integrations/all/deel
 deel-sandbox:
+    display_name: Deel (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://auth-demo.letsdeel.com/oauth2/authorize
     token_url: https://auth-demo.letsdeel.com/oauth2/tokens
@@ -853,6 +920,7 @@ deel-sandbox:
         base_url: https://api-staging.letsdeel.com
     docs: https://docs.nango.dev/integrations/all/deel
 dialpad:
+    display_name: Dialpad
     categories:
         - communication
     auth_mode: OAUTH2
@@ -868,6 +936,7 @@ dialpad:
         base_url: https://dialpad.com
     docs: https://docs.nango.dev/integrations/all/dialpad
 digitalocean:
+    display_name: DigitalOcean
     categories:
         - dev-tools
     auth_mode: OAUTH2
@@ -883,6 +952,7 @@ digitalocean:
         base_url: https://api.digitalocean.com
     docs: https://docs.nango.dev/integrations/all/digitalocean
 discord:
+    display_name: Discord
     categories:
         - gaming
         - social
@@ -897,6 +967,7 @@ discord:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/discord
 discourse:
+    display_name: Discourse
     categories:
         - communication
     auth_mode: API_KEY
@@ -908,6 +979,7 @@ discourse:
             Accept: application/json
     docs: https://docs.nango.dev/integrations/all/discourse
 docusign:
+    display_name: DocuSign
     categories:
         - legal
     auth_mode: OAUTH2
@@ -924,6 +996,7 @@ docusign:
         base_url: https://www.docusign.net
     docs: https://docs.nango.dev/integrations/all/docusign
 docusign-sandbox:
+    display_name: DocuSign (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://account-d.docusign.com/oauth/auth
     token_url: https://account-d.docusign.com/oauth/token
@@ -938,6 +1011,7 @@ docusign-sandbox:
         base_url: https://demo.docusign.net
     docs: https://docs.nango.dev/integrations/all/docusign
 dropbox:
+    display_name: Dropbox
     categories:
         - knowledge-base
         - storage
@@ -950,6 +1024,7 @@ dropbox:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
 e-conomic:
+    display_name: e-conomic
     categories:
         - accounting
     auth_mode: BASIC
@@ -959,6 +1034,7 @@ e-conomic:
             Content-Type: application/json
     docs: https://docs.nango.dev/integrations/all/e-conomic
 egnyte:
+    display_name: Egnyte
     categories:
         - storage
     auth_mode: OAUTH2
@@ -975,6 +1051,7 @@ egnyte:
         base_url: https://${connectionConfig.subdomain}.egnyte.com/pubapi
     docs: https://docs.nango.dev/integrations/all/egnyte
 entrata:
+    display_name: Entrata
     categories:
         - other
     auth_mode: BASIC
@@ -982,6 +1059,7 @@ entrata:
         base_url: https://${connectionConfig.subdomain}.entrata.com
     docs: https://docs.nango.dev/integrations/all/entrata
 envoy:
+    display_name: Envoy
     categories:
         - productivity
     auth_mode: OAUTH2
@@ -998,6 +1076,7 @@ envoy:
         base_url: https://api.envoy.com
     docs: https://docs.nango.dev/integrations/all/envoy
 epic-games:
+    display_name: Epic Games
     categories:
         - gaming
     auth_mode: OAUTH2
@@ -1008,11 +1087,13 @@ epic-games:
         base_url: https://api.epicgames.dev
     docs: https://docs.nango.dev/integrations/all/epic-games
 evaluagent:
+    display_name: EvaluAgent
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.region}.evaluagent.com
     docs: https://docs.nango.dev/integrations/all/evaluagent
 eventbrite:
+    display_name: Eventbrite
     categories:
         - marketing
     auth_mode: OAUTH2
@@ -1026,6 +1107,7 @@ eventbrite:
         base_url: https://www.eventbriteapi.com
     docs: https://docs.nango.dev/integrations/all/eventbrite
 exa:
+    display_name: Exa
     categories:
         - analytics
     auth_mode: API_KEY
@@ -1035,6 +1117,7 @@ exa:
             x-api-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/exa
 exact-online:
+    display_name: Exact Online
     categories:
         - accounting
         - hr
@@ -1059,6 +1142,7 @@ exact-online:
             link_path_in_response_body: d.__next
     docs: https://docs.nango.dev/integrations/all/exact-online
 exist:
+    display_name: Exist
     categories:
         - other
     auth_mode: OAUTH2
@@ -1077,11 +1161,13 @@ exist:
             link_path_in_response_body: next
     docs: https://docs.nango.dev/integrations/all/exist
 expensify:
+    display_name: Expensify
     categories:
         - productivity
     auth_mode: BASIC
     docs: https://docs.nango.dev/integrations/all/expensify
 factorial:
+    display_name: Factorial
     categories:
         - hr
     auth_mode: OAUTH2
@@ -1090,6 +1176,7 @@ factorial:
     disable_pkce: true
     docs: https://docs.nango.dev/integrations/all/factorial
 facebook:
+    display_name: Facebook
     categories:
         - marketing
         - social
@@ -1100,12 +1187,14 @@ facebook:
         base_url: https://graph.facebook.com
     docs: https://docs.nango.dev/integrations/all/facebook
 figjam:
+    display_name: FigJam
     categories:
         - design
         - productivity
     alias: figma
     docs: https://docs.nango.dev/integrations/all/figjam
 figma:
+    display_name: Figma
     categories:
         - design
         - productivity
@@ -1118,6 +1207,7 @@ figma:
         base_url: https://api.figma.com
     docs: https://docs.nango.dev/integrations/all/figma
 fireflies:
+    display_name: Fireflies
     categories:
         - analytics
         - communication
@@ -1129,6 +1219,7 @@ fireflies:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/fireflies
 fiserv:
+    display_name: Fiserv
     categories:
         - banking
         - payment
@@ -1142,6 +1233,7 @@ fiserv:
         base_url: https://${connectionConfig.hostUrl}
     docs: https://docs.nango.dev/integrations/all/fiserv
 fiserv-api-key:
+    display_name: Fiserv (api key)
     categories:
         - banking
         - payment
@@ -1155,6 +1247,7 @@ fiserv-api-key:
             endpoint: /sandbox/exp/v1/authorisations
     docs: https://docs.nango.dev/integrations/all/fiserv
 fitbit:
+    display_name: Fitbit
     categories:
         - sports
     auth_mode: OAUTH2
@@ -1165,6 +1258,7 @@ fitbit:
         base_url: https://api.fitbit.com
     docs: https://docs.nango.dev/integrations/all/fitbit
 freshbooks:
+    display_name: FreshBooks
     categories:
         - accounting
     auth_mode: OAUTH2
@@ -1176,6 +1270,7 @@ freshbooks:
         base_url: https://api.freshbooks.com
     docs: https://docs.nango.dev/integrations/all/freshbooks
 freshdesk:
+    display_name: FreshDesk
     categories:
         - support
     auth_mode: BASIC
@@ -1183,6 +1278,7 @@ freshdesk:
         base_url: https://${connectionConfig.subdomain}.freshdesk.com
     docs: https://docs.nango.dev/integrations/all/freshdesk
 freshsales:
+    display_name: FreshSales
     categories:
         - crm
     auth_mode: API_KEY
@@ -1194,6 +1290,7 @@ freshsales:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/freshsales
 freshservice:
+    display_name: FreshService
     categories:
         - support
     auth_mode: BASIC
@@ -1201,6 +1298,7 @@ freshservice:
         base_url: https://${connectionConfig.subdomain}.freshservice.com
     docs: https://docs.nango.dev/integrations/all/freshservice
 front:
+    display_name: Front
     categories:
         - support
         - ticketing
@@ -1215,6 +1313,7 @@ front:
             link_path_in_response_body: _pagination.next
     docs: https://docs.nango.dev/integrations/all/front
 gainsight-cc:
+    display_name: Gainsight
     categories:
         - support
         - crm
@@ -1227,6 +1326,7 @@ gainsight-cc:
         base_url: https://api2-${connectionConfig.region}.insided.com
     docs: https://docs.nango.dev/integrations/all/gainsight-cc
 garmin:
+    display_name: Garmin
     categories:
         - sports
     auth_mode: OAUTH1
@@ -1238,6 +1338,7 @@ garmin:
         base_url: https://apis.garmin.com
     docs: https://docs.nango.dev/integrations/all/garmin
 guru:
+    display_name: Guru
     categories:
         - knowledge-base
     auth_mode: BASIC
@@ -1245,6 +1346,7 @@ guru:
         base_url: https://api.getguru.com/api/v1
     docs: https://docs.nango.dev/integrations/all/guru
 github:
+    display_name: GitHub
     categories:
         - dev-tools
         - support
@@ -1262,6 +1364,7 @@ github:
             link_rel_in_response_header: next
     docs: https://docs.nango.dev/integrations/all/github
 github-app:
+    display_name: GitHub App
     categories:
         - dev-tools
         - ticketing
@@ -1272,6 +1375,7 @@ github-app:
     webhook_routing_script: githubAppWebhookRouting
     docs: https://docs.nango.dev/integrations/all/github
 github-app-oauth:
+    display_name: GitHub App (oauth)
     categories:
         - dev-tools
         - ticketing
@@ -1286,6 +1390,7 @@ github-app-oauth:
     post_connection_script: githubAppOauthPostConnection
     docs: https://docs.nango.dev/integrations/all/github
 gitlab:
+    display_name: GitLab
     categories:
         - dev-tools
         - ticketing
@@ -1298,6 +1403,7 @@ gitlab:
         base_url: https://gitlab.com
     docs: https://docs.nango.dev/integrations/all/gitlab
 gong:
+    display_name: Gong
     categories:
         - productivity
     auth_mode: BASIC
@@ -1305,6 +1411,7 @@ gong:
         base_url: https://api.gong.io
     docs: https://docs.nango.dev/integrations/all/gong
 gong-oauth:
+    display_name: Gong (oauth)
     auth_mode: OAUTH2
     authorization_url: https://app.gong.io/oauth2/authorize
     token_url: https://app.gong.io/oauth2/generate-customer-token
@@ -1323,6 +1430,7 @@ gong-oauth:
         base_url: ${connectionConfig.api_base_url_for_customer} || https://api.gong.io
     docs: https://docs.nango.dev/integrations/all/gong
 google:
+    display_name: Google
     auth_mode: OAUTH2
     authorization_url: https://accounts.google.com/o/oauth2/v2/auth
     token_url: https://oauth2.googleapis.com/token
@@ -1340,6 +1448,7 @@ google:
             response_path: items
     docs: https://docs.nango.dev/integrations/all/google
 google-calendar:
+    display_name: Google Calendar
     categories:
         - productivity
     alias: google
@@ -1353,6 +1462,7 @@ google-calendar:
             response_path: items
     docs: https://docs.nango.dev/integrations/all/google-calendar
 google-docs:
+    display_name: Google Docs
     categories:
         - productivity
     alias: google
@@ -1360,6 +1470,7 @@ google-docs:
         base_url: https://docs.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-docs
 google-mail:
+    display_name: Google Mail
     categories:
         - productivity
     alias: google
@@ -1367,6 +1478,7 @@ google-mail:
         base_url: https://gmail.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-mail
 google-sheet:
+    display_name: Google Sheet
     categories:
         - productivity
     alias: google
@@ -1374,12 +1486,14 @@ google-sheet:
         base_url: https://sheets.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-sheet
 google-drive:
+    display_name: Google Drive
     categories:
         - knowledge-base
         - storage
     alias: google
     docs: https://docs.nango.dev/integrations/all/google-drive
 google-ads:
+    display_name: Google Ads
     categories:
         - marketing
     alias: google
@@ -1394,6 +1508,7 @@ google-ads:
             response_path: results
     docs: https://docs.nango.dev/integrations/all/google-ads
 google-play:
+    display_name: Google Play
     categories:
         - dev-tools
     auth_mode: OAUTH2
@@ -1411,6 +1526,7 @@ google-play:
         base_url: https://play.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-play
 gorgias:
+    display_name: Gorgias
     categories:
         - e-commerce
     auth_mode: OAUTH2
@@ -1429,6 +1545,7 @@ gorgias:
         base_url: https://${connectionConfig.subdomain}.gorgias.com
     docs: https://docs.nango.dev/integrations/all/gorgias
 greenhouse:
+    display_name: Greenhouse
     categories:
         - ats
     auth_mode: OAUTH2
@@ -1444,6 +1561,7 @@ greenhouse:
             link_rel_in_response_header: next
     docs: https://docs.nango.dev/integrations/all/greenhouse
 greenhouse-basic:
+    display_name: Greenhouse (basic auth)
     categories:
         - ats
     auth_mode: BASIC
@@ -1457,6 +1575,7 @@ greenhouse-basic:
             link_rel_in_response_header: next
     docs: https://docs.nango.dev/integrations/all/greenhouse
 gumroad:
+    display_name: Gumroad
     categories:
         - design
         - e-commerce
@@ -1474,6 +1593,7 @@ gumroad:
         base_url: https://api.gumroad.com
     docs: https://docs.nango.dev/integrations/all/gumroad
 gusto:
+    display_name: Gusto
     categories:
         - hr
     auth_mode: OAUTH2
@@ -1489,6 +1609,7 @@ gusto:
         base_url: https://api.gusto.com
     docs: https://docs.nango.dev/integrations/all/gusto
 gusto-demo:
+    display_name: Gusto Demo
     auth_mode: OAUTH2
     authorization_url: https://api.gusto-demo.com/oauth/authorize
     token_url: https://api.gusto-demo.com/oauth/token
@@ -1502,11 +1623,13 @@ gusto-demo:
         base_url: https://api.gusto-demo.com
     docs: https://docs.nango.dev/integrations/all/gusto
 hackerrank-work:
+    display_name: HackerRank Work
     auth_mode: BASIC
     proxy:
         base_url: https://www.hackerrank.com
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
 harvest:
+    display_name: Harvest
     categories:
         - productivity
     auth_mode: OAUTH2
@@ -1527,6 +1650,7 @@ harvest:
         base_url: https://api.harvestapp.com
     docs: https://docs.nango.dev/integrations/all/harvest
 health-gorilla:
+    display_name: Health Gorilla
     auth_mode: OAUTH2
     authorization_url: https://api.healthgorilla.com/oauth/authorize
     token_url: https://api.healthgorilla.com/oauth/token
@@ -1540,6 +1664,7 @@ health-gorilla:
         base_url: https://healthgorilla.com
     docs: https://docs.nango.dev/integrations/all/healthgorilla
 hibob-service-user:
+    display_name: Hibob Service User
     categories:
         - hr
     auth_mode: BASIC
@@ -1550,6 +1675,7 @@ hibob-service-user:
             endpoint: /v1/company/named-lists
     docs: https://apidocs.hibob.com/
 highlevel:
+    display_name: HighLevel
     categories:
         - marketing
     auth_mode: OAUTH2
@@ -1565,6 +1691,7 @@ highlevel:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/highlevel
 highlevel-white-label:
+    display_name: HighLevel (white label)
     categories:
         - marketing
     auth_mode: OAUTH2
@@ -1580,6 +1707,7 @@ highlevel-white-label:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/highlevel
 holded:
+    display_name: Holded
     categories:
         - accounting
         - crm
@@ -1594,6 +1722,7 @@ holded:
             endpoint: /invoicing/v1/contacts
     docs: https://docs.nango.dev/integrations/all/holded
 hubspot:
+    display_name: Hubspot
     categories:
         - marketing
         - support
@@ -1616,6 +1745,7 @@ hubspot:
             response_path: results
     docs: https://docs.nango.dev/integrations/all/hubspot
 insightly:
+    display_name: Insightly
     categories:
         - crm
     auth_mode: BASIC
@@ -1626,6 +1756,7 @@ insightly:
             endpoint: /v3.1/Contacts
     docs: https://docs.nango.dev/integrations/all/insightly
 instantly:
+    display_name: Instantly
     categories:
         - marketing
         - communication
@@ -1634,6 +1765,7 @@ instantly:
         base_url: https://api.instantly.ai/api
     docs: https://docs.nango.dev/integrations/all/instantly
 instagram:
+    display_name: Instagram
     categories:
         - marketing
         - social
@@ -1644,6 +1776,7 @@ instagram:
         base_url: https://graph.instagram.com
     docs: https://docs.nango.dev/integrations/all/instagram
 intercom:
+    display_name: Intercom
     categories:
         - marketing
         - support
@@ -1656,6 +1789,7 @@ intercom:
         base_url: https://api.intercom.io
     docs: https://docs.nango.dev/integrations/all/intercom
 intuit:
+    display_name: Intuit
     categories:
         - accounting
     auth_mode: OAUTH2
@@ -1665,6 +1799,7 @@ intuit:
         base_url: https://quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/intuit
 jira:
+    display_name: Jira
     categories:
         - productivity
         - ticketing
@@ -1689,6 +1824,7 @@ jira:
     webhook_routing_script: jiraWebhookRouting
     docs: https://docs.nango.dev/integrations/all/jira
 jira-basic:
+    display_name: Jira (basic auth)
     categories:
         - productivity
         - ticketing
@@ -1702,6 +1838,7 @@ jira-basic:
             endpoint: /rest/api/3/events
     docs: https://docs.nango.dev/integrations/all/jira
 jira-data-center:
+    display_name: Jira Data Center
     categories:
         - productivity
         - ticketing
@@ -1714,6 +1851,7 @@ jira-data-center:
         - endpointURL
     docs: https://docs.nango.dev/integrations/all/jira-data-center
 jotform:
+    display_name: Jotform
     categories:
         - surveys
     auth_mode: API_KEY
@@ -1723,6 +1861,7 @@ jotform:
             APIKEY: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/jotform
 helpscout-docs:
+    display_name: Help Scout Docs
     auth_mode: BASIC
     proxy:
         retry:
@@ -1730,6 +1869,7 @@ helpscout-docs:
         base_url: https://docsapi.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 helpscout-mailbox:
+    display_name: Help Scout Mailbox
     auth_mode: OAUTH2
     authorization_url: https://secure.helpscout.net/authentication/authorizeClientApplication
     token_url: https://api.helpscout.net/v2/oauth2/token
@@ -1745,6 +1885,7 @@ helpscout-mailbox:
         base_url: https://api.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 keap:
+    display_name: Keap
     categories:
         - marketing
     auth_mode: OAUTH2
@@ -1760,6 +1901,7 @@ keap:
         base_url: https://api.infusionsoft.com
     docs: https://docs.nango.dev/integrations/all/keap
 klipfolio:
+    display_name: Klipfolio
     categories:
         - productivity
         - dev-tools
@@ -1773,6 +1915,7 @@ klipfolio:
             endpoint: /api/1.0/profile
     docs: https://docs.nango.dev/integrations/all/klipfolio
 klaviyo:
+    display_name: Klaviyo
     categories:
         - marketing
     auth_mode: API_KEY
@@ -1788,6 +1931,7 @@ klaviyo:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/klaviyo
 klaviyo-oauth:
+    display_name: Klaviyo (oauth)
     categories:
         - marketing
     auth_mode: OAUTH2
@@ -1809,6 +1953,7 @@ klaviyo-oauth:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/klaviyo
 kustomer:
+    display_name: Kustomer
     categories:
         - crm
     auth_mode: API_KEY
@@ -1820,6 +1965,7 @@ kustomer:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/kustomer
 lessonly:
+    display_name: Lessonly
     categories:
         - productivity
     auth_mode: BASIC
@@ -1827,6 +1973,7 @@ lessonly:
         base_url: https://api.lessonly.com/api
     docs: https://docs.nango.dev/integrations/all/lessonly
 lever:
+    display_name: Lever
     categories:
         - ats
     auth_mode: OAUTH2
@@ -1840,11 +1987,13 @@ lever:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
 lever-basic:
+    display_name: Lever (basic auth)
     auth_mode: BASIC
     proxy:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
 lever-sandbox:
+    display_name: Lever (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://sandbox-lever.auth0.com/authorize
     token_url: https://sandbox-lever.auth0.com/oauth/token
@@ -1856,11 +2005,13 @@ lever-sandbox:
         base_url: https://api.sandbox.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
 lever-basic-sandbox:
+    display_name: Lever (basic auth) (sandbox)
     auth_mode: BASIC
     proxy:
         base_url: https://api.sandbox.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
 linear:
+    display_name: Linear
     categories:
         - productivity
         - ticketing
@@ -1878,6 +2029,7 @@ linear:
     webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/linear
 linkedin:
+    display_name: LinkedIn
     categories:
         - ats
         - social
@@ -1889,6 +2041,7 @@ linkedin:
         base_url: https://api.linkedin.com
     docs: https://docs.nango.dev/integrations/all/linkedin
 linkhut:
+    display_name: LinkHut
     auth_mode: OAUTH2
     authorization_url: https://ln.ht/_/oauth/authorize
     token_url: https://api.ln.ht/v1/oauth/token
@@ -1896,6 +2049,7 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://docs.nango.dev/integrations/all/linkhut
 luma:
+    display_name: Luma
     categories:
         - productivity
         - ticketing
@@ -1909,6 +2063,7 @@ luma:
             endpoint: /public/v1/user/get-self
     docs: https://docs.nango.dev/integrations/all/luma
 listmonk:
+    display_name: Listmonk
     categories:
         - marketing
     auth_mode: BASIC
@@ -1922,6 +2077,7 @@ listmonk:
             method: GET
             endpoint: /lists
 make:
+    display_name: Make
     categories:
         - productivity
     auth_mode: API_KEY
@@ -1934,6 +2090,7 @@ make:
             endpoint: /users/me
     docs: https://docs.nango.dev/integrations/all/make
 mailgun:
+    display_name: Mailgun
     categories:
         - marketing
     auth_mode: BASIC
@@ -1944,6 +2101,7 @@ mailgun:
             endpoint: /v4/domains
     docs: https://docs.nango.dev/integrations/all/mailgun
 mailchimp:
+    display_name: Mailchimp
     categories:
         - marketing
         - surveys
@@ -1955,6 +2113,7 @@ mailchimp:
     docs: https://docs.nango.dev/integrations/all/mailchimp
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:
+    display_name: Manatal
     auth_mode: API_KEY
     categories:
         - crm
@@ -1973,6 +2132,7 @@ manatal:
             response_path: results
     docs: https://docs.nango.dev/integrations/all/manatal
 marketo:
+    display_name: Marketo
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.endpointURL}
@@ -1981,6 +2141,7 @@ marketo:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
 medallia:
+    display_name: Medallia
     categories:
         - crm
         - support
@@ -1996,6 +2157,7 @@ medallia:
         base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://docs.nango.dev/integrations/all/medallia
 metabase:
+    display_name: Metabase
     categories:
         - analytics
     auth_mode: API_KEY
@@ -2008,6 +2170,7 @@ metabase:
             endpoint: /api/database
     docs: https://docs.nango.dev/integrations/all/metabase
 microsoft:
+    display_name: Microsoft
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
@@ -2029,6 +2192,7 @@ microsoft:
         decompress: true
     docs: https://docs.nango.dev/integrations/all/microsoft
 microsoft-teams:
+    display_name: Microsoft Teams
     categories:
         - productivity
         - video
@@ -2037,6 +2201,7 @@ microsoft-teams:
     post_connection_script: microsoftTeamsPostConnection
     docs: https://docs.nango.dev/integrations/all/microsoft-teams
 microsoft-tenant-specific:
+    display_name: Microsoft (tenant)
     categories:
         - erp
     auth_mode: OAUTH2
@@ -2055,6 +2220,7 @@ microsoft-tenant-specific:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/microsoft-tenant-specific
 microsoft-ads:
+    display_name: Microsoft Ads
     alias: microsoft
     categories:
         - marketing
@@ -2068,11 +2234,13 @@ microsoft-ads:
         scope: https://ads.microsoft.com/msads.manage
     docs: https://docs.nango.dev/integrations/all/microsoft-ads
 microsoft-entra-id:
+    display_name: Microsoft Entra ID
     categories:
         - other
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/microsoft-entra-id
 microsoft-power-bi:
+    display_name: Microsoft Power BI
     categories:
         - productivity
     alias: microsoft
@@ -2080,6 +2248,7 @@ microsoft-power-bi:
         base_url: https://api.powerbi.com
     docs: https://docs.nango.dev/integrations/all/microsoft-power-bi
 mixpanel:
+    display_name: Mixpanel
     categories:
         - analytics
     auth_mode: BASIC
@@ -2087,6 +2256,7 @@ mixpanel:
         base_url: https://mixpanel.com
     docs: https://docs.nango.dev/integrations/all/mixpanel
 miro:
+    display_name: Miro
     categories:
         - design
         - productivity
@@ -2103,6 +2273,7 @@ miro:
         base_url: https://api.miro.com
     docs: https://docs.nango.dev/integrations/all/miro
 monday:
+    display_name: Monday
     categories:
         - productivity
         - ticketing
@@ -2111,6 +2282,7 @@ monday:
     token_url: https://auth.monday.com/oauth2/token
     docs: https://docs.nango.dev/integrations/all/monday
 mural:
+    display_name: Mural
     categories:
         - design
     auth_mode: OAUTH2
@@ -2126,6 +2298,7 @@ mural:
         base_url: https://app.mural.co
     docs: https://docs.nango.dev/integrations/all/mural
 nationbuilder:
+    display_name: NationBuilder
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/authorize
     token_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/token
@@ -2139,6 +2312,7 @@ nationbuilder:
         - default
     docs: https://docs.nango.dev/integrations/all/nationbuilder
 netsuite:
+    display_name: NetSuite
     categories:
         - accounting
         - erp
@@ -2156,9 +2330,11 @@ netsuite:
     docs: https://docs.nango.dev/integrations/all/netsuite
 netsuite-tba:
     alias: netsuite
+    display_name: NetSuite TBA
     auth_mode: TBA
     docs: https://docs.nango.dev/integrations/all/netsuite
 next-cloud-ocs:
+    display_name: Next Cloud OCS
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.domain}/ocs/v1.php
@@ -2166,6 +2342,7 @@ next-cloud-ocs:
             'OCS-APIRequest': 'true'
     docs: http://docs.nango.dev/integrations/all/next-cloud
 notion:
+    display_name: Notion
     categories:
         - knowledge-base
         - productivity
@@ -2191,6 +2368,7 @@ notion:
             response_path: results
     docs: https://docs.nango.dev/integrations/all/notion
 odoo:
+    display_name: Odoo
     categories:
         - erp
     auth_mode: OAUTH2
@@ -2206,6 +2384,7 @@ odoo:
         base_url: https://${connectionConfig.serverUrl}
     docs: https://docs.nango.dev/integrations/all/odoo
 okta:
+    display_name: Okta
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/authorize
     token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
@@ -2218,12 +2397,14 @@ okta:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/okta
 one-drive:
+    display_name: One Drive
     categories:
         - knowledge-base
         - storage
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/one-drive
 one-note:
+    display_name: One Note
     categories:
         - productivity
     alias: microsoft
@@ -2245,6 +2426,7 @@ openai:
             after: 'x-ratelimit-reset-requests'
     docs: https://docs.nango.dev/integrations/all/openai
 ory:
+    display_name: Ory
     categories:
         - other
     auth_mode: OAUTH2_CC
@@ -2256,6 +2438,7 @@ ory:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/ory
 osu:
+    display_name: Osu
     categories:
         - gaming
     auth_mode: OAUTH2
@@ -2273,6 +2456,7 @@ osu:
         base_url: https://osu.ppy.sh
     docs: https://docs.nango.dev/integrations/all/osu
 oura:
+    display_name: Oura
     categories:
         - sports
     auth_mode: OAUTH2
@@ -2289,11 +2473,13 @@ oura:
         base_url: https://api.ouraring.com
     docs: https://docs.nango.dev/integrations/all/oura
 outlook:
+    display_name: Outlook
     categories:
         - communication
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/outlook
 outreach:
+    display_name: Outreach
     categories:
         - marketing
     auth_mode: OAUTH2
@@ -2309,6 +2495,7 @@ outreach:
         base_url: https://api.outreach.io
     docs: https://docs.nango.dev/integrations/all/outreach
 pagerduty:
+    display_name: PagerDuty
     categories:
         - dev-tools
     auth_mode: OAUTH2
@@ -2318,6 +2505,7 @@ pagerduty:
         base_url: https://api.pagerduty.com
     docs: https://docs.nango.dev/integrations/all/pagerduty
 pandadoc:
+    display_name: Pandadoc
     categories:
         - legal
     auth_mode: OAUTH2
@@ -2333,6 +2521,7 @@ pandadoc:
         base_url: https://api.pandadoc.com
     docs: https://docs.nango.dev/integrations/all/pandadoc
 payfit:
+    display_name: Payfit
     categories:
         - hr
     auth_mode: OAUTH2
@@ -2344,6 +2533,7 @@ payfit:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/payfit
 paypal:
+    display_name: Paypal
     categories:
         - payment
     auth_mode: OAUTH2
@@ -2358,6 +2548,7 @@ paypal:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/paypal
 paypal-sandbox:
+    display_name: Paypal (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://www.sandbox.paypal.com/signin/authorize
     token_url: https://api-m.sandbox.paypal.com/v1/oauth2/token
@@ -2370,6 +2561,7 @@ paypal-sandbox:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/paypal
 pendo:
+    display_name: Pendo
     categories:
         - analytics
     auth_mode: API_KEY
@@ -2379,6 +2571,7 @@ pendo:
             x-pendo-integration-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/pendo
 pennylane:
+    display_name: Pennylane
     categories:
         - accounting
         - banking
@@ -2398,6 +2591,7 @@ pennylane:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/pennylane
 peopledatalabs:
+    display_name: People Data Labs
     categories:
         - analytics
     auth_mode: API_KEY
@@ -2407,6 +2601,7 @@ peopledatalabs:
             api_key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/peopledatalabs
 personio:
+    display_name: Personio
     categories:
         - hr
     auth_mode: OAUTH2_CC
@@ -2419,6 +2614,7 @@ personio:
     body_format: json
     docs: https://docs.nango.dev/integrations/all/personio
 personio-recruiting:
+    display_name: Personio Recruiting
     categories:
         - hr
     auth_mode: API_KEY
@@ -2438,6 +2634,7 @@ personio-recruiting:
                 content-type: xml
     docs: https://docs.nango.dev/integrations/all/personio
 pingboard:
+    display_name: Pingboard
     categories:
         - productivity
     auth_mode: OAUTH2_CC
@@ -2449,6 +2646,7 @@ pingboard:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/pingboard
 pinterest:
+    display_name: Pinterest
     categories:
         - design
         - marketing
@@ -2468,6 +2666,7 @@ pinterest:
         base_url: https://api.pinterest.com
     docs: https://docs.nango.dev/integrations/all/pinterest
 pipedrive:
+    display_name: Pipedrive
     categories:
         - crm
     auth_mode: OAUTH2
@@ -2485,6 +2684,7 @@ pipedrive:
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/pipedrive
 pivotaltracker:
+    display_name: Pivotal Tracker
     categories:
         - productivity
     auth_mode: API_KEY
@@ -2497,6 +2697,7 @@ pivotaltracker:
             endpoint: /accounts
     docs: https://docs.nango.dev/integrations/all/pivotaltracker
 podium:
+    display_name: Podium
     categories:
         - communication
         - marketing
@@ -2520,6 +2721,7 @@ podium:
             after: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/podium
 posthog:
+    display_name: Posthog
     categories:
         - dev-tools
     auth_mode: API_KEY
@@ -2532,6 +2734,7 @@ posthog:
             endpoint: /api/users/@me
     docs: https://docs.nango.dev/integrations/all/posthog
 productboard:
+    display_name: Productboard
     categories:
         - productivity
     auth_mode: OAUTH2
@@ -2550,6 +2753,7 @@ productboard:
         base_url: https://api.productboard.com
     docs: https://docs.nango.dev/integrations/all/productboard
 qualtrics:
+    display_name: Qualtrics
     categories:
         - surveys
     auth_mode: OAUTH2
@@ -2559,6 +2763,7 @@ qualtrics:
         base_url: https://${connectionConfig.subdomain}.qualtrics.com
     docs: https://docs.nango.dev/integrations/all/qualtrics
 quickbooks:
+    display_name: Quickbooks
     categories:
         - accounting
     auth_mode: OAUTH2
@@ -2570,6 +2775,7 @@ quickbooks:
         base_url: https://quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
 ramp:
+    display_name: Ramp
     categories:
         - banking
     auth_mode: OAUTH2
@@ -2580,6 +2786,7 @@ ramp:
         base_url: https://api.ramp.com
     docs: https://docs.nango.dev/integrations/all/ramp
 ramp-sandbox:
+    display_name: Ramp (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://demo.ramp.com/v1/authorize
     token_url: https://demo-api.ramp.com/developer/v1/token
@@ -2588,6 +2795,7 @@ ramp-sandbox:
         base_url: https://demo-api.ramp.com
     docs: https://docs.nango.dev/integrations/all/ramp
 reddit:
+    display_name: Reddit
     categories:
         - social
     auth_mode: OAUTH2
@@ -2600,6 +2808,7 @@ reddit:
         base_url: https://oauth.reddit.com
     docs: https://docs.nango.dev/integrations/all/reddit
 refiner:
+    display_name: Refiner
     categories:
         - surveys
     auth_mode: API_KEY
@@ -2609,6 +2818,7 @@ refiner:
         base_url: https://api.refiner.io/v1
     docs: https://docs.nango.dev/integrations/all/refiner
 ring-central:
+    display_name: Ring Central
     categories:
         - support
     auth_mode: OAUTH2
@@ -2639,6 +2849,7 @@ ring-central-sandbox:
         base_url: https://platform.devtest.ringcentral.com
     docs: https://docs.nango.dev/integrations/all/ring-central
 segment:
+    display_name: Segment
     categories:
         - analytics
         - marketing
@@ -2650,6 +2861,7 @@ segment:
         base_url: https://api.segment.io
     docs: https://docs.nango.dev/integrations/all/segment
 sage:
+    display_name: Sage
     categories:
         - accounting
         - erp
@@ -2662,6 +2874,7 @@ sage:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
 salesforce:
+    display_name: Salesforce
     categories:
         - crm
     auth_mode: OAUTH2
@@ -2701,6 +2914,7 @@ salesforce-experience-cloud:
         base_url: ${connectionConfig.instance_url}
     docs: https://docs.nango.dev/integrations/all/salesforce-experience-cloud
 salesloft:
+    display_name: Salesloft
     categories:
         - marketing
     auth_mode: OAUTH2
@@ -2710,6 +2924,7 @@ salesloft:
         base_url: https://api.salesloft.com
     docs: https://docs.nango.dev/integrations/all/salesloft
 sendgrid:
+    display_name: Sendgrid
     categories:
         - marketing
     auth_mode: API_KEY
@@ -2719,6 +2934,7 @@ sendgrid:
         base_url: https://api.sendgrid.com
     docs: https://docs.nango.dev/integrations/all/sendgrid
 servicem8:
+    display_name: ServiceM8
     categories:
         - productivity
     auth_mode: OAUTH2
@@ -2735,6 +2951,7 @@ servicem8:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/servicem8
 signnow:
+    display_name: SignNow
     categories:
         - legal
     auth_mode: OAUTH2
@@ -2750,6 +2967,7 @@ signnow:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/signnow
 signnow-sandbox:
+    display_name: SignNow (sandbox)
     categories:
         - legal
     auth_mode: OAUTH2
@@ -2765,6 +2983,7 @@ signnow-sandbox:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/signnow
 servicenow:
+    display_name: ServiceNow
     categories:
         - productivity
     auth_mode: OAUTH2
@@ -2778,12 +2997,14 @@ servicenow:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/servicenow
 sharepoint-online:
+    display_name: SharePoint Online
     categories:
         - storage
         - communication
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/sharepoint-online
 shipstation:
+    display_name: Shipstation
     categories:
         - e-commerce
     auth_mode: BASIC
@@ -2796,6 +3017,7 @@ shipstation:
             endpoint: /users
     docs: https://docs.nango.dev/integrations/all/shipstation
 shopify:
+    display_name: Shopify
     categories:
         - e-commerce
     auth_mode: OAUTH2
@@ -2807,6 +3029,7 @@ shopify:
             X-Shopify-Access-Token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/shopify
 shortcut:
+    display_name: Shortcut
     categories:
         - dev-tools
         - productivity
@@ -2817,6 +3040,7 @@ shortcut:
             Shortcut-Token: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/shortcut
 slack:
+    display_name: Slack
     categories:
         - productivity
     auth_mode: OAUTH2
@@ -2838,6 +3062,7 @@ slack:
     webhook_routing_script: slackWebhookRouting
     docs: https://docs.nango.dev/integrations/all/slack
 smartrecruiters-api-key:
+    display_name: Smartrecruiters (api key)
     auth_mode: API_KEY
     proxy:
         base_url: https://api.smartrecruiters.com
@@ -2845,6 +3070,7 @@ smartrecruiters-api-key:
             X-SmartToken: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/smartrecruiters
 smartsheet:
+    display_name: Smartsheet
     auth_mode: OAUTH2
     authorization_url: https://app.smartsheet.com/b/authorize
     token_url: https://api.smartsheet.com/2.0/token
@@ -2856,6 +3082,7 @@ smartsheet:
         base_url: https://api.smartsheet.com
     docs: https://docs.nango.dev/integrations/all/smartsheet
 smugmug:
+    display_name: Smugmug
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
     authorization_url: https://api.smugmug.com/services/oauth/1.0a/authorize
@@ -2866,6 +3093,7 @@ smugmug:
         base_url: https://www.smugmug.com
     docs: https://docs.nango.dev/integrations/all/smugmug
 snowflake:
+    display_name: Snowflake
     categories:
         - dev-tools
     auth_mode: OAUTH2
@@ -2882,6 +3110,7 @@ snowflake:
         base_url: https://{connectionConfig.snowflake_account_url}
     docs: https://docs.nango.dev/integrations/all/snowflake
 splitwise:
+    display_name: Splitwise
     categories:
         - payment
         - social
@@ -2892,6 +3121,7 @@ splitwise:
         base_url: https://secure.splitwise.com
     docs: https://docs.nango.dev/integrations/all/splitwise
 spotify:
+    display_name: Spotify
     categories:
         - other
     auth_mode: OAUTH2
@@ -2907,6 +3137,7 @@ spotify:
         base_url: https://api.spotify.com
     docs: https://docs.nango.dev/integrations/all/spotify
 spotify-oauth2-cc:
+    display_name: Spotify (custom)
     categories:
         - other
     auth_mode: OAUTH2_CC
@@ -2919,6 +3150,7 @@ spotify-oauth2-cc:
         base_url: https://api.spotify.com
     docs: https://docs.nango.dev/integrations/all/spotify
 squarespace:
+    display_name: Squarespace
     categories:
         - dev-tools
         - design
@@ -2939,6 +3171,7 @@ squarespace:
             User-Agent: ${connectionConfig.customappDescription}
     docs: https://docs.nango.dev/integrations/all/squarespace
 squareup:
+    display_name: Squareup
     categories:
         - payment
     auth_mode: OAUTH2
@@ -2957,6 +3190,7 @@ squareup:
         base_url: https://connect.squareup.com
     docs: https://docs.nango.dev/integrations/all/squareup
 squareup-sandbox:
+    display_name: Squareup (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
     token_url: https://connect.squareupsandbox.com/oauth2/token
@@ -2972,6 +3206,7 @@ squareup-sandbox:
         base_url: https://connect.squareupsandbox.com
     docs: https://docs.nango.dev/integrations/all/squareup
 stackexchange:
+    display_name: Stack Exchange
     categories:
         - knowledge-base
         - support
@@ -2984,6 +3219,7 @@ stackexchange:
         base_url: https://api.stackexchange.com
     docs: https://docs.nango.dev/integrations/all/stackexchange
 strava:
+    display_name: Strava (mobile)
     categories:
         - social
         - sports
@@ -3002,6 +3238,7 @@ strava:
         base_url: https://www.strava.com
     docs: https://docs.nango.dev/integrations/all/strava
 strava-web:
+    display_name: Strava (web)
     categories:
         - social
         - sports
@@ -3018,8 +3255,9 @@ strava-web:
         grant_type: refresh_token
     proxy:
         base_url: https://www.strava.com
-    docs: https://docs.nango.dev/integrations/all/strava-web
+    docs: https://docs.nango.dev/integrations/all/strava
 stripe:
+    display_name: Stripe
     categories:
         - payment
     auth_mode: OAUTH2
@@ -3027,6 +3265,7 @@ stripe:
     token_url: https://connect.stripe.com/oauth/token
     docs: https://docs.nango.dev/integrations/all/stripe
 stripe-express:
+    display_name: Stripe Express
     categories:
         - payment
     auth_mode: OAUTH2
@@ -3038,6 +3277,7 @@ stripe-express:
         base_url: https://api.stripe.com
     docs: https://docs.nango.dev/integrations/all/stripe-express
 stripe-app:
+    display_name: Stripe App
     categories:
         - payment
     auth_mode: OAUTH2
@@ -3050,6 +3290,7 @@ stripe-app:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/stripe-app
 stripe-app-sandbox:
+    display_name: Stripe App (sandbox)
     auth_mode: OAUTH2
     authorization_url: https://marketplace.stripe.com/oauth/v2/${connectionConfig.appDomain}/authorize
     token_url: https://api.stripe.com/v1/oauth/token
@@ -3060,6 +3301,7 @@ stripe-app-sandbox:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/stripe-app
 survey-monkey:
+    display_name: SurveyMonkey
     categories:
         - surveys
     auth_mode: OAUTH2
@@ -3074,6 +3316,7 @@ survey-monkey:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
 tableau:
+    display_name: Tableau
     categories:
         - analytics
     auth_mode: TABLEAU
@@ -3085,6 +3328,7 @@ tableau:
         base_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}
     docs: https://docs.nango.dev/integrations/all/tableau
 teamtailor:
+    display_name: Teamtailor
     categories:
         - ats
     auth_mode: API_KEY
@@ -3097,6 +3341,7 @@ teamtailor:
             X-Api-Version: '20210218'
     docs: https://docs.nango.dev/integrations/all/teamtailor
 teamwork:
+    display_name: Teamwork
     categories:
         - productivity
         - ticketing
@@ -3109,6 +3354,7 @@ teamwork:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://docs.nango.dev/integrations/all/teamwork
 ticktick:
+    display_name: TickTick
     categories:
         - productivity
         - ticketing
@@ -3120,6 +3366,7 @@ ticktick:
         base_url: https://api.ticktick.com
     docs: https://docs.nango.dev/integrations/all/ticktick
 tiktok-accounts:
+    display_name: TikTok Accounts
     categories:
         - social
     auth_mode: OAUTH2
@@ -3139,6 +3386,7 @@ tiktok-accounts:
     scope_separator: ','
     docs: https://docs.nango.dev/integrations/all/tiktok-accounts
 tiktok-ads:
+    display_name: TikTok Ads
     categories:
         - social
     auth_mode: OAUTH2
@@ -3152,6 +3400,7 @@ tiktok-ads:
         client_id: app_id
     docs: https://docs.nango.dev/integrations/all/tiktok-ads
 timely:
+    display_name: Timely
     categories:
         - productivity
     auth_mode: OAUTH2
@@ -3166,6 +3415,7 @@ timely:
         base_url: https://api.timelyapp.com
     docs: https://docs.nango.dev/integrations/all/timely
 tremendous:
+    display_name: Tremendous
     categories:
         - payment
     auth_mode: OAUTH2
@@ -3182,6 +3432,7 @@ tremendous:
         base_url: https://api.tremendous.com/api/v2
     docs: https://docs.nango.dev/integrations/all/tremendous
 tremendous-sandbox:
+    display_name: Tremendous (sandbox)
     categories:
         - payment
     auth_mode: OAUTH2
@@ -3198,6 +3449,7 @@ tremendous-sandbox:
         base_url: https://testflight.tremendous.com/api/v2
     docs: https://docs.nango.dev/integrations/all/tremendous
 trello:
+    display_name: Trello
     categories:
         - productivity
         - ticketing
@@ -3213,6 +3465,7 @@ trello:
         base_url: https://api.trello.com
     docs: https://docs.nango.dev/integrations/all/trello
 tsheetsteam:
+    display_name: TSheets
     categories:
         - payroll
         - hr
@@ -3230,6 +3483,7 @@ tsheetsteam:
         base_url: https://rest.tsheets.com/api/v1
     docs: https://docs.nango.dev/integrations/all/tsheetsteam
 todoist:
+    display_name: Todoist
     categories:
         - productivity
         - ticketing
@@ -3241,6 +3495,7 @@ todoist:
         base_url: https://api.todoist.com
     docs: https://docs.nango.dev/integrations/all/todoist
 tumblr:
+    display_name: Tumblr
     categories:
         - social
         - communication
@@ -3258,6 +3513,7 @@ tumblr:
         base_url: https://api.tumblr.com/v2
     docs: https://docs.nango.dev/integrations/all/tumblr
 twitch:
+    display_name: Twitch
     categories:
         - gaming
         - social
@@ -3277,6 +3533,7 @@ twitch:
         base_url: https://api.twitch.tv
     docs: https://docs.nango.dev/integrations/all/twitch
 twitter:
+    display_name: Twitter (v1)
     categories:
         - marketing
         - social
@@ -3291,6 +3548,7 @@ twitter:
         base_url: https://api.twitter.com
     docs: https://docs.nango.dev/integrations/all/twitter
 twitter-v2:
+    display_name: Twitter (v2)
     categories:
         - marketing
         - social
@@ -3311,6 +3569,7 @@ twitter-v2:
         base_url: https://api.twitter.com
     docs: https://docs.nango.dev/integrations/all/twitter
 twitter-oauth2-cc:
+    display_name: Twitter (custom)
     categories:
         - marketing
         - social
@@ -3324,6 +3583,7 @@ twitter-oauth2-cc:
         base_url: https://api.twitter.com
     docs: https://docs.nango.dev/integrations/all/twitter
 twinfield:
+    display_name: Twinfield
     auth_mode: OAUTH2
     authorization_url: https://login.twinfield.com/auth/authentication/connect/authorize
     token_url: https://login.twinfield.com/auth/authentication/connect/token
@@ -3342,6 +3602,7 @@ twinfield:
     disable_pkce: true
     docs: https://docs.nango.dev/integrations/all/twinfield
 typeform:
+    display_name: Typeform
     categories:
         - surveys
     auth_mode: OAUTH2
@@ -3360,6 +3621,7 @@ typeform:
         base_url: https://api.typeform.com
     docs: https://docs.nango.dev/integrations/all/typeform
 uber:
+    display_name: Uber
     auth_mode: OAUTH2
     authorization_url: https://login.uber.com/oauth/v2/authorize
     token_url: https://login.uber.com/oauth/v2/token
@@ -3373,6 +3635,7 @@ uber:
         base_url: https://api.uber.com
     docs: https://docs.nango.dev/integrations/all/uber
 unanet:
+    display_name: Unanet
     categories:
         - crm
         - erp
@@ -3392,6 +3655,7 @@ unauthenticated:
     docs: https://docs.nango.dev/integrations/overview
     webhook_routing_script: unauthenticatedWebhookRouting
 vimeo:
+    display_name: Vimeo
     categories:
         - video
     auth_mode: OAUTH2
@@ -3407,6 +3671,7 @@ vimeo:
         base_url: https://api.vimeo.com
     docs: https://docs.nango.dev/integrations/all/vimeo
 vimeo-basic:
+    display_name: Vimeo (basic auth)
     categories:
         - video
     auth_mode: BASIC
@@ -3417,6 +3682,7 @@ vimeo-basic:
             endpoint: /
     docs: https://docs.nango.dev/integrations/all/vimeo
 wakatime:
+    display_name: Wakatime
     categories:
         - analytics
         - dev-tools
@@ -3427,6 +3693,7 @@ wakatime:
         base_url: https://wakatime.com
     docs: https://docs.nango.dev/integrations/all/wakatime
 wave-accounting:
+    display_name: Wave Accounting
     categories:
         - accounting
     auth_mode: OAUTH2
@@ -3436,6 +3703,7 @@ wave-accounting:
         base_url: https://gql.waveapps.com
     docs: https://docs.nango.dev/integrations/all/wave-accounting
 wealthbox:
+    display_name: Wealthbox
     categories:
         - crm
     auth_mode: OAUTH2
@@ -3451,6 +3719,7 @@ wealthbox:
         base_url: https://api.crmworkspace.com
     docs: https://docs.nango.dev/integrations/all/wealthbox
 webflow:
+    display_name: Webflow
     categories:
         - dev-tools
         - design
@@ -3466,6 +3735,7 @@ webflow:
         base_url: https://api.webflow.com
     docs: https://docs.nango.dev/integrations/all/webflow
 whoop:
+    display_name: Whoop
     categories:
         - sports
     auth_mode: OAUTH2
@@ -3483,6 +3753,7 @@ whoop:
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/whoop
 wildix-pbx:
+    display_name: Wildix PBX
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2
     token_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2Token
@@ -3494,6 +3765,7 @@ wildix-pbx:
     proxy:
         base_url: https://${connectionConfig.subdomain}.wildixin.com
 wordpress:
+    display_name: WordPress
     categories:
         - dev-tools
         - design
@@ -3510,6 +3782,7 @@ wordpress:
         base_url: https://public-api.wordpress.com/rest/v1
     docs: https://docs.nango.dev/integrations/all/wordpress
 woocommerce:
+    display_name: WooCommerce
     categories:
         - e-commerce
         - dev-tools
@@ -3522,6 +3795,7 @@ woocommerce:
             endpoint: /wp-json/wc/v3/customers
     docs: https://docs.nango.dev/integrations/all/woocommerce
 workable:
+    display_name: Workable
     categories:
         - ats
     auth_mode: API_KEY
@@ -3531,6 +3805,7 @@ workable:
         base_url: https://${connectionConfig.subdomain}.workable.com
     docs: https://docs.nango.dev/integrations/all/workable
 workday:
+    display_name: Workday
     categories:
         - hr
     auth_mode: BASIC
@@ -3538,6 +3813,7 @@ workday:
         base_url: https://${connectionConfig.subdomain}.workday.com
     docs: https://docs.nango.dev/integrations/all/workday
 wrike:
+    display_name: Wrike
     categories:
         - productivity
     auth_mode: OAUTH2
@@ -3556,6 +3832,7 @@ wrike:
         base_url: https://${connectionConfig.host}/api/v4
     docs: https://docs.nango.dev/integrations/all/wrike
 xero:
+    display_name: Xero
     categories:
         - accounting
     auth_mode: OAUTH2
@@ -3570,6 +3847,7 @@ xero:
     post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
 yahoo:
+    display_name: Yahoo
     categories:
         - social
     auth_mode: OAUTH2
@@ -3577,6 +3855,7 @@ yahoo:
     token_url: https://api.login.yahoo.com/oauth2/get_token
     docs: https://docs.nango.dev/integrations/all/yahoo
 yandex:
+    display_name: Yandex
     categories:
         - social
     auth_mode: OAUTH2
@@ -3592,11 +3871,13 @@ yandex:
         base_url: https://translate.yandex.net
     docs: https://docs.nango.dev/integrations/all/yandex
 youtube:
+    display_name: YouTube
     alias: google
     categories:
         - video
     docs: https://docs.nango.dev/integrations/all/youtube
 zapier-nla:
+    display_name: Zapier NLA
     auth_mode: OAUTH2
     authorization_url: https://nla.zapier.com/oauth/authorize/
     token_url: https://nla.zapier.com/oauth/token/
@@ -3604,6 +3885,7 @@ zapier-nla:
         base_url: https://nla.zapier.com
     docs: https://docs.nango.dev/integrations/all/zapier-nla
 zendesk:
+    display_name: Zendesk
     categories:
         - support
         - ticketing
@@ -3620,6 +3902,7 @@ zendesk:
             link_path_in_response_body: next_page
     docs: https://docs.nango.dev/integrations/all/zendesk
 zenefits:
+    display_name: Zenefits
     categories:
         - hr
     auth_mode: OAUTH2
@@ -3635,6 +3918,7 @@ zenefits:
         base_url: https://api.zenefits.com
     docs: https://docs.nango.dev/integrations/all/zenefits
 zoho:
+    display_name: Zoho
     categories:
         - accounting
     auth_mode: OAUTH2
@@ -3651,28 +3935,34 @@ zoho:
             offset_name_in_request: page
             limit_name_in_request: per_page
 zoho-books:
+    display_name: Zoho Books
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-books
 zoho-crm:
+    display_name: Zoho CRM
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-crm
 zoho-desk:
+    display_name: Zoho Desk
     categories:
         - support
         - ticketing
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-desk
 zoho-inventory:
+    display_name: Zoho Inventory
     categories:
         - e-commerce
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-inventory
 zoho-invoice:
+    display_name: Zoho Invoice
     categories:
         - invoicing
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-invoice
 zoho-mail:
+    display_name: Zoho Mail
     categories:
         - productivity
         - communication
@@ -3681,9 +3971,11 @@ zoho-mail:
         base_url: https://mail.zoho.${connectionConfig.extension}
     docs: https://docs.nango.dev/integrations/all/zoho-mail
 zoho-bigin:
+    display_name: Zoho Bigin
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-bigin
 zoho-people:
+    display_name: Zoho People
     categories:
         - hr
     alias: zoho
@@ -3691,6 +3983,7 @@ zoho-people:
         base_url: https://people.zoho.com
     docs: https://docs.nango.dev/integrations/all/zoho-people
 zoom:
+    display_name: Zoom
     categories:
         - video
     auth_mode: OAUTH2
@@ -3704,6 +3997,7 @@ zoom:
         base_url: https://api.zoom.us/v2
     docs: https://docs.nango.dev/integrations/all/zoom
 zoominfo:
+    display_name: ZoomInfo
     categories:
         - crm
         - marketing
