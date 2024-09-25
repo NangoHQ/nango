@@ -28,6 +28,6 @@ jobs:
 
             - name: Validate YAML
               run: |
-                  cd scripts/validation/providers
                   npm i
+                  cd scripts/validation/providers
                   npx tsx validate.ts
