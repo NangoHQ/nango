@@ -15,6 +15,7 @@ import { useToast } from '../../hooks/useToast';
 
 interface Provider {
     name: string;
+    displayName: string;
     defaultScopes: string[];
     authMode: AuthModeType;
     categories?: string[];
@@ -76,7 +77,7 @@ export default function Create() {
             const lowercaseValue = value.toLowerCase();
             const filtered = initialProviders?.filter(
                 (provider) =>
-                    provider.name.toLowerCase().includes(lowercaseValue) ||
+                    provider.displayName.toLowerCase().includes(lowercaseValue) ||
                     provider.categories?.some((category) => category.toLowerCase().includes(lowercaseValue))
             );
             setProviders(filtered as Provider[]);
@@ -122,7 +123,7 @@ export default function Create() {
                                 <div className="flex items-center">
                                     <IntegrationLogo provider={provider.name} height={12} width={12} classNames="mr-2" />
                                     <div className="flex flex-col flex-start">
-                                        <span className="flex capitalize">{provider.name.replace(/-/g, ' ')}</span>
+                                        <span className="flex">{provider.displayName}</span>
                                         {provider.categories && <span className="flex text-xs text-gray-400">{provider.categories.join(', ')}</span>}
                                     </div>
                                 </div>

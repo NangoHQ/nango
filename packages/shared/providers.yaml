@@ -1610,7 +1610,7 @@ gusto:
         base_url: https://api.gusto.com
     docs: https://docs.nango.dev/integrations/all/gusto
 gusto-demo:
-    display_name: Gusto Demo
+    display_name: Gusto (demo)
     auth_mode: OAUTH2
     authorization_url: https://api.gusto-demo.com/oauth/authorize
     token_url: https://api.gusto-demo.com/oauth/token
@@ -2332,7 +2332,7 @@ netsuite:
     docs: https://docs.nango.dev/integrations/all/netsuite
 netsuite-tba:
     alias: netsuite
-    display_name: NetSuite TBA
+    display_name: NetSuite (tba)
     auth_mode: TBA
     docs: https://docs.nango.dev/integrations/all/netsuite
 next-cloud-ocs:
