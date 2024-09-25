@@ -2185,7 +2185,7 @@ notion:
             'Notion-Version': '2022-06-28'
         paginate:
             type: cursor
-            cursor_path_in_response: start_cursor
+            cursor_path_in_response: next_cursor
             cursor_name_in_request: start_cursor
             limit_name_in_request: page_size
             response_path: results
@@ -2228,6 +2228,22 @@ one-note:
         - productivity
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/one-note
+openai:
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.openai.com
+        headers:
+            Authorization: Bearer ${apiKey}
+            Content-Type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/models
+        retry:
+            after: 'x-ratelimit-reset-requests'
+    docs: https://docs.nango.dev/integrations/all/openai
 ory:
     categories:
         - other
