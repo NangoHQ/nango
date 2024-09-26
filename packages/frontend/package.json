@@ -16,7 +16,7 @@
     "scripts": {},
     "dependencies": {},
     "devDependencies": {
-        "@nangohq/types": "^0.42.10"
+        "@nangohq/types": "^0.42.12"
     },
     "files": [
         "dist/**/*.js",
