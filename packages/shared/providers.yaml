@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./../../scripts/validation/providers/schema.json
 accelo:
     display_name: Accelo
     categories:
@@ -16,6 +17,13 @@ accelo:
     proxy:
         base_url: https://${connectionConfig.subdomain}.api.accelo.com
     docs: https://docs.nango.dev/integrations/all/accelo
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Accelo account
+            pattern: '^[a-z0-9_-]+$'
+
 adobe:
     display_name: Adobe
     categories:
@@ -32,6 +40,7 @@ adobe:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/adobe
+
 affinity:
     display_name: Affinity
     categories:
@@ -40,6 +49,7 @@ affinity:
     proxy:
         base_url: https://api.affinity.co
     docs: https://docs.nango.dev/integrations/all/affinity
+
 aircall:
     display_name: Aircall
     categories:
@@ -53,6 +63,7 @@ aircall:
     token_params:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/aircall
+
 airtable:
     display_name: Airtable
     categories:
@@ -66,6 +77,7 @@ airtable:
     proxy:
         base_url: https://api.airtable.com
     docs: https://docs.nango.dev/integrations/all/airtable
+
 autodesk:
     display_name: Autodesk
     categories:
@@ -86,6 +98,7 @@ autodesk:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/autodesk
+
 algolia:
     display_name: Algolia
     categories:
@@ -97,6 +110,21 @@ algolia:
             X-Algolia-Application-Id: ${connectionConfig.APP_ID}
             X-Algolia-API-Key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/algolia
+    connection_config:
+        APP_ID:
+            type: string
+            title: Application ID
+            description: The application ID for your Algolia account
+            example: ERBSOWZO32
+            pattern: '^[A-Z0-9]{10}$'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Algolia account
+            example: c5c28261f9ade4e34891ccf761491b94
+            pattern: '^[a-zA-Z0-9]+$'
+
 amazon:
     display_name: Amazon
     categories:
@@ -114,6 +142,14 @@ amazon:
     proxy:
         base_url: https://api.amazon.com
     docs: https://docs.nango.dev/integrations/all/amazon
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension for your Amazon account
+            example: com
+            pattern: '^[a-z.]+$'
+
 anrok:
     display_name: Anrok
     categories:
@@ -126,6 +162,12 @@ anrok:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/anrok
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Anrok account
+
 amplitude:
     display_name: Amplitude
     categories:
@@ -134,6 +176,7 @@ amplitude:
     proxy:
         base_url: https://amplitude.com
     docs: https://docs.nango.dev/integrations/all/amplitude
+
 anthropic:
     display_name: Anthropic
     categories:
@@ -149,6 +192,19 @@ anthropic:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/anthropic
+    connection_config:
+        version:
+            type: string
+            title: API Version
+            description: The version of the Anthropic API to use
+            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+            example: '2023-06-01'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Anthropic account
+
 apollo:
     display_name: Apollo
     categories:
@@ -159,6 +215,12 @@ apollo:
         query:
             api_key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/apollo
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Apollo account
+
 apple-app-store:
     display_name: Apple App Store
     auth_mode: APP_STORE
@@ -166,6 +228,7 @@ apple-app-store:
     authorization_params:
         audience: appstoreconnect-v1
     docs: https://docs.nango.dev/integrations/all/apple-app-store
+
 asana:
     display_name: Asana
     categories:
@@ -191,6 +254,7 @@ asana:
             response_path: data
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/asana
+
 ashby:
     display_name: Ashby
     categories:
@@ -202,6 +266,7 @@ ashby:
             method: POST
             endpoint: apiKey.info
     docs: https://docs.nango.dev/integrations/all/ashby
+
 atlassian:
     display_name: Atlassian
     categories:
@@ -222,6 +287,7 @@ atlassian:
     proxy:
         base_url: https://api.atlassian.com
     docs: https://docs.nango.dev/integrations/all/atlassian
+
 attio:
     display_name: Attio
     categories:
@@ -238,6 +304,7 @@ attio:
     proxy:
         base_url: https://app.attio.com
     docs: https://docs.nango.dev/integrations/all/attio
+
 auth0:
     display_name: Auth0
     auth_mode: OAUTH2
@@ -251,6 +318,13 @@ auth0:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/auth0
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Auth0 account
+            pattern: '^[a-z0-9_-]+$'
+
 avalara:
     display_name: Avalara
     categories:
@@ -265,6 +339,13 @@ avalara:
             method: GET
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
+    connection_config:
+        avalaraClient:
+            type: string
+            title: Avalara Client
+            description: The Avalara client for your Avalara account
+            pattern: '^[a-zA-Z0-9_-]+$'
+
 avalara-sandbox:
     display_name: Avalara (sandbox)
     categories:
@@ -279,6 +360,13 @@ avalara-sandbox:
             method: GET
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
+    connection_config:
+        avalaraClient:
+            type: string
+            title: Avalara Client
+            description: The Avalara client for your Avalara account
+            pattern: '^[a-zA-Z0-9_-]+$'
+
 aws:
     display_name: AWS
     categories:
@@ -296,6 +384,19 @@ aws:
     default_scopes:
         - openid
     docs: https://docs.nango.dev/integrations/all/aws
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Auth0 account
+            pattern: '^[a-z0-9_-]+$'
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Auth0 account
+            example: com
+            pattern: '^[a-z.]+$'
+
 bamboohr:
     display_name: BambooHR
     categories:
@@ -312,6 +413,13 @@ bamboohr:
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
     docs: https://docs.nango.dev/integrations/all/bamboohr
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your BambooHR account
+            pattern: '^[a-z0-9_-]+$'
+
 bamboohr-basic:
     display_name: BambooHR (basic auth)
     categories:
@@ -323,6 +431,13 @@ bamboohr-basic:
             method: GET
             endpoint: /v1/meta/fields
     docs: https://docs.nango.dev/integrations/all/bamboohr
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your BambooHR account
+            pattern: '^[a-z0-9_-]+$'
+
 battlenet:
     display_name: Battle.net
     categories:
@@ -335,6 +450,14 @@ battlenet:
     token_params:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/battlenet
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Battle.net account
+            example: com
+            pattern: '^[a-z.]+$'
+
 bigcommerce:
     display_name: BigCommerce
     categories:
@@ -353,6 +476,19 @@ bigcommerce:
     proxy:
         base_url: https://api.bigcommerce.com/stores/${connectionConfig.storeHash}
     docs: https://docs.nango.dev/integrations/all/bigcommerce
+    connection_config:
+        storeHash:
+            type: string
+            title: Store Hash
+            description: The store hash of your BigCommerce account
+            pattern: '^[a-zA-Z0-9]+$'
+        accountUuid:
+            type: string
+            title: Account UUID
+            description: The account UUID of your BigCommerce account
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+
 bitbucket:
     display_name: Bitbucket
     categories:
@@ -363,6 +499,7 @@ bitbucket:
     proxy:
         base_url: https://api.bitbucket.org
     docs: https://docs.nango.dev/integrations/all/bitbucket
+
 bitdefender:
     display_name: Bitdefender
     categories:
@@ -373,6 +510,15 @@ bitdefender:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/bitdefender
+    connection_config:
+        ACCESS_URL:
+            type: string
+            title: Access URL
+            description: The access URL of your Bitdefender account
+            example: https://api.bitdefender.com
+            format: uri
+            pattern: '^https://.*'
+
 bitly:
     display_name: Bitly
     categories:
@@ -388,6 +534,7 @@ bitly:
     proxy:
         base_url: https://api-ssl.bitly.com
     docs: https://docs.nango.dev/integrations/all/bitly
+
 blackbaud:
     display_name: Blackbaud
     categories:
@@ -404,6 +551,7 @@ blackbaud:
     proxy:
         base_url: https://api.sky.blackbaud.com
     docs: https://docs.nango.dev/integrations/all/blackbaud
+
 blandai:
     display_name: BlandAI
     categories:
@@ -414,6 +562,12 @@ blandai:
         headers:
             Authorization: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/blandai
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your BlandAI account
+
 boldsign:
     display_name: BoldSign
     categories:
@@ -430,6 +584,7 @@ boldsign:
     proxy:
         base_url: https://api.boldsign.com
     docs: https://docs.nango.dev/integrations/all/boldsign
+
 box:
     display_name: Box
     categories:
@@ -441,6 +596,7 @@ box:
     proxy:
         base_url: https://api.box.com
     docs: https://docs.nango.dev/integrations/all/box
+
 braintree:
     display_name: Braintree
     categories:
@@ -456,6 +612,7 @@ braintree:
     redirect_uri_metadata:
         - merchantId
     docs: https://docs.nango.dev/integrations/all/braintree
+
 braintree-sandbox:
     display_name: Braintree (sandbox)
     auth_mode: OAUTH2
@@ -469,6 +626,7 @@ braintree-sandbox:
     redirect_uri_metadata:
         - merchantId
     docs: https://docs.nango.dev/integrations/all/braintree
+
 brex:
     display_name: Brex
     categories:
@@ -482,6 +640,7 @@ brex:
     proxy:
         base_url: https://platform.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
+
 brex-api-key:
     display_name: Brex (api key)
     auth_mode: API_KEY
@@ -490,6 +649,12 @@ brex-api-key:
             Authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Brex account
+
 brex-staging:
     display_name: Brex (staging)
     auth_mode: OAUTH2
@@ -498,6 +663,7 @@ brex-staging:
     proxy:
         base_url: https://platform.staging.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
+
 builder-io-private:
     display_name: Builder.io (private)
     categories:
@@ -510,6 +676,21 @@ builder-io-private:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain of your Builder.io account
+            example: app.builder.io
+            format: hostname
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Builder.io account
+            pattern: '^[a-zA-Z0-9]+$'
+            example: bb209fb71eh2412dbe0114bdae18fd15
+
 builder-io-public:
     display_name: Builder.io (public)
     categories:
@@ -522,6 +703,20 @@ builder-io-public:
         query:
             apiKey: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain of your Builder.io account
+            example: app.builder.io
+            format: hostname
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Builder.io account
+            pattern: '^[a-zA-Z0-9]+$'
+            example: bb209fb71eh2412dbe0114bdae18fd15
 cal-com-v1:
     display_name: Cal.com (v1)
     categories:
@@ -537,6 +732,13 @@ cal-com-v1:
             method: GET
             endpoint: /me
     docs: https://docs.nango.dev/integrations/all/cal-com
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Cal.com account
+            pattern: '^cal_[a-zA-Z0-9_]+$'
+            example: cal_xxxxxx
 cal-com-v2:
     display_name: Cal.com (v2)
     categories:
@@ -557,6 +759,14 @@ cal-com-v2:
             method: GET
             endpoint: /me
     docs: https://docs.nango.dev/integrations/all/cal-com
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Cal.com account
+            pattern: '^cal_[a-zA-Z0-9_]+$'
+            example: cal_xxxxxx
+
 calendly:
     display_name: Calendly
     categories:
@@ -576,6 +786,7 @@ calendly:
     token_response_metadata:
         - owner
     docs: https://docs.nango.dev/integrations/all/calendly
+
 canny:
     display_name: Canny
     categories:
@@ -589,6 +800,12 @@ canny:
             method: POST
             endpoint: /boards/list
     docs: https://docs.nango.dev/integrations/all/canny
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Canny account
+
 certn:
     display_name: Certn
     categories:
@@ -606,6 +823,12 @@ certn:
             method: GET
             endpoint: /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Certn account
+
 certn-partner:
     display_name: Certn Partner
     categories:
@@ -624,6 +847,7 @@ certn-partner:
             method: GET
             endpoint: /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
+
 chargebee:
     display_name: Chargebee
     categories:
@@ -637,6 +861,13 @@ chargebee:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/chargebee
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Chargebee account
+            pattern: '^[a-z0-9_-]+$'
+
 checkr-partner:
     display_name: Checkr Partner
     categories:
@@ -656,6 +887,12 @@ checkr-partner:
     webhook_routing_script: checkrWebhookRouting
     post_connection_script: checkrPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr-partner
+    connection_config:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of your Checkr Partner account
+
 checkr-partner-staging:
     display_name: Checkr Partner (staging)
     categories:
@@ -675,6 +912,12 @@ checkr-partner-staging:
     webhook_routing_script: checkrWebhookRouting
     post_connection_script: checkrPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr-partner
+    connection_config:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of your Checkr Partner account
+
 checkout-com:
     display_name: Checkout.com
     categories:
@@ -690,6 +933,7 @@ checkout-com:
             Accept: application/json
         base_url: https://api.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com
+
 checkout-com-sandbox:
     display_name: Checkout.com (sandbox)
     categories:
@@ -705,12 +949,14 @@ checkout-com-sandbox:
             Accept: application/json
         base_url: https://api.sandbox.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com
+
 chorus:
     display_name: Chorus
     auth_mode: BASIC
     proxy:
         base_url: https://chorus.ai
     docs: https://docs.nango.dev/integrations/all/chorus
+
 circle-so:
     display_name: Circle.so
     categories:
@@ -721,6 +967,12 @@ circle-so:
         headers:
             Authorization: Token ${apiKey}
     docs: https://docs.nango.dev/integrations/all/circle-so
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Circle.so account
+
 clari-copilot:
     display_name: Clari Copilot
     categories:
@@ -732,6 +984,17 @@ clari-copilot:
             X-Api-Password: ${connectionConfig.API_PASSWORD}
         base_url: https://rest-api.copilot.clari.com
     docs: https://docs.nango.dev/integrations/all/clari-copilot
+    connection_config:
+        API_PASSWORD:
+            type: string
+            title: API Password
+            description: The API password of your Clari Copilot account
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Clari Copilot account
+
 clickup:
     display_name: ClickUp
     categories:
@@ -743,6 +1006,7 @@ clickup:
     proxy:
         base_url: https://api.clickup.com
     docs: https://docs.nango.dev/integrations/all/clickup
+
 cloudentity:
     display_name: Cloudentity
     auth_mode: OAUTH2_CC
@@ -755,6 +1019,20 @@ cloudentity:
     proxy:
         base_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}
     docs: https://docs.nango.dev/integrations/all/cloudentity
+    connection_config:
+        tenantID:
+            type: string
+            title: Tenant ID
+            description: The tenant ID of your Cloudentity account
+        regionID:
+            type: string
+            title: Region ID
+            description: The region ID of your Cloudentity account
+        workspaceID:
+            type: string
+            title: Workspace ID
+            description: The workspace ID of your Cloudentity account
+
 close:
     display_name: Close
     categories:
@@ -769,6 +1047,7 @@ close:
     proxy:
         base_url: https://api.close.com/api
     docs: https://docs.nango.dev/integrations/all/close
+
 coda:
     display_name: Coda
     categories:
@@ -780,6 +1059,12 @@ coda:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/coda
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Coda account
+
 codeclimate:
     display_name: Code Climate
     categories:
@@ -795,12 +1080,25 @@ codeclimate:
             method: GET
             endpoint: /v1/user
     docs: https://docs.nango.dev/integrations/all/codeclimate
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain of your Code Climate account
+            format: hostname
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Code Climate account
+
 confluence:
     display_name: Confluence
     categories:
         - knowledge-base
     alias: jira
     docs: https://docs.nango.dev/integrations/all/confluence
+
 contentful:
     display_name: Contentful
     categories:
@@ -821,6 +1119,13 @@ contentful:
         retry:
             after: X-Contentful-RateLimit-Reset
     docs: https://docs.nango.dev/integrations/all/contentful
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Contentful account
+            pattern: '^[a-z0-9_-]+$'
+
 contentstack:
     display_name: Contentstack
     categories:
@@ -829,6 +1134,17 @@ contentstack:
     authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
     token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
     docs: https://docs.nango.dev/integrations/all/contentstack
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Contentstack account
+            pattern: '^[a-z0-9_-]+$'
+        appId:
+            type: string
+            title: App ID
+            description: The app ID of your Contentstack account
+
 coros:
     display_name: Coros
     categories:
@@ -848,6 +1164,7 @@ coros:
     proxy:
         base_url: https://open.coros.com
     docs: https://docs.nango.dev/integrations/all/coros
+
 coros-sandbox:
     display_name: Coros (sandbox)
     auth_mode: OAUTH2
@@ -865,6 +1182,7 @@ coros-sandbox:
     proxy:
         base_url: https://opentest.coros.com
     docs: https://docs.nango.dev/integrations/all/coros
+
 coupa-compass:
     display_name: Coupa Compass
     categories:
@@ -878,6 +1196,13 @@ coupa-compass:
     proxy:
         base_url: https://${connectionConfig.instanceDomain}
     docs: https://docs.nango.dev/integrations/all/coupa-compass
+    connection_config:
+        instanceDomain:
+            type: string
+            title: Instance Domain
+            description: The domain of your Coupa Compass account
+            format: hostname
+
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     display_name: Datev
@@ -903,6 +1228,7 @@ datev:
     proxy:
         base_url: https://api.datev.de
     docs: https://docs.nango.dev/integrations/all/datev
+
 deel:
     display_name: Deel
     categories:
@@ -920,6 +1246,7 @@ deel:
     proxy:
         base_url: https://api.letsdeel.com
     docs: https://docs.nango.dev/integrations/all/deel
+
 deel-sandbox:
     display_name: Deel (sandbox)
     auth_mode: OAUTH2
@@ -935,6 +1262,7 @@ deel-sandbox:
     proxy:
         base_url: https://api-staging.letsdeel.com
     docs: https://docs.nango.dev/integrations/all/deel
+
 dialpad:
     display_name: Dialpad
     categories:
@@ -951,6 +1279,7 @@ dialpad:
     proxy:
         base_url: https://dialpad.com
     docs: https://docs.nango.dev/integrations/all/dialpad
+
 digitalocean:
     display_name: DigitalOcean
     categories:
@@ -967,6 +1296,7 @@ digitalocean:
     proxy:
         base_url: https://api.digitalocean.com
     docs: https://docs.nango.dev/integrations/all/digitalocean
+
 discord:
     display_name: Discord
     categories:
@@ -982,6 +1312,7 @@ discord:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/discord
+
 discourse:
     display_name: Discourse
     categories:
@@ -994,6 +1325,22 @@ discourse:
             Api-Key: ${apiKey}
             Accept: application/json
     docs: https://docs.nango.dev/integrations/all/discourse
+    connection_config:
+        defaultHost:
+            type: string
+            title: Domain
+            description: The domain of your Discourse account
+            format: hostname
+        apiUsername:
+            type: string
+            title: API Username
+            description: The API username of your Discourse account
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Discourse account
+
 docusign:
     display_name: DocuSign
     categories:
@@ -1011,6 +1358,7 @@ docusign:
     proxy:
         base_url: https://www.docusign.net
     docs: https://docs.nango.dev/integrations/all/docusign
+
 docusign-sandbox:
     display_name: DocuSign (sandbox)
     auth_mode: OAUTH2
@@ -1026,6 +1374,7 @@ docusign-sandbox:
     proxy:
         base_url: https://demo.docusign.net
     docs: https://docs.nango.dev/integrations/all/docusign
+
 dropbox:
     display_name: Dropbox
     categories:
@@ -1039,6 +1388,7 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+
 e-conomic:
     display_name: e-conomic
     categories:
@@ -1049,6 +1399,7 @@ e-conomic:
         headers:
             Content-Type: application/json
     docs: https://docs.nango.dev/integrations/all/e-conomic
+
 egnyte:
     display_name: Egnyte
     categories:
@@ -1066,6 +1417,13 @@ egnyte:
     proxy:
         base_url: https://${connectionConfig.subdomain}.egnyte.com/pubapi
     docs: https://docs.nango.dev/integrations/all/egnyte
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Egnyte account
+            pattern: '^[a-z0-9_-]+$'
+
 entrata:
     display_name: Entrata
     categories:
@@ -1074,6 +1432,13 @@ entrata:
     proxy:
         base_url: https://${connectionConfig.subdomain}.entrata.com
     docs: https://docs.nango.dev/integrations/all/entrata
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Entrata account
+            pattern: '^[a-z0-9_-]+$'
+
 envoy:
     display_name: Envoy
     categories:
@@ -1091,6 +1456,7 @@ envoy:
     proxy:
         base_url: https://api.envoy.com
     docs: https://docs.nango.dev/integrations/all/envoy
+
 epic-games:
     display_name: Epic Games
     categories:
@@ -1102,12 +1468,21 @@ epic-games:
     proxy:
         base_url: https://api.epicgames.dev
     docs: https://docs.nango.dev/integrations/all/epic-games
+
 evaluagent:
     display_name: EvaluAgent
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.region}.evaluagent.com
     docs: https://docs.nango.dev/integrations/all/evaluagent
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region of your EvaluAgent account
+            example: eu
+            pattern: '^[a-z]+$'
+
 eventbrite:
     display_name: Eventbrite
     categories:
@@ -1122,6 +1497,7 @@ eventbrite:
     proxy:
         base_url: https://www.eventbriteapi.com
     docs: https://docs.nango.dev/integrations/all/eventbrite
+
 exa:
     display_name: Exa
     categories:
@@ -1132,6 +1508,12 @@ exa:
         headers:
             x-api-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/exa
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Exa account
+
 exact-online:
     display_name: Exact Online
     categories:
@@ -1157,6 +1539,14 @@ exact-online:
             type: link
             link_path_in_response_body: d.__next
     docs: https://docs.nango.dev/integrations/all/exact-online
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Exact Online account
+            example: nl
+            pattern: '^[a-z.]+$'
+
 exist:
     display_name: Exist
     categories:
@@ -1176,12 +1566,14 @@ exist:
             type: link
             link_path_in_response_body: next
     docs: https://docs.nango.dev/integrations/all/exist
+
 expensify:
     display_name: Expensify
     categories:
         - productivity
     auth_mode: BASIC
     docs: https://docs.nango.dev/integrations/all/expensify
+
 factorial:
     display_name: Factorial
     categories:
@@ -1191,6 +1583,7 @@ factorial:
     token_url: https://api.factorialhr.com/oauth/token
     disable_pkce: true
     docs: https://docs.nango.dev/integrations/all/factorial
+
 facebook:
     display_name: Facebook
     categories:
@@ -1202,6 +1595,7 @@ facebook:
     proxy:
         base_url: https://graph.facebook.com
     docs: https://docs.nango.dev/integrations/all/facebook
+
 figjam:
     display_name: FigJam
     categories:
@@ -1209,6 +1603,7 @@ figjam:
         - productivity
     alias: figma
     docs: https://docs.nango.dev/integrations/all/figjam
+
 figma:
     display_name: Figma
     categories:
@@ -1222,6 +1617,7 @@ figma:
     proxy:
         base_url: https://api.figma.com
     docs: https://docs.nango.dev/integrations/all/figma
+
 fireflies:
     display_name: Fireflies
     categories:
@@ -1234,6 +1630,12 @@ fireflies:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/fireflies
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Fireflies account
+
 fiserv:
     display_name: Fiserv
     categories:
@@ -1248,6 +1650,13 @@ fiserv:
     proxy:
         base_url: https://${connectionConfig.hostUrl}
     docs: https://docs.nango.dev/integrations/all/fiserv
+    connection_config:
+        hostUrl:
+            type: string
+            title: Domain
+            description: The domain of your Fiserv account
+            format: hostname
+
 fiserv-api-key:
     display_name: Fiserv (api key)
     categories:
@@ -1262,6 +1671,12 @@ fiserv-api-key:
             method: GET
             endpoint: /sandbox/exp/v1/authorisations
     docs: https://docs.nango.dev/integrations/all/fiserv
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Fiserv account
+
 fitbit:
     display_name: Fitbit
     categories:
@@ -1273,6 +1688,7 @@ fitbit:
     proxy:
         base_url: https://api.fitbit.com
     docs: https://docs.nango.dev/integrations/all/fitbit
+
 freshbooks:
     display_name: FreshBooks
     categories:
@@ -1285,6 +1701,7 @@ freshbooks:
     proxy:
         base_url: https://api.freshbooks.com
     docs: https://docs.nango.dev/integrations/all/freshbooks
+
 freshdesk:
     display_name: FreshDesk
     categories:
@@ -1293,6 +1710,13 @@ freshdesk:
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshdesk.com
     docs: https://docs.nango.dev/integrations/all/freshdesk
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your FreshDesk account
+            pattern: '^[a-z0-9_-]+$'
+
 freshsales:
     display_name: FreshSales
     categories:
@@ -1305,6 +1729,18 @@ freshsales:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/freshsales
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your FreshSales account
+            pattern: '^[a-z0-9_-]+$'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your FreshSales account
+
 freshservice:
     display_name: FreshService
     categories:
@@ -1313,6 +1749,13 @@ freshservice:
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshservice.com
     docs: https://docs.nango.dev/integrations/all/freshservice
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your FreshService account
+            pattern: '^[a-z0-9_-]+$'
+
 front:
     display_name: Front
     categories:
@@ -1328,6 +1771,7 @@ front:
             response_path: _results
             link_path_in_response_body: _pagination.next
     docs: https://docs.nango.dev/integrations/all/front
+
 gainsight-cc:
     display_name: Gainsight
     categories:
@@ -1341,6 +1785,14 @@ gainsight-cc:
     proxy:
         base_url: https://api2-${connectionConfig.region}.insided.com
     docs: https://docs.nango.dev/integrations/all/gainsight-cc
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region of your Gainsight account
+            example: eu
+            pattern: '^[a-z]+$'
+
 garmin:
     display_name: Garmin
     categories:
@@ -1353,6 +1805,7 @@ garmin:
     proxy:
         base_url: https://apis.garmin.com
     docs: https://docs.nango.dev/integrations/all/garmin
+
 guru:
     display_name: Guru
     categories:
@@ -1361,6 +1814,7 @@ guru:
     proxy:
         base_url: https://api.getguru.com/api/v1
     docs: https://docs.nango.dev/integrations/all/guru
+
 github:
     display_name: GitHub
     categories:
@@ -1379,6 +1833,7 @@ github:
             limit_name_in_request: per_page
             link_rel_in_response_header: next
     docs: https://docs.nango.dev/integrations/all/github
+
 github-app:
     display_name: GitHub App
     categories:
@@ -1390,6 +1845,19 @@ github-app:
     token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     webhook_routing_script: githubAppWebhookRouting
     docs: https://docs.nango.dev/integrations/all/github
+    connection_config:
+        appPublicLink:
+            type: string
+            title: App Public Link
+            description: The public link of your GitHub App
+            format: uri
+            pattern: '^https?://.*$'
+        installation_id:
+            type: string
+            title: Installation ID
+            description: The installation ID of your GitHub App
+            example: '38631545'
+
 github-app-oauth:
     display_name: GitHub App (oauth)
     categories:
@@ -1405,6 +1873,19 @@ github-app-oauth:
     webhook_routing_script: githubAppOauthWebhookRouting
     post_connection_script: githubAppOauthPostConnection
     docs: https://docs.nango.dev/integrations/all/github
+    connection_config:
+        appPublicLink:
+            type: string
+            title: App Public Link
+            description: The public link of your GitHub App
+            format: uri
+            pattern: '^https?://.*$'
+        installation_id:
+            type: string
+            title: Installation ID
+            description: The installation ID of your GitHub App
+            example: '38631545'
+
 gitlab:
     display_name: GitLab
     categories:
@@ -1418,6 +1899,7 @@ gitlab:
     proxy:
         base_url: https://gitlab.com
     docs: https://docs.nango.dev/integrations/all/gitlab
+
 gong:
     display_name: Gong
     categories:
@@ -1426,6 +1908,7 @@ gong:
     proxy:
         base_url: https://api.gong.io
     docs: https://docs.nango.dev/integrations/all/gong
+
 gong-oauth:
     display_name: Gong (oauth)
     auth_mode: OAUTH2
@@ -1445,6 +1928,14 @@ gong-oauth:
     proxy:
         base_url: ${connectionConfig.api_base_url_for_customer} || https://api.gong.io
     docs: https://docs.nango.dev/integrations/all/gong
+    connection_config:
+        api_base_url_for_customer:
+            type: string
+            title: API Base URL
+            description: The base URL of your Gong account
+            format: uri
+            pattern: '^https?://.*$'
+
 google:
     display_name: Google
     auth_mode: OAUTH2
@@ -1463,6 +1954,7 @@ google:
             cursor_name_in_request: pageToken
             response_path: items
     docs: https://docs.nango.dev/integrations/all/google
+
 google-calendar:
     display_name: Google Calendar
     categories:
@@ -1477,6 +1969,7 @@ google-calendar:
             cursor_name_in_request: pageToken
             response_path: items
     docs: https://docs.nango.dev/integrations/all/google-calendar
+
 google-docs:
     display_name: Google Docs
     categories:
@@ -1485,6 +1978,7 @@ google-docs:
     proxy:
         base_url: https://docs.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-docs
+
 google-mail:
     display_name: Google Mail
     categories:
@@ -1493,6 +1987,7 @@ google-mail:
     proxy:
         base_url: https://gmail.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-mail
+
 google-sheet:
     display_name: Google Sheet
     categories:
@@ -1501,6 +1996,7 @@ google-sheet:
     proxy:
         base_url: https://sheets.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-sheet
+
 google-drive:
     display_name: Google Drive
     categories:
@@ -1508,6 +2004,7 @@ google-drive:
         - storage
     alias: google
     docs: https://docs.nango.dev/integrations/all/google-drive
+
 google-ads:
     display_name: Google Ads
     categories:
@@ -1523,6 +2020,7 @@ google-ads:
             cursor_name_in_request: pageToken
             response_path: results
     docs: https://docs.nango.dev/integrations/all/google-ads
+
 google-play:
     display_name: Google Play
     categories:
@@ -1541,6 +2039,7 @@ google-play:
     proxy:
         base_url: https://play.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-play
+
 gorgias:
     display_name: Gorgias
     categories:
@@ -1560,6 +2059,13 @@ gorgias:
     proxy:
         base_url: https://${connectionConfig.subdomain}.gorgias.com
     docs: https://docs.nango.dev/integrations/all/gorgias
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Gorgias account
+            pattern: '^[a-z0-9_-]+$'
+
 greenhouse:
     display_name: Greenhouse
     categories:
@@ -1576,6 +2082,13 @@ greenhouse:
             limit_name_in_request: per_page
             link_rel_in_response_header: next
     docs: https://docs.nango.dev/integrations/all/greenhouse
+    connection_config:
+        resource:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Greenhouse account
+            pattern: '^[a-z0-9_-]+$'
+
 greenhouse-basic:
     display_name: Greenhouse (basic auth)
     categories:
@@ -1590,6 +2103,13 @@ greenhouse-basic:
             limit_name_in_request: per_page
             link_rel_in_response_header: next
     docs: https://docs.nango.dev/integrations/all/greenhouse
+    connection_config:
+        resource:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Greenhouse account
+            pattern: '^[a-z0-9_-]+$'
+
 gumroad:
     display_name: Gumroad
     categories:
@@ -1608,6 +2128,7 @@ gumroad:
     proxy:
         base_url: https://api.gumroad.com
     docs: https://docs.nango.dev/integrations/all/gumroad
+
 gusto:
     display_name: Gusto
     categories:
@@ -1624,6 +2145,7 @@ gusto:
     proxy:
         base_url: https://api.gusto.com
     docs: https://docs.nango.dev/integrations/all/gusto
+
 gusto-demo:
     display_name: Gusto (demo)
     auth_mode: OAUTH2
@@ -1638,12 +2160,14 @@ gusto-demo:
     proxy:
         base_url: https://api.gusto-demo.com
     docs: https://docs.nango.dev/integrations/all/gusto
+
 hackerrank-work:
     display_name: HackerRank Work
     auth_mode: BASIC
     proxy:
         base_url: https://www.hackerrank.com
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
+
 harvest:
     display_name: Harvest
     categories:
@@ -1665,6 +2189,12 @@ harvest:
             after: 'Retry-After'
         base_url: https://api.harvestapp.com
     docs: https://docs.nango.dev/integrations/all/harvest
+    connection_config:
+        appDetails:
+            type: string
+            title: App Details
+            description: The details of your app
+
 health-gorilla:
     display_name: Health Gorilla
     auth_mode: OAUTH2
@@ -1679,6 +2209,7 @@ health-gorilla:
     proxy:
         base_url: https://healthgorilla.com
     docs: https://docs.nango.dev/integrations/all/healthgorilla
+
 hibob-service-user:
     display_name: Hibob Service User
     categories:
@@ -1690,6 +2221,7 @@ hibob-service-user:
             method: GET
             endpoint: /v1/company/named-lists
     docs: https://docs.nango.dev/integrations/all/hibob
+
 highlevel:
     display_name: HighLevel
     categories:
@@ -1706,6 +2238,7 @@ highlevel:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/highlevel
+
 highlevel-white-label:
     display_name: HighLevel (white label)
     categories:
@@ -1722,6 +2255,7 @@ highlevel-white-label:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/highlevel
+
 holded:
     display_name: Holded
     categories:
@@ -1737,6 +2271,12 @@ holded:
             method: GET
             endpoint: /invoicing/v1/contacts
     docs: https://docs.nango.dev/integrations/all/holded
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Holded account
+
 hubspot:
     display_name: HubSpot
     categories:
@@ -1760,6 +2300,7 @@ hubspot:
             cursor_name_in_request: after
             response_path: results
     docs: https://docs.nango.dev/integrations/all/hubspot
+
 insightly:
     display_name: Insightly
     categories:
@@ -1771,6 +2312,13 @@ insightly:
             method: GET
             endpoint: /v3.1/Contacts
     docs: https://docs.nango.dev/integrations/all/insightly
+    connection_config:
+        pod:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Insightly account
+            pattern: '^[a-z0-9_-]+$'
+
 instantly:
     display_name: Instantly
     categories:
@@ -1780,6 +2328,12 @@ instantly:
     proxy:
         base_url: https://api.instantly.ai/api
     docs: https://docs.nango.dev/integrations/all/instantly
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Instantly account
+
 instagram:
     display_name: Instagram
     categories:
@@ -1791,6 +2345,7 @@ instagram:
     proxy:
         base_url: https://graph.instagram.com
     docs: https://docs.nango.dev/integrations/all/instagram
+
 intercom:
     display_name: Intercom
     categories:
@@ -1804,6 +2359,7 @@ intercom:
     proxy:
         base_url: https://api.intercom.io
     docs: https://docs.nango.dev/integrations/all/intercom
+
 intuit:
     display_name: Intuit
     categories:
@@ -1814,6 +2370,7 @@ intuit:
     proxy:
         base_url: https://quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/intuit
+
 jira:
     display_name: Jira
     categories:
@@ -1839,6 +2396,7 @@ jira:
     post_connection_script: jiraPostConnection
     webhook_routing_script: jiraWebhookRouting
     docs: https://docs.nango.dev/integrations/all/jira
+
 jira-basic:
     display_name: Jira (basic auth)
     categories:
@@ -1853,6 +2411,13 @@ jira-basic:
             method: GET
             endpoint: /rest/api/3/events
     docs: https://docs.nango.dev/integrations/all/jira
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Jira account
+            pattern: '^[a-z0-9_-]+$'
+
 jira-data-center:
     display_name: Jira Data Center
     categories:
@@ -1866,6 +2431,14 @@ jira-data-center:
     connection_configuration:
         - endpointURL
     docs: https://docs.nango.dev/integrations/all/jira-data-center
+    connection_config:
+        endpointURL:
+            type: string
+            title: Domain
+            description: The domain of your Jira Data Center account
+            pattern: '^https://[a-z0-9.-]+.atlassian.net$'
+            example: https://foobar.atlassian.net
+
 jotform:
     display_name: Jotform
     categories:
@@ -1876,6 +2449,12 @@ jotform:
         headers:
             APIKEY: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/jotform
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Jotform account
+
 helpscout-docs:
     display_name: Help Scout Docs
     auth_mode: BASIC
@@ -1884,6 +2463,7 @@ helpscout-docs:
             after: 'X-RateLimit-Reset'
         base_url: https://docsapi.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
+
 helpscout-mailbox:
     display_name: Help Scout Mailbox
     auth_mode: OAUTH2
@@ -1900,6 +2480,7 @@ helpscout-mailbox:
             after: 'X-RateLimit-Retry-After'
         base_url: https://api.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
+
 keap:
     display_name: Keap
     categories:
@@ -1916,6 +2497,7 @@ keap:
     proxy:
         base_url: https://api.infusionsoft.com
     docs: https://docs.nango.dev/integrations/all/keap
+
 klipfolio:
     display_name: Klipfolio
     categories:
@@ -1930,6 +2512,12 @@ klipfolio:
             method: GET
             endpoint: /api/1.0/profile
     docs: https://docs.nango.dev/integrations/all/klipfolio
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Klipfolio account
+
 klaviyo:
     display_name: Klaviyo
     categories:
@@ -1946,6 +2534,12 @@ klaviyo:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/klaviyo
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Klaviyo account
+
 klaviyo-oauth:
     display_name: Klaviyo (oauth)
     categories:
@@ -1968,6 +2562,7 @@ klaviyo-oauth:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/klaviyo
+
 kustomer:
     display_name: Kustomer
     categories:
@@ -1980,6 +2575,18 @@ kustomer:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/kustomer
+    connection_config:
+        extension:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Kustomer account
+            pattern: '^[a-z0-9_-]+$'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Kustomer account
+
 lessonly:
     display_name: Lessonly
     categories:
@@ -1988,6 +2595,7 @@ lessonly:
     proxy:
         base_url: https://api.lessonly.com/api
     docs: https://docs.nango.dev/integrations/all/lessonly
+
 lever:
     display_name: Lever
     categories:
@@ -2002,12 +2610,14 @@ lever:
     proxy:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
+
 lever-basic:
     display_name: Lever (basic auth)
     auth_mode: BASIC
     proxy:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
+
 lever-sandbox:
     display_name: Lever (sandbox)
     auth_mode: OAUTH2
@@ -2020,12 +2630,14 @@ lever-sandbox:
     proxy:
         base_url: https://api.sandbox.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
+
 lever-basic-sandbox:
     display_name: Lever (basic auth) (sandbox)
     auth_mode: BASIC
     proxy:
         base_url: https://api.sandbox.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
+
 linear:
     display_name: Linear
     categories:
@@ -2044,6 +2656,7 @@ linear:
     post_connection_script: linearPostConnection
     webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/linear
+
 linkedin:
     display_name: LinkedIn
     categories:
@@ -2056,6 +2669,7 @@ linkedin:
     proxy:
         base_url: https://api.linkedin.com
     docs: https://docs.nango.dev/integrations/all/linkedin
+
 linkhut:
     display_name: LinkHut
     auth_mode: OAUTH2
@@ -2064,6 +2678,7 @@ linkhut:
     proxy:
         base_url: https://api.ln.ht
     docs: https://docs.nango.dev/integrations/all/linkhut
+
 luma:
     display_name: Luma
     categories:
@@ -2078,6 +2693,12 @@ luma:
             method: GET
             endpoint: /public/v1/user/get-self
     docs: https://docs.nango.dev/integrations/all/luma
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Luma account
+
 listmonk:
     display_name: Listmonk
     categories:
@@ -2093,6 +2714,13 @@ listmonk:
             method: GET
             endpoint: /lists
     docs: https://docs.nango.dev/integrations/all/listmonk
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain of your Listmonk account
+            format: hostname
+
 make:
     display_name: Make
     categories:
@@ -2106,6 +2734,18 @@ make:
             method: GET
             endpoint: /users/me
     docs: https://docs.nango.dev/integrations/all/make
+    connection_config:
+        environmentUrl:
+            type: string
+            title: Domain
+            description: The domain of your Make account
+            format: hostname
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Make account
+
 mailgun:
     display_name: Mailgun
     categories:
@@ -2117,6 +2757,14 @@ mailgun:
             method: GET
             endpoint: /v4/domains
     docs: https://docs.nango.dev/integrations/all/mailgun
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region of your Mailgun account
+            pattern: '^[a-z]+$'
+            example: us
+
 mailchimp:
     display_name: Mailchimp
     categories:
@@ -2128,6 +2776,7 @@ mailchimp:
     authorization_params:
         response_type: code
     docs: https://docs.nango.dev/integrations/all/mailchimp
+
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:
     display_name: Manatal
@@ -2148,6 +2797,12 @@ manatal:
             link_path_in_response_body: next
             response_path: results
     docs: https://docs.nango.dev/integrations/all/manatal
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Manatal account
+
 marketo:
     display_name: Marketo
     auth_mode: OAUTH2_CC
@@ -2157,6 +2812,18 @@ marketo:
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
+    connection_config:
+        endpointURL:
+            type: string
+            title: Domain
+            description: The domain of your Marketo account
+            format: hostname
+        identityURL:
+            type: string
+            title: Identity URL
+            description: The identity URL of your Marketo account
+            format: hostname
+
 medallia:
     display_name: Medallia
     categories:
@@ -2173,6 +2840,22 @@ medallia:
             after: 'X-RateLimit-Reset'
         base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://docs.nango.dev/integrations/all/medallia
+    connection_config:
+        reportingInstance:
+            type: string
+            title: Domain
+            description: The domain of your Medallia account
+            format: hostname
+        tenantName:
+            type: string
+            title: Tenant Name
+            description: The tenant name of your Medallia account
+        gatewayUrl:
+            type: string
+            title: Gateway URL
+            description: The gateway URL of your Medallia account
+            format: hostname
+
 metabase:
     display_name: Metabase
     categories:
@@ -2186,6 +2869,19 @@ metabase:
             method: GET
             endpoint: /api/database
     docs: https://docs.nango.dev/integrations/all/metabase
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain (without the extension) of your Metabase account
+            pattern: '^[a-z0-9.-]+$'
+            example: metabase
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Metabase account
+
 microsoft:
     display_name: Microsoft
     auth_mode: OAUTH2
@@ -2208,6 +2904,7 @@ microsoft:
             after: 'Retry-After'
         decompress: true
     docs: https://docs.nango.dev/integrations/all/microsoft
+
 microsoft-teams:
     display_name: Microsoft Teams
     categories:
@@ -2217,6 +2914,7 @@ microsoft-teams:
     webhook_routing_script: microsoftTeamsWebhookRouting
     post_connection_script: microsoftTeamsPostConnection
     docs: https://docs.nango.dev/integrations/all/microsoft-teams
+
 microsoft-tenant-specific:
     display_name: Microsoft (tenant)
     categories:
@@ -2236,6 +2934,12 @@ microsoft-tenant-specific:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/microsoft-tenant-specific
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant of your Microsoft account
+
 microsoft-ads:
     display_name: Microsoft Ads
     alias: microsoft
@@ -2250,12 +2954,14 @@ microsoft-ads:
         grant_type: refresh_token
         scope: https://ads.microsoft.com/msads.manage
     docs: https://docs.nango.dev/integrations/all/microsoft-ads
+
 microsoft-entra-id:
     display_name: Microsoft Entra ID
     categories:
         - other
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/microsoft-entra-id
+
 microsoft-power-bi:
     display_name: Microsoft Power BI
     categories:
@@ -2264,6 +2970,7 @@ microsoft-power-bi:
     proxy:
         base_url: https://api.powerbi.com
     docs: https://docs.nango.dev/integrations/all/microsoft-power-bi
+
 mixpanel:
     display_name: Mixpanel
     categories:
@@ -2272,6 +2979,7 @@ mixpanel:
     proxy:
         base_url: https://mixpanel.com
     docs: https://docs.nango.dev/integrations/all/mixpanel
+
 miro:
     display_name: Miro
     categories:
@@ -2289,6 +2997,7 @@ miro:
     proxy:
         base_url: https://api.miro.com
     docs: https://docs.nango.dev/integrations/all/miro
+
 monday:
     display_name: Monday
     categories:
@@ -2298,6 +3007,7 @@ monday:
     authorization_url: https://auth.monday.com/oauth2/authorize
     token_url: https://auth.monday.com/oauth2/token
     docs: https://docs.nango.dev/integrations/all/monday
+
 mural:
     display_name: Mural
     categories:
@@ -2314,6 +3024,7 @@ mural:
     proxy:
         base_url: https://app.mural.co
     docs: https://docs.nango.dev/integrations/all/mural
+
 nationbuilder:
     display_name: NationBuilder
     auth_mode: OAUTH2
@@ -2328,6 +3039,12 @@ nationbuilder:
     default_scopes:
         - default
     docs: https://docs.nango.dev/integrations/all/nationbuilder
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: The account ID of your NationBuilder account
+
 netsuite:
     display_name: NetSuite
     categories:
@@ -2345,11 +3062,20 @@ netsuite:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/netsuite
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: The account ID of your NetSuite account
+            pattern: '^[a-zA-Z0-9-_]+$'
+            example: tstdrv231585
+
 netsuite-tba:
     alias: netsuite
     display_name: NetSuite (tba)
     auth_mode: TBA
     docs: https://docs.nango.dev/integrations/all/netsuite
+
 next-cloud-ocs:
     display_name: Next Cloud OCS
     auth_mode: BASIC
@@ -2358,6 +3084,13 @@ next-cloud-ocs:
         headers:
             'OCS-APIRequest': 'true'
     docs: http://docs.nango.dev/integrations/all/next-cloud
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain of your Next Cloud account
+            format: hostname
+
 notion:
     display_name: Notion
     categories:
@@ -2384,6 +3117,7 @@ notion:
             limit_name_in_request: page_size
             response_path: results
     docs: https://docs.nango.dev/integrations/all/notion
+
 odoo:
     display_name: Odoo
     categories:
@@ -2400,6 +3134,13 @@ odoo:
     proxy:
         base_url: https://${connectionConfig.serverUrl}
     docs: https://docs.nango.dev/integrations/all/odoo
+    connection_config:
+        serverUrl:
+            type: string
+            title: Domain
+            description: The domain of your Odoo account
+            format: hostname
+
 okta:
     display_name: Okta
     auth_mode: OAUTH2
@@ -2413,6 +3154,13 @@ okta:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/okta
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Okta account
+            pattern: '^[a-z0-9_-]+$'
+
 one-drive:
     display_name: One Drive
     categories:
@@ -2420,12 +3168,14 @@ one-drive:
         - storage
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/one-drive
+
 one-note:
     display_name: One Note
     categories:
         - productivity
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/one-note
+
 openai:
     display_name: OpenAI
     categories:
@@ -2443,6 +3193,12 @@ openai:
         retry:
             after: 'x-ratelimit-reset-requests'
     docs: https://docs.nango.dev/integrations/all/openai
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your OpenAI account
+
 ory:
     display_name: Ory
     categories:
@@ -2455,6 +3211,12 @@ ory:
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/ory
+    connection_config:
+        projectSlug:
+            type: string
+            title: Project Slug
+            description: The project slug of your Ory project
+
 osu:
     display_name: Osu
     categories:
@@ -2473,6 +3235,7 @@ osu:
     proxy:
         base_url: https://osu.ppy.sh
     docs: https://docs.nango.dev/integrations/all/osu
+
 oura:
     display_name: Oura
     categories:
@@ -2490,12 +3253,14 @@ oura:
     proxy:
         base_url: https://api.ouraring.com
     docs: https://docs.nango.dev/integrations/all/oura
+
 outlook:
     display_name: Outlook
     categories:
         - communication
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/outlook
+
 outreach:
     display_name: Outreach
     categories:
@@ -2512,6 +3277,7 @@ outreach:
     proxy:
         base_url: https://api.outreach.io
     docs: https://docs.nango.dev/integrations/all/outreach
+
 pagerduty:
     display_name: PagerDuty
     categories:
@@ -2522,6 +3288,7 @@ pagerduty:
     proxy:
         base_url: https://api.pagerduty.com
     docs: https://docs.nango.dev/integrations/all/pagerduty
+
 pandadoc:
     display_name: Pandadoc
     categories:
@@ -2538,6 +3305,7 @@ pandadoc:
     proxy:
         base_url: https://api.pandadoc.com
     docs: https://docs.nango.dev/integrations/all/pandadoc
+
 payfit:
     display_name: Payfit
     categories:
@@ -2550,6 +3318,7 @@ payfit:
     token_params:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/payfit
+
 paypal:
     display_name: Paypal
     categories:
@@ -2565,6 +3334,7 @@ paypal:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/paypal
+
 paypal-sandbox:
     display_name: Paypal (sandbox)
     auth_mode: OAUTH2
@@ -2578,6 +3348,7 @@ paypal-sandbox:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/paypal
+
 pendo:
     display_name: Pendo
     categories:
@@ -2588,6 +3359,12 @@ pendo:
         headers:
             x-pendo-integration-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/pendo
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pendo account
+
 pennylane:
     display_name: Pennylane
     categories:
@@ -2608,6 +3385,7 @@ pennylane:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/pennylane
+
 peopledatalabs:
     display_name: People Data Labs
     categories:
@@ -2618,6 +3396,12 @@ peopledatalabs:
         query:
             api_key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/peopledatalabs
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your People Data Labs account
+
 personio:
     display_name: Personio
     categories:
@@ -2631,6 +3415,16 @@ personio:
     token_url: https://api.personio.de/v1/auth
     body_format: json
     docs: https://docs.nango.dev/integrations/all/personio
+    connection_config:
+        partnerId:
+            type: string
+            title: Partner ID
+            description: The partner ID of your Personio account
+        appId:
+            type: string
+            title: App ID
+            description: The app ID of your Personio account
+
 personio-recruiting:
     display_name: Personio Recruiting
     categories:
@@ -2651,6 +3445,29 @@ personio-recruiting:
                 accept: application/xml
                 content-type: xml
     docs: https://docs.nango.dev/integrations/all/personio
+    connection_config:
+        companyId:
+            type: string
+            title: Company ID
+            description: The company ID of your Personio account
+        company:
+            type: string
+            title: Company Name
+            description: The company name of your Workday account
+        partnerId:
+            type: string
+            title: Partner ID
+            description: The partner ID of your Personio account
+        appId:
+            type: string
+            title: App ID
+            description: The app ID of your Personio account
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pingboard account
+
 pingboard:
     display_name: Pingboard
     categories:
@@ -2663,6 +3480,7 @@ pingboard:
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/pingboard
+
 pinterest:
     display_name: Pinterest
     categories:
@@ -2683,6 +3501,7 @@ pinterest:
     proxy:
         base_url: https://api.pinterest.com
     docs: https://docs.nango.dev/integrations/all/pinterest
+
 pipedrive:
     display_name: Pipedrive
     categories:
@@ -2701,6 +3520,14 @@ pipedrive:
             response_path: data
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/pipedrive
+    connection_config:
+        api_domain:
+            type: string
+            title: API URL
+            description: The API URL of your Pipedrive account
+            format: uri
+            pattern: '^https?://.*$'
+
 pivotaltracker:
     display_name: Pivotal Tracker
     categories:
@@ -2714,6 +3541,12 @@ pivotaltracker:
             method: GET
             endpoint: /accounts
     docs: https://docs.nango.dev/integrations/all/pivotaltracker
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pivotal Tracker account
+
 podium:
     display_name: Podium
     categories:
@@ -2738,8 +3571,14 @@ podium:
         retry:
             after: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/podium
+    connection_config:
+        apiVersion:
+            type: string
+            title: API Version
+            description: The API version of your Podium account
+
 posthog:
-    display_name: Posthog
+    display_name: PostHog
     categories:
         - dev-tools
     auth_mode: API_KEY
@@ -2751,6 +3590,18 @@ posthog:
             method: GET
             endpoint: /api/users/@me
     docs: https://docs.nango.dev/integrations/all/posthog
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your PostHog account
+            pattern: '^[a-z0-9_-]+$'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your PostHog account
+
 productboard:
     display_name: Productboard
     categories:
@@ -2770,6 +3621,7 @@ productboard:
             X-Version: '1'
         base_url: https://api.productboard.com
     docs: https://docs.nango.dev/integrations/all/productboard
+
 qualtrics:
     display_name: Qualtrics
     categories:
@@ -2780,6 +3632,13 @@ qualtrics:
     proxy:
         base_url: https://${connectionConfig.subdomain}.qualtrics.com
     docs: https://docs.nango.dev/integrations/all/qualtrics
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Qualtrics account
+            pattern: '^[a-z0-9_-]+$'
+
 quickbooks:
     display_name: Quickbooks
     categories:
@@ -2792,6 +3651,7 @@ quickbooks:
     proxy:
         base_url: https://quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
+
 ramp:
     display_name: Ramp
     categories:
@@ -2803,6 +3663,7 @@ ramp:
     proxy:
         base_url: https://api.ramp.com
     docs: https://docs.nango.dev/integrations/all/ramp
+
 ramp-sandbox:
     display_name: Ramp (sandbox)
     auth_mode: OAUTH2
@@ -2812,6 +3673,7 @@ ramp-sandbox:
     proxy:
         base_url: https://demo-api.ramp.com
     docs: https://docs.nango.dev/integrations/all/ramp
+
 reddit:
     display_name: Reddit
     categories:
@@ -2825,6 +3687,7 @@ reddit:
     proxy:
         base_url: https://oauth.reddit.com
     docs: https://docs.nango.dev/integrations/all/reddit
+
 refiner:
     display_name: Refiner
     categories:
@@ -2835,6 +3698,12 @@ refiner:
             Authorization: Bearer ${apiKey}
         base_url: https://api.refiner.io/v1
     docs: https://docs.nango.dev/integrations/all/refiner
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Refiner account
+
 replicate:
     display_name: Replicate
     auth_mode: API_KEY
@@ -2843,6 +3712,12 @@ replicate:
             Authorization: Bearer ${apiKey}
         base_url: https://api.replicate.com
     docs: https://docs.nango.dev/integrations/all/replicate
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Replicate account
+
 ring-central:
     display_name: RingCentral
     categories:
@@ -2860,6 +3735,7 @@ ring-central:
     proxy:
         base_url: https://platform.ringcentral.com
     docs: https://docs.nango.dev/integrations/all/ring-central
+
 ring-central-sandbox:
     display_name: RingCentral (sandbox)
     auth_mode: OAUTH2
@@ -2875,6 +3751,7 @@ ring-central-sandbox:
     proxy:
         base_url: https://platform.devtest.ringcentral.com
     docs: https://docs.nango.dev/integrations/all/ring-central
+
 segment:
     display_name: Segment
     categories:
@@ -2887,6 +3764,7 @@ segment:
     proxy:
         base_url: https://api.segment.io
     docs: https://docs.nango.dev/integrations/all/segment
+
 sage:
     display_name: Sage
     categories:
@@ -2900,6 +3778,7 @@ sage:
     proxy:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
+
 salesforce:
     display_name: Salesforce
     categories:
@@ -2918,6 +3797,14 @@ salesforce:
     webhook_routing_script: salesforceWebhookRouting
     post_connection_script: salesforcePostConnection
     docs: https://docs.nango.dev/integrations/all/salesforce
+    connection_config:
+        instance_url:
+            type: string
+            title: Instance URL
+            description: The instance URL of your Salesforce account
+            format: uri
+            pattern: '^https?://.*$'
+
 salesforce-sandbox:
     display_name: Salesforce (sandbox)
     auth_mode: OAUTH2
@@ -2930,6 +3817,14 @@ salesforce-sandbox:
     proxy:
         base_url: ${connectionConfig.instance_url}
     docs: https://docs.nango.dev/integrations/all/salesforce
+    connection_config:
+        instance_url:
+            type: string
+            title: Instance URL
+            description: The instance URL of your Salesforce account
+            format: uri
+            pattern: '^https?://.*$'
+
 salesforce-experience-cloud:
     display_name: Salesforce Experience Cloud
     auth_mode: OAUTH2
@@ -2942,6 +3837,19 @@ salesforce-experience-cloud:
     proxy:
         base_url: ${connectionConfig.instance_url}
     docs: https://docs.nango.dev/integrations/all/salesforce-experience-cloud
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Salesforce Experience Cloud account
+            pattern: '^[a-z0-9_-]+$'
+        instance_url:
+            type: string
+            title: Instance URL
+            description: The instance URL of your Salesforce Experience Cloud account
+            format: uri
+            pattern: '^https?://.*$'
+
 salesloft:
     display_name: Salesloft
     categories:
@@ -2952,6 +3860,7 @@ salesloft:
     proxy:
         base_url: https://api.salesloft.com
     docs: https://docs.nango.dev/integrations/all/salesloft
+
 sendgrid:
     display_name: Sendgrid
     categories:
@@ -2962,6 +3871,11 @@ sendgrid:
             Authorization: Bearer ${apiKey}
         base_url: https://api.sendgrid.com
     docs: https://docs.nango.dev/integrations/all/sendgrid
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Sendgrid account
 servicem8:
     display_name: ServiceM8
     categories:
@@ -2979,6 +3893,7 @@ servicem8:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/servicem8
+
 signnow:
     display_name: SignNow
     categories:
@@ -2995,6 +3910,7 @@ signnow:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/signnow
+
 signnow-sandbox:
     display_name: SignNow (sandbox)
     categories:
@@ -3011,6 +3927,7 @@ signnow-sandbox:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/signnow
+
 servicenow:
     display_name: ServiceNow
     categories:
@@ -3025,6 +3942,13 @@ servicenow:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/servicenow
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your ServiceNow account
+            pattern: '^[a-z0-9_-]+$'
+
 sharepoint-online:
     display_name: SharePoint Online
     categories:
@@ -3032,6 +3956,7 @@ sharepoint-online:
         - communication
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/sharepoint-online
+
 shipstation:
     display_name: Shipstation
     categories:
@@ -3045,6 +3970,7 @@ shipstation:
             method: GET
             endpoint: /users
     docs: https://docs.nango.dev/integrations/all/shipstation
+
 shopify:
     display_name: Shopify
     categories:
@@ -3057,6 +3983,13 @@ shopify:
         headers:
             X-Shopify-Access-Token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/shopify
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Shopify account
+            pattern: '^[a-z0-9_-]+$'
+
 shortcut:
     display_name: Shortcut
     categories:
@@ -3068,6 +4001,12 @@ shortcut:
         headers:
             Shortcut-Token: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/shortcut
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Shortcut account
+
 slack:
     display_name: Slack
     categories:
@@ -3090,6 +4029,7 @@ slack:
             limit_name_in_request: limit
     webhook_routing_script: slackWebhookRouting
     docs: https://docs.nango.dev/integrations/all/slack
+
 smartrecruiters-api-key:
     display_name: Smartrecruiters (api key)
     auth_mode: API_KEY
@@ -3098,6 +4038,12 @@ smartrecruiters-api-key:
         headers:
             X-SmartToken: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/smartrecruiters
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Smartrecruiters account
+
 smartsheet:
     display_name: Smartsheet
     auth_mode: OAUTH2
@@ -3110,6 +4056,7 @@ smartsheet:
     proxy:
         base_url: https://api.smartsheet.com
     docs: https://docs.nango.dev/integrations/all/smartsheet
+
 smugmug:
     display_name: Smugmug
     auth_mode: OAUTH1
@@ -3121,6 +4068,7 @@ smugmug:
     proxy:
         base_url: https://www.smugmug.com
     docs: https://docs.nango.dev/integrations/all/smugmug
+
 snowflake:
     display_name: Snowflake
     categories:
@@ -3138,6 +4086,13 @@ snowflake:
     proxy:
         base_url: https://{connectionConfig.snowflake_account_url}
     docs: https://docs.nango.dev/integrations/all/snowflake
+    connection_config:
+        snowflake_account_url:
+            type: string
+            title: Domain
+            description: The domain of your Snowflake account
+            format: hostname
+
 splitwise:
     display_name: Splitwise
     categories:
@@ -3149,6 +4104,7 @@ splitwise:
     proxy:
         base_url: https://secure.splitwise.com
     docs: https://docs.nango.dev/integrations/all/splitwise
+
 spotify:
     display_name: Spotify
     categories:
@@ -3178,6 +4134,7 @@ spotify-oauth2-cc:
     proxy:
         base_url: https://api.spotify.com
     docs: https://docs.nango.dev/integrations/all/spotify
+
 squarespace:
     display_name: Squarespace
     categories:
@@ -3199,6 +4156,12 @@ squarespace:
         headers:
             User-Agent: ${connectionConfig.customappDescription}
     docs: https://docs.nango.dev/integrations/all/squarespace
+    connection_config:
+        customappDescription:
+            type: string
+            title: User Agent
+            description: The user agent of your custom app
+
 squareup:
     display_name: Squareup
     categories:
@@ -3218,6 +4181,7 @@ squareup:
     proxy:
         base_url: https://connect.squareup.com
     docs: https://docs.nango.dev/integrations/all/squareup
+
 squareup-sandbox:
     display_name: Squareup (sandbox)
     auth_mode: OAUTH2
@@ -3234,6 +4198,7 @@ squareup-sandbox:
     proxy:
         base_url: https://connect.squareupsandbox.com
     docs: https://docs.nango.dev/integrations/all/squareup
+
 stackexchange:
     display_name: Stack Exchange
     categories:
@@ -3247,6 +4212,7 @@ stackexchange:
     proxy:
         base_url: https://api.stackexchange.com
     docs: https://docs.nango.dev/integrations/all/stackexchange
+
 strava:
     display_name: Strava (mobile)
     categories:
@@ -3266,6 +4232,7 @@ strava:
     proxy:
         base_url: https://www.strava.com
     docs: https://docs.nango.dev/integrations/all/strava
+
 strava-web:
     display_name: Strava (web)
     categories:
@@ -3285,6 +4252,7 @@ strava-web:
     proxy:
         base_url: https://www.strava.com
     docs: https://docs.nango.dev/integrations/all/strava
+
 stripe:
     display_name: Stripe
     categories:
@@ -3293,6 +4261,7 @@ stripe:
     authorization_url: https://connect.stripe.com/oauth/authorize
     token_url: https://connect.stripe.com/oauth/token
     docs: https://docs.nango.dev/integrations/all/stripe
+
 stripe-express:
     display_name: Stripe Express
     categories:
@@ -3305,6 +4274,7 @@ stripe-express:
     proxy:
         base_url: https://api.stripe.com
     docs: https://docs.nango.dev/integrations/all/stripe-express
+
 stripe-app:
     display_name: Stripe App
     categories:
@@ -3318,6 +4288,7 @@ stripe-app:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/stripe-app
+
 stripe-app-sandbox:
     display_name: Stripe App (sandbox)
     auth_mode: OAUTH2
@@ -3329,6 +4300,12 @@ stripe-app-sandbox:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/stripe-app
+    connection_config:
+        appDomain:
+            type: string
+            title: App Domain
+            description: The domain of your Stripe app
+
 survey-monkey:
     display_name: SurveyMonkey
     categories:
@@ -3344,6 +4321,7 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+
 tableau:
     display_name: Tableau
     categories:
@@ -3356,6 +4334,17 @@ tableau:
             Content-Type: application/json
         base_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}
     docs: https://docs.nango.dev/integrations/all/tableau
+    connection_config:
+        myServer:
+            type: string
+            title: Domain
+            description: The domain of your Tableau instance
+            format: hostname
+        version:
+            type: string
+            title: API Version
+            description: The version of the Tableau API to use
+
 teamtailor:
     display_name: Teamtailor
     categories:
@@ -3369,6 +4358,18 @@ teamtailor:
             Authorization: Token token=${apiKey}
             X-Api-Version: '20210218'
     docs: https://docs.nango.dev/integrations/all/teamtailor
+    connection_config:
+        extension:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Teamtailor instance
+            pattern: '^[a-z0-9_-]+$'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Teamtailor account
+
 teamwork:
     display_name: Teamwork
     categories:
@@ -3382,6 +4383,7 @@ teamwork:
     proxy:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://docs.nango.dev/integrations/all/teamwork
+
 ticktick:
     display_name: TickTick
     categories:
@@ -3394,6 +4396,7 @@ ticktick:
     proxy:
         base_url: https://api.ticktick.com
     docs: https://docs.nango.dev/integrations/all/ticktick
+
 tiktok-accounts:
     display_name: TikTok Accounts
     categories:
@@ -3414,6 +4417,7 @@ tiktok-accounts:
         grant_type: refresh_token
     scope_separator: ','
     docs: https://docs.nango.dev/integrations/all/tiktok-accounts
+
 tiktok-ads:
     display_name: TikTok Ads
     categories:
@@ -3428,6 +4432,7 @@ tiktok-ads:
     authorization_url_replacements:
         client_id: app_id
     docs: https://docs.nango.dev/integrations/all/tiktok-ads
+
 timely:
     display_name: Timely
     categories:
@@ -3443,6 +4448,7 @@ timely:
     proxy:
         base_url: https://api.timelyapp.com
     docs: https://docs.nango.dev/integrations/all/timely
+
 tremendous:
     display_name: Tremendous
     categories:
@@ -3460,6 +4466,7 @@ tremendous:
     proxy:
         base_url: https://api.tremendous.com/api/v2
     docs: https://docs.nango.dev/integrations/all/tremendous
+
 tremendous-sandbox:
     display_name: Tremendous (sandbox)
     categories:
@@ -3477,6 +4484,7 @@ tremendous-sandbox:
     proxy:
         base_url: https://testflight.tremendous.com/api/v2
     docs: https://docs.nango.dev/integrations/all/tremendous
+
 trello:
     display_name: Trello
     categories:
@@ -3493,6 +4501,7 @@ trello:
     proxy:
         base_url: https://api.trello.com
     docs: https://docs.nango.dev/integrations/all/trello
+
 tsheetsteam:
     display_name: TSheets
     categories:
@@ -3511,6 +4520,7 @@ tsheetsteam:
     proxy:
         base_url: https://rest.tsheets.com/api/v1
     docs: https://docs.nango.dev/integrations/all/tsheetsteam
+
 todoist:
     display_name: Todoist
     categories:
@@ -3523,6 +4533,7 @@ todoist:
     proxy:
         base_url: https://api.todoist.com
     docs: https://docs.nango.dev/integrations/all/todoist
+
 tumblr:
     display_name: Tumblr
     categories:
@@ -3541,6 +4552,7 @@ tumblr:
     proxy:
         base_url: https://api.tumblr.com/v2
     docs: https://docs.nango.dev/integrations/all/tumblr
+
 twitch:
     display_name: Twitch
     categories:
@@ -3561,6 +4573,7 @@ twitch:
     proxy:
         base_url: https://api.twitch.tv
     docs: https://docs.nango.dev/integrations/all/twitch
+
 twitter:
     display_name: Twitter (v1)
     categories:
@@ -3611,6 +4624,7 @@ twitter-oauth2-cc:
     proxy:
         base_url: https://api.twitter.com
     docs: https://docs.nango.dev/integrations/all/twitter
+
 twinfield:
     display_name: Twinfield
     auth_mode: OAUTH2
@@ -3630,6 +4644,7 @@ twinfield:
         - offline_access
     disable_pkce: true
     docs: https://docs.nango.dev/integrations/all/twinfield
+
 typeform:
     display_name: Typeform
     categories:
@@ -3649,6 +4664,7 @@ typeform:
     proxy:
         base_url: https://api.typeform.com
     docs: https://docs.nango.dev/integrations/all/typeform
+
 uber:
     display_name: Uber
     auth_mode: OAUTH2
@@ -3663,6 +4679,7 @@ uber:
     proxy:
         base_url: https://api.uber.com
     docs: https://docs.nango.dev/integrations/all/uber
+
 unanet:
     display_name: Unanet
     categories:
@@ -3679,11 +4696,22 @@ unanet:
             method: GET
             endpoint: /api/projects
     docs: https://docs.nango.dev/integrations/all/unanet
+    connection_config:
+        firmId:
+            type: string
+            title: Firm ID
+            description: The firm ID of your Unanet instance
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key of your Unanet instance
+
 unauthenticated:
     display_name: Unauthenticated
     auth_mode: NONE
     webhook_routing_script: unauthenticatedWebhookRouting
     docs: https://docs.nango.dev/integrations/all/unauthenticated
+
 vimeo:
     display_name: Vimeo
     categories:
@@ -3700,6 +4728,7 @@ vimeo:
     proxy:
         base_url: https://api.vimeo.com
     docs: https://docs.nango.dev/integrations/all/vimeo
+
 vimeo-basic:
     display_name: Vimeo (basic auth)
     categories:
@@ -3711,6 +4740,7 @@ vimeo-basic:
             method: GET
             endpoint: /
     docs: https://docs.nango.dev/integrations/all/vimeo
+
 wakatime:
     display_name: Wakatime
     categories:
@@ -3722,6 +4752,7 @@ wakatime:
     proxy:
         base_url: https://wakatime.com
     docs: https://docs.nango.dev/integrations/all/wakatime
+
 wave-accounting:
     display_name: Wave Accounting
     categories:
@@ -3732,6 +4763,7 @@ wave-accounting:
     proxy:
         base_url: https://gql.waveapps.com
     docs: https://docs.nango.dev/integrations/all/wave-accounting
+
 wealthbox:
     display_name: Wealthbox
     categories:
@@ -3748,6 +4780,7 @@ wealthbox:
     proxy:
         base_url: https://api.crmworkspace.com
     docs: https://docs.nango.dev/integrations/all/wealthbox
+
 webflow:
     display_name: Webflow
     categories:
@@ -3764,6 +4797,7 @@ webflow:
     proxy:
         base_url: https://api.webflow.com
     docs: https://docs.nango.dev/integrations/all/webflow
+
 whoop:
     display_name: Whoop
     categories:
@@ -3782,6 +4816,7 @@ whoop:
             offset_name_in_request: nextToken
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/whoop
+
 wildix-pbx:
     display_name: Wildix PBX
     auth_mode: OAUTH2
@@ -3794,6 +4829,13 @@ wildix-pbx:
     docs: https://docs.nango.dev/integrations/all/wildix-pbx
     proxy:
         base_url: https://${connectionConfig.subdomain}.wildixin.com
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Wildix instance
+            pattern: '^[a-z0-9_-]+$'
+
 wordpress:
     display_name: WordPress
     categories:
@@ -3811,6 +4853,7 @@ wordpress:
     proxy:
         base_url: https://public-api.wordpress.com/rest/v1
     docs: https://docs.nango.dev/integrations/all/wordpress
+
 woocommerce:
     display_name: WooCommerce
     categories:
@@ -3824,6 +4867,12 @@ woocommerce:
             method: GET
             endpoint: /wp-json/wc/v3/customers
     docs: https://docs.nango.dev/integrations/all/woocommerce
+    connection_config:
+        storeURL:
+            type: string
+            title: Domain
+            description: The domain of your WooCommerce store
+
 workable:
     display_name: Workable
     categories:
@@ -3834,6 +4883,18 @@ workable:
             Authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
     docs: https://docs.nango.dev/integrations/all/workable
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Workable account
+            pattern: '^[a-z0-9_-]+$'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Workable account
+
 workday:
     display_name: Workday
     categories:
@@ -3842,6 +4903,13 @@ workday:
     proxy:
         base_url: https://${connectionConfig.subdomain}.workday.com
     docs: https://docs.nango.dev/integrations/all/workday
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Workday account
+            pattern: '^[a-z0-9_-]+$'
+
 wrike:
     display_name: Wrike
     categories:
@@ -3861,6 +4929,13 @@ wrike:
     proxy:
         base_url: https://${connectionConfig.host}/api/v4
     docs: https://docs.nango.dev/integrations/all/wrike
+    connection_config:
+        host:
+            type: string
+            title: Domain
+            description: The domain of your Wrike account
+            format: hostname
+
 xero:
     display_name: Xero
     categories:
@@ -3876,6 +4951,7 @@ xero:
         base_url: https://api.xero.com
     post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
+
 yahoo:
     display_name: Yahoo
     categories:
@@ -3884,6 +4960,7 @@ yahoo:
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
     token_url: https://api.login.yahoo.com/oauth2/get_token
     docs: https://docs.nango.dev/integrations/all/yahoo
+
 yandex:
     display_name: Yandex
     categories:
@@ -3900,12 +4977,14 @@ yandex:
     proxy:
         base_url: https://translate.yandex.net
     docs: https://docs.nango.dev/integrations/all/yandex
+
 youtube:
     display_name: YouTube
     alias: google
     categories:
         - video
     docs: https://docs.nango.dev/integrations/all/youtube
+
 zapier-nla:
     display_name: Zapier NLA
     auth_mode: OAUTH2
@@ -3914,6 +4993,7 @@ zapier-nla:
     proxy:
         base_url: https://nla.zapier.com
     docs: https://docs.nango.dev/integrations/all/zapier-nla
+
 zendesk:
     display_name: Zendesk
     categories:
@@ -3931,6 +5011,13 @@ zendesk:
             limit_name_in_request: per_page
             link_path_in_response_body: next_page
     docs: https://docs.nango.dev/integrations/all/zendesk
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Zendesk account
+            pattern: '^[a-z0-9_-]+$'
+
 zenefits:
     display_name: Zenefits
     categories:
@@ -3947,6 +5034,7 @@ zenefits:
     proxy:
         base_url: https://api.zenefits.com
     docs: https://docs.nango.dev/integrations/all/zenefits
+
 zoho:
     display_name: Zoho
     categories:
@@ -3965,14 +5053,23 @@ zoho:
             offset_name_in_request: page
             limit_name_in_request: per_page
     docs: https://docs.nango.dev/integrations/all/zoho
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho account
+            pattern: '^[a-z.]+$'
+
 zoho-books:
     display_name: Zoho Books
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-books
+
 zoho-crm:
     display_name: Zoho CRM
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-crm
+
 zoho-desk:
     display_name: Zoho Desk
     categories:
@@ -3980,18 +5077,21 @@ zoho-desk:
         - ticketing
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-desk
+
 zoho-inventory:
     display_name: Zoho Inventory
     categories:
         - e-commerce
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-inventory
+
 zoho-invoice:
     display_name: Zoho Invoice
     categories:
         - invoicing
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-invoice
+
 zoho-mail:
     display_name: Zoho Mail
     categories:
@@ -4001,10 +5101,18 @@ zoho-mail:
     proxy:
         base_url: https://mail.zoho.${connectionConfig.extension}
     docs: https://docs.nango.dev/integrations/all/zoho-mail
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho account
+            pattern: '^[a-z.]+$'
+
 zoho-bigin:
     display_name: Zoho Bigin
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-bigin
+
 zoho-people:
     display_name: Zoho People
     categories:
@@ -4013,6 +5121,7 @@ zoho-people:
     proxy:
         base_url: https://people.zoho.com
     docs: https://docs.nango.dev/integrations/all/zoho-people
+
 zoom:
     display_name: Zoom
     categories:
@@ -4027,6 +5136,7 @@ zoom:
     proxy:
         base_url: https://api.zoom.us/v2
     docs: https://docs.nango.dev/integrations/all/zoom
+
 zoominfo:
     display_name: ZoomInfo
     categories:
