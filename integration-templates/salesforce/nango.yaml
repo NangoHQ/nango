@@ -3,10 +3,11 @@ integrations:
         actions:
             fetch-fields:
                 description: |
-                    Fetch available task fields. If the input is not specified then it defaults back to "Task"
+                    Fetch available task fields, child relationships and validation rules. If the input is not specified then it defaults back to "Task"
                     Data Validation: Parses all incoming data with Zod. Does not fail on parsing error will instead log parse error and return result.
                 scopes: offline_access,api
                 input: SalesforceEntity
+                version: 1.0.0
                 output: SalesforceFieldSchema
                 endpoint: GET /salesforce/fetch-fields
         syncs:
