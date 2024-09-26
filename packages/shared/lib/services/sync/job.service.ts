@@ -100,7 +100,7 @@ export const updateLatestJobSyncStatus = async (sync_id: string, status: SyncSta
  * @desc grab any existing results and add them to the current
  */
 export const updateSyncJobResult = async (id: number, result: SyncResultByModel, model: string): Promise<SyncJob> => {
-    return db.knex.transaction(async (trx) => {
+    return await db.knex.transaction(async (trx) => {
         const { result: existingResult } = await trx.from<SyncJob>(SYNC_JOB_TABLE).select('result').forUpdate().where({ id }).first();
 
         if (!existingResult || Object.keys(existingResult).length === 0) {
