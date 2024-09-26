@@ -317,6 +317,70 @@
                 },
                 "webhook_routing_script": {
                     "type": "string"
+                },
+                "connection_config": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "patternProperties": {
+                        "^[a-zA-Z_]+$": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["type", "title", "description"],
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": ["string"]
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "type": "string"
+                                },
+                                "pattern": {
+                                    "type": "string"
+                                },
+                                "format": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "credentials": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "patternProperties": {
+                        "^[a-zA-Z_]+$": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["type", "title", "description"],
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": ["string"]
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "type": "string"
+                                },
+                                "pattern": {
+                                    "type": "string"
+                                },
+                                "format": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

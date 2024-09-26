@@ -21,6 +21,15 @@ export interface ProviderAlias {
     };
 }
 
+export interface SimplifiedJSONSchema {
+    type: 'string';
+    title: string;
+    description: string;
+    example?: string;
+    pattern?: string;
+    format?: string;
+}
+
 export interface BaseProvider {
     display_name: string;
     auth_mode: AuthModeType;
@@ -58,6 +67,8 @@ export interface BaseProvider {
     post_connection_script?: string;
     categories?: string[];
     connection_configuration?: string[];
+    connection_config?: Record<string, SimplifiedJSONSchema>;
+    credentials?: Record<string, SimplifiedJSONSchema>;
 }
 
 export interface ProviderOAuth2 extends BaseProvider {

@@ -1712,6 +1712,24 @@ components:
       additionalProperties: false
       type: object
 
+    SimplifiedJSONSchema:
+        type: object
+        additionalProperties: false
+        required: ["type", "title", "description"]
+        properties:
+            type:
+                type: string
+                enum: [string]
+            title:
+                type: string
+            description:
+                type: string
+            example:
+                type: string
+            pattern:
+                type: string
+            format:
+                type: string
     BaseProvider:
       properties:
         name:
@@ -1813,9 +1831,19 @@ components:
           items:
             type: string
           type: array
+        connection_config:
+            $ref: '#/components/schemas/SimplifiedJSONSchema'
+        credentials:
+          type: object
+          properties:
+            apiKey:
+              $ref: '#/components/schemas/SimplifiedJSONSchema'
+
       required:
         - auth_mode
         - name
+        - display_name
+        - docs
       additionalProperties: false
       type: object
     ProviderOAuth2:
