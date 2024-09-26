@@ -1948,6 +1948,7 @@ components:
         additionalProperties: false
         required:
             - unique_key
+            - display_name
             - provider
             - created_at
             - updated_at
@@ -1955,6 +1956,9 @@ components:
             unique_key:
                 type: string
                 description: The integration ID that you created in Nango.
+            display_name:
+                type: string
+                description: The provider display name.
             provider:
                 type: string
                 description: The Nango API Configuration.
