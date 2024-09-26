@@ -57,7 +57,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             environmentId: res.locals.environment.id
         });
 
-        let endUserId: number;
+        let endUserInternalId: number;
         if (getEndUser.isErr()) {
             if (getEndUser.error.code !== 'not_found') {
                 res.status(500).send({ error: { code: 'internal_error', message: 'Failed to get end user' } });
@@ -81,7 +81,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 res.status(500).send({ error: { code: 'internal_error', message: 'Failed to create end user' } });
                 return;
             }
-            endUserId = createEndUser.value.id;
+            endUserInternalId = createEndUser.value.id;
         } else {
             const shouldUpdate =
                 getEndUser.value.email !== req.body.end_user.email ||
@@ -107,12 +107,12 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                     return;
                 }
             }
-            endUserId = getEndUser.value.id;
+            endUserInternalId = getEndUser.value.id;
         }
 
         // create connect session
         const createConnectSession = await connectSessionService.createConnectSession(trx, {
-            endUserId: endUserId,
+            endUserInternalId: endUserInternalId,
             accountId: res.locals.account.id,
             environmentId: res.locals.environment.id,
             allowedIntegrations: req.body.allowed_integrations || null,

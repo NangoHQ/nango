@@ -1,6 +1,6 @@
 export interface ConnectSession {
     readonly id: number;
-    readonly endUserId: number;
+    readonly endUserInternalId: number;
     readonly accountId: number;
     readonly environmentId: number;
     readonly allowedIntegrations?: string[] | null;

@@ -1,6 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
 import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError } from '@nangohq/utils';
 import { LogActionEnum, ErrorSourceEnum, environmentService, errorManager, userService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import * as connectSessionService from '../services/connectSession.service.js';
 import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import tracer from 'dd-trace';
 import type { RequestLocals } from '../utils/express.js';
@@ -164,6 +166,58 @@ export class AccessMiddleware {
         if (isBasicAuthEnabled) {
             res.status(401).send({ error: { code: 'unauthorized' } });
             return;
+        }
+    }
+
+    async connectSessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('connectSessionAuth', {
+            childOf: active!
+        });
+
+        const start = Date.now();
+        try {
+            const authorizationHeader = req.get('authorization');
+
+            if (!authorizationHeader) {
+                return errorManager.errRes(res, 'missing_auth_header');
+            }
+
+            const token = authorizationHeader.split('Bearer ').pop();
+
+            if (!token) {
+                return errorManager.errRes(res, 'malformed_auth_header');
+            }
+
+            const getConnectSession = await connectSessionService.getConnectSessionByToken(db.knex, token);
+            if (getConnectSession.isErr()) {
+                return errorManager.errRes(res, 'unknown_connect_token');
+            }
+
+            const result = await environmentService.getAccountAndEnvironment({
+                environmentId: getConnectSession.value.environmentId
+            });
+            if (!result) {
+                res.status(401).send({ error: { code: 'unknown_user_account' } });
+                return;
+            }
+
+            res.locals['authType'] = 'connectSession';
+            res.locals['account'] = result.account;
+            res.locals['environment'] = result.environment;
+            res.locals['connectSession'] = getConnectSession.value;
+            tracer.setUser({
+                id: String(result.account.id),
+                environmentId: String(result.environment.id),
+                connectSessionId: String(getConnectSession.value.id)
+            });
+            next();
+        } catch (err) {
+            logger.error(`failed_get_env_by_connect_session_token ${stringifyError(err)}`);
+            return errorManager.errRes(res, 'malformed_auth_header');
+        } finally {
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION, Date.now() - start);
+            span.finish();
         }
     }
 
