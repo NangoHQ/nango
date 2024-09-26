@@ -75,15 +75,30 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should return new connectSessionToken', async () => {
+        const endUserId = 'someId';
+        const email = 'a@b.com';
+        const displayName = 'Mr AB';
+        const orgId = 'orgId';
+        const orgDisplayName = 'OrgName';
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: seed.env.secret_key,
             body: {
-                end_user: { id: 'someId', email: 'a@b.com', display_name: 'Mr AB' },
-                organization: { id: 'orgId', display_name: 'OrgName' }
+                end_user: { id: endUserId, email, display_name: displayName },
+                organization: { id: orgId, display_name: orgDisplayName }
             }
         });
         isSuccess(res.json);
+        const getProfile = await endUserService.getEndUser(db.knex, {
+            endUserId,
+            accountId: seed.env.account_id,
+            environmentId: seed.env.id
+        });
+        const profile = getProfile.unwrap();
+        expect(profile.email).toBe(email);
+        expect(profile.displayName).toBe(displayName);
+        expect(profile.organization?.organizationId).toBe(orgId);
+        expect(profile.organization?.displayName).toBe(orgDisplayName);
     });
 
     it('should update the end user if needed', async () => {
