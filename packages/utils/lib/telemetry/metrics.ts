@@ -82,7 +82,7 @@ export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: T
     };
 
     // This function should handle both async/sync function
-    // So it's try/catch regular execution and use .then() for async
+    // So it try/catch regular execution and use .then() for async
     // @ts-expect-error can't fix this
     return function wrapped(...args: any) {
         const start = process.hrtime();
