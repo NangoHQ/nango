@@ -9,8 +9,8 @@ export const stagingUrl: string = 'https://api-staging.nango.dev';
 export const prodUrl: string = 'https://api.nango.dev';
 
 export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
-export const githubRepo = 'https://github.com/NangoHQ/nango';
-export const githubIntegrationTemplates = `${githubRepo}/tree/master/integration-templates`;
+export const githubRepo = 'https://github.com/NangoHQ/integration-templates';
+export const githubIntegrationTemplates = `${githubRepo}/tree/main/integrations`;
 
 export function isHosted() {
     return process.env.REACT_APP_ENV === 'hosted';
