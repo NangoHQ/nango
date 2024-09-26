@@ -1,4 +1,4 @@
-import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig } from '@nangohq/types';
+import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig, Provider } from '@nangohq/types';
 import { basePublicUrl } from '@nangohq/utils';
 
 export function integrationToApi(data: IntegrationConfig): ApiIntegration {
@@ -9,13 +9,22 @@ export function integrationToApi(data: IntegrationConfig): ApiIntegration {
     };
 }
 
-export function integrationToPublicApi(data: IntegrationConfig, include?: ApiPublicIntegrationInclude): ApiPublicIntegration {
+export function integrationToPublicApi({
+    integration,
+    include,
+    provider
+}: {
+    integration: IntegrationConfig;
+    provider: Provider;
+    include?: ApiPublicIntegrationInclude;
+}): ApiPublicIntegration {
     return {
-        unique_key: data.unique_key,
-        provider: data.provider,
-        logo: `${basePublicUrl}/images/template-logos/${data.provider}.svg`,
+        unique_key: integration.unique_key,
+        provider: integration.provider,
+        display_name: provider.display_name,
+        logo: `${basePublicUrl}/images/template-logos/${integration.provider}.svg`,
         ...include,
-        created_at: data.created_at.toISOString(),
-        updated_at: data.updated_at.toISOString()
+        created_at: integration.created_at.toISOString(),
+        updated_at: integration.updated_at.toISOString()
     };
 }

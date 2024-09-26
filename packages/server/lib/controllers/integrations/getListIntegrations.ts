@@ -1,7 +1,7 @@
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { GetPublicListIntegrations } from '@nangohq/types';
-import { configService } from '@nangohq/shared';
+import { configService, getProviders } from '@nangohq/shared';
 import { integrationToPublicApi } from '../../formatters/integration.js';
 
 export const getPublicListIntegrations = asyncWrapper<GetPublicListIntegrations>(async (req, res) => {
@@ -14,9 +14,15 @@ export const getPublicListIntegrations = asyncWrapper<GetPublicListIntegrations>
     const { environment } = res.locals;
     const configs = await configService.listProviderConfigs(environment.id);
 
+    const providers = getProviders();
+    if (!providers) {
+        res.status(500).send({ error: { code: 'server_error', message: `failed to load providers` } });
+        return;
+    }
+
     res.status(200).send({
         data: configs.map((config) => {
-            return integrationToPublicApi(config);
+            return integrationToPublicApi({ integration: config, provider: providers[config.provider]! });
         })
     });
 });

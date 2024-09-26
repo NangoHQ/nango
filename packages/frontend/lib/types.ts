@@ -6,7 +6,8 @@ export type AuthErrorType =
     | 'missingCredentials'
     | 'windowClosed'
     | 'request_error'
-    | 'missing_ws_client_id';
+    | 'missing_ws_client_id'
+    | 'connection_test_failed';
 
 export interface AuthResult {
     providerConfigKey: string;
