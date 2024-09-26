@@ -7,6 +7,12 @@ import Ajv from 'ajv';
 import chalk from 'chalk';
 import type { Provider } from '@nangohq/types';
 
+// Function to recursively search for connectionConfig in the provider value
+interface Ref {
+    path: string[];
+    key: string;
+}
+
 console.log('🕵️‍♂️ Validate providers.yaml');
 
 const __filename = fileURLToPath(import.meta.url);
@@ -42,8 +48,25 @@ console.log('Checking values...');
 const docsPath = path.join(__dirname, '../../../docs-v2/integrations/all');
 const svgPath = path.join(__dirname, '../../../packages/webapp/public/images/template-logos');
 
+// store a global flag so we don't stop at first error
 let error = false;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
+    validateProvider(providerKey, provider);
+}
+
+if (error) {
+    console.log('❌ providers.yaml contains some errors');
+    process.exit(1);
+}
+
+console.log('✅ All providers are valid');
+
+// ---------------------- Helpers
+
+/**
+ * Validate one provider
+ */
+function validateProvider(providerKey: string, provider: Provider) {
     const filename = provider.docs.split('/').slice(-1)[0];
     const mdx = path.join(docsPath, `${filename}.mdx`);
     const svg = path.join(svgPath, `${providerKey}.svg`);
@@ -96,13 +119,11 @@ for (const [providerKey, provider] of Object.entries(providersJson)) {
     }
 }
 
-// Function to recursively search for connectionConfig in the provider value
-interface Ref {
-    path: string[];
-    key: string;
-}
+/**
+ * Recursively look for connectionConfig and check if they are well defined in connection_config
+ */
 function findConnectionConfigReferences(obj: Record<string, any>, path: string[] = []): Ref[] {
-    let references: Ref[] = [];
+    const references: Ref[] = [];
     if (!(typeof obj === 'object') || !obj) {
         return references;
     }
@@ -114,16 +135,9 @@ function findConnectionConfigReferences(obj: Record<string, any>, path: string[]
                 references.push({ path: [...path, key], key: match[1]! });
             }
         } else if (typeof value === 'object' && value) {
-            references = references.concat(findConnectionConfigReferences(value, [...path, key]));
+            references.push(...findConnectionConfigReferences(value, [...path, key]));
         }
     }
 
     return references;
 }
-
-if (error) {
-    console.log('❌ providers.yaml contains some errors');
-    process.exit(1);
-}
-
-console.log('✅ All providers are valid');
