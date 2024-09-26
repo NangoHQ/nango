@@ -7,16 +7,17 @@ const pbkdf2 = utils.promisify(crypto.pbkdf2);
 
 let encryption: Encryption | null = null;
 
-function getEncryptionKey(): string | undefined {
-    return envs.NANGO_ENCRYPTION_KEY;
+function getEncryptionKey(): string {
+    const encryptionKey = envs.NANGO_ENCRYPTION_KEY;
+    if (!encryptionKey) {
+        throw new Error('NANGO_ENCRYPTION_KEY is not set');
+    }
+    return encryptionKey;
 }
 
 export function getEncryption(): Encryption {
     if (!encryption) {
         const encryptionKey = getEncryptionKey();
-        if (!encryptionKey) {
-            throw new Error('NANGO_ENCRYPTION_KEY is not set');
-        }
         encryption = new Encryption(encryptionKey);
     }
     return encryption;
@@ -24,9 +25,5 @@ export function getEncryption(): Encryption {
 
 export async function hashValue(val: string): Promise<string> {
     const encryptionKey = getEncryptionKey();
-    if (!encryptionKey) {
-        throw new Error('NANGO_ENCRYPTION_KEY is not set');
-    }
-
     return (await pbkdf2(val, encryptionKey, 310000, 32, 'sha256')).toString('base64');
 }
