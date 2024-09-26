@@ -17,23 +17,21 @@ try {
     logger.info(`🚀 service ready at http://localhost:${port}`);
     const processor = new Processor(orchestratorUrl);
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    const healthCheck = setInterval(async () => {
-        const start = Date.now();
+    // We are using a setTimeout because we don't want overlapping setInterval if the DB is down
+    let healthCheck: NodeJS.Timeout | undefined;
+    const check = async () => {
         try {
-            await db.knex.raw('SELECT 1');
-            if (Date.now() - start > 1000) {
-                logger.info('HealthCheck too long...');
-                void close();
-            }
+            await db.knex.raw('SELECT 1').timeout(1000);
+            healthCheck = setTimeout(check);
         } catch (err) {
-            logger.info('HealthCheck failed...', err);
+            logger.error('HealthCheck failed...', err);
             void close();
         }
-    }, 1000);
+    };
+    void check();
 
     const close = async () => {
-        clearInterval(healthCheck);
+        clearTimeout(healthCheck);
         processor.stop();
         await db.knex.destroy();
         srv.close(() => {
@@ -52,13 +50,13 @@ try {
     });
 
     process.on('unhandledRejection', (reason) => {
-        logger.info('Received unhandledRejection...', reason);
+        logger.error('Received unhandledRejection...', reason);
         process.exitCode = 1;
         void close();
     });
 
     process.on('uncaughtException', (e) => {
-        logger.info('Received uncaughtException...', e);
+        logger.error('Received uncaughtException...', e);
         // not closing on purpose
     });
 
