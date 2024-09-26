@@ -60,7 +60,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         let endUserInternalId: number;
         if (getEndUser.isErr()) {
             if (getEndUser.error.code !== 'not_found') {
-                res.status(500).send({ error: { code: 'internal_error', message: 'Failed to get end user' } });
+                res.status(500).send({ error: { code: 'server_error', message: 'Failed to get end user' } });
                 return;
             }
             // create end user if it doesn't exist yet
@@ -78,7 +78,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 environmentId: res.locals.environment.id
             });
             if (createEndUser.isErr()) {
-                res.status(500).send({ error: { code: 'internal_error', message: 'Failed to create end user' } });
+                res.status(500).send({ error: { code: 'server_error', message: 'Failed to create end user' } });
                 return;
             }
             endUserInternalId = createEndUser.value.id;
@@ -103,7 +103,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                         : null
                 });
                 if (updateEndUser.isErr()) {
-                    res.status(500).send({ error: { code: 'internal_error', message: 'Failed to update end user' } });
+                    res.status(500).send({ error: { code: 'server_error', message: 'Failed to update end user' } });
                     return;
                 }
             }
@@ -123,7 +123,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 : null
         });
         if (createConnectSession.isErr()) {
-            res.status(500).send({ error: { code: 'internal_error', message: 'Failed to create connect session' } });
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create connect session' } });
             return;
         }
         // create a private key for the connect session
@@ -136,7 +136,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             ttlInMs: 30 * 60 * 1000 // 30 minutes
         });
         if (createPrivateKey.isErr()) {
-            res.status(500).send({ error: { code: 'internal_error', message: 'Failed to create session token' } });
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create session token' } });
             return;
         }
         const [token, privateKey] = createPrivateKey.value;
