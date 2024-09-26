@@ -5,7 +5,7 @@ import type { Result } from '@nangohq/utils';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 
-interface DbConnectSession {
+interface DBConnectSession {
     readonly id: number;
     readonly linked_profile_id: number;
     readonly account_id: number;
@@ -15,10 +15,10 @@ interface DbConnectSession {
     readonly allowed_integrations: string[] | null;
     readonly integrations_config_defaults: Record<string, { connectionConfig: Record<string, unknown> }> | null;
 }
-type DbInsertConnectSession = Omit<DbConnectSession, 'id' | 'created_at' | 'updated_at'>;
+type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'created_at' | 'updated_at'>;
 
 const ConnectSessionMapper = {
-    to: (session: ConnectSession): DbConnectSession => {
+    to: (session: ConnectSession): DBConnectSession => {
         return {
             id: session.id,
             linked_profile_id: session.linkedProfileId,
@@ -30,7 +30,7 @@ const ConnectSessionMapper = {
             integrations_config_defaults: session.integrationsConfigDefaults || null
         };
     },
-    from: (dbSession: DbConnectSession): ConnectSession => {
+    from: (dbSession: DBConnectSession): ConnectSession => {
         return {
             id: dbSession.id,
             linkedProfileId: dbSession.linked_profile_id,
@@ -72,7 +72,7 @@ export async function createConnectSession(
         allowed_integrations: allowedIntegrations || null,
         integrations_config_defaults: integrationsConfigDefaults || null
     };
-    const [session] = await db.insert<DbConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
+    const [session] = await db.insert<DBConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
     if (!session) {
         return Err(
             new ConnectSessionError({
@@ -85,18 +85,40 @@ export async function createConnectSession(
     return Ok(ConnectSessionMapper.from(session));
 }
 
-export async function getConnectSession(db: knex.Knex, id: number): Promise<Result<ConnectSession, ConnectSessionError>> {
-    const session = await db<DbConnectSession>(CONNECT_SESSIONS_TABLE).where({ id }).first();
+export async function getConnectSession(
+    db: knex.Knex,
+    {
+        id,
+        accountId,
+        environmentId
+    }: {
+        id: number;
+        accountId: number;
+        environmentId: number;
+    }
+): Promise<Result<ConnectSession, ConnectSessionError>> {
+    const session = await db<DBConnectSession>(CONNECT_SESSIONS_TABLE).where({ id, account_id: accountId, environment_id: environmentId }).first();
     if (!session) {
-        return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found` }));
+        return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found`, payload: { id, accountId, environmentId } }));
     }
     return Ok(ConnectSessionMapper.from(session));
 }
 
-export async function deleteConnectSession(db: knex.Knex, id: number): Promise<Result<void, ConnectSessionError>> {
-    const deleted = await db<DbConnectSession>(CONNECT_SESSIONS_TABLE).where({ id }).delete();
+export async function deleteConnectSession(
+    db: knex.Knex,
+    {
+        id,
+        accountId,
+        environmentId
+    }: {
+        id: number;
+        accountId: number;
+        environmentId: number;
+    }
+): Promise<Result<void, ConnectSessionError>> {
+    const deleted = await db<DBConnectSession>(CONNECT_SESSIONS_TABLE).where({ id, account_id: accountId, environment_id: environmentId }).delete();
     if (!deleted) {
-        return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found` }));
+        return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found`, payload: { id, accountId, environmentId } }));
     }
     return Ok(undefined);
 }

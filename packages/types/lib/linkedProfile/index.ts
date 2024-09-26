@@ -6,7 +6,7 @@ export interface LinkedProfile {
     readonly email: string;
     readonly displayName?: string | null;
     readonly organization?: {
-        readonly organizationId: string;
+        readonly id: string;
         readonly displayName?: string | null;
     } | null;
     readonly createdAt: Date;

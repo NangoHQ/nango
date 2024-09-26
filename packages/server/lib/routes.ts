@@ -212,7 +212,7 @@ publicAPI.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(
 publicAPI.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bind(flowController));
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
-publicAPI.route('/connect/sessions').post(apiAuth, ...postConnectSessions);
+publicAPI.route('/connect/sessions').post(apiAuth, postConnectSessions);
 
 publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
 

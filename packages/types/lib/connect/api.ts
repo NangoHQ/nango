@@ -7,11 +7,11 @@ export type PostConnectSessions = Endpoint<{
     Body: {
         linkedProfile: {
             profileId: string;
-            email?: string | undefined;
+            email: string;
             displayName?: string | undefined;
             organization?:
                 | {
-                      organizationId: string;
+                      id: string;
                       displayName?: string | undefined;
                   }
                 | undefined;
@@ -19,6 +19,8 @@ export type PostConnectSessions = Endpoint<{
         allowedIntegrations?: string[] | undefined;
         integrationsConfigDefaults?: Record<string, { connectionConfig: Record<string, unknown> }> | undefined;
     };
-    Error: ApiError<'forbidden' | 'invalid_request' | 'internal_error'>;
-    Success: ConnectSessionToken;
+    Error: ApiError<'forbidden' | 'invalid_body' | 'invalid_query_params' | 'internal_error'>;
+    Success: {
+        data: ConnectSessionToken;
+    };
 }>;
