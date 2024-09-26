@@ -102,3 +102,10 @@ export const actionResponseErrorSchema = z.object({
     message: z.string(),
     details: actionResponseErrorDetailsSchema.optional()
 });
+
+export const validationRuleSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    errorConditionFormula: z.string(),
+    errorMessage: z.string()
+});

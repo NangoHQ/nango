@@ -102,6 +102,7 @@ models:
     SalesforceFieldSchema:
         __extends: NestedFieldSchema
         childRelationships: ChildField[]
+        validationRules: ValidationRule[]
     NestedFieldSchema:
         fields: Field[]
     Field:
@@ -122,3 +123,8 @@ models:
         method: string
         url: string
         code: string
+    ValidationRule:
+        id: string
+        name: string
+        errorConditionFormula: string
+        errorMessage: string

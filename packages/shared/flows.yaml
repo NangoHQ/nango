@@ -3866,6 +3866,7 @@ integrations:
             SalesforceFieldSchema:
                 fields: Field[]
                 childRelationships: ChildField[]
+                validationRules: ValidationRule[]
             NestedFieldSchema:
                 fields: Field[]
             Field:
@@ -3886,6 +3887,11 @@ integrations:
                 method: string
                 url: string
                 code: string
+            ValidationRule:
+                id: string
+                name: string
+                errorConditionFormula: string
+                errorMessage: string
     sharepoint-online:
         actions:
             list-sites:

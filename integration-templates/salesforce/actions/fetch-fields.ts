@@ -1,33 +1,61 @@
-import type { NangoAction, SalesforceFieldSchema, ProxyConfiguration, ActionResponseError, ChildField, Field, SalesforceEntity } from '../../models';
-import { fieldSchema, childFieldSchema } from '../schema.zod.js';
+import type {
+    NangoAction,
+    SalesforceFieldSchema,
+    ProxyConfiguration,
+    ActionResponseError,
+    ChildField,
+    Field,
+    SalesforceEntity,
+    ValidationRule
+} from '../../models';
+import { fieldSchema, childFieldSchema, validationRuleSchema } from '../schema.zod.js';
+import type { DescribeSObjectResult, SalesForceField, ChildRelationship, ValidationRecord, ValidationRuleResponse } from '../types';
 
 /**
- * This action fetches the available objects for a given organization in Salesforce.
+ * This action retrieves the available properties of a custom object, including fields, child relationships, and validation rules, for a given organization in Salesforce.
  * https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm
- * @param nango - The NangoAction object
- * @returns SalesforceFieldSchema - The fields for the object
+ * https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_validationrule.htm
+ *
+ * @param nango - The NangoAction instance used for making API requests.
+ * @param input - SalesforceEntity defining the object to describe
+ * @returns A promise that resolves to a SalesforceFieldSchema object containing: fields, child relationships, and validation rules for the object
  */
 export default async function runAction(nango: NangoAction, input: SalesforceEntity): Promise<SalesforceFieldSchema> {
     try {
         const entity = input?.name || 'Task';
-        const proxyConfig: ProxyConfiguration = {
+
+        const proxyConfigFields: ProxyConfiguration = {
             endpoint: `/services/data/v60.0/sobjects/${entity}/describe`,
-            retries: 5
+            retries: 10
         };
 
-        const response = await nango.get(proxyConfig);
+        const proxyConfigValidationIds: ProxyConfiguration = {
+            endpoint: `/services/data/v60.0/tooling/query`,
+            retries: 10,
+            params: {
+                q: `SELECT Id, ValidationName FROM ValidationRule WHERE EntityDefinition.QualifiedApiName='${entity}'`
+            }
+        };
 
-        const { data } = response;
-        const { fields, childRelationships } = data;
+        // Parallelize both requests as we won't get rate limited in here.
+        const [fieldsResponse, validationResponse] = await Promise.all([
+            nango.get<DescribeSObjectResult>(proxyConfigFields),
+            nango.get<ValidationRuleResponse>(proxyConfigValidationIds)
+        ]);
 
-        const fieldResults = mapFields({ fields });
-        const childRelationshipsResults = mapChildRelationships({
-            relationships: childRelationships
-        });
+        const { fields, childRelationships } = fieldsResponse.data;
+        const validationRulesIds = validationResponse.data.records;
+
+        const validationRulesData: ValidationRecord[] = await fetchValidationRuleMetadata(nango, validationRulesIds);
+
+        const fieldResults = mapFields(fields);
+        const childRelationshipsResults = mapChildRelationships(childRelationships);
+        const validationRulesResults = mapValidationRules(validationRulesData);
 
         return {
             fields: fieldResults,
-            childRelationships: childRelationshipsResults
+            childRelationships: childRelationshipsResults,
+            validationRules: validationRulesResults
         };
     } catch (error: unknown) {
         const errorResponse = error as Record<string, unknown>;
@@ -45,44 +73,86 @@ export default async function runAction(nango: NangoAction, input: SalesforceEnt
 }
 
 /**
- * Maps the fields from the Salesforce API response to the Field schema
- * @param fields - The unverified data returned from the Salesforce API
- * @param nango - The NangoAction object
- * @returns The mapped fields and a boolean indicating if the mapping was successful
+ * Fetches metadata for multiple validation rules from the Salesforce Tooling API.
+ * Note: The maximum number of active validation rules per object is limited to 500,
+ * and this limit can vary based on the Salesforce edition.
+ * For more details, refer to the Salesforce documentation:
+ * https://help.salesforce.com/s/articleView?id=000383591&type=1
+ *
+ * @param nango - The NangoAction instance used for making API requests.
+ * @param validationRulesIds - An array of objects containing the IDs and names of the validation rules.
+ * @returns A promise that resolves to an array of ValidationRecord objects with metadata for each validation rule.
  */
-function mapFields({ fields }: { fields: unknown[] }): Field[] {
-    const validatedFields: Field[] = [];
-    for (const field of fields) {
-        const resultData = field as Record<string, unknown>;
-        const parsedField = fieldSchema.parse({
-            name: resultData['name'],
-            label: resultData['label'],
-            type: resultData['type'],
-            referenceTo: resultData['referenceTo'],
-            relationshipName: resultData['relationshipName']
-        });
+async function fetchValidationRuleMetadata(nango: NangoAction, validationRulesIds: { Id: string; ValidationName: string }[]): Promise<ValidationRecord[]> {
+    const metadataFetchPromises: Promise<ValidationRecord>[] = validationRulesIds.map((rule) =>
+        nango
+            .get<ValidationRuleResponse>({
+                endpoint: `/services/data/v60.0/tooling/query`,
+                retries: 10,
+                params: {
+                    q: `SELECT Id, ValidationName, Metadata FROM ValidationRule WHERE Id='${rule.Id}'`
+                }
+            })
+            .then((response: { data: ValidationRuleResponse }) => {
+                const record = response.data.records[0];
+                if (record) {
+                    return { ...record, ValidationName: rule.ValidationName };
+                }
+                throw new nango.ActionError({
+                    message: `Validation rule with ID ${rule.Id} not found.`
+                });
+            })
+    );
 
-        validatedFields.push(parsedField);
-    }
+    const settledResults = await Promise.allSettled(metadataFetchPromises);
 
-    return validatedFields;
+    return settledResults.filter((result) => result.status === 'fulfilled').map((result) => (result as PromiseFulfilledResult<ValidationRecord>).value);
 }
 
 /**
- * Maps the child relationships from the Salesforce API response to the ChildField schema
- * @param relationships - The unverified data returned from the Salesforce API
- * @returns The mapped child relationships and a boolean indicating if the mapping was successful
+ * Maps the fields from the Salesforce API response to the Field schema.
+ * @param fields - Array of fields from Salesforce
+ * @returns An array of mapped validation rules conforming to the Field schema.
  */
-function mapChildRelationships({ relationships }: { relationships: unknown[] }): ChildField[] {
-    const validatedRelationships: ChildField[] = [];
-    for (const relationship of relationships) {
-        const resultData = relationship as Record<string, unknown>;
-        const parsedChildField = childFieldSchema.parse({
-            object: resultData['childSObject'],
-            field: resultData['field'],
-            relationshipName: resultData['relationshipName']
-        });
-        validatedRelationships.push(parsedChildField);
-    }
-    return validatedRelationships;
+function mapFields(fields: SalesForceField[]): Field[] {
+    return fields.map((field) =>
+        fieldSchema.parse({
+            name: field.name,
+            label: field.label,
+            type: field.type,
+            referenceTo: field.referenceTo,
+            relationshipName: field.relationshipName
+        })
+    );
+}
+
+/**
+ * Maps child relationships from Salesforce API to the ChildField schema.
+ * @param relationships - Array of child relationships from Salesforce
+ * @returns An array of mapped child relationships conforming to the ChildField schema.
+ */
+function mapChildRelationships(relationships: ChildRelationship[]): ChildField[] {
+    return relationships.map((relationship) =>
+        childFieldSchema.parse({
+            object: relationship.childSObject,
+            field: relationship.field,
+            relationshipName: relationship.relationshipName
+        })
+    );
+}
+
+/**
+ * Maps validation rules from Salesforce Tooling API response to the ValidationRule schema.
+ * @param validationRules - Array of validation rules from Salesforce Tooling API
+ * @returns An array of mapped validation rules conforming to the ValidationRule schema.
+ */
+function mapValidationRules(validationRules: ValidationRecord[]): ValidationRule[] {
+    return validationRules.map((rule) =>
+        validationRuleSchema.parse({
+            id: rule.Id,
+            name: rule.ValidationName,
+            errorConditionFormula: rule.Metadata.errorConditionFormula,
+            errorMessage: rule.Metadata.errorMessage
+        })
+    );
 }
