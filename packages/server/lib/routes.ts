@@ -92,12 +92,15 @@ import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticate
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postConnectSessions } from './controllers/connect/postSessions.js';
+import { getConnectSession } from './controllers/connect/getSession.js';
+import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 
 export const router = express.Router();
 
 router.use(...securityMiddlewares());
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth: RequestHandler[] = [
     authMiddleware.secretKeyAuth.bind(authMiddleware),
     authMiddleware.adminKeyAuth.bind(authMiddleware),
@@ -213,6 +216,8 @@ publicAPI.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bin
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
 publicAPI.route('/connect/sessions').post(apiAuth, postConnectSessions);
+publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
+publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 
 publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
 

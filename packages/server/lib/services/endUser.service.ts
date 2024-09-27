@@ -100,19 +100,21 @@ export async function createEndUser(
 
 export async function getEndUser(
     db: knex.Knex,
-    { endUserId, accountId, environmentId }: { endUserId: string; accountId: number; environmentId: number }
+    props: { endUserId: string; accountId: number; environmentId: number } | { id: number; accountId: number; environmentId: number }
 ): Promise<Result<EndUser, EndUserError>> {
-    const endUser = await db<DBEndUser>(END_USERS_TABLE).where({ end_user_id: endUserId, account_id: accountId, environment_id: environmentId }).first();
+    const endUser = await db<DBEndUser>(END_USERS_TABLE)
+        .where(
+            'endUserId' in props
+                ? { end_user_id: props.endUserId, environment_id: props.environmentId, account_id: props.accountId }
+                : { id: props.id, environment_id: props.environmentId, account_id: props.accountId }
+        )
+        .first();
     if (!endUser) {
         return Err(
             new EndUserError({
                 code: 'not_found',
                 message: `End user not found`,
-                payload: {
-                    endUserId,
-                    accountId,
-                    environmentId
-                }
+                payload: props
             })
         );
     }

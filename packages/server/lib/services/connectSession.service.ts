@@ -1,4 +1,5 @@
 import type knex from 'knex';
+import * as keystore from '@nangohq/keystore';
 import type { ConnectSession } from '@nangohq/types';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -102,6 +103,19 @@ export async function getConnectSession(
         return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found`, payload: { id, accountId, environmentId } }));
     }
     return Ok(ConnectSessionMapper.from(session));
+}
+
+export async function getConnectSessionByToken(db: knex.Knex, token: string): Promise<Result<ConnectSession, ConnectSessionError>> {
+    const getSession = await keystore.getPrivateKey(db, token);
+    if (getSession.isErr()) {
+        return Err(new ConnectSessionError({ code: 'not_found', message: `Token not found`, payload: { token: `${token.substring(0, 32)}...` } }));
+    }
+    const privateKey = getSession.value;
+    const session = await getConnectSession(db, { id: privateKey.entityId, accountId: privateKey.accountId, environmentId: privateKey.environmentId });
+    if (session.isErr()) {
+        return Err(session.error);
+    }
+    return Ok(session.value);
 }
 
 export async function deleteConnectSession(
