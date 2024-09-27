@@ -31,7 +31,7 @@ export default function ConnectionList() {
     const connectUI = useRef<ConnectUI>();
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
-    const { data, error, errorNotifications } = useConnections(env);
+    const { data, error, errorNotifications, mutate } = useConnections(env);
     const { environmentAndAccount } = useEnvironment(env);
 
     const [connections, setConnections] = useState<Connection[] | null>(null);
@@ -116,7 +116,14 @@ export default function ConnectionList() {
             publicKey: environmentAndAccount!.environment.public_key
         });
 
-        connectUI.current = nango.openConnectUI({});
+        connectUI.current = nango.openConnectUI({
+            onEvent: (event) => {
+                if (event.type === 'close') {
+                    // we refresh on close so user can see the diff
+                    void mutate();
+                }
+            }
+        });
     };
 
     if (error) {
