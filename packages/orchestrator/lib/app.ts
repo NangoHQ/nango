@@ -52,9 +52,9 @@ try {
         on: eventsHandler.onCallbacks
     });
 
-    // default max listerner is 10
+    // default max listener is 10
     // but we need more listeners
-    // each processor fetching from a group_key adds a listerner for the long-polling dequeue
+    // each processor fetching from a group_key adds a listener for the long-polling dequeue
     eventsHandler.setMaxListeners(Infinity);
 
     const server = getServer(scheduler, eventsHandler);
