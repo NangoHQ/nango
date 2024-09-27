@@ -7,7 +7,7 @@ const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 
 interface DBConnectSession {
     readonly id: number;
-    readonly linked_profile_id: number;
+    readonly end_user_id: number;
     readonly account_id: number;
     readonly environment_id: number;
     readonly created_at: Date;
@@ -21,7 +21,7 @@ const ConnectSessionMapper = {
     to: (session: ConnectSession): DBConnectSession => {
         return {
             id: session.id,
-            linked_profile_id: session.linkedProfileId,
+            end_user_id: session.endUserId,
             account_id: session.accountId,
             environment_id: session.environmentId,
             created_at: session.createdAt,
@@ -33,7 +33,7 @@ const ConnectSessionMapper = {
     from: (dbSession: DBConnectSession): ConnectSession => {
         return {
             id: dbSession.id,
-            linkedProfileId: dbSession.linked_profile_id,
+            endUserId: dbSession.end_user_id,
             accountId: dbSession.account_id,
             environmentId: dbSession.environment_id,
             createdAt: dbSession.created_at,
@@ -58,15 +58,15 @@ export class ConnectSessionError extends Error {
 export async function createConnectSession(
     db: knex.Knex,
     {
-        linkedProfileId,
+        endUserId,
         accountId,
         environmentId,
         allowedIntegrations,
         integrationsConfigDefaults
-    }: Pick<ConnectSession, 'linkedProfileId' | 'allowedIntegrations' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId'>
+    }: Pick<ConnectSession, 'endUserId' | 'allowedIntegrations' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId'>
 ): Promise<Result<ConnectSession, ConnectSessionError>> {
     const dbSession: DbInsertConnectSession = {
-        linked_profile_id: linkedProfileId,
+        end_user_id: endUserId,
         account_id: accountId,
         environment_id: environmentId,
         allowed_integrations: allowedIntegrations || null,
@@ -78,7 +78,7 @@ export async function createConnectSession(
             new ConnectSessionError({
                 code: 'creation_failed',
                 message: 'Failed to create connect session',
-                payload: { linkedProfileId, allowedIntegrations, integrationsConfigDefaults }
+                payload: { endUserId, allowedIntegrations, integrationsConfigDefaults }
             })
         );
     }

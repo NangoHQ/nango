@@ -4,7 +4,7 @@ import { seeders } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
 import type { DBEnvironment } from '@nangohq/types';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
-import * as linkedProfileService from '../../services/linkedProfile.service.js';
+import * as endUserService from '../../services/endUser.service.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -33,7 +33,7 @@ describe(`POST ${endpoint}`, () => {
         shouldBeProtected(res);
     });
 
-    it('should fail if no linkedProfile', async () => {
+    it('should fail if no endUser', async () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: seed.env.secret_key,
@@ -45,19 +45,19 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'invalid_type', message: 'Required', path: ['linkedProfile'] }]
+                errors: [{ code: 'invalid_type', message: 'Required', path: ['end_user'] }]
             }
         });
         expect(res.res.status).toBe(400);
     });
 
-    it('should fail if no profileId or email', async () => {
+    it('should fail if no endUserId or email', async () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: seed.env.secret_key,
             body: {
                 // @ts-expect-error on purpose
-                linkedProfile: {}
+                end_user: {}
             }
         });
 
@@ -66,8 +66,8 @@ describe(`POST ${endpoint}`, () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_type', message: 'Required', path: ['linkedProfile', 'profileId'] },
-                    { code: 'invalid_type', message: 'Required', path: ['linkedProfile', 'email'] }
+                    { code: 'invalid_type', message: 'Required', path: ['end_user', 'id'] },
+                    { code: 'invalid_type', message: 'Required', path: ['end_user', 'email'] }
                 ]
             }
         });
@@ -78,22 +78,25 @@ describe(`POST ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: seed.env.secret_key,
-            body: { linkedProfile: { profileId: 'someId', email: 'a@b.com' } }
+            body: {
+                end_user: { id: 'someId', email: 'a@b.com', display_name: 'Mr AB' },
+                organization: { id: 'orgId', display_name: 'OrgName' }
+            }
         });
         isSuccess(res.json);
     });
 
-    it('should update the linked profile if needed', async () => {
-        // first request create a linked profile
-        const profileId = 'knownId';
+    it('should update the end user if needed', async () => {
+        // first request create an end user
+        const endUserId = 'knownId';
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: seed.env.secret_key,
-            body: { linkedProfile: { profileId, email: 'a@b.com' } }
+            body: { end_user: { id: endUserId, email: 'a@b.com' } }
         });
         isSuccess(res.json);
 
-        // second request with same profileId update the linked profile
+        // second request with same endUserId update the end user
         const newEmail = 'x@y.com';
         const newDisplayName = 'Mr XY';
         const newOrgId = 'orgId';
@@ -102,24 +105,24 @@ describe(`POST ${endpoint}`, () => {
             method: 'POST',
             token: seed.env.secret_key,
             body: {
-                linkedProfile: {
-                    profileId,
+                end_user: {
+                    id: endUserId,
                     email: newEmail,
-                    displayName: newDisplayName,
-                    organization: { id: newOrgId, displayName: newOrgDisplayName }
-                }
+                    display_name: newDisplayName
+                },
+                organization: { id: newOrgId, display_name: newOrgDisplayName }
             }
         });
         isSuccess(res2.json);
-        const getProfile = await linkedProfileService.getLinkedProfile(db.knex, {
-            profileId,
+        const getEndUser = await endUserService.getEndUser(db.knex, {
+            endUserId: endUserId,
             accountId: seed.env.account_id,
             environmentId: seed.env.id
         });
-        const profile = getProfile.unwrap();
-        expect(profile.email).toBe(newEmail);
-        expect(profile.displayName).toBe(newDisplayName);
-        expect(profile.organization?.id).toBe(newOrgId);
-        expect(profile.organization?.displayName).toBe(newOrgDisplayName);
+        const endUser = getEndUser.unwrap();
+        expect(endUser.email).toBe(newEmail);
+        expect(endUser.displayName).toBe(newDisplayName);
+        expect(endUser.organization?.organizationId).toBe(newOrgId);
+        expect(endUser.organization?.displayName).toBe(newOrgDisplayName);
     });
 });

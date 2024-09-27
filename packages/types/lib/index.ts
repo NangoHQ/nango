@@ -41,7 +41,7 @@ export type * from './deploy/api.js';
 export type * from './deploy/incomingFlow.js';
 export type * from './connect/api.js';
 export type * from './connect/session.js';
-export type * from './linkedProfile/index.js';
+export type * from './endUser/index.js';
 
 export type * from './nangoYaml/index.js';
 
