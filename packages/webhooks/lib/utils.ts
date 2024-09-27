@@ -127,9 +127,10 @@ export const deliver = async ({
         const { url, type } = webhook;
 
         try {
+            const filteredHeaders = filterHeaders(incomingHeaders || {});
             const headers = {
                 ...getSignatureHeader(environment.secret_key, body),
-                ...filterHeaders(incomingHeaders || {})
+                ...filteredHeaders
             };
 
             const response = await retryWithBackoff(
@@ -143,12 +144,12 @@ export const deliver = async ({
                 if (response.status >= 200 && response.status < 300) {
                     await logCtx.info(
                         `${webhookType} webhook sent successfully to the ${type} ${url} and received with a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}.`,
-                        body as Record<string, unknown>
+                        { headers: filteredHeaders, body }
                     );
                 } else {
                     await logCtx.error(
                         `${webhookType} sent webhook successfully to the ${type} ${url} but received a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`,
-                        body as Record<string, unknown>
+                        { headers: filteredHeaders, body }
                     );
                     success = false;
                 }
