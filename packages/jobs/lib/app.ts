@@ -31,7 +31,7 @@ try {
     void check();
 
     const close = async () => {
-        console.log('Closing...');
+        logger.info('Closing...');
         clearTimeout(healthCheck);
         processor.stop();
         await db.knex.destroy();
