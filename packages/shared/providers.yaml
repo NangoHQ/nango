@@ -717,7 +717,6 @@ builder-io-public:
             description: The API key for your Builder.io account
             pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
-
 cal-com-v1:
     display_name: Cal.com (v1)
     categories:
@@ -740,7 +739,6 @@ cal-com-v1:
             description: The API key for your Cal.com account
             pattern: '^cal_[a-zA-Z0-9_]+$'
             example: cal_xxxxxx
-
 cal-com-v2:
     display_name: Cal.com (v2)
     categories:
