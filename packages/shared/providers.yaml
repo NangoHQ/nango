@@ -717,6 +717,7 @@ builder-io-public:
             description: The API key for your Builder.io account
             pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
+
 cal-com-v1:
     display_name: Cal.com (v1)
     categories:
@@ -739,6 +740,7 @@ cal-com-v1:
             description: The API key for your Cal.com account
             pattern: '^cal_[a-zA-Z0-9_]+$'
             example: cal_xxxxxx
+
 cal-com-v2:
     display_name: Cal.com (v2)
     categories:
@@ -786,6 +788,27 @@ calendly:
     token_response_metadata:
         - owner
     docs: https://docs.nango.dev/integrations/all/calendly
+
+brightcrowd:
+    display_name: BrightCrowd
+    categories:
+        - alumni-data
+    auth_mode: BASIC
+    token_url: https://bcb-staging.auth.us-east-1.amazoncognito.com/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+        scope: bcb.partner/book.read
+    proxy:
+        base_url: https://brightcrowd.com/partner-api
+        headers:
+            Content-Type: application/x-www-form-urlencoded
+        paginate:
+            type: cursor
+            cursor_path_in_response: next_cursor
+            cursor_name_in_request: cursor
+            limit_name_in_request: limit
+    docs: https://docs.nango.dev/integrations/all/brightcrowd
 
 canny:
     display_name: Canny

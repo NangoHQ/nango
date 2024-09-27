@@ -345,6 +345,7 @@
                 "integrations/all/box",
                 "integrations/all/braintree",
                 "integrations/all/brex",
+                "integrations/all/brightcrowd",
                 "integrations/all/builder-io",
                 "integrations/all/calendly",
                 "integrations/all/cal-com",
