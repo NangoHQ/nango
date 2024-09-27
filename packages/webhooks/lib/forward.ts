@@ -56,7 +56,8 @@ export const forwardWebhook = async ({
             body: payload,
             webhookType: 'forward',
             environment,
-            logCtx
+            logCtx,
+            incomingHeaders: webhookOriginalHeaders
         });
 
         result ? await logCtx.success() : await logCtx.failed();
