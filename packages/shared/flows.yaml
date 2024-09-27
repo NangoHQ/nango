@@ -23,25 +23,25 @@ integrations:
                     Creates an ephemeral transaction in Anrok.
                 input: Transaction
                 output: TransactionActionResponse
-                endpoint: POST /ephmeral-transaction
+                endpoint: POST /ephmeral-transactions
             create-or-update-transaction:
                 description: |
                     Creates or updates a transaction in Anrok.
                 input: Transaction[]
                 output: TransactionActionResponse
-                endpoint: POST /transaction
+                endpoint: POST /transactions
             void-transaction:
                 description: |
                     Voids a transaction in Anrok.
                 input: TransactionToDelete[]
                 output: TransactionDeletionActionResponse
-                endpoint: POST /transaction/voide
+                endpoint: POST /transactions/void
             negate-transaction:
                 description: |
                     Creates a negation in Anrok.
                 input: TransactionToNegate[]
                 output: TransactionNegationActionResponse
-                endpoint: POST /transaction/negate
+                endpoint: POST /transactions/negate
         models:
             AnrokAddress:
                 line1: string
@@ -142,42 +142,42 @@ integrations:
                 runs: every hour
                 description: Retrieve all tasks that exist in the workspace
                 output: Task
-                endpoint: GET /ticketing/tasks
+                endpoint: GET /tasks
                 sync_type: incremental
             users:
                 runs: every hour
                 description: Retrieve all users that exist in the workspace
                 output: User
-                endpoint: GET /ticketing/users
+                endpoint: GET /users
                 sync_type: incremental
             workspaces:
                 runs: every hour
                 description: Retrieve all workspaces for a user
                 output: AsanaWorkspace
-                endpoint: GET /ticketing/workspaces
+                endpoint: GET /workspaces
             projects:
                 runs: every hour
                 description: Retrieves all projects for a user
                 output: AsanaProject
-                endpoint: GET /ticketing/projects
+                endpoint: GET /projects
         actions:
             fetch-workspaces:
                 description: >-
                     Fetch the workspaces with a limit (default 10) of a user to allow them
                     to selection of projects to sync
-                endpoint: GET /ticketing/workspaces/limit
+                endpoint: GET /workspaces/limit
                 output: BaseAsanaModel[]
                 input: Limit
             fetch-projects:
                 description: >-
                     Fetch the projects with a limit (default 10) given a workspace of a
                     user to allow selection when choosing the tasks to sync.
-                endpoint: GET /ticketing/projects/limit
+                endpoint: GET /projects/limit
                 output: BaseAsanaModel[]
                 input: AsanaProjectInput
             create-task:
                 input: CreateAsanaTask
-                endpoint: POST /ticketing/task
+                endpoint: POST /tasks
                 output: Task
                 description: >
                     Create a task using Asana specific fields and return a unified model
@@ -186,11 +186,11 @@ integrations:
             update-task:
                 description: Update a task and be able to assign the task to a specific user
                 input: AsanaUpdateTask
-                endpoint: PATCH /ticketing/task
+                endpoint: PATCH /tasks
                 output: Task
             delete-task:
                 input: Id
-                endpoint: DELETE /ticketing/task
+                endpoint: DELETE /tasks
                 output: boolean
         models:
             Id:
@@ -311,7 +311,7 @@ integrations:
                     Fetches a list of all candidates from your ashby account
                 scopes: candidatelastsyncToken
                 sync_type: incremental
-                endpoint: GET /ashby/candidates
+                endpoint: GET /candidates
             jobs:
                 runs: every hour
                 output: AshbyJob
@@ -319,20 +319,20 @@ integrations:
                     Fetches a list of all jobs from your ashby account
                 scopes: jobslastsyncToken
                 sync_type: incremental
-                endpoint: GET /ashby/jobs
+                endpoint: GET /jobs
         actions:
             create-application:
                 output: AshbyCreateApplicationResponse
                 input: AshbyCreateCandidateInput
                 description: |
                     Action to consider a candidate for a job
-                endpoint: POST /ashby/create-application
+                endpoint: POST /applications
             create-note:
                 output: AshbyCreateNoteResponse
                 input: AshbyCreateNoteInput
                 description: |
                     Action to create a note on a candidate.
-                endpoint: POST /ashby/create-note
+                endpoint: POST /notes
         models:
             AshbyCandidate:
                 id: string
@@ -485,22 +485,22 @@ integrations:
                     Fetches a list of current employees from bamboohr
                 output: BamboohrEmployee
                 sync_type: incremental
-                endpoint: GET /bamboohr/employees
+                endpoint: GET /employees
         actions:
             create-employee:
                 description: |
                     Action to create a new employee
                 output: BamboohrCreateEmployeeResponse
                 input: BamboohrCreateEmployee
-                endpoint: POST /bamboohr/create-employee
+                endpoint: POST /employees
                 version: 1.0.0
             update-employee:
-                endpoint: PUT /bamboohr/employee
+                endpoint: PUT /employees
                 input: BamboohrUpdateEmployee
                 output: BamboohrResponseStatus
                 description: Update an existing employee in the system
             fetch-fields:
-                endpoint: GET /bamboohr/fields
+                endpoint: GET /fields
                 output: BamboohrField[]
                 description: Introspection to retrieve available fields
         models:
@@ -1118,7 +1118,7 @@ integrations:
                     Fetches a list of calls from your account. For the first sync, it will
                     go back to the past one year
                 sync_type: incremental
-                endpoint: GET /clari-copilot/call
+                endpoint: GET /calls
         models:
             ClariCopilotCall:
                 id: string
@@ -1177,7 +1177,7 @@ integrations:
                     Fetches a list of spaces from confluence
                 sync_type: full
                 scopes: read:space:confluence
-                endpoint: GET /confluence/spaces
+                endpoint: GET /spaces
             pages:
                 runs: every 4 hours
                 output: ConfluencePage
@@ -1185,7 +1185,7 @@ integrations:
                     Fetches a list of pages from confluence
                 sync_type: full
                 scopes: read:page:confluence
-                endpoint: GET /confluence/pages
+                endpoint: GET /pages
         models:
             ConfluenceSpace:
                 id: string
@@ -1222,7 +1222,7 @@ integrations:
             active-users:
                 description: |
                     Fetches a list of active users from Discourse.
-                endpoint: /discourse/active-users
+                endpoint: /users
                 sync_type: full
                 runs: every 1 hour
                 output: User
@@ -3433,7 +3433,7 @@ integrations:
                 output: Customer
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /customers
+                endpoint: GET /quickbooks/customers
             accounts:
                 description: >
                     Fetches all accounts in QuickBooks. Handles both active and archived
@@ -3442,7 +3442,7 @@ integrations:
                 output: Account
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /accounts
+                endpoint: GET /quickbooks/accounts
             payments:
                 description: >
                     Fetches all payments in QuickBooks. Handles both active and voided
@@ -3451,7 +3451,7 @@ integrations:
                 output: Payment
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /payments
+                endpoint: GET /quickbooks/payments
             items:
                 description: >
                     Fetches all items in QuickBooks. Handles both active and archived
@@ -3460,7 +3460,7 @@ integrations:
                 output: Item
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /items
+                endpoint: GET /quickbooks/items
             invoices:
                 description: >
                     Fetches all invoices in QuickBooks. Handles both active and voided
@@ -3469,7 +3469,7 @@ integrations:
                 output: Invoice
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /invoices
+                endpoint: GET /quickbooks/invoices
         actions:
             create-customer:
                 description: |
@@ -3477,77 +3477,77 @@ integrations:
                 input: CreateCustomer
                 scopes: com.intuit.quickbooks.accounting
                 output: Customer
-                endpoint: POST /customers
+                endpoint: POST /quickbooks/customer
             update-customer:
                 description: |
                     Update a single customer in QuickBooks.
                 input: UpdateCustomer
                 scopes: com.intuit.quickbooks.accounting
                 output: Customer
-                endpoint: PUT /customers
+                endpoint: PUT /quickbooks/customer
             create-item:
                 description: |
                     Creates a single item in QuickBooks.
                 input: CreateItem
                 scopes: com.intuit.quickbooks.accounting
                 output: Item
-                endpoint: POST /items
+                endpoint: POST /quickbooks/item
             update-item:
                 description: |
                     Update a single item in QuickBooks.
                 input: UpdateItem
                 scopes: com.intuit.quickbooks.accounting
                 output: Item
-                endpoint: PUT /items
+                endpoint: PUT /quickbooks/item
             create-account:
                 description: |
                     Creates a single account in QuickBooks.
                 input: CreateAccount
                 scopes: com.intuit.quickbooks.accounting
                 output: Account
-                endpoint: POST /accounts
+                endpoint: POST /quickbooks/account
             update-account:
                 description: |
                     Updates a single account in QuickBooks.
                 input: UpdateAccount
                 scopes: com.intuit.quickbooks.accounting
                 output: Account
-                endpoint: PUT /accounts
+                endpoint: PUT /quickbooks/account
             create-invoice:
                 description: |
                     Creates a single invoice in QuickBooks.
                 input: CreateInvoice
                 scopes: com.intuit.quickbooks.accounting
                 output: Invoice
-                endpoint: POST /invoices
+                endpoint: POST /quickbooks/invoice
             update-invoice:
                 description: |
                     Updates a single invoice in QuickBooks.
                 input: UpdateInvoice
                 scopes: com.intuit.quickbooks.accounting
                 output: Invoice
-                endpoint: PUT /invoices
+                endpoint: PUT /quickbooks/invoice
             create-credit-memo:
                 description: |
                     Creates a single credit memo in QuickBooks.
                 input: CreateCreditMemo
                 scopes: com.intuit.quickbooks.accounting
                 output: CreditMemo
-                endpoint: POST /credit-memos
+                endpoint: POST /quickbooks/credit-memo
             update-credit-memo:
                 description: |
                     Updates a single credit memo in QuickBooks.
                 input: UpdateCreditMemo
                 scopes: com.intuit.quickbooks.accounting
                 output: CreditMemo
-                endpoint: PUT /credit-memos
+                endpoint: PUT /quickbooks/credit-memo
             create-payment:
                 description: |
                     Creates a single payment in QuickBooks.
                 input: CreatePayment
                 scopes: com.intuit.quickbooks.accounting
                 output: Payment
-                endpoint: POST /payments
+                endpoint: POST /quickbooks/payment
         models:
             Updates:
                 id: string
@@ -3800,6 +3800,7 @@ integrations:
                 description: |
                     Fetches a list of articles from salesforce
                 output: SalesforceArticle
+                auto_start: false
                 sync_type: incremental
                 endpoint: GET /salesforce/articles
             tickets:
@@ -4714,7 +4715,8 @@ integrations:
                 runs: every hour
                 output: Contact
                 sync_type: incremental
-                endpoint: GET /contacts
+                endpoint: GET /xero/contacts
+                version: 1.0.0
             accounts:
                 description: >
                     Fetches all accounts in Xero (chart of accounts). Incremental sync,
@@ -4723,7 +4725,8 @@ integrations:
                 scopes: accounting.settings
                 output: Account
                 sync_type: incremental
-                endpoint: GET /accounts
+                endpoint: GET /xero/accounts
+                version: 1.0.0
             items:
                 description: >
                     Fetches all items in Xero. Incremental sync, does not detect deletes,
@@ -4734,7 +4737,8 @@ integrations:
                 scopes: accounting.settings
                 output: Item
                 sync_type: incremental
-                endpoint: GET /items
+                endpoint: GET /xero/items
+                version: 1.0.0
             invoices:
                 description: |
                     Fetches all invoices in Xero. Incremental sync.
@@ -4742,7 +4746,8 @@ integrations:
                 scopes: accounting.transactions
                 output: Invoice
                 sync_type: incremental
-                endpoint: GET /invoices
+                endpoint: GET /xero/invoices
+                version: 1.0.0
             payments:
                 description: |
                     Fetches all payments in Xero. Incremental sync.
@@ -4750,7 +4755,8 @@ integrations:
                 scopes: accounting.transactions
                 output: Payment
                 sync_type: incremental
-                endpoint: GET /payments
+                endpoint: GET /xero/payments
+                version: 1.0.0
         actions:
             create-contact:
                 description: |
@@ -4759,7 +4765,8 @@ integrations:
                 input: CreateContact[]
                 scopes: accounting.contacts
                 output: ContactActionResponse
-                endpoint: POST /contacts
+                endpoint: POST /xero/contacts
+                version: 1.0.0
             update-contact:
                 description: >
                     Updates one or multiple contacts in Xero. Only fields that are passed
@@ -4768,7 +4775,8 @@ integrations:
                 input: Contact[]
                 scopes: accounting.contacts
                 output: ContactActionResponse
-                endpoint: PUT /contacts
+                endpoint: PUT /xero/contacts
+                version: 1.0.0
             create-invoice:
                 description: |
                     Creates one or more invoices in Xero.
@@ -4776,8 +4784,8 @@ integrations:
                 input: CreateInvoice[]
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
-                endpoint: POST /invoices
-                version: 1.0.0
+                endpoint: POST /xero/invoices
+                version: 1.0.1
             update-invoice:
                 description: |
                     Updates one or more invoices in Xero. To delete an invoice
@@ -4787,8 +4795,8 @@ integrations:
                 input: UpdateInvoice[]
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
-                endpoint: PUT /invoices
-                version: 1.0.0
+                endpoint: PUT /xero/invoices
+                version: 1.0.1
             create-credit-note:
                 description: |
                     Creates one or more credit notes in Xero.
@@ -4796,14 +4804,16 @@ integrations:
                 input: CreditNote[]
                 scopes: accounting.transactions
                 output: CreditNoteActionResponse
-                endpoint: POST /creditnotes
+                endpoint: POST /xero/creditnotes
+                version: 1.0.0
             update-credit-note:
                 description: |
                     Updates one or more credit notes in Xero.
                 input: CreditNote[]
                 scopes: accounting.transactions
                 output: CreditNoteActionResponse
-                endpoint: PUT /creditnotes
+                endpoint: PUT /xero/creditnotes
+                version: 1.0.0
             create-payment:
                 description: |
                     Creates one or more payments in Xero.
@@ -4811,7 +4821,8 @@ integrations:
                 scopes: accounting.transactions
                 input: CreatePayment[]
                 output: PaymentActionResponse
-                endpoint: POST /payments
+                endpoint: POST /xero/payments
+                version: 1.0.0
             create-item:
                 description: |
                     Creates one or more items in Xero.
@@ -4819,14 +4830,16 @@ integrations:
                 scopes: accounting.settings
                 input: Item[]
                 output: ItemActionResponse
-                endpoint: POST /items
+                endpoint: POST /xero/items
+                version: 1.0.0
             update-item:
                 description: |
                     Updates one or more items in Xero.
                 scopes: accounting.settings
                 input: Item[]
                 output: ItemActionResponse
-                endpoint: PUT /items
+                endpoint: PUT /xero/items
+                version: 1.0.0
         models:
             ActionErrorResponse:
                 message: string
@@ -4847,9 +4860,9 @@ integrations:
             Contact:
                 name: string
                 id: string
-                external_id?: string
+                external_id: string | null
                 email: string | null
-                tax_number?: string | null
+                tax_number: string | null
                 address_line_1?: string | null
                 address_line_2?: string | null
                 city: string | null
@@ -4861,9 +4874,9 @@ integrations:
             FailedContact:
                 name: string
                 id: string
-                external_id?: string
+                external_id: string | null
                 email: string | null
-                tax_number?: string | null
+                tax_number: string | null
                 address_line_1?: string | null
                 address_line_2?: string | null
                 city: string | null
@@ -5049,12 +5062,12 @@ integrations:
                 external_contact_id: string
                 status: string
                 number: string
-                is_taxable: boolean
-                tax_rate_id: string
-                tax_rate: number
+                is_taxable?: boolean
+                tax_rate_id?: string
+                tax_rate?: number
                 currency: string
                 reference: string
-                issuing_date: date
+                issuing_date: date | null
                 fees: CreditNoteFee[]
             CreditNoteFee:
                 item_id: string
@@ -5072,12 +5085,12 @@ integrations:
                 external_contact_id: string
                 status: string
                 number: string
-                is_taxable: boolean
-                tax_rate_id: string
-                tax_rate: number
+                is_taxable?: boolean
+                tax_rate_id?: string
+                tax_rate?: number
                 currency: string
                 reference: string
-                issuing_date: date
+                issuing_date: date | null
                 fees: CreditNoteFee[]
                 validation_errors: any[]
             CreditNoteActionResponse:
