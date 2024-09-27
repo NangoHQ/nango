@@ -1164,6 +1164,83 @@ The response from the external API is passed back to you exactly as Nango gets i
 - response body
 </Expandable>
 
+# Connect
+
+### Create a connect session
+
+Create a connect session for a given end user
+
+```js
+const { data } = await nango.createConnectSession({
+  end_user: {
+    id: '<END-USER-ID>',
+    email: '<END-USER-EMAIL>',
+    display_name: '<END-USER-NAME>'
+  },
+  organization: {
+    id: '<ORGANIZATION-ID>',
+    display_name: '<ORGANIZATION-NAME>'
+  },
+  allowed_integrations: ['<INTEGRATION-ID-1>', '<INTEGRATION-ID-2>'],
+  integrations_config_defaults: {
+    <INTEGRATION-ID-1>: {
+      connection_config: {
+        <CONFIG-KEY>: '<VALUE>'
+      }
+    }
+  }
+});
+```
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="end_user" type="object" required>
+    <Expandable title="end_user" defaultOpen>
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the end user.
+      </ResponseField>
+      <ResponseField name="email" type="string" required>
+        The email address of the end user.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the end user.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="organization" type="object">
+    <Expandable title="organization" defaultOpen>
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the organization.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the organization.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="allowed_integrations" type="string[]">
+    An array of integration IDs that are allowed for this session.
+  </ResponseField>
+
+  <ResponseField name="integrations_config_defaults" type="object">
+    Default configuration for specific integrations.
+  </ResponseField>
+</Expandable>
+
+**Returns**
+
+<Expandable>
+```json
+{
+    "data": {
+        "token": "nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
+        "expires_at": "2024-09-27T19:49:51.449Z"
+    }
+}
+```
+</Expandable>
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
