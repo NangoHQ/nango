@@ -1645,6 +1645,75 @@ paths:
             responses:
                 '200':
                     description: The response exactly as returned by the external API
+    /connect/sessions:
+        post:
+            description: Create a new connect session
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ConnectSession'
+            responses:
+                '201':
+                    description: Successfully created a connect session
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: object
+                                        required:
+                                            - token
+                                            - expires_at
+                                        properties:
+                                            token:
+                                                type: string
+                                                description: The connect session token
+                                            expires_at:
+                                                type: string
+                                                description: When the token expires
+                                                format: date
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+    /connect/session:
+        get:
+            description: Retrieve a connect session
+            responses:
+                '200':
+                    description: Successfully retrieved a connect session
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/ConnectSession'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+        delete:
+            description: Delete a connect session
+            responses:
+                '204':
+                    description: Successfully retrieved a connect session
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
 
 components:
 
@@ -1973,3 +2042,42 @@ components:
                 type: string
                 format: date
                 description: Last time it was updated
+    ConnectSession:
+        type: object
+        required:
+            - end_user
+        properties:
+            end_user:
+                type: object
+                required:
+                    - id
+                    - email
+                properties:
+                    id:
+                        type: string
+                        description: Uniquely identifies the end user.
+                    email:
+                        type: string
+                    display_name:
+                        type: string
+            organization:
+                type: object
+                properties:
+                    id:
+                        type: string
+                        description: Uniquely identifies the organization the end user belongs to
+                    display_name:
+                        type: string
+            allowed_integrations:
+                type: array
+                description: Session would only be able to interact with allowed integrations
+                items:
+                    type: string
+            integrations_config_defaults:
+                type: object
+                additionalProperties:
+                    type: object
+                    description: the unique name of an integration
+                    properties:
+                        connection_config:
+                            type: object

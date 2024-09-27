@@ -650,6 +650,14 @@
                                 "reference/api/proxy/patch",
                                 "reference/api/proxy/delete"
                             ]
+                        },
+                        {
+                            "group": "Connect",
+                            "pages": [
+                                "reference/api/connect/sessions/create",
+                                "reference/api/connect/session/get",
+                                "reference/api/connect/session/delete"
+                            ]
                         }
                     ]
                 },
