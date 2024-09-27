@@ -78,7 +78,7 @@ export async function httpSnippet({
     connectionId: string;
     providerConfigKey: string;
     language: TargetId;
-    input?: NangoModel | NangoSyncModel;
+    input?: NangoModel | NangoSyncModel | undefined;
 }) {
     const [method, path] = Object.entries(endpoint)[0];
     const secretKeyDisplay = isProd() ? maskedKey : secretKey;
