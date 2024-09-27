@@ -59,6 +59,6 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
     }
 
     res.status(200).send({
-        data: integrationToPublicApi(integration, include)
+        data: integrationToPublicApi({ integration, include, provider })
     });
 });

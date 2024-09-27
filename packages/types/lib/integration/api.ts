@@ -10,6 +10,7 @@ import type { SyncType } from '../scripts/syncs/api';
 
 export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider'>, ApiTimestamps> & {
     logo: string;
+    display_name: string;
 } & ApiPublicIntegrationInclude;
 export interface ApiPublicIntegrationInclude {
     webhook_url?: string | null;
