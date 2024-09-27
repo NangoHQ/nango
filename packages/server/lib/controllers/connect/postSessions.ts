@@ -3,32 +3,32 @@ import { z } from 'zod';
 import db from '@nangohq/database';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import * as keystore from '@nangohq/keystore';
-import * as linkedProfileService from '../../services/linkedProfile.service.js';
+import * as endUserService from '../../services/endUser.service.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 const bodySchema = z
     .object({
-        linkedProfile: z
+        end_user: z
             .object({
-                profileId: z.string().max(255).min(1),
+                id: z.string().max(255).min(1),
                 email: z.string().email().min(5),
-                displayName: z.string().max(255).optional(),
-                organization: z
-                    .object({
-                        id: z.string().max(255).min(0),
-                        displayName: z.string().max(255).optional()
-                    })
-                    .strict()
-                    .optional()
+                display_name: z.string().max(255).optional()
             })
             .strict(),
-        allowedIntegrations: z.array(z.string()).optional(),
-        integrationsConfigDefaults: z
+        organization: z
+            .object({
+                id: z.string().max(255).min(0),
+                display_name: z.string().max(255).optional()
+            })
+            .strict()
+            .optional(),
+        allowed_integrations: z.array(z.string()).optional(),
+        integrations_config_defaults: z
             .record(
                 z
                     .object({
-                        connectionConfig: z.record(z.unknown())
+                        connection_config: z.record(z.unknown())
                     })
                     .strict()
             )
@@ -50,73 +50,77 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
     }
 
     await db.knex.transaction(async (trx) => {
-        // Check if the linkedProfile exists in the database
-        const getLinkedProfile = await linkedProfileService.getLinkedProfile(trx, {
-            profileId: req.body.linkedProfile.profileId,
+        // Check if the endUser exists in the database
+        const getEndUser = await endUserService.getEndUser(trx, {
+            endUserId: req.body.end_user.id,
             accountId: res.locals.account.id,
             environmentId: res.locals.environment.id
         });
 
-        let linkedProfileId: number;
-        if (getLinkedProfile.isErr()) {
-            if (getLinkedProfile.error.code !== 'not_found') {
-                res.status(500).send({ error: { code: 'internal_error', message: 'Failed to get linked profile' } });
+        let endUserId: number;
+        if (getEndUser.isErr()) {
+            if (getEndUser.error.code !== 'not_found') {
+                res.status(500).send({ error: { code: 'internal_error', message: 'Failed to get end user' } });
                 return;
             }
-            // create linked profile if it doesn't exist yet
-            const createLinkedProfile = await linkedProfileService.createLinkedProfile(trx, {
-                profileId: req.body.linkedProfile.profileId,
-                email: req.body.linkedProfile.email,
-                displayName: req.body.linkedProfile.displayName || null,
-                organization: req.body.linkedProfile.organization?.id
+            // create end user if it doesn't exist yet
+            const createEndUser = await endUserService.createEndUser(trx, {
+                endUserId: req.body.end_user.id,
+                email: req.body.end_user.email,
+                displayName: req.body.end_user.display_name || null,
+                organization: req.body.organization?.id
                     ? {
-                          id: req.body.linkedProfile.organization.id,
-                          displayName: req.body.linkedProfile.organization.displayName || null
+                          organizationId: req.body.organization.id,
+                          displayName: req.body.organization.display_name || null
                       }
                     : null,
                 accountId: res.locals.account.id,
                 environmentId: res.locals.environment.id
             });
-            if (createLinkedProfile.isErr()) {
-                res.status(500).send({ error: { code: 'internal_error', message: 'Failed to create linked profile' } });
+            if (createEndUser.isErr()) {
+                res.status(500).send({ error: { code: 'internal_error', message: 'Failed to create end user' } });
                 return;
             }
-            linkedProfileId = createLinkedProfile.value.id;
+            endUserId = createEndUser.value.id;
         } else {
             const shouldUpdate =
-                getLinkedProfile.value.email !== req.body.linkedProfile.email ||
-                getLinkedProfile.value.displayName !== req.body.linkedProfile.displayName ||
-                getLinkedProfile.value.organization?.id !== req.body.linkedProfile.organization?.id ||
-                getLinkedProfile.value.organization?.displayName !== req.body.linkedProfile.organization?.displayName;
+                getEndUser.value.email !== req.body.end_user.email ||
+                getEndUser.value.displayName !== req.body.end_user.display_name ||
+                getEndUser.value.organization?.organizationId !== req.body.organization?.id ||
+                getEndUser.value.organization?.displayName !== req.body.organization?.display_name;
             if (shouldUpdate) {
-                const updateLinkedProfile = await linkedProfileService.updateLinkedProfile(trx, {
-                    profileId: getLinkedProfile.value.profileId,
+                const updateEndUser = await endUserService.updateEndUser(trx, {
+                    endUserId: getEndUser.value.endUserId,
                     accountId: res.locals.account.id,
                     environmentId: res.locals.environment.id,
-                    email: req.body.linkedProfile.email,
-                    displayName: req.body.linkedProfile.displayName || null,
-                    organization: req.body.linkedProfile.organization?.id
+                    email: req.body.end_user.email,
+                    displayName: req.body.end_user.display_name || null,
+                    organization: req.body.organization?.id
                         ? {
-                              id: req.body.linkedProfile.organization.id,
-                              displayName: req.body.linkedProfile.organization.displayName || null
+                              organizationId: req.body.organization.id,
+                              displayName: req.body.organization.display_name || null
                           }
                         : null
                 });
-                if (updateLinkedProfile.isErr()) {
-                    res.status(500).send({ error: { code: 'internal_error', message: 'Failed to update linked profile' } });
+                if (updateEndUser.isErr()) {
+                    res.status(500).send({ error: { code: 'internal_error', message: 'Failed to update end user' } });
                     return;
                 }
             }
-            linkedProfileId = getLinkedProfile.value.id;
+            endUserId = getEndUser.value.id;
         }
 
         // create connect session
         const createConnectSession = await connectSessionService.createConnectSession(trx, {
-            linkedProfileId: linkedProfileId,
+            endUserId: endUserId,
             accountId: res.locals.account.id,
             environmentId: res.locals.environment.id,
-            allowedIntegrations: req.body.allowedIntegrations || null,
-            integrationsConfigDefaults: req.body.integrationsConfigDefaults || null
+            allowedIntegrations: req.body.allowed_integrations || null,
+            integrationsConfigDefaults: req.body.integrations_config_defaults
+                ? Object.fromEntries(
+                      Object.entries(req.body.integrations_config_defaults).map(([key, value]) => [key, { connectionConfig: value.connection_config }])
+                  )
+                : null
         });
         if (createConnectSession.isErr()) {
             res.status(500).send({ error: { code: 'internal_error', message: 'Failed to create connect session' } });
@@ -136,7 +140,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             return;
         }
         const [token, privateKey] = createPrivateKey.value;
-        res.status(201).send({ data: { token, expiresAt: privateKey.expiresAt! } });
+        res.status(201).send({ data: { token, expires_at: privateKey.expiresAt! } });
         return;
     });
 });
