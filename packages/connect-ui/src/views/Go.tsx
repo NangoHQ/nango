@@ -75,18 +75,14 @@ export const Go: React.FC = () => {
         const baseForm = formSchema[authMode];
 
         // Modify base form with credentials specific
-        if (provider.credentials) {
-            for (const [name, schema] of Object.entries(provider.credentials)) {
-                baseForm.shape[name] = jsonSchemaToZod(schema);
-            }
+        for (const [name, schema] of Object.entries(provider.credentials || [])) {
+            baseForm.shape[name] = jsonSchemaToZod(schema);
         }
 
         // Append connectionConfig object
         const additionalFields: z.ZodRawShape = {};
-        if (provider.connection_config) {
-            for (const [name, schema] of Object.entries(provider.connection_config)) {
-                additionalFields[name] = jsonSchemaToZod(schema);
-            }
+        for (const [name, schema] of Object.entries(provider.connection_config || [])) {
+            additionalFields[name] = jsonSchemaToZod(schema);
         }
 
         // Only add objects if they have something otherwise it breaks react-form
