@@ -18,10 +18,13 @@ export type ResDefaultErrors =
     | ApiError<'invalid_body', ValidationError[]>
     | ApiError<'invalid_uri_params', ValidationError[]>
     | ApiError<'feature_disabled'>
-    | ApiError<'missing_auth_header'>
     | ApiError<'generic_error_support', undefined, string>
     | ApiError<'server_error'>
-    | ApiError<'resource_capped'>;
+    | ApiError<'resource_capped'>
+    | ApiError<'missing_auth_header'>
+    | ApiError<'malformed_auth_header'>
+    | ApiError<'unknown_account'>
+    | ApiError<'unknown_connect_session_token'>;
 
 export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /**

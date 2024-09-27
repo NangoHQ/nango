@@ -49,12 +49,14 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         return;
     }
 
+    const { account, environment } = res.locals;
+
     await db.knex.transaction(async (trx) => {
         // Check if the endUser exists in the database
         const getEndUser = await endUserService.getEndUser(trx, {
             endUserId: req.body.end_user.id,
-            accountId: res.locals.account.id,
-            environmentId: res.locals.environment.id
+            accountId: account.id,
+            environmentId: environment.id
         });
 
         let endUserInternalId: number;
@@ -74,8 +76,8 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                           displayName: req.body.organization.display_name || null
                       }
                     : null,
-                accountId: res.locals.account.id,
-                environmentId: res.locals.environment.id
+                accountId: account.id,
+                environmentId: environment.id
             });
             if (createEndUser.isErr()) {
                 res.status(500).send({ error: { code: 'server_error', message: 'Failed to create end user' } });
@@ -91,8 +93,8 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             if (shouldUpdate) {
                 const updateEndUser = await endUserService.updateEndUser(trx, {
                     endUserId: getEndUser.value.endUserId,
-                    accountId: res.locals.account.id,
-                    environmentId: res.locals.environment.id,
+                    accountId: account.id,
+                    environmentId: environment.id,
                     email: req.body.end_user.email,
                     displayName: req.body.end_user.display_name || null,
                     organization: req.body.organization?.id
@@ -112,9 +114,9 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
 
         // create connect session
         const createConnectSession = await connectSessionService.createConnectSession(trx, {
-            endUserInternalId: endUserInternalId,
-            accountId: res.locals.account.id,
-            environmentId: res.locals.environment.id,
+            endUserId: endUserInternalId,
+            accountId: account.id,
+            environmentId: environment.id,
             allowedIntegrations: req.body.allowed_integrations || null,
             integrationsConfigDefaults: req.body.integrations_config_defaults
                 ? Object.fromEntries(
@@ -129,8 +131,8 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         // create a private key for the connect session
         const createPrivateKey = await keystore.createPrivateKey(trx, {
             displayName: '',
-            accountId: res.locals.account.id,
-            environmentId: res.locals.environment.id,
+            accountId: account.id,
+            environmentId: environment.id,
             entityType: 'connect_session',
             entityId: createConnectSession.value.id,
             ttlInMs: 30 * 60 * 1000 // 30 minutes

@@ -17,10 +17,12 @@ export const deleteConnectSession = asyncWrapper<DeleteConnectSession>(async (re
         return;
     }
 
+    const { connectSession, account, environment } = res.locals;
+
     const deleteSession = await connectSessionService.deleteConnectSession(db.knex, {
-        id: res.locals.connectSession.id,
-        accountId: res.locals.account.id,
-        environmentId: res.locals.environment.id
+        id: connectSession.id,
+        accountId: account.id,
+        environmentId: environment.id
     });
 
     if (deleteSession.isErr()) {
@@ -29,9 +31,9 @@ export const deleteConnectSession = asyncWrapper<DeleteConnectSession>(async (re
                 code: 'server_error',
                 message: 'Failed to delete connect session',
                 payload: {
-                    id: res.locals.connectSession.id,
-                    accountId: res.locals.account.id,
-                    environmentId: res.locals.environment.id
+                    id: connectSession.id,
+                    accountId: account.id,
+                    environmentId: environment.id
                 }
             }
         });

@@ -17,12 +17,12 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
         return;
     }
 
-    const { connectSession } = res.locals;
+    const { connectSession, account, environment } = res.locals;
 
     const getEndUser = await endUserService.getEndUser(db.knex, {
-        id: connectSession.endUserInternalId,
-        accountId: res.locals.account.id,
-        environmentId: res.locals.environment.id
+        id: connectSession.endUserId,
+        accountId: account.id,
+        environmentId: environment.id
     });
 
     if (getEndUser.isErr()) {

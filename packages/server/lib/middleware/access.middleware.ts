@@ -191,14 +191,14 @@ export class AccessMiddleware {
 
             const getConnectSession = await connectSessionService.getConnectSessionByToken(db.knex, token);
             if (getConnectSession.isErr()) {
-                return errorManager.errRes(res, 'unknown_connect_token');
+                return errorManager.errRes(res, 'unknown_connect_session_token');
             }
 
             const result = await environmentService.getAccountAndEnvironment({
                 environmentId: getConnectSession.value.environmentId
             });
             if (!result) {
-                res.status(401).send({ error: { code: 'unknown_user_account' } });
+                res.status(401).send({ error: { code: 'unknown_account' } });
                 return;
             }
 

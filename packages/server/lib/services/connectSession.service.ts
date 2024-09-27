@@ -22,7 +22,7 @@ const ConnectSessionMapper = {
     to: (session: ConnectSession): DBConnectSession => {
         return {
             id: session.id,
-            end_user_id: session.endUserInternalId,
+            end_user_id: session.endUserId,
             account_id: session.accountId,
             environment_id: session.environmentId,
             created_at: session.createdAt,
@@ -34,7 +34,7 @@ const ConnectSessionMapper = {
     from: (dbSession: DBConnectSession): ConnectSession => {
         return {
             id: dbSession.id,
-            endUserInternalId: dbSession.end_user_id,
+            endUserId: dbSession.end_user_id,
             accountId: dbSession.account_id,
             environmentId: dbSession.environment_id,
             createdAt: dbSession.created_at,
@@ -59,15 +59,15 @@ export class ConnectSessionError extends Error {
 export async function createConnectSession(
     db: knex.Knex,
     {
-        endUserInternalId,
+        endUserId,
         accountId,
         environmentId,
         allowedIntegrations,
         integrationsConfigDefaults
-    }: Pick<ConnectSession, 'endUserInternalId' | 'allowedIntegrations' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId'>
+    }: Pick<ConnectSession, 'endUserId' | 'allowedIntegrations' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId'>
 ): Promise<Result<ConnectSession, ConnectSessionError>> {
     const dbSession: DbInsertConnectSession = {
-        end_user_id: endUserInternalId,
+        end_user_id: endUserId,
         account_id: accountId,
         environment_id: environmentId,
         allowed_integrations: allowedIntegrations || null,
@@ -79,7 +79,7 @@ export async function createConnectSession(
             new ConnectSessionError({
                 code: 'creation_failed',
                 message: 'Failed to create connect session',
-                payload: { endUserInternalId, allowedIntegrations, integrationsConfigDefaults }
+                payload: { endUserId, allowedIntegrations, integrationsConfigDefaults }
             })
         );
     }

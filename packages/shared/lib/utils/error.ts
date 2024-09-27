@@ -57,6 +57,11 @@ export class NangoError extends Error {
                 this.message = 'Authentication failed. The provided public key is not a UUID v4.';
                 break;
 
+            case 'unknown_connect_session_token':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided connect session token does not match any account.';
+                break;
+
             case 'only_nango_cloud':
                 this.status = 401;
                 this.message = 'This endpoint is only available for Nango Cloud.';

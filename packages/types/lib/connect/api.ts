@@ -1,4 +1,4 @@
-import type { Endpoint, ApiError } from '../api.js';
+import type { Endpoint } from '../api.js';
 
 export type PostConnectSessions = Endpoint<{
     Method: 'POST';
@@ -18,7 +18,6 @@ export type PostConnectSessions = Endpoint<{
         allowed_integrations?: string[] | undefined;
         integrations_config_defaults?: Record<string, { connection_config: Record<string, unknown> }> | undefined;
     };
-    Error: ApiError<'forbidden'>;
     Success: {
         data: {
             token: string;
@@ -30,7 +29,6 @@ export type PostConnectSessions = Endpoint<{
 export type GetConnectSession = Endpoint<{
     Method: 'GET';
     Path: '/connect/session';
-    Error: ApiError<'forbidden'>;
     Success: {
         data: {
             allowed_integrations?: string[] | undefined;
@@ -53,6 +51,5 @@ export type GetConnectSession = Endpoint<{
 export type DeleteConnectSession = Endpoint<{
     Method: 'DELETE';
     Path: '/connect/session';
-    Error: ApiError<'forbidden'>;
     Success: never;
 }>;
