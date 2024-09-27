@@ -76,7 +76,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                     secretKey,
                     connectionId,
                     providerConfigKey,
-                    input: flow.input,
+                    input: flow.type === 'action' ? flow.input : undefined,
                     language: language === 'curl' ? 'shell' : language!
                 });
             }
