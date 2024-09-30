@@ -1706,7 +1706,7 @@ paths:
             description: Delete a connect session
             responses:
                 '204':
-                    description: Successfully retrieved a connect session
+                    description: Successfully deleted a connect session
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -2070,7 +2070,7 @@ components:
                         type: string
             allowed_integrations:
                 type: array
-                description: Session would only be able to interact with allowed integrations
+                description: Filters which integrations the end user can interact with
                 items:
                     type: string
             integrations_config_defaults:
