@@ -3,7 +3,7 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 import { Go } from '@/views/Go';
 import { IntegrationsList } from '@/views/IntegrationsList';
 
-const rootRoute = createRootRoute();
+const rootRoute = createRootRoute({});
 export const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',

@@ -119,6 +119,7 @@ algolia:
             description: The application ID for your Algolia account
             example: ERBSOWZO32
             pattern: '^[A-Z0-9]{10}$'
+            order: 1
     credentials:
         apiKey:
             type: string
