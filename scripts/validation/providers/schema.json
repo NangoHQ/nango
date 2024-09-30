@@ -184,6 +184,7 @@
                         "verification": {
                             "type": "object",
                             "additionalProperties": false,
+                            "required": ["endpoint"],
                             "properties": {
                                 "method": {
                                     "type": "string",

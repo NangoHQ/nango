@@ -1,3 +1,4 @@
+/// <reference types="vite-plugin-svgr/client" />
 import { IconArrowRight, IconExclamationCircle, IconX } from '@tabler/icons-react';
 import { QueryErrorResetBoundary, useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -12,8 +13,44 @@ import { Button } from '@/components/ui/button';
 import { getIntegrations, getProvider } from '@/lib/api';
 import { triggerClose } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
+import NoIntegrationSVG from '@/svg/nointegrations.svg?react';
 
 export const IntegrationsList: React.FC = () => {
+    return (
+        <QueryErrorResetBoundary>
+            {({ reset }) => (
+                <ErrorBoundary fallbackRender={ErrorFallback} onReset={reset}>
+                    <Suspense fallback={<div>loading</div>}>
+                        <Integrations />
+                    </Suspense>
+                </ErrorBoundary>
+            )}
+        </QueryErrorResetBoundary>
+    );
+};
+
+const Integrations: React.FC = () => {
+    const { data } = useSuspenseQuery({ queryKey: ['integrations'], queryFn: getIntegrations });
+
+    if (data.data.length <= 0) {
+        return (
+            <Layout>
+                <main className="h-full overflow-auto m-9 p-1">
+                    <div className="flex flex-col justify-between h-full">
+                        <div></div>
+                        <div className="flex flex-col items-center gap-5 w-full">
+                            <NoIntegrationSVG />
+                            <h1 className="text-xl font-semibold">No integration found.</h1>
+                        </div>
+
+                        <Button title="Close UI" onClick={() => triggerClose()}>
+                            Close
+                        </Button>
+                    </div>
+                </main>
+            </Layout>
+        );
+    }
     return (
         <Layout>
             <header className="flex flex-col gap-4 p-10 ">
@@ -28,29 +65,13 @@ export const IntegrationsList: React.FC = () => {
                 </div>
             </header>
             <main className="h-full overflow-auto m-9 mt-1 p-1">
-                <QueryErrorResetBoundary>
-                    {({ reset }) => (
-                        <ErrorBoundary fallbackRender={ErrorFallback} onReset={reset}>
-                            <Suspense fallback={<div>loading</div>}>
-                                <Integrations />
-                            </Suspense>
-                        </ErrorBoundary>
-                    )}
-                </QueryErrorResetBoundary>
+                <div className="flex flex-col">
+                    {data.data.map((integration) => {
+                        return <Integration key={integration.unique_key} integration={integration} />;
+                    })}
+                </div>
             </main>
         </Layout>
-    );
-};
-
-const Integrations: React.FC = () => {
-    const { data } = useSuspenseQuery({ queryKey: ['integrations'], queryFn: getIntegrations });
-
-    return (
-        <div className="flex flex-col">
-            {data.data.map((integration) => {
-                return <Integration key={integration.unique_key} integration={integration} />;
-            })}
-        </div>
     );
 };
 

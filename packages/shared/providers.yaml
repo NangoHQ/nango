@@ -109,6 +109,8 @@ algolia:
         headers:
             X-Algolia-Application-Id: ${connectionConfig.APP_ID}
             X-Algolia-API-Key: ${apiKey}
+        verification:
+            endpoint: /1/keys/${credentials.apiKey}
     docs: https://docs.nango.dev/integrations/all/algolia
     connection_config:
         APP_ID:
