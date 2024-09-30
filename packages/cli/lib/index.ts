@@ -36,7 +36,7 @@ class NangoCommand extends Command {
                 }
             }
 
-            if (isCI) {
+            if (!isCI) {
                 await upgradeAction(debug);
             }
         });
