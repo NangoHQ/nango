@@ -4716,6 +4716,7 @@ integrations:
                 output: Contact
                 sync_type: incremental
                 endpoint: GET /xero/contacts
+                version: 1.0.0
             accounts:
                 description: >
                     Fetches all accounts in Xero (chart of accounts). Incremental sync,
@@ -4725,6 +4726,7 @@ integrations:
                 output: Account
                 sync_type: incremental
                 endpoint: GET /xero/accounts
+                version: 1.0.0
             items:
                 description: >
                     Fetches all items in Xero. Incremental sync, does not detect deletes,
@@ -4736,6 +4738,7 @@ integrations:
                 output: Item
                 sync_type: incremental
                 endpoint: GET /xero/items
+                version: 1.0.0
             invoices:
                 description: |
                     Fetches all invoices in Xero. Incremental sync.
@@ -4744,6 +4747,7 @@ integrations:
                 output: Invoice
                 sync_type: incremental
                 endpoint: GET /xero/invoices
+                version: 1.0.0
             payments:
                 description: |
                     Fetches all payments in Xero. Incremental sync.
@@ -4752,6 +4756,7 @@ integrations:
                 output: Payment
                 sync_type: incremental
                 endpoint: GET /xero/payments
+                version: 1.0.0
         actions:
             create-contact:
                 description: |
@@ -4761,6 +4766,7 @@ integrations:
                 scopes: accounting.contacts
                 output: ContactActionResponse
                 endpoint: POST /xero/contacts
+                version: 1.0.0
             update-contact:
                 description: >
                     Updates one or multiple contacts in Xero. Only fields that are passed
@@ -4770,6 +4776,7 @@ integrations:
                 scopes: accounting.contacts
                 output: ContactActionResponse
                 endpoint: PUT /xero/contacts
+                version: 1.0.0
             create-invoice:
                 description: |
                     Creates one or more invoices in Xero.
@@ -4778,7 +4785,7 @@ integrations:
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
                 endpoint: POST /xero/invoices
-                version: 1.0.0
+                version: 1.0.1
             update-invoice:
                 description: |
                     Updates one or more invoices in Xero. To delete an invoice
@@ -4789,7 +4796,7 @@ integrations:
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
                 endpoint: PUT /xero/invoices
-                version: 1.0.0
+                version: 1.0.1
             create-credit-note:
                 description: |
                     Creates one or more credit notes in Xero.
@@ -4798,6 +4805,7 @@ integrations:
                 scopes: accounting.transactions
                 output: CreditNoteActionResponse
                 endpoint: POST /xero/creditnotes
+                version: 1.0.0
             update-credit-note:
                 description: |
                     Updates one or more credit notes in Xero.
@@ -4805,6 +4813,7 @@ integrations:
                 scopes: accounting.transactions
                 output: CreditNoteActionResponse
                 endpoint: PUT /xero/creditnotes
+                version: 1.0.0
             create-payment:
                 description: |
                     Creates one or more payments in Xero.
@@ -4813,6 +4822,7 @@ integrations:
                 input: CreatePayment[]
                 output: PaymentActionResponse
                 endpoint: POST /xero/payments
+                version: 1.0.0
             create-item:
                 description: |
                     Creates one or more items in Xero.
@@ -4821,6 +4831,7 @@ integrations:
                 input: Item[]
                 output: ItemActionResponse
                 endpoint: POST /xero/items
+                version: 1.0.0
             update-item:
                 description: |
                     Updates one or more items in Xero.
@@ -4828,6 +4839,7 @@ integrations:
                 input: Item[]
                 output: ItemActionResponse
                 endpoint: PUT /xero/items
+                version: 1.0.0
         models:
             ActionErrorResponse:
                 message: string
@@ -4848,9 +4860,9 @@ integrations:
             Contact:
                 name: string
                 id: string
-                external_id?: string
+                external_id: string | null
                 email: string | null
-                tax_number?: string | null
+                tax_number: string | null
                 address_line_1?: string | null
                 address_line_2?: string | null
                 city: string | null
@@ -4862,9 +4874,9 @@ integrations:
             FailedContact:
                 name: string
                 id: string
-                external_id?: string
+                external_id: string | null
                 email: string | null
-                tax_number?: string | null
+                tax_number: string | null
                 address_line_1?: string | null
                 address_line_2?: string | null
                 city: string | null
@@ -5050,12 +5062,12 @@ integrations:
                 external_contact_id: string
                 status: string
                 number: string
-                is_taxable: boolean
-                tax_rate_id: string
-                tax_rate: number
+                is_taxable?: boolean
+                tax_rate_id?: string
+                tax_rate?: number
                 currency: string
                 reference: string
-                issuing_date: date
+                issuing_date: date | null
                 fees: CreditNoteFee[]
             CreditNoteFee:
                 item_id: string
@@ -5073,12 +5085,12 @@ integrations:
                 external_contact_id: string
                 status: string
                 number: string
-                is_taxable: boolean
-                tax_rate_id: string
-                tax_rate: number
+                is_taxable?: boolean
+                tax_rate_id?: string
+                tax_rate?: number
                 currency: string
                 reference: string
-                issuing_date: date
+                issuing_date: date | null
                 fees: CreditNoteFee[]
                 validation_errors: any[]
             CreditNoteActionResponse:

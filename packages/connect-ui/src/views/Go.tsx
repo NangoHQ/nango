@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthError } from '@nangohq/frontend';
 import { IconArrowLeft, IconCircleCheckFilled, IconExclamationCircle, IconX } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -16,18 +16,17 @@ import { Input } from '@/components/ui/input';
 import { triggerClose } from '@/lib/events';
 import { nango } from '@/lib/nango';
 import { useGlobal } from '@/lib/store';
+import { jsonSchemaToZod } from '@/lib/utils';
+
+import type { Resolver } from 'react-hook-form';
 
 const formSchema: Record<AuthModeType, z.AnyZodObject> = {
     API_KEY: z.object({
-        credentials: z.object({
-            apiKey: z.string().min(1)
-        })
+        apiKey: z.string().min(1)
     }),
     BASIC: z.object({
-        credentials: z.object({
-            username: z.string().min(1),
-            password: z.string().min(1)
-        })
+        username: z.string().min(1),
+        password: z.string().min(1)
     }),
     APP: z.object({}),
     APP_STORE: z.object({}),
@@ -58,14 +57,6 @@ export const Go: React.FC = () => {
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-assignment
     const authMode = provider?.auth_mode;
-    const fields = authMode ? formSchema[authMode] : null;
-    const hasField = fields ? Object.keys(fields.shape).length > 0 : true;
-    const form = useForm<z.infer<(typeof formSchema)['API_KEY']>>({
-        resolver: zodResolver(formSchema[authMode || 'NONE']),
-        defaultValues: {
-            username: ''
-        }
-    });
 
     useEffect(() => {
         // on unmount always clear popup and state
@@ -73,6 +64,43 @@ export const Go: React.FC = () => {
             nango.clear();
         };
     }, []);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { resolver, hasField } = useMemo<{ resolver: Resolver<any>; hasField: boolean }>(() => {
+        if (!provider) {
+            return { hasField: true, resolver: () => ({ values: {}, errors: {} }) };
+        }
+
+        const authMode = provider.auth_mode;
+        const baseForm = formSchema[authMode];
+
+        // Modify base form with credentials specific
+        for (const [name, schema] of Object.entries(provider.credentials || [])) {
+            baseForm.shape[name] = jsonSchemaToZod(schema);
+        }
+
+        // Append connectionConfig object
+        const additionalFields: z.ZodRawShape = {};
+        for (const [name, schema] of Object.entries(provider.connection_config || [])) {
+            additionalFields[name] = jsonSchemaToZod(schema);
+        }
+
+        // Only add objects if they have something otherwise it breaks react-form
+        const fields = z.object({
+            ...(Object.keys(baseForm.shape).length > 0 ? { credentials: baseForm } : {}),
+            ...(Object.keys(additionalFields).length > 0 ? { params: z.object(additionalFields) } : {})
+        });
+
+        const hasField = Object.keys(fields.shape).length > 0;
+        const resolver = zodResolver(fields);
+        return { hasField, resolver };
+    }, [provider]);
+
+    const form = useForm<z.infer<(typeof formSchema)['API_KEY']>>({
+        resolver: resolver,
+        mode: 'onChange',
+        reValidateMode: 'onChange'
+    });
 
     const onSubmit = useCallback(
         async (values: z.infer<(typeof formSchema)[AuthModeType]>) => {
@@ -95,14 +123,15 @@ export const Go: React.FC = () => {
                     if (err.type === 'blocked_by_browser') {
                         setError('Auth pop-up blocked by your browser, please allow pop-ups to open');
                         return;
-                    }
-                    if (err.type === 'windowClosed') {
+                    } else if (err.type === 'windowClosed') {
                         setError('The auth pop-up was closed before the end of the process');
+                        return;
+                    } else if (err.type === 'connection_test_failed') {
+                        setError(`${provider.display_name} refused your credentials. Please check the values and try again.`);
                         return;
                     }
                 }
 
-                console.error(err);
                 setError('An error occurred, please try again');
             } finally {
                 setLoading(false);
@@ -178,15 +207,16 @@ export const Go: React.FC = () => {
                                     control={form.control}
                                     name="credentials.apiKey"
                                     render={({ field }) => {
+                                        const def = provider.credentials?.apiKey;
                                         return (
                                             <FormItem>
                                                 <div>
-                                                    <FormLabel>API Key</FormLabel>
-                                                    <FormDescription>Find your API Key in your own {provider.name} account</FormDescription>
+                                                    <FormLabel>{def?.title || 'API Key'}</FormLabel>
+                                                    <FormDescription>{def?.description}</FormDescription>
                                                 </div>
                                                 <div>
                                                     <FormControl>
-                                                        <Input placeholder="Your API Key" {...field} autoComplete="off" type="password" />
+                                                        <Input placeholder={def?.example || 'Your API Key'} {...field} autoComplete="off" type="password" />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </div>
@@ -378,15 +408,48 @@ export const Go: React.FC = () => {
                                     />
                                 </>
                             )}
+
+                            {provider.connection_config &&
+                                Object.entries(provider.connection_config).map(([key, schema]) => {
+                                    return (
+                                        <FormField
+                                            key={key}
+                                            control={form.control}
+                                            name={`params.${key}`}
+                                            render={({ field }) => {
+                                                return (
+                                                    <FormItem>
+                                                        <div>
+                                                            <FormLabel>{schema.title}</FormLabel>
+                                                            {schema.description && <FormDescription>{schema.description}</FormDescription>}
+                                                        </div>
+                                                        <div>
+                                                            <FormControl>
+                                                                <Input placeholder={schema.example || schema.title} {...field} autoComplete="off" />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </div>
+                                                    </FormItem>
+                                                );
+                                            }}
+                                        />
+                                    );
+                                })}
                         </div>
-                        <div>
+                        <div className="flex flex-col gap-4">
                             {error && (
                                 <div className="border border-red-base bg-red-base-35 text-red-base flex items-center py-1 px-4 rounded gap-2">
-                                    <IconExclamationCircle size={17} stroke={1} /> {error}
+                                    <IconExclamationCircle size={20} stroke={1} /> {error}
                                 </div>
                             )}
                             {hasField && (
-                                <Button className="w-full" loading={loading} size={'lg'} type="submit">
+                                <Button
+                                    className="w-full"
+                                    disabled={!form.formState.isValid || Object.keys(form.formState.errors).length > 0}
+                                    loading={loading}
+                                    size={'lg'}
+                                    type="submit"
+                                >
                                     Submit
                                 </Button>
                             )}

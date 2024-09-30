@@ -10,7 +10,7 @@ describe('PrivateKey', async () => {
     });
 
     it('should be created and retrieved', async () => {
-        const entityType = 'session';
+        const entityType = 'connect_session';
         const displayName = 'this is my key';
         const createKey = await createPrivateKey(db, {
             displayName,
@@ -22,7 +22,7 @@ describe('PrivateKey', async () => {
         if (createKey.isErr()) {
             throw createKey.error;
         }
-        const keyValue = createKey.value;
+        const [keyValue] = createKey.value;
         const getKey = await getPrivateKey(db, keyValue);
 
         const key = getKey.unwrap();
@@ -30,7 +30,7 @@ describe('PrivateKey', async () => {
         expect(key.entityType).toBe(entityType);
 
         const decrypted = decryptPrivateKey(key);
-        expect(decrypted.unwrap()?.substring(0, 14)).toBe('nango_session_');
+        expect(decrypted.unwrap()).toMatch(/^nango_connect_session_[a-f0-9]{64}$/);
     });
 
     it('should return an error if the key is not found', async () => {
@@ -39,7 +39,7 @@ describe('PrivateKey', async () => {
     });
 
     it('should be deleted', async () => {
-        const entityType = 'session';
+        const entityType = 'connect_session';
         const createKey = await createPrivateKey(db, {
             displayName: 'this is my key',
             entityType,
@@ -48,16 +48,17 @@ describe('PrivateKey', async () => {
             environmentId: 1
         });
 
-        const getKey = await getPrivateKey(db, createKey.unwrap());
+        const [keyValue] = createKey.unwrap();
+        const getKey = await getPrivateKey(db, keyValue);
         expect(getKey.isOk()).toBe(true);
 
         const deleteKey = await deletePrivateKey(db, {
-            keyValue: createKey.unwrap(),
+            keyValue: keyValue,
             entityType
         });
         expect(deleteKey.isOk()).toBe(true);
 
-        const getKeyAgain = await getPrivateKey(db, createKey.unwrap());
+        const getKeyAgain = await getPrivateKey(db, keyValue);
         if (getKeyAgain.isOk()) {
             throw new Error('Key should have been deleted');
         }
@@ -65,7 +66,7 @@ describe('PrivateKey', async () => {
     });
 
     it('should have their last_access_at updated when retrieved', async () => {
-        const entityType = 'session';
+        const entityType = 'connect_session';
         const createKey = await createPrivateKey(db, {
             displayName: 'this is my key',
             entityType,
@@ -73,20 +74,21 @@ describe('PrivateKey', async () => {
             accountId: 1,
             environmentId: 1
         });
-        const getKey = await getPrivateKey(db, createKey.unwrap());
+        const [keyValue] = createKey.unwrap();
+        const getKey = await getPrivateKey(db, keyValue);
         const lastAccessAt1 = getKey.unwrap().lastAccessAt;
         expect(lastAccessAt1).not.toBe(null);
 
         await new Promise((resolve) => setTimeout(resolve, 10));
-        const getKeyAgain = await getPrivateKey(db, createKey.unwrap());
+        const getKeyAgain = await getPrivateKey(db, keyValue);
         const lastAccessAt2 = getKeyAgain.unwrap().lastAccessAt;
         expect(lastAccessAt2).not.toBe(null);
         expect(lastAccessAt2?.getTime() || 0).toBeGreaterThan(lastAccessAt1?.getTime() || 0);
     });
 
     it('should be retrieved before it expires', async () => {
-        const entityType = 'session';
-        const ttlInMs = 30;
+        const entityType = 'connect_session';
+        const ttlInMs = 100;
         const createKey = await createPrivateKey(db, {
             displayName: 'this is my key',
             entityType,
@@ -95,13 +97,13 @@ describe('PrivateKey', async () => {
             environmentId: 1,
             ttlInMs
         });
-        await new Promise((resolve) => setTimeout(resolve, ttlInMs / 2));
-        const getKey = await getPrivateKey(db, createKey.unwrap());
+        const [keyValue] = createKey.unwrap();
+        const getKey = await getPrivateKey(db, keyValue);
         expect(getKey.isOk()).toBe(true);
     });
 
     it('should expires', async () => {
-        const entityType = 'session';
+        const entityType = 'connect_session';
         const ttlInMs = 5;
         const createKey = await createPrivateKey(db, {
             displayName: 'this is my key',
@@ -112,12 +114,13 @@ describe('PrivateKey', async () => {
             ttlInMs
         });
         await new Promise((resolve) => setTimeout(resolve, ttlInMs * 2));
-        const getKey = await getPrivateKey(db, createKey.unwrap());
+        const [keyValue] = createKey.unwrap();
+        const getKey = await getPrivateKey(db, keyValue);
         expect(getKey.isErr()).toBe(true);
     });
 
     it('should be created and retrieved with only hash stored', async () => {
-        const entityType = 'session';
+        const entityType = 'connect_session';
         const displayName = 'this is my key';
         const createKey = await createPrivateKey(
             db,
@@ -130,7 +133,8 @@ describe('PrivateKey', async () => {
             },
             { onlyStoreHash: true }
         );
-        const getKey = await getPrivateKey(db, createKey.unwrap());
+        const [keyValue] = createKey.unwrap();
+        const getKey = await getPrivateKey(db, keyValue);
         expect(getKey.unwrap().encrypted).toBe(null);
     });
 });

@@ -6,6 +6,7 @@ export enum Types {
     ACTION_FAILURE = 'nango.orch.action.failure',
     ACTION_TRACK_RUNTIME = 'action_track_runtime',
 
+    AUTH_GET_ENV_BY_CONNECT_SESSION = 'nango.auth.getEnvByConnectSession',
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
     AUTH_PUBLIC_KEY = 'nango.auth.publicKey',
     AUTH_SESSION = 'nango.auth.session',
