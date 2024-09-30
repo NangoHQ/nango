@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { WebSocketClientId } from './publisher.client';
-import { RedisPubSub, Publisher } from './publisher.client';
+import type { WebSocketClientId, RedisPubSub } from './publisher.client';
+import { Publisher } from './publisher.client';
 import type { WebSocket } from 'ws';
 import * as uuid from 'uuid';
+import type { RedisClientType } from '@nangohq/kvstore';
 
 const mockWebsocket = () => {
     const mock = {} as any;
@@ -19,11 +20,19 @@ const mockRes = ({ status }: { status: number }) => {
     return mock;
 };
 
-class MockRedis extends RedisPubSub {
+class MockRedis implements RedisPubSub {
     // Caveat: only one subscription per channel is supported
     private subscriptions = new Map<string, (message: string, channel: string) => void>();
+    // @ts-expect-error unused because implements
+    private pub: RedisClientType | undefined;
+    // @ts-expect-error unused because implements
+    private sub: RedisClientType | undefined;
 
-    public override async publish(channel: string, message: string) {
+    public async connect(): Promise<void> {
+        // void
+    }
+
+    public async publish(channel: string, message: string) {
         const onMessage = this.subscriptions.get(channel);
         if (onMessage) {
             onMessage(message, channel);
@@ -31,12 +40,12 @@ class MockRedis extends RedisPubSub {
         return Promise.resolve();
     }
 
-    public override async subscribe(channel: string, onMessage: (message: string, channel: string) => void) {
+    public async subscribe(channel: string, onMessage: (message: string, channel: string) => void) {
         this.subscriptions.set(channel, onMessage);
         return Promise.resolve();
     }
 
-    public override async unsubscribe(channel: string) {
+    public async unsubscribe(channel: string) {
         this.subscriptions.delete(channel);
         return Promise.resolve();
     }
@@ -50,8 +59,8 @@ describe('Publisher', () => {
     let ws: WebSocket;
 
     beforeEach(() => {
-        publisher1 = new Publisher(mockRedis);
-        publisher2 = new Publisher(mockRedis);
+        publisher1 = new Publisher(mockRedis as any);
+        publisher2 = new Publisher(mockRedis as any);
         wsClientId = uuid.v4();
         ws = mockWebsocket();
     });

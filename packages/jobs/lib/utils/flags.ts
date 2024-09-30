@@ -11,8 +11,6 @@ export async function getRunnerFlags(): Promise<RunnerFlags> {
         featureFlags.isEnabled({ key: 'runner.validateSyncMetadata', distinctId: 'global', fallback: false })
     ]);
 
-    console.log('hello', validateActionInput);
-
     return {
         validateActionInput,
         validateActionOutput,
