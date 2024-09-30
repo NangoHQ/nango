@@ -1,11 +1,13 @@
 import type { Request, Response, NextFunction } from 'express';
-import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError, Err, Ok } from '@nangohq/utils';
 import { LogActionEnum, ErrorSourceEnum, environmentService, errorManager, userService } from '@nangohq/shared';
 import db from '@nangohq/database';
 import * as connectSessionService from '../services/connectSession.service.js';
 import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import tracer from 'dd-trace';
 import type { RequestLocals } from '../utils/express.js';
+import type { ConnectSession, DBEnvironment, DBTeam } from '@nangohq/types';
 
 const logger = getLogger('AccessMiddleware');
 
@@ -13,6 +15,35 @@ const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9
 const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
 
 export class AccessMiddleware {
+    private async secretKeyCheck(req: Request): Promise<
+        Result<{
+            account: DBTeam;
+            environment: DBEnvironment;
+        }>
+    > {
+        const authorizationHeader = req.get('authorization');
+
+        if (!authorizationHeader) {
+            return Err('missing_auth_header');
+        }
+
+        const secret = authorizationHeader.split('Bearer ').pop();
+
+        if (!secret) {
+            return Err('malformed_auth_header');
+        }
+
+        if (!keyRegex.test(secret)) {
+            return Err('invalid_secret_key_format');
+        }
+
+        const result = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
+        if (!result) {
+            return Err('unknown_user_account');
+        }
+        return Ok(result);
+    }
+
     async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('secretKeyAuth', {
@@ -21,32 +52,16 @@ export class AccessMiddleware {
 
         const start = Date.now();
         try {
-            const authorizationHeader = req.get('authorization');
-
-            if (!authorizationHeader) {
-                return errorManager.errRes(res, 'missing_auth_header');
-            }
-
-            const secret = authorizationHeader.split('Bearer ').pop();
-
-            if (!secret) {
-                return errorManager.errRes(res, 'malformed_auth_header');
-            }
-
-            if (!keyRegex.test(secret)) {
-                return errorManager.errRes(res, 'invalid_secret_key_format');
-            }
-
-            const result = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
-            if (!result) {
-                res.status(401).send({ error: { code: 'unknown_user_account' } });
+            const result = await this.secretKeyCheck(req);
+            if (result.isErr()) {
+                errorManager.errRes(res, result.error.message);
                 return;
             }
 
             res.locals['authType'] = 'secretKey';
-            res.locals['account'] = result.account;
-            res.locals['environment'] = result.environment;
-            tracer.setUser({ id: String(result.account.id), environmentId: String(result.environment.id) });
+            res.locals['account'] = result.value.account;
+            res.locals['environment'] = result.value.environment;
+            tracer.setUser({ id: String(result.value.account.id), environmentId: String(result.value.environment.id) });
             next();
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
@@ -169,6 +184,44 @@ export class AccessMiddleware {
         }
     }
 
+    private async connectSessionCheck(req: Request): Promise<
+        Result<{
+            account: DBTeam;
+            environment: DBEnvironment;
+            connectSession: ConnectSession;
+        }>
+    > {
+        const authorizationHeader = req.get('authorization');
+
+        if (!authorizationHeader) {
+            return Err('missing_auth_header');
+        }
+
+        const token = authorizationHeader.split('Bearer ').pop();
+
+        if (!token) {
+            return Err('malformed_auth_header');
+        }
+
+        const getConnectSession = await connectSessionService.getConnectSessionByToken(db.knex, token);
+        if (getConnectSession.isErr()) {
+            return Err('unknown_connect_session_token');
+        }
+
+        const result = await environmentService.getAccountAndEnvironment({
+            environmentId: getConnectSession.value.environmentId
+        });
+        if (!result) {
+            return Err('unknown_account');
+        }
+
+        return Ok({
+            account: result.account,
+            environment: result.environment,
+            connectSession: getConnectSession.value
+        });
+    }
+
     async connectSessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('connectSessionAuth', {
@@ -177,46 +230,73 @@ export class AccessMiddleware {
 
         const start = Date.now();
         try {
-            const authorizationHeader = req.get('authorization');
+            const result = await this.connectSessionCheck(req);
 
-            if (!authorizationHeader) {
-                return errorManager.errRes(res, 'missing_auth_header');
-            }
-
-            const token = authorizationHeader.split('Bearer ').pop();
-
-            if (!token) {
-                return errorManager.errRes(res, 'malformed_auth_header');
-            }
-
-            const getConnectSession = await connectSessionService.getConnectSessionByToken(db.knex, token);
-            if (getConnectSession.isErr()) {
-                return errorManager.errRes(res, 'unknown_connect_session_token');
-            }
-
-            const result = await environmentService.getAccountAndEnvironment({
-                environmentId: getConnectSession.value.environmentId
-            });
-            if (!result) {
-                res.status(401).send({ error: { code: 'unknown_account' } });
+            if (result.isErr()) {
+                errorManager.errRes(res, result.error.message);
                 return;
             }
 
             res.locals['authType'] = 'connectSession';
-            res.locals['account'] = result.account;
-            res.locals['environment'] = result.environment;
-            res.locals['connectSession'] = getConnectSession.value;
+            res.locals['account'] = result.value.account;
+            res.locals['environment'] = result.value.environment;
+            res.locals['connectSession'] = result.value.connectSession;
             tracer.setUser({
-                id: String(result.account.id),
-                environmentId: String(result.environment.id),
-                connectSessionId: String(getConnectSession.value.id)
+                id: String(result.value.account.id),
+                environmentId: String(result.value.environment.id),
+                connectSessionId: String(result.value.connectSession.id)
             });
             next();
-        } catch (err) {
-            logger.error(`failed_get_env_by_connect_session_token ${stringifyError(err)}`);
-            return errorManager.errRes(res, 'malformed_auth_header');
+        } catch (e) {
+            logger.error(`failed_get_env_by_connect_session ${stringifyError(e)}`);
+            return errorManager.errRes(res, 'unknown_account');
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION, Date.now() - start);
+            span.finish();
+        }
+    }
+
+    async connectSessionOrSecretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('connectSessionOrSecretKeyAuth', {
+            childOf: active!
+        });
+
+        const start = Date.now();
+        try {
+            const connectSessionResult = await this.connectSessionCheck(req);
+
+            if (connectSessionResult.isErr()) {
+                const secretKeyResult = await this.secretKeyCheck(req);
+                if (secretKeyResult.isErr()) {
+                    errorManager.errRes(res, secretKeyResult.error.message);
+                    return;
+                }
+
+                res.locals['authType'] = 'secretKey';
+                res.locals['account'] = secretKeyResult.value.account;
+                res.locals['environment'] = secretKeyResult.value.environment;
+                tracer.setUser({
+                    id: String(secretKeyResult.value.account.id),
+                    environmentId: String(secretKeyResult.value.environment.id)
+                });
+            } else {
+                res.locals['authType'] = 'connectSession';
+                res.locals['account'] = connectSessionResult.value.account;
+                res.locals['environment'] = connectSessionResult.value.environment;
+                res.locals['connectSession'] = connectSessionResult.value.connectSession;
+                tracer.setUser({
+                    id: String(connectSessionResult.value.account.id),
+                    environmentId: String(connectSessionResult.value.environment.id),
+                    connectSessionId: String(connectSessionResult.value.connectSession.id)
+                });
+            }
+            next();
+        } catch (e) {
+            logger.error(`failed_get_env_by_connect_session_or_secret ${stringifyError(e)}`);
+            return errorManager.errRes(res, 'unknown_account');
+        } finally {
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION_OR_SECRET_KEY, Date.now() - start);
             span.finish();
         }
     }

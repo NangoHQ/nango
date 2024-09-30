@@ -34,7 +34,7 @@ export class NangoError extends Error {
 
             case 'unknown_account':
                 this.status = 401;
-                this.message = 'Authentication failed. The provided secret/public key does not match any account.';
+                this.message = 'Authentication failed. The provided authorization header does not match any account.';
                 break;
 
             case 'invalid_secret_key':
