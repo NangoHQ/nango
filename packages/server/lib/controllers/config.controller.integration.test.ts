@@ -5,13 +5,14 @@ import { NangoError } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
 import configController from './config.controller';
 import type { RequestLocals } from '../utils/express.js';
-import type { DBTeam, DBEnvironment } from '@nangohq/types';
+import type { DBTeam, DBEnvironment, ConnectSession } from '@nangohq/types';
 
 const locals: Required<RequestLocals> = {
     authType: 'secretKey',
     account: { id: 0 } as DBTeam,
     environment: { id: 1 } as DBEnvironment,
-    user: { id: 0 } as User
+    user: { id: 0 } as User,
+    connectSession: { id: 0 } as ConnectSession
 };
 /**
  * LIST: ✅

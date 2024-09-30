@@ -1,4 +1,4 @@
-export type EntityType = 'session' | 'connection' | 'environment';
+export type EntityType = 'connect_session' | 'connection' | 'environment';
 
 export interface PrivateKey {
     readonly id: number;
