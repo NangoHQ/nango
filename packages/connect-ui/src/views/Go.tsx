@@ -265,12 +265,14 @@ export const Go: React.FC = () => {
                         <img src={integration.logo} />
                     </div>
                     <h1 className="font-semibold text-xl text-dark-800">Link {provider.display_name} Account</h1>
-                    <p className="text-dark-500">
-                        Stuck?{' '}
-                        <Link className="underline text-dark-800" target="_blank" to={provider.docs}>
-                            View connection guide
-                        </Link>
-                    </p>
+                    {provider.docs_connect && (
+                        <p className="text-dark-500">
+                            Stuck?{' '}
+                            <Link className="underline text-dark-800" target="_blank" to={provider.docs_connect}>
+                                View connection guide
+                            </Link>
+                        </p>
+                    )}
                 </div>
             </header>
             <main className="h-full overflow-auto p-10 pt-1">
