@@ -2,11 +2,12 @@ import { Err, metrics, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskPostConnection } from '@nangohq/nango-orchestrator';
 import type { Config, SyncConfig, NangoConnection, NangoProps } from '@nangohq/shared';
-import { configService, environmentService, getApiUrl, getRunnerFlags, NangoError } from '@nangohq/shared';
+import { configService, environmentService, getApiUrl, NangoError } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient } from '../clients.js';
+import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startPostConnection(task: TaskPostConnection): Promise<Result<void>> {
     let account: DBTeam | undefined;

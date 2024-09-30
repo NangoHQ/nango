@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { WebSocketClientId } from './publisher.client';
-import { Redis, Publisher } from './publisher.client';
+import { RedisPubSub, Publisher } from './publisher.client';
 import type { WebSocket } from 'ws';
 import * as uuid from 'uuid';
 
@@ -19,12 +19,9 @@ const mockRes = ({ status }: { status: number }) => {
     return mock;
 };
 
-class MockRedis extends Redis {
+class MockRedis extends RedisPubSub {
     // Caveat: only one subscription per channel is supported
     private subscriptions = new Map<string, (message: string, channel: string) => void>();
-    constructor() {
-        super('');
-    }
 
     public override async publish(channel: string, message: string) {
         const onMessage = this.subscriptions.get(channel);

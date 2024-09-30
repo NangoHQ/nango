@@ -17,14 +17,12 @@ import syncManager, { syncCommandToOperation } from './services/sync/manager.ser
 import flowService from './services/flow.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
-import featureFlags from './utils/featureflags.js';
 import { Orchestrator } from './clients/orchestrator.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
 
 export * from './services/sync/post-connection.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
-export * from './services/sync/run.utils.js';
 export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
@@ -72,7 +70,6 @@ export {
     errorNotificationService,
     analytics,
     AnalyticsTypes,
-    featureFlags,
     syncCommandToOperation,
     Orchestrator,
     SlackService,

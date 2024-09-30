@@ -9,13 +9,14 @@ import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration, File } from '@nangohq/shared';
-import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
+import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService } from '@nangohq/shared';
 import { metrics, getLogger, axiosInstance as axios, getHeaders } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 import type { MessageRowInsert } from '@nangohq/types';
+import { featureFlags } from '../utils/utils.js';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -63,7 +64,7 @@ class ProxyController {
 
             const headers = parseHeaders(req);
 
-            const rawBodyFlag = await featureFlags.isEnabled('proxy:rawbody', 'global', false);
+            const rawBodyFlag = await featureFlags.isEnabled({ key: 'proxy:rawbody', distinctId: 'global', fallback: false });
             const data = rawBodyFlag ? req.rawBody : req.body;
             let files: File[] = [];
             if (Array.isArray(req.files)) {

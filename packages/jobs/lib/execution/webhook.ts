@@ -10,7 +10,6 @@ import {
     createSyncJob,
     environmentService,
     getApiUrl,
-    getRunnerFlags,
     getSyncByIdAndName,
     getSyncConfigRaw,
     updateSyncJobStatus
@@ -19,6 +18,7 @@ import { bigQueryClient } from '../clients.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import { startScript } from './operations/start.js';
+import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let account: DBTeam | undefined;

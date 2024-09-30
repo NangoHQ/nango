@@ -18,10 +18,9 @@ import {
     truncateJson
 } from '@nangohq/utils';
 import type { SyncConfig } from '../models/Sync.js';
-import type { RunnerFlags } from '../services/sync/run.utils.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
-import type { DBTeam, GetPublicIntegration, MessageRowInsert } from '@nangohq/types';
+import type { DBTeam, GetPublicIntegration, MessageRowInsert, RunnerFlags } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
 
 const logger = getLogger('SDK');

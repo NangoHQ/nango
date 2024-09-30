@@ -1,10 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
-import { featureFlags, environmentService } from '@nangohq/shared';
+import { environmentService } from '@nangohq/shared';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import routeWebhook from '../webhook/webhook.manager.js';
+import { featureFlags } from '../utils/utils.js';
 
 class WebhookController {
     async receive(req: Request, res: Response<any, never>, next: NextFunction) {
@@ -19,7 +20,7 @@ class WebhookController {
             if (!environmentUuid || !providerConfigKey) {
                 return;
             }
-            const isGloballyEnabled = await featureFlags.isEnabled('external-webhooks', 'global', true, true);
+            const isGloballyEnabled = await featureFlags.isEnabled({ key: 'external-webhooks', distinctId: 'global', fallback: true, isExcludingFlag: true });
 
             if (!isGloballyEnabled) {
                 res.status(404).send();
@@ -37,7 +38,12 @@ class WebhookController {
             span.setTag('nango.environmentUUID', environmentUuid);
             span.setTag('nango.providerConfigKey', providerConfigKey);
 
-            const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', accountUUID, true, true);
+            const areWebhooksEnabled = await featureFlags.isEnabled({
+                key: 'external-webhooks',
+                distinctId: accountUUID,
+                fallback: true,
+                isExcludingFlag: true
+            });
 
             let responsePayload = null;
 

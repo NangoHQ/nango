@@ -8,8 +8,12 @@ import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
 import { NangoError, userService, interpolateString, Orchestrator, getOrchestratorUrl } from '@nangohq/shared';
 import { OrchestratorClient } from '@nangohq/nango-orchestrator';
+import { FeatureFlags, createKVStore } from '@nangohq/kvstore';
 
 const logger = getLogger('Server.Utils');
+
+export const kvStore = await createKVStore();
+export const featureFlags = new FeatureFlags(kvStore);
 
 export async function getUserFromSession(req: Request<any>): Promise<Result<User, NangoError>> {
     const sessionUser = req.user;
