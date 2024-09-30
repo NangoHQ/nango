@@ -39,11 +39,13 @@ export function saveResponse<T>({
 export function onAxiosRequestFulfilled({
     response,
     providerConfigKey,
-    connectionId
+    connectionId,
+    syncConfig
 }: {
     response: AxiosResponse;
     providerConfigKey: string | undefined;
     connectionId: string;
+    syncConfig: string;
 }): AxiosResponse {
     if (!providerConfigKey) {
         return response;
@@ -79,7 +81,7 @@ export function onAxiosRequestFulfilled({
         directoryName,
         config: { endpoint: pathname, method },
         data: response.data,
-        customFilePath: `mocks/nango/${method}/${strippedPath}.json`
+        customFilePath: `mocks/nango/${method}/${strippedPath}/${syncConfig}.json`
     });
 
     return response;
