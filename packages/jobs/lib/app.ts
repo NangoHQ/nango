@@ -22,7 +22,7 @@ try {
     const check = async () => {
         try {
             await db.knex.raw('SELECT 1').timeout(1000);
-            healthCheck = setTimeout(check);
+            healthCheck = setTimeout(check, 1000);
         } catch (err) {
             logger.error('HealthCheck failed...', err);
             void close();
@@ -31,6 +31,7 @@ try {
     void check();
 
     const close = async () => {
+        logger.info('Closing...');
         clearTimeout(healthCheck);
         processor.stop();
         await db.knex.destroy();
