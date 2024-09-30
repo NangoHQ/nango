@@ -28,6 +28,7 @@ export interface SimplifiedJSONSchema {
     example?: string;
     pattern?: string;
     format?: string;
+    order: number;
 }
 
 export interface BaseProvider {

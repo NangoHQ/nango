@@ -48,6 +48,19 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
     CUSTOM: z.object({})
 };
 
+const defaultConfiguration: Record<string, { secret: boolean; title: string; example: string }> = {
+    'credentials.apiKey': { secret: true, title: 'API Key', example: 'Your API Key' },
+    'credentials.username': { secret: true, title: 'User Name', example: 'Your user name' },
+    'credentials.password': { secret: false, title: 'Password', example: 'Your password' },
+    'credentials.pat_name': { secret: false, title: 'Personal App Token', example: 'Your PAT' },
+    'credentials.pat_secret': { secret: true, title: 'Personal App Token Secret', example: 'Your PAT Secret' },
+    'credentials.content_url': { secret: true, title: 'Content URL', example: 'Your content URL' },
+    'credentials.oauth_client_id_override': { secret: false, title: 'OAuth Client ID', example: 'Your OAuth Client ID' },
+    'credentials.oauth_client_secret_override': { secret: true, title: 'OAuth Client Secret', example: 'Your OAuth Client Secret' },
+    'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
+    'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' }
+};
+
 export const Go: React.FC = () => {
     const { provider, integration, setIsDirty } = useGlobal();
 
@@ -55,9 +68,6 @@ export const Go: React.FC = () => {
     const [result, setResult] = useState<AuthResult>();
     const [error, setError] = useState<string | null>(null);
     const [connectionFailed, setConnectionFailed] = useState(false);
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-assignment
-    const authMode = provider?.auth_mode;
 
     useEffect(() => {
         // on unmount always clear popup and state
@@ -67,13 +77,23 @@ export const Go: React.FC = () => {
     }, []);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { resolver, hasField } = useMemo<{ resolver: Resolver<any>; hasField: boolean }>(() => {
+    const { resolver, hasField, orderedFields } = useMemo<{ resolver: Resolver<any>; hasField: boolean; orderedFields: [string, number][] }>(() => {
         if (!provider) {
-            return { hasField: true, resolver: () => ({ values: {}, errors: {} }) };
+            return { hasField: true, resolver: () => ({ values: {}, errors: {} }), orderedFields: [] };
         }
 
-        const authMode = provider.auth_mode;
-        const baseForm = formSchema[authMode];
+        const baseForm = formSchema[provider.auth_mode];
+
+        // To order fields we use incremented int starting high because we don't know yet which fields will be sorted
+        // It's a lazy algorithm that works most of the time
+        const orderedFields: Record<string, number> = {};
+        let order = 99;
+
+        // Base credentials are usually the first in the list so we start here
+        for (const name of Object.keys(baseForm.shape)) {
+            order += 1;
+            orderedFields[`credentials.${name}`] = order;
+        }
 
         // Modify base form with credentials specific
         for (const [name, schema] of Object.entries(provider.credentials || [])) {
@@ -84,6 +104,15 @@ export const Go: React.FC = () => {
         const additionalFields: z.ZodRawShape = {};
         for (const [name, schema] of Object.entries(provider.connection_config || [])) {
             additionalFields[name] = jsonSchemaToZod(schema);
+
+            if (schema.order) {
+                // If there is an order prop, it will goes before credentials
+                orderedFields[`params.${name}`] = schema.order;
+            } else {
+                // Otherwise it's after
+                order += 1;
+                orderedFields[`params.${name}`] = order;
+            }
         }
 
         // Only add objects if they have something otherwise it breaks react-form
@@ -94,7 +123,11 @@ export const Go: React.FC = () => {
 
         const hasField = Object.keys(fields.shape).length > 0;
         const resolver = zodResolver(fields);
-        return { hasField, resolver };
+        return {
+            hasField,
+            resolver,
+            orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1))
+        };
     }, [provider]);
 
     const form = useForm<z.infer<(typeof formSchema)['API_KEY']>>({
@@ -153,7 +186,7 @@ export const Go: React.FC = () => {
                 setLoading(false);
             }
         },
-        [integration, loading]
+        [provider, integration, loading]
     );
 
     useEffect(() => {
@@ -245,230 +278,33 @@ export const Go: React.FC = () => {
                     <form className="flex flex-col gap-4 justify-between grow min-h-full" onSubmit={form.handleSubmit(onSubmit)}>
                         {hasField && (
                             <div className="flex flex-col gap-8 p-7 border border-dark-300 rounded-md">
-                                {authMode === 'API_KEY' && (
-                                    <FormField
-                                        control={form.control}
-                                        name="credentials.apiKey"
-                                        render={({ field }) => {
-                                            const def = provider.credentials?.apiKey;
-                                            return (
-                                                <FormItem>
-                                                    <div>
-                                                        <FormLabel>{def?.title || 'API Key'}</FormLabel>
-                                                        <FormDescription>{def?.description}</FormDescription>
-                                                    </div>
-                                                    <div>
-                                                        <FormControl>
-                                                            <Input placeholder={def?.example || 'Your API Key'} {...field} autoComplete="off" type="password" />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </div>
-                                                </FormItem>
-                                            );
-                                        }}
-                                    />
-                                )}
-                                {authMode === 'BASIC' && (
-                                    <>
-                                        <FormField
-                                            control={form.control}
-                                            name="credentials.username"
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem>
-                                                        <div>
-                                                            <FormLabel>User Name</FormLabel>
-                                                        </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <Input placeholder="Your user name" {...field} />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="credentials.password"
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem>
-                                                        <div>
-                                                            <FormLabel>Password</FormLabel>
-                                                        </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <Input placeholder="Your password" {...field} autoComplete="off" type="password" />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                    </>
-                                )}
-                                {authMode === 'TABLEAU' && (
-                                    <>
-                                        <FormField
-                                            control={form.control}
-                                            name="credentials.pat_name"
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem>
-                                                        <div>
-                                                            <FormLabel>Personal App Token</FormLabel>
-                                                        </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <Input placeholder="Your PAT" {...field} />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="credentials.pat_secret"
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem>
-                                                        <div>
-                                                            <FormLabel>Personal App Token Secret</FormLabel>
-                                                        </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <Input placeholder="Your PAT Secret" {...field} autoComplete="off" type="password" />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="credentials.content_url"
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem>
-                                                        <div>
-                                                            <FormLabel>Content URL</FormLabel>
-                                                        </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <Input placeholder="Your content URL" {...field} />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                    </>
-                                )}
-                                {authMode === 'TBA' && (
-                                    <>
-                                        <FormField
-                                            control={form.control}
-                                            name="credentials.oauth_client_id_override"
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem>
-                                                        <div>
-                                                            <FormLabel>OAuth Client ID</FormLabel>
-                                                        </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <Input placeholder="Your OAuth Client ID" {...field} />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="credentials.oauth_client_secret_override"
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem>
-                                                        <div>
-                                                            <FormLabel>OAuth Client Secret</FormLabel>
-                                                        </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <Input placeholder="Your OAuth Client Secret" {...field} autoComplete="off" type="password" />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="credentials.token_id"
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem>
-                                                        <div>
-                                                            <FormLabel>Token ID</FormLabel>
-                                                        </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <Input placeholder="Your Token ID" {...field} />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="credentials.token_secret"
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem>
-                                                        <div>
-                                                            <FormLabel>Token Secret</FormLabel>
-                                                        </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <Input placeholder="Your Token Secret" {...field} autoComplete="off" type="password" />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                    </>
-                                )}
+                                {orderedFields.map(([name]) => {
+                                    const [type, key] = name.split('.') as ['credentials' | 'params', string];
+                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                                    const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
+                                    // Not all fields have a definition in providers.yaml so we fallback to default
+                                    const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
 
-                                {provider.connection_config &&
-                                    Object.entries(provider.connection_config).map(([key, schema]) => {
-                                        return (
+                                    return (
+                                        <div key={name}>
                                             <FormField
-                                                key={key}
                                                 control={form.control}
-                                                name={`params.${key}`}
+                                                name={name}
                                                 render={({ field }) => {
                                                     return (
                                                         <FormItem>
                                                             <div>
-                                                                <FormLabel>{schema.title}</FormLabel>
-                                                                {schema.description && <FormDescription>{schema.description}</FormDescription>}
+                                                                <FormLabel>{definition?.title || base?.title}</FormLabel>
+                                                                {definition?.description && <FormDescription>{definition.description}</FormDescription>}
                                                             </div>
                                                             <div>
                                                                 <FormControl>
-                                                                    <Input placeholder={schema.example || schema.title} {...field} autoComplete="off" />
+                                                                    <Input
+                                                                        placeholder={definition?.example || definition?.title || base?.example}
+                                                                        {...field}
+                                                                        autoComplete="off"
+                                                                        type={base?.secret ? 'password' : 'text'}
+                                                                    />
                                                                 </FormControl>
                                                                 <FormMessage />
                                                             </div>
@@ -476,8 +312,9 @@ export const Go: React.FC = () => {
                                                     );
                                                 }}
                                             />
-                                        );
-                                    })}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                         {!hasField && <div className="text-sm text-dark-500 w-full text-center">{loading && 'A popup is opened...'}</div>}
