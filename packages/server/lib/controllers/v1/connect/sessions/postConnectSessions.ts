@@ -21,10 +21,10 @@ export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessi
     // @ts-expect-error req.body is never but we want to fake it on purpose
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     req.body = {
-        end_user: { id: `nango_${user.id}`, email: user.email, display_name: user.name }
+        end_user: { id: `nango_dashboard_${user.id}`, email: user.email, display_name: user.name }
     } satisfies PostConnectSessions['Body'];
 
-    // @ts-expect-error yes I know
+    // @ts-expect-error on internal api we pass ?env= but it's not allowed in public api
     req.query = {};
 
     postConnectSessions(req as any, res, next);

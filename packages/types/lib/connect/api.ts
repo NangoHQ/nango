@@ -57,10 +57,5 @@ export type DeleteConnectSession = Endpoint<{
 export type PostInternalConnectSessions = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
-    Success: {
-        data: {
-            token: string;
-            expires_at: Date;
-        };
-    };
+    Success: PostConnectSessions['Success'];
 }>;
