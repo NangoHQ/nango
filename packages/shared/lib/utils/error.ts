@@ -47,6 +47,11 @@ export class NangoError extends Error {
                 this.message = 'Authentication failed. The provided secret key is not a UUID v4.';
                 break;
 
+            case 'invalid_connect_session_token_format':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided connect session token is not following correct format: nango_connect_session_RANDOM)';
+                break;
+
             case 'missing_public_key':
                 this.status = 401;
                 this.message = 'Authentication failed. The request is missing a valid public key parameter.';

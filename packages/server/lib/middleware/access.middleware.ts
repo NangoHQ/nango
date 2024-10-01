@@ -12,31 +12,20 @@ import type { ConnectSession, DBEnvironment, DBTeam } from '@nangohq/types';
 const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+const connectSessionTokenPrefix = 'nango_connect_session_';
+const connectSessionTokenRegex = new RegExp(`^${connectSessionTokenPrefix}[a-f0-9]{64}$`, 'i');
 const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
 
 export class AccessMiddleware {
-    private async secretKeyCheck(req: Request): Promise<
+    private async validateSecretKey(secret: string): Promise<
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
         }>
     > {
-        const authorizationHeader = req.get('authorization');
-
-        if (!authorizationHeader) {
-            return Err('missing_auth_header');
-        }
-
-        const secret = authorizationHeader.split('Bearer ').pop();
-
-        if (!secret) {
-            return Err('malformed_auth_header');
-        }
-
         if (!keyRegex.test(secret)) {
             return Err('invalid_secret_key_format');
         }
-
         const result = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
         if (!result) {
             return Err('unknown_user_account');
@@ -52,7 +41,20 @@ export class AccessMiddleware {
 
         const start = Date.now();
         try {
-            const result = await this.secretKeyCheck(req);
+            const authorizationHeader = req.get('authorization');
+
+            if (!authorizationHeader) {
+                errorManager.errRes(res, 'missing_auth_header');
+                return;
+            }
+
+            const secret = authorizationHeader.split('Bearer ').pop();
+
+            if (!secret) {
+                errorManager.errRes(res, 'malformed_auth_header');
+                return;
+            }
+            const result = await this.validateSecretKey(secret);
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
                 return;
@@ -184,23 +186,15 @@ export class AccessMiddleware {
         }
     }
 
-    private async connectSessionCheck(req: Request): Promise<
+    private async validateConnectSessionToken(token: string): Promise<
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
             connectSession: ConnectSession;
         }>
     > {
-        const authorizationHeader = req.get('authorization');
-
-        if (!authorizationHeader) {
-            return Err('missing_auth_header');
-        }
-
-        const token = authorizationHeader.split('Bearer ').pop();
-
-        if (!token) {
-            return Err('malformed_auth_header');
+        if (!connectSessionTokenRegex.test(token)) {
+            return Err('invalid_connect_session_token_format');
         }
 
         const getConnectSession = await connectSessionService.getConnectSessionByToken(db.knex, token);
@@ -230,7 +224,21 @@ export class AccessMiddleware {
 
         const start = Date.now();
         try {
-            const result = await this.connectSessionCheck(req);
+            const authorizationHeader = req.get('authorization');
+
+            if (!authorizationHeader) {
+                errorManager.errRes(res, 'missing_auth_header');
+                return;
+            }
+
+            const token = authorizationHeader.split('Bearer ').pop();
+
+            if (!token) {
+                errorManager.errRes(res, 'malformed_auth_header');
+                return;
+            }
+
+            const result = await this.validateConnectSessionToken(token);
 
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
@@ -264,10 +272,30 @@ export class AccessMiddleware {
 
         const start = Date.now();
         try {
-            const connectSessionResult = await this.connectSessionCheck(req);
+            const authorizationHeader = req.get('authorization');
+
+            if (!authorizationHeader) {
+                errorManager.errRes(res, 'missing_auth_header');
+                return;
+            }
+
+            const token = authorizationHeader.split('Bearer ').pop();
+
+            if (!token) {
+                errorManager.errRes(res, 'malformed_auth_header');
+                return;
+            }
+
+            const connectSessionResult = await this.validateConnectSessionToken(token);
 
             if (connectSessionResult.isErr()) {
-                const secretKeyResult = await this.secretKeyCheck(req);
+                // if token is prefixed with connect session token prefix we do not try to validate it as secret key
+                if (token.startsWith(connectSessionTokenPrefix)) {
+                    errorManager.errRes(res, connectSessionResult.error.message);
+                    return;
+                }
+
+                const secretKeyResult = await this.validateSecretKey(token);
                 if (secretKeyResult.isErr()) {
                     errorManager.errRes(res, secretKeyResult.error.message);
                     return;
