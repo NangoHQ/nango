@@ -55,7 +55,7 @@ export function onAxiosRequestFulfilled({
         return response;
     }
 
-    const pathname = response.request.path.split('?')[0];
+    const pathname: string = response.request.path.split('?')[0];
     const strippedPath = pathname.replace('/', '');
 
     saveResponse<AxiosResponse>({
