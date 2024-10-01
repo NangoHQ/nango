@@ -3658,6 +3658,13 @@ quickbooks:
         base_url: https://quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
 
+quickbooks-sandbox:
+    alias: quickbooks
+    display_name: Quickbooks (sandbox)
+    proxy:
+        base_url: https://sandbox-quickbooks.api.intuit.com
+    docs: https://docs.nango.dev/integrations/all/quickbooks
+
 ramp:
     display_name: Ramp
     categories:
