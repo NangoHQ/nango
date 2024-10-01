@@ -112,6 +112,7 @@ algolia:
         verification:
             endpoint: /1/keys/${credentials.apiKey}
     docs: https://docs.nango.dev/integrations/all/algolia
+    docs_connect: https://docs.nango.dev/integrations/all/algolia/connect
     connection_config:
         APP_ID:
             type: string
@@ -120,6 +121,7 @@ algolia:
             example: ERBSOWZO32
             pattern: '^[A-Z0-9]{10}$'
             order: 1
+            doc_section: '#step-1-finding-your-application-id'
     credentials:
         apiKey:
             type: string
@@ -127,6 +129,7 @@ algolia:
             description: The API key for your Algolia account
             example: c5c28261f9ade4e34891ccf761491b94
             pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-2-finding-your-admin-api-key'
 
 amazon:
     display_name: Amazon

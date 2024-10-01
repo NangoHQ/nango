@@ -29,6 +29,7 @@ export interface SimplifiedJSONSchema {
     pattern?: string;
     format?: string;
     order: number;
+    doc_section?: string;
 }
 
 export interface BaseProvider {
@@ -62,6 +63,7 @@ export interface BaseProvider {
     redirect_uri_metadata?: string[];
     token_response_metadata?: string[];
     docs: string;
+    docs_connect?: string;
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;

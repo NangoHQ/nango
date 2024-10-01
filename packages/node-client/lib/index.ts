@@ -119,10 +119,8 @@ export class Nango {
             }
         });
 
-        if (interceptors) {
-            if (interceptors.response) {
-                this.http.interceptors.response.use(interceptors.response.onFulfilled, undefined);
-            }
+        if (interceptors?.response) {
+            this.http.interceptors.response.use(interceptors.response.onFulfilled, undefined);
         }
     }
 
