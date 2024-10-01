@@ -178,13 +178,11 @@ export class AccessMiddleware {
         const start = Date.now();
         try {
             const authorizationHeader = req.get('authorization');
-
             if (!authorizationHeader) {
                 return errorManager.errRes(res, 'missing_auth_header');
             }
 
             const token = authorizationHeader.split('Bearer ').pop();
-
             if (!token) {
                 return errorManager.errRes(res, 'malformed_auth_header');
             }

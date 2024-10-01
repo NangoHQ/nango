@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
-import type { ApiError, Endpoint, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
+import type { ApiError, Endpoint, GetConnectSession, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
 
 const API_HOSTNAME = 'http://localhost:3003'; // TODO: remove hardcoded value
 
@@ -17,7 +17,7 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
     opts: (TEndpoint['Method'] extends 'GET' ? { method?: TEndpoint['Method'] } : { method: TEndpoint['Method'] }) &
         (TEndpoint['Body'] extends never ? { body?: undefined } : { body: TEndpoint['Body'] }) &
         (TEndpoint['Querystring'] extends never ? { query?: undefined } : { query: TEndpoint['Querystring'] }) &
-        (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }),
+        (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }) & { headers?: Record<string, any> },
     method?: RequestInit['method']
 ): Promise<TEndpoint['Success']> {
     const url = new URL(API_HOSTNAME);
@@ -38,12 +38,14 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
         }
     }
 
-    const headers = new Headers();
+    const headers = new Headers(opts.headers);
     if (opts?.body) {
         headers.append('content-type', 'application/json');
     }
 
-    headers.append('Authorization', `Bearer ${import.meta.env.VITE_LOCAL_SECRET_KEY}`);
+    if (!headers.has('Authorization')) {
+        headers.append('Authorization', `Bearer ${import.meta.env.VITE_LOCAL_SECRET_KEY}`);
+    }
 
     const res = await fetch(url, {
         method: method || 'GET',
@@ -79,6 +81,14 @@ export class APIError extends Error {
 /******************
  * ENDPOINTS
  ********************/
+
+export async function getConnectSession(sessionToken: string) {
+    return await fetchApi<GetConnectSession>('/connect/session', {
+        headers: {
+            Authorization: `Bearer ${sessionToken}`
+        }
+    });
+}
 
 export async function getIntegrations() {
     return await fetchApi<GetPublicListIntegrations>('/integrations', {});
