@@ -101,6 +101,16 @@ function validateProvider(providerKey: string, provider: Provider) {
                 continue;
             }
         }
+        for (const [key, schema] of Object.entries(provider.connection_config || [])) {
+            if (schema.doc_section && !provider.docs_connect) {
+                console.error(
+                    chalk.red('error'),
+                    chalk.blue(providerKey),
+                    `"connection_config > ${key}" defines a "doc_section" but has no "docs_connect" property`
+                );
+                error = true;
+            }
+        }
     } else if (provider.connection_config) {
         console.error(chalk.red('error'), chalk.blue(providerKey), `"connection_config" is defined but not required`);
         error = true;

@@ -109,6 +109,9 @@
                 "docs": {
                     "type": "string"
                 },
+                "docs_connect": {
+                    "type": "string"
+                },
                 "post_connection_script": {
                     "type": "string"
                 },
@@ -352,6 +355,10 @@
                                 },
                                 "suffix": {
                                     "type": "string"
+                                },
+                                "doc_section": {
+                                    "type": "string",
+                                    "pattern": "^#[a-z0-9-]+$"
                                 }
                             }
                         }
@@ -392,6 +399,9 @@
                                     "type": "boolean"
                                 },
                                 "suffix": {
+                                    "type": "string"
+                                },
+                                "doc_section": {
                                     "type": "string"
                                 }
                             }

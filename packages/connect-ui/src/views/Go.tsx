@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthError } from '@nangohq/frontend';
-import { IconArrowLeft, IconCircleCheckFilled, IconExclamationCircle, IconExclamationCircleFilled, IconX } from '@tabler/icons-react';
+import { IconArrowLeft, IconCircleCheckFilled, IconExclamationCircle, IconExclamationCircleFilled, IconInfoCircle, IconX } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
@@ -269,12 +269,14 @@ export const Go: React.FC = () => {
                         <img src={integration.logo} />
                     </div>
                     <h1 className="font-semibold text-xl text-dark-800">Link {provider.display_name} Account</h1>
-                    <p className="text-dark-500">
-                        Stuck?{' '}
-                        <Link className="underline text-dark-800" target="_blank" to={provider.docs}>
-                            View connection guide
-                        </Link>
-                    </p>
+                    {provider.docs_connect && (
+                        <p className="text-dark-500">
+                            Stuck?{' '}
+                            <Link className="underline text-dark-800" target="_blank" to={provider.docs_connect}>
+                                View connection guide
+                            </Link>
+                        </p>
+                    )}
                 </div>
             </header>
             <main className="h-full overflow-auto p-10 pt-1">
@@ -300,7 +302,14 @@ export const Go: React.FC = () => {
                                                 return (
                                                     <FormItem className={cn(definition?.hidden && 'hidden')}>
                                                         <div>
-                                                            <FormLabel>{definition?.title || base?.title}</FormLabel>
+                                                            <div className="flex gap-2 items-start pb-1">
+                                                                <FormLabel className="leading-4">{definition?.title || base?.title}</FormLabel>
+                                                                {definition?.doc_section && (
+                                                                    <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
+                                                                        <IconInfoCircle size={16} />
+                                                                    </Link>
+                                                                )}
+                                                            </div>
                                                             {definition?.description && <FormDescription>{definition.description}</FormDescription>}
                                                         </div>
                                                         <div>
