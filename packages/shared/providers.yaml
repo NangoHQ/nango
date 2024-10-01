@@ -1433,6 +1433,9 @@ elevenlabs:
         base_url: https://api.elevenlabs.io
         headers:
             xi-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/user
     docs: https://docs.nango.dev/integrations/all/elevenlabs
     credentials:
         apiKey:
