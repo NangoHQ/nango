@@ -3562,7 +3562,7 @@ integrations:
                 output: Customer
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /quickbooks/customers
+                endpoint: GET /customers
             accounts:
                 description: >
                     Fetches all accounts in QuickBooks. Handles both active and archived
@@ -3571,7 +3571,7 @@ integrations:
                 output: Account
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /quickbooks/accounts
+                endpoint: GET /accounts
             payments:
                 description: >
                     Fetches all payments in QuickBooks. Handles both active and voided
@@ -3580,7 +3580,7 @@ integrations:
                 output: Payment
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /quickbooks/payments
+                endpoint: GET /payments
             items:
                 description: >
                     Fetches all items in QuickBooks. Handles both active and archived
@@ -3589,7 +3589,7 @@ integrations:
                 output: Item
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /quickbooks/items
+                endpoint: GET /items
             invoices:
                 description: >
                     Fetches all invoices in QuickBooks. Handles both active and voided
@@ -3598,7 +3598,7 @@ integrations:
                 output: Invoice
                 sync_type: incremental
                 scopes: com.intuit.quickbooks.accounting
-                endpoint: GET /quickbooks/invoices
+                endpoint: GET /invoices
         actions:
             create-customer:
                 description: |
@@ -3606,77 +3606,414 @@ integrations:
                 input: CreateCustomer
                 scopes: com.intuit.quickbooks.accounting
                 output: Customer
-                endpoint: POST /quickbooks/customer
+                endpoint: POST /customers
             update-customer:
                 description: |
                     Update a single customer in QuickBooks.
                 input: UpdateCustomer
                 scopes: com.intuit.quickbooks.accounting
                 output: Customer
-                endpoint: PUT /quickbooks/customer
+                endpoint: PUT /customers
             create-item:
                 description: |
                     Creates a single item in QuickBooks.
                 input: CreateItem
                 scopes: com.intuit.quickbooks.accounting
                 output: Item
-                endpoint: POST /quickbooks/item
+                endpoint: POST /items
             update-item:
                 description: |
                     Update a single item in QuickBooks.
                 input: UpdateItem
                 scopes: com.intuit.quickbooks.accounting
                 output: Item
-                endpoint: PUT /quickbooks/item
+                endpoint: PUT /items
             create-account:
                 description: |
                     Creates a single account in QuickBooks.
                 input: CreateAccount
                 scopes: com.intuit.quickbooks.accounting
                 output: Account
-                endpoint: POST /quickbooks/account
+                endpoint: POST /accounts
             update-account:
                 description: |
                     Updates a single account in QuickBooks.
                 input: UpdateAccount
                 scopes: com.intuit.quickbooks.accounting
                 output: Account
-                endpoint: PUT /quickbooks/account
+                endpoint: PUT /accounts
             create-invoice:
                 description: |
                     Creates a single invoice in QuickBooks.
                 input: CreateInvoice
                 scopes: com.intuit.quickbooks.accounting
                 output: Invoice
-                endpoint: POST /quickbooks/invoice
+                endpoint: POST /invoices
             update-invoice:
                 description: |
                     Updates a single invoice in QuickBooks.
                 input: UpdateInvoice
                 scopes: com.intuit.quickbooks.accounting
                 output: Invoice
-                endpoint: PUT /quickbooks/invoice
+                endpoint: PUT /invoices
             create-credit-memo:
                 description: |
                     Creates a single credit memo in QuickBooks.
                 input: CreateCreditMemo
                 scopes: com.intuit.quickbooks.accounting
                 output: CreditMemo
-                endpoint: POST /quickbooks/credit-memo
+                endpoint: POST /credit-memos
             update-credit-memo:
                 description: |
                     Updates a single credit memo in QuickBooks.
                 input: UpdateCreditMemo
                 scopes: com.intuit.quickbooks.accounting
                 output: CreditMemo
-                endpoint: PUT /quickbooks/credit-memo
+                endpoint: PUT /credit-memos
             create-payment:
                 description: |
                     Creates a single payment in QuickBooks.
                 input: CreatePayment
                 scopes: com.intuit.quickbooks.accounting
                 output: Payment
-                endpoint: POST /quickbooks/payment
+                endpoint: POST /payments
+        models:
+            Updates:
+                id: string
+                sync_token: string
+            BaseInvoice:
+                created_at: string
+                updated_at: string
+                id: string
+                txn_date: string
+                balance_cents: number
+                total_amt_cents: number
+                bill_address: BillAddr | null
+                items: InvoiceItem[]
+            Metadata:
+                created_at: string
+                updated_at: string
+            Reference:
+                name?: string
+                value: string
+            BillAddr:
+                city: string | null
+                line1: string | null
+                postal_code: string | null
+                country: string | null
+                id: string
+            Customer:
+                created_at: string
+                updated_at: string
+                id: string
+                given_name: string | null
+                display_name: string | null
+                active: boolean
+                balance_cents: number
+                taxable: boolean
+                primary_email: string | null
+                primary_phone: string | null
+                bill_address: BillAddr | null
+                ship_address: BillAddr | null
+            Account:
+                created_at: string
+                updated_at: string
+                id: string
+                fully_qualified_name: string
+                name: string
+                account_type: string
+                account_sub_type: string
+                classification: string
+                current_balance_cents: number
+                active: boolean
+                description: string | null
+                acct_num: string | null
+                sub_account: boolean
+            Payment:
+                created_at: string
+                updated_at: string
+                id: string
+                amount_cents: number
+                customer_name: string | null
+                txn_date: string
+            Item:
+                created_at: string
+                updated_at: string
+                id: string
+                name: string
+                active: boolean
+                type: string
+                unit_price_cents: number
+                purchase_cost_cents: number
+                qty_on_hand: number | null
+                inv_start_date: string | null
+                description: string | null
+                track_qty_onHand: boolean
+            Invoice:
+                created_at: string
+                updated_at: string
+                id: string
+                txn_date: string
+                balance_cents: number
+                total_amt_cents: number
+                bill_address: BillAddr | null
+                items: InvoiceItem[]
+                due_date: string
+                deposit_cents: number
+            InvoiceItem:
+                id: string
+                description: string | null
+                qty: number
+                unit_price_cents: number
+                amount_cents: number
+            Address:
+                line1?: string
+                line2?: string
+                city?: string
+                postal_code?: string
+                country?: string
+                lat?: string
+                long?: string
+            CreateCustomer:
+                display_name?: string
+                suffix?: string
+                title?: string
+                given_name?: string
+                company_name?: string
+                notes?: string
+                primary_email?: string
+                primary_phone?: string
+                bill_address?: Address
+                ship_address?: Address
+            UpdateCustomer:
+                id: string
+                sync_token: string
+                display_name?: string
+                suffix?: string
+                title?: string
+                given_name?: string
+                company_name?: string
+                notes?: string
+                primary_email?: string
+                primary_phone?: string
+                bill_address?: Address
+                ship_address?: Address
+            CreateItem:
+                track_qty_onHand?: boolean
+                qty_on_hand?: number
+                name: string
+                expense_accountRef?: Reference
+                income_accountRef?: Reference
+                asset_accountRef?: Reference
+                inv_start_date?: string
+                unit_price_cents?: number
+                purchase_cost_cents?: number
+                type?: string
+            UpdateItem:
+                id: string
+                sync_token: string
+                track_qty_onHand?: boolean
+                qty_on_hand?: number
+                name: string
+                expense_accountRef?: Reference
+                income_accountRef?: Reference
+                asset_accountRef?: Reference
+                inv_start_date?: string
+                unit_price_cents?: number
+                purchase_cost_cents?: number
+                type?: string
+            CreateAccount:
+                name: string
+                account_type?: string
+                account_sub_type?: string
+                description?: string
+                acct_num?: string
+            UpdateAccount:
+                id: string
+                sync_token: string
+                name: string
+                account_type?: string
+                account_sub_type?: string
+                description?: string
+                acct_num?: string
+            CreateInvoice:
+                customer_ref?: Reference
+                line?: Line[]
+                due_date?: string
+                currency_ref?: Reference
+                project_ref?: Reference
+            Line:
+                detail_type: string
+                amount_cents: number
+                sales_item_line_detail:
+                    item_ref: Reference
+                quantity?: number
+                unit_price_cents?: number
+                discount_rate?: number
+                description?: string
+            UpdateInvoice:
+                id: string
+                sync_token: string
+                customer_ref?: Reference
+                line?: Line[]
+                due_date?: string
+                currency_ref?: Reference
+                project_ref?: Reference
+            CreateCreditMemo:
+                customer_ref?: Reference
+                line?: Line[]
+                due_date?: string
+                currency_ref?: Reference
+                project_ref?: Reference
+            UpdateCreditMemo:
+                id: string
+                sync_token: string
+                customer_ref?: Reference
+                line?: Line[]
+                due_date?: string
+                currency_ref?: Reference
+                project_ref?: Reference
+            CreditMemo:
+                created_at: string
+                updated_at: string
+                id: string
+                txn_date: string
+                balance_cents: number
+                total_amt_cents: number
+                bill_address: BillAddr | null
+                items: InvoiceItem[]
+                remaining_credit: number
+                customer_name: string | null
+            CreatePayment:
+                total_amount_cents: number
+                customer_ref: Reference
+                currency_ref?: Reference
+                project_ref?: Reference
+    quickbooks-sandbox:
+        syncs:
+            customers:
+                description: >
+                    Fetches all QuickBooks customers. Handles both active and archived
+                    customers, saving or deleting them based on their status.
+                runs: every hour
+                output: Customer
+                sync_type: incremental
+                scopes: com.intuit.quickbooks.accounting
+                endpoint: GET /customers
+            accounts:
+                description: >
+                    Fetches all accounts in QuickBooks. Handles both active and archived
+                    accounts, saving or deleting them based on their status.
+                runs: every hour
+                output: Account
+                sync_type: incremental
+                scopes: com.intuit.quickbooks.accounting
+                endpoint: GET /accounts
+            payments:
+                description: >
+                    Fetches all payments in QuickBooks. Handles both active and voided
+                    payments, saving or deleting them based on their status.
+                runs: every hour
+                output: Payment
+                sync_type: incremental
+                scopes: com.intuit.quickbooks.accounting
+                endpoint: GET /payments
+            items:
+                description: >
+                    Fetches all items in QuickBooks. Handles both active and archived
+                    items, saving or deleting them based on their status.
+                runs: every hour
+                output: Item
+                sync_type: incremental
+                scopes: com.intuit.quickbooks.accounting
+                endpoint: GET /items
+            invoices:
+                description: >
+                    Fetches all invoices in QuickBooks. Handles both active and voided
+                    invoices, saving or deleting them based on their status.
+                runs: every hour
+                output: Invoice
+                sync_type: incremental
+                scopes: com.intuit.quickbooks.accounting
+                endpoint: GET /invoices
+        actions:
+            create-customer:
+                description: |
+                    Creates a single customer in QuickBooks.
+                input: CreateCustomer
+                scopes: com.intuit.quickbooks.accounting
+                output: Customer
+                endpoint: POST /customers
+            update-customer:
+                description: |
+                    Update a single customer in QuickBooks.
+                input: UpdateCustomer
+                scopes: com.intuit.quickbooks.accounting
+                output: Customer
+                endpoint: PUT /customers
+            create-item:
+                description: |
+                    Creates a single item in QuickBooks.
+                input: CreateItem
+                scopes: com.intuit.quickbooks.accounting
+                output: Item
+                endpoint: POST /items
+            update-item:
+                description: |
+                    Update a single item in QuickBooks.
+                input: UpdateItem
+                scopes: com.intuit.quickbooks.accounting
+                output: Item
+                endpoint: PUT /items
+            create-account:
+                description: |
+                    Creates a single account in QuickBooks.
+                input: CreateAccount
+                scopes: com.intuit.quickbooks.accounting
+                output: Account
+                endpoint: POST /accounts
+            update-account:
+                description: |
+                    Updates a single account in QuickBooks.
+                input: UpdateAccount
+                scopes: com.intuit.quickbooks.accounting
+                output: Account
+                endpoint: PUT /accounts
+            create-invoice:
+                description: |
+                    Creates a single invoice in QuickBooks.
+                input: CreateInvoice
+                scopes: com.intuit.quickbooks.accounting
+                output: Invoice
+                endpoint: POST /invoices
+            update-invoice:
+                description: |
+                    Updates a single invoice in QuickBooks.
+                input: UpdateInvoice
+                scopes: com.intuit.quickbooks.accounting
+                output: Invoice
+                endpoint: PUT /invoices
+            create-credit-memo:
+                description: |
+                    Creates a single credit memo in QuickBooks.
+                input: CreateCreditMemo
+                scopes: com.intuit.quickbooks.accounting
+                output: CreditMemo
+                endpoint: POST /credit-memos
+            update-credit-memo:
+                description: |
+                    Updates a single credit memo in QuickBooks.
+                input: UpdateCreditMemo
+                scopes: com.intuit.quickbooks.accounting
+                output: CreditMemo
+                endpoint: PUT /credit-memos
+            create-payment:
+                description: |
+                    Creates a single payment in QuickBooks.
+                input: CreatePayment
+                scopes: com.intuit.quickbooks.accounting
+                output: Payment
+                endpoint: POST /payments
         models:
             Updates:
                 id: string
