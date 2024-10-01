@@ -349,6 +349,9 @@
                                 },
                                 "order": {
                                     "type": "number"
+                                },
+                                "suffix": {
+                                    "type": "string"
                                 }
                             }
                         }
@@ -380,6 +383,15 @@
                                     "type": "string"
                                 },
                                 "format": {
+                                    "type": "string"
+                                },
+                                "default_value": {
+                                    "type": "string"
+                                },
+                                "hidden": {
+                                    "type": "boolean"
+                                },
+                                "suffix": {
                                     "type": "string"
                                 }
                             }
