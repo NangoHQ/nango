@@ -272,8 +272,8 @@ export interface NangoProps {
         };
         messages: unknown[];
     } | undefined;
-    rawSaveOutput?: unknown[] | undefined;
-    rawDeleteOutput?: unknown[] | undefined;
+    rawSaveOutput?: Map<string, unknown[]> | undefined;
+    rawDeleteOutput?: Map<string, unknown[]> | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
@@ -376,8 +376,8 @@ export declare class NangoSync extends NangoAction {
         };
         messages: unknown[];
     } | undefined;
-    rawSaveOutput?: unknown[];
-    rawDeleteOutput?: unknown[];
+    rawSaveOutput?: Map<string, unknown[]>;
+    rawDeleteOutput?: Map<string, unknown[]>;
     stubbedMetadata?: Metadata | undefined;
     private batchSize;
     constructor(config: NangoProps);
