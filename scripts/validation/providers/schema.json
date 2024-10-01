@@ -346,6 +346,9 @@
                                 },
                                 "format": {
                                     "type": "string"
+                                },
+                                "order": {
+                                    "type": "number"
                                 }
                             }
                         }

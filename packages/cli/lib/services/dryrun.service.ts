@@ -326,7 +326,7 @@ export class DryRunService {
                 nangoProps.axios = {
                     response: {
                         onFulfilled: (response: AxiosResponse) =>
-                            responseSaver.onAxiosRequestFulfilled({ response, providerConfigKey, connectionId: nangoConnection.connection_id })
+                            responseSaver.onAxiosRequestFulfilled({ response, providerConfigKey, connectionId: nangoConnection.connection_id, syncName })
                     }
                 };
             }

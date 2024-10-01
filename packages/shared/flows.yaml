@@ -1601,6 +1601,8 @@ integrations:
                     - https://www.googleapis.com/auth/admin.directory.user.readonly
             workspace-users:
                 runs: every hour
+                input: Metadata
+                auto_start: false
                 output: User
                 sync_type: full
                 endpoint: GET /google/workspace-users
@@ -1613,6 +1615,11 @@ integrations:
                     - https://www.googleapis.com/auth/admin.directory.user.readonly
                     - https://www.googleapis.com/auth/admin.directory.user.security
         models:
+            Metadata:
+                orgsToSync: OrgToSync[]
+            OrgToSync:
+                id: string
+                path: string
             OrganizationalUnit:
                 id: string
                 name: string
@@ -2912,12 +2919,16 @@ integrations:
                     array of organization ids.
                     Details: full refresh, doesn't support deletes, goes back all time,
                     metadata is required.
+                input: Metadata
+                auto_start: false
                 output: User
                 sync_type: full
                 endpoint: GET /microsoft-teams/microsoft-users
                 scopes:
                     - User.Read.All
         models:
+            Metadata:
+                orgsToSync: string[]
             OrganizationalUnit:
                 id: string
                 name: string
@@ -3254,33 +3265,58 @@ integrations:
                     setPassword: boolean
     notion:
         syncs:
-            pages:
-                runs: every 6 hours
-                description: |
-                    Sync pages, subpages, database entries, entries of
-                    sub-databases and retrieve only the text content and ignores
-                    images, files and other blocks that do not have
-                    a `rich_text` property.
-                output: NotionPage
-                sync_type: incremental
-                endpoint: GET /notion/pages
-            rich-pages:
-                runs: every 6 hours
+            content-metadata:
+                runs: every 1h
                 track_deletes: true
                 description: |
-                    Sync pages, subpages, database entries, entries of
-                    sub-databases and maps to full markdown. It transforms
-                    images, tables, uploaded files, etc into their markdown counterparts.
-                output: NotionRichPage
-                sync_type: incremental
-                endpoint: GET /notion/rich-pages
+                    Sync pages and databases metadata to further fetch the content
+                    using a dedicated action
+                output: ContentMetadata
+                sync_type: full
+                endpoint: GET /metadata
+        actions:
+            fetch-rich-page:
+                description: >
+                    Fetch a specific page in Notion by passing a pageId. This action
+                    fetches a page,
+
+                    and its content and converts it into a full markdown. It transforms
+                    images,
+
+                    tables, uploaded files, etc., into their markdown counterparts,
+                    providing a complete markdown.
+                input: RichPageInput
+                output: RichPage
+                endpoint: GET /fetch-rich-page
+            fetch-database:
+                description: >
+                    Fetch a specific Notion database by passing in the database id. This
+                    action fetches
+
+                    the database and converts it into a CSV string.
+                input: DatabaseInput
+                output: Database
+                endpoint: GET /fetch-database
+            fetch-content-metadata:
+                description: >
+                    Retrieve the entity type as well as an id for a Notion entity to later
+                    call
+
+                    fetch-database or fetch-rich-page based on the type.
+                input: UrlOrId
+                output: ContentMetadata
+                endpoint: GET /fetch-content-metadata
         models:
-            NotionPage:
+            RichPageInput:
+                pageId: string
+            ContentMetadata:
                 id: string
-                url: string
-                content: string
-                parent_page_id: string | undefined
-            NotionRichPage:
+                path?: string
+                type: page | database
+                last_modified: string
+                title?: string
+                parent_id?: string | undefined
+            RichPage:
                 id: string
                 path: string
                 title: string
@@ -3288,6 +3324,21 @@ integrations:
                 contentType: string
                 meta: object
                 last_modified: string
+                parent_id?: string | undefined
+            DatabaseInput:
+                databaseId: string
+            DatabaseEntry:
+                __string: string
+            Database:
+                id: string
+                path: string
+                title: string
+                meta: object
+                last_modified: string
+                entries: DatabaseEntry[]
+            UrlOrId:
+                url?: string
+                id?: string
     pipedrive:
         syncs:
             activities:
@@ -3764,13 +3815,14 @@ integrations:
         actions:
             fetch-fields:
                 description: >
-                    Fetch available task fields. If the input is not specified then it
-                    defaults back to "Task"
+                    Fetch available task fields, child relationships and validation rules.
+                    If the input is not specified then it defaults back to "Task"
 
                     Data Validation: Parses all incoming data with Zod. Does not fail on
                     parsing error will instead log parse error and return result.
                 scopes: offline_access,api
                 input: SalesforceEntity
+                version: 1.0.0
                 output: SalesforceFieldSchema
                 endpoint: GET /salesforce/fetch-fields
         syncs:
@@ -3778,28 +3830,33 @@ integrations:
                 runs: every hour
                 description: |
                     Fetches a list of accounts from salesforce
-                output: SalesforceAccount
+                output: Account
                 sync_type: incremental
+                version: 1.0.0
                 endpoint: GET /salesforce/accounts
             contacts:
                 runs: every hour
                 description: |
                     Fetches a list of contacts from salesforce
-                output: SalesforceContact
+                output: Contact
                 sync_type: incremental
+                version: 1.0.0
                 endpoint: GET /salesforce/contacts
             deals:
                 runs: every hour
                 description: |
                     Fetches a list of deals from salesforce
-                output: SalesforceDeal
+                output: Deal
                 sync_type: incremental
+                version: 1.0.0
                 endpoint: GET /salesforce/deals
             articles:
                 runs: every day
                 description: |
                     Fetches a list of articles from salesforce
-                output: SalesforceArticle
+                output: Article
+                input: SalesforceMetadata
+                version: 1.0.0
                 auto_start: false
                 sync_type: incremental
                 endpoint: GET /salesforce/articles
@@ -3807,66 +3864,69 @@ integrations:
                 runs: every day
                 description: |
                     Fetches a list of tickets from salesforce
-                output: SalesforceTicket
+                output: Ticket
                 sync_type: incremental
+                version: 1.0.0
                 endpoint: GET /salesforce/tickets
         models:
-            SalesforceAccount:
+            Account:
                 id: string
                 name: string
-                website: string
-                description: string
-                no_employees: number
+                website: string | null
+                description: string | null
+                no_employees: number | null
                 last_modified_date: string
-            SalesforceContact:
+            Contact:
                 id: string
-                first_name: string
+                first_name: string | null
                 last_name: string
-                email: string
-                account_id: string
+                email: string | null
+                account_id: string | null
                 last_modified_date: string
-            SalesforceDeal:
+            Deal:
                 id: string
                 name: string
-                amount: number
+                amount: number | null
                 stage: string
                 account_id: string
                 last_modified_date: string
-            SalesforceArticle:
+            Article:
                 id: string
                 title: string
                 content: string
                 last_modified_date: string
-            SalesforceTicket:
+            Ticket:
                 id: string
                 case_number: string
                 subject: string | null
-                account_id: string
+                account_id: string | null
                 account_name: string | null
-                contact_id: string
+                contact_id: string | null
                 contact_name: string | null
                 owner_id: string
                 owner_name: string | null
                 priority: string
                 status: string
                 description: string | null
-                type: string
+                type: string | null
                 created_date: string
-                closed_date: string
-                origin: string
+                closed_date: string | null
+                origin: string | null
                 is_closed: boolean
                 is_escalated: boolean
-                conversation:
-                    id: string
-                    body: string
-                    created_date: string
-                    created_by: string
+                conversation: Conversation[]
                 last_modified_date: string
+            Conversation:
+                id: string
+                body: string
+                created_date: string
+                created_by: string
             SalesforceEntity:
                 name: string
             SalesforceFieldSchema:
                 fields: Field[]
                 childRelationships: ChildField[]
+                validationRules: ValidationRule[]
             NestedFieldSchema:
                 fields: Field[]
             Field:
@@ -3887,6 +3947,13 @@ integrations:
                 method: string
                 url: string
                 code: string
+            SalesforceMetadata:
+                customFields: string[]
+            ValidationRule:
+                id: string
+                name: string
+                errorConditionFormula: string
+                errorMessage: string
     sharepoint-online:
         actions:
             list-sites:
