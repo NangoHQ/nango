@@ -4665,6 +4665,22 @@ typeform:
         base_url: https://api.typeform.com
     docs: https://docs.nango.dev/integrations/all/typeform
 
+typefully:
+    display_name: Typefully
+    categories:
+        - twitter
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.typefully.com
+        headers:
+            X-API-Key: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/typefully
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Typefully account
+
 uber:
     display_name: Uber
     auth_mode: OAUTH2
