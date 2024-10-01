@@ -1424,6 +1424,22 @@ egnyte:
             description: The subdomain of your Egnyte account
             pattern: '^[a-z0-9_-]+$'
 
+elevenlabs:
+    display_name: Eleven Labs
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.elevenlabs.io
+        headers:
+            xi-api-key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/elevenlabs
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your ElevenLabs account
+
 entrata:
     display_name: Entrata
     categories:
