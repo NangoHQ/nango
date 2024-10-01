@@ -245,7 +245,8 @@ export class DryRunService {
                     fs.mkdirSync(`${directoryName}/mocks/${syncName}`, { recursive: true });
                 }
                 const filePath = `${directoryName}/mocks/${syncName}/input.json`;
-                fs.writeFileSync(filePath, normalizedInput);
+                const dataToWrite = typeof normalizedInput === 'object' ? JSON.stringify(normalizedInput, null, 2) : normalizedInput;
+                fs.writeFileSync(filePath, dataToWrite);
             }
         }
 
