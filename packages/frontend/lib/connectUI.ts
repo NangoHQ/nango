@@ -1,18 +1,21 @@
 import type { MaybePromise } from '@nangohq/types';
-import type { ConnectUIEvent } from './types';
+import type { ConnectUIEvent, ConnectUIEventToken } from './types';
 
 export interface ConnectUIProps {
+    sessionToken: string;
     baseURL?: string;
     onEvent?: (event: ConnectUIEvent) => MaybePromise<void>;
 }
 
 export class ConnectUI {
     private listener: ((this: Window, ev: MessageEvent) => any) | null = null;
+    private sessionToken;
     private baseURL;
     private onEvent;
     iframe: HTMLIFrameElement | null = null;
 
-    constructor({ baseURL = 'http://localhost:5173', onEvent }: ConnectUIProps) {
+    constructor({ sessionToken, baseURL = 'http://localhost:5173', onEvent }: ConnectUIProps) {
+        this.sessionToken = sessionToken;
         this.baseURL = baseURL;
         this.onEvent = onEvent;
     }
@@ -55,12 +58,18 @@ export class ConnectUI {
             const evt = event.data as ConnectUIEvent;
 
             switch (evt.type) {
-                case 'close':
+                case 'ready': {
+                    const data: ConnectUIEventToken = { type: 'session_token', sessionToken: this.sessionToken };
+                    this.iframe?.contentWindow?.postMessage(data, '*');
+                    break;
+                }
+                case 'close': {
                     this.close();
                     break;
-
-                default:
+                }
+                default: {
                     break;
+                }
             }
 
             // Transfer event to customers' frontend

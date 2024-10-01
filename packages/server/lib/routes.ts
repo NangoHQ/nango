@@ -94,6 +94,7 @@ import { getPublicListIntegrations } from './controllers/integrations/getListInt
 import { postConnectSessions } from './controllers/connect/postSessions.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
+import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 
 export const router = express.Router();
 
@@ -285,6 +286,8 @@ web.route('/api/v1/environment/revert-key').post(webAuth, environmentController.
 web.route('/api/v1/environment/webhook/settings').patch(webAuth, patchSettings);
 web.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
+
+web.route('/api/v1/connect/sessions').post(webAuth, postInternalConnectSessions);
 
 web.route('/api/v1/integrations').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 web.route('/api/v1/integrations/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
