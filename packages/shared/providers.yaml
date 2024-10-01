@@ -4668,12 +4668,17 @@ typeform:
 typefully:
     display_name: Typefully
     categories:
-        - twitter
+        - analytics
+        - communication
+        - social
     auth_mode: API_KEY
     proxy:
         base_url: https://api.typefully.com
         headers:
             X-API-Key: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/notifications/
     docs: https://docs.nango.dev/integrations/all/typefully
     credentials:
         apiKey:
