@@ -5155,6 +5155,9 @@ zoominfo:
 
 falai:
     display_name: fal.ai
+    categories:
+        - productivity
+        - dev-tools
     auth_mode: API_KEY
     proxy:
         headers:
