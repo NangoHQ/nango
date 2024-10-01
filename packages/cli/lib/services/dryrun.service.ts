@@ -237,6 +237,15 @@ export class DryRunService {
                     normalizedInput = actionInput;
                 }
             }
+
+            if (options.saveResponses) {
+                const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
+                const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
+                responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
+                const filePath = `${directoryName}/mocks/${syncName}/input.json`;
+                const dataToWrite = typeof normalizedInput === 'object' ? JSON.stringify(normalizedInput, null, 2) : normalizedInput;
+                fs.writeFileSync(filePath, dataToWrite);
+            }
         }
 
         if (rawStubbedMetadata) {
@@ -320,8 +329,8 @@ export class DryRunService {
                 startedAt: new Date()
             };
             if (options.saveResponses) {
-                nangoProps.rawSaveOutput = [];
-                nangoProps.rawDeleteOutput = [];
+                nangoProps.rawSaveOutput = new Map<string, unknown[]>();
+                nangoProps.rawDeleteOutput = new Map<string, unknown[]>();
 
                 nangoProps.axios = {
                     response: {
@@ -364,6 +373,13 @@ export class DryRunService {
                     resultOutput.push(chalk.gray('no output'));
                 } else {
                     console.log(JSON.stringify(results.response, null, 2));
+                    if (options.saveResponses) {
+                        const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
+                        const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
+                        responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
+                        const filePath = `${directoryName}/mocks/${syncName}/output.json`;
+                        fs.writeFileSync(filePath, JSON.stringify(results.response, null, 2));
+                    }
                     resultOutput.push(JSON.stringify(results.response, null, 2));
                 }
             }
@@ -403,17 +419,21 @@ export class DryRunService {
                 if (options.saveResponses) {
                     const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
                     const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
-                    if (!fs.existsSync(`${directoryName}/mocks/${syncName}`)) {
-                        fs.mkdirSync(`${directoryName}/mocks/${syncName}`, { recursive: true });
-                    }
-                    if (nangoProps.rawSaveOutput) {
-                        const filePath = `${directoryName}/mocks/${syncName}/batchSave.json`;
-                        fs.writeFileSync(filePath, JSON.stringify(nangoProps.rawSaveOutput, null, 2));
-                    }
+                    if (scriptInfo?.output) {
+                        for (const model of scriptInfo.output) {
+                            responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}/${model}`);
+                            if (nangoProps.rawSaveOutput) {
+                                const filePath = `${directoryName}/mocks/${syncName}/${model}/batchSave.json`;
+                                const modelData = nangoProps.rawSaveOutput.get(model) || [];
+                                fs.writeFileSync(filePath, JSON.stringify(modelData, null, 2));
+                            }
 
-                    if (nangoProps.rawDeleteOutput) {
-                        const filePath = `${directoryName}/mocks/${syncName}/batchDelete.json`;
-                        fs.writeFileSync(filePath, JSON.stringify(nangoProps.rawDeleteOutput, null, 2));
+                            if (nangoProps.rawDeleteOutput) {
+                                const filePath = `${directoryName}/mocks/${syncName}/${model}/batchDelete.json`;
+                                const modelData = nangoProps.rawDeleteOutput.get(model) || [];
+                                fs.writeFileSync(filePath, JSON.stringify(modelData, null, 2));
+                            }
+                        }
                     }
                 }
             }
