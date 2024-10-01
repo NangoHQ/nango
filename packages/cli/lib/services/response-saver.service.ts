@@ -4,7 +4,7 @@ import type { AxiosResponse } from 'axios';
 import type { Connection } from '@nangohq/shared';
 import type { Metadata } from '@nangohq/types';
 
-function ensureDirectoryExists(directoryName: string): void {
+export function ensureDirectoryExists(directoryName: string): void {
     if (!fs.existsSync(directoryName)) {
         fs.mkdirSync(directoryName, { recursive: true });
     }

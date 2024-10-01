@@ -241,9 +241,7 @@ export class DryRunService {
             if (options.saveResponses) {
                 const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
                 const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
-                if (!fs.existsSync(`${directoryName}/mocks/${syncName}`)) {
-                    fs.mkdirSync(`${directoryName}/mocks/${syncName}`, { recursive: true });
-                }
+                responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
                 const filePath = `${directoryName}/mocks/${syncName}/input.json`;
                 const dataToWrite = typeof normalizedInput === 'object' ? JSON.stringify(normalizedInput, null, 2) : normalizedInput;
                 fs.writeFileSync(filePath, dataToWrite);
@@ -378,9 +376,7 @@ export class DryRunService {
                     if (options.saveResponses) {
                         const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
                         const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
-                        if (!fs.existsSync(`${directoryName}/mocks/${syncName}`)) {
-                            fs.mkdirSync(`${directoryName}/mocks/${syncName}`, { recursive: true });
-                        }
+                        responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
                         const filePath = `${directoryName}/mocks/${syncName}/output.json`;
                         fs.writeFileSync(filePath, JSON.stringify(results.response, null, 2));
                     }
@@ -425,9 +421,7 @@ export class DryRunService {
                     const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
                     if (scriptInfo?.output) {
                         for (const model of scriptInfo.output) {
-                            if (!fs.existsSync(`${directoryName}/mocks/${syncName}/${model}`)) {
-                                fs.mkdirSync(`${directoryName}/mocks/${syncName}/${model}`, { recursive: true });
-                            }
+                            responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}/${model}`);
                             if (nangoProps.rawSaveOutput) {
                                 const filePath = `${directoryName}/mocks/${syncName}/${model}/batchSave.json`;
                                 const modelData = nangoProps.rawSaveOutput.get(model) || [];
