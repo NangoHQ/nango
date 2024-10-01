@@ -13,7 +13,7 @@ export const validationBody = validationBodyBase.extend({
     frequency: z
         .string()
         .regex(
-            /^(?<every>every )?((?<amount>[0-9]+)?\s?(?<unit>(m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/
+            /^(?<every>every )?((?<amount>[0-9]+)?\s?(?<unit>(s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/
         )
 });
 
