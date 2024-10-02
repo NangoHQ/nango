@@ -10,11 +10,10 @@ import type { AuthResult } from '@nangohq/frontend';
 import type { AuthModeType } from '@nangohq/types';
 
 import { CustomInput } from '@/components/CustomInput';
-import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { triggerClose, triggerConnection } from '@/lib/events';
-import { nango } from '@/lib/nango';
+import { useNango } from '@/lib/nango';
 import { useGlobal } from '@/lib/store';
 import { cn, jsonSchemaToZod } from '@/lib/utils';
 
@@ -62,7 +61,8 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 };
 
 export const Go: React.FC = () => {
-    const { provider, integration, setIsDirty } = useGlobal();
+    const { provider, integration, sessionToken, setIsDirty } = useGlobal();
+    const nango = useNango(sessionToken);
 
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<AuthResult>();
@@ -72,7 +72,7 @@ export const Go: React.FC = () => {
     useEffect(() => {
         // on unmount always clear popup and state
         return () => {
-            nango.clear();
+            nango?.clear();
         };
     }, []);
 
@@ -154,7 +154,7 @@ export const Go: React.FC = () => {
 
     const onSubmit = useCallback(
         async (values: z.infer<(typeof formSchema)[AuthModeType]>) => {
-            if (!integration || loading || !provider) {
+            if (!integration || loading || !provider || !nango) {
                 return;
             }
 
@@ -209,50 +209,46 @@ export const Go: React.FC = () => {
 
     if (result) {
         return (
-            <Layout>
-                <main className="h-full overflow-auto p-10 pt-1 flex flex-col justify-between ">
-                    <div></div>
-                    <div className="flex flex-col items-center gap-5">
-                        <IconCircleCheckFilled className="text-green-base" size={44} />
-                        <h2 className="text-xl font-semibold">Success!</h2>
-                        <p className="text-dark-500">You&apos;ve successfully set up your {provider.name} integration</p>
-                    </div>
-                    <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose()}>
-                        Finish
-                    </Button>
-                </main>
-            </Layout>
+            <main className="h-full overflow-auto p-10 pt-1 flex flex-col justify-between ">
+                <div></div>
+                <div className="flex flex-col items-center gap-5">
+                    <IconCircleCheckFilled className="text-green-base" size={44} />
+                    <h2 className="text-xl font-semibold">Success!</h2>
+                    <p className="text-dark-500">You&apos;ve successfully set up your {provider.name} integration</p>
+                </div>
+                <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose()}>
+                    Finish
+                </Button>
+            </main>
         );
     }
 
     if (connectionFailed) {
         return (
-            <Layout>
-                <main className="h-full overflow-auto p-10 pt-1 flex flex-col justify-between ">
-                    <div></div>
-                    <div className="flex flex-col items-center gap-5">
-                        <IconExclamationCircleFilled className="text-dark-800" size={44} />
-                        <h2 className="text-xl font-semibold">Connection failed</h2>
-                        {error ? <p className="text-dark-500 text-center w-[80%]">{error}</p> : <p>Please try again</p>}
-                    </div>
-                    <Button
-                        className="w-full"
-                        loading={loading}
-                        size={'lg'}
-                        onClick={() => {
-                            setConnectionFailed(false);
-                            setError(null);
-                        }}
-                    >
-                        Try Again
-                    </Button>
-                </main>
-            </Layout>
+            <main className="h-full overflow-auto p-10 pt-1 flex flex-col justify-between ">
+                <div></div>
+                <div className="flex flex-col items-center gap-5">
+                    <IconExclamationCircleFilled className="text-dark-800" size={44} />
+                    <h2 className="text-xl font-semibold">Connection failed</h2>
+                    {error ? <p className="text-dark-500 text-center w-[80%]">{error}</p> : <p>Please try again</p>}
+                </div>
+                <Button
+                    className="w-full"
+                    loading={loading}
+                    size={'lg'}
+                    onClick={() => {
+                        setConnectionFailed(false);
+                        setError(null);
+                    }}
+                >
+                    Try Again
+                </Button>
+            </main>
         );
     }
 
     return (
-        <Layout>
+        <>
             <header className="flex flex-col gap-8 p-10">
                 <div className="flex justify-between">
                     <Link to="/" onClick={() => setIsDirty(false)}>
@@ -352,6 +348,6 @@ export const Go: React.FC = () => {
                     </form>
                 </Form>
             </main>
-        </Layout>
+        </>
     );
 };
