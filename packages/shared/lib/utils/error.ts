@@ -34,7 +34,7 @@ export class NangoError extends Error {
 
             case 'unknown_account':
                 this.status = 401;
-                this.message = 'Authentication failed. The provided secret/public key does not match any account.';
+                this.message = 'Authentication failed. The provided authorization header does not match any account.';
                 break;
 
             case 'invalid_secret_key':
@@ -45,6 +45,11 @@ export class NangoError extends Error {
             case 'invalid_secret_key_format':
                 this.status = 401;
                 this.message = 'Authentication failed. The provided secret key is not a UUID v4.';
+                break;
+
+            case 'invalid_connect_session_token_format':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided connect session token is not following correct format: nango_connect_session_RANDOM)';
                 break;
 
             case 'missing_public_key':

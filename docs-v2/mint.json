@@ -387,6 +387,7 @@
                 "integrations/all/exist",
                 "integrations/all/facebook",
                 "integrations/all/factorial",
+                "integrations/all/falai",
                 "integrations/all/figjam",
                 "integrations/all/figma",
                 "integrations/all/fireflies",
@@ -537,6 +538,7 @@
                 "integrations/all/twitter",
                 "integrations/all/twinfield",
                 "integrations/all/typeform",
+                "integrations/all/typefully",
                 "integrations/all/uber",
                 "integrations/all/unanet",
                 "integrations/all/vimeo",
@@ -650,6 +652,14 @@
                                 "reference/api/proxy/put",
                                 "reference/api/proxy/patch",
                                 "reference/api/proxy/delete"
+                            ]
+                        },
+                        {
+                            "group": "Connect",
+                            "pages": [
+                                "reference/api/connect/sessions/create",
+                                "reference/api/connect/session/get",
+                                "reference/api/connect/session/delete"
                             ]
                         }
                     ]

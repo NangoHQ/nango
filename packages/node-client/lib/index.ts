@@ -18,7 +18,8 @@ import type {
     GetPublicProvider,
     GetPublicListIntegrations,
     GetPublicListIntegrationsLegacy,
-    GetPublicIntegration
+    GetPublicIntegration,
+    PostConnectSessions
 } from '@nangohq/types';
 import type {
     Connection,
@@ -118,10 +119,8 @@ export class Nango {
             }
         });
 
-        if (interceptors) {
-            if (interceptors.response) {
-                this.http.interceptors.response.use(interceptors.response.onFulfilled, undefined);
-            }
+        if (interceptors?.response) {
+            this.http.interceptors.response.use(interceptors.response.onFulfilled, undefined);
         }
     }
 
@@ -882,6 +881,18 @@ export class Nango {
                 .update(`${this.secretKey}${JSON.stringify(jsonPayload)}`)
                 .digest('hex') === signatureInHeader
         );
+    }
+
+    /**
+     * Creates a new connect session
+     * @param sessionProps - The properties for the new session, including end user information
+     * @returns A promise that resolves with the created session token and expiration date
+     */
+    public async createConnectSession(sessionProps: PostConnectSessions['Body']): Promise<PostConnectSessions['Success']> {
+        const url = `${this.serverUrl}/connect/sessions`;
+
+        const response = await this.http.post(url, sessionProps, { headers: this.enrichHeaders() });
+        return response.data;
     }
 
     /**

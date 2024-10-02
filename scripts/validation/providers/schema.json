@@ -109,6 +109,9 @@
                 "docs": {
                     "type": "string"
                 },
+                "docs_connect": {
+                    "type": "string"
+                },
                 "post_connection_script": {
                     "type": "string"
                 },
@@ -184,6 +187,7 @@
                         "verification": {
                             "type": "object",
                             "additionalProperties": false,
+                            "required": ["endpoint"],
                             "properties": {
                                 "method": {
                                     "type": "string",
@@ -345,6 +349,16 @@
                                 },
                                 "format": {
                                     "type": "string"
+                                },
+                                "order": {
+                                    "type": "number"
+                                },
+                                "suffix": {
+                                    "type": "string"
+                                },
+                                "doc_section": {
+                                    "type": "string",
+                                    "pattern": "^#[a-z0-9-]+$"
                                 }
                             }
                         }
@@ -376,6 +390,18 @@
                                     "type": "string"
                                 },
                                 "format": {
+                                    "type": "string"
+                                },
+                                "default_value": {
+                                    "type": "string"
+                                },
+                                "hidden": {
+                                    "type": "boolean"
+                                },
+                                "suffix": {
+                                    "type": "string"
+                                },
+                                "doc_section": {
                                     "type": "string"
                                 }
                             }
