@@ -402,7 +402,8 @@
                                     "type": "string"
                                 },
                                 "doc_section": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "pattern": "^#[a-z0-9-]+$"
                                 }
                             }
                         }
