@@ -10,7 +10,7 @@ import type { GetUser, PatchUser } from './user/api';
 import type { DeletePublicIntegration, GetPublicIntegration, GetPublicListIntegrations, GetPublicListIntegrationsLegacy } from './integration/api';
 import type { PostPublicTableauAuthorization, PostPublicTbaAuthorization, PostPublicUnauthenticatedAuthorization } from './auth/http.api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
-import type { PostConnectSessions } from './connect/api';
+import type { PostConnectSessions, PostInternalConnectSessions } from './connect/api';
 
 export type PublicApiEndpoints =
     | SetMetadata
@@ -44,7 +44,8 @@ export type PrivateApiEndpoints =
     | GetOperation
     | SearchMessages
     | SearchFilters
-    | GetOnboardingStatus;
+    | GetOnboardingStatus
+    | PostInternalConnectSessions;
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 
 /**

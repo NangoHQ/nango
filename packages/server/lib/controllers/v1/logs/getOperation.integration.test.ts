@@ -1,5 +1,4 @@
-import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
-import { multipleMigrations } from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
@@ -7,9 +6,6 @@ import { runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../ut
 let api: Awaited<ReturnType<typeof runServer>>;
 describe('GET /logs/operations/:operationId', () => {
     beforeAll(async () => {
-        await multipleMigrations();
-        await migrateLogsMapping();
-
         api = await runServer();
     });
     afterAll(() => {

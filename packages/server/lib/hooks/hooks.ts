@@ -21,7 +21,6 @@ import type {
     RecentlyCreatedConnection,
     Connection,
     ConnectionConfig,
-    HTTP_VERB,
     RecentlyFailedConnection
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
@@ -234,7 +233,7 @@ export const connectionTest = async (
 
     const configBody: ApplicationConstructedProxyConfiguration = {
         endpoint,
-        method: method?.toUpperCase() as HTTP_VERB,
+        method: method ?? 'GET',
         provider,
         token: credentials,
         providerName: providerName,
@@ -281,9 +280,9 @@ export const connectionTest = async (
         }
 
         return Ok(true);
-    } catch (e) {
+    } catch (err) {
         const error = new NangoError('connection_test_failed');
-        span.setTag('nango.error', e);
+        span.setTag('nango.error', err);
         return Err(error);
     } finally {
         span.finish();

@@ -19,7 +19,7 @@ import { stagingHost, cloudHost } from '@nangohq/shared';
 import { compileSingleFile, compileAllFiles, resolveTsFileLocation, getFileToCompile } from './compile.service.js';
 
 import verificationService from './verification.service.js';
-import { printDebug, parseSecretKey, port, enrichHeaders, http } from '../utils.js';
+import { printDebug, parseSecretKey, port, enrichHeaders, http, isCI } from '../utils.js';
 import type { DeployOptions, InternalDeployOptions } from '../types.js';
 import { parse } from './config.service.js';
 import type { JSONSchema7 } from 'json-schema';
@@ -228,7 +228,7 @@ class DeployService {
                 if (!shouldConfirm && shouldConfirmDestructive) {
                     confirmationMsg += ' (set --allow-destructive flag to skip this confirmation)';
                 }
-                if (process.env['CI']) {
+                if (isCI) {
                     console.log(
                         chalk.red(
                             `Syncs/Actions were not deployed. Confirm the deploy by passing the --auto-confirm flag${shouldConfirmDestructive ? ' and --allow-destructive flag' : ''}. Exiting`
