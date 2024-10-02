@@ -11,13 +11,19 @@ export const getPublicListIntegrations = asyncWrapper<GetPublicListIntegrations>
         return;
     }
 
-    const { environment } = res.locals;
-    const configs = await configService.listProviderConfigs(environment.id);
+    const { environment, connectSession } = res.locals;
+    let configs = await configService.listProviderConfigs(environment.id);
 
     const providers = getProviders();
     if (!providers) {
         res.status(500).send({ error: { code: 'server_error', message: `failed to load providers` } });
         return;
+    }
+
+    if (connectSession?.allowedIntegrations) {
+        configs = configs.filter((config) => {
+            return connectSession.allowedIntegrations?.includes(config.unique_key);
+        });
     }
 
     res.status(200).send({
