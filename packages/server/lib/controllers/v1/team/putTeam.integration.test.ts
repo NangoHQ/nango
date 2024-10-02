@@ -1,4 +1,3 @@
-import { multipleMigrations } from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
@@ -7,7 +6,6 @@ const route = '/api/v1/team';
 let api: Awaited<ReturnType<typeof runServer>>;
 describe(`PUT ${route}`, () => {
     beforeAll(async () => {
-        await multipleMigrations();
         api = await runServer();
     });
     afterAll(() => {

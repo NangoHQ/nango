@@ -17,7 +17,9 @@ export function clearValidationCache() {
     cache.clear();
 }
 
-export function validateData({ version, input, modelName, jsonSchema }: ValidateProps): true | (ErrorObject | Error)[] {
+export type ValidateDataError = ErrorObject | Error;
+
+export function validateData({ version, input, modelName, jsonSchema }: ValidateProps): true | ValidateDataError[] {
     if (!jsonSchema) {
         // For legacy reason, not all scripts have a jsonSchema
         return true;

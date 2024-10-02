@@ -1,4 +1,3 @@
-import { multipleMigrations } from '@nangohq/database';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 import { getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
@@ -11,7 +10,6 @@ const endpoint = '/sync/deploy';
 
 describe(`POST ${endpoint}`, () => {
     beforeAll(async () => {
-        await multipleMigrations();
         api = await runServer();
         envs.NANGO_LOGS_ENABLED = false;
     });

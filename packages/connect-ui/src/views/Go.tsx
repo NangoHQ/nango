@@ -9,14 +9,14 @@ import { z } from 'zod';
 import type { AuthResult } from '@nangohq/frontend';
 import type { AuthModeType } from '@nangohq/types';
 
+import { CustomInput } from '@/components/CustomInput';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { triggerClose, triggerConnection } from '@/lib/events';
 import { nango } from '@/lib/nango';
 import { useGlobal } from '@/lib/store';
-import { jsonSchemaToZod } from '@/lib/utils';
+import { cn, jsonSchemaToZod } from '@/lib/utils';
 
 import type { Resolver } from 'react-hook-form';
 
@@ -83,6 +83,7 @@ export const Go: React.FC = () => {
         }
 
         const baseForm = formSchema[provider.auth_mode];
+        const defaultValues: Record<string, string> = {};
 
         // To order fields we use incremented int starting high because we don't know yet which fields will be sorted
         // It's a lazy algorithm that works most of the time
@@ -98,6 +99,9 @@ export const Go: React.FC = () => {
         // Modify base form with credentials specific
         for (const [name, schema] of Object.entries(provider.credentials || [])) {
             baseForm.shape[name] = jsonSchemaToZod(schema);
+            if (schema.default_value) {
+                defaultValues[`credentials.${name}`] = schema.default_value;
+            }
         }
 
         // Append connectionConfig object
@@ -288,38 +292,42 @@ export const Go: React.FC = () => {
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
 
                                     return (
-                                        <div key={name}>
-                                            <FormField
-                                                control={form.control}
-                                                name={name}
-                                                render={({ field }) => {
-                                                    return (
-                                                        <FormItem>
-                                                            <div>
-                                                                <div className="flex gap-2 items-start pb-1">
-                                                                    <FormLabel className="leading-4">{definition?.title || base?.title}</FormLabel>
-                                                                    {definition?.doc_section && (
-                                                                        <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
-                                                                            <IconInfoCircle size={16} />
-                                                                        </Link>
-                                                                    )}
-                                                                </div>
-                                                                {definition?.description && <FormDescription>{definition.description}</FormDescription>}
+                                        <FormField
+                                            key={name}
+                                            control={form.control}
+                                            defaultValue={definition?.default_value ?? undefined}
+                                            // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
+                                            name={name}
+                                            render={({ field }) => {
+                                                return (
+                                                    <FormItem className={cn(definition?.hidden && 'hidden')}>
+                                                        <div>
+                                                            <div className="flex gap-2 items-start pb-1">
+                                                                <FormLabel className="leading-4">{definition?.title || base?.title}</FormLabel>
+                                                                {definition?.doc_section && (
+                                                                    <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
+                                                                        <IconInfoCircle size={16} />
+                                                                    </Link>
+                                                                )}
                                                             </div>
+                                                            {definition?.description && <FormDescription>{definition.description}</FormDescription>}
+                                                        </div>
+                                                        <div>
                                                             <FormControl>
-                                                                <Input
+                                                                <CustomInput
                                                                     placeholder={definition?.example || definition?.title || base?.example}
+                                                                    suffix={definition?.suffix}
                                                                     {...field}
                                                                     autoComplete="off"
                                                                     type={base?.secret ? 'password' : 'text'}
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />
-                                                        </FormItem>
-                                                    );
-                                                }}
-                                            />
-                                        </div>
+                                                        </div>
+                                                    </FormItem>
+                                                );
+                                            }}
+                                        />
                                     );
                                 })}
                             </div>

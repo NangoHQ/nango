@@ -1,7 +1,6 @@
-import { multipleMigrations } from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
+import { isSuccess, runServer, shouldBeProtected, getConnectSessionToken } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -9,8 +8,6 @@ const endpoint = '/integrations';
 
 describe(`GET ${endpoint}`, () => {
     beforeAll(async () => {
-        await multipleMigrations();
-
         api = await runServer();
     });
     afterAll(() => {
@@ -19,8 +16,22 @@ describe(`GET ${endpoint}`, () => {
 
     it('should be protected', async () => {
         const res = await api.fetch(endpoint, { method: 'GET' });
-
         shouldBeProtected(res);
+    });
+
+    it('should be accessible with private key', async () => {
+        const env = await seeders.createEnvironmentSeed();
+        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key });
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+    });
+
+    it('should be accessible with connect session token', async () => {
+        const env = await seeders.createEnvironmentSeed();
+        const token = await getConnectSessionToken(api, env);
+        const res = await api.fetch(endpoint, { method: 'GET', token });
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
     });
 
     it('should enforce no query params', async () => {

@@ -5,6 +5,9 @@ import express from 'express';
 import { expect } from 'vitest';
 import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, ApiError } from '@nangohq/types';
 import getPort from 'get-port';
+import { migrateLogsMapping } from '@nangohq/logs';
+import db, { multipleMigrations } from '@nangohq/database';
+import { migrate as migrateKeystore } from '@nangohq/keystore';
 
 import { router } from '../routes.js';
 
@@ -121,6 +124,10 @@ export function shouldRequireQueryEnv({ res, json }: { res: Response; json: any 
  * Run the API in the test
  */
 export async function runServer(): Promise<{ server: Server; url: string; fetch: ReturnType<typeof apiFetch> }> {
+    await multipleMigrations();
+    await migrateLogsMapping();
+    await migrateKeystore(db.knex);
+
     const server = createServer(express().use(router));
     const port = await getPort();
     return new Promise((resolve) => {
@@ -129,4 +136,26 @@ export async function runServer(): Promise<{ server: Server; url: string; fetch:
             resolve({ server, url, fetch: apiFetch(url) });
         });
     });
+}
+
+/**
+ * Get connect session token
+ * @param api
+ * @param env
+ * @returns connect session token
+ * @throws Error if no connect session token
+ * @example const token = await getConnectSessionToken(api, env);
+ */
+export async function getConnectSessionToken(api: Awaited<ReturnType<typeof runServer>>, env: { secret_key: string }) {
+    const endUserId = Math.random().toString(36).substring(7);
+    const getSession = await fetch(`${api.url}/connect/sessions`, {
+        method: 'POST',
+        body: JSON.stringify({ end_user: { id: endUserId, email: `${endUserId}@domain.com` } }),
+        headers: { Authorization: `Bearer ${env.secret_key}`, 'content-type': 'application/json' }
+    });
+    const {
+        data: { token }
+    } = (await getSession.json()) as { data: { token: string } };
+    if (!token) throw new Error('No connect session token');
+    return token;
 }

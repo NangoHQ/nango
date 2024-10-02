@@ -1,4 +1,3 @@
-import { multipleMigrations } from '@nangohq/database';
 import { connectionService, seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runServer, shouldBeProtected } from '../../../../utils/tests.js';
@@ -9,8 +8,6 @@ const endpoint = '/connection/metadata';
 
 describe(`POST ${endpoint}`, () => {
     beforeAll(async () => {
-        await multipleMigrations();
-
         api = await runServer();
     });
     afterAll(() => {
