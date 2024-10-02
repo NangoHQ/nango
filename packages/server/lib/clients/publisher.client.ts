@@ -1,11 +1,10 @@
 import type { WebSocket } from 'ws';
-import type { RedisClientType } from 'redis';
 import * as uuid from 'uuid';
-import { createClient } from 'redis';
 import { getLogger } from '@nangohq/utils';
 import type { WSErr } from '../utils/web-socket-error.js';
 import { errorHtml, successHtml } from '../utils/utils.js';
-import { getRedisUrl } from '@nangohq/shared';
+import type { RedisClientType } from '@nangohq/kvstore';
+import { createRedisClient, redisURL } from '@nangohq/kvstore';
 
 const logger = getLogger('Server.Publisher');
 
@@ -17,28 +16,27 @@ const enum MessageType {
 
 export type WebSocketClientId = string;
 
-export class Redis {
+export class RedisPubSub {
     // Two redis clients are needed because the same client cannot be used for both publishing and subscribing
     // more at https://redis.io/commands/subscribe/
-    private url: string;
     private pub: RedisClientType;
     private sub: RedisClientType;
 
-    constructor(url: string) {
-        this.url = url;
-        this.pub = createClient({ url: this.url });
+    constructor() {
+        this.pub = createRedisClient();
         this.pub.on('error', (err) => {
             logger.error(`Redis (publisher) error: ${err}`);
         });
         this.pub.on('connect', () => {
-            logger.info(`Redis (publisher) connected to ${this.url}`);
+            logger.info(`Redis (publisher) connected`);
         });
-        this.sub = createClient({ url: this.url }) as RedisClientType;
+
+        this.sub = createRedisClient({ cache: false });
         this.sub.on('error', (err) => {
             logger.error(`Redis (subscriber) error: ${err}`);
         });
         this.sub.on('connect', () => {
-            logger.info(`Redis Subscriber connected to ${this.url}`);
+            logger.info(`Redis Subscriber connected`);
         });
     }
 
@@ -63,11 +61,11 @@ export class Redis {
 }
 
 class RedisPublisher {
-    private redis: Redis;
+    private redis: RedisPubSub;
 
     public static REDIS_CHANNEL_PREFIX = 'publisher:';
 
-    constructor(redis: Redis) {
+    constructor(redis: RedisPubSub) {
         this.redis = redis;
     }
 
@@ -139,11 +137,11 @@ export class Publisher {
     private redisPublisher: RedisPublisher | null;
     private wsPublisher: WebSocketPublisher;
 
-    constructor(redisClients: Redis | undefined) {
+    constructor(redisClient: RedisPubSub | undefined) {
         this.wsPublisher = new WebSocketPublisher();
 
-        if (redisClients) {
-            this.redisPublisher = new RedisPublisher(redisClients);
+        if (redisClient) {
+            this.redisPublisher = new RedisPublisher(redisClient);
         } else {
             this.redisPublisher = null;
         }
@@ -222,13 +220,4 @@ export class Publisher {
     }
 }
 
-const redis = await (async () => {
-    let redis;
-    const url = getRedisUrl();
-    if (url) {
-        redis = new Redis(url);
-        await redis.connect();
-    }
-    return redis;
-})();
-export default new Publisher(redis);
+export default new Publisher(redisURL ? new RedisPubSub() : undefined);

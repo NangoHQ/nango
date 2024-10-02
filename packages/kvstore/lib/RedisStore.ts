@@ -1,16 +1,12 @@
 import type { KVStore } from './KVStore.js';
-import { createClient } from 'redis';
 import type { RedisClientType } from 'redis';
+import { createRedisClient } from './index.js';
 
 export class RedisKVStore implements KVStore {
-    private client: RedisClientType;
+    public client: RedisClientType;
 
     constructor(url: string) {
-        this.client = createClient({ url: url });
-
-        this.client.on('error', (err) => {
-            console.error(`Redis (kvstore) error: ${err}`);
-        });
+        this.client = createRedisClient({ url });
     }
 
     public async connect(): Promise<void> {

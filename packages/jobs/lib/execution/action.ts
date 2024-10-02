@@ -2,21 +2,12 @@ import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config, NangoConnection, NangoProps, SyncConfig } from '@nangohq/shared';
-import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    NangoError,
-    configService,
-    environmentService,
-    errorManager,
-    getApiUrl,
-    getRunnerFlags,
-    getSyncConfigRaw
-} from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, NangoError, configService, environmentService, errorManager, getApiUrl, getSyncConfigRaw } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient, slackService } from '../clients.js';
+import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;

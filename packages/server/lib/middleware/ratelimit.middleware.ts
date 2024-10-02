@@ -1,21 +1,19 @@
 import type { Request, Response, NextFunction } from 'express';
-import { createClient } from 'redis';
 import { RateLimiterRes, RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
-import { getRedisUrl } from '@nangohq/shared';
 import { flagHasAPIRateLimit, getLogger } from '@nangohq/utils';
+import { createRedisClient, redisURL } from '@nangohq/kvstore';
 
 const logger = getLogger('RateLimiter');
 
-const rateLimiter = await (async () => {
+const rateLimiter = (() => {
     const opts = {
         keyPrefix: 'middleware',
         points: parseInt(process.env['DEFAULT_RATE_LIMIT_PER_MIN'] || '0') || 2400,
         duration: 60,
         blockDuration: 0
     };
-    const url = getRedisUrl();
-    if (url) {
-        const redisClient = await createClient({ url: url, disableOfflineQueue: true }).connect();
+    if (redisURL) {
+        const redisClient = createRedisClient();
         redisClient.on('error', (err) => {
             logger.error(`Redis (rate-limiter) error: ${err}`);
         });

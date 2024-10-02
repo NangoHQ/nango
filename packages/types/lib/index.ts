@@ -24,6 +24,7 @@ export type * from './team/db.js';
 
 export type * from './providers/api.js';
 export type * from './proxy/api.js';
+export type * from './runner/index.js';
 
 export type * from './environment/db.js';
 export type * from './scripts/post-connection/db.js';

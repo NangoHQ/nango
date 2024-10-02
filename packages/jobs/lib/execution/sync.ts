@@ -5,7 +5,6 @@ import {
     externalWebhookService,
     getApiUrl,
     getLastSyncDate,
-    getRunnerFlags,
     updateSyncJobStatus,
     SyncStatus,
     errorManager,
@@ -35,6 +34,7 @@ import { records } from '@nangohq/records';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import { abortScript } from './operations/abort.js';
 import { logger } from '../logger.js';
+import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
     let logCtx: LogContext | undefined;
