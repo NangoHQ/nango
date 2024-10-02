@@ -8,7 +8,7 @@ export function useNango(sessionToken: string | null) {
         }
 
         return new Nango({
-            publicKey: sessionToken,
+            connectSessionToken: sessionToken,
             host: import.meta.env.VITE_LOCAL_HOSTNAME
         });
     }, [sessionToken]);
