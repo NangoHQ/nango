@@ -102,6 +102,7 @@ router.use(...securityMiddlewares());
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
+const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth: RequestHandler[] = [
     authMiddleware.secretKeyAuth.bind(authMiddleware),
     authMiddleware.adminKeyAuth.bind(authMiddleware),
@@ -178,8 +179,8 @@ publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustom
 publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
 // @deprecated
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
-publicAPI.route('/providers').get(apiAuth, getPublicProviders);
-publicAPI.route('/providers/:provider').get(apiAuth, getPublicProvider);
+publicAPI.route('/providers').get(connectSessionOrApiAuth, getPublicProviders);
+publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, getPublicProvider);
 
 // @deprecated
 publicAPI.route('/config').get(apiAuth, getPublicListIntegrationsLegacy);
@@ -188,8 +189,8 @@ publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getP
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
 publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegration);
-publicAPI.route('/integrations').get(apiAuth, getPublicListIntegrations);
-publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
+publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
+publicAPI.route('/integrations/:uniqueKey').get(connectSessionOrApiAuth, getPublicIntegration);
 
 publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 publicAPI.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));

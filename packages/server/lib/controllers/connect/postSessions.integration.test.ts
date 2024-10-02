@@ -1,9 +1,8 @@
 import { afterAll, beforeAll, describe, it, expect } from 'vitest';
 import { runServer, shouldBeProtected, isError, isSuccess } from '../../utils/tests.js';
 import { seeders } from '@nangohq/shared';
-import db, { multipleMigrations } from '@nangohq/database';
+import db from '@nangohq/database';
 import type { DBEnvironment } from '@nangohq/types';
-import { migrate as migrateKeystore } from '@nangohq/keystore';
 import * as endUserService from '../../services/endUser.service.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -14,10 +13,8 @@ describe(`POST ${endpoint}`, () => {
     let seed: { env: DBEnvironment };
 
     beforeAll(async () => {
-        await multipleMigrations();
-        await migrateKeystore(db.knex);
-        seed = await seeders.seedAccountEnvAndUser();
         api = await runServer();
+        seed = await seeders.seedAccountEnvAndUser();
     });
     afterAll(() => {
         api.server.close();

@@ -1,5 +1,3 @@
-import { migrateLogsMapping } from '@nangohq/logs';
-import { multipleMigrations } from '@nangohq/database';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { isSuccess, runServer } from '../../../utils/tests.js';
 import { nanoid } from '@nangohq/utils';
@@ -8,9 +6,6 @@ const route = '/api/v1/account/signup';
 let api: Awaited<ReturnType<typeof runServer>>;
 describe('POST /api/v1/account/signup', () => {
     beforeAll(async () => {
-        await multipleMigrations();
-        await migrateLogsMapping();
-
         api = await runServer();
     });
     afterAll(() => {
