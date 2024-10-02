@@ -39,7 +39,8 @@ export default class Nango {
     private hostBaseUrl: string;
     private websocketsBaseUrl: string;
     private status: AuthorizationStatus;
-    private publicKey: string;
+    private publicKey: string | undefined;
+    private connectSessionToken: string | undefined;
     private debug = false;
     private width: number | null = null;
     private height: number | null = null;
@@ -47,7 +48,15 @@ export default class Nango {
 
     public win: AuthorizationModal | null = null;
 
-    constructor(config: { host?: string; websocketsPath?: string; publicKey: string; width?: number; height?: number; debug?: boolean }) {
+    constructor(config: {
+        host?: string;
+        websocketsPath?: string;
+        publicKey?: string;
+        connectSessionToken?: string;
+        width?: number;
+        height?: number;
+        debug?: boolean;
+    }) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
         config.websocketsPath = config.websocketsPath || '/'; // Default to root path.
         this.debug = config.debug || false;
@@ -67,11 +76,13 @@ export default class Nango {
 
         this.hostBaseUrl = config.host.slice(-1) === '/' ? config.host.slice(0, -1) : config.host; // Remove trailing slash.
         this.status = AuthorizationStatus.IDLE;
-        this.publicKey = config.publicKey;
 
-        if (!config.publicKey) {
-            throw new AuthError('You must specify a public key (cf. documentation).', 'missingPublicKey');
+        if ((!config.publicKey && !config.connectSessionToken) || (config.publicKey && config.connectSessionToken)) {
+            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missingAuthToken');
         }
+
+        this.publicKey = config.publicKey;
+        this.connectSessionToken = config.connectSessionToken;
 
         try {
             const baseUrl = new URL(this.hostBaseUrl);
@@ -107,19 +118,11 @@ export default class Nango {
         }
         const url = this.hostBaseUrl + `/auth/unauthenticated/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        const res = await this.triggerAuth({
+            authUrl: url
         });
 
-        if (!res.ok) {
-            const errorResponse = (await res.json()) as PostPublicUnauthenticatedAuthorization['Errors'];
-            throw new AuthError(errorResponse.error.message || errorResponse.error.code, 'request_error');
-        }
-
-        return (await res.json()) as PostPublicUnauthenticatedAuthorization['Success'];
+        return res as PostPublicUnauthenticatedAuthorization['Success'];
     }
 
     /**
@@ -350,6 +353,29 @@ export default class Nango {
         return { params };
     }
 
+    private async triggerAuth({
+        authUrl,
+        credentials
+    }: {
+        authUrl: string;
+        credentials?: ApiKeyCredentials | BasicApiCredentials | AppStoreCredentials | TBACredentials | TableauCredentials | OAuth2ClientCredentials | undefined;
+    }): Promise<AuthResult> {
+        const res = await fetch(authUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            ...(credentials ? { body: JSON.stringify(credentials) } : {})
+        });
+
+        if (!res.ok) {
+            const errorResponse = await res.json();
+            throw new AuthError(errorResponse.error.message, errorResponse.error.code);
+        }
+
+        return res.json();
+    }
+
     /**
      * Performs authorization based on the provided credentials i.e api, basic, appstore and oauth2
      * @param providerConfigKey - The key identifying the provider configuration on Nango
@@ -371,128 +397,45 @@ export default class Nango {
         }
 
         if ('apiKey' in credentials) {
-            const apiKeyCredential = credentials as ApiKeyCredentials;
-            const url = this.hostBaseUrl + `/api-auth/api-key/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(apiKeyCredential)
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/api-auth/api-key/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as ApiKeyCredentials
             });
-
-            if (!res.ok) {
-                const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
-            }
-
-            return res.json();
         }
 
         if ('username' in credentials || 'password' in credentials) {
-            const basicCredentials = credentials as BasicApiCredentials;
-
-            const url = this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(basicCredentials)
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as BasicApiCredentials
             });
-
-            if (!res.ok) {
-                const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
-            }
-
-            return res.json();
         }
 
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
-            const appCredentials = credentials as unknown as AppStoreCredentials;
-
-            const url = this.hostBaseUrl + `/app-store-auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(appCredentials)
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/app-store-auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as AppStoreCredentials
             });
-
-            if (!res.ok) {
-                const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
-            }
-
-            return res.json();
         }
 
         if ('token_id' in credentials && 'token_secret' in credentials) {
-            const tbaCredentials = credentials as unknown as TBACredentials;
-
-            const url = this.hostBaseUrl + `/auth/tba/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(tbaCredentials)
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/tba/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as TBACredentials
             });
-
-            if (!res.ok) {
-                const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
-            }
-
-            return res.json();
         }
 
         if ('pat_name' in credentials && 'pat_secret' in credentials) {
-            const tableauCredentials = credentials as unknown as TableauCredentials;
-
-            const url = this.hostBaseUrl + `/auth/tableau/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(tableauCredentials)
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/tableau/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as TableauCredentials
             });
-
-            if (!res.ok) {
-                const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
-            }
-
-            return res.json();
         }
 
         if ('client_id' in credentials && 'client_secret' in credentials) {
-            const oauthCredentials = credentials as unknown as OAuth2ClientCredentials;
-
-            const url = this.hostBaseUrl + `/oauth2/auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(oauthCredentials)
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/oauth2/auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as OAuth2ClientCredentials
             });
-
-            if (!res.ok) {
-                const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error.message, errorResponse.error.code);
-            }
-
-            return res.json();
         }
 
         return Promise.reject(new Error('Something went wrong with the authorization'));
@@ -511,7 +454,13 @@ export default class Nango {
             query.push(`connection_id=${connectionId}`);
         }
 
-        query.push(`public_key=${this.publicKey}`);
+        if (this.publicKey) {
+            query.push(`public_key=${this.publicKey}`);
+        }
+
+        if (this.connectSessionToken) {
+            query.push(`connect_session_token=${this.connectSessionToken}`);
+        }
 
         if (connectionConfig) {
             for (const param in connectionConfig.params) {
