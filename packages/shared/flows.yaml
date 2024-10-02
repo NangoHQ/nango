@@ -1466,6 +1466,50 @@ integrations:
                 variables: object
             FirefliesAddtoLiveResponse:
                 data: object
+    freshdesk:
+        syncs:
+            articles:
+                description: |
+                    Recursively fetches a list of solution articles.
+                endpoint: GET /articles
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: Article
+        models:
+            Timestamps:
+                created_at: string
+                updated_at: string
+            Article:
+                created_at: string
+                updated_at: string
+                id: number
+                type: number
+                category_id: number
+                folder_id: number
+                hierarchy: HierarchyLevel[]
+                thumbs_up: number
+                thumbs_down: number
+                hits: number
+                tags?: string[] | undefined
+                seo_data: SeoData
+                agent_id: number
+                title: string
+                description: string
+                description_text: string
+                status: number
+            HierarchyLevel:
+                level: number
+                type: string
+                data: HierarchyData
+            HierarchyData:
+                id: number
+                name: string
+                language: string
+            SeoData:
+                meta_title?: string | undefined
+                meta_description?: string | undefined
+                meta_keywords?: string | undefined
     github:
         syncs:
             issues:
