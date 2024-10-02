@@ -19,6 +19,7 @@ import {
 } from '@nangohq/utils';
 import type { SyncConfig } from '../models/Sync.js';
 import type { RunnerFlags } from '../services/sync/run.utils.js';
+import type { ValidateDataError } from './dataValidation.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
 import type { DBTeam, GetPublicIntegration, MessageRowInsert } from '@nangohq/types';
@@ -337,8 +338,8 @@ export interface NangoProps {
     track_deletes?: boolean;
     attributes?: object | undefined;
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
-    rawSaveOutput?: unknown[] | undefined;
-    rawDeleteOutput?: unknown[] | undefined;
+    rawSaveOutput?: Map<string, unknown[]> | undefined;
+    rawDeleteOutput?: Map<string, unknown[]> | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
@@ -361,6 +362,7 @@ export interface EnvironmentVariable {
 }
 
 const MEMOIZED_CONNECTION_TTL = 60000;
+const RECORDS_VALIDATION_SAMPLE = 5;
 
 export const defaultPersistApi = axios.create({
     baseURL: getPersistAPIUrl(),
@@ -873,8 +875,8 @@ export class NangoSync extends NangoAction {
         counts: { updated: 0, added: 0, deleted: 0 },
         messages: []
     };
-    rawSaveOutput?: unknown[];
-    rawDeleteOutput?: unknown[];
+    rawSaveOutput?: Map<string, unknown[]>;
+    rawDeleteOutput?: Map<string, unknown[]>;
     stubbedMetadata?: Metadata | undefined = undefined;
 
     private batchSize = 1000;
@@ -930,6 +932,7 @@ export class NangoSync extends NangoAction {
         }
 
         // Validate records
+        const hasErrors: { data: any; validation: ValidateDataError[] }[] = [];
         for (const record of results) {
             const validation = validateData({
                 version: this.syncConfig?.version || '1',
@@ -941,16 +944,31 @@ export class NangoSync extends NangoAction {
                 continue;
             }
 
+            hasErrors.push({ data: record, validation });
             metrics.increment(metrics.Types.RUNNER_INVALID_SYNCS_RECORDS);
 
+            if (this.runnerFlags?.validateSyncRecords) {
+                break;
+            }
+        }
+        if (hasErrors.length > 0) {
             if (this.dryRun) {
                 await this.log('Invalid record payload. Use `--validation` option to see the details', { level: 'warn' });
-            } else {
-                await this.log('Invalid record payload', { data: record, validation, model }, { level: 'warn' });
             }
             if (this.runnerFlags?.validateSyncRecords) {
-                throw new NangoError(`invalid_sync_record`, { data: record, validation, model });
+                throw new NangoError(`invalid_sync_record`, { ...hasErrors[0], model });
             }
+
+            const sampled = hasErrors.length > RECORDS_VALIDATION_SAMPLE;
+            const sample = sampled ? hasErrors.slice(0, RECORDS_VALIDATION_SAMPLE) : hasErrors;
+            if (sampled) {
+                await this.log(`Invalid records: ${hasErrors.length} failed ${sampled ? `(sampled to ${RECORDS_VALIDATION_SAMPLE})` : ''}`, { level: 'warn' });
+            }
+            await Promise.all(
+                sample.map((log) => {
+                    return this.log(`Invalid record payload`, { ...log, model }, { level: 'warn' });
+                })
+            );
         }
 
         if (this.dryRun) {
@@ -961,8 +979,11 @@ export class NangoSync extends NangoAction {
             if (this.logMessages && this.logMessages.counts) {
                 this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
             }
-            if (this.rawSaveOutput && Array.isArray(this.rawSaveOutput)) {
-                this.rawSaveOutput.push(...results);
+            if (this.rawSaveOutput) {
+                if (!this.rawSaveOutput.has(model)) {
+                    this.rawSaveOutput.set(model, []);
+                }
+                this.rawSaveOutput.get(model)?.push(...results);
             }
             return null;
         }
@@ -1031,8 +1052,11 @@ export class NangoSync extends NangoAction {
             if (this.logMessages && this.logMessages.counts) {
                 this.logMessages.counts.deleted = Number(this.logMessages.counts.deleted) + results.length;
             }
-            if (this.rawDeleteOutput && Array.isArray(this.rawDeleteOutput)) {
-                this.rawDeleteOutput.push(...results);
+            if (this.rawDeleteOutput) {
+                if (!this.rawDeleteOutput.has(model)) {
+                    this.rawDeleteOutput.set(model, []);
+                }
+                this.rawDeleteOutput.get(model)?.push(...results);
             }
             return null;
         }

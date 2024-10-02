@@ -24,6 +24,7 @@ import type { ConnectUI } from '@nangohq/frontend';
 import Nango from '@nangohq/frontend';
 import { useUnmount } from 'react-use';
 import { globalEnv } from '../../utils/env';
+import { apiConnectSessions } from '../../hooks/useConnect';
 
 const defaultFilter = ['all'];
 
@@ -31,7 +32,7 @@ export default function ConnectionList() {
     const connectUI = useRef<ConnectUI>();
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
-    const { data, error, errorNotifications } = useConnections(env);
+    const { data, error, errorNotifications, mutate } = useConnections(env);
     const { environmentAndAccount } = useEnvironment(env);
 
     const [connections, setConnections] = useState<Connection[] | null>(null);
@@ -109,14 +110,31 @@ export default function ConnectionList() {
         };
     }, [debouncedSearch]);
 
-    const onClickConnectUI = () => {
+    const onClickConnectUI = async () => {
+        if (!environmentAndAccount) {
+            return;
+        }
+
+        const res = await apiConnectSessions(env);
+        if ('error' in res.json) {
+            return;
+        }
+
         const nango = new Nango({
-            host: environmentAndAccount!.host || baseUrl(),
-            websocketsPath: environmentAndAccount!.environment.websockets_path || '',
-            publicKey: environmentAndAccount!.environment.public_key
+            host: environmentAndAccount.host || baseUrl(),
+            websocketsPath: environmentAndAccount.environment.websockets_path || '',
+            publicKey: environmentAndAccount.environment.public_key
         });
 
-        connectUI.current = nango.openConnectUI({});
+        connectUI.current = nango.openConnectUI({
+            sessionToken: res.json.data.token,
+            onEvent: (event) => {
+                if (event.type === 'close') {
+                    // we refresh on close so user can see the diff
+                    void mutate();
+                }
+            }
+        });
     };
 
     if (error) {
