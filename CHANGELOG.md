@@ -2,6 +2,70 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.14] - 2024-10-02
+
+### Added
+
+- *(integrations)* Add support for bitly (#2753) by @hassan254-prog
+- Add keystore package (#2756) by @TBonnin
+- *(connect-ui)* Handle generic auth method (#2754) by @bodinsamuel
+- *(integrations)* Add support for OpenAi (#2755) by @hassan254-prog
+- *(connect)* Open in dashboard, send events, polish display (#2760) by @bodinsamuel
+- *(providers)* Add display name, validate doc/svg path (#2762) by @bodinsamuel
+- *(integration-template-tests)* [nan-1696] update sdk so that record responses is less instrusive (#2763) by @khaliqgant
+- *(integrations)* Add support for anthropic (#2764) by @hassan254-prog
+- *(integrations)* Add support for replicate (#2766) by @claudfuen
+- *(providers)* Add connection_config, credentials definition (#2768) by @bodinsamuel
+- *(connect)* Add display name, auto generate form from connection_config (#2775) by @bodinsamuel
+- Add POST /connect/sessions endpoint (#2769) by @TBonnin
+- Add GET /connect/session endpoint (#2776) by @TBonnin
+- Add createConnectSession to node-client + docs (#2785) by @TBonnin
+- *(connect)* Require session token to load (#2787) by @bodinsamuel
+- *(connect)* Add ability to document connection config and credentials (#2790) by @bodinsamuel
+- *(connect)* Support for domain suffix, hidden fields, default value (#2797) by @bodinsamuel
+- *(integrations)* Support for Typefully (#2800) by @Shubhamai
+- *(integrations)* Add support for fal.ai (#2791) by @Shubhamai
+- Add middleware to combine connect session and private key auth (#2792) by @TBonnin
+
+### Changed
+
+- *(deps)* Bump rollup from 4.21.2 to 4.22.4 (#2757) by @dependabot[bot]
+- *(integration-template-reference)* [nan-1760] update references to integration templates to point to the new repo (#2773) by @khaliqgant
+- *(integration-templates)* [nan-1170] remove integration templates (#2774) by @khaliqgant
+- *(.env.example cleanup)* Remove temporal and comment out redis as it will crash if not set (#2777) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml from the integration-templates repo by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml from the integration-templates repo by @github-actions[bot]
+- Update docs/openapi spec to describe connect session endpoints (#2784) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml from the integration-templates repo by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml from the integration-templates repo by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml from the integration-templates repo by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml from the integration-templates repo by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml from the integration-templates repo by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml from the integration-templates repo by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml from the integration-templates repo by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml from the integration-templates repo by @github-actions[bot]
+
+### Fixed
+
+- Missing FLAG_AUTH_ENABLED in docker-compose.yaml (#2752) by @marcodeltongo
+- *(integrations)* Update endpoints so entities are organized via headers (#2758) by @khaliqgant
+- *(ui)* Clear cache on integration save (#2759) by @bodinsamuel
+- *(pagination)* [nan-1793] use next_cursor instead of start_cursor (#2761) by @khaliqgant
+- *(publish)* Missing types bump in frontend (#2772) by @bodinsamuel
+- *(jobs)* Try to handle knex pool exhaustion (#2771) by @bodinsamuel
+- *(ui)* Do not put metadata as input (#2778) by @bodinsamuel
+- *(webhook-forward)* [nan-1813] when we arent able to validate a connection the headers should still forward (#2779) by @khaliqgant
+- *(jobs)* Missing timeout value (#2781) by @bodinsamuel
+- *(ci)* Do not ask for upgrade on CI (#2782) by @bodinsamuel
+- *(connect)* Error screen, empty screen, handle verification error, handle quitting too soon (#2780) by @bodinsamuel
+- *(integration-tests)* Fix overrides (#2786) by @hassan254-prog
+- *(connect)* Fields ordering (#2788) by @bodinsamuel
+- Merge fail on routes (#2796) by @bodinsamuel
+- *(save-responses)* [nan-1827] save batchSave to namespace model Map and save input for action (#2795) by @khaliqgant
+- *(quickbooks-sandbox)* [nan-1824] update quickbooks sandbox (#2799) by @khaliqgant
+- Sync frequency can be edited to be 30s or more (#2801) by @TBonnin
+- *(sdk)* Sample record validation errors (#2794) by @bodinsamuel
+
 ## [v0.42.12] - 2024-09-23
 
 ### Added
@@ -1920,6 +1984,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.14]: https://github.com/NangoHQ/nango/compare/v0.42.12..v0.42.14
 [v0.42.12]: https://github.com/NangoHQ/nango/compare/v0.42.10..v0.42.12
 [v0.42.10]: https://github.com/NangoHQ/nango/compare/v0.42.9..v0.42.10
 [v0.42.9]: https://github.com/NangoHQ/nango/compare/v0.42.8..v0.42.9
