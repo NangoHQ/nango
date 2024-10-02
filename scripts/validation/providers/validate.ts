@@ -117,9 +117,22 @@ function validateProvider(providerKey: string, provider: Provider) {
     }
 
     if (provider.auth_mode === 'API_KEY') {
-        if (!provider?.credentials?.['apiKey']) {
+        if (!provider.credentials?.['apiKey']) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" > "apiKey" is not defined`);
             error = true;
+        }
+        if (!provider.proxy?.verification) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `do not have "proxy" > "verification" set`);
+        }
+    } else if (provider.auth_mode === 'BASIC') {
+        if (!provider.credentials?.['username']) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" > "username" is not defined`);
+        }
+        if (!provider.credentials?.['password']) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" > "password" is not defined`);
+        }
+        if (!provider.proxy?.verification) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `do not have "proxy" > "verification" set`);
         }
     } else {
         if (provider.credentials) {

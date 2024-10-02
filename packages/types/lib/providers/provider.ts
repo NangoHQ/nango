@@ -29,6 +29,9 @@ export interface SimplifiedJSONSchema {
     pattern?: string;
     format?: string;
     order: number;
+    default_value?: string;
+    hidden?: string;
+    suffix?: string;
     doc_section?: string;
 }
 

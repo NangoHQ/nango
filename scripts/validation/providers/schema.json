@@ -353,6 +353,9 @@
                                 "order": {
                                     "type": "number"
                                 },
+                                "suffix": {
+                                    "type": "string"
+                                },
                                 "doc_section": {
                                     "type": "string",
                                     "pattern": "^#[a-z0-9-]+$"
@@ -387,6 +390,15 @@
                                     "type": "string"
                                 },
                                 "format": {
+                                    "type": "string"
+                                },
+                                "default_value": {
+                                    "type": "string"
+                                },
+                                "hidden": {
+                                    "type": "boolean"
+                                },
+                                "suffix": {
                                     "type": "string"
                                 },
                                 "doc_section": {
