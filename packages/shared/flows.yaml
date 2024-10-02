@@ -2568,21 +2568,104 @@ integrations:
                 runs: every 5mins
                 description: |
                     Fetches a list of issues from Jira
-                output: JiraIssue
+                output: Issue
                 sync_type: incremental
-                endpoint: GET /jira/issues
+                input: JiraIssueMetadata
+                auto_start: false
+                scopes:
+                    - read:jira-work
+                endpoint: GET /issues
+            projects:
+                runs: every day
+                description: |
+                    Fetches a list of projects from Jira
+                output: Project
+                scopes:
+                    - read:jira-work
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /projects
+            issue-types:
+                runs: every day
+                description: Fetches a list of issue types for a project
+                output: IssueType
+                scopes:
+                    - read:jira-work
+                sync_type: full
+                track_deletes: true
+                auto_start: false
+                input: JiraIssueMetadata
+                endpoint: GET /issue-types
+        actions:
+            create-issue:
+                description: |
+                    An action that creates an Issue on Jira
+                input: CreateIssueInput
+                scopes:
+                    - write:jira-work
+                output: CreateIssueOutput
+                endpoint: POST /create-issue
         models:
-            JiraIssue:
-                id: integer
+            JiraIssueMetadata:
+                projectIdsToSync: JiraProjectId[]
+                cloudId: string
+                baseUrl: string
+            JiraProjectId:
+                id: string
+            Timestamps:
+                createdAt: string
+                updatedAt: string
+            Issue:
+                createdAt: string
+                updatedAt: string
+                id: string
                 key: string
                 summary: string
                 issueType: string
                 status: string
-                assignee: string
+                assignee: string | null
+                url: string
+                webUrl: string
+                projectId: string
                 projectKey: string
                 projectName: string
-                createdAt: date
-                updatedAt: date
+                comments:
+                    - Comment
+            Comment:
+                createdAt: string
+                updatedAt: string
+                id: string
+                author: Author
+                body: object
+            Author:
+                accountId: string | null
+                active: boolean
+                displayName: string
+                emailAddress: string | null
+            Project:
+                id: string
+                key: string
+                name: string
+                url: string
+                projectTypeKey: string
+                webUrl: string
+            IssueType:
+                projectId: string
+                id: string
+                name: string
+                description: string | null
+                url: string
+            CreateIssueInput:
+                summary: string
+                description?: string
+                assignee?: string
+                labels?: string[]
+                project: string
+                issueType: string
+            CreateIssueOutput:
+                id: string
+                key: string
+                self: string
     kustomer:
         syncs:
             conversations:
