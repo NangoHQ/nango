@@ -2484,8 +2484,6 @@ jira-data-center:
     authorization_params:
         grant_type: authorization_code
     token_url: https://${connectionConfig.endpointURL}/rest/oauth2/latest/token
-    connection_configuration:
-        - endpointURL
     docs: https://docs.nango.dev/integrations/all/jira-data-center
     connection_config:
         endpointURL:
@@ -2930,7 +2928,7 @@ metabase:
     connection_config:
         domain:
             type: string
-            title: Domain
+            title: Metabase Domain
             description: The domain (without the extension) of your Metabase account
             pattern: '^[a-z0-9.-]+$'
             example: metabase
@@ -5259,7 +5257,6 @@ zoominfo:
     token_request_auth_method: custom
     body_format: json
     docs: https://docs.nango.dev/integrations/all/zoominfo
-
 
 falai:
     display_name: fal.ai
