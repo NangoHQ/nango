@@ -88,6 +88,16 @@ export const enum WSMessageType {
     Success = 'success'
 }
 
+// This one is sent by parent only
+export interface ConnectUIEventToken {
+    type: 'session_token';
+    sessionToken: string;
+}
+
+export interface ConnectUIEventReady {
+    type: 'ready';
+}
+
 export interface ConnectUIEventClose {
     type: 'close';
 }
@@ -97,4 +107,4 @@ export interface ConnectUIEventConnect {
     payload: AuthResult;
 }
 
-export type ConnectUIEvent = ConnectUIEventClose | ConnectUIEventConnect;
+export type ConnectUIEvent = ConnectUIEventReady | ConnectUIEventClose | ConnectUIEventConnect;

@@ -27,6 +27,7 @@ const execPromise = util.promisify(exec);
 
 export const NANGO_INTEGRATIONS_NAME = 'nango-integrations';
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './';
+export const isCI = process.env['CI'];
 const IGNORE_UPGRADE_FOR = 86400 * 1000;
 
 export const port = process.env['NANGO_PORT'] || '3003';
@@ -289,7 +290,7 @@ export function getNangoRootPath(debug = false): string {
 }
 
 function getPackagePath(debug = false): string {
-    if (process.env['CI'] || process.env['VITEST']) {
+    if (isCI || process.env['VITEST']) {
         return path.join(__dirname);
     }
 
