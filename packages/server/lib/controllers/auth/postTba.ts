@@ -23,7 +23,8 @@ const queryStringValidation = z
         connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
         hmac: z.string().optional(),
-        public_key: z.string().uuid()
+        public_key: z.string().uuid().optional(),
+        connect_session_token: z.string().startsWith('nango_connect_session_').optional()
     })
     .strict();
 
