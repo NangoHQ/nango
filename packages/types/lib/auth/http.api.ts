@@ -10,7 +10,6 @@ export type PostPublicTbaAuthorization = Endpoint<{
     };
     Querystring: {
         connection_id?: string | undefined;
-        public_key: string;
         params?: Record<string, any> | undefined;
         hmac?: string | undefined;
     };
@@ -40,7 +39,6 @@ export type PostPublicTableauAuthorization = Endpoint<{
     };
     Querystring: {
         connection_id?: string | undefined;
-        public_key: string;
         params?: Record<string, any> | undefined;
         hmac?: string | undefined;
     };
