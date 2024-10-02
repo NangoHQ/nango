@@ -5151,3 +5151,22 @@ zoominfo:
     token_request_auth_method: custom
     body_format: json
     docs: https://docs.nango.dev/integrations/all/zoominfo
+
+
+falai:
+    display_name: fal.ai
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Key ${apiKey}
+        base_url: https://queue.fal.run
+    docs: https://docs.nango.dev/integrations/all/falai
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your fal.ai account
+
