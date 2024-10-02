@@ -168,6 +168,11 @@ export default class Nango {
         }
 
         return new Promise<AuthResult>((resolve, reject) => {
+            // Clear state if the modal is closed
+            if (this.win?.modal?.closed) {
+                this.clear();
+            }
+
             const successHandler = (providerConfigKey: string, connectionId: string, isPending = false) => {
                 if (this.status !== AuthorizationStatus.BUSY) {
                     return;
