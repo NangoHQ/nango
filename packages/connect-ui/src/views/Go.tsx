@@ -154,7 +154,6 @@ export const Go: React.FC = () => {
 
     const onSubmit = useCallback(
         async (values: z.infer<(typeof formSchema)[AuthModeType]>) => {
-            console;
             if (!integration || loading || !provider || !nango) {
                 return;
             }

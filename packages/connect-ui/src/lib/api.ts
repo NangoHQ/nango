@@ -20,7 +20,7 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
     opts: (TEndpoint['Method'] extends 'GET' ? { method?: TEndpoint['Method'] } : { method: TEndpoint['Method'] }) &
         (TEndpoint['Body'] extends never ? { body?: undefined } : { body: TEndpoint['Body'] }) &
         (TEndpoint['Querystring'] extends never ? { query?: undefined } : { query: TEndpoint['Querystring'] }) &
-        (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }) & { headers?: Record<string, any> },
+        (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }),
     method?: RequestInit['method']
 ): Promise<TEndpoint['Success']> {
     const url = new URL(API_HOSTNAME);
@@ -41,7 +41,7 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
         }
     }
 
-    const headers = new Headers(opts.headers);
+    const headers = new Headers();
     if (opts?.body) {
         headers.append('content-type', 'application/json');
     }
