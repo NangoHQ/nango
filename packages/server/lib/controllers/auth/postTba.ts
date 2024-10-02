@@ -7,7 +7,7 @@ import type { TbaCredentials, PostPublicTbaAuthorization } from '@nangohq/types'
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionTest as connectionTestHook } from '../../hooks/hooks.js';
-import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 
 const bodyValidation = z
     .object({
@@ -24,7 +24,7 @@ const queryStringValidation = z
         params: z.record(z.any()).optional(),
         hmac: z.string().optional(),
         public_key: z.string().uuid().optional(),
-        connect_session_token: z.string().startsWith('nango_connect_session_').optional()
+        connect_session_token: connectSessionTokenSchema.optional()
     })
     .strict();
 

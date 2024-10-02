@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getProvider } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
@@ -14,7 +14,7 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         public_key: z.string().uuid().optional(),
-        connect_session_token: z.string().startsWith('nango_connect_session_').optional(),
+        connect_session_token: connectSessionTokenSchema.optional(),
         user_scope: z.string().optional(),
         hmac: z.string().optional()
     })

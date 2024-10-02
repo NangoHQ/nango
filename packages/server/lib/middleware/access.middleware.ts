@@ -8,12 +8,11 @@ import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import tracer from 'dd-trace';
 import type { RequestLocals } from '../utils/express.js';
 import type { ConnectSession, DBEnvironment, DBTeam } from '@nangohq/types';
+import { connectSessionTokenSchema, connectSessionTokenPrefix } from '../helpers/validation.js';
 
 const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-const connectSessionTokenPrefix = 'nango_connect_session_';
-const connectSessionTokenRegex = new RegExp(`^${connectSessionTokenPrefix}[a-f0-9]{64}$`, 'i');
 const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
 
 export class AccessMiddleware {
@@ -172,7 +171,8 @@ export class AccessMiddleware {
             connectSession: ConnectSession;
         }>
     > {
-        if (!connectSessionTokenRegex.test(token)) {
+        const parsedToken = connectSessionTokenSchema.safeParse(token);
+        if (!parsedToken.success) {
             return Err('invalid_connect_session_token_format');
         }
 
