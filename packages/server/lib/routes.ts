@@ -108,7 +108,11 @@ const adminAuth: RequestHandler[] = [
     authMiddleware.adminKeyAuth.bind(authMiddleware),
     rateLimiterMiddleware
 ];
-const apiPublicAuth: RequestHandler[] = [authMiddleware.publicKeyAuth.bind(authMiddleware), resourceCapping, rateLimiterMiddleware];
+const connectSessionOrPublicAuth: RequestHandler[] = [
+    authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
+    resourceCapping,
+    rateLimiterMiddleware
+];
 let webAuth: RequestHandler[] = flagHasAuth
     ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
     : isBasicAuthEnabled
@@ -159,16 +163,18 @@ publicAPI.options('*', publicAPICorsHandler); // Pre-flight
 publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
-publicAPI.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
-publicAPI.route('/oauth2/auth/:providerConfigKey').post(apiPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
-publicAPI.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
-publicAPI.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(apiAuthController));
-publicAPI.route('/app-store-auth/:providerConfigKey').post(apiPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
-publicAPI.route('/auth/tba/:providerConfigKey').post(apiPublicAuth, postPublicTbaAuthorization);
-publicAPI.route('/auth/tableau/:providerConfigKey').post(apiPublicAuth, postPublicTableauAuthorization);
-publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(apiPublicAuth, postPublicUnauthenticated);
+
+publicAPI.route('/oauth/connect/:providerConfigKey').get(connectSessionOrPublicAuth, oauthController.oauthRequest.bind(oauthController));
+publicAPI.route('/oauth2/auth/:providerConfigKey').post(connectSessionOrPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
+publicAPI.route('/api-auth/api-key/:providerConfigKey').post(connectSessionOrPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
+publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPublicAuth, apiAuthController.basic.bind(apiAuthController));
+publicAPI.route('/app-store-auth/:providerConfigKey').post(connectSessionOrPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
+publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTbaAuthorization);
+publicAPI.route('/auth/tableau/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTableauAuthorization);
+publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
+
 // @deprecated
-publicAPI.route('/unauth/:providerConfigKey').post(apiPublicAuth, postPublicUnauthenticated);
+publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
 // API Admin routes
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
