@@ -1885,7 +1885,10 @@ integrations:
             emails:
                 runs: every hour
                 description: |
-                    Fetches a list of emails from gmail
+                    Fetches a list of emails from gmail. Goes back default to 1 year
+                    but metadata can be set using the `backfillPeriodMs` property
+                    to change the lookback. The property should be set in milliseconds.
+                input: OptionalBackfillSetting
                 output: GmailEmail
                 sync_type: incremental
                 endpoint: GET /google-mail/emails
@@ -1898,6 +1901,8 @@ integrations:
                 description: |
                     Send an Email using Gmail.
         models:
+            OptionalBackfillSetting:
+                backfillPeriodMs: number
             GmailEmail:
                 id: string
                 sender: string
@@ -5549,7 +5554,7 @@ integrations:
                 tax_rate?: number
                 currency: string
                 reference: string
-                issuing_date: date | null
+                issuing_date: string | null
                 fees: CreditNoteFee[]
             CreditNoteFee:
                 item_id: string
@@ -5572,7 +5577,7 @@ integrations:
                 tax_rate?: number
                 currency: string
                 reference: string
-                issuing_date: date | null
+                issuing_date: string | null
                 fees: CreditNoteFee[]
                 validation_errors: any[]
             CreditNoteActionResponse:
