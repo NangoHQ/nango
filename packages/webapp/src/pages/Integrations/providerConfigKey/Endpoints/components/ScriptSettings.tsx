@@ -19,7 +19,7 @@ import { Link } from 'react-router-dom';
 const drawerWidth = '630px';
 // To sync with patchFrequency
 const frequencyRegex =
-    /^(?<every>every )?((?<amount>[0-9]+)?\s?(?<unit>(m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/;
+    /^(?<every>every )?((?<amount>[0-9]+)?\s?(?<unit>(s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/;
 
 export const ScriptSettings: React.FC<{
     integration: GetIntegration['Success']['data'];
@@ -94,15 +94,15 @@ export const ScriptSettings: React.FC<{
 
         const reg = value.match(frequencyRegex);
         if (!reg || !reg.groups) {
-            setFrequencyError('Format should be "every (number) (minutes|hours|days)", e.g: "every 1 hour", "every 20 days"r');
+            setFrequencyError('Format should be "every (number) (seconds|minutes|hours|days)", e.g: "every 1 hour", "every 20 days"');
             return;
         }
 
         const unit = reg.groups['unit'];
         const amount = parseInt(reg.groups['amount'], 10);
 
-        if (unit.startsWith('m') && (amount < 5 || !amount)) {
-            setFrequencyError('The minimum frequency is 5 minutes');
+        if (unit.startsWith('s') && (amount < 30 || !amount)) {
+            setFrequencyError('The minimum frequency is 30 seconds');
             return;
         }
         setFrequencyError(null);

@@ -20,9 +20,11 @@ accelo:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Accelo Domain
             description: The subdomain of your Accelo account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .api.accelo.com
 
 adobe:
     display_name: Adobe
@@ -112,6 +114,7 @@ algolia:
         verification:
             endpoint: /1/keys/${credentials.apiKey}
     docs: https://docs.nango.dev/integrations/all/algolia
+    docs_connect: https://docs.nango.dev/integrations/all/algolia/connect
     connection_config:
         APP_ID:
             type: string
@@ -120,6 +123,7 @@ algolia:
             example: ERBSOWZO32
             pattern: '^[A-Z0-9]{10}$'
             order: 1
+            doc_section: '#step-1-finding-your-application-id'
     credentials:
         apiKey:
             type: string
@@ -127,6 +131,7 @@ algolia:
             description: The API key for your Algolia account
             example: c5c28261f9ade4e34891ccf761491b94
             pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-2-finding-your-admin-api-key'
 
 amazon:
     display_name: Amazon
@@ -324,9 +329,11 @@ auth0:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Auth0 Domain
             description: The subdomain of your Auth0 account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .auth0.com
 
 avalara:
     display_name: Avalara
@@ -390,13 +397,15 @@ aws:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
-            description: The subdomain of your Auth0 account
+            title: AWS Domain
+            description: The subdomain of your AWS account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .amazoncognito.com
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Auth0 account
+            description: The domain extension of your AWS account
             example: com
             pattern: '^[a-z.]+$'
 
@@ -419,9 +428,11 @@ bamboohr:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: BambooHR Domain
             description: The subdomain of your BambooHR account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .bamboohr.com
 
 bamboohr-basic:
     display_name: BambooHR (basic auth)
@@ -437,9 +448,11 @@ bamboohr-basic:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: BambooHR Domain
             description: The subdomain of your BambooHR account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .bamboohr.com
 
 battlenet:
     display_name: Battle.net
@@ -867,9 +880,11 @@ chargebee:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Chargebee Domain
             description: The subdomain of your Chargebee account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .chargebee.com
 
 checkr-partner:
     display_name: Checkr Partner
@@ -1125,9 +1140,11 @@ contentful:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Contentful Domain
             description: The subdomain of your Contentful account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .contentful.com
 
 contentstack:
     display_name: Contentstack
@@ -1140,13 +1157,16 @@ contentstack:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Contentstack Domain
             description: The subdomain of your Contentstack account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .contentstack.com
         appId:
             type: string
             title: App ID
             description: The app ID of your Contentstack account
+            order: 1
 
 coros:
     display_name: Coros
@@ -1423,9 +1443,11 @@ egnyte:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Egnyte Domain
             description: The subdomain of your Egnyte account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .egnyte.com
 
 entrata:
     display_name: Entrata
@@ -1438,9 +1460,11 @@ entrata:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Entrata Domain
             description: The subdomain of your Entrata account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .entrata.com
 
 envoy:
     display_name: Envoy
@@ -1712,13 +1736,28 @@ freshdesk:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshdesk.com
+        verification:
+            endpoint: /api/v2/settings/helpdesk
     docs: https://docs.nango.dev/integrations/all/freshdesk
+    credentials:
+        username:
+            type: string
+            title: FreshDesk API Key
+            description: The API Key of your FreshDesk account
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: X
+            hidden: true
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: FreshDesk Domain
             description: The subdomain of your FreshDesk account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .freshdesk.com
 
 freshsales:
     display_name: FreshSales
@@ -1735,9 +1774,11 @@ freshsales:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: FreshSales Domain
             description: The subdomain of your FreshSales account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .freshsales.io
     credentials:
         apiKey:
             type: string
@@ -1755,9 +1796,11 @@ freshservice:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: FreshService Domain
             description: The subdomain of your FreshService account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .freshservice.com
 
 front:
     display_name: Front
@@ -2065,9 +2108,11 @@ gorgias:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Gorgias Domain
             description: The subdomain of your Gorgias account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .gorgias.com
 
 greenhouse:
     display_name: Greenhouse
@@ -2088,9 +2133,11 @@ greenhouse:
     connection_config:
         resource:
             type: string
-            title: Subdomain
+            title: Greenhouse Domain
             description: The subdomain of your Greenhouse account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .greenhouse.io
 
 greenhouse-basic:
     display_name: Greenhouse (basic auth)
@@ -2109,9 +2156,11 @@ greenhouse-basic:
     connection_config:
         resource:
             type: string
-            title: Subdomain
+            title: Greenhouse Domain
             description: The subdomain of your Greenhouse account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .greenhouse.io
 
 gumroad:
     display_name: Gumroad
@@ -2318,9 +2367,11 @@ insightly:
     connection_config:
         pod:
             type: string
-            title: Subdomain
+            title: Insightly Domain
             description: The subdomain of your Insightly account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .insightly.com
 
 instantly:
     display_name: Instantly
@@ -2417,9 +2468,11 @@ jira-basic:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Jira Domain
             description: The subdomain of your Jira account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .atlassian.net
 
 jira-data-center:
     display_name: Jira Data Center
@@ -2581,9 +2634,11 @@ kustomer:
     connection_config:
         extension:
             type: string
-            title: Subdomain
+            title: Kustomer Domain
             description: The subdomain of your Kustomer account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .kustomerapp.com
     credentials:
         apiKey:
             type: string
@@ -3160,9 +3215,11 @@ okta:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Okta Domain
             description: The subdomain of your Okta account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .okta.com
 
 one-drive:
     display_name: One Drive
@@ -3596,9 +3653,11 @@ posthog:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: PostHog Domain
             description: The subdomain of your PostHog account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .posthog.com
     credentials:
         apiKey:
             type: string
@@ -3638,9 +3697,11 @@ qualtrics:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Qualtrics Domain
             description: The subdomain of your Qualtrics account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .qualtrics.com
 
 quickbooks:
     display_name: Quickbooks
@@ -3653,6 +3714,13 @@ quickbooks:
         - realmId
     proxy:
         base_url: https://quickbooks.api.intuit.com
+    docs: https://docs.nango.dev/integrations/all/quickbooks
+
+quickbooks-sandbox:
+    alias: quickbooks
+    display_name: Quickbooks (sandbox)
+    proxy:
+        base_url: https://sandbox-quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
 
 ramp:
@@ -3843,9 +3911,11 @@ salesforce-experience-cloud:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Salesforce Domain
             description: The subdomain of your Salesforce Experience Cloud account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .my.site.com
         instance_url:
             type: string
             title: Instance URL
@@ -3948,9 +4018,11 @@ servicenow:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: ServiceNow Domain
             description: The subdomain of your ServiceNow account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .service-now.com
 
 sharepoint-online:
     display_name: SharePoint Online
@@ -3989,9 +4061,11 @@ shopify:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Shopify Domain
             description: The subdomain of your Shopify account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .myshopify.com
 
 shortcut:
     display_name: Shortcut
@@ -4364,9 +4438,11 @@ teamtailor:
     connection_config:
         extension:
             type: string
-            title: Subdomain
+            title: Teamtailor Domain
             description: The subdomain of your Teamtailor instance
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .teamtailor.com
     credentials:
         apiKey:
             type: string
@@ -4835,9 +4911,11 @@ wildix-pbx:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Wildix Domain
             description: The subdomain of your Wildix instance
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .wildixin.com
 
 wordpress:
     display_name: WordPress
@@ -4889,9 +4967,11 @@ workable:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Workable Domain
             description: The subdomain of your Workable account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .workable.com
     credentials:
         apiKey:
             type: string
@@ -4909,9 +4989,11 @@ workday:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Workday Domain
             description: The subdomain of your Workday account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .workday.com
 
 wrike:
     display_name: Wrike
@@ -5017,9 +5099,11 @@ zendesk:
     connection_config:
         subdomain:
             type: string
-            title: Subdomain
+            title: Zendesk Domain
             description: The subdomain of your Zendesk account
             pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .zendesk.com
 
 zenefits:
     display_name: Zenefits

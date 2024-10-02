@@ -338,8 +338,8 @@ export interface NangoProps {
     track_deletes?: boolean;
     attributes?: object | undefined;
     logMessages?: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } | undefined;
-    rawSaveOutput?: unknown[] | undefined;
-    rawDeleteOutput?: unknown[] | undefined;
+    rawSaveOutput?: Map<string, unknown[]> | undefined;
+    rawDeleteOutput?: Map<string, unknown[]> | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
@@ -875,8 +875,8 @@ export class NangoSync extends NangoAction {
         counts: { updated: 0, added: 0, deleted: 0 },
         messages: []
     };
-    rawSaveOutput?: unknown[];
-    rawDeleteOutput?: unknown[];
+    rawSaveOutput?: Map<string, unknown[]>;
+    rawDeleteOutput?: Map<string, unknown[]>;
     stubbedMetadata?: Metadata | undefined = undefined;
 
     private batchSize = 1000;
@@ -979,8 +979,11 @@ export class NangoSync extends NangoAction {
             if (this.logMessages && this.logMessages.counts) {
                 this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
             }
-            if (this.rawSaveOutput && Array.isArray(this.rawSaveOutput)) {
-                this.rawSaveOutput.push(...results);
+            if (this.rawSaveOutput) {
+                if (!this.rawSaveOutput.has(model)) {
+                    this.rawSaveOutput.set(model, []);
+                }
+                this.rawSaveOutput.get(model)?.push(...results);
             }
             return null;
         }
@@ -1049,8 +1052,11 @@ export class NangoSync extends NangoAction {
             if (this.logMessages && this.logMessages.counts) {
                 this.logMessages.counts.deleted = Number(this.logMessages.counts.deleted) + results.length;
             }
-            if (this.rawDeleteOutput && Array.isArray(this.rawDeleteOutput)) {
-                this.rawDeleteOutput.push(...results);
+            if (this.rawDeleteOutput) {
+                if (!this.rawDeleteOutput.has(model)) {
+                    this.rawDeleteOutput.set(model, []);
+                }
+                this.rawDeleteOutput.get(model)?.push(...results);
             }
             return null;
         }
