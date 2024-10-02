@@ -5,23 +5,16 @@ import { useEffect } from 'react';
 import type { ConnectUIEventToken } from '@nangohq/frontend';
 
 import { ErrorFallback } from '@/components/ErrorFallback';
-import { Layout } from '@/components/Layout';
+import { LoadingView } from '@/components/LoadingView';
 import { getConnectSession } from '@/lib/api';
 import { triggerReady } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
-    const { sessionToken, session, setSession, setSessionToken } = useGlobal();
+    const { sessionToken, setSession, setSessionToken } = useGlobal();
 
-    const { data, error, isLoading } = useQuery({
-        enabled: sessionToken !== null,
-        queryKey: ['sessionToken'],
-        queryFn: () => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            return getConnectSession(sessionToken!);
-        }
-    });
+    const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
 
     useEffect(() => {
         // Listen to parent
@@ -58,17 +51,9 @@ export const Home: React.FC = () => {
         }
     }, [data]);
 
-    if (!sessionToken || isLoading || session) {
-        return (
-            <Layout>
-                <div className="w-full h-full text-dark-400 flex items-center justify-center">Loading...</div>
-            </Layout>
-        );
-    }
-
     if (error) {
         return <ErrorFallback />;
     }
 
-    return <Layout>.</Layout>;
+    return <LoadingView />;
 };
