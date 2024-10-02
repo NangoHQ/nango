@@ -8,12 +8,11 @@ import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import tracer from 'dd-trace';
 import type { RequestLocals } from '../utils/express.js';
 import type { ConnectSession, DBEnvironment, DBTeam } from '@nangohq/types';
+import { connectSessionTokenSchema, connectSessionTokenPrefix } from '../helpers/validation.js';
 
 const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-const connectSessionTokenPrefix = 'nango_connect_session_';
-const connectSessionTokenRegex = new RegExp(`^${connectSessionTokenPrefix}[a-f0-9]{64}$`, 'i');
 const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
 
 export class AccessMiddleware {
@@ -67,6 +66,7 @@ export class AccessMiddleware {
             next();
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
+            span.setTag('error', err);
             return errorManager.errRes(res, 'malformed_auth_header');
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start);
@@ -87,42 +87,20 @@ export class AccessMiddleware {
         next();
     }
 
-    async publicKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
-        const active = tracer.scope().active();
-        const span = tracer.startSpan('publicKeyAuth', {
-            childOf: active!
-        });
-
-        const start = Date.now();
-        try {
-            const publicKey = req.query['public_key'] as string;
-
-            if (!publicKey) {
-                return errorManager.errRes(res, 'missing_public_key');
-            }
-
-            if (!keyRegex.test(publicKey)) {
-                return errorManager.errRes(res, 'invalid_public_key');
-            }
-
-            const result = await environmentService.getAccountAndEnvironmentByPublicKey(publicKey);
-            if (!result) {
-                res.status(401).send({ error: { code: 'unknown_user_account' } });
-                return;
-            }
-
-            res.locals['authType'] = 'publicKey';
-            res.locals['account'] = result.account;
-            res.locals['environment'] = result.environment;
-            tracer.setUser({ id: String(result.account.id), environmentId: String(result.environment.id) });
-            next();
-        } catch (e) {
-            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.INTERNAL_AUTHORIZATION });
-            return errorManager.errRes(res, 'unknown_account');
-        } finally {
-            metrics.duration(metrics.Types.AUTH_PUBLIC_KEY, Date.now() - start);
-            span.finish();
+    private async validatePublicKey(publicKey: string): Promise<
+        Result<{
+            account: DBTeam;
+            environment: DBEnvironment;
+        }>
+    > {
+        if (!keyRegex.test(publicKey)) {
+            return Err('invalid_secret_key_format');
         }
+        const result = await environmentService.getAccountAndEnvironmentByPublicKey(publicKey);
+        if (!result) {
+            return Err('unknown_user_account');
+        }
+        return Ok(result);
     }
 
     async sessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -193,7 +171,8 @@ export class AccessMiddleware {
             connectSession: ConnectSession;
         }>
     > {
-        if (!connectSessionTokenRegex.test(token)) {
+        const parsedToken = connectSessionTokenSchema.safeParse(token);
+        if (!parsedToken.success) {
             return Err('invalid_connect_session_token_format');
         }
 
@@ -255,8 +234,9 @@ export class AccessMiddleware {
                 connectSessionId: String(result.value.connectSession.id)
             });
             next();
-        } catch (e) {
-            logger.error(`failed_get_env_by_connect_session ${stringifyError(e)}`);
+        } catch (err) {
+            logger.error(`failed_get_env_by_connect_session ${stringifyError(err)}`);
+            span.setTag('error', err);
             return errorManager.errRes(res, 'unknown_account');
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION, Date.now() - start);
@@ -320,11 +300,68 @@ export class AccessMiddleware {
                 });
             }
             next();
-        } catch (e) {
-            logger.error(`failed_get_env_by_connect_session_or_secret ${stringifyError(e)}`);
+        } catch (err) {
+            logger.error(`failed_get_env_by_connect_session_or_secret ${stringifyError(err)}`);
+            span.setTag('error', err);
             return errorManager.errRes(res, 'unknown_account');
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION_OR_SECRET_KEY, Date.now() - start);
+            span.finish();
+        }
+    }
+
+    async connectSessionOrPublicKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('connectSessionOrSecretKeyAuth', {
+            childOf: active!
+        });
+
+        const start = Date.now();
+        try {
+            const token = req.query['connect_session_token'] as string;
+            if (token) {
+                const connectSessionResult = await this.validateConnectSessionToken(token);
+                if (connectSessionResult.isErr()) {
+                    errorManager.errRes(res, connectSessionResult.error.message);
+                    return;
+                }
+                res.locals['authType'] = 'connectSession';
+                res.locals['account'] = connectSessionResult.value.account;
+                res.locals['environment'] = connectSessionResult.value.environment;
+                res.locals['connectSession'] = connectSessionResult.value.connectSession;
+                tracer.setUser({
+                    id: String(connectSessionResult.value.account.id),
+                    environmentId: String(connectSessionResult.value.environment.id),
+                    connectSessionId: String(connectSessionResult.value.connectSession.id)
+                });
+            } else {
+                const publicKey = req.query['public_key'] as string;
+
+                if (!publicKey) {
+                    return errorManager.errRes(res, 'missing_public_key');
+                }
+
+                if (!keyRegex.test(publicKey)) {
+                    return errorManager.errRes(res, 'invalid_public_key');
+                }
+
+                const result = await this.validatePublicKey(publicKey);
+                if (result.isErr()) {
+                    errorManager.errRes(res, result.error.message);
+                    return;
+                }
+                res.locals['authType'] = 'publicKey';
+                res.locals['account'] = result.value.account;
+                res.locals['environment'] = result.value.environment;
+                tracer.setUser({ id: String(result.value.account.id), environmentId: String(result.value.environment.id) });
+            }
+            next();
+        } catch (err) {
+            errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.INTERNAL_AUTHORIZATION });
+            span.setTag('error', err);
+            return errorManager.errRes(res, 'unknown_account');
+        } finally {
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION_OR_PUBLIC_KEY, Date.now() - start);
             span.finish();
         }
     }

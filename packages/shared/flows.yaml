@@ -1933,7 +1933,7 @@ integrations:
                     but metadata can be set using the `backfillPeriodMs` property
                     to change the lookback. The property should be set in milliseconds.
                 input: OptionalBackfillSetting
-                version: 1.0.0
+                version: 1.0.1
                 output: GmailEmail
                 sync_type: incremental
                 endpoint: GET /google-mail/emails

@@ -18,7 +18,7 @@ import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 
 const bodyValidation = z
     .object({
@@ -32,7 +32,8 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
-        public_key: z.string().uuid(),
+        public_key: z.string().uuid().optional(),
+        connect_session_token: connectSessionTokenSchema.optional(),
         hmac: z.string().optional()
     })
     .strict();

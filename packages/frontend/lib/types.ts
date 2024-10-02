@@ -1,5 +1,5 @@
 export type AuthErrorType =
-    | 'missingPublicKey'
+    | 'missingAuthToken'
     | 'blocked_by_browser'
     | 'invalidHostUrl'
     | 'windowIsOpened'
