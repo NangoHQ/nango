@@ -2,55 +2,25 @@
 import { IconArrowRight, IconExclamationCircle, IconX } from '@tabler/icons-react';
 import { QueryErrorResetBoundary, useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
-import type { ConnectUIEventToken } from '@nangohq/frontend';
 import type { ApiPublicIntegration, GetPublicProvider } from '@nangohq/types';
 
 import { ErrorFallback } from '@/components/ErrorFallback';
-import { Layout } from '@/components/Layout';
+import { LoadingView } from '@/components/LoadingView';
 import { Button } from '@/components/ui/button';
 import { getIntegrations, getProvider } from '@/lib/api';
-import { triggerClose, triggerReady } from '@/lib/events';
+import { triggerClose } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 import NoIntegrationSVG from '@/svg/nointegrations.svg?react';
 
 export const IntegrationsList: React.FC = () => {
-    const sessionToken = useGlobal((state) => state.sessionToken);
-    const setSessionToken = useGlobal((state) => state.setSessionToken);
-
-    useEffect(() => {
-        // Listen to parent
-        // the parent will send the sessionToken through post message
-        const listener: (this: Window, ev: MessageEvent) => void = (evt) => {
-            if (!evt.data || !('type' in evt.data) || evt.data.type !== 'session_token') {
-                return;
-            }
-
-            const data = evt.data as ConnectUIEventToken;
-            setSessionToken(data.sessionToken);
-        };
-        window.addEventListener('message', listener, false);
-
-        // Tell the parent we are ready to receive message
-        triggerReady();
-
-        return () => {
-            window.removeEventListener('message', listener, false);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    if (!sessionToken) {
-        return null;
-    }
-
     return (
         <QueryErrorResetBoundary>
             {({ reset }) => (
                 <ErrorBoundary fallbackRender={ErrorFallback} onReset={reset}>
-                    <Suspense fallback={<div>loading</div>}>
+                    <Suspense fallback={<LoadingView />}>
                         <Integrations />
                     </Suspense>
                 </ErrorBoundary>
@@ -64,25 +34,23 @@ const Integrations: React.FC = () => {
 
     if (data.data.length <= 0) {
         return (
-            <Layout>
-                <main className="h-full overflow-auto m-9 p-1">
-                    <div className="flex flex-col justify-between h-full">
-                        <div></div>
-                        <div className="flex flex-col items-center gap-5 w-full">
-                            <NoIntegrationSVG />
-                            <h1 className="text-xl font-semibold">No integration found.</h1>
-                        </div>
-
-                        <Button title="Close UI" onClick={() => triggerClose()}>
-                            Close
-                        </Button>
+            <main className="h-full overflow-auto m-9 p-1">
+                <div className="flex flex-col justify-between h-full">
+                    <div></div>
+                    <div className="flex flex-col items-center gap-5 w-full">
+                        <NoIntegrationSVG />
+                        <h1 className="text-xl font-semibold">No integration found.</h1>
                     </div>
-                </main>
-            </Layout>
+
+                    <Button title="Close UI" onClick={() => triggerClose()}>
+                        Close
+                    </Button>
+                </div>
+            </main>
         );
     }
     return (
-        <Layout>
+        <>
             <header className="flex flex-col gap-4 p-10 ">
                 <div className="flex justify-end">
                     <Button size={'icon'} title="Close UI" variant={'transparent'} onClick={() => triggerClose()}>
@@ -101,7 +69,7 @@ const Integrations: React.FC = () => {
                     })}
                 </div>
             </main>
-        </Layout>
+        </>
     );
 };
 
