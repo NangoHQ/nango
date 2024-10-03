@@ -110,13 +110,8 @@ export default function ConnectionList() {
         };
     }, [debouncedSearch]);
 
-    const onClickConnectUI = async () => {
+    const onClickConnectUI = () => {
         if (!environmentAndAccount) {
-            return;
-        }
-
-        const res = await apiConnectSessions(env);
-        if ('error' in res.json) {
             return;
         }
 
@@ -128,7 +123,6 @@ export default function ConnectionList() {
 
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
-            sessionToken: res.json.data.token,
             onEvent: (event) => {
                 if (event.type === 'close') {
                     // we refresh on close so user can see the diff
@@ -136,6 +130,16 @@ export default function ConnectionList() {
                 }
             }
         });
+
+        // We defer the token creation so the iframe can open and display a loading screen
+        //   instead of blocking the main loop and no visual clue for the end user
+        setTimeout(async () => {
+            const res = await apiConnectSessions(env);
+            if ('error' in res.json) {
+                return;
+            }
+            connectUI.current!.setSessionToken(res.json.data.token);
+        }, 10);
     };
 
     if (error) {
