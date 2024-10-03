@@ -1,4 +1,4 @@
-import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasScripts, isCloud, isLocal } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, connectUrl, flagHasAuth, flagHasManagedAuth, flagHasScripts, isCloud, isLocal } from '@nangohq/utils';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import type { WindowEnv } from '@nangohq/types';
 import { envs } from '@nangohq/logs';
@@ -7,6 +7,7 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
     const configObject: WindowEnv = {
         apiUrl: baseUrl,
         publicUrl: basePublicUrl,
+        connectUrl: connectUrl,
         publicSentryKey: process.env['PUBLIC_SENTRY_KEY'] || '',
         publicPosthogKey: process.env['PUBLIC_POSTHOG_KEY'] || '',
         publicPosthogPost: process.env['PUBLIC_POSTHOG_HOST'] || '',
@@ -17,7 +18,7 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
             auth: flagHasAuth,
             managedAuth: flagHasManagedAuth,
             interactiveDemo: isCloud || isLocal,
-            connectUI: isLocal
+            connectUI: isCloud || isLocal
         }
     };
     res.setHeader('content-type', 'text/javascript');

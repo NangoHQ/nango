@@ -9,6 +9,7 @@ export function triggerReady() {
 
 export function triggerClose() {
     const isDirty = useGlobal.getState().isDirty;
+    const nango = useGlobal.getState().nango;
     if (isDirty) {
         const leave = confirm('Are you sure you want to leave?');
         if (!leave) {
@@ -18,6 +19,7 @@ export function triggerClose() {
 
     const event: ConnectUIEventClose = { type: 'close' };
     parent.postMessage(event, '*');
+    nango?.clear();
 }
 
 export function triggerConnection(results: AuthResult) {

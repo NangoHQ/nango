@@ -5,7 +5,9 @@ import type { ApiError, Endpoint, GetConnectSession, GetPublicListIntegrations, 
 
 import { useGlobal } from './store';
 
-const API_HOSTNAME = 'http://localhost:3003'; // TODO: remove hardcoded value
+// Temp solution, ideally we can launch this without having to rebuild the whole UI
+// TODO: remove hardcoded value
+export const API_HOSTNAME: string = import.meta.env.VITE_API_HOSTNAME || 'http://localhost:3003';
 
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     let res = tpl;
