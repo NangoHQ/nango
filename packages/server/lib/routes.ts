@@ -196,7 +196,7 @@ publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.b
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
 publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegration);
 publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
-publicAPI.route('/integrations/:uniqueKey').get(connectSessionOrApiAuth, getPublicIntegration);
+publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
 
 publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 publicAPI.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));

@@ -4,6 +4,7 @@ import { IconArrowLeft, IconCircleCheckFilled, IconExclamationCircle, IconExclam
 import { Link, Navigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
+import { useMount } from 'react-use';
 import { z } from 'zod';
 
 import type { AuthResult } from '@nangohq/frontend';
@@ -61,7 +62,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 };
 
 export const Go: React.FC = () => {
-    const { provider, integration, sessionToken, setIsDirty } = useGlobal();
+    const { provider, integration, session, sessionToken, setIsDirty } = useGlobal();
     const nango = useNango(sessionToken);
 
     const [loading, setLoading] = useState(false);
@@ -69,25 +70,31 @@ export const Go: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [connectionFailed, setConnectionFailed] = useState(false);
 
-    useEffect(() => {
+    const preconfigured = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
+
+    useMount(() => {
         // on unmount always clear popup and state
         return () => {
             nango?.clear();
         };
-    }, []);
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { resolver, hasField, orderedFields } = useMemo<{ resolver: Resolver<any>; hasField: boolean; orderedFields: [string, number][] }>(() => {
+    const { resolver, shouldAutoTrigger, orderedFields } = useMemo<{
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        resolver: Resolver<any>;
+        shouldAutoTrigger: boolean;
+        orderedFields: [string, number][];
+    }>(() => {
         if (!provider) {
-            return { hasField: true, resolver: () => ({ values: {}, errors: {} }), orderedFields: [] };
+            return { shouldAutoTrigger: false, resolver: () => ({ values: {}, errors: {} }), orderedFields: [] };
         }
 
         const baseForm = formSchema[provider.auth_mode];
-        const defaultValues: Record<string, string> = {};
 
         // To order fields we use incremented int starting high because we don't know yet which fields will be sorted
         // It's a lazy algorithm that works most of the time
         const orderedFields: Record<string, number> = {};
+        let hiddenFields = 0;
         let order = 99;
 
         // Base credentials are usually the first in the list so we start here
@@ -99,9 +106,6 @@ export const Go: React.FC = () => {
         // Modify base form with credentials specific
         for (const [name, schema] of Object.entries(provider.credentials || [])) {
             baseForm.shape[name] = jsonSchemaToZod(schema);
-            if (schema.default_value) {
-                defaultValues[`credentials.${name}`] = schema.default_value;
-            }
         }
 
         // Append connectionConfig object
@@ -117,6 +121,9 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[`params.${name}`] = order;
             }
+            if (preconfigured[name] || schema.hidden) {
+                hiddenFields += 1;
+            }
         }
 
         // Only add objects if they have something otherwise it breaks react-form
@@ -125,10 +132,10 @@ export const Go: React.FC = () => {
             ...(Object.keys(additionalFields).length > 0 ? { params: z.object(additionalFields) } : {})
         });
 
-        const hasField = Object.keys(fields.shape).length > 0;
+        const fieldCount = Object.keys(fields.shape).length;
         const resolver = zodResolver(fields);
         return {
-            hasField,
+            shouldAutoTrigger: fieldCount - hiddenFields <= 0,
             resolver,
             orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1))
         };
@@ -145,12 +152,12 @@ export const Go: React.FC = () => {
         if (isDirty) {
             setIsDirty(true);
         }
-    }, [isDirty]);
+    }, [isDirty, setIsDirty]);
     useEffect(() => {
         if (result) {
             setIsDirty(false);
         }
-    }, [result]);
+    }, [result, setIsDirty]);
 
     const onSubmit = useCallback(
         async (values: z.infer<(typeof formSchema)[AuthModeType]>) => {
@@ -190,17 +197,17 @@ export const Go: React.FC = () => {
                 setLoading(false);
             }
         },
-        [provider, integration, loading]
+        [provider, integration, loading, nango]
     );
 
     useEffect(() => {
-        if (hasField) {
+        if (!shouldAutoTrigger || !nango) {
             return;
         }
 
         // Auto submit when no fields are required (e.g: oauth2)
-        void onSubmit({});
-    }, []);
+        void form.handleSubmit(onSubmit)();
+    }, [shouldAutoTrigger, nango]);
 
     if (!provider || !integration) {
         // typescript pleasing or if we enter the URL directly
@@ -278,61 +285,71 @@ export const Go: React.FC = () => {
             <main className="h-full overflow-auto p-10 pt-1">
                 <Form {...form}>
                     <form className="flex flex-col gap-4 justify-between grow min-h-full" onSubmit={form.handleSubmit(onSubmit)}>
-                        {hasField && (
-                            <div className="flex flex-col gap-8 p-7 border border-dark-300 rounded-md">
-                                {orderedFields.map(([name]) => {
-                                    const [type, key] = name.split('.') as ['credentials' | 'params', string];
-                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                                    const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
-                                    // Not all fields have a definition in providers.yaml so we fallback to default
-                                    const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
+                        <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger && 'border border-dark-300')}>
+                            {orderedFields.map(([name]) => {
+                                const [type, key] = name.split('.') as ['credentials' | 'params', string];
+                                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                                const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
+                                // Not all fields have a definition in providers.yaml so we fallback to default
+                                const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
+                                const isPreconfigured = preconfigured[key];
 
-                                    return (
-                                        <FormField
-                                            key={name}
-                                            control={form.control}
-                                            defaultValue={definition?.default_value ?? undefined}
-                                            // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
-                                            name={name}
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem className={cn(definition?.hidden && 'hidden')}>
-                                                        <div>
-                                                            <div className="flex gap-2 items-start pb-1">
-                                                                <FormLabel className="leading-4">{definition?.title || base?.title}</FormLabel>
-                                                                {definition?.doc_section && (
-                                                                    <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
-                                                                        <IconInfoCircle size={16} />
-                                                                    </Link>
-                                                                )}
-                                                            </div>
-                                                            {definition?.description && <FormDescription>{definition.description}</FormDescription>}
+                                return (
+                                    <FormField
+                                        key={name}
+                                        control={form.control}
+                                        defaultValue={isPreconfigured ?? definition?.default_value ?? undefined}
+                                        // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
+                                        name={name}
+                                        render={({ field }) => {
+                                            return (
+                                                <FormItem className={cn(isPreconfigured || definition?.hidden ? 'hidden' : null)}>
+                                                    <div>
+                                                        <div className="flex gap-2 items-start pb-1">
+                                                            <FormLabel className="leading-4">{definition?.title || base?.title}</FormLabel>
+                                                            {definition?.doc_section && (
+                                                                <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
+                                                                    <IconInfoCircle size={16} />
+                                                                </Link>
+                                                            )}
                                                         </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <CustomInput
-                                                                    placeholder={definition?.example || definition?.title || base?.example}
-                                                                    suffix={definition?.suffix}
-                                                                    {...field}
-                                                                    autoComplete="off"
-                                                                    type={base?.secret ? 'password' : 'text'}
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        )}
-                        {!hasField && <div className="text-sm text-dark-500 w-full text-center">{loading && 'A popup is opened...'}</div>}
+                                                        {definition?.description && <FormDescription>{definition.description}</FormDescription>}
+                                                    </div>
+                                                    <div>
+                                                        <FormControl>
+                                                            <CustomInput
+                                                                placeholder={definition?.example || definition?.title || base?.example}
+                                                                suffix={definition?.suffix}
+                                                                {...field}
+                                                                autoComplete="off"
+                                                                type={base?.secret ? 'password' : 'text'}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </div>
+                                                </FormItem>
+                                            );
+                                        }}
+                                    />
+                                );
+                            })}
+                        </div>
+                        {shouldAutoTrigger && <div className="text-sm text-dark-500 w-full text-center">{loading && 'A popup is opened...'}</div>}
                         <div className="flex flex-col gap-4">
                             {error && (
                                 <div className="border border-red-base bg-red-base-35 text-red-base flex items-center py-1 px-4 rounded-md gap-2">
-                                    <IconExclamationCircle size={20} stroke={1} /> {error}
+                                    <div>
+                                        <IconExclamationCircle size={20} stroke={1} />
+                                    </div>{' '}
+                                    {error}
+                                </div>
+                            )}
+                            {!error && shouldAutoTrigger && !form.formState.isValid && (
+                                <div className="border border-red-base bg-red-base-35 text-red-base flex items-center py-1 px-4 rounded-md gap-2">
+                                    <div>
+                                        <IconExclamationCircle size={20} stroke={1} />
+                                    </div>
+                                    A pre-configured field set by the administrator is invalid, please reach out to the support
                                 </div>
                             )}
                             <Button

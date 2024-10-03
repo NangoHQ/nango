@@ -1,18 +1,17 @@
 import Nango from '@nangohq/frontend';
-import { useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 
 export function useNango(sessionToken: string | null) {
-    const ref = useRef<Nango>();
-    useEffect(() => {
+    const nango = useMemo(() => {
         if (!sessionToken) {
             return;
         }
 
-        ref.current = new Nango({
-            publicKey: sessionToken,
+        return new Nango({
+            connectSessionToken: sessionToken,
             host: import.meta.env.VITE_LOCAL_HOSTNAME
         });
     }, [sessionToken]);
 
-    return ref.current;
+    return nango;
 }
