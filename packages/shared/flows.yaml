@@ -2341,36 +2341,81 @@ integrations:
                     Fetches a list of service tickets from Hubspot
                 output: HubspotServiceTicket
                 sync_type: incremental
-                endpoint: GET /hubspot/service-tickets
+                endpoint: GET /service-tickets
             contacts:
                 runs: every day
                 description: |
                     Fetches a list of contacts from Hubspot
                 output: HubspotContact
                 sync_type: full
-                endpoint: GET /hubspot/contacts
+                endpoint: GET /contacts
             owners:
                 runs: every day
                 description: |
                     Fetches a list of owners from Hubspot
                 output: HubspotOwner
                 sync_type: full
-                endpoint: GET /hubspot/owner
+                endpoint: GET /owners
             users:
                 runs: every day
                 description: |
                     Fetches a list of users from Hubspot
                 output: HubspotUser
                 sync_type: full
-                endpoint: GET /hubspot/user
+                endpoint: GET /users
             knowledge-base:
                 runs: every day
                 description: |
                     Fetches a list of knowledge base from Hubspot
                 output: HubspotKnowledgeBase
                 sync_type: full
-                endpoint: GET /hubspot/knowledge-base
+                endpoint: GET /knowledge-base
+        actions:
+            fetch-properties:
+                description: Fetch the properties of a specified object
+                input: InputProperty
+                output: PropertyResponse
+                endpoint: GET /properties
+            create-deal:
+                description: Creates a deal in Hubspot
+                output: CreatedDeal
+                endpoint: POST /deals
+                input: CreateDeal
+                scopes:
+                    - crm.objects.deals.write
         models:
+            InputProperty:
+                name: string
+            PropertyResponse:
+                result: Property
+            Property:
+                updatedAt: string
+                createdAt: string
+                name: string
+                label: string
+                type: string
+                fieldType: string
+                description: string
+                groupName: string
+                options: Option[],
+                displayOrder: number
+                calculated: boolean
+                externalOptions: boolean
+                hasUniqueValue: boolean
+                hidden: boolean
+                hubspotDefined: boolean
+                showCurrencySymbol: boolean
+                modificationMetadata:
+                    archivable: boolean
+                    readOnlyDefinition: boolean
+                    readOnlyValue: boolean
+                formField: boolean
+                dataSensitivity: string
+            Option:
+                label: string
+                value: string
+                displayOrder: number
+                hidden: boolean
             HubspotServiceTicket:
                 id: integer
                 createdAt: date
@@ -2413,6 +2458,36 @@ integrations:
                 first_name: string
                 last_name: string
                 email: string
+            CreateDeal:
+                properties:
+                    dealname: string
+                    __string: any
+            DealDefaultProperties:
+                createdate: string
+                days_to_close: string
+                dealname: string
+                hs_closed_amount: string
+                hs_closed_amount_in_home_currency: string
+                hs_closed_won_count: string
+                hs_createdate: string
+                hs_days_to_close_raw: string
+                hs_deal_stage_probability_shadow: string
+                hs_is_closed_lost: string
+                hs_is_closed_won: string
+                hs_is_deal_split: string
+                hs_lastmodifieddate: string
+                hs_object_id: string
+                hs_object_source: string
+                hs_object_source_id: string
+                hs_object_source_label: string
+                hs_projected_amount: string
+                hs_projected_amount_in_home_currency: string
+            CreatedDeal:
+                id: string
+                properties: DealDefaultProperties
+                createdAt: string
+                updatedAt: string
+                archived: boolean
     instantly:
         actions:
             set-campaign-name:
