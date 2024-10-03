@@ -298,7 +298,7 @@ export const Go: React.FC = () => {
                                     <FormField
                                         key={name}
                                         control={form.control}
-                                        defaultValue={isPreconfigured ?? definition?.default_value ?? undefined}
+                                        defaultValue={isPreconfigured ?? definition?.default_value ?? ''}
                                         // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
                                         name={name}
                                         render={({ field }) => {

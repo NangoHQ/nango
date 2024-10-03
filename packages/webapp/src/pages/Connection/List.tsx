@@ -187,11 +187,7 @@ export default function ConnectionList() {
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 <div className="flex gap-2">
-                    {globalEnv.features.connectUI && (
-                        <Button onClick={onClickConnectUI} variant={'emptyFaded'}>
-                            Open Connect UI (alpha)
-                        </Button>
-                    )}
+                    {globalEnv.features.connectUI && <Button onClick={onClickConnectUI}>Open Connect UI (beta)</Button>}
                     {connections && connections.length > 0 && (
                         <Link
                             to={`/${env}/connections/create`}
