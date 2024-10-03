@@ -7,9 +7,11 @@ export function useNango(sessionToken: string | null) {
             return;
         }
 
+        // Temp solution, ideally we can launch this without having to rebuild the whole UI
+        const hostname = import.meta.env.VITE_API_HOSTNAME || 'http://localhost:3003';
         return new Nango({
             connectSessionToken: sessionToken,
-            host: import.meta.env.VITE_LOCAL_HOSTNAME
+            host: hostname
         });
     }, [sessionToken]);
 

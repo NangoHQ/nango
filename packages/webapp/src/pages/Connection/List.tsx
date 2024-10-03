@@ -127,6 +127,7 @@ export default function ConnectionList() {
         });
 
         connectUI.current = nango.openConnectUI({
+            baseURL: globalEnv.connectUrl,
             sessionToken: res.json.data.token,
             onEvent: (event) => {
                 if (event.type === 'close') {
