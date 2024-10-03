@@ -2,17 +2,19 @@ import type { MaybePromise } from '@nangohq/types';
 import type { ConnectUIEvent, ConnectUIEventToken } from './types';
 
 export interface ConnectUIProps {
-    sessionToken: string;
+    sessionToken?: string;
     baseURL?: string;
     onEvent?: (event: ConnectUIEvent) => MaybePromise<void>;
 }
 
 export class ConnectUI {
+    iframe: HTMLIFrameElement | null = null;
+
+    private isReady = false;
     private listener: ((this: Window, ev: MessageEvent) => any) | null = null;
     private sessionToken;
     private baseURL;
     private onEvent;
-    iframe: HTMLIFrameElement | null = null;
 
     constructor({ sessionToken, baseURL = 'http://localhost:5173', onEvent }: ConnectUIProps) {
         this.sessionToken = sessionToken;
@@ -59,8 +61,9 @@ export class ConnectUI {
 
             switch (evt.type) {
                 case 'ready': {
-                    const data: ConnectUIEventToken = { type: 'session_token', sessionToken: this.sessionToken };
-                    this.iframe?.contentWindow?.postMessage(data, '*');
+                    this.isReady = true;
+                    this.sendSessionToken();
+
                     break;
                 }
                 case 'close': {
@@ -81,6 +84,16 @@ export class ConnectUI {
     }
 
     /**
+     * Set the session token and send it to the Connect UI iframe
+     */
+    setSessionToken(sessionToken: string) {
+        this.sessionToken = sessionToken;
+        if (this.isReady) {
+            this.sendSessionToken();
+        }
+    }
+
+    /**
      * Close UI and clear state
      */
     close() {
@@ -91,5 +104,14 @@ export class ConnectUI {
             document.body.removeChild(this.iframe);
             this.iframe = null;
         }
+    }
+
+    private sendSessionToken() {
+        if (!this.sessionToken) {
+            return;
+        }
+
+        const data: ConnectUIEventToken = { type: 'session_token', sessionToken: this.sessionToken };
+        this.iframe?.contentWindow?.postMessage(data, '*');
     }
 }
