@@ -136,4 +136,4 @@ jobs:
                   COMMIT="${{ github.sha }}"
                   echo "Deploying $COMMIT to $SERVICE_ID"
 
-                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data '{ "commitId": "${COMMIT}" }'
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"commitId\": \"$COMMIT\" }"
