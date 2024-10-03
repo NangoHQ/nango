@@ -23,6 +23,7 @@ on:
                     - runner
                     - persist
                     - orchestrator
+                    - connect_ui
 
 jobs:
     deploy_server:
