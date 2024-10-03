@@ -62,8 +62,8 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 };
 
 export const Go: React.FC = () => {
-    const { provider, integration, session, sessionToken, setIsDirty } = useGlobal();
-    const nango = useNango(sessionToken);
+    const { provider, integration, session, setIsDirty } = useGlobal();
+    const nango = useNango();
 
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<AuthResult>();
@@ -334,7 +334,9 @@ export const Go: React.FC = () => {
                                 );
                             })}
                         </div>
-                        {shouldAutoTrigger && <div className="text-sm text-dark-500 w-full text-center">{loading && 'A popup is opened...'}</div>}
+                        {shouldAutoTrigger && provider.auth_mode !== 'NONE' && (
+                            <div className="text-sm text-dark-500 w-full text-center">{loading && 'A popup is opened...'}</div>
+                        )}
                         <div className="flex flex-col gap-4">
                             {error && (
                                 <div className="border border-red-base bg-red-base-35 text-red-base flex items-center py-1 px-4 rounded-md gap-2">
