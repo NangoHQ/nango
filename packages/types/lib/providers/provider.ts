@@ -56,6 +56,7 @@ export interface BaseProvider {
     };
     authorization_url?: string;
     authorization_url_encode?: boolean;
+    token_url_encode?: boolean;
     access_token_url?: string;
     authorization_params?: Record<string, string>;
     scope_separator?: string;
