@@ -762,7 +762,7 @@ buildium:
             type: string
             title: API Key
             description: The API key for your Buildium account
-            pattern: '^[a-z0-9_-]+$'
+            pattern: '^[A-Za-z0-9+/]+$'
             example: uOq2p+xlgpFdijfV/HqY+EvYpZKHRwlyhGuAVbJIxXs
 
 cal-com-v1:
