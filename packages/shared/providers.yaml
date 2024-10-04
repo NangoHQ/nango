@@ -755,11 +755,15 @@ buildium:
             type: string
             title: Client ID
             description: Your API Key Client ID
+            pattern: '^[a-z0-9_-]+$'
+            example: a228f0e7-b4a3-4150-b9ae-8552fc2880d3
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Buildium account
+            pattern: '^[a-z0-9_-]+$'
+            example: uOq2p+xlgpFdijfV/HqY+EvYpZKHRwlyhGuAVbJIxXs
 
 cal-com-v1:
     display_name: Cal.com (v1)
