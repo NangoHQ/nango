@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
-import type { ApiError, Endpoint, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
 
-const API_HOSTNAME = 'http://localhost:3003'; // TODO: remove hardcoded value
+import type { ApiError, Endpoint, GetConnectSession, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
+
+import { useGlobal } from './store';
+
+// Temp solution, ideally we can launch this without having to rebuild the whole UI
+// TODO: remove hardcoded value
+export const API_HOSTNAME: string = import.meta.env.VITE_API_HOSTNAME || 'http://localhost:3003';
 
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     let res = tpl;
@@ -43,7 +48,8 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
         headers.append('content-type', 'application/json');
     }
 
-    headers.append('Authorization', `Bearer ${import.meta.env.VITE_LOCAL_SECRET_KEY}`);
+    const sessionToken = useGlobal.getState().sessionToken;
+    headers.append('Authorization', `Bearer ${sessionToken}`);
 
     const res = await fetch(url, {
         method: method || 'GET',
@@ -79,6 +85,10 @@ export class APIError extends Error {
 /******************
  * ENDPOINTS
  ********************/
+
+export async function getConnectSession() {
+    return await fetchApi<GetConnectSession>('/connect/session', {});
+}
 
 export async function getIntegrations() {
     return await fetchApi<GetPublicListIntegrations>('/integrations', {});

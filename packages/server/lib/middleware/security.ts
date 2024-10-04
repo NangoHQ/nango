@@ -1,4 +1,4 @@
-import { basePublicUrl, baseUrl } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, connectUrl } from '@nangohq/utils';
 import type { RequestHandler } from 'express';
 import helmet from 'helmet';
 
@@ -26,7 +26,7 @@ export function securityMiddlewares(): RequestHandler[] {
                 childSrc: "'self'",
                 connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://*.sentry.io', hostPublic, hostApi, hostWs.href, 'https://*.posthog.com'],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
-                frameSrc: ["'self'", 'https://accounts.google.com'],
+                frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl],
                 imgSrc: ["'self'", 'data:', hostPublic, hostApi, 'https://*.google-analytics.com', 'https://*.googleapis.com', 'https://*.posthog.com'],
                 manifestSrc: "'self'",
                 mediaSrc: "'self'",
