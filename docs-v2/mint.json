@@ -346,6 +346,7 @@
                 "integrations/all/braintree",
                 "integrations/all/brex",
                 "integrations/all/builder-io",
+                "integrations/all/buildium",
                 "integrations/all/calendly",
                 "integrations/all/cal-com",
                 "integrations/all/canny",

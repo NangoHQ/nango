@@ -733,6 +733,38 @@ builder-io-public:
             description: The API key for your Builder.io account
             pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
+
+buildium:
+    display_name: Buildium
+    categories:
+        - accounting
+        - crm
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.buildium.com
+        headers:
+            x-buildium-client-id: ${connectionConfig.clientId}
+            x-buildium-client-secret: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/rentals
+    docs: https://docs.nango.dev/integrations/all/buildium
+    connection_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your API Key Client ID
+            pattern: '^[a-f0-9-]+$'
+            example: a228f0e7-b4a3-4150-b9ae-8552fc2880d3
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Buildium account
+            pattern: '^[A-Za-z0-9+/]+$'
+            example: uOq2p+xlgpFdijfV/HqY+EvYpZKHRwlyhGuAVbJIxXs
+
 cal-com-v1:
     display_name: Cal.com (v1)
     categories:
