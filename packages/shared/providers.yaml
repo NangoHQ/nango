@@ -3460,6 +3460,23 @@ peopledatalabs:
             title: API Key
             description: The API key for your People Data Labs account
 
+perplexity:
+    display_name: Perplexity
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://api.perplexity.ai
+    docs: https://docs.nango.dev/integrations/all/perplexity
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Perplexity account
+
 personio:
     display_name: Personio
     categories:

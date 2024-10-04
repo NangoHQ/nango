@@ -479,6 +479,7 @@
                 "integrations/all/pennylane",
                 "integrations/all/personio",
                 "integrations/all/peopledatalabs",
+                "integrations/all/perplexity",
                 "integrations/all/pingboard",
                 "integrations/all/pinterest",
                 "integrations/all/pipedrive",
