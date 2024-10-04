@@ -1,0 +1,36 @@
+---
+title: Connectwise PSA
+sidebarTitle: Connectwise PSA
+---
+
+API configuration: [`connectwise-psa`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (Basic)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [How to obtain your keys](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Obtaining_your_Keys)
+-   [REST docs](https://developer.connectwise.com/Products/ConnectWise_PSA/REST)
+-   [Auth related docs](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Authentication)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+
+## API gotchas
+- To access the API documentation, you will need to log in to their developer [portal](https://developer.connectwise.com/).
+- ConnectWise PSA uses BASIC authentication. The username will always begin with the CompanyId followed by either the public key, integrator username, or MemberId. The password will be the private key, integrator password, or member hash.
+- When creating a new connection on Nango, you will need to include the `apiVersion` in the format `2019.1`. For more details, visit [Versioning](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Versioning)
+- You will also need to provide the `subdomain` in the format `api-{region}`, with the region being specified (see [Authentication](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Authentication))
+- Additionally, you will be required to enter the `clientId`, which can be found at [ClientID](https://developer.connectwise.com/ClientID)
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/connectwise-psa.mdx)</Note>
