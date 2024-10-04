@@ -5235,6 +5235,7 @@ zoom:
     auth_mode: OAUTH2
     authorization_url: https://zoom.us/oauth/authorize
     token_url: https://zoom.us/oauth/token
+    scope_separator: ','
     authorization_params:
         response_type: code
     refresh_params:

@@ -3283,6 +3283,16 @@ integrations:
                 auto_start: true
                 endpoint: GET /creditnotes
                 track_deletes: true
+            locations:
+                version: 1.0.0
+                description: |
+                    Fetches all locations in Netsuite
+                runs: every hour
+                output: NetsuiteLocation
+                sync_type: full
+                auto_start: true
+                endpoint: GET /locations
+                track_deletes: true
         actions:
             customer-create:
                 version: 1.0.0
@@ -3298,14 +3308,14 @@ integrations:
                 output: NetsuiteCustomerUpdateOutput
                 endpoint: PUT /customers
             invoice-create:
-                version: 1.0.0
+                version: 2.0.0
                 description: |
                     Creates an invoice in Netsuite
                 input: NetsuiteInvoiceCreateInput
                 output: NetsuiteInvoiceCreateOutput
                 endpoint: POST /invoices
             invoice-update:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Updates an invoice in Netsuite
                 input: NetsuiteInvoiceUpdateInput
@@ -3436,6 +3446,7 @@ integrations:
                 amount: number
                 vatCode?: string
                 description?: string
+                locationId?: string
             NetsuiteInvoiceCreateInput:
                 customerId: string
                 currency: string
@@ -3452,6 +3463,7 @@ integrations:
                 lines: NetsuiteInvoiceLine[]
                 id: string
                 customerId?: string
+                locationId?: string
                 currency?: string
             NetsuiteInvoiceUpdateOutput:
                 success: boolean
@@ -3491,6 +3503,24 @@ integrations:
                 applyTo?: string[]
             NetsuitePaymentUpdateOutput:
                 success: boolean
+            NetsuiteLocation:
+                id: string
+                isInactive: boolean
+                name: string
+                lastModifiedDate: string
+                address:
+                    address1: string
+                    addressee: string
+                    addressText: string
+                    city: string
+                    country: string
+                    state: string
+                    zip: string
+                returnAddress:
+                    addressText: string
+                    country: string
+                timeZone: string
+                useBins: boolean
     next-cloud-ocs:
         syncs:
             users:
