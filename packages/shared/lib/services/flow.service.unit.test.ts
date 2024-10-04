@@ -177,7 +177,7 @@ describe('Flow service tests', () => {
 `,
                     output: 'AlgoliaContact',
                     input: 'AlgoliaCreateContactInput',
-                    endpoint: 'POST /algolia/create-contacts'
+                    endpoint: 'POST /contacts'
                 }
             }
         });
