@@ -3752,22 +3752,19 @@ rapidapi:
         headers:
             x-rapidapi-key: ${apiKey}
             x-rapidapi-host: ${connectionConfig.host}
-        verification:
-            method: GET
-            endpoint: /xml?language=en
-            base_url_override: https://${connectionConfig.company}.jobs.personio.de
         base_url: https://${connectionConfig.host}
     docs: https://docs.nango.dev/integrations/all/rapidapi
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your RapidAPI account
     connection_config:
         host:
             type: string
             title: Host
             description: The host of the API (e.g. api-football-v1.p.rapidapi.com)
             pattern: '^[a-z0-9_-]+$'
-        apiKey:
-            type: string
-            title: API Key
-            description: The API key for your RapidAPI account
 
 reddit:
     display_name: Reddit
