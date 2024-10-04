@@ -1110,6 +1110,38 @@ codeclimate:
             title: API Key
             description: The API key for your Code Climate account
 
+connectwise-psa:
+    display_name: ConnectWise PSA
+    categories:
+        - support
+        - ticketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
+        headers:
+            Accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
+            clientId: ${connectionConfig.clientId}
+        verification:
+            method: POST
+            endpoint: apiKey.info
+    docs: https://docs.nango.dev/integrations/all/connectwise-psa
+    connection_config:
+        subdomain:
+            type: string
+            title: ConnectWise PSA subdomain
+            description: The subdomain to connect to ConnectWise PSA
+            pattern: '^api-(au|eu|na)$'
+            example: api-au
+            suffix: .myconnectwise.net
+        apiVersion:
+            type: string
+            title: Api version
+            description: The API version to connect to ConnectWise PSA
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID assigned to your integration
+
 confluence:
     display_name: Confluence
     categories:
