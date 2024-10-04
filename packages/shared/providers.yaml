@@ -755,7 +755,7 @@ buildium:
             type: string
             title: Client ID
             description: Your API Key Client ID
-            pattern: '^[a-z0-9_-]+$'
+            pattern: '^[a-f0-9-]+$'
             example: a228f0e7-b4a3-4150-b9ae-8552fc2880d3
     credentials:
         apiKey:
