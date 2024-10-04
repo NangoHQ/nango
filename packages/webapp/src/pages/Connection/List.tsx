@@ -110,13 +110,8 @@ export default function ConnectionList() {
         };
     }, [debouncedSearch]);
 
-    const onClickConnectUI = async () => {
+    const onClickConnectUI = () => {
         if (!environmentAndAccount) {
-            return;
-        }
-
-        const res = await apiConnectSessions(env);
-        if ('error' in res.json) {
             return;
         }
 
@@ -127,7 +122,7 @@ export default function ConnectionList() {
         });
 
         connectUI.current = nango.openConnectUI({
-            sessionToken: res.json.data.token,
+            baseURL: globalEnv.connectUrl,
             onEvent: (event) => {
                 if (event.type === 'close') {
                     // we refresh on close so user can see the diff
@@ -135,6 +130,16 @@ export default function ConnectionList() {
                 }
             }
         });
+
+        // We defer the token creation so the iframe can open and display a loading screen
+        //   instead of blocking the main loop and no visual clue for the end user
+        setTimeout(async () => {
+            const res = await apiConnectSessions(env);
+            if ('error' in res.json) {
+                return;
+            }
+            connectUI.current!.setSessionToken(res.json.data.token);
+        }, 10);
     };
 
     if (error) {
@@ -187,11 +192,7 @@ export default function ConnectionList() {
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 <div className="flex gap-2">
-                    {globalEnv.features.connectUI && (
-                        <Button onClick={onClickConnectUI} variant={'emptyFaded'}>
-                            Open Connect UI (alpha)
-                        </Button>
-                    )}
+                    {globalEnv.features.connectUI && <Button onClick={onClickConnectUI}>Open Connect UI (beta)</Button>}
                     {connections && connections.length > 0 && (
                         <Link
                             to={`/${env}/connections/create`}

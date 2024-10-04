@@ -264,7 +264,12 @@ export async function upgradePreBuilt({
         created_at: now,
         updated_at: now,
         version: flow.version!,
-        model_schema: JSON.stringify(flow.models) as any
+        file_location,
+        model_schema: JSON.stringify(flow.models) as any,
+        metadata: flow.metadata || {},
+        auto_start: flow.auto_start === true,
+        track_deletes: flow.track_deletes === true,
+        models: flow.returns
     };
     delete flowData.id;
 

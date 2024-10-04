@@ -1,6 +1,6 @@
 import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { getConnectSessionToken, isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -18,6 +18,14 @@ describe(`GET ${endpoint}`, () => {
         const res = await api.fetch(endpoint, { method: 'GET', params: { uniqueKey: 'github' }, query: {} });
 
         shouldBeProtected(res);
+    });
+
+    it('should not be accessible with connect session token', async () => {
+        const env = await seeders.createEnvironmentSeed();
+        const token = await getConnectSessionToken(api, env);
+        const res = await api.fetch(endpoint, { method: 'GET', token, params: { uniqueKey: 'github' }, query: {} });
+        isError(res.json);
+        expect(res.res.status).toBe(401);
     });
 
     it('should enforce no query params', async () => {
