@@ -296,6 +296,25 @@ atlassian:
         base_url: https://api.atlassian.com
     docs: https://docs.nango.dev/integrations/all/atlassian
 
+atlassian-admin:
+    display_name: Atlassian admin
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.atlassian.com
+        headers:
+            Authorization: Bearer ${apiKey}
+            x-organization-id: ${connectionConfig.organizationId}
+        retry:
+            at: 'X-RateLimit-Reset'
+    docs: https://docs.nango.dev/integrations/all/atlassian
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Atlassian account
+
 attio:
     display_name: Attio
     categories:
