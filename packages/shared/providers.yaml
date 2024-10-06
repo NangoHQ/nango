@@ -5343,23 +5343,18 @@ falai:
 acuity-scheduling:
     display_name: Acuity Scheduling
     categories:
-        - scheduling
-        - appointments
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://acuityscheduling.com/oauth2/authorize
     token_url: https://acuityscheduling.com/oauth2/token
-    connection_configuration:
-        - userId
-        - apiKey
-    post_connection_script: acuityPostConnection
-    webhook_routing_script: acuityWebhookRouting
+    token_params:
+        grant_type: authorization_code
+    auth:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - api-v1
     proxy:
         base_url: https://acuityscheduling.com/api/v1
-        decompress: true
-        paginate:
-            type: cursor
-            cursor_path_in_response: pagination.nextCursor
-            limit_name_in_request: limit
-            cursor_name_in_request: cursor
-            response_path: data
-    docs: https://developers.acuityscheduling.com/docs
+    docs: https://docs.nango.dev/integrations/all/acuity-scheduling
