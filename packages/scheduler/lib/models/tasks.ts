@@ -263,41 +263,41 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
 
 export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
     try {
-        const tasks = await db
-            .update({
-                state: 'EXPIRED',
-                last_state_transition_at: new Date(),
-                terminated: true,
-                output: db.raw(`
+        const { rows: tasks } = await db.raw<{ rows: DbTask[] }>(
+            `
+            WITH eligible_tasks AS (
+                SELECT id, state, output,
                     CASE
-                        WHEN state = 'CREATED' AND starts_after + created_to_started_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP THEN '{"reason": "createdToStartedTimeoutSecs_exceeded"}'
-                        WHEN state = 'STARTED' AND last_heartbeat_at + heartbeat_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP THEN '{"reason": "heartbeatTimeoutSecs_exceeded"}'
-                        WHEN state = 'STARTED' AND last_state_transition_at + started_to_completed_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP THEN '{"reason": "startedToCompletedTimeoutSecs_exceeded"}'
+                        WHEN state = 'CREATED' AND starts_after + created_to_started_timeout_secs * INTERVAL '1 second' < CURRENT_TIMESTAMP
+                            THEN '{"reason": "createdToStartedTimeoutSecs_exceeded"}'::json
+                        WHEN state = 'STARTED' AND last_heartbeat_at + heartbeat_timeout_secs * INTERVAL '1 second' < CURRENT_TIMESTAMP
+                            THEN '{"reason": "heartbeatTimeoutSecs_exceeded"}'::json
+                        WHEN state = 'STARTED' AND last_state_transition_at + started_to_completed_timeout_secs * INTERVAL '1 second' < CURRENT_TIMESTAMP
+                            THEN '{"reason": "startedToCompletedTimeoutSecs_exceeded"}'::json
                         ELSE output
-                    END
-                `)
-            })
-            .from<DbTask>(TASKS_TABLE)
-            .whereIn(
-                'id',
-                db
-                    .select('id')
-                    .from<DbTask>(TASKS_TABLE)
-                    .where((builder) => {
-                        builder
-                            .where({ state: 'CREATED' })
-                            .andWhere(db.raw(`starts_after + created_to_started_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP`));
-                        builder
-                            .orWhere({ state: 'STARTED' })
-                            .andWhere(db.raw(`last_heartbeat_at + heartbeat_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP`));
-                        builder
-                            .orWhere({ state: 'STARTED' })
-                            .andWhere(db.raw(`last_state_transition_at + started_to_completed_timeout_secs * INTERVAL '1 seconds' < CURRENT_TIMESTAMP`));
-                    })
-                    .forUpdate()
-                    .skipLocked()
+                    END AS reason
+                FROM ${TASKS_TABLE}
+                WHERE (
+                   state = 'CREATED' AND starts_after + created_to_started_timeout_secs * INTERVAL '1 second' < CURRENT_TIMESTAMP)
+                   OR (
+                       state = 'STARTED'
+                       AND (
+                           last_heartbeat_at + heartbeat_timeout_secs * INTERVAL '1 second' < CURRENT_TIMESTAMP
+                           OR last_state_transition_at + started_to_completed_timeout_secs * INTERVAL '1 second' < CURRENT_TIMESTAMP
+                       )
+                    )
+                FOR UPDATE SKIP LOCKED
             )
-            .returning('*');
+            UPDATE ${TASKS_TABLE} t
+            SET state = 'EXPIRED',
+                last_state_transition_at = CURRENT_TIMESTAMP,
+                terminated = TRUE,
+                output = e.reason
+            FROM eligible_tasks e
+            WHERE t.id = e.id
+            RETURNING t.*;
+        `
+        );
         if (!tasks?.[0]) {
             return Ok([]);
         }
