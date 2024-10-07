@@ -1153,9 +1153,6 @@ connectwise-psa:
         headers:
             Accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientId: ${connectionConfig.clientId}
-        verification:
-            method: POST
-            endpoint: apiKey.info
     docs: https://docs.nango.dev/integrations/all/connectwise-psa
     connection_config:
         subdomain:
@@ -1165,6 +1162,28 @@ connectwise-psa:
             pattern: '^api-(au|eu|na)$'
             example: api-au
             suffix: .myconnectwise.net
+        apiVersion:
+            type: string
+            title: Api version
+            description: The API version to connect to ConnectWise PSA
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID assigned to your integration
+
+connectwise-psa-staging:
+    display_name: ConnectWise PSA (staging)
+    categories:
+        - support
+        - ticketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api-staging.connectwisedev.com/v4_6_release/apis/3.0
+        headers:
+            Accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
+            clientId: ${connectionConfig.clientId}
+    docs: https://docs.nango.dev/integrations/all/connectwise-psa
+    connection_config:
         apiVersion:
             type: string
             title: Api version
@@ -4288,7 +4307,7 @@ snowflake:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://{connectionConfig.snowflake_account_url}
+        base_url: https://${connectionConfig.snowflake_account_url}
     docs: https://docs.nango.dev/integrations/all/snowflake
     connection_config:
         snowflake_account_url:
