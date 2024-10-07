@@ -5347,12 +5347,6 @@ acuity-scheduling:
     auth_mode: OAUTH2
     authorization_url: https://acuityscheduling.com/oauth2/authorize
     token_url: https://acuityscheduling.com/oauth2/token
-    token_params:
-        grant_type: authorization_code
-    auth:
-        response_type: code
-    refresh_params:
-        grant_type: refresh_token
     default_scopes:
         - api-v1
     proxy:
