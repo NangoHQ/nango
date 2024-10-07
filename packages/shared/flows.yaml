@@ -2361,9 +2361,10 @@ integrations:
                 description: |
                     Fetches a list of users from Hubspot
                 output: User
+                track_deletes: true
                 sync_type: full
                 endpoint: GET /users
-                version: 1.0.1
+                version: 1.0.2
                 scopes:
                     - settings.users.read (standard scope)
                     - crm.objects.users.read (granular scope)
@@ -2404,14 +2405,14 @@ integrations:
                     - settings.users.write (standard scope)
                     - crm.objects.users.write (granular)
             fetch-roles:
-                description: Fetch the roles on an account
+                description: Fetch the roles on an account. Requires an enterprise account.
                 output: RoleResponse
                 endpoint: GET /roles
                 scopes:
                     - settings.users.read (standard scope)
                     - crm.objects.users.read (granular scope)
             change-user-role:
-                description: Change a user role
+                description: Change a user role. Requires an enterprise account.
                 input: UserRoleInput
                 output: ChangedRoleResponse
                 endpoint: PUT /roles
@@ -3674,6 +3675,14 @@ integrations:
                 output: ContentMetadata
                 sync_type: full
                 endpoint: GET /metadata
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Notion
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
         actions:
             fetch-rich-page:
                 description: >
@@ -3739,6 +3748,12 @@ integrations:
             UrlOrId:
                 url?: string
                 id?: string
+            User:
+                id: string
+                email: string | null
+                firstName: string
+                lastName: string
+                isBot: boolean
     pipedrive:
         syncs:
             activities:
