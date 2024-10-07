@@ -1153,9 +1153,6 @@ connectwise-psa:
         headers:
             Accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientId: ${connectionConfig.clientId}
-        verification:
-            method: POST
-            endpoint: apiKey.info
     docs: https://docs.nango.dev/integrations/all/connectwise-psa
     connection_config:
         subdomain:
@@ -1185,9 +1182,6 @@ connectwise-psa-staging:
         headers:
             Accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientId: ${connectionConfig.clientId}
-        verification:
-            method: POST
-            endpoint: apiKey.info
     docs: https://docs.nango.dev/integrations/all/connectwise-psa
     connection_config:
         apiVersion:
