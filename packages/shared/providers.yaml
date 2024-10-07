@@ -1181,7 +1181,7 @@ connectwise-psa-staging:
         - ticketing
     auth_mode: BASIC
     proxy:
-        base_url: https://api-staging.connectwisedev.com//v4_6_release/apis/3.0
+        base_url: https://api-staging.connectwisedev.com/v4_6_release/apis/3.0
         headers:
             Accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientId: ${connectionConfig.clientId}
