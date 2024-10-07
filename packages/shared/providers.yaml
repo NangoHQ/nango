@@ -296,8 +296,8 @@ atlassian:
         base_url: https://api.atlassian.com
     docs: https://docs.nango.dev/integrations/all/atlassian
 
-atlassian-admin:
-    display_name: Atlassian admin
+atlassian-organizations:
+    display_name: Atlassian organizations
     categories:
         - dev-tools
     auth_mode: API_KEY
@@ -314,6 +314,40 @@ atlassian-admin:
             type: string
             title: API Key
             description: The API key for your Atlassian account
+    connection_config:
+        organizationId:
+            type: string
+            title: Organization ID
+            description: The organization ID of your Atlassian account
+            pattern: '^[a-z0-9_-]+$'
+            example: 'c41bac5d-6b7k-1da5-6j09-3817j85b0143'
+
+atlassian-users:
+    display_name: Atlassian users
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.atlassian.com
+        headers:
+            Authorization: Bearer ${apiKey}
+            x-organization-id: ${connectionConfig.directoryId}
+        verification:
+            method: GET
+            endpoint: /scim/directory/${connection_config.directoryId}/Schemas
+    docs: https://docs.nango.dev/integrations/all/atlassian
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Atlassian account
+    connection_config:
+        directoryId:
+            type: string
+            title: Directory ID
+            description: The directory ID of your Atlassian account
+            pattern: '^[a-z0-9_-]+$'
+            example: '2be29551-9f52-41a7-9f17-399f75b568ce'
 
 attio:
     display_name: Attio

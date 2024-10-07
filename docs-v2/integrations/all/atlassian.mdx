@@ -3,7 +3,7 @@ title: Atlassian
 sidebarTitle: Atlassian
 ---
 
-API configuration: [`atlassian`](https://nango.dev/providers.yaml)
+API configuration: [`atlassian`](https://nango.dev/providers.yaml), [`atlassian-organizations`](https://nango.dev/providers.yaml), [`atlassian-users`](https://nango.dev/providers.yaml)
 
 ## Features
 
@@ -24,6 +24,8 @@ API configuration: [`atlassian`](https://nango.dev/providers.yaml)
 -   [List of OAuth scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#classic-scopes)
 -   [Jira Rest API](https://developer.atlassian.com/cloud/jira/software/rest/intro/#introduction)
 -   [Confluence Cloud Rest API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#using)
+-   [Atlassian Organizations Rest API](https://developer.atlassian.com/cloud/admin/organization/rest/intro/#about)
+-   [Atlassian Users Rest API](https://developer.atlassian.com/cloud/admin/user-provisioning/rest/intro/#about)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
@@ -33,5 +35,7 @@ API configuration: [`atlassian`](https://nango.dev/providers.yaml)
 -   When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public, find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps)
 -   Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
 -   When using the proxy for atlassian, it is important to know that Jira apps will use `/jira/{cloudid}/{api}` for jira apps and `/confluence/{cloudid}/{api}` for confluence apps.
+-   To obtain an organizations rest API token you navigate to http://admin.atlassian.com/ and go to Settings > API Keys. See the [docs](https://support.atlassian.com/organization-administration/docs/manage-an-organization-with-the-admin-apis/) for more details. The organization ID is provided when you create the API Key.
+-   To obtain an users rest API token you need to navigate to http://admin.atlassian.com/ and go to Security > Identify providers. Select your identify provider directory. Select "Set up user provisioning" and copy the value for API Key that it displays. See the [docs](https://support.atlassian.com/provisioning-users/docs/configure-user-provisioning-with-an-identity-provider/). The directory which is required to create a connection can be found in the URL for that directory. So for example an URL like `https://admin.atlassian.com/o/a12bac34-578d-9ab0-1b23-0000a0000000/idp/1ab34567-8b90-aaaa-aaaa-000000000000` the directory is the segment after the `idp` in the URL, so it would be `1ab34567-8b90-aaaa-aaaa-000000000000`
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/atlassian.mdx)</Note>

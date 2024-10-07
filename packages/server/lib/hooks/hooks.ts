@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { isAxiosError } from 'axios';
 import type { Span, Tracer } from 'dd-trace';
 import {
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
@@ -260,8 +260,9 @@ export const connectionTest = async (
 
     try {
         const { response } = await proxyService.route(configBody, internalConfig);
+        console.log(response);
 
-        if (axios.isAxiosError(response)) {
+        if (isAxiosError(response)) {
             span.setTag('nango.error', response);
             const error = new NangoError('connection_test_failed', response, response.response?.status);
             return Err(error);
