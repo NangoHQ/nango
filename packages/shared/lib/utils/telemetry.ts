@@ -1,5 +1,5 @@
 import { v2, client } from '@datadog/datadog-api-client';
-import { isCloud } from '@nangohq/utils';
+import { isCloud, isEnterprise } from '@nangohq/utils';
 
 export enum LogTypes {
     AUTH_TOKEN_REFRESH_START = 'auth_token_refresh_start',
@@ -44,7 +44,7 @@ class Telemetry {
     private logInstance: v2.LogsApi | undefined;
     constructor() {
         try {
-            if (isCloud && process.env['DD_API_KEY'] && process.env['DD_APP_KEY']) {
+            if ((isCloud || isEnterprise) && process.env['DD_API_KEY'] && process.env['DD_APP_KEY']) {
                 const configuration = client.createConfiguration();
                 configuration.setServerVariables({
                     site: 'us3.datadoghq.com'
