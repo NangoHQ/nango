@@ -3864,6 +3864,33 @@ ramp-sandbox:
         base_url: https://demo-api.ramp.com
     docs: https://docs.nango.dev/integrations/all/ramp
 
+rapidapi:
+    display_name: RapidAPI
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-rapidapi-key: ${apiKey}
+            x-rapidapi-host: ${connectionConfig.subdomain}.p.rapidapi.com
+        base_url: https://${connectionConfig.subdomain}.p.rapidapi.com
+    docs: https://docs.nango.dev/integrations/all/rapidapi
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your RapidAPI account
+            example: b7c156af2dmgh5c635305f3744bap168553jsp75193c8367ef
+            pattern: '^[a-zA-Z0-9]+$'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of the Rapid API.
+            pattern: '^[a-z0-9_-]+$'
+            example: api-football-v1
+            suffix: .p.rapidapi.com
+
 reddit:
     display_name: Reddit
     categories:
