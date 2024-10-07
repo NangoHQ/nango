@@ -3834,20 +3834,24 @@ rapidapi:
     proxy:
         headers:
             x-rapidapi-key: ${apiKey}
-            x-rapidapi-host: ${connectionConfig.host}
-        base_url: https://${connectionConfig.host}
+            x-rapidapi-host: ${connectionConfig.subdomain}
+        base_url: https://${connectionConfig.subdomain}
     docs: https://docs.nango.dev/integrations/all/rapidapi
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your RapidAPI account
+            example: b7c156af2dmgh5c635305f3744bap168553jsp75193c8367ef
+            pattern: '^[a-zA-Z0-9]+$'
     connection_config:
-        host:
+        subdomain:
             type: string
-            title: Host
-            description: The host of the API (e.g. api-football-v1.p.rapidapi.com)
+            title: Subdomain
+            description: The subdomain of the Rapid API.
             pattern: '^[a-z0-9_-]+$'
+            example: api-football-v1
+            suffix: .p.rapidapi.com
 
 reddit:
     display_name: Reddit
