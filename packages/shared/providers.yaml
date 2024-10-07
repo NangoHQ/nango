@@ -3476,6 +3476,8 @@ perplexity:
             type: string
             title: API Key
             description: The API key for your Perplexity account
+            pattern: '^pplx-[a-f0-9]+$'
+            example: pplx-xxxxxx
 
 personio:
     display_name: Personio
