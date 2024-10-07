@@ -3835,7 +3835,7 @@ rapidapi:
         headers:
             x-rapidapi-key: ${apiKey}
             x-rapidapi-host: ${connectionConfig.subdomain}
-        base_url: https://${connectionConfig.subdomain}
+        base_url: https://${connectionConfig.subdomain}.p.rapidapi.com
     docs: https://docs.nango.dev/integrations/all/rapidapi
     credentials:
         apiKey:
