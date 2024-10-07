@@ -81,6 +81,16 @@ export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null>
     return null;
 };
 
+export const getSyncJobByRunId = async (run_id: string): Promise<SyncJob | null> => {
+    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ run_id, deleted: false }).first();
+
+    if (result) {
+        return result;
+    }
+
+    return null;
+};
+
 export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<void> => {
     return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
         status,
