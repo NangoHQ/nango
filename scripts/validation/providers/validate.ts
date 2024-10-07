@@ -41,6 +41,13 @@ if (validator.errors) {
     process.exit(1);
 }
 
+const invalidInterpolation = /(?<!(\$|]))\{/g;
+const match = [...providersYaml.toString().matchAll(invalidInterpolation)];
+if (match.length > 0) {
+    console.error(chalk.red('error'), 'providers.yaml contains interpolation errors. A `{` does not have a `$` in front of it.');
+    process.exit(1);
+}
+
 console.log('✅ JSON schema valid');
 
 // Check if files exist
@@ -55,7 +62,7 @@ for (const [providerKey, provider] of Object.entries(providersJson)) {
 }
 
 if (error) {
-    console.log('❌ providers.yaml contains some errors');
+    console.error('❌ providers.yaml contains some errors');
     process.exit(1);
 }
 
