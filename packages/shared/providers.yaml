@@ -1566,6 +1566,25 @@ egnyte:
             example: domain
             suffix: .egnyte.com
 
+elevenlabs:
+    display_name: Eleven Labs
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.elevenlabs.io
+        headers:
+            xi-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/user
+    docs: https://docs.nango.dev/integrations/all/elevenlabs
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your ElevenLabs account
+
 entrata:
     display_name: Entrata
     categories:
@@ -3577,6 +3596,25 @@ peopledatalabs:
             title: API Key
             description: The API key for your People Data Labs account
 
+perplexity:
+    display_name: Perplexity
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://api.perplexity.ai
+    docs: https://docs.nango.dev/integrations/all/perplexity
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Perplexity account
+            pattern: '^pplx-[a-f0-9]+$'
+            example: pplx-xxxxxx
+
 personio:
     display_name: Personio
     categories:
@@ -5392,3 +5430,16 @@ falai:
             type: string
             title: API Key
             description: The API key for your fal.ai account
+
+acuity-scheduling:
+    display_name: Acuity Scheduling
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://acuityscheduling.com/oauth2/authorize
+    token_url: https://acuityscheduling.com/oauth2/token
+    default_scopes:
+        - api-v1
+    proxy:
+        base_url: https://acuityscheduling.com/api/v1
+    docs: https://docs.nango.dev/integrations/all/acuity-scheduling
