@@ -164,8 +164,8 @@ export class OrchestratorClient {
             return res;
         }
         const taskId = res.value.taskId;
-        const fetchTimeoutSecs = scheduleProps.timeoutSettingsInSecs.createdToStarted + scheduleProps.timeoutSettingsInSecs.startedToCompleted;
-        const getOutput = await this.routeFetch(getOutputRoute, { timeoutMs: fetchTimeoutSecs * 1000 })({ params: { taskId }, query: { longPolling: true } });
+        const timeoutMs = (scheduleProps.timeoutSettingsInSecs.createdToStarted + scheduleProps.timeoutSettingsInSecs.startedToCompleted) * 1000;
+        const getOutput = await this.routeFetch(getOutputRoute, { timeoutMs })({ params: { taskId }, query: { longPolling: timeoutMs } });
         if ('error' in getOutput) {
             return Err({
                 name: getOutput.error.code,
