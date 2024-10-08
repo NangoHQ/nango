@@ -342,14 +342,14 @@ integrations:
                     value: string
                     type: string
                     isPrimary: boolean
-                emailAddresses: []
+                emailAddresses: string[]
                 primaryPhoneNumber:
                     value: string
                     type: string
                     isPrimary: boolean
-                phoneNumbers: []
-                socialLinks: []
-                tags: []
+                phoneNumbers: string[]
+                socialLinks: string[]
+                tags: string[]
                 position: string
                 company: string
                 school: string
@@ -358,8 +358,8 @@ integrations:
                     id: string
                     name: string
                     handle: string
-                fileHandles: []
-                customFields: []
+                fileHandles: string[]
+                customFields: string[]
                 profileUrl: string
                 source:
                     id: string
@@ -387,10 +387,10 @@ integrations:
                 departmentId: string
                 defaultInterviewPlanId: string
                 interviewPlanIds: string[]
-                customFields: []
+                customFields: string[]
                 jobPostingIds: string[]
                 customRequisitionId: string
-                hiringTeam: []
+                hiringTeam: string[]
                 updatedAt: date
                 location:
                     id: string
@@ -402,13 +402,13 @@ integrations:
                             addressRegion: string
                             addressLocality: string
                     isRemote: boolean
-                openings: []
+                openings: string[]
             AshbyCreateApplicationResponse:
                 id: string
                 createdAt: date
                 updatedAt: date
                 status: string
-                customFields: []
+                customFields: string[]
                 candidate:
                     id: string
                     name: string
@@ -452,7 +452,7 @@ integrations:
                     globalRole: string
                     isEnabled: boolean
                     updatedAt: date
-                hiringTeam: []
+                hiringTeam: string[]
                 appliedViaJobPostingId: string
             AshbyCreateNoteResponse:
                 id: string
@@ -1124,10 +1124,10 @@ integrations:
                 id: string
                 source_id: string
                 title: string
-                users: []
-                externalParticipants: []
+                users: any[]
+                externalParticipants: any[]
                 status: string
-                bot_not_join_reason: []
+                bot_not_join_reason: string[]
                 type: string
                 time: string
                 icaluid: string
@@ -1143,13 +1143,13 @@ integrations:
                 deal_close_date: string
                 deal_stage_before_call: string
                 account_name: string
-                contact_names: []
+                contact_names: string[]
                 crm_info:
                     source_crm: string
                     deal_id: string
                     account_id: string
-                    contact_ids: []
-                bookmark_timestamps: []
+                    contact_ids: string[]
+                bookmark_timestamps: string[]
                 metrics:
                     talk_listen_ratio: number
                     num_questions_asked: number
@@ -1159,15 +1159,15 @@ integrations:
                     longest_monologue_duration: number
                     longest_monologue_start_time: number
                     engaging_questions: number
-                    categories: []
+                    categories: string[]
                 call_review_page_url: string
                 deal_stage_live: string
-                transcript: []
+                transcript: string[]
                 summary:
                     full_summary: string
-                    topics_discussed: []
-                    key_action_items: []
-                competitor_sentiments: []
+                    topics_discussed: string[]
+                    key_action_items: string[]
+                competitor_sentiments: string[]
     confluence:
         syncs:
             spaces:
@@ -2019,13 +2019,13 @@ integrations:
                 rejection_details:
                     custom_fields: object
                     keyed_custom_fields: object
-                jobs: []
+                jobs: string[]
                 job_post_id: string
                 status: string
                 current_stage:
                     id: string
                     name: string
-                answers: []
+                answers: string[]
                 prospective_office:
                     primary_contact_user_id: string
                     parent_id: string
@@ -2034,13 +2034,13 @@ integrations:
                         name: string
                     id: string
                     external_id: string
-                    child_ids: []
+                    child_ids: string[]
                 prospective_department:
                     parent_id: string
                     name: string
                     id: string
                     external_id: string
-                    child_ids: []
+                    child_ids: string[]
                 prospect_detail:
                     prospect_pool:
                         id: string
@@ -2053,7 +2053,7 @@ integrations:
                         name: string
                 custom_fields: object
                 keyed_custom_fields: object
-                attachments: []
+                attachments: any[]
             GreenhouseCandidate:
                 id: string
                 first_name: string
@@ -2065,13 +2065,13 @@ integrations:
                 last_activity: date
                 is_private: boolean
                 photo_url: string
-                attachments: []
-                application_ids: []
-                phone_numbers: []
-                addresses: []
-                email_addresses: []
-                website_addresses: []
-                social_media_addresses: []
+                attachments: any[]
+                application_ids: string[]
+                phone_numbers: string[]
+                addresses: any[]
+                email_addresses: string[]
+                website_addresses: string[]
+                social_media_addresses: string[]
                 recruiter:
                     id: string
                     first_name: string
@@ -2085,10 +2085,10 @@ integrations:
                     name: string
                     employee_id: string
                 can_email: boolean
-                tags: []
-                applications: []
-                educations: []
-                employments: []
+                tags: string[]
+                applications: string[]
+                educations: string[]
+                employments: string[]
                 linked_user_ids: string
                 custom_fields: object
                 keyed_custom_fields: object
@@ -2105,16 +2105,16 @@ integrations:
                 updated_at: date
                 is_template: boolean
                 copied_from_id: string
-                departments: []
-                offices: []
+                departments: string[]
+                offices: string[]
                 custom_fields: object
                 keyed_custom_fields: object
                 hiring_team:
-                    hiring_managers: []
-                    recruiters: []
-                    coordinators: []
-                    sourcers: []
-                openings: []
+                    hiring_managers: string[]
+                    recruiters: string[]
+                    coordinators: string[]
+                    sourcers: string[]
+                openings: string[]
     hackerrank-work:
         syncs:
             interviews:
@@ -2224,8 +2224,8 @@ integrations:
                 logo_id: string
                 library_access: boolean
                 invite_as: string
-                locations: []
-                departments: []
+                locations: string[]
+                departments: string[]
             HackerRankWorkTest:
                 id: string
                 unique_id: string
@@ -2241,9 +2241,9 @@ integrations:
                 start_time: date
                 end_time: date
                 draft: boolean
-                questions: []
+                questions: string[]
                 sections: object
-                tags: []
+                tags: string[]
                 permission: number
             HackerRankWorkUser:
                 id: string
@@ -2953,11 +2953,11 @@ integrations:
                 name: string
                 headline: string
                 contact: string
-                emails: []
-                phones: []
+                emails: string[]
+                phones: string[]
                 confidentiality: string
                 location: string
-                links: []
+                links: string[]
                 archived:
                     reason: string
                     archivedAt: number
@@ -2969,15 +2969,15 @@ integrations:
                 archivedAt: number
                 archiveReason: string
                 stage: string
-                stageChanges: []
+                stageChanges: string[]
                 owner: string
-                tags: []
-                sources: []
+                tags: string[]
+                sources: string[]
                 origin: string
                 sourcedBy: string
-                applications: []
+                applications: string[]
                 resume: string
-                followers: []
+                followers: string[]
                 urls:
                     list: string
                     show: string
@@ -3006,9 +3006,9 @@ integrations:
                 ownerId: string
                 hiringManager: string
                 company: string
-                links: []
+                links: string[]
                 comments: string
-                customQuestions: []
+                customQuestions: string[]
                 archived:
                     reason: string
                     archivedAt: number
@@ -3017,7 +3017,7 @@ integrations:
                 type: string
                 text: string
                 instructions: string
-                fields: []
+                fields: string[]
                 baseTemplateId: string
                 interview: string
                 panel: string
@@ -3031,24 +3031,24 @@ integrations:
                 panel: string
                 subject: string
                 note: string
-                interviewers: []
+                interviewers: string[]
                 timezone: string
                 createdAt: number
                 date: number
                 duration: number
                 location: string
                 feedbackTemplate: string
-                feedbackForms: []
+                feedbackForms: string[]
                 feedbackReminder: string
                 user: string
                 stage: string
                 canceledAt: number
-                postings: []
+                postings: string[]
                 gcalEventUrl: string
             LeverOpportunityNote:
                 id: string
                 text: string
-                fields: []
+                fields: string[]
                 user: string
                 secret: boolean
                 completedAt: number
@@ -3059,7 +3059,7 @@ integrations:
                 createdAt: number
                 status: string
                 creator: string
-                fields: []
+                fields: string[]
                 sentDocument:
                     fileName: string
                     uploadedAt: number
@@ -3081,22 +3081,22 @@ integrations:
                     team: string
                     department: string
                     location: string
-                    allLocations: []
+                    allLocations: string[]
                     commitment: string
                     level: string
                 content:
                     description: string
                     descriptionHtml: string
-                    lists: []
+                    lists: string[]
                     closing: string
                     closingHtml: string
                 country: string
-                followers: []
-                tags: []
+                followers: string[]
+                tags: string[]
                 state: string
-                distributionChannels: []
+                distributionChannels: string[]
                 reqCode: string
-                requisitionCodes: []
+                requisitionCodes: string[]
                 salaryDescription: string
                 salaryDescriptionHtml: string
                 salaryRange:
@@ -3112,10 +3112,10 @@ integrations:
             LeverPostingApply:
                 id: string
                 text: string
-                customQuestions: []
-                eeoQuestions: []
-                personalInformation: []
-                urls: []
+                customQuestions: string[]
+                eeoQuestions: string[]
+                personalInformation: string[]
+                urls: string[]
             LeverStage:
                 id: string
                 text: string
@@ -3632,8 +3632,8 @@ integrations:
                 avatarScope: string
                 email: string
                 emailScope: string
-                additional_mail: []
-                additional_mailScope: []
+                additional_mail: string[]
+                additional_mailScope: string[]
                 displayname: string
                 display_name: string
                 displaynameScope: string
@@ -3880,8 +3880,8 @@ integrations:
                 owner_id: integer
                 org_id: integer
                 name: string
-                phone: []
-                email: []
+                phone: string[]
+                email: string[]
                 update_time: date
                 delete_time: date
                 add_time: date
@@ -5960,15 +5960,15 @@ integrations:
                 author_id: number
                 body: string
                 comments_disabled: boolean
-                content_tag_ids: []
+                content_tag_ids: string[]
                 created_at: string
                 draft: boolean
                 edited_at: string
                 html_url: string
                 id: number
-                label_names: []
+                label_names: string[]
                 outdated: boolean
-                outdated_locales: []
+                outdated_locales: string[]
                 position: number
                 promoted: boolean
                 section_id: number
@@ -6134,7 +6134,7 @@ integrations:
                 $in_merge: boolean
                 Locked__s: boolean
                 Billing_State: string
-                Tag: []
+                Tag: any[]
                 Fax: string
                 $approval_state: string
             ZohoCRMContact:
@@ -6217,7 +6217,7 @@ integrations:
                 $in_merge: boolean
                 Locked__s: boolean
                 Lead_Source: string
-                Tag: []
+                Tag: any[]
                 Fax: string
                 $approval_state: string
             ZohoCRMDeal:
@@ -6280,7 +6280,7 @@ integrations:
                     name: string
                     id: string
                     email: string
-                Tag: []
+                Tag: any[]
                 $zia_owner_assignment: string
                 $approval_state: string
     zoho-mail:
@@ -6326,7 +6326,7 @@ integrations:
                 serviceType: number
                 modifiedTime: date
                 resourceId: string
-                attachments: []
+                attachments: any[]
                 statusStr: string
                 statusValue: number
                 description: string
@@ -6341,14 +6341,14 @@ integrations:
                 owner:
                     name: string
                     id: number
-                assigneeList: []
-                dependency: []
-                subtasks: []
+                assigneeList: string[]
+                dependency: any[]
+                subtasks: any[]
                 priority: string
-                tags: []
-                followers: []
+                tags: string[]
+                followers: string[]
                 namespaceId: string
-                dependents: []
+                dependents: string[]
                 assignee:
                     name: string
                     id: number
