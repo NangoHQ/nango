@@ -1933,28 +1933,40 @@ integrations:
                     but metadata can be set using the `backfillPeriodMs` property
                     to change the lookback. The property should be set in milliseconds.
                 input: OptionalBackfillSetting
-                version: 1.0.1
+                version: 1.0.2
+                scopes:
+                    - https://www.googleapis.com/auth/gmail.readonly
                 output: GmailEmail
                 sync_type: incremental
-                endpoint: GET /google-mail/emails
+                endpoint: GET /emails
         actions:
             send-email:
-                scopes: send
                 input: GmailEmailInput
                 output: GmailEmailSentOutput
-                endpoint: POST /google-mail/send
+                scopes:
+                    - https://www.googleapis.com/auth/gmail.send
+                endpoint: POST /send
                 description: |
                     Send an Email using Gmail.
+            fetch-attachment:
+                input: DocumentInput
+                output: string
+                scopes:
+                    - https://www.googleapis.com/auth/gmail.readonly
+                endpoint: GET /fetch-document
+                description: |
+                    An action used to fetch the contents of an attachment.
         models:
             OptionalBackfillSetting:
                 backfillPeriodMs: number
             GmailEmail:
                 id: string
                 sender: string
-                recipients: string
-                date: date
+                recipients?: string | undefined
+                date: string
                 subject: string
                 body: string
+                attachments: Attachments[]
                 threadId: string
             GmailEmailInput:
                 from: string
@@ -1968,6 +1980,14 @@ integrations:
             GmailEmailSentOutput:
                 id: string
                 threadId: string
+            Attachments:
+                filename: string
+                mimeType: string
+                size: number
+                attachmentId: string
+            DocumentInput:
+                threadId: string
+                attachmentId: string
     greenhouse-basic:
         syncs:
             applications:
