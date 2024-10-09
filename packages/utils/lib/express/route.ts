@@ -39,7 +39,7 @@ export const routeFetch = <E extends Endpoint<any>>(
     baseUrl: string,
     route: Route<E>,
     config?: {
-        timeoutMs: number;
+        timeoutMs?: number | undefined;
     }
 ) => {
     return async function f({ query, body, params }: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }): Promise<E['Reply']> {

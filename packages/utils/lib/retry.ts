@@ -2,21 +2,29 @@ import { AxiosError } from 'axios';
 import type { BackoffOptions } from 'exponential-backoff';
 import { backOff } from 'exponential-backoff';
 
-interface RetryConfig {
+export interface RetryConfig<T = unknown> {
     maxAttempts: number;
     delayMs: number | ((attempt: number) => number);
-    retryIf: (error: Error) => boolean;
+    retryIf?: (t: T) => boolean;
+    retryOnError?: (error: Error) => boolean;
 }
 
-export async function retry<T>(fn: () => T, config: RetryConfig): Promise<T> {
-    const { maxAttempts, delayMs, retryIf } = config;
+export async function retry<T>(fn: () => T, { maxAttempts, delayMs, retryIf = () => false, retryOnError = () => true }: RetryConfig<T>): Promise<T> {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const wait = async () => {
+            const delay = typeof delayMs === 'number' ? delayMs : delayMs(attempt);
+            return new Promise((resolve) => setTimeout(resolve, delay));
+        };
         try {
-            return fn();
+            const res = await Promise.resolve(fn());
+            if (attempt < maxAttempts && retryIf(res)) {
+                await wait();
+            } else {
+                return res;
+            }
         } catch (error) {
-            if (attempt < maxAttempts && retryIf(error as Error)) {
-                const delay = typeof delayMs === 'number' ? delayMs : delayMs(attempt);
-                await new Promise((resolve) => setTimeout(resolve, delay));
+            if (attempt < maxAttempts && retryOnError(error as Error)) {
+                await wait();
             } else {
                 throw error;
             }

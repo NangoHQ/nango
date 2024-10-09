@@ -14,8 +14,7 @@ describe('retry', () => {
             },
             {
                 maxAttempts: 3,
-                delayMs: () => 0,
-                retryIf: () => true
+                delayMs: () => 0
             }
         );
         expect(result).toEqual(3);
@@ -31,14 +30,33 @@ describe('retry', () => {
                 },
                 {
                     maxAttempts: 3,
-                    delayMs: () => 0,
-                    retryIf: () => true
+                    delayMs: () => 0
                 }
             );
         } catch (error: any) {
             expect(error.message).toEqual('my error');
         }
         expect(count).toBe(3);
+    });
+
+    it('should not retry if result condition is false ', async () => {
+        let count = 0;
+        try {
+            await retry(
+                () => {
+                    count++;
+                    return count;
+                },
+                {
+                    maxAttempts: 3,
+                    delayMs: () => 0,
+                    retryIf: (n) => n == -1
+                }
+            );
+        } catch (error: any) {
+            expect(error.message).toEqual('my error');
+        }
+        expect(count).toBe(1);
     });
 
     it('should not retry if error condition is false ', async () => {
@@ -55,7 +73,7 @@ describe('retry', () => {
                 {
                     maxAttempts: 3,
                     delayMs: () => 0,
-                    retryIf: (error) => error.message === 'another error'
+                    retryOnError: (error) => error.message === 'another error'
                 }
             );
         } catch (error: any) {
