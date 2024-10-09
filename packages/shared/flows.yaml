@@ -3993,6 +3993,7 @@ integrations:
                 output: OutlookEmail
                 sync_type: incremental
                 endpoint: GET /emails
+                version: 1.0.0
         actions:
             fetch-attachment:
                 input: DocumentInput
