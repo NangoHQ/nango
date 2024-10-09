@@ -2370,7 +2370,7 @@ integrations:
                 output: Contact
                 sync_type: full
                 track_deletes: true
-                version: 1.0.0
+                version: 2.0.0
                 endpoint: GET /contacts
             owners:
                 runs: every day
@@ -2391,6 +2391,7 @@ integrations:
                 endpoint: GET /users
                 version: 1.0.2
                 scopes:
+                    - oauth
                     - settings.users.read (standard scope)
                     - crm.objects.users.read (granular scope)
             knowledge-base:
@@ -2411,6 +2412,7 @@ integrations:
                 track_deletes: true
                 endpoint: GET /deals
                 scopes:
+                    - oauth
                     - crm.objects.deals.read
                     - e-commerce (standard scope)
                     - crm.objects.line_items.read (granular scope)
@@ -2423,6 +2425,7 @@ integrations:
                 track_deletes: true
                 endpoint: GET /companies
                 scopes:
+                    - oauth
                     - crm.objects.companies.read
             currency-codes:
                 runs: every day
@@ -2433,6 +2436,7 @@ integrations:
                 track_deletes: true
                 endpoint: GET /currency-codes
                 scopes:
+                    - oauth
                     - settings.currencies.read
         actions:
             fetch-properties:
@@ -2446,6 +2450,7 @@ integrations:
                 endpoint: POST /deals
                 input: CreateDeal
                 scopes:
+                    - oauth
                     - crm.objects.deals.write
             create-user:
                 description: Creates a user in Hubspot
@@ -2453,6 +2458,7 @@ integrations:
                 endpoint: POST /users
                 input: CreateUser
                 scopes:
+                    - oauth
                     - settings.users.write (standard scope)
                     - crm.objects.users.write (granular)
             delete-user:
@@ -2461,6 +2467,7 @@ integrations:
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
+                    - oauth
                     - settings.users.write (standard scope)
                     - crm.objects.users.write (granular)
             fetch-roles:
@@ -2468,6 +2475,7 @@ integrations:
                 output: RoleResponse
                 endpoint: GET /roles
                 scopes:
+                    - oauth
                     - settings.users.read (standard scope)
                     - crm.objects.users.read (granular scope)
             change-user-role:
@@ -2476,6 +2484,7 @@ integrations:
                 output: ChangedRoleResponse
                 endpoint: PUT /roles
                 scopes:
+                    - oauth
                     - settings.users.write (standard scope)
                     - crm.objects.users.write (granular scope)
             fetch-account-information:
@@ -2489,7 +2498,40 @@ integrations:
                 output: CustomObject
                 endpoint: GET /custom-objects
                 scopes:
+                    - oauth
                     - crm.schemas.custom.read
+            create-contact:
+                description: Create a single contact in Hubspot
+                input: CreateContact
+                endpoint: POST /contacts
+                output: Contact
+                scopes:
+                    - oauth
+                    - crm.objects.contacts.write
+            update-contact:
+                description: Update a single contact in Hubspot
+                input: UpdateContact
+                endpoint: PUT /contacts
+                output: Contact
+                scopes:
+                    - oauth
+                    - crm.objects.contacts.write
+            create-company:
+                description: Create a single company in Hubspot
+                input: CreateCompany
+                output: Company
+                endpoint: POST /company
+                scopes:
+                    - oauth
+                    - crm.objects.companies.write
+            update-company:
+                description: Update a single company in Hubspot
+                input: UpdateCompany
+                output: Company
+                endpoint: PUT /company
+                scopes:
+                    - oauth
+                    - crm.objects.companies.write
         models:
             IdEntity:
                 id: string
@@ -2609,12 +2651,30 @@ integrations:
                 publishDate: number
             Contact:
                 id: string
-                created_at: string
-                updated_at: string
-                first_name: string
-                last_name: string
+                createdAt: string
+                updatedAt: string
+                firstName: string
+                lastName: string
                 email: string
                 primaryContactId?: string
+            CreateContact:
+                associations?: ContactAssociations[]
+                properties: object
+            ContactAssociations:
+                types?:
+                    - associationCategory?: HUBSPOT_DEFINED | USER_DEFINED | INTEGRATOR_DEFINED
+                      associationTypeId?: number
+                to?:
+                    id?: string
+            CreatedContact:
+                id: string
+            UpdateContact:
+                contactId: string
+                input:
+                    properties: object
+                    idProperty?: string
+            UpdatedContact:
+                id: string
             Account:
                 id: string
                 type: string
@@ -2699,6 +2759,20 @@ integrations:
                 name: string
                 domain: string
                 archived: boolean
+            CreateCompany:
+                associations?: CompanyAssociations[]
+                properties: object
+            CompanyAssociations:
+                types?:
+                    - associationCategory?: HUBSPOT_DEFINED | USER_DEFINED | INTEGRATOR_DEFINED
+                      associationTypeId?: number
+                to?:
+                    id?: string
+            UpdateCompany:
+                companyId: string
+                input:
+                    properties: object
+                    idProperty?: string
             LineItem:
                 name: string
                 price: string
