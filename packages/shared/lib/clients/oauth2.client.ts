@@ -18,7 +18,7 @@ export function getSimpleOAuth2ClientConfig(
     connectionConfig: Record<string, string>
 ): Merge<ModuleOptions, { http: WreckHttpOptions }> {
     const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['OAUTH2'] as string);
-    const tokenUrl = makeUrl(templateTokenUrl, connectionConfig);
+    const tokenUrl = makeUrl(templateTokenUrl, connectionConfig, provider.token_url_encode);
     const authorizeUrl = makeUrl(provider.authorization_url!, connectionConfig, provider.authorization_url_encode);
 
     const headers = { 'User-Agent': 'Nango' };

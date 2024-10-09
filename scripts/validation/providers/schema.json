@@ -316,6 +316,9 @@
                         }
                     ]
                 },
+                "token_url_encode": {
+                    "type": "boolean"
+                },
                 "webhook_user_defined_secret": {
                     "type": "boolean"
                 },
