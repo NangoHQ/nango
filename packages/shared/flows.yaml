@@ -3905,6 +3905,49 @@ integrations:
                 firstName: string
                 lastName: string
                 isBot: boolean
+    outlook:
+        syncs:
+            emails:
+                runs: every hour
+                description: |
+                    Fetches a list of emails from outlook. Goes back default to 1 year
+                    but metadata can be set using the `backfillPeriodMs` property
+                    to change the lookback. The property should be set in milliseconds.
+                input: OptionalBackfillSetting
+                scopes:
+                    - Mail.Read
+                output: OutlookEmail
+                sync_type: incremental
+                endpoint: GET /emails
+        actions:
+            fetch-attachment:
+                input: DocumentInput
+                output: string
+                scopes:
+                    - Mail.Read
+                endpoint: GET /fetch-attachment
+                description: |
+                    An action used to fetch the contents of an attachment.
+        models:
+            OptionalBackfillSetting:
+                backfillPeriodMs: number
+            OutlookEmail:
+                id: string
+                sender: string
+                recipients?: string | undefined
+                date: string
+                subject: string
+                body: string
+                attachments: Attachments[]
+                threadId: string
+            Attachments:
+                filename: string
+                mimeType: string
+                size: number
+                attachmentId: string
+            DocumentInput:
+                threadId: string
+                attachmentId: string
     pipedrive:
         syncs:
             activities:
