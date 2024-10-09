@@ -346,6 +346,7 @@
                 "integrations/all/braintree",
                 "integrations/all/brex",
                 "integrations/all/builder-io",
+                "integrations/all/buildium",
                 "integrations/all/calendly",
                 "integrations/all/cal-com",
                 "integrations/all/canny",
@@ -360,6 +361,7 @@
                 "integrations/all/cloudentity",
                 "integrations/all/codeclimate",
                 "integrations/all/coda",
+                "integrations/all/connectwise-psa",
                 "integrations/all/confluence",
                 "integrations/all/contentful",
                 "integrations/all/contentstack",
@@ -375,6 +377,7 @@
                 "integrations/all/docusign",
                 "integrations/all/e-conomic",
                 "integrations/all/egnyte",
+                "integrations/all/elevenlabs",
                 "integrations/all/entrata",
                 "integrations/all/envoy",
                 "integrations/all/epic-games",
@@ -479,6 +482,7 @@
                 "integrations/all/pennylane",
                 "integrations/all/personio",
                 "integrations/all/peopledatalabs",
+                "integrations/all/perplexity",
                 "integrations/all/pingboard",
                 "integrations/all/pinterest",
                 "integrations/all/pipedrive",
@@ -491,6 +495,7 @@
                 "integrations/all/ramp",
                 "integrations/all/reddit",
                 "integrations/all/refiner",
+                "integrations/all/rapidapi",
                 "integrations/all/replicate",
                 "integrations/all/ring-central",
                 "integrations/all/sage",
@@ -568,7 +573,8 @@
                 "integrations/all/zoho-mail",
                 "integrations/all/zoho-people",
                 "integrations/all/zoom",
-                "integrations/all/zoominfo"
+                "integrations/all/zoominfo",
+                "integrations/all/acuity-scheduling"
             ]
         },
         {

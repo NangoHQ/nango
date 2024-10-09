@@ -13,9 +13,9 @@ type GetOutput = Endpoint<{
         taskId: string;
     };
     Querystring: {
-        longPolling?: boolean;
+        longPolling?: number | undefined;
     };
-    Error: ApiError<'task_not_found'>;
+    Error: ApiError<'task_not_found' | 'timeout'>;
     Success: { state: TaskState; output: JsonValue };
 }>;
 
@@ -26,11 +26,7 @@ const validate = validateRequest<GetOutput>({
     parseQuery: (data) =>
         z
             .object({
-                longPolling: z
-                    .string()
-                    .optional()
-                    .default('false')
-                    .transform((val) => val === 'true')
+                longPolling: z.coerce.number().optional()
             })
             .parse(data),
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
@@ -38,7 +34,7 @@ const validate = validateRequest<GetOutput>({
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (req: EndpointRequest<GetOutput>, res: EndpointResponse<GetOutput>) => {
-        const longPollingTimeoutMs = 120_000;
+        const longPollingTimeoutMs = req.query.longPolling || 120_000;
         const eventId = `task:completed:${req.params.taskId}`;
         const cleanupAndRespond = (respond: (res: EndpointResponse<GetOutput>) => void) => {
             if (timeout) {
@@ -55,7 +51,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             cleanupAndRespond((res) => res.status(200).json({ state: completedTask.state, output: completedTask.output }));
         };
         const timeout = setTimeout(() => {
-            cleanupAndRespond((res) => res.status(204).send());
+            cleanupAndRespond((res) => res.status(500).send({ error: { code: 'timeout', message: 'Long polling timeout' } }));
         }, longPollingTimeoutMs);
 
         eventEmitter.once(eventId, onCompletion);

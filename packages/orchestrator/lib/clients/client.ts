@@ -38,10 +38,13 @@ export class OrchestratorClient {
     }
 
     private routeFetch<E extends Endpoint<any>>(
-        route: Route<E>
+        route: Route<E>,
+        config?: {
+            timeoutMs: number;
+        }
     ): (props: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }) => Promise<E['Reply']> {
         return (props) => {
-            return retryWithBackoff(() => routeFetch(this.baseUrl, route)(props), { retry: httpRetryStrategy, numOfAttempts: 3, maxDelay: 50 });
+            return retryWithBackoff(() => routeFetch(this.baseUrl, route, config)(props), { retry: httpRetryStrategy, numOfAttempts: 3, maxDelay: 50 });
         };
     }
 
@@ -161,7 +164,8 @@ export class OrchestratorClient {
             return res;
         }
         const taskId = res.value.taskId;
-        const getOutput = await this.routeFetch(getOutputRoute)({ params: { taskId }, query: { longPolling: true } });
+        const timeoutMs = (scheduleProps.timeoutSettingsInSecs.createdToStarted + scheduleProps.timeoutSettingsInSecs.startedToCompleted) * 1000;
+        const getOutput = await this.routeFetch(getOutputRoute, { timeoutMs })({ params: { taskId }, query: { longPolling: timeoutMs } });
         if ('error' in getOutput) {
             return Err({
                 name: getOutput.error.code,
