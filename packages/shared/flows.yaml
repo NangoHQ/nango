@@ -2364,10 +2364,13 @@ integrations:
                 endpoint: GET /service-tickets
             contacts:
                 runs: every day
-                description: |
-                    Fetches a list of contacts from Hubspot
-                output: HubspotContact
+                description: >
+                    Fetches a list of contacts from Hubspot with the primary associated
+                    company
+                output: Contact
                 sync_type: full
+                track_deletes: true
+                version: 1.0.0
                 endpoint: GET /contacts
             owners:
                 runs: every day
@@ -2375,6 +2378,8 @@ integrations:
                     Fetches a list of owners from Hubspot
                 output: HubspotOwner
                 sync_type: full
+                track_deletes: true
+                version: 1.0.0
                 endpoint: GET /owners
             users:
                 runs: every day
@@ -2394,7 +2399,41 @@ integrations:
                     Fetches a list of knowledge base from Hubspot
                 output: HubspotKnowledgeBase
                 sync_type: full
+                track_deletes: true
                 endpoint: GET /knowledge-base
+            deals:
+                runs: every day
+                description: >
+                    Fetch hubspot deals with the corresponding line items and associated
+                    companies and contacts.
+                output: Deal
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /deals
+                scopes:
+                    - crm.objects.deals.read
+                    - e-commerce (standard scope)
+                    - crm.objects.line_items.read (granular scope)
+            companies:
+                runs: every day
+                description: |
+                    Fetch hubspot companies
+                output: Company
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /companies
+                scopes:
+                    - crm.objects.companies.read
+            currency-codes:
+                runs: every day
+                description: |
+                    Fetch hubspot deals
+                output: CurrencyCode
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /currency-codes
+                scopes:
+                    - settings.currencies.read
         actions:
             fetch-properties:
                 description: Fetch the properties of a specified object
@@ -2439,6 +2478,18 @@ integrations:
                 scopes:
                     - settings.users.write (standard scope)
                     - crm.objects.users.write (granular scope)
+            fetch-account-information:
+                description: Fetch the account information from Hubspot
+                output: Account
+                endpoint: GET /account-information
+                scopes:
+                    - oauth
+            fetch-custom-objects:
+                description: Fetch custom objects in Hubspot. Requires Hubspot enterprise
+                output: CustomObject
+                endpoint: GET /custom-objects
+                scopes:
+                    - crm.schemas.custom.read
         models:
             IdEntity:
                 id: string
@@ -2556,13 +2607,55 @@ integrations:
                 category: string
                 content: string
                 publishDate: number
-            HubspotContact:
+            Contact:
                 id: string
                 created_at: string
                 updated_at: string
                 first_name: string
                 last_name: string
                 email: string
+                primaryContactId?: string
+            Account:
+                id: string
+                type: string
+                timeZone: string
+                companyCurrency: string
+                additionalCurrencies: string[]
+                utcOffset: string
+                utcOffsetMilliseconds: number
+                uiDomain: string
+                dataHostingLocation: string
+            Deal:
+                createdate: string
+                days_to_close: string
+                dealname: string
+                hs_closed_amount: string
+                hs_closed_amount_in_home_currency: string
+                hs_closed_won_count: string
+                hs_createdate: string
+                hs_days_to_close_raw: string
+                hs_deal_stage_probability_shadow: string
+                hs_is_closed_lost: string
+                hs_is_closed_won: string
+                hs_is_deal_split: string
+                hs_lastmodifieddate: string
+                hs_object_id: string
+                hs_object_source: string
+                hs_object_source_id: string
+                hs_object_source_label: string
+                hs_projected_amount: string
+                hs_projected_amount_in_home_currency: string
+                id: string
+                companies?: CompanyAssociation[]
+                contacts?:
+                    - id: string
+                lineItems?:
+                    id: string
+                    __extends: LineItemDefaultProperties
+                __string: any
+            CompanyAssociation:
+                id: string
+                primary: boolean
             CreateDeal:
                 properties:
                     dealname: string
@@ -2593,6 +2686,44 @@ integrations:
                 createdAt: string
                 updatedAt: string
                 archived: boolean
+            CurrencyCode:
+                id: string
+                code: string
+                description: string
+            Association:
+                id: string
+            Company:
+                id: string
+                createdAt: string
+                updatedAt: string
+                name: string
+                domain: string
+                archived: boolean
+            LineItem:
+                name: string
+                price: string
+                quantity: string
+                recurringbillingfrequency: null | number
+                tax: null | number
+                amount: string
+                createdate: string
+                description: string
+                discount: null | number
+                id: string
+                __string: any
+            LineItemDefaultProperties:
+                name: string
+                price: string
+                quantity: string
+                recurringbillingfrequency: null | number
+                tax: null | number
+                amount: string
+                createdate: string
+                description: string
+                discount: null | number
+            CustomObject:
+                id: string
+                __string: any
     instantly:
         actions:
             set-campaign-name:
