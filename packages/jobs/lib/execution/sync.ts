@@ -21,7 +21,7 @@ import {
     configService,
     createSyncJob,
     getSyncConfigRaw,
-    isSyncJobRunning
+    getSyncJobByRunId
 } from '@nangohq/shared';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -463,7 +463,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             logger.error(`failed to abort script for task ${task.abortedTask.id}: ${abortedScript.error}`);
         }
 
-        const syncJob = await isSyncJobRunning(task.syncId);
+        const syncJob = await getSyncJobByRunId(task.abortedTask.id);
         if (!syncJob) {
             throw new Error(`Sync job not found for syncId: ${task.syncId}`);
         }

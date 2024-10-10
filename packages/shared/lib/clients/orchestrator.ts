@@ -23,10 +23,10 @@ import type {
     OrchestratorSchedule
 } from '@nangohq/nango-orchestrator';
 import type { NangoIntegrationData, Sync, SyncConfig } from '../models/index.js';
-import { SyncCommand } from '../models/index.js';
+import { SyncCommand, SyncStatus } from '../models/index.js';
 import tracer from 'dd-trace';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
-import { isSyncJobRunning } from '../services/sync/job.service.js';
+import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { getSyncConfigRaw, getSyncConfigBySyncId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
@@ -562,6 +562,7 @@ export class Orchestrator {
                 if (!syncJob || !syncJob?.run_id) {
                     return Err(`Sync job not found for syncId: ${syncId}`);
                 }
+                await updateSyncJobStatus(syncJob.id, SyncStatus.STOPPED);
                 await this.client.cancel({ taskId: syncJob?.run_id, reason: initiator });
                 return Ok(undefined);
             };
