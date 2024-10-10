@@ -835,6 +835,27 @@ calendly:
         - owner
     docs: https://docs.nango.dev/integrations/all/calendly
 
+brightcrowd:
+    display_name: BrightCrowd
+    categories:
+        - alumni-data
+    auth_mode: BASIC
+    token_url: https://bcb-staging.auth.us-east-1.amazoncognito.com/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+        scope: bcb.partner/book.read
+    proxy:
+        base_url: https://brightcrowd.com/partner-api
+        headers:
+            Content-Type: application/x-www-form-urlencoded
+        paginate:
+            type: cursor
+            cursor_path_in_response: next_cursor
+            cursor_name_in_request: cursor
+            limit_name_in_request: limit
+    docs: https://docs.nango.dev/integrations/all/brightcrowd
+
 canny:
     display_name: Canny
     categories:

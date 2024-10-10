@@ -1,0 +1,65 @@
+---
+title: 'BrightCrowd'
+sidebarTitle: 'BrightCrowd'
+---
+
+# BrightCrowd API Integration
+
+This page provides information about the BrightCrowd API integration in Nango.
+
+## API Description
+
+BrightCrowd is a platform designed to make connections effortless, effective, and enduring. It offers a unique approach to digital engagement, focusing on purposeful connections without the typical features of social networks like liking, commenting, or friending. BrightCrowd is used by higher education institutions, corporations, and non-profits for various purposes such as new student welcome, alumni reunions, new hire onboarding, and industry conferences.
+
+This integration allows you to interact with BrightCrowd's data, including books (which are collections of user profiles) and their members.
+
+## Key Features
+
+- Privacy-focused: Data shared is only visible to the specific group it's shared with.
+- Simplicity: The platform is designed to be intuitive and easy to use.
+- Purposeful engagement: Focuses on forming better relationships with peers and colleagues.
+- Versatile use cases: From higher education to corporate and non-profit sectors.
+
+## API Endpoints
+
+The BrightCrowd Partner API provides the following endpoints:
+
+- GET /books: List all books
+- GET /books/{bookId}: Get a specific book
+- GET /books/{bookId}/members: List members of a specific book
+- GET /books/{bookId}/members/{memberId}: Get a specific member of a book
+- POST /books/{bookId}/members: Add a new member to a book
+- PUT /books/{bookId}/members/{memberId}: Update a member in a book
+- DELETE /books/{bookId}/members/{memberId}: Remove a member from a book
+
+## Authentication
+
+BrightCrowd uses OAuth 2.0 Client Credentials flow for authentication. This ensures secure access to the API while maintaining the privacy standards that BrightCrowd upholds.
+
+## Rate Limits
+
+[Include information about rate limits if available]
+
+## Use Cases
+
+BrightCrowd can be used for various purposes, including:
+
+1. Higher Education:
+   - New Student Welcome
+   - Alumni Reunions
+   - Sports Teams
+   - Affinity Groups
+
+2. Corporate & Non-profit:
+   - New Hire Onboarding
+   - Corporate Teams & Events
+   - Non-profit Networks
+   - Industry Conferences
+
+## Resources
+
+- [BrightCrowd API Documentation](https://brightcrowd.com/partner-api#/)
+- [BrightCrowd About Us Page](https://brightcrowd.com/about)
+- [BrightCrowd Blog](https://brightcrowd.com/about#blog-section)
+
+For more information about BrightCrowd and its features, visit their [official website](https://brightcrowd.com/).
