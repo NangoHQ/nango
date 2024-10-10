@@ -179,14 +179,11 @@ export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, '
     return null;
 };
 
-export async function softDeleteJobs({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
+export async function hardDeleteJobs({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
     return db
         .knex('_nango_sync_jobs')
-        .update({
-            deleted: true,
-            deleted_at: db.knex.fn.now()
-        })
+        .delete()
         .whereIn('id', function (sub) {
-            sub.select('id').from('_nango_sync_jobs').where({ deleted: false, sync_id: syncId }).limit(limit);
+            sub.select('id').from('_nango_sync_jobs').where({ sync_id: syncId }).limit(limit);
         });
 }
