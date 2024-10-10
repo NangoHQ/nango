@@ -1960,7 +1960,7 @@ guru:
         - knowledge-base
     auth_mode: BASIC
     proxy:
-        base_url: https://api.getguru.com/api/v1
+        base_url: https://api.getguru.com
     docs: https://docs.nango.dev/integrations/all/guru
 
 github:
