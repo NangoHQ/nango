@@ -696,7 +696,7 @@ export class Orchestrator {
                 timeoutSettingsInSecs: {
                     createdToStarted: 60 * 60, // 1 hour
                     startedToCompleted: 60 * 60 * 24, // 1 day
-                    heartbeat: 30 * 60 // 30 minutes
+                    heartbeat: 5 * 60 // 5 minutes
                 },
                 startsAt: new Date(),
                 args: {
