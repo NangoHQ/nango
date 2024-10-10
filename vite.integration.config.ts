@@ -13,7 +13,8 @@ export default defineConfig({
         testTimeout: 20000,
         env: {
             NANGO_ENCRYPTION_KEY: 'RzV4ZGo5RlFKMm0wYWlXdDhxTFhwb3ZrUG5KNGg3TmU=',
-            NANGO_LOGS_ENABLED: 'true'
+            NANGO_LOGS_ENABLED: 'true',
+            ORCHESTRATOR_SERVICE_URL: 'http://orchestrator'
         },
         fileParallelism: false,
         pool: 'forks'
