@@ -3975,14 +3975,14 @@ integrations:
                 output: RichPage
                 endpoint: GET /fetch-rich-page
             fetch-database:
-                description: >
+                description: >-
                     Fetch a specific Notion database by passing in the database id. This
-                    action fetches
-
-                    the database and converts it into a CSV string.
+                    action fetches the database and outputs an object. Note that this
+                    should be used for small databases.
                 input: DatabaseInput
                 output: Database
                 endpoint: GET /fetch-database
+                version: 1.0.0
             fetch-content-metadata:
                 description: >
                     Retrieve the entity type as well as an id for a Notion entity to later
@@ -4013,15 +4013,17 @@ integrations:
                 parent_id?: string | undefined
             DatabaseInput:
                 databaseId: string
-            DatabaseEntry:
-                __string: string
+            RowEntry:
+                id: string
+                row:
+                    __string: any
             Database:
                 id: string
                 path: string
                 title: string
                 meta: object
                 last_modified: string
-                entries: DatabaseEntry[]
+                entries: RowEntry[]
             UrlOrId:
                 url?: string
                 id?: string
