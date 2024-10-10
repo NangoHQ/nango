@@ -1227,12 +1227,64 @@ integrations:
                 runs: every 1 hour
                 output: User
                 track_deletes: true
+            categories:
+                endpoint: GET /categories
+                description: List all categories
+                sync_type: full
+                track_deletes: true
+                runs: every week
+                output: Category
+        actions:
+            create-category:
+                endpoint: POST /categories
+                description: Create a category in discourse
+                input: CreateCategory
+                output: Category
+            create-topic:
+                endpoint: POST /topics
+                description: Create a new topic in discourse
+                input: CreateTopic
+                output: Topic
+            update-topic-status:
+                endpoint: PUT /topics/status
+                description: Update the status of a topic
+                input: TopicStatus
+                output: TopicStatusUpdated
         models:
             User:
                 id: number
                 username: string
                 name: string
                 admin: boolean
+            CreateCategory:
+                name: string
+                color?: string
+                text_color?: string
+                parent_category_id?: string
+                slug?: string
+                search_priority?: string
+            Category:
+                id: string
+                name: string
+                color: string
+                description: string | null
+                slug: string
+            CreateTopic:
+                title: string
+                category: number
+                raw: string
+            Topic:
+                id: string
+                name: string
+                content: string
+            TopicStatus:
+                id: string
+                status: closed | pinned | pinned_globally | archived | visible
+                enabled: true | false
+                until: string
+            TopicStatusUpdated:
+                success: string
+                result: string
     evaluagent:
         syncs:
             users:
