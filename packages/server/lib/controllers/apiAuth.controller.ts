@@ -329,7 +329,7 @@ class ApiAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: 'BASIC',
+                        auth_mode: 'API_KEY',
                         operation: updatedConnection.operation
                     },
                     config.provider,
