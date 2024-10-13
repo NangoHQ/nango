@@ -959,7 +959,10 @@ class ConnectionService {
             connection.credentials = response.credentials as OAuth2Credentials;
         }
 
-        await this.updateLastFetched(connection.id);
+        // sample this to reduce writes and load on the db
+        if (Math.random() < 0.33) {
+            await this.updateLastFetched(connection.id);
+        }
 
         return Ok(connection);
     }
