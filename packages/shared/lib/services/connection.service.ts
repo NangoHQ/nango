@@ -954,6 +954,9 @@ class ConnectionService {
                     environment,
                     config
                 });
+
+                // if the credentials were refreshed be sure to set the last fetched date
+                await this.updateLastFetched(connection.id);
             }
 
             connection.credentials = response.credentials as OAuth2Credentials;
@@ -1176,7 +1179,7 @@ class ConnectionService {
             }
 
             connectionToRefresh.credentials = newCredentials;
-            await this.updateConnection(connectionToRefresh);
+            await this.updateConnection({ ...connectionToRefresh, updated_at: new Date() });
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
