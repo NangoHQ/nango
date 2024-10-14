@@ -59,6 +59,34 @@ export type PostPublicTableauAuthorization = Endpoint<{
     };
 }>;
 
+export type PostPublicGhostAdminAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        ghost_api_key: string;
+        token?: string | undefined;
+    };
+    Querystring: {
+        connection_id?: string | undefined;
+        params?: Record<string, any> | undefined;
+        hmac?: string | undefined;
+    };
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/ghost-admin';
+    Error:
+        | ApiError<'invalid_body'>
+        | ApiError<'invalid_query_params'>
+        | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
+        | ApiError<'invalid_auth_mode'>
+        | ApiError<'invalid_credentials'>;
+    Success: {
+        providerConfigKey: string;
+        connectionId: string;
+    };
+}>;
+
 export type PostPublicUnauthenticatedAuthorization = Endpoint<{
     Method: 'POST';
     Querystring: {

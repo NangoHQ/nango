@@ -167,6 +167,7 @@ export interface AuthModes {
     None: 'NONE';
     TBA: 'TBA';
     Tableau: 'TABLEAU';
+    GhostAdmin: 'GHOST_ADMIN';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 
@@ -248,6 +249,12 @@ interface TableauCredentials extends CredentialsCommon {
     token?: string;
     expires_at?: Date | undefined;
 }
+interface GhostAdminCredentials {
+    type: AuthModes['GhostAdmin'];
+    ghost_api_key: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
 interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
@@ -265,6 +272,7 @@ type AuthCredentials =
     | UnauthCredentials
     | TbaCredentials
     | TableauCredentials
+    | GhostAdminCredentials
     | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
@@ -604,6 +612,7 @@ export class NangoAction {
         | CustomCredentials
         | TbaCredentials
         | TableauCredentials
+        | GhostAdminCredentials
     > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);

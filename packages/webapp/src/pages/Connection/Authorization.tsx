@@ -193,6 +193,12 @@ export default function Authorization(props: AuthorizationProps) {
                     <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.refresh_token} copy={true} />
                 </div>
             )}
+            {connection.credentials.type === 'GHOST_ADMIN' && connection.credentials.ghost_api_key && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">API KEY</span>
+                    <SecretInput disabled defaultValue={connection.credentials.ghost_api_key} copy={true} />
+                </div>
+            )}
             <div className="flex flex-col">
                 <span className="text-gray-400 text-xs uppercase mb-2">Connection Configuration</span>
                 <Prism language="json" colorScheme="dark">

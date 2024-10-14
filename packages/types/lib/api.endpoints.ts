@@ -8,7 +8,12 @@ import type { PostForgotPassword, PutResetPassword, PostSignin, PostSignup } fro
 import type { DeleteInvite, PostInvite } from './invitations/api';
 import type { GetUser, PatchUser } from './user/api';
 import type { DeletePublicIntegration, GetPublicIntegration, GetPublicListIntegrations, GetPublicListIntegrationsLegacy } from './integration/api';
-import type { PostPublicTableauAuthorization, PostPublicTbaAuthorization, PostPublicUnauthenticatedAuthorization } from './auth/http.api';
+import type {
+    PostPublicTableauAuthorization,
+    PostPublicTbaAuthorization,
+    PostPublicUnauthenticatedAuthorization,
+    PostPublicGhostAdminAuthorization
+} from './auth/http.api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
 import type { PostConnectSessions, PostInternalConnectSessions } from './connect/api';
 
@@ -19,6 +24,7 @@ export type PublicApiEndpoints =
     | PostDeployConfirmation
     | PostPublicTbaAuthorization
     | PostPublicTableauAuthorization
+    | PostPublicGhostAdminAuthorization
     | PostPublicUnauthenticatedAuthorization
     | GetPublicProviders
     | GetPublicProvider

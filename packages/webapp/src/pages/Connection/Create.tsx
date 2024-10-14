@@ -53,6 +53,7 @@ export default function IntegrationCreate() {
     const [patName, setpatName] = useState('');
     const [patSecret, setpatSecret] = useState('');
     const [contentUrl, setContentUrl] = useState('');
+    const [ghostApiKey, setghostApiKey] = useState('');
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
@@ -205,6 +206,13 @@ export default function IntegrationCreate() {
                 content_url: contentUrl
             };
         }
+
+        if (authMode === 'GHOST_ADMIN') {
+            credentials = {
+                ghost_api_key: ghostApiKey
+            };
+        }
+
         const connectionConfig = {
             user_scope: authMode === 'NONE' ? undefined : selectedScopes || [],
             params,
@@ -426,6 +434,17 @@ export default function IntegrationCreate() {
             }
         }
 
+        let ghostAdminCredentialsString = '';
+        if (integration?.authMode === 'GHOST_ADMIN') {
+            if (ghostApiKey) {
+                ghostAdminCredentialsString = `
+    credentials: {
+        ghost_api_key: '${ghostApiKey}'
+    }
+  `;
+            }
+        }
+
         let oauth2ClientCredentialsString = '';
 
         if (integration?.authMode === 'OAUTH2_CC') {
@@ -470,6 +489,7 @@ export default function IntegrationCreate() {
             !oauthCredentialsString &&
             !oauth2ClientCredentialsString &&
             !tableauCredentialsString &&
+            !ghostAdminCredentialsString &&
             !tbaCredentialsString
                 ? ''
                 : ', { ' +
@@ -483,6 +503,7 @@ export default function IntegrationCreate() {
                       oauthCredentialsString,
                       oauth2ClientCredentialsString,
                       tableauCredentialsString,
+                      ghostAdminCredentialsString,
                       tbaCredentialsString
                   ]
                       .filter(Boolean)
@@ -767,6 +788,26 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             placeholder="Content Url"
                                             value={contentUrl}
                                             setOptionalValue={setContentUrl}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {integration?.authMode === 'GHOST_ADMIN' && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="api_key" className="text-text-light-gray block text-sm font-semibold">
+                                            API KEY
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="api_key"
+                                            name="api_key"
+                                            placeholder="API KEY"
+                                            optionalValue={ghostApiKey}
+                                            setOptionalValue={setghostApiKey}
                                         />
                                     </div>
                                 </div>
