@@ -405,6 +405,7 @@
                 "integrations/all/gainsight-cc",
                 "integrations/all/guru",
                 "integrations/all/github",
+                "integrations/all/ghost",
                 "integrations/all/gitlab",
                 "integrations/all/gong",
                 "integrations/all/google",
