@@ -1747,6 +1747,19 @@ figma:
         base_url: https://api.figma.com
     docs: https://docs.nango.dev/integrations/all/figma
 
+firefish:
+    display_name: Firefish
+    scope_separator: ' '
+    categories:
+        - CRM
+    auth_mode: OAUTH2_CC
+    token_url: https://api.firefishsoftware.com/authorization/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.firefishsoftware.com
+    docs: https://docs.nango.dev/integrations/all/firefish
+
 fireflies:
     display_name: Fireflies
     categories:
