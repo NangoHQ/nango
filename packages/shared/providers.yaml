@@ -5130,6 +5130,8 @@ workable:
         headers:
             Authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
+        retry:
+            at: 'X-Rate-Limit-Reset'
     docs: https://docs.nango.dev/integrations/all/workable
     connection_config:
         subdomain:
@@ -5144,6 +5146,34 @@ workable:
             type: string
             title: API Key
             description: The API key for your Workable account
+
+workable-oauth:
+    display_name: Workable (OAuth)
+    categories:
+        - ats
+    auth_mode: OAUTH2
+    authorization_url: https://www.workable.com/oauth/authorize
+    token_url: https://www.workable.com/oauth/token
+    scope_separator: '+'
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.workable.com
+        retry:
+            at: 'X-Rate-Limit-Reset'
+    docs: https://docs.nango.dev/integrations/all/workable
+    connection_config:
+        subdomain:
+            type: string
+            title: Workable Domain
+            description: The subdomain of your Workable account
+            pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .workable.com
 
 workday:
     display_name: Workday
