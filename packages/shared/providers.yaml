@@ -2095,7 +2095,7 @@ ghost-content:
     proxy:
         headers:
             Accept-Version: ${connectionConfig.version}
-        base_url: https://${connectionConfig.domain}/ghost/api/content/
+        base_url: https://${connectionConfig.adminDomain}/ghost/api/content/
         query:
             key: ${apiKey}
         verification:
