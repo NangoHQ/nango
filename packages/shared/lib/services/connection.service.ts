@@ -1566,7 +1566,7 @@ class ConnectionService {
         };
 
         try {
-            const token = jwt.sign(payload, Buffer.from(secret, 'hex'), { algorithm: 'HS256', header });
+            const token = this.generateJWT(payload, Buffer.from(secret, 'hex'), { algorithm: 'HS256', header });
             const expiresAt = new Date(Date.now() + DEFAULT_GHOST_ADMIN_EXPIRES_AT_MS);
             const credentials: GhostAdminCredentials = {
                 type: 'GHOST_ADMIN',
@@ -1579,6 +1579,14 @@ class ConnectionService {
         } catch (err) {
             const error = new NangoError('jwt_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
             return { success: false, error, response: null };
+        }
+    }
+
+    private generateJWT(payload: Record<string, string | number>, secretOrPrivateKey: string | Buffer, options: object): string {
+        try {
+            return jwt.sign(payload, secretOrPrivateKey, options);
+        } catch (err) {
+            throw new NangoError('jwt_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
         }
     }
 
@@ -1625,7 +1633,7 @@ class ConnectionService {
         }
 
         try {
-            const token = jwt.sign(payload, privateKey, options);
+            const token = this.generateJWT(payload, privateKey, options);
 
             const headers = {
                 Authorization: `Bearer ${token}`
