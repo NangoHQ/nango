@@ -1756,8 +1756,6 @@ firefish:
     token_url: https://api.firefishsoftware.com/authorization/token
     token_params:
         grant_type: client_credentials
-    authorization_params:
-        expiration: 10 minutes
     proxy:
         base_url: https://api.firefishsoftware.com
     docs: https://docs.nango.dev/integrations/all/firefish
