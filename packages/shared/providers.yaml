@@ -4687,6 +4687,41 @@ timely:
         base_url: https://api.timelyapp.com
     docs: https://docs.nango.dev/integrations/all/timely
 
+thrivecart-oauth:
+    display_name: ThriveCart (OAuth)
+    categories:
+        - ecommerce
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://thrivecart.com/authorization/new
+    token_url: https://thrivecart.com/authorization/token
+    scope_separator: ' '
+    proxy:
+        base_url: https://thrivecart.com/api/external
+    docs: https://docs.nango.dev/integrations/all/thrivecart
+
+thrivecart-api-key:
+    display_name: ThriveCart (api key)
+    categories:
+        - ecommerce
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://thrivecart.com/api/external
+        headers:
+            Authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /ping
+    docs: https://docs.nango.dev/integrations/all/thrivecart
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your ThriveCart account
+            example: 'ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ'
+            pattern: '^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$'
+
 tremendous:
     display_name: Tremendous
     categories:
