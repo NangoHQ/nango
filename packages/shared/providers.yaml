@@ -5498,6 +5498,11 @@ zoom:
         grant_type: refresh_token
     proxy:
         base_url: https://api.zoom.us/v2
+        paginate:
+            type: cursor
+            cursor_path_in_response: next_page_token
+            cursor_name_in_request: next_page_token
+            limit_name_in_request: page_size
     docs: https://docs.nango.dev/integrations/all/zoom
 
 zoominfo:
