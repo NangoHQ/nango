@@ -229,6 +229,26 @@ apollo:
             title: API Key
             description: The API key for your Apollo account
 
+apollo-oauth:
+    display_name: Apollo (OAuth)
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://app.apollo.io
+    token_url: https://app.apollo.io/api/v1/oauth/token
+    authorization_url_fragment: oauth/authorize
+    body_format: json
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.apollo.io/api
+    docs: https://docs.nango.dev/integrations/all/apollo
+
 apple-app-store:
     display_name: Apple App Store
     auth_mode: APP_STORE
