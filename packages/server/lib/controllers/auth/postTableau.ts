@@ -159,7 +159,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                     connection: updatedConnection.connection,
                     environment,
                     account,
-                    auth_mode: 'NONE',
+                    auth_mode: 'TABLEAU',
                     operation: updatedConnection.operation
                 },
                 config.provider,

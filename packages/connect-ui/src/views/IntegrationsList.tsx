@@ -2,7 +2,7 @@
 import { IconArrowRight, IconExclamationCircle, IconX } from '@tabler/icons-react';
 import { QueryErrorResetBoundary, useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import type { ApiPublicIntegration, GetPublicProvider } from '@nangohq/types';
@@ -30,7 +30,22 @@ export const IntegrationsList: React.FC = () => {
 };
 
 const Integrations: React.FC = () => {
+    const navigate = useNavigate();
+
+    const store = useGlobal();
     const { data } = useSuspenseQuery({ queryKey: ['integrations'], queryFn: getIntegrations });
+
+    useEffect(() => {
+        async function call() {
+            const integration = data.data[0];
+            const provider = await getProvider({ provider: integration.provider });
+            store.set(provider.data, integration);
+            await navigate({ to: '/go' });
+        }
+        if (data.data.length === 1 && store.session?.allowed_integrations?.length === 1) {
+            void call();
+        }
+    }, [data, store.session]);
 
     if (data.data.length <= 0) {
         return (
@@ -49,6 +64,11 @@ const Integrations: React.FC = () => {
             </main>
         );
     }
+
+    if (data.data.length === 1 && store.session?.allowed_integrations?.length === 1) {
+        return;
+    }
+
     return (
         <>
             <header className="flex flex-col gap-4 p-10 ">
