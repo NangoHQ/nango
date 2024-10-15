@@ -6263,32 +6263,166 @@ integrations:
             tickets:
                 runs: every 1 hour
                 description: |
-                    Fetches a list of tickets from zendesk
-                output: ZendeskTicket
+                    Fetches a list of tickets from Zendesk
+                output: Ticket
                 sync_type: full
-                endpoint: GET /zendesk/tickets
+                track_deletes: true
+                endpoint: GET /tickets
+                version: 1.0.0
+                scopes:
+                    - tickets:read
             articles:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of articles in Help center from zendesk
-                output: ZendeskArticle
+                    Fetches a list of articles in Help center from Zendesk
+                output: Article
                 sync_type: full
-                endpoint: GET /zendesk/articles
+                track_deletes: true
+                endpoint: GET /articles
+                version: 1.0.0
+                scopes:
+                    - hc:read
+            categories:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of help center categories
+                output: Category
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /categories
+                scopes:
+                    - hc:read
+            sections:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of sections in Help center from Zendesk
+                output: Section
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /sections
+                scopes:
+                    - hc:read
+            users:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of admin or agent users from Zendesk
+                output: User
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /users
+                scopes:
+                    - users:read
+        actions:
+            fetch-articles:
+                output: ArticleResponse
+                endpoint: GET /all-articles
+                description: Fetch all help center articles metadata
+                scopes:
+                    - hc:read
+            fetch-article:
+                output: SingleArticleResponse
+                endpoint: GET /single-article
+                input: ArticleInput
+                description: Fetch a single full help center article
+                scopes:
+                    - hc:read
+            create-section:
+                output: Section
+                input: SectionCreate
+                endpoint: POST /sections
+                description: Create a section within a category in the help center
+                scopes:
+                    - hc:write
+            create-category:
+                output: Category
+                endpoint: POST /categories
+                input: CategoryCreate
+                description: Create a category within the help center
+                scopes:
+                    - hc:write
+            create-ticket:
+                output: CreatedTicket
+                endpoint: POST /tickets
+                input: TicketCreate
+                description: Create a Zendesk ticket
+                scopes:
+                    - tickets:write
+            delete-user:
+                output: SuccessResponse
+                endpoint: DELETE /users
+                input: IdEntity
+                description: Delete a user in Zendesk
+                scopes:
+                    - users:write
+            create-user:
+                output: User
+                endpoint: POST /users
+                input: CreateUser
+                description: >-
+                    Create an admin or agent user in Zendesk. Defaults to agent if a role
+                    is not provided
+                scopes:
+                    - users:write
         models:
-            ZendeskArticle:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                role?: admin | agent
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            CategoryCreate:
+                category:
+                    name: string
+                    description?: string
+            Category:
+                id: string
+                url: string
+                name: string
+                description: string
+            SectionCreate:
+                category_id: number
+                section:
+                    name: string
+                    description?: string
+            Section:
+                id: string
+                url: string
+                category_id: number
+                name: string
+                description: string
+            ArticleResponse:
+                articles: ArticleLite[]
+            SingleArticleResponse:
+                article: Article
+            ArticleLite:
                 title: string
+                id: string
+                url: string
+            ArticleInput:
+                id: string
+            Article:
+                title: string
+                id: number
+                url: string
                 locale: string
-                user_segment_id: number
+                user_segment_id: number | null
                 permission_group_id: number
                 author_id: number
                 body: string
                 comments_disabled: boolean
-                content_tag_ids: string[]
+                content_tag_ids: number[]
                 created_at: string
                 draft: boolean
                 edited_at: string
                 html_url: string
-                id: number
                 label_names: string[]
                 outdated: boolean
                 outdated_locales: string[]
@@ -6297,10 +6431,31 @@ integrations:
                 section_id: number
                 source_locale: string
                 updated_at: string
-                url: string
                 vote_count: number
                 vote_sum: number
-            ZendeskTicket:
+            TicketCreate:
+                ticket:
+                    comment:
+                        body?: string
+                        html_body?: string
+                    assignee_email?: string
+                    assignee_id?: number
+                    brand_id?: number
+                    due_at?: string
+                    type?: problem | incident | question | task
+                    status?: new | open | pending | hold | solved | closed.
+                    metadata?:
+                        __string: any
+            CreatedTicket:
+                id: string
+                url: string
+                created_at: string
+                updated_at: string
+                subject: string
+                description: string
+                priority: string
+                status: string
+            Ticket:
                 requester_id: number
                 allow_attachments: boolean
                 allow_channelback: boolean
