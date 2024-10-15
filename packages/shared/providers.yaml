@@ -26,6 +26,19 @@ accelo:
             example: domain
             suffix: .api.accelo.com
 
+acuity-scheduling:
+    display_name: Acuity Scheduling
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://acuityscheduling.com/oauth2/authorize
+    token_url: https://acuityscheduling.com/oauth2/token
+    default_scopes:
+        - api-v1
+    proxy:
+        base_url: https://acuityscheduling.com/api/v1
+    docs: https://docs.nango.dev/integrations/all/acuity-scheduling
+
 adobe:
     display_name: Adobe
     categories:
@@ -1746,6 +1759,23 @@ figma:
     proxy:
         base_url: https://api.figma.com
     docs: https://docs.nango.dev/integrations/all/figma
+
+falai:
+    display_name: fal.ai
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Key ${apiKey}
+        base_url: https://queue.fal.run
+    docs: https://docs.nango.dev/integrations/all/falai
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your fal.ai account
 
 firefish:
     display_name: Firefish
@@ -5484,33 +5514,3 @@ zoominfo:
     token_request_auth_method: custom
     body_format: json
     docs: https://docs.nango.dev/integrations/all/zoominfo
-
-falai:
-    display_name: fal.ai
-    categories:
-        - productivity
-        - dev-tools
-    auth_mode: API_KEY
-    proxy:
-        headers:
-            Authorization: Key ${apiKey}
-        base_url: https://queue.fal.run
-    docs: https://docs.nango.dev/integrations/all/falai
-    credentials:
-        apiKey:
-            type: string
-            title: API Key
-            description: The API key for your fal.ai account
-
-acuity-scheduling:
-    display_name: Acuity Scheduling
-    categories:
-        - productivity
-    auth_mode: OAUTH2
-    authorization_url: https://acuityscheduling.com/oauth2/authorize
-    token_url: https://acuityscheduling.com/oauth2/token
-    default_scopes:
-        - api-v1
-    proxy:
-        base_url: https://acuityscheduling.com/api/v1
-    docs: https://docs.nango.dev/integrations/all/acuity-scheduling
