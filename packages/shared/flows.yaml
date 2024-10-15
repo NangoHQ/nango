@@ -3960,6 +3960,17 @@ integrations:
                 track_deletes: true
                 sync_type: full
                 endpoint: GET /users
+            databases:
+                runs: every 1h
+                track_deletes: true
+                description: >
+                    Sync a database content with each row as an entry. Store the top level
+
+                    database information in the metadata to be able to reconcile the
+                    database
+                output: NotionCompleteDatabase
+                sync_type: full
+                endpoint: GET /notion/database
         actions:
             fetch-rich-page:
                 description: >
@@ -4024,6 +4035,15 @@ integrations:
                 meta: object
                 last_modified: string
                 entries: RowEntry[]
+            NotionCompleteDatabase:
+                id: string
+                row:
+                    __string: any
+                meta:
+                    databaseId: string
+                    path: string
+                    title: string
+                    last_modified: string
             UrlOrId:
                 url?: string
                 id?: string
