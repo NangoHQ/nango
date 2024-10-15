@@ -5,6 +5,7 @@ import { isEnterprise, env, getLogger } from '@nangohq/utils';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import type { KVStore } from '@nangohq/kvstore';
 import { createKVStore } from '@nangohq/kvstore';
+import { envs } from '../env.js';
 
 const logger = getLogger('Runner');
 
@@ -54,12 +55,17 @@ export async function getOrStartRunner(runnerId: string): Promise<Runner> {
             logger.error(err);
         }
     }
-    const isRender = process.env['IS_RENDER'] === 'true';
     let runner: Runner;
-    if (isRender) {
-        runner = await RenderRunner.getOrStart(runnerId);
-    } else {
-        runner = await LocalRunner.getOrStart(runnerId);
+    switch (envs.RUNNER_TYPE) {
+        case 'LOCAL':
+            runner = await LocalRunner.getOrStart(runnerId);
+            break;
+        case 'REMOTE':
+            runner = await RemoteRunner.getOrStart(runnerId);
+            break;
+        case 'RENDER':
+            runner = await RenderRunner.getOrStart(runnerId);
+            break;
     }
 
     await waitForRunner(runner);
@@ -68,8 +74,7 @@ export async function getOrStartRunner(runnerId: string): Promise<Runner> {
 }
 
 export async function suspendRunner(runnerId: string): Promise<void> {
-    const isRender = process.env['IS_RENDER'] === 'true';
-    if (isRender) {
+    if (envs.RUNNER_TYPE === 'RENDER') {
         // we only suspend render runners
         const runner = await RenderRunner.get(runnerId);
         if (runner) {
