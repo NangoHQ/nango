@@ -342,14 +342,14 @@ integrations:
                     value: string
                     type: string
                     isPrimary: boolean
-                emailAddresses: []
+                emailAddresses: string[]
                 primaryPhoneNumber:
                     value: string
                     type: string
                     isPrimary: boolean
-                phoneNumbers: []
-                socialLinks: []
-                tags: []
+                phoneNumbers: string[]
+                socialLinks: string[]
+                tags: string[]
                 position: string
                 company: string
                 school: string
@@ -358,8 +358,8 @@ integrations:
                     id: string
                     name: string
                     handle: string
-                fileHandles: []
-                customFields: []
+                fileHandles: string[]
+                customFields: string[]
                 profileUrl: string
                 source:
                     id: string
@@ -387,10 +387,10 @@ integrations:
                 departmentId: string
                 defaultInterviewPlanId: string
                 interviewPlanIds: string[]
-                customFields: []
+                customFields: string[]
                 jobPostingIds: string[]
                 customRequisitionId: string
-                hiringTeam: []
+                hiringTeam: string[]
                 updatedAt: date
                 location:
                     id: string
@@ -402,13 +402,13 @@ integrations:
                             addressRegion: string
                             addressLocality: string
                     isRemote: boolean
-                openings: []
+                openings: string[]
             AshbyCreateApplicationResponse:
                 id: string
                 createdAt: date
                 updatedAt: date
                 status: string
-                customFields: []
+                customFields: string[]
                 candidate:
                     id: string
                     name: string
@@ -452,7 +452,7 @@ integrations:
                     globalRole: string
                     isEnabled: boolean
                     updatedAt: date
-                hiringTeam: []
+                hiringTeam: string[]
                 appliedViaJobPostingId: string
             AshbyCreateNoteResponse:
                 id: string
@@ -1124,10 +1124,10 @@ integrations:
                 id: string
                 source_id: string
                 title: string
-                users: []
-                externalParticipants: []
+                users: any[]
+                externalParticipants: any[]
                 status: string
-                bot_not_join_reason: []
+                bot_not_join_reason: string[]
                 type: string
                 time: string
                 icaluid: string
@@ -1143,13 +1143,13 @@ integrations:
                 deal_close_date: string
                 deal_stage_before_call: string
                 account_name: string
-                contact_names: []
+                contact_names: string[]
                 crm_info:
                     source_crm: string
                     deal_id: string
                     account_id: string
-                    contact_ids: []
-                bookmark_timestamps: []
+                    contact_ids: string[]
+                bookmark_timestamps: string[]
                 metrics:
                     talk_listen_ratio: number
                     num_questions_asked: number
@@ -1159,15 +1159,15 @@ integrations:
                     longest_monologue_duration: number
                     longest_monologue_start_time: number
                     engaging_questions: number
-                    categories: []
+                    categories: string[]
                 call_review_page_url: string
                 deal_stage_live: string
-                transcript: []
+                transcript: string[]
                 summary:
                     full_summary: string
-                    topics_discussed: []
-                    key_action_items: []
-                competitor_sentiments: []
+                    topics_discussed: string[]
+                    key_action_items: string[]
+                competitor_sentiments: string[]
     confluence:
         syncs:
             spaces:
@@ -1227,12 +1227,64 @@ integrations:
                 runs: every 1 hour
                 output: User
                 track_deletes: true
+            categories:
+                endpoint: GET /categories
+                description: List all categories
+                sync_type: full
+                track_deletes: true
+                runs: every week
+                output: Category
+        actions:
+            create-category:
+                endpoint: POST /categories
+                description: Create a category in discourse
+                input: CreateCategory
+                output: Category
+            create-topic:
+                endpoint: POST /topics
+                description: Create a new topic in discourse
+                input: CreateTopic
+                output: Topic
+            update-topic-status:
+                endpoint: PUT /topics/status
+                description: Update the status of a topic
+                input: TopicStatus
+                output: TopicStatusUpdated
         models:
             User:
                 id: number
                 username: string
                 name: string
                 admin: boolean
+            CreateCategory:
+                name: string
+                color?: string
+                text_color?: string
+                parent_category_id?: string
+                slug?: string
+                search_priority?: string
+            Category:
+                id: string
+                name: string
+                color: string
+                description: string | null
+                slug: string
+            CreateTopic:
+                title: string
+                category: number
+                raw: string
+            Topic:
+                id: string
+                name: string
+                content: string
+            TopicStatus:
+                id: string
+                status: closed | pinned | pinned_globally | archived | visible
+                enabled: true | false
+                until: string
+            TopicStatusUpdated:
+                success: string
+                result: string
     evaluagent:
         syncs:
             users:
@@ -1933,28 +1985,40 @@ integrations:
                     but metadata can be set using the `backfillPeriodMs` property
                     to change the lookback. The property should be set in milliseconds.
                 input: OptionalBackfillSetting
-                version: 1.0.1
+                version: 1.0.2
+                scopes:
+                    - https://www.googleapis.com/auth/gmail.readonly
                 output: GmailEmail
                 sync_type: incremental
-                endpoint: GET /google-mail/emails
+                endpoint: GET /emails
         actions:
             send-email:
-                scopes: send
                 input: GmailEmailInput
                 output: GmailEmailSentOutput
-                endpoint: POST /google-mail/send
+                scopes:
+                    - https://www.googleapis.com/auth/gmail.send
+                endpoint: POST /send
                 description: |
                     Send an Email using Gmail.
+            fetch-attachment:
+                input: DocumentInput
+                output: string
+                scopes:
+                    - https://www.googleapis.com/auth/gmail.readonly
+                endpoint: GET /fetch-document
+                description: |
+                    An action used to fetch the contents of an attachment.
         models:
             OptionalBackfillSetting:
                 backfillPeriodMs: number
             GmailEmail:
                 id: string
                 sender: string
-                recipients: string
-                date: date
+                recipients?: string | undefined
+                date: string
                 subject: string
                 body: string
+                attachments: Attachments[]
                 threadId: string
             GmailEmailInput:
                 from: string
@@ -1968,6 +2032,14 @@ integrations:
             GmailEmailSentOutput:
                 id: string
                 threadId: string
+            Attachments:
+                filename: string
+                mimeType: string
+                size: number
+                attachmentId: string
+            DocumentInput:
+                threadId: string
+                attachmentId: string
     greenhouse-basic:
         syncs:
             applications:
@@ -2019,13 +2091,13 @@ integrations:
                 rejection_details:
                     custom_fields: object
                     keyed_custom_fields: object
-                jobs: []
+                jobs: string[]
                 job_post_id: string
                 status: string
                 current_stage:
                     id: string
                     name: string
-                answers: []
+                answers: string[]
                 prospective_office:
                     primary_contact_user_id: string
                     parent_id: string
@@ -2034,13 +2106,13 @@ integrations:
                         name: string
                     id: string
                     external_id: string
-                    child_ids: []
+                    child_ids: string[]
                 prospective_department:
                     parent_id: string
                     name: string
                     id: string
                     external_id: string
-                    child_ids: []
+                    child_ids: string[]
                 prospect_detail:
                     prospect_pool:
                         id: string
@@ -2053,7 +2125,7 @@ integrations:
                         name: string
                 custom_fields: object
                 keyed_custom_fields: object
-                attachments: []
+                attachments: any[]
             GreenhouseCandidate:
                 id: string
                 first_name: string
@@ -2065,13 +2137,13 @@ integrations:
                 last_activity: date
                 is_private: boolean
                 photo_url: string
-                attachments: []
-                application_ids: []
-                phone_numbers: []
-                addresses: []
-                email_addresses: []
-                website_addresses: []
-                social_media_addresses: []
+                attachments: any[]
+                application_ids: string[]
+                phone_numbers: string[]
+                addresses: any[]
+                email_addresses: string[]
+                website_addresses: string[]
+                social_media_addresses: string[]
                 recruiter:
                     id: string
                     first_name: string
@@ -2085,10 +2157,10 @@ integrations:
                     name: string
                     employee_id: string
                 can_email: boolean
-                tags: []
-                applications: []
-                educations: []
-                employments: []
+                tags: string[]
+                applications: string[]
+                educations: string[]
+                employments: string[]
                 linked_user_ids: string
                 custom_fields: object
                 keyed_custom_fields: object
@@ -2105,16 +2177,16 @@ integrations:
                 updated_at: date
                 is_template: boolean
                 copied_from_id: string
-                departments: []
-                offices: []
+                departments: string[]
+                offices: string[]
                 custom_fields: object
                 keyed_custom_fields: object
                 hiring_team:
-                    hiring_managers: []
-                    recruiters: []
-                    coordinators: []
-                    sourcers: []
-                openings: []
+                    hiring_managers: string[]
+                    recruiters: string[]
+                    coordinators: string[]
+                    sourcers: string[]
+                openings: string[]
     hackerrank-work:
         syncs:
             interviews:
@@ -2224,8 +2296,8 @@ integrations:
                 logo_id: string
                 library_access: boolean
                 invite_as: string
-                locations: []
-                departments: []
+                locations: string[]
+                departments: string[]
             HackerRankWorkTest:
                 id: string
                 unique_id: string
@@ -2241,9 +2313,9 @@ integrations:
                 start_time: date
                 end_time: date
                 draft: boolean
-                questions: []
+                questions: string[]
                 sections: object
-                tags: []
+                tags: string[]
                 permission: number
             HackerRankWorkUser:
                 id: string
@@ -2344,10 +2416,13 @@ integrations:
                 endpoint: GET /service-tickets
             contacts:
                 runs: every day
-                description: |
-                    Fetches a list of contacts from Hubspot
-                output: HubspotContact
+                description: >
+                    Fetches a list of contacts from Hubspot with the primary associated
+                    company
+                output: Contact
                 sync_type: full
+                track_deletes: true
+                version: 2.0.0
                 endpoint: GET /contacts
             owners:
                 runs: every day
@@ -2355,16 +2430,20 @@ integrations:
                     Fetches a list of owners from Hubspot
                 output: HubspotOwner
                 sync_type: full
+                track_deletes: true
+                version: 1.0.0
                 endpoint: GET /owners
             users:
                 runs: every day
                 description: |
                     Fetches a list of users from Hubspot
                 output: User
+                track_deletes: true
                 sync_type: full
                 endpoint: GET /users
-                version: 1.0.1
+                version: 1.0.2
                 scopes:
+                    - oauth
                     - settings.users.read (standard scope)
                     - crm.objects.users.read (granular scope)
             knowledge-base:
@@ -2373,7 +2452,44 @@ integrations:
                     Fetches a list of knowledge base from Hubspot
                 output: HubspotKnowledgeBase
                 sync_type: full
+                track_deletes: true
                 endpoint: GET /knowledge-base
+            deals:
+                runs: every day
+                description: >
+                    Fetch hubspot deals with the corresponding line items and associated
+                    companies and contacts.
+                output: Deal
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /deals
+                scopes:
+                    - oauth
+                    - crm.objects.deals.read
+                    - e-commerce (standard scope)
+                    - crm.objects.line_items.read (granular scope)
+            companies:
+                runs: every day
+                description: |
+                    Fetch hubspot companies
+                output: Company
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /companies
+                scopes:
+                    - oauth
+                    - crm.objects.companies.read
+            currency-codes:
+                runs: every day
+                description: |
+                    Fetch hubspot deals
+                output: CurrencyCode
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /currency-codes
+                scopes:
+                    - oauth
+                    - settings.currencies.read
         actions:
             fetch-properties:
                 description: Fetch the properties of a specified object
@@ -2386,6 +2502,7 @@ integrations:
                 endpoint: POST /deals
                 input: CreateDeal
                 scopes:
+                    - oauth
                     - crm.objects.deals.write
             create-user:
                 description: Creates a user in Hubspot
@@ -2393,6 +2510,7 @@ integrations:
                 endpoint: POST /users
                 input: CreateUser
                 scopes:
+                    - oauth
                     - settings.users.write (standard scope)
                     - crm.objects.users.write (granular)
             delete-user:
@@ -2401,23 +2519,71 @@ integrations:
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
+                    - oauth
                     - settings.users.write (standard scope)
                     - crm.objects.users.write (granular)
             fetch-roles:
-                description: Fetch the roles on an account
+                description: Fetch the roles on an account. Requires an enterprise account.
                 output: RoleResponse
                 endpoint: GET /roles
                 scopes:
+                    - oauth
                     - settings.users.read (standard scope)
                     - crm.objects.users.read (granular scope)
             change-user-role:
-                description: Change a user role
+                description: Change a user role. Requires an enterprise account.
                 input: UserRoleInput
                 output: ChangedRoleResponse
                 endpoint: PUT /roles
                 scopes:
+                    - oauth
                     - settings.users.write (standard scope)
                     - crm.objects.users.write (granular scope)
+            fetch-account-information:
+                description: Fetch the account information from Hubspot
+                output: Account
+                endpoint: GET /account-information
+                scopes:
+                    - oauth
+            fetch-custom-objects:
+                description: Fetch custom objects in Hubspot. Requires Hubspot enterprise
+                output: CustomObject
+                endpoint: GET /custom-objects
+                scopes:
+                    - oauth
+                    - crm.schemas.custom.read
+            create-contact:
+                description: Create a single contact in Hubspot
+                input: CreateContact
+                endpoint: POST /contacts
+                output: Contact
+                scopes:
+                    - oauth
+                    - crm.objects.contacts.write
+            update-contact:
+                description: Update a single contact in Hubspot
+                input: UpdateContact
+                endpoint: PUT /contacts
+                output: Contact
+                scopes:
+                    - oauth
+                    - crm.objects.contacts.write
+            create-company:
+                description: Create a single company in Hubspot
+                input: CreateCompany
+                output: Company
+                endpoint: POST /company
+                scopes:
+                    - oauth
+                    - crm.objects.companies.write
+            update-company:
+                description: Update a single company in Hubspot
+                input: UpdateCompany
+                output: Company
+                endpoint: PUT /company
+                scopes:
+                    - oauth
+                    - crm.objects.companies.write
         models:
             IdEntity:
                 id: string
@@ -2535,13 +2701,73 @@ integrations:
                 category: string
                 content: string
                 publishDate: number
-            HubspotContact:
+            Contact:
                 id: string
-                created_at: string
-                updated_at: string
-                first_name: string
-                last_name: string
+                createdAt: string
+                updatedAt: string
+                firstName: string
+                lastName: string
                 email: string
+                primaryContactId?: string
+            CreateContact:
+                associations?: ContactAssociations[]
+                properties: object
+            ContactAssociations:
+                types?:
+                    - associationCategory?: HUBSPOT_DEFINED | USER_DEFINED | INTEGRATOR_DEFINED
+                      associationTypeId?: number
+                to?:
+                    id?: string
+            CreatedContact:
+                id: string
+            UpdateContact:
+                contactId: string
+                input:
+                    properties: object
+                    idProperty?: string
+            UpdatedContact:
+                id: string
+            Account:
+                id: string
+                type: string
+                timeZone: string
+                companyCurrency: string
+                additionalCurrencies: string[]
+                utcOffset: string
+                utcOffsetMilliseconds: number
+                uiDomain: string
+                dataHostingLocation: string
+            Deal:
+                createdate: string
+                days_to_close: string
+                dealname: string
+                hs_closed_amount: string
+                hs_closed_amount_in_home_currency: string
+                hs_closed_won_count: string
+                hs_createdate: string
+                hs_days_to_close_raw: string
+                hs_deal_stage_probability_shadow: string
+                hs_is_closed_lost: string
+                hs_is_closed_won: string
+                hs_is_deal_split: string
+                hs_lastmodifieddate: string
+                hs_object_id: string
+                hs_object_source: string
+                hs_object_source_id: string
+                hs_object_source_label: string
+                hs_projected_amount: string
+                hs_projected_amount_in_home_currency: string
+                id: string
+                companies?: CompanyAssociation[]
+                contacts?:
+                    - id: string
+                lineItems?:
+                    id: string
+                    __extends: LineItemDefaultProperties
+                __string: any
+            CompanyAssociation:
+                id: string
+                primary: boolean
             CreateDeal:
                 properties:
                     dealname: string
@@ -2572,6 +2798,58 @@ integrations:
                 createdAt: string
                 updatedAt: string
                 archived: boolean
+            CurrencyCode:
+                id: string
+                code: string
+                description: string
+            Association:
+                id: string
+            Company:
+                id: string
+                createdAt: string
+                updatedAt: string
+                name: string
+                domain: string
+                archived: boolean
+            CreateCompany:
+                associations?: CompanyAssociations[]
+                properties: object
+            CompanyAssociations:
+                types?:
+                    - associationCategory?: HUBSPOT_DEFINED | USER_DEFINED | INTEGRATOR_DEFINED
+                      associationTypeId?: number
+                to?:
+                    id?: string
+            UpdateCompany:
+                companyId: string
+                input:
+                    properties: object
+                    idProperty?: string
+            LineItem:
+                name: string
+                price: string
+                quantity: string
+                recurringbillingfrequency: null | number
+                tax: null | number
+                amount: string
+                createdate: string
+                description: string
+                discount: null | number
+                id: string
+                __string: any
+            LineItemDefaultProperties:
+                name: string
+                price: string
+                quantity: string
+                recurringbillingfrequency: null | number
+                tax: null | number
+                amount: string
+                createdate: string
+                description: string
+                discount: null | number
+            CustomObject:
+                id: string
+                __string: any
     instantly:
         actions:
             set-campaign-name:
@@ -2952,11 +3230,11 @@ integrations:
                 name: string
                 headline: string
                 contact: string
-                emails: []
-                phones: []
+                emails: string[]
+                phones: string[]
                 confidentiality: string
                 location: string
-                links: []
+                links: string[]
                 archived:
                     reason: string
                     archivedAt: number
@@ -2968,15 +3246,15 @@ integrations:
                 archivedAt: number
                 archiveReason: string
                 stage: string
-                stageChanges: []
+                stageChanges: string[]
                 owner: string
-                tags: []
-                sources: []
+                tags: string[]
+                sources: string[]
                 origin: string
                 sourcedBy: string
-                applications: []
+                applications: string[]
                 resume: string
-                followers: []
+                followers: string[]
                 urls:
                     list: string
                     show: string
@@ -3005,9 +3283,9 @@ integrations:
                 ownerId: string
                 hiringManager: string
                 company: string
-                links: []
+                links: string[]
                 comments: string
-                customQuestions: []
+                customQuestions: string[]
                 archived:
                     reason: string
                     archivedAt: number
@@ -3016,7 +3294,7 @@ integrations:
                 type: string
                 text: string
                 instructions: string
-                fields: []
+                fields: string[]
                 baseTemplateId: string
                 interview: string
                 panel: string
@@ -3030,24 +3308,24 @@ integrations:
                 panel: string
                 subject: string
                 note: string
-                interviewers: []
+                interviewers: string[]
                 timezone: string
                 createdAt: number
                 date: number
                 duration: number
                 location: string
                 feedbackTemplate: string
-                feedbackForms: []
+                feedbackForms: string[]
                 feedbackReminder: string
                 user: string
                 stage: string
                 canceledAt: number
-                postings: []
+                postings: string[]
                 gcalEventUrl: string
             LeverOpportunityNote:
                 id: string
                 text: string
-                fields: []
+                fields: string[]
                 user: string
                 secret: boolean
                 completedAt: number
@@ -3058,7 +3336,7 @@ integrations:
                 createdAt: number
                 status: string
                 creator: string
-                fields: []
+                fields: string[]
                 sentDocument:
                     fileName: string
                     uploadedAt: number
@@ -3080,22 +3358,22 @@ integrations:
                     team: string
                     department: string
                     location: string
-                    allLocations: []
+                    allLocations: string[]
                     commitment: string
                     level: string
                 content:
                     description: string
                     descriptionHtml: string
-                    lists: []
+                    lists: string[]
                     closing: string
                     closingHtml: string
                 country: string
-                followers: []
-                tags: []
+                followers: string[]
+                tags: string[]
                 state: string
-                distributionChannels: []
+                distributionChannels: string[]
                 reqCode: string
-                requisitionCodes: []
+                requisitionCodes: string[]
                 salaryDescription: string
                 salaryDescriptionHtml: string
                 salaryRange:
@@ -3111,10 +3389,10 @@ integrations:
             LeverPostingApply:
                 id: string
                 text: string
-                customQuestions: []
-                eeoQuestions: []
-                personalInformation: []
-                urls: []
+                customQuestions: string[]
+                eeoQuestions: string[]
+                personalInformation: string[]
+                urls: string[]
             LeverStage:
                 id: string
                 text: string
@@ -3631,8 +3909,8 @@ integrations:
                 avatarScope: string
                 email: string
                 emailScope: string
-                additional_mail: []
-                additional_mailScope: []
+                additional_mail: string[]
+                additional_mailScope: string[]
                 displayname: string
                 display_name: string
                 displaynameScope: string
@@ -3674,6 +3952,14 @@ integrations:
                 output: ContentMetadata
                 sync_type: full
                 endpoint: GET /metadata
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Notion
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
         actions:
             fetch-rich-page:
                 description: >
@@ -3689,14 +3975,14 @@ integrations:
                 output: RichPage
                 endpoint: GET /fetch-rich-page
             fetch-database:
-                description: >
+                description: >-
                     Fetch a specific Notion database by passing in the database id. This
-                    action fetches
-
-                    the database and converts it into a CSV string.
+                    action fetches the database and outputs an object. Note that this
+                    should be used for small databases.
                 input: DatabaseInput
                 output: Database
                 endpoint: GET /fetch-database
+                version: 1.0.0
             fetch-content-metadata:
                 description: >
                     Retrieve the entity type as well as an id for a Notion entity to later
@@ -3727,18 +4013,70 @@ integrations:
                 parent_id?: string | undefined
             DatabaseInput:
                 databaseId: string
-            DatabaseEntry:
-                __string: string
+            RowEntry:
+                id: string
+                row:
+                    __string: any
             Database:
                 id: string
                 path: string
                 title: string
                 meta: object
                 last_modified: string
-                entries: DatabaseEntry[]
+                entries: RowEntry[]
             UrlOrId:
                 url?: string
                 id?: string
+            User:
+                id: string
+                email: string | null
+                firstName: string
+                lastName: string
+                isBot: boolean
+    outlook:
+        syncs:
+            emails:
+                runs: every hour
+                description: |
+                    Fetches a list of emails from outlook. Goes back default to 1 year
+                    but metadata can be set using the `backfillPeriodMs` property
+                    to change the lookback. The property should be set in milliseconds.
+                input: OptionalBackfillSetting
+                scopes:
+                    - Mail.Read
+                output: OutlookEmail
+                sync_type: incremental
+                endpoint: GET /emails
+                version: 1.0.0
+        actions:
+            fetch-attachment:
+                input: DocumentInput
+                output: string
+                scopes:
+                    - Mail.Read
+                endpoint: GET /fetch-attachment
+                description: |
+                    An action used to fetch the contents of an attachment.
+        models:
+            OptionalBackfillSetting:
+                backfillPeriodMs: number
+            OutlookEmail:
+                id: string
+                sender: string
+                recipients?: string | undefined
+                date: string
+                subject: string
+                body: string
+                attachments: Attachments[]
+                threadId: string
+            Attachments:
+                filename: string
+                mimeType: string
+                size: number
+                attachmentId: string
+            DocumentInput:
+                threadId: string
+                attachmentId: string
     pipedrive:
         syncs:
             activities:
@@ -3865,8 +4203,8 @@ integrations:
                 owner_id: integer
                 org_id: integer
                 name: string
-                phone: []
-                email: []
+                phone: string[]
+                email: string[]
                 update_time: date
                 delete_time: date
                 add_time: date
@@ -5925,44 +6263,199 @@ integrations:
             tickets:
                 runs: every 1 hour
                 description: |
-                    Fetches a list of tickets from zendesk
-                output: ZendeskTicket
+                    Fetches a list of tickets from Zendesk
+                output: Ticket
                 sync_type: full
-                endpoint: GET /zendesk/tickets
+                track_deletes: true
+                endpoint: GET /tickets
+                version: 1.0.0
+                scopes:
+                    - tickets:read
             articles:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of articles in Help center from zendesk
-                output: ZendeskArticle
+                    Fetches a list of articles in Help center from Zendesk
+                output: Article
                 sync_type: full
-                endpoint: GET /zendesk/articles
+                track_deletes: true
+                endpoint: GET /articles
+                version: 1.0.0
+                scopes:
+                    - hc:read
+            categories:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of help center categories
+                output: Category
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /categories
+                scopes:
+                    - hc:read
+            sections:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of sections in Help center from Zendesk
+                output: Section
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /sections
+                scopes:
+                    - hc:read
+            users:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of admin or agent users from Zendesk
+                output: User
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /users
+                scopes:
+                    - users:read
+        actions:
+            fetch-articles:
+                output: ArticleResponse
+                endpoint: GET /all-articles
+                description: Fetch all help center articles metadata
+                scopes:
+                    - hc:read
+            fetch-article:
+                output: SingleArticleResponse
+                endpoint: GET /single-article
+                input: ArticleInput
+                description: Fetch a single full help center article
+                scopes:
+                    - hc:read
+            create-section:
+                output: Section
+                input: SectionCreate
+                endpoint: POST /sections
+                description: Create a section within a category in the help center
+                scopes:
+                    - hc:write
+            create-category:
+                output: Category
+                endpoint: POST /categories
+                input: CategoryCreate
+                description: Create a category within the help center
+                scopes:
+                    - hc:write
+            create-ticket:
+                output: CreatedTicket
+                endpoint: POST /tickets
+                input: TicketCreate
+                description: Create a Zendesk ticket
+                scopes:
+                    - tickets:write
+            delete-user:
+                output: SuccessResponse
+                endpoint: DELETE /users
+                input: IdEntity
+                description: Delete a user in Zendesk
+                scopes:
+                    - users:write
+            create-user:
+                output: User
+                endpoint: POST /users
+                input: CreateUser
+                description: >-
+                    Create an admin or agent user in Zendesk. Defaults to agent if a role
+                    is not provided
+                scopes:
+                    - users:write
         models:
-            ZendeskArticle:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                role?: admin | agent
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            CategoryCreate:
+                category:
+                    name: string
+                    description?: string
+            Category:
+                id: string
+                url: string
+                name: string
+                description: string
+            SectionCreate:
+                category_id: number
+                section:
+                    name: string
+                    description?: string
+            Section:
+                id: string
+                url: string
+                category_id: number
+                name: string
+                description: string
+            ArticleResponse:
+                articles: ArticleLite[]
+            SingleArticleResponse:
+                article: Article
+            ArticleLite:
                 title: string
+                id: string
+                url: string
+            ArticleInput:
+                id: string
+            Article:
+                title: string
+                id: number
+                url: string
                 locale: string
-                user_segment_id: number
+                user_segment_id: number | null
                 permission_group_id: number
                 author_id: number
                 body: string
                 comments_disabled: boolean
-                content_tag_ids: []
+                content_tag_ids: number[]
                 created_at: string
                 draft: boolean
                 edited_at: string
                 html_url: string
-                id: number
-                label_names: []
+                label_names: string[]
                 outdated: boolean
-                outdated_locales: []
+                outdated_locales: string[]
                 position: number
                 promoted: boolean
                 section_id: number
                 source_locale: string
                 updated_at: string
-                url: string
                 vote_count: number
                 vote_sum: number
-            ZendeskTicket:
+            TicketCreate:
+                ticket:
+                    comment:
+                        body?: string
+                        html_body?: string
+                    assignee_email?: string
+                    assignee_id?: number
+                    brand_id?: number
+                    due_at?: string
+                    type?: problem | incident | question | task
+                    status?: new | open | pending | hold | solved | closed.
+                    metadata?:
+                        __string: any
+            CreatedTicket:
+                id: string
+                url: string
+                created_at: string
+                updated_at: string
+                subject: string
+                description: string
+                priority: string
+                status: string
+            Ticket:
                 requester_id: number
                 allow_attachments: boolean
                 allow_channelback: boolean
@@ -6119,7 +6612,7 @@ integrations:
                 $in_merge: boolean
                 Locked__s: boolean
                 Billing_State: string
-                Tag: []
+                Tag: any[]
                 Fax: string
                 $approval_state: string
             ZohoCRMContact:
@@ -6202,7 +6695,7 @@ integrations:
                 $in_merge: boolean
                 Locked__s: boolean
                 Lead_Source: string
-                Tag: []
+                Tag: any[]
                 Fax: string
                 $approval_state: string
             ZohoCRMDeal:
@@ -6265,7 +6758,7 @@ integrations:
                     name: string
                     id: string
                     email: string
-                Tag: []
+                Tag: any[]
                 $zia_owner_assignment: string
                 $approval_state: string
     zoho-mail:
@@ -6311,7 +6804,7 @@ integrations:
                 serviceType: number
                 modifiedTime: date
                 resourceId: string
-                attachments: []
+                attachments: any[]
                 statusStr: string
                 statusValue: number
                 description: string
@@ -6326,14 +6819,14 @@ integrations:
                 owner:
                     name: string
                     id: number
-                assigneeList: []
-                dependency: []
-                subtasks: []
+                assigneeList: string[]
+                dependency: any[]
+                subtasks: any[]
                 priority: string
-                tags: []
-                followers: []
+                tags: string[]
+                followers: string[]
                 namespaceId: string
-                dependents: []
+                dependents: string[]
                 assignee:
                     name: string
                     id: number

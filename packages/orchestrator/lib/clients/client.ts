@@ -8,8 +8,8 @@ import { route as postSchedulesSearchRoute } from '../routes/v1/schedules/postSe
 import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js';
 import { route as putTaskRoute } from '../routes/v1/tasks/putTaskId.js';
 import { route as postHeartbeatRoute } from '../routes/v1/tasks/taskId/postHeartbeat.js';
-import type { Result, Route } from '@nangohq/utils';
-import { Ok, Err, routeFetch, getLogger, retryWithBackoff, httpRetryStrategy } from '@nangohq/utils';
+import type { Result, RetryConfig, Route } from '@nangohq/utils';
+import { Ok, Err, routeFetch, getLogger, retry } from '@nangohq/utils';
 import type { Endpoint } from '@nangohq/types';
 import type {
     ClientError,
@@ -38,10 +38,22 @@ export class OrchestratorClient {
     }
 
     private routeFetch<E extends Endpoint<any>>(
-        route: Route<E>
+        route: Route<E>,
+        config?: {
+            timeoutMs?: number;
+            retryConfig?: RetryConfig<E['Reply']>;
+        }
     ): (props: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }) => Promise<E['Reply']> {
         return (props) => {
-            return retryWithBackoff(() => routeFetch(this.baseUrl, route)(props), { retry: httpRetryStrategy, numOfAttempts: 3, maxDelay: 50 });
+            const fetch = async () => {
+                return await routeFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs })(props);
+            };
+            const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
+                maxAttempts: 3,
+                delayMs: 50,
+                retryIf: (res) => 'error' in res
+            };
+            return retry(fetch, retryConfig);
         };
     }
 
@@ -161,7 +173,14 @@ export class OrchestratorClient {
             return res;
         }
         const taskId = res.value.taskId;
-        const getOutput = await this.routeFetch(getOutputRoute)({ params: { taskId }, query: { longPolling: true } });
+        const retryUntil = Date.now() + (scheduleProps.timeoutSettingsInSecs.createdToStarted + scheduleProps.timeoutSettingsInSecs.startedToCompleted) * 1000;
+        const getOutput = await this.routeFetch(getOutputRoute, {
+            retryConfig: {
+                maxAttempts: 1000,
+                delayMs: 100,
+                retryIf: (res) => 'error' in res && Date.now() < retryUntil
+            }
+        })({ params: { taskId }, query: { longPolling: 30_000 } });
         if ('error' in getOutput) {
             return Err({
                 name: getOutput.error.code,

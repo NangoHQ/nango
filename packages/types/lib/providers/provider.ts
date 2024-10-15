@@ -61,6 +61,7 @@ export interface BaseProvider {
     scope_separator?: string;
     default_scopes?: string[];
     token_url?: string | TokenUrlObject;
+    token_url_encode?: boolean;
     token_params?: Record<string, string>;
     authorization_url_replacements?: Record<string, string>;
     redirect_uri_metadata?: string[];

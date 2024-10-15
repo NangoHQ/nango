@@ -219,9 +219,9 @@ export async function upsert({
                 await retry(upserting, {
                     maxAttempts: 3,
                     delayMs: 500,
-                    retryIf: (error: Error) => {
-                        if ('code' in error) {
-                            const errorCode = (error as { code: string }).code;
+                    retryIf: (res) => {
+                        if ('code' in res) {
+                            const errorCode = (res as { code: string }).code;
                             return errorCode === '40P01'; // deadlock_detected
                         }
                         return false;
