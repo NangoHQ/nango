@@ -1,4 +1,4 @@
-import type { ActiveLogIds, NangoModel, SyncTypeLiteral, AuthModeType, NangoSyncEndpoint } from '@nangohq/types';
+import type { NangoModel, SyncTypeLiteral, AuthModeType, NangoSyncEndpoint, ActiveLog } from '@nangohq/types';
 
 export type SyncResult = Record<string, Result>;
 
@@ -58,7 +58,7 @@ export interface SyncResponse {
         version: string;
         models: string[];
     };
-    active_logs: ActiveLogIds | null;
+    active_logs: Pick<ActiveLog, 'log_id'> | null;
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL' | 'CANCEL';

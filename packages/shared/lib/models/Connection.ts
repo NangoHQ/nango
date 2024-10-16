@@ -1,6 +1,6 @@
 import type { ApiKeyCredentials, BasicApiCredentials } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
-import type { AuthModeType, Metadata, ActiveLogIds, AuthOperationType, AllAuthCredentials, DBTeam, DBEnvironment } from '@nangohq/types';
+import type { AuthModeType, Metadata, AuthOperationType, AllAuthCredentials, DBTeam, DBEnvironment, ActiveLog } from '@nangohq/types';
 
 export type ConnectionConfig = Record<string, any>;
 
@@ -82,5 +82,5 @@ export interface ConnectionList {
     provider: string;
     created: string;
     metadata?: Metadata | null;
-    active_logs?: ActiveLogIds | null;
+    errors: Pick<ActiveLog, 'log_id' | 'type'>[];
 }
