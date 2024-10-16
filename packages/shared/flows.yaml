@@ -607,6 +607,105 @@ integrations:
                 id: string
             BamboohrResponseStatus:
                 status: string
+    box:
+        actions:
+            create-user:
+                description: Creates a user in Box. Requires an enterprise account.
+                output: User
+                endpoint: POST /users
+                input: BoxCreateUser
+            delete-user:
+                description: Deletes a user in Box. Requires an enterprise account.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: BoxDeleteUser
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Box. Requires an enterprise account.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            BoxCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                address?: string
+                can_see_managed_users?: boolean
+                external_app_user_id?: string
+                is_exempt_from_device_limits?: boolean
+                is_exempt_from_login_verification?: boolean
+                is_external_collab_restricted?: boolean
+                is_platform_access_only?: boolean
+                is_sync_enabled?: boolean
+                job_title?: string
+                language?: string
+                phone?: string
+                role?: coadmin | user
+                space_amount?: number
+                status?: active| inactive| cannot_delete_edit| cannot_delete_edit_upload
+                timezone?: string
+                tracking_codes?: TrackingCode[]
+            TrackingCode:
+                type?: tracking_code
+                name?: string
+                value?: string
+            CreatedUser:
+                id: string
+                type: string
+                address?: string
+                avatar_url?: string
+                can_see_managed_users: boolean
+                created_at: string
+                enterprise: Enterprise
+                external_app_user_id?: string
+                hostname: string
+                is_exempt_from_device_limits: boolean
+                is_exempt_from_login_verification: boolean
+                is_external_collab_restricted: boolean
+                is_platform_access_only: boolean
+                is_sync_enabled: boolean
+                job_title?: string
+                language?: string
+                login: string
+                max_upload_size: integer
+                modified_at: string
+                name: string
+                notification_email: NotificationEmail
+                phone?: string
+                role: string
+                space_amount: integer
+                space_used: integer
+                status: string
+                timezone?: string
+                tracking_codes?: TrackingCode[]
+            NotificationEmail:
+                email: string
+                is_confirmed: boolean
+            Enterprise:
+                id: string
+                type: string
+                name: string
+            BoxDeleteUser:
+                id: string
+                force?: boolean
+                notify?: boolean
     cal-com-v2:
         syncs:
             events:
@@ -2416,14 +2515,41 @@ integrations:
                 endpoint: GET /service-tickets
             contacts:
                 runs: every day
-                description: >
-                    Fetches a list of contacts from Hubspot with the primary associated
-                    company
+                description: |
+                    Fetches a list of contacts from Hubspot
                 output: Contact
+                scopes:
+                    - crm.objects.contacts.read
+                    - oauth
                 sync_type: full
                 track_deletes: true
-                version: 2.0.0
+                version: 2.0.1
                 endpoint: GET /contacts
+            companies:
+                runs: every day
+                description: |
+                    Fetches a list of companies from Hubspot
+                output: Company
+                scopes:
+                    - crm.objects.companies.read
+                    - oauth
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /companies
+            deals:
+                runs: every day
+                description: >
+                    Fetches a list of deals from Hubspot with their associated companies
+                    and contacts
+                output: Deal
+                scopes:
+                    - crm.objects.deals.read
+                    - oauth
+                    - e-commerce (standard scope)
+                    - crm.objects.line_items.read (granular scope)
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /deals
             owners:
                 runs: every day
                 description: |
@@ -2454,31 +2580,17 @@ integrations:
                 sync_type: full
                 track_deletes: true
                 endpoint: GET /knowledge-base
-            deals:
-                runs: every day
-                description: >
-                    Fetch hubspot deals with the corresponding line items and associated
-                    companies and contacts.
-                output: Deal
-                sync_type: full
-                track_deletes: true
-                endpoint: GET /deals
-                scopes:
-                    - oauth
-                    - crm.objects.deals.read
-                    - e-commerce (standard scope)
-                    - crm.objects.line_items.read (granular scope)
-            companies:
+            tasks:
                 runs: every day
                 description: |
-                    Fetch hubspot companies
-                output: Company
+                    Fetches a list of tasks from Hubspot
+                output: Task
+                scopes:
+                    - crm.objects.contacts.read
+                    - oauth
                 sync_type: full
                 track_deletes: true
-                endpoint: GET /companies
-                scopes:
-                    - oauth
-                    - crm.objects.companies.read
+                endpoint: GET /tasks
             currency-codes:
                 runs: every day
                 description: |
@@ -2497,15 +2609,32 @@ integrations:
                 output: PropertyResponse
                 endpoint: GET /properties
             create-deal:
-                description: Creates a deal in Hubspot
-                output: CreatedDeal
+                description: Creates a single deal in Hubspot
+                output: CreateUpdateDealOutput
                 endpoint: POST /deals
-                input: CreateDeal
+                input: CreateDealInput
                 scopes:
                     - oauth
                     - crm.objects.deals.write
+                    - oauth
+            update-deal:
+                description: Updates a single deal in Hubspot
+                output: CreateUpdateDealOutput
+                endpoint: PATCH /deal
+                input: UpdateDealInput
+                scopes:
+                    - crm.objects.deals.write
+                    - oauth
+            delete-deal:
+                description: Deletes a deal in Hubspot
+                input: Id
+                endpoint: DELETE /deal
+                output: SuccessResponse
+                scopes:
+                    - crm.objects.deals.write
+                    - oauth
             create-user:
-                description: Creates a user in Hubspot
+                description: Creates a single user in Hubspot
                 output: CreatedUser
                 endpoint: POST /users
                 input: CreateUser
@@ -2554,41 +2683,91 @@ integrations:
                     - crm.schemas.custom.read
             create-contact:
                 description: Create a single contact in Hubspot
-                input: CreateContact
-                endpoint: POST /contacts
-                output: Contact
+                output: CreateUpdateContactOutput
+                endpoint: POST /contact
+                input: CreateContactInput
                 scopes:
-                    - oauth
                     - crm.objects.contacts.write
+                    - oauth
             update-contact:
-                description: Update a single contact in Hubspot
-                input: UpdateContact
-                endpoint: PUT /contacts
-                output: Contact
+                description: Updates a single contact in Hubspot
+                output: CreateUpdateContactOutput
+                endpoint: PATCH /contact
+                input: UpdateContactInput
                 scopes:
-                    - oauth
                     - crm.objects.contacts.write
+                    - oauth
+            delete-contact:
+                description: Deletes a contact in Hubspot
+                input: Id
+                endpoint: DELETE /contact
+                output: SuccessResponse
+                scopes:
+                    - crm.objects.contacts.write
+                    - oauth
             create-company:
                 description: Create a single company in Hubspot
-                input: CreateCompany
-                output: Company
+                output: CreateUpdateCompanyOutput
                 endpoint: POST /company
+                input: CreateCompanyInput
                 scopes:
-                    - oauth
                     - crm.objects.companies.write
+                    - oauth
             update-company:
                 description: Update a single company in Hubspot
-                input: UpdateCompany
-                output: Company
-                endpoint: PUT /company
+                output: CreateUpdateCompanyOutput
+                endpoint: PATCH /company
+                input: UpdateCompanyInput
                 scopes:
-                    - oauth
                     - crm.objects.companies.write
+                    - oauth
+            delete-company:
+                description: Deletes a company in Hubspot
+                input: Id
+                endpoint: DELETE /company
+                output: SuccessResponse
+                scopes:
+                    - crm.objects.companies.write
+                    - oauth
+            create-task:
+                description: Creates a single task in Hubspot
+                output: CreateUpdateTaskOutput
+                endpoint: POST /task
+                input: CreateTaskInput
+                scopes:
+                    - crm.objects.contacts.write
+                    - oauth
+            update-task:
+                description: Updates a single company in Hubspot
+                output: UpdateTaskInput
+                endpoint: PATCH /task
+                input: CreateUpdateTaskOutput
+                scopes:
+                    - crm.objects.contacts.write
+                    - oauth
+            delete-task:
+                description: Deletes a task in Hubspot
+                input: Id
+                endpoint: DELETE /task
+                output: SuccessResponse
+                scopes:
+                    - crm.objects.contacts.write
+                    - oauth
+            create-note:
+                description: Creates a single note in Hubspot
+                input: Note
+                endpoint: POST /note
+                output: Note
+                scopes:
+                    - crm.objects.contacts.write
+                    - oauth
         models:
             IdEntity:
                 id: string
             SuccessResponse:
                 success: boolean
+            Id:
+                id: string
             InputProperty:
                 name: string
             PropertyResponse:
@@ -2701,32 +2880,112 @@ integrations:
                 category: string
                 content: string
                 publishDate: number
+            CreateContactInput:
+                first_name?: string | undefined
+                last_name?: string | undefined
+                email?: string | undefined
+                job_title?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                salutation?: string | undefined
+                mobile_phone_number?: string | undefined
+                website_url?: string | undefined
+                owner?: string | undefined
+            CreateUpdateContactOutput:
+                id: string
+                created_date: string
+                first_name?: string | undefined
+                last_name?: string  | undefined
+                email?: string | undefined
+                job_title?: string | undefined
+                last_contacted?: string | undefined
+                last_activity_date?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                salutation?: string | undefined
+                mobile_phone_number?: string | undefined
+                website_url?: string | undefined
+                owner?: string | undefined
+            UpdateContactInput:
+                first_name?: string | undefined
+                last_name?: string | undefined
+                email?: string | undefined
+                job_title?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                salutation?: string | undefined
+                mobile_phone_number?: string | undefined
+                website_url?: string | undefined
+                owner?: string | undefined
+                id: string
             Contact:
                 id: string
-                createdAt: string
-                updatedAt: string
-                firstName: string
-                lastName: string
-                email: string
-                primaryContactId?: string
-            CreateContact:
-                associations?: ContactAssociations[]
-                properties: object
-            ContactAssociations:
-                types?:
-                    - associationCategory?: HUBSPOT_DEFINED | USER_DEFINED | INTEGRATOR_DEFINED
-                      associationTypeId?: number
-                to?:
-                    id?: string
-            CreatedContact:
+                created_date: string
+                first_name: string | null
+                last_name: string  | null
+                email: string | null
+                job_title: string | null
+                last_contacted: string | null
+                last_activity_date: string | null
+                lead_status: string | null
+                lifecycle_stage: string | null
+                salutation: string | null
+                mobile_phone_number: string | null
+                website_url: string | null
+                owner: string | null
+            CurrencyCode:
                 id: string
-            UpdateContact:
-                contactId: string
-                input:
-                    properties: object
-                    idProperty?: string
-            UpdatedContact:
+                code: string
+                description: string
+            CreateCompanyInput:
+                name?: string | undefined
+                industry?: string | undefined
+                description?: string | undefined
+                country?: string | undefined
+                city?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                owner?: string | undefined
+                year_founded?: string | undefined
+                website_url?: string | undefined
+            UpdateCompanyInput:
+                name?: string | undefined
+                industry?: string | undefined
+                description?: string | undefined
+                country?: string | undefined
+                city?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                owner?: string | undefined
+                year_founded?: string | undefined
+                website_url?: string | undefined
                 id: string
+            CreateUpdateCompanyOutput:
+                id: string
+                created_date: string
+                name?: string | undefined
+                industry?: string | undefined
+                description?: string | undefined
+                country?: string | undefined
+                city?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                owner?: string | undefined
+                year_founded?: string | undefined
+                website_url?: string | undefined
+            Company:
+                id: string
+                created_date: string | null
+                name: string | null
+                industry: string | null
+                description: string | null
+                country: string | null
+                city: string | null
+                lead_status: string | null
+                lifecycle_stage: string | null
+                owner: string | null
+                year_founded: string | null
+                website_url: string | null
             Account:
                 id: string
                 type: string
@@ -2737,94 +2996,107 @@ integrations:
                 utcOffsetMilliseconds: number
                 uiDomain: string
                 dataHostingLocation: string
+            CreateTaskInput:
+                task_type?: string | undefined
+                title?: string | undefined
+                priority?: string| undefined
+                assigned_to?: string | undefined
+                due_date?: string | undefined
+                notes?: string | undefined
+                associations?: Association[] | undefined
+            UpdateTaskInput:
+                task_type?: string | undefined
+                title?: string | undefined
+                priority?: string| undefined
+                assigned_to?: string | undefined
+                due_date?: string | undefined
+                notes?: string | undefined
+                associations?: Association[] | undefined
+                id: string
+            CreateUpdateTaskOutput:
+                id: string
+                task_type?: string | undefined
+                title?: string | undefined
+                priority?: string| undefined
+                assigned_to?: string | undefined
+                due_date?: string | undefined
+                notes?: string | undefined
+                associations?: Association[] | undefined
+            Task:
+                id: string
+                task_type: string | null
+                title: string | null
+                priority: string| null
+                assigned_to: string | null
+                due_date: string | null
+                notes: string | null
+                returned_associations?: ReturnedAssociations | undefined
+            CreateDealInput:
+                name?: string | undefined
+                amount?: string | undefined
+                close_date?: string | undefined
+                deal_description?: string | undefined
+                owner?: string | undefined
+                deal_stage?: string | undefined
+                deal_probability?: string | undefined
+                associations?: Association[] | undefined
+            UpdateDealInput:
+                name?: string | undefined
+                amount?: string | undefined
+                close_date?: string | undefined
+                deal_description?: string | undefined
+                owner?: string | undefined
+                deal_stage?: string | undefined
+                deal_probability?: string | undefined
+                associations?: Association[] | undefined
+                id: string
+            CreateUpdateDealOutput:
+                id: string
+                name?: string | undefined
+                amount?: string | undefined
+                close_date?: string | undefined
+                deal_description?: string | undefined
+                owner?: string | undefined
+                deal_stage?: string | undefined
+                deal_probability?: string | undefined
             Deal:
-                createdate: string
-                days_to_close: string
-                dealname: string
-                hs_closed_amount: string
-                hs_closed_amount_in_home_currency: string
-                hs_closed_won_count: string
-                hs_createdate: string
-                hs_days_to_close_raw: string
-                hs_deal_stage_probability_shadow: string
-                hs_is_closed_lost: string
-                hs_is_closed_won: string
-                hs_is_deal_split: string
-                hs_lastmodifieddate: string
-                hs_object_id: string
-                hs_object_source: string
-                hs_object_source_id: string
-                hs_object_source_label: string
-                hs_projected_amount: string
-                hs_projected_amount_in_home_currency: string
                 id: string
-                companies?: CompanyAssociation[]
-                contacts?:
-                    - id: string
-                lineItems?:
-                    id: string
-                    __extends: LineItemDefaultProperties
-                __string: any
-            CompanyAssociation:
-                id: string
-                primary: boolean
-            CreateDeal:
-                properties:
-                    dealname: string
-                    __string: any
-            DealDefaultProperties:
-                createdate: string
-                days_to_close: string
-                dealname: string
-                hs_closed_amount: string
-                hs_closed_amount_in_home_currency: string
-                hs_closed_won_count: string
-                hs_createdate: string
-                hs_days_to_close_raw: string
-                hs_deal_stage_probability_shadow: string
-                hs_is_closed_lost: string
-                hs_is_closed_won: string
-                hs_is_deal_split: string
-                hs_lastmodifieddate: string
-                hs_object_id: string
-                hs_object_source: string
-                hs_object_source_id: string
-                hs_object_source_label: string
-                hs_projected_amount: string
-                hs_projected_amount_in_home_currency: string
-            CreatedDeal:
-                id: string
-                properties: DealDefaultProperties
-                createdAt: string
-                updatedAt: string
-                archived: boolean
-            CurrencyCode:
-                id: string
-                code: string
-                description: string
+                name: string | null
+                amount: string | null
+                close_date: string | null
+                deal_description: string | null
+                owner: string | null
+                deal_stage: string | null
+                deal_probability: string | null
+                returned_associations?: ReturnedAssociations | undefined
+            ReturnedAssociations:
+                companies?: AssociationCompany[] | undefined
+                contacts?: AssociationContact[] | undefined
+                deals?: AssociationDeal[] | undefined
+            AssociationTypes:
+                association_category: string
+                association_type_Id: number
             Association:
+                to: number
+                types: AssociationTypes[]
+            AssociationCompany:
                 id: string
-            Company:
+                name: string | null
+            AssociationContact:
                 id: string
-                createdAt: string
-                updatedAt: string
-                name: string
-                domain: string
-                archived: boolean
-            CreateCompany:
-                associations?: CompanyAssociations[]
-                properties: object
-            CompanyAssociations:
-                types?:
-                    - associationCategory?: HUBSPOT_DEFINED | USER_DEFINED | INTEGRATOR_DEFINED
-                      associationTypeId?: number
-                to?:
-                    id?: string
-            UpdateCompany:
-                companyId: string
-                input:
-                    properties: object
-                    idProperty?: string
+                first_name: string | null
+                last_name: string | null
+            AssociationDeal:
+                id: string
+                name: string | null
+            Note:
+                id?: string | undefined
+                time_stamp: string
+                created_date?: string | undefined
+                body?: string | undefined
+                attachment_ids?: string | undefined
+                owner?: string | undefined
+                associations?: Association[] | undefined
             LineItem:
                 name: string
                 price: string
