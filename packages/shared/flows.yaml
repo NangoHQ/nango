@@ -7172,3 +7172,121 @@ integrations:
             ZohoMailAddUserOutput:
                 status: object
                 data: object
+    zoom:
+        actions:
+            create-user:
+                description: Creates a user in Zoom. Requires Pro account or higher
+                output: User
+                endpoint: POST /users
+                input: ZoomCreateUser
+                scopes:
+                    - user:write
+                    - user:write:admin
+            delete-user:
+                description: Deletes a user in Zoom. Requires Pro account or higher
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - user:write
+                    - user:write:admin
+            create-meeting:
+                description: Creates a meeting in Zoom.
+                endpoint: POST /meetings
+                output: Meeting
+                input: CreateMeeting
+                scopes:
+                    - meeting:write
+            delete-meeting:
+                description: Deletes a meeting in Zoom
+                endpoint: DELETE /meetings
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - meeting:write
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Zoom
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - user:read
+                    - user:read:admin
+            meetings:
+                runs: every day
+                description: |
+                    Fetches a list of meetings from Zoom
+                output: Meeting
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /meetings
+                scopes:
+                    - meeting:read
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            ZoomCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                action?: create | autoCreate | custCreate | ssoCreate
+                display_name?: string
+                type?: basic | licensed | UnassignedWithoutMeetingsBasic | None
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            Meeting:
+                id: string
+                topic: string
+                startTime: string
+                duration: number
+                timezone: string
+                joinUrl: string
+                createdAt: string
+            CreateMeeting:
+                topic: string
+                type: instant | scheduled | recurringNoFixed | recurring | screenShareOnly
+                agenda?: string
+                default_password?: boolean
+                duration?: number
+                password?: string
+                pre_schedule?: boolean
+                recurrence?:
+                    end_date_time?: string
+                    end_times?: number
+                    monthly_day?: number
+                    monthly_week?: number
+                    monthly_week_day?: number
+                    repeat_interval?: number
+                    type?: daily | weekly | monthly
+                    weekly_days?: sunday | monday | tuesday | wednesday | thursday | friday | saturday
+                settings?:
+                    host_video?: boolean
+                    participant_video?: boolean
+                    join_before_host?: boolean
+                    mute_upon_entry?: boolean
+                    approval_type?: automatic | manually | notRequired
+                    registration_type?: >-
+                        registerOnceAttendAny | registerEveryTime |
+                        registerOnceSelectOccurrences
+                    audio?: both | telephony | voip | thirdParty
+                    auto_recording?: local | cloud | none
+                    waiting_room: boolean
+                schedule_for?: string
+                start_time?: string
+                template_id?: string
+                timezone?: string
