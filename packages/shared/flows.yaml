@@ -607,6 +607,105 @@ integrations:
                 id: string
             BamboohrResponseStatus:
                 status: string
+    box:
+        actions:
+            create-user:
+                description: Creates a user in Box. Requires an enterprise account.
+                output: User
+                endpoint: POST /users
+                input: BoxCreateUser
+            delete-user:
+                description: Deletes a user in Box. Requires an enterprise account.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: BoxDeleteUser
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Box. Requires an enterprise account.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            BoxCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                address?: string
+                can_see_managed_users?: boolean
+                external_app_user_id?: string
+                is_exempt_from_device_limits?: boolean
+                is_exempt_from_login_verification?: boolean
+                is_external_collab_restricted?: boolean
+                is_platform_access_only?: boolean
+                is_sync_enabled?: boolean
+                job_title?: string
+                language?: string
+                phone?: string
+                role?: coadmin | user
+                space_amount?: number
+                status?: active| inactive| cannot_delete_edit| cannot_delete_edit_upload
+                timezone?: string
+                tracking_codes?: TrackingCode[]
+            TrackingCode:
+                type?: tracking_code
+                name?: string
+                value?: string
+            CreatedUser:
+                id: string
+                type: string
+                address?: string
+                avatar_url?: string
+                can_see_managed_users: boolean
+                created_at: string
+                enterprise: Enterprise
+                external_app_user_id?: string
+                hostname: string
+                is_exempt_from_device_limits: boolean
+                is_exempt_from_login_verification: boolean
+                is_external_collab_restricted: boolean
+                is_platform_access_only: boolean
+                is_sync_enabled: boolean
+                job_title?: string
+                language?: string
+                login: string
+                max_upload_size: integer
+                modified_at: string
+                name: string
+                notification_email: NotificationEmail
+                phone?: string
+                role: string
+                space_amount: integer
+                space_used: integer
+                status: string
+                timezone?: string
+                tracking_codes?: TrackingCode[]
+            NotificationEmail:
+                email: string
+                is_confirmed: boolean
+            Enterprise:
+                id: string
+                type: string
+                name: string
+            BoxDeleteUser:
+                id: string
+                force?: boolean
+                notify?: boolean
     cal-com-v2:
         syncs:
             events:
