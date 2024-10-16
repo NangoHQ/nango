@@ -26,6 +26,19 @@ accelo:
             example: domain
             suffix: .api.accelo.com
 
+acuity-scheduling:
+    display_name: Acuity Scheduling
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://acuityscheduling.com/oauth2/authorize
+    token_url: https://acuityscheduling.com/oauth2/token
+    default_scopes:
+        - api-v1
+    proxy:
+        base_url: https://acuityscheduling.com/api/v1
+    docs: https://docs.nango.dev/integrations/all/acuity-scheduling
+
 adobe:
     display_name: Adobe
     categories:
@@ -1746,6 +1759,36 @@ figma:
     proxy:
         base_url: https://api.figma.com
     docs: https://docs.nango.dev/integrations/all/figma
+
+falai:
+    display_name: fal.ai
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Key ${apiKey}
+        base_url: https://queue.fal.run
+    docs: https://docs.nango.dev/integrations/all/falai
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your fal.ai account
+
+firefish:
+    display_name: Firefish
+    scope_separator: ' '
+    categories:
+        - CRM
+    auth_mode: OAUTH2_CC
+    token_url: https://api.firefishsoftware.com/authorization/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.firefishsoftware.com
+    docs: https://docs.nango.dev/integrations/all/firefish
 
 fireflies:
     display_name: Fireflies
@@ -4674,6 +4717,41 @@ timely:
         base_url: https://api.timelyapp.com
     docs: https://docs.nango.dev/integrations/all/timely
 
+thrivecart-oauth:
+    display_name: ThriveCart (OAuth)
+    categories:
+        - ecommerce
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://thrivecart.com/authorization/new
+    token_url: https://thrivecart.com/authorization/token
+    scope_separator: ' '
+    proxy:
+        base_url: https://thrivecart.com/api/external
+    docs: https://docs.nango.dev/integrations/all/thrivecart
+
+thrivecart-api-key:
+    display_name: ThriveCart (api key)
+    categories:
+        - ecommerce
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://thrivecart.com/api/external
+        headers:
+            Authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /ping
+    docs: https://docs.nango.dev/integrations/all/thrivecart
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your ThriveCart account
+            example: 'ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ'
+            pattern: '^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$'
+
 tremendous:
     display_name: Tremendous
     categories:
@@ -5130,6 +5208,8 @@ workable:
         headers:
             Authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
+        retry:
+            at: 'X-Rate-Limit-Reset'
     docs: https://docs.nango.dev/integrations/all/workable
     connection_config:
         subdomain:
@@ -5144,6 +5224,34 @@ workable:
             type: string
             title: API Key
             description: The API key for your Workable account
+
+workable-oauth:
+    display_name: Workable (OAuth)
+    categories:
+        - ats
+    auth_mode: OAUTH2
+    authorization_url: https://www.workable.com/oauth/authorize
+    token_url: https://www.workable.com/oauth/token
+    scope_separator: '+'
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.workable.com
+        retry:
+            at: 'X-Rate-Limit-Reset'
+    docs: https://docs.nango.dev/integrations/all/workable
+    connection_config:
+        subdomain:
+            type: string
+            title: Workable Domain
+            description: The subdomain of your Workable account
+            pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .workable.com
 
 workday:
     display_name: Workday
@@ -5390,6 +5498,11 @@ zoom:
         grant_type: refresh_token
     proxy:
         base_url: https://api.zoom.us/v2
+        paginate:
+            type: cursor
+            cursor_path_in_response: next_page_token
+            cursor_name_in_request: next_page_token
+            limit_name_in_request: page_size
     docs: https://docs.nango.dev/integrations/all/zoom
 
 zoominfo:
@@ -5406,33 +5519,3 @@ zoominfo:
     token_request_auth_method: custom
     body_format: json
     docs: https://docs.nango.dev/integrations/all/zoominfo
-
-falai:
-    display_name: fal.ai
-    categories:
-        - productivity
-        - dev-tools
-    auth_mode: API_KEY
-    proxy:
-        headers:
-            Authorization: Key ${apiKey}
-        base_url: https://queue.fal.run
-    docs: https://docs.nango.dev/integrations/all/falai
-    credentials:
-        apiKey:
-            type: string
-            title: API Key
-            description: The API key for your fal.ai account
-
-acuity-scheduling:
-    display_name: Acuity Scheduling
-    categories:
-        - productivity
-    auth_mode: OAUTH2
-    authorization_url: https://acuityscheduling.com/oauth2/authorize
-    token_url: https://acuityscheduling.com/oauth2/token
-    default_scopes:
-        - api-v1
-    proxy:
-        base_url: https://acuityscheduling.com/api/v1
-    docs: https://docs.nango.dev/integrations/all/acuity-scheduling
