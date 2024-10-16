@@ -12,7 +12,18 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { ConnectionConfig, Connection, StoredConnection, NangoConnection } from '../models/Connection.js';
-import type { Metadata, Provider, ProviderOAuth2, AuthModeType, TbaCredentials, TableauCredentials, MaybePromise, DBTeam, DBEnvironment } from '@nangohq/types';
+import type {
+    Metadata,
+    Provider,
+    ProviderOAuth2,
+    AuthModeType,
+    TbaCredentials,
+    TableauCredentials,
+    MaybePromise,
+    DBTeam,
+    DBEnvironment,
+    ActiveLog
+} from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
@@ -1598,6 +1609,10 @@ class ConnectionService {
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }
+    }
+
+    public async getActiveLogs(connectionId: number): Promise<ActiveLog[]> {
+        return db.knex.from<ActiveLog>(ACTIVE_LOG_TABLE).select('*').where({ connection_id: connectionId, active: true });
     }
 }
 

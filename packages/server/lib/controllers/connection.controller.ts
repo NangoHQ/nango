@@ -79,7 +79,22 @@ class ConnectionController {
                 }
             }
 
-            res.status(200).send(connection);
+            const errors = [];
+            if (connection.id) {
+                const activeLogs = await connectionService.getActiveLogs(connection.id);
+                errors.push(
+                    ...activeLogs.map((log) => {
+                        return {
+                            type: log.type,
+                            log_id: log.log_id
+                        };
+                    })
+                );
+            }
+            res.status(200).send({
+                ...connection,
+                errors
+            });
         } catch (err) {
             next(err);
         }
