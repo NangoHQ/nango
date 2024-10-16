@@ -268,6 +268,13 @@ class ProxyController {
         });
 
         responseStream.data.on('end', async () => {
+            if (responseStream.status === 204) {
+                res.status(204).end();
+                metrics.increment(metrics.Types.PROXY_SUCCESS);
+                await logCtx.success();
+                return;
+            }
+
             if (!isJsonResponse) {
                 res.send(responseData);
                 await logCtx.success();
