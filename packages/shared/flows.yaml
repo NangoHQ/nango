@@ -2781,7 +2781,7 @@ integrations:
                 fieldType: string
                 description: string
                 groupName: string
-                options: Option[],
+                options: Option[]
                 displayOrder: number
                 calculated: boolean
                 externalOptions: boolean
@@ -3375,6 +3375,65 @@ integrations:
                 id: string
                 key: string
                 self: string
+    jira-basic:
+        actions:
+            create-user:
+                description: >
+                    Creates a user in Jira. Note that this endpoint is marked as
+                    experimental and could 
+
+                    be deprecated in the future. Products are optional and allowed params
+                    are
+
+                    jira-core, jira-servicedesk, jira-product-discovery, jira-software.
+                    Defaults to 
+
+                    jira-software. Note that the last name isn't able to be set via the
+                    API and 
+
+                    the first name defaults to the email address.
+                output: User
+                endpoint: POST /users
+                input: JiraCreateUser
+            delete-user:
+                description: >
+                    Deletes a user in Jira. Note that this endpoint is marked as
+                    experimental and could 
+
+                    be deprecated in the future.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Jira
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            JiraCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                products?: string[]
     kustomer:
         syncs:
             conversations:
