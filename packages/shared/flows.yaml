@@ -5457,6 +5457,7 @@ integrations:
                 endpoint: GET /users
                 scopes:
                     - users:read
+                    - users:read.email
             channels:
                 runs: every hour
                 description: |
@@ -5519,7 +5520,7 @@ integrations:
                     real_name_normalized: string | null
                     display_name_normalized: string | null
                     email: string | null
-                    image_original: string | null
+                    image_original: string | null | undefined
                 is_admin: boolean
                 is_owner: boolean
                 is_primary_owner: boolean
