@@ -1877,7 +1877,7 @@ components:
         authorization_url_replacements:
           type: object
         authorization_url_fragment:
-            type: string
+          type: string
         redirect_uri_metadata:
           items:
             type: string
