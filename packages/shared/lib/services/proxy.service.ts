@@ -5,7 +5,7 @@ import * as crypto from 'node:crypto';
 import { axiosInstance as axios, SIGNATURE_METHOD } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
+import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials, GhostAdminCredentials } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
@@ -112,6 +112,12 @@ class ProxyService {
                 }
                 break;
             case 'TABLEAU':
+                {
+                    const credentials = connection.credentials;
+                    token = credentials.token;
+                }
+                break;
+            case 'GHOST_ADMIN':
                 {
                     const credentials = connection.credentials;
                     token = credentials.token;
@@ -462,6 +468,14 @@ class ProxyService {
                     };
                 }
                 break;
+            case 'GHOST_ADMIN':
+                {
+                    const token = config.token as GhostAdminCredentials;
+                    headers = {
+                        Authorization: `Ghost ${token}`
+                    };
+                }
+                break;
             case 'API_KEY':
                 headers = {};
                 break;
@@ -502,6 +516,14 @@ class ProxyService {
                             break;
                         default:
                             tokenPair = config.token;
+                            break;
+                        case 'GHOST_ADMIN':
+                            if (value.includes('connectionConfig')) {
+                                value = value.replace(/connectionConfig\./g, '');
+                                tokenPair = config.connection.connection_config;
+                            } else {
+                                tokenPair = config.token;
+                            }
                             break;
                     }
                     acc[key] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);

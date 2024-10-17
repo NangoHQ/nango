@@ -10,6 +10,7 @@ export interface AuthModes {
     None: 'NONE';
     TBA: 'TBA';
     Tableau: 'TABLEAU';
+    GhostAdmin: 'GHOST_ADMIN';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -140,6 +141,13 @@ export interface TableauCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
+export interface GhostAdminCredentials {
+    type: AuthModes['GhostAdmin'];
+    ghost_api_key: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
+
 export type UnauthCredentials = Record<string, never>;
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;
@@ -159,4 +167,5 @@ export type AllAuthCredentials =
     | UnauthCredentials
     | CustomCredentials
     | TbaCredentials
-    | TableauCredentials;
+    | TableauCredentials
+    | GhostAdminCredentials;

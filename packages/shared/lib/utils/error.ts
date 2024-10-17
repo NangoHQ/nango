@@ -498,6 +498,11 @@ export class NangoError extends Error {
                 this.message = `Invalid app secret key. Please make sure the app secret is correct.`;
                 break;
 
+            case 'invalid_ghost_api_key_format':
+                this.status = 400;
+                this.message = `Invalid API key format. It should be of "id:secret".`;
+                break;
+
             case 'no_config_found':
                 this.status = 400;
                 this.message = 'No nango config found. Please make sure it is present and formatted correctly.';

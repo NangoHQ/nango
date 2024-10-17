@@ -16,6 +16,7 @@ import type {
     OAuth2ClientCredentials,
     TBACredentials,
     TableauCredentials,
+    GhostAdminCredentials,
     OAuthCredentialsOverride
 } from './types';
 import { AuthorizationStatus, WSMessageType } from './types.js';
@@ -287,6 +288,7 @@ export default class Nango {
             | AppStoreCredentials
             | TBACredentials
             | TableauCredentials
+            | GhostAdminCredentials
             | OAuth2ClientCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
@@ -355,6 +357,14 @@ export default class Nango {
             return { params: tableauCredentials } as unknown as ConnectionConfig;
         }
 
+        if ('ghost_api_key' in credentials) {
+            const ghostAdminCredentials: GhostAdminCredentials = {
+                ghost_api_key: credentials.ghost_api_key
+            };
+
+            return { params: ghostAdminCredentials } as unknown as ConnectionConfig;
+        }
+
         return { params };
     }
 
@@ -363,7 +373,15 @@ export default class Nango {
         credentials
     }: {
         authUrl: string;
-        credentials?: ApiKeyCredentials | BasicApiCredentials | AppStoreCredentials | TBACredentials | TableauCredentials | OAuth2ClientCredentials | undefined;
+        credentials?:
+            | ApiKeyCredentials
+            | BasicApiCredentials
+            | AppStoreCredentials
+            | TBACredentials
+            | TableauCredentials
+            | GhostAdminCredentials
+            | OAuth2ClientCredentials
+            | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
             method: 'POST',
@@ -433,6 +451,13 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/tableau/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as TableauCredentials
+            });
+        }
+
+        if ('ghost_api_key' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/ghost-admin/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as GhostAdminCredentials
             });
         }
 

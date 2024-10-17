@@ -33,6 +33,7 @@ export interface ConnectionConfig {
         | AppStoreCredentials
         | TBACredentials
         | TableauCredentials
+        | GhostAdminCredentials
         | OAuth2ClientCredentials;
 }
 
@@ -68,6 +69,10 @@ export interface TableauCredentials {
     pat_name: string;
     pat_secret: string;
     content_url?: string;
+}
+
+export interface GhostAdminCredentials {
+    ghost_api_key: string;
 }
 
 export interface OAuth2ClientCredentials {

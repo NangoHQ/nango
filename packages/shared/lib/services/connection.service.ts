@@ -12,7 +12,18 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { ConnectionConfig, Connection, StoredConnection, NangoConnection } from '../models/Connection.js';
-import type { Metadata, Provider, ProviderOAuth2, AuthModeType, TbaCredentials, TableauCredentials, MaybePromise, DBTeam, DBEnvironment } from '@nangohq/types';
+import type {
+    Metadata,
+    Provider,
+    ProviderOAuth2,
+    AuthModeType,
+    TbaCredentials,
+    TableauCredentials,
+    MaybePromise,
+    DBTeam,
+    DBEnvironment,
+    GhostAdminCredentials
+} from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
@@ -49,6 +60,7 @@ import { v4 as uuidv4 } from 'uuid';
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 const DEFAULT_EXPIRES_AT_MS = 55 * 60 * 1000; // This ensures we have an expiresAt value
+const DEFAULT_GHOST_ADMIN_EXPIRES_AT_MS = 5 * 60 * 1000; // This is to ensure we have a GhostToken expiresAt value
 
 type KeyValuePairs = Record<string, string | boolean>;
 
@@ -249,6 +261,68 @@ class ConnectionService {
             .returning('*');
 
         void analytics.track(AnalyticsTypes.TABLEAU_CONNECTION_INSERTED, account.id, { provider: config.provider });
+
+        return [{ connection: connection[0]!, operation: 'creation' }];
+    }
+
+    public async upsertGhostAdminConnection({
+        connectionId,
+        providerConfigKey,
+        credentials,
+        connectionConfig,
+        metadata,
+        config,
+        environment,
+        account
+    }: {
+        connectionId: string;
+        providerConfigKey: string;
+        credentials: GhostAdminCredentials;
+        connectionConfig?: ConnectionConfig;
+        config: ProviderConfig;
+        metadata?: Metadata | null;
+        environment: DBEnvironment;
+        account: DBTeam;
+    }): Promise<ConnectionUpsertResponse[]> {
+        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
+
+        if (storedConnection) {
+            const encryptedConnection = encryptionManager.encryptConnection({
+                connection_id: connectionId,
+                config_id: config.id as number,
+                provider_config_key: providerConfigKey,
+                credentials,
+                connection_config: connectionConfig || storedConnection.connection_config,
+                environment_id: environment.id,
+                metadata: metadata || storedConnection.metadata || null
+            });
+            (encryptedConnection as Connection).updated_at = new Date();
+            const connection = await db.knex
+                .from<StoredConnection>(`_nango_connections`)
+                .where({ id: storedConnection.id!, deleted: false })
+                .update(encryptedConnection)
+                .returning('*');
+
+            void analytics.track(AnalyticsTypes.TABLEAU_CONNECTION_INSERTED, account.id, { provider: config.provider });
+
+            return [{ connection: connection[0]!, operation: 'override' }];
+        }
+        const connection = await db.knex
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(
+                encryptionManager.encryptConnection({
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    config_id: config.id as number,
+                    credentials,
+                    metadata: metadata || null,
+                    connection_config: connectionConfig || {},
+                    environment_id: environment.id
+                })
+            )
+            .returning('*');
+
+        void analytics.track(AnalyticsTypes.GHOST_ADMIN_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
         return [{ connection: connection[0]!, operation: 'creation' }];
     }
@@ -539,7 +613,13 @@ class ConnectionService {
 
         // Parse the token expiration date.
         if (connection != null) {
-            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials | AppCredentials | OAuth2ClientCredentials | TableauCredentials;
+            const credentials = connection.credentials as
+                | OAuth1Credentials
+                | OAuth2Credentials
+                | AppCredentials
+                | OAuth2ClientCredentials
+                | TableauCredentials
+                | GhostAdminCredentials;
             if (credentials.type && credentials.type === 'OAUTH2') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
@@ -559,6 +639,12 @@ class ConnectionService {
             }
 
             if (credentials.type && credentials.type === 'TABLEAU') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'GHOST_ADMIN') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
@@ -892,7 +978,8 @@ class ConnectionService {
             connection?.credentials?.type === 'OAUTH2' ||
             connection?.credentials?.type === 'APP' ||
             connection?.credentials?.type === 'OAUTH2_CC' ||
-            connection?.credentials?.type === 'TABLEAU'
+            connection?.credentials?.type === 'TABLEAU' ||
+            connection?.credentials?.type === 'GHOST_ADMIN'
         ) {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connectionId: connection.connection_id,
@@ -1082,7 +1169,7 @@ class ConnectionService {
     }): Promise<
         ServiceResponse<{
             refreshed: boolean;
-            credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials;
+            credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | GhostAdminCredentials;
         }>
     > {
         const providerConfigKey = providerConfig.unique_key;
@@ -1090,7 +1177,14 @@ class ConnectionService {
         // fetch connection and return credentials if they are fresh
         const getConnectionAndFreshCredentials = async (): Promise<{
             connection: Connection;
-            freshCredentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | null;
+            freshCredentials:
+                | OAuth2Credentials
+                | AppCredentials
+                | AppStoreCredentials
+                | OAuth2ClientCredentials
+                | TableauCredentials
+                | GhostAdminCredentials
+                | null;
         }> => {
             const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
 
@@ -1110,7 +1204,13 @@ class ConnectionService {
                 connection,
                 freshCredentials: shouldRefresh
                     ? null
-                    : (connection.credentials as OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials)
+                    : (connection.credentials as
+                          | OAuth2Credentials
+                          | AppCredentials
+                          | AppStoreCredentials
+                          | OAuth2ClientCredentials
+                          | TableauCredentials
+                          | GhostAdminCredentials)
             };
         };
 
@@ -1451,6 +1551,52 @@ class ConnectionService {
         }
     }
 
+    public getGhostAdminCredentials(ghostApiKey: string): ServiceResponse<GhostAdminCredentials> {
+        const parts = ghostApiKey.split(':');
+        const id = parts[0];
+        const secret = parts[1];
+
+        if (!id || !secret) {
+            throw new NangoError('invalid_ghost_api_key_format');
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        const payload = {
+            iat: now,
+            exp: now + DEFAULT_GHOST_ADMIN_EXPIRES_AT_MS / 1000,
+            aud: '/admin/'
+        };
+
+        const header = {
+            alg: 'HS256',
+            kid: id
+        };
+
+        try {
+            const token = this.generateJWT(payload, Buffer.from(secret, 'hex'), { algorithm: 'HS256', header });
+            const expiresAt = new Date(Date.now() + DEFAULT_GHOST_ADMIN_EXPIRES_AT_MS);
+            const credentials: GhostAdminCredentials = {
+                type: 'GHOST_ADMIN',
+                ghost_api_key: ghostApiKey,
+                token,
+                expires_at: expiresAt
+            };
+
+            return { success: true, error: null, response: credentials };
+        } catch (err) {
+            const error = new NangoError('jwt_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
+            return { success: false, error, response: null };
+        }
+    }
+
+    private generateJWT(payload: Record<string, string | number>, secretOrPrivateKey: string | Buffer, options: object): string {
+        try {
+            return jwt.sign(payload, secretOrPrivateKey, options);
+        } catch (err) {
+            throw new NangoError('jwt_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
+        }
+    }
+
     public async shouldCapUsage({
         providerConfigKey,
         environmentId,
@@ -1494,7 +1640,7 @@ class ConnectionService {
         }
 
         try {
-            const token = jwt.sign(payload, privateKey, options);
+            const token = this.generateJWT(payload, privateKey, options);
 
             const headers = {
                 Authorization: `Bearer ${token}`
@@ -1544,7 +1690,9 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         provider: Provider
-    ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials>> {
+    ): Promise<
+        ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials | GhostAdminCredentials>
+    > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
@@ -1566,6 +1714,15 @@ class ConnectionService {
         } else if (provider.auth_mode === 'APP_STORE') {
             const { private_key } = connection.credentials as AppStoreCredentials;
             const { success, error, response: credentials } = await this.getAppStoreCredentials(provider, connection.connection_config, private_key);
+
+            if (!success || !credentials) {
+                return { success, error, response: null };
+            }
+
+            return { success: true, error: null, response: credentials };
+        } else if (provider.auth_mode === 'GHOST_ADMIN') {
+            const { ghost_api_key } = connection.credentials as GhostAdminCredentials;
+            const { success, error, response: credentials } = this.getGhostAdminCredentials(ghost_api_key);
 
             if (!success || !credentials) {
                 return { success, error, response: null };
