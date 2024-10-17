@@ -15,7 +15,7 @@ const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as
 
 export interface InternalNango {
     getConnection: () => Promise<Connection>;
-    proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse | AxiosError>;
+    proxy: <T = any>({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse<T> | AxiosError>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
