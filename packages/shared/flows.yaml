@@ -2402,6 +2402,114 @@ integrations:
                     coordinators: string[]
                     sourcers: string[]
                 openings: string[]
+    gusto:
+        actions:
+            create-user:
+                description: Creates a user in Gusto.
+                output: User
+                endpoint: POST /users
+                input: GustoCreateUser
+                scopes:
+                    - employees:manage
+            delete-user:
+                description: Deletes a user in Gusto.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: GustoDeleteUser
+                scopes:
+                    - employments:write
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Gusto. Requires an enterprise account.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - employees:read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            GustoCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth: string
+                ssn?: string
+                selfOnboarding?: boolean
+            GustoDeleteUser:
+                id: string
+                effectiveDate?: string
+                runTerminationPayroll?: boolean
+    gusto-demo:
+        actions:
+            create-user:
+                description: Creates a user in Gusto.
+                output: User
+                endpoint: POST /users
+                input: GustoCreateUser
+                scopes:
+                    - employees:manage
+            delete-user:
+                description: Deletes a user in Gusto.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: GustoDeleteUser
+                scopes:
+                    - employments:write
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Gusto. Requires an enterprise account.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - employees:read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            GustoCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth: string
+                ssn?: string
+                selfOnboarding?: boolean
+            GustoDeleteUser:
+                id: string
+                effectiveDate?: string
+                runTerminationPayroll?: boolean
     hackerrank-work:
         syncs:
             interviews:
