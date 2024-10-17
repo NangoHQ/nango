@@ -1,6 +1,5 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
-import { envs } from '@nangohq/logs';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { handleSyncSuccess, startSync } from './sync.js';
@@ -8,6 +7,7 @@ import type { TaskSync } from '@nangohq/nango-orchestrator';
 import type { Connection, Sync, SyncResult, Job as SyncJob, SyncConfig } from '@nangohq/shared';
 import { isSyncJobRunning, seeders, getLatestSyncJob, updateSyncJobResult } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
+import { envs } from '../env.js';
 
 const mockStartScript = vi.fn(() => Promise.resolve(Ok(undefined)));
 

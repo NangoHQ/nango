@@ -81,6 +81,16 @@ export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null>
     return null;
 };
 
+export const getSyncJobByRunId = async (run_id: string): Promise<SyncJob | null> => {
+    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ run_id, deleted: false }).first();
+
+    if (result) {
+        return result;
+    }
+
+    return null;
+};
+
 export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<void> => {
     return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
         status,
@@ -169,14 +179,11 @@ export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, '
     return null;
 };
 
-export async function softDeleteJobs({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
+export async function hardDeleteJobs({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
     return db
         .knex('_nango_sync_jobs')
-        .update({
-            deleted: true,
-            deleted_at: db.knex.fn.now()
-        })
+        .delete()
         .whereIn('id', function (sub) {
-            sub.select('id').from('_nango_sync_jobs').where({ deleted: false, sync_id: syncId }).limit(limit);
+            sub.select('id').from('_nango_sync_jobs').where({ sync_id: syncId }).limit(limit);
         });
 }

@@ -15,13 +15,14 @@ import { getLogger, createRoute, requestLoggerMiddleware } from '@nangohq/utils'
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError } from '@nangohq/types';
 import type EventEmitter from 'node:events';
+import { serverRequestSizeLimit } from './constants.js';
 
 const logger = getLogger('Orchestrator.server');
 
 export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Express => {
     const server = express();
 
-    server.use(express.json({ limit: '10mb' }));
+    server.use(express.json({ limit: serverRequestSizeLimit }));
 
     // Log all requests
     if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
