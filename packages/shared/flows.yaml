@@ -1384,6 +1384,122 @@ integrations:
             TopicStatusUpdated:
                 success: string
                 result: string
+    docusign:
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from DocuSign
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - oauth
+                    - user_read
+        actions:
+            create-user:
+                description: Creates a user in DocuSign
+                output: User
+                endpoint: POST /users
+                input: DocuSignCreateUser
+                scopes:
+                    - oauth
+                    - user_write
+            delete-user:
+                description: Deletes a user in DocuSign
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - oauth
+                    - user_write
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            DocuSignCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                userName?: string
+                title?: string
+                phoneNumber?: string
+                company?: string
+                countryCode?: string
+                activationAccessCode?: string
+                settings?:
+                    language?: string
+                    timeZone?: string
+                userStatus?: string
+    docusign-sandbox:
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from DocuSign sandbox
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - oauth
+                    - user_read
+        actions:
+            create-user:
+                description: Creates a user in DocuSign sandbox
+                output: User
+                endpoint: POST /users
+                input: DocuSignCreateUser
+                scopes:
+                    - oauth
+                    - user_write
+            delete-user:
+                description: Deletes a user in DocuSign sandbox
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - oauth
+                    - user_write
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            DocuSignCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                userName?: string
+                title?: string
+                phoneNumber?: string
+                company?: string
+                countryCode?: string
+                activationAccessCode?: string
+                settings?:
+                    language?: string
+                    timeZone?: string
+                userStatus?: string
     evaluagent:
         syncs:
             users:
