@@ -2880,6 +2880,29 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://docs.nango.dev/integrations/all/linkhut
 
+loops-so:
+    display_name: Loops.so
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.loops.so/api
+        headers:
+            Accept: application/json
+            Authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/api-key
+    docs: https://docs.nango.dev/integrations/all/loops-so
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Loops.so account
+            pattern: '^[a-f0-9]{32}$'
+            example: d2d561f5ff80136f69b4b5a31b9fb3c9
+
 luma:
     display_name: Luma
     categories:
