@@ -247,6 +247,16 @@ export class NangoError extends Error {
                 this.message = `Missing param 'callback_url'.`;
                 break;
 
+            case 'missing_token_url':
+                this.status = 400;
+                this.message = `Token URL is missing or invalid.`;
+                break;
+
+            case 'bill_credentials_fetch_error':
+                this.status = 400;
+                this.message = `Error fetching Bill credentials`;
+                break;
+
             case 'provider_config_creation_failure':
                 this.status = 500;
                 this.message = `Failed to create the Provider Configuration. Please try again.`;

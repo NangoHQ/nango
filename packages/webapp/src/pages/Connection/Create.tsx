@@ -53,6 +53,8 @@ export default function IntegrationCreate() {
     const [patName, setpatName] = useState('');
     const [patSecret, setpatSecret] = useState('');
     const [contentUrl, setContentUrl] = useState('');
+    const [organizationId, setOrganizationId] = useState('');
+    const [devKey, setDevKey] = useState('');
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
@@ -203,6 +205,14 @@ export default function IntegrationCreate() {
                 pat_name: patName,
                 pat_secret: patSecret,
                 content_url: contentUrl
+            };
+        }
+        if (authMode === 'BILL') {
+            credentials = {
+                username: apiAuthUsername,
+                password: apiAuthPassword,
+                organization_id: organizationId,
+                dev_key: devKey
             };
         }
         const connectionConfig = {
@@ -426,6 +436,20 @@ export default function IntegrationCreate() {
             }
         }
 
+        const billCredentialsString = '';
+        if (integration?.authMode === 'BILL') {
+            if (apiAuthUsername && apiAuthPassword && organizationId && devKey) {
+                tableauCredentialsString = `
+    credentials: {
+        username: '${apiAuthUsername}',
+        password: '${apiAuthPassword}',
+        organization_id: '${organizationId}',
+        dev_key: '${devKey}'
+    }
+  `;
+            }
+        }
+
         let oauth2ClientCredentialsString = '';
 
         if (integration?.authMode === 'OAUTH2_CC') {
@@ -470,7 +494,8 @@ export default function IntegrationCreate() {
             !oauthCredentialsString &&
             !oauth2ClientCredentialsString &&
             !tableauCredentialsString &&
-            !tbaCredentialsString
+            !tbaCredentialsString &&
+            !billCredentialsString
                 ? ''
                 : ', { ' +
                   [
@@ -483,7 +508,8 @@ export default function IntegrationCreate() {
                       oauthCredentialsString,
                       oauth2ClientCredentialsString,
                       tableauCredentialsString,
-                      tbaCredentialsString
+                      tbaCredentialsString,
+                      billCredentialsString
                   ]
                       .filter(Boolean)
                       .join(', ') +
@@ -814,7 +840,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </div>
                             ))}
 
-                            {(authMode === 'API_KEY' || authMode === 'BASIC') && (
+                            {(authMode === 'API_KEY' || authMode === 'BASIC' || authMode === 'BILL') && (
                                 <div>
                                     <div>
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
@@ -823,7 +849,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                         <p className="mt-3 mb-5">{authMode}</p>
                                     </div>
 
-                                    {authMode === 'BASIC' && (
+                                    {(authMode === 'BASIC' || authMode === 'BILL') && (
                                         <div>
                                             <div className="flex mt-6">
                                                 <label htmlFor="username" className="text-text-light-gray block text-sm font-semibold">
@@ -889,6 +915,39 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             </div>
                                         </div>
                                     )}
+                                </div>
+                            )}
+
+                            {integration?.authMode === 'BILL' && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="username" className="text-text-light-gray block text-sm font-semibold">
+                                            Organization ID
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="pat_name"
+                                            name="pat_name"
+                                            placeholder="Organization ID"
+                                            optionalValue={organizationId}
+                                            setOptionalValue={setOrganizationId}
+                                        />
+                                    </div>
+                                    <div className="mt-4">
+                                        <label htmlFor="dev_key" className="text-text-light-gray block text-sm font-semibold">
+                                            Dev Key
+                                        </label>
+                                        <SecretInput
+                                            copy={true}
+                                            id="dev_key"
+                                            name="dev_key"
+                                            placeholder="Dev Key"
+                                            optionalValue={devKey}
+                                            setOptionalValue={setDevKey}
+                                        />
+                                    </div>
                                 </div>
                             )}
 
