@@ -889,7 +889,40 @@ integrations:
                 endpoint: GET /event/invitees
                 output: EventInvitee
                 description: For all events (active and canceled) retrieve the event invitees
+            users:
+                runs: every day
+                description: Fetches a list of users from Calendly
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+        actions:
+            create-user:
+                description: Creates a user in Calendly
+                endpoint: POST /users
+                output: User
+                input: CreateUser
+                scopes:
+                    - admin
+            delete-user:
+                description: Deletes a user in Calendly
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - admin
         models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                email: string
             Event:
                 id: string
                 uri: string
