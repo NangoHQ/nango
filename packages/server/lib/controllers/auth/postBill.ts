@@ -160,7 +160,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
                     connection: updatedConnection.connection,
                     environment,
                     account,
-                    auth_mode: 'NONE',
+                    auth_mode: 'BILL',
                     operation: updatedConnection.operation
                 },
                 config.provider,
@@ -182,7 +182,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
                 auth_mode: 'BILL',
                 error: {
                     type: 'unknown',
-                    description: `Error during Unauth create: ${prettyError}`
+                    description: `Error during Bill create: ${prettyError}`
                 },
                 operation: 'unknown'
             },
@@ -190,7 +190,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
             logCtx
         );
         if (logCtx) {
-            await logCtx.error('Error during GhostAdmin credentials creation', { error: err });
+            await logCtx.error('Error during Bill credentials creation', { error: err });
             await logCtx.failed();
         }
 
