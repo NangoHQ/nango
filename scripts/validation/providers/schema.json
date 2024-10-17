@@ -325,6 +325,9 @@
                 "webhook_routing_script": {
                     "type": "string"
                 },
+                "authorization_url_fragment": {
+                    "type": "string"
+                },
                 "connection_config": {
                     "type": "object",
                     "additionalProperties": false,
