@@ -79,7 +79,7 @@ export function onAxiosRequestFulfilled({
 
     let concatenateIfExists = false;
 
-    if (params.includes('page')) {
+    if (params && params.includes('page')) {
         concatenateIfExists = true;
     }
 
