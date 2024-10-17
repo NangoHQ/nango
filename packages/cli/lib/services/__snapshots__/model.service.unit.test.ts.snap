@@ -135,7 +135,7 @@ export interface AuthModes {
     None: 'NONE';
     TBA: 'TBA';
     Tableau: 'TABLEAU';
-    Bill: 'BILL'
+    Bill: 'BILL';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 interface OAuth1Token {
