@@ -2422,7 +2422,7 @@ integrations:
             users:
                 runs: every day
                 description: |
-                    Fetches a list of users from Gusto. Requires an enterprise account.
+                    Fetches a list of users from Gusto.
                 output: User
                 track_deletes: true
                 sync_type: full
@@ -2476,7 +2476,7 @@ integrations:
             users:
                 runs: every day
                 description: |
-                    Fetches a list of users from Gusto. Requires an enterprise account.
+                    Fetches a list of users from Gusto.
                 output: User
                 track_deletes: true
                 sync_type: full
