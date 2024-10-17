@@ -58,7 +58,7 @@ export interface ApiKeyCredentials {
     apiKey: string;
 }
 
-export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials | TbaCredentials | TableauCredentials;
+export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials | TbaCredentials | TableauCredentials | BillCredentials;
 
 export interface AppCredentials {
     type?: 'APP';
@@ -143,6 +143,17 @@ export interface JwtCredentials {
           }
         | string; // Colon-separated string for Ghost Admin: 'id:secret'
     token?: string;
+    expires_at?: Date | undefined;
+}
+
+export interface BillCredentials extends CredentialsCommon {
+    type: 'BILL';
+    username: string;
+    password: string;
+    organization_id: string;
+    dev_key: string;
+    session_id?: string;
+    user_id?: string;
     expires_at?: Date | undefined;
 }
 

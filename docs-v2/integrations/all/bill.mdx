@@ -1,0 +1,34 @@
+---
+title: Bill
+sidebarTitle: Bill
+---
+
+API configuration: [`bill`](https://nango.dev/providers.yaml), [`bill-sandbox`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (Bill)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [Bill Authentication docs](https://developer.bill.com/docs/api-sandbox-sign-in)
+-   [Bill API docs](https://developer.bill.com/reference)
+-   [API rate limiting](https://developer.bill.com/docs/api-rate-limits)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- If you would like to set up a sandbox API environment, one can [sign up](https://www-test.bill.com/signup?env=stage). Once you have completed the form, please [email](mailto:developerprogram@hq.bill.com),the team, and they will send you the API credentials.
+- Your sign-in credentials for BILL include: Username (the email address used to sign in to your BILL developer account), Password (used to sign in to your BILL developer account), Organization ID (a unique alphanumeric value beginning with 008 that represents your organization), and Developer key (provided by the team and used to identify your developer account in API requests).
+- After sign-in a `sessionId` is generated which expires when it is inactive or idle for 35 minutes and you are automatically signed out.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bill.mdx)</Note>

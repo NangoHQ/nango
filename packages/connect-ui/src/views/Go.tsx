@@ -56,6 +56,12 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
         token_id: z.string().min(1),
         token_secret: z.string().min(1)
     }),
+    BILL: z.object({
+        username: z.string().min(1),
+        password: z.string().min(1),
+        organization_id: z.string().min(1),
+        dev_key: z.string().min(1)
+    }),
     CUSTOM: z.object({})
 };
 

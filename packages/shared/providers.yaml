@@ -560,6 +560,26 @@ bigcommerce:
             format: uuid
             example: 123e4567-e89b-12d3-a456-426614174000
 
+bill-sandbox:
+    display_name: Bill(Connect API sandbox)
+    categories:
+        - payment
+    auth_mode: BILL
+    token_url: https://gateway.stage.bill.com/connect/v3/login
+    proxy:
+        base_url: https://gateway.stage.bill.com/connect/v3
+    docs: https://docs.nango.dev/integrations/all/bill
+
+bill:
+    display_name: Bill(Connect API)
+    categories:
+        - payment
+    auth_mode: BILL
+    token_url: https://gateway.prod.bill.com/connect/v3/login
+    proxy:
+        base_url: https://gateway.prod.bill.com/connect/v3
+    docs: https://docs.nango.dev/integrations/all/bill
+
 bitbucket:
     display_name: Bitbucket
     categories:
