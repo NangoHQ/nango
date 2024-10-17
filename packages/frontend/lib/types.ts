@@ -75,6 +75,13 @@ export interface OAuth2ClientCredentials {
     client_secret: string;
 }
 
+export interface BillCredentials {
+    username: string;
+    password: string;
+    organization_id: string;
+    dev_key: string;
+}
+
 export enum AuthorizationStatus {
     IDLE,
     BUSY,
