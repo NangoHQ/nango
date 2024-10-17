@@ -846,6 +846,7 @@ calendly:
             at: 'X-Ratelimit-Reset'
     token_response_metadata:
         - owner
+    post_connection_script: calendlyPostConnection
     docs: https://docs.nango.dev/integrations/all/calendly
 
 canny:
@@ -1476,6 +1477,7 @@ docusign:
         grant_type: refresh_token
     proxy:
         base_url: https://www.docusign.net
+    post_connection_script: docusignPostConnection
     docs: https://docs.nango.dev/integrations/all/docusign
 
 docusign-sandbox:
@@ -1492,6 +1494,7 @@ docusign-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://demo.docusign.net
+    post_connection_script: docusignPostConnection
     docs: https://docs.nango.dev/integrations/all/docusign
 
 dropbox:
@@ -2341,6 +2344,7 @@ gusto:
         grant_type: refresh_token
     proxy:
         base_url: https://api.gusto.com
+    post_connection_script: gustoPostConnection
     docs: https://docs.nango.dev/integrations/all/gusto
 
 gusto-demo:
@@ -2356,6 +2360,7 @@ gusto-demo:
         grant_type: refresh_token
     proxy:
         base_url: https://api.gusto-demo.com
+    post_connection_script: gustoPostConnection
     docs: https://docs.nango.dev/integrations/all/gusto
 
 hackerrank-work:
