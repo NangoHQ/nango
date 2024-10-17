@@ -12,18 +12,7 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { ConnectionConfig, Connection, StoredConnection, NangoConnection } from '../models/Connection.js';
-import type {
-    Metadata,
-    ActiveLogIds,
-    Provider,
-    ProviderOAuth2,
-    AuthModeType,
-    TbaCredentials,
-    TableauCredentials,
-    MaybePromise,
-    DBTeam,
-    DBEnvironment
-} from '@nangohq/types';
+import type { Metadata, Provider, ProviderOAuth2, AuthModeType, TbaCredentials, TableauCredentials, MaybePromise, DBTeam, DBEnvironment } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
@@ -758,7 +747,9 @@ class ConnectionService {
     public async listConnections(
         environment_id: number,
         connectionId?: string
-    ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata; active_logs: ActiveLogIds }[]> {
+    ): Promise<
+        { id: number; connection_id: string; provider: string; created: string; metadata: Metadata; active_logs: [{ type: string; log_id: string }] }[]
+    > {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
             .select(
@@ -768,15 +759,15 @@ class ConnectionService {
                 { created: '_nango_connections.created_at' },
                 '_nango_connections.metadata',
                 db.knex.raw(`
-                  (SELECT json_build_object(
+                  (SELECT COALESCE(json_agg(json_build_object(
+                      'type', type,
                       'log_id', log_id
-                    )
+                    )), '[]'::json)
                     FROM ${ACTIVE_LOG_TABLE}
                     WHERE _nango_connections.id = ${ACTIVE_LOG_TABLE}.connection_id
                       AND ${ACTIVE_LOG_TABLE}.active = true
-                    LIMIT 1
                   ) as active_logs
-                `)
+               `)
             )
             .where({
                 environment_id: environment_id,
