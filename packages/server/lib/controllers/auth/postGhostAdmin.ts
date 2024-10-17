@@ -180,7 +180,7 @@ export const postPublicGhostAdminAuthorization = asyncWrapper<PostPublicGhostAdm
                     connection: updatedConnection.connection,
                     environment,
                     account,
-                    auth_mode: 'NONE',
+                    auth_mode: 'GHOST_ADMIN',
                     operation: updatedConnection.operation
                 },
                 config.provider,
@@ -202,7 +202,7 @@ export const postPublicGhostAdminAuthorization = asyncWrapper<PostPublicGhostAdm
                 auth_mode: 'GHOST_ADMIN',
                 error: {
                     type: 'unknown',
-                    description: `Error during Unauth create: ${prettyError}`
+                    description: `Error during GHOST_ADMIN create: ${prettyError}`
                 },
                 operation: 'unknown'
             },

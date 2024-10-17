@@ -12,7 +12,18 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { ConnectionConfig, Connection, StoredConnection, NangoConnection } from '../models/Connection.js';
-import type { Metadata, Provider, ProviderOAuth2, AuthModeType, TbaCredentials, TableauCredentials, MaybePromise, DBTeam, DBEnvironment } from '@nangohq/types';
+import type {
+    Metadata,
+    Provider,
+    ProviderOAuth2,
+    AuthModeType,
+    TbaCredentials,
+    TableauCredentials,
+    MaybePromise,
+    DBTeam,
+    DBEnvironment,
+    GhostAdminCredentials
+} from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
