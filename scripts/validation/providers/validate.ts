@@ -141,6 +141,14 @@ function validateProvider(providerKey: string, provider: Provider) {
         if (!provider.proxy?.verification) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `do not have "proxy" > "verification" set`);
         }
+    } else if (provider.auth_mode === 'GHOST_ADMIN') {
+        if (!provider.credentials?.['apiKey']) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" > "apiKey" is not defined`);
+            error = true;
+        }
+        if (!provider.proxy?.verification) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `do not have "proxy" > "verification" set`);
+        }
     } else {
         if (provider.credentials) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" is defined but not required`);
