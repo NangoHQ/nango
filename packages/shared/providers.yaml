@@ -5027,6 +5027,28 @@ uber:
         base_url: https://api.uber.com
     docs: https://docs.nango.dev/integrations/all/uber
 
+umapi:
+    display_name: UMAPI(Adobe User Management API)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://ims-na1.adobelogin.com/ims/token/v2
+    scope_separator: ','
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            x-api-key: ${connectionConfig.clientId}
+        retry:
+            after: 'Retry-After'
+        base_url: https://usermanagement.adobe.io
+    docs: https://docs.nango.dev/integrations/all/adobe
+    connection_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from the OAuth Server-to-Server enabled project on developer portal
+
 unanet:
     display_name: Unanet
     categories:
