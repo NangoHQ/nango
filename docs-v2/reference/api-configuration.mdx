@@ -447,6 +447,10 @@ slack:
     Specifies a script to handle external [webhooks](/understand/concepts/webhooks).
 </ResponseField>
 
+<ResponseField name="authorization_url_fragment" type="string">
+    Specifies a fragment to be appended to the authorization URL, typically used to modify the redirection flow or pass additional information in the URL before the query parameters.
+</ResponseField>
+
 <ResponseField name="connection_config" type="object">
     The list of properties available in `${connectionConfig}` and their validation.
     <Expandable>

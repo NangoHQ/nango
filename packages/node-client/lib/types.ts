@@ -26,7 +26,8 @@ import type {
     TbaCredentials,
     RecordMetadata,
     RecordLastAction,
-    NangoRecord
+    NangoRecord,
+    ActiveLog
 } from '@nangohq/types';
 
 export type {
@@ -148,6 +149,7 @@ export interface ConnectionList {
     provider: string;
     created: string;
     metadata?: Metadata | null;
+    errors: Pick<ActiveLog, 'log_id' | 'type'>[];
 }
 
 export interface IntegrationWithCreds extends Integration {

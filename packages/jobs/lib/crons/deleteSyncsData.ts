@@ -1,6 +1,6 @@
 import * as cron from 'node-cron';
 import db from '@nangohq/database';
-import { errorManager, ErrorSourceEnum, softDeleteJobs, findRecentlyDeletedSync, Orchestrator } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, hardDeleteJobs, findRecentlyDeletedSync, Orchestrator } from '@nangohq/shared';
 import { records } from '@nangohq/records';
 import { getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
@@ -48,10 +48,10 @@ export async function exec(): Promise<void> {
     for (const sync of syncs) {
         logger.info(`[deleteSyncs] deleting syncId: ${sync.id}`);
 
-        // Soft delete jobs
+        // hard delete jobs
         let countJobs = 0;
         do {
-            countJobs = await softDeleteJobs({ syncId: sync.id, limit: limitJobs });
+            countJobs = await hardDeleteJobs({ syncId: sync.id, limit: limitJobs });
             logger.info(`[deleteSyncs] soft deleted ${countJobs} jobs`);
             metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_JOBS, countJobs);
         } while (countJobs >= limitJobs);

@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.17] - 2024-10-17
+
+### Added
+
+- *(providers)* Add new token_url_encode parameter to provider config (#2815) by @gorets
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d58a3a8ddcca05919b61f1a93ddff8dff7c4803e by Hassan_Wari. Commit message: feat(integrations): add outlook templates (#43) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5e788a0cb163980fa15d239d306c865c19ae8406 by Khaliq. Commit message: fix(notion-db-action): add id of the row in the output (#47) by @github-actions[bot]
+- *(integrations)* Add support for firefish (#2836) by @hilmia
+- *(integrations)* Add support for workable oauth2 (#2842) by @hassan254-prog
+- *(integrations)* Add support for thrivecart (#2843) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/e0a44f04ac2fa39a2f605d8acb1ae8e940c18e7e by Khaliq. Commit message: feat(notion): add notion database sync (#48) by @github-actions[bot]
+- *(pagination)* [nan-1899] zoom operations (#2845) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d4501e484fa441152048d902b3bbee3e34d4ed56 by Hassan_Wari. Commit message: feat(hubspot): add hubspot integrations (#49) by @github-actions[bot]
+- *(integrations)* Add support for loops.so (#2848) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/25f6f1940c36d54d9815902699f90062ab84c787 by Khaliq. Commit message: feat(hubspot): [nan-1848] additional hubspot syncs (#42) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/2d397758ee31a2ae39a0b29b268fa1e20048c37e by Khaliq. Commit message: feat(hubspot): [nan-1848] hubspot actions (#44) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d854c2ebb84691dddde1a0f567b1081825ec9f90 by Khaliq. Commit message: feat(discourse): discourse endpoints (#46) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/8944770db7c599b723eff8d7dff41012be441a25 by Khaliq. Commit message: feat(zendesk): [nan-1884] Zendesk updates (#51) by @github-actions[bot]
+- Fix typo in handle-large-datasets.mdx (#2846) by @amir-bio
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0ae108ba0121ee1bbffe5a712c7e2e253f01ae45 by Andres Reales. Commit message: feat(box): Add box integration (#50) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/67d3f0fdbd376a3c70a6f261dde9d1fba8536545 by Khaliq. Commit message: feat(zoom-meetings): [nan-1899] zoom operations (#54) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/8e42930a80f83cad598769521207dc43cc314b87 by Khaliq. Commit message: feat(jira): [nan-1860] add in user operations (#53) by @github-actions[bot]
+- Hard delete sync jobs when a sync is deleted (#2834) by @TBonnin
+
+### Fixed
+
+- Dynamic getOutpout longPolling timeout (#2830) by @TBonnin
+- Retry until to fetch task output instead of long-lived request (#2831) by @TBonnin
+- Bump jobs/orchestrator server limit for incoming request (#2832) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/9c9b2a79b0d06d5933865534e31e8d85c7a4b0b5 by Khaliq. Commit message: fix(outlook): Tweak outlook format to be plain text instead of html (#45) by @github-actions[bot]
+- Out of sync between task state and sync_job status (#2829) by @TBonnin
+- Enable possibility to run remote runner (#2826) by @TBonnin
+- Lower task heartbeat timeout to 5 mins (#2833) by @TBonnin
+- *(connections)* Update last fetched at to be 33% (#2838) by @khaliqgant
+- *(docs)* Redeploy mintlify (#2839) by @bastienbeurier
+- *(proxy)* Handle 204 empty response data (#2844) by @hassan254-prog
+- *(object-spec)* [nan-1908] handle nested object fields (#2849) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/6d17af6defa25fdc07597c2f74c559f8c4159988 by Khaliq. Commit message: fix(slack-users-sync): [nan-1912] clean up slack sync (#55) by @github-actions[bot]
+- *(node-client)* [nan-1915] pass the body along for a delete request if provided (#2850) by @khaliqgant
+
 ## [v0.42.15] - 2024-10-08
 
 ### Added
@@ -2015,6 +2058,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.17]: https://github.com/NangoHQ/nango/compare/v0.42.15..v0.42.17
 [v0.42.15]: https://github.com/NangoHQ/nango/compare/v0.42.12..v0.42.15
 [v0.42.12]: https://github.com/NangoHQ/nango/compare/v0.42.10..v0.42.12
 [v0.42.10]: https://github.com/NangoHQ/nango/compare/v0.42.9..v0.42.10

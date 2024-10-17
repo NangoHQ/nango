@@ -6,7 +6,7 @@ const nango = new Nango({ host: 'http://localhost:3003', secretKey: args[0] });
 nango
     .listConnections(args[1])
     .then((response) => {
-        console.log(response);
+        console.log(JSON.stringify(response));
     })
     .catch((err) => {
         console.log(err.response?.data || err.message);

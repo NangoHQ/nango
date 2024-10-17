@@ -813,7 +813,10 @@ export class Nango {
         } else if (method?.toUpperCase() === 'PUT') {
             return this.http.put(url, config.data, options);
         } else if (method?.toUpperCase() === 'DELETE') {
-            return this.http.delete(url, options);
+            return this.http.delete(url, {
+                ...options,
+                ...(config.data ? { data: config.data } : {})
+            });
         } else {
             return this.http.get(url, options);
         }
