@@ -15,6 +15,7 @@ import type { ConnectionConfig, Connection, StoredConnection, NangoConnection } 
 import type {
     Metadata,
     Provider,
+    ProviderJwt,
     ProviderOAuth2,
     AuthModeType,
     TbaCredentials,
@@ -22,7 +23,7 @@ import type {
     MaybePromise,
     DBTeam,
     DBEnvironment,
-    GhostAdminCredentials
+    JWTCredentials
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -60,7 +61,6 @@ import { v4 as uuidv4 } from 'uuid';
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 const DEFAULT_EXPIRES_AT_MS = 55 * 60 * 1000; // This ensures we have an expiresAt value
-const DEFAULT_GHOST_ADMIN_EXPIRES_AT_MS = 5 * 60 * 1000; // This is to ensure we have a GhostToken expiresAt value
 
 type KeyValuePairs = Record<string, string | boolean>;
 
@@ -265,7 +265,7 @@ class ConnectionService {
         return [{ connection: connection[0]!, operation: 'creation' }];
     }
 
-    public async upsertGhostAdminConnection({
+    public async upsertJWTConnection({
         connectionId,
         providerConfigKey,
         credentials,
@@ -277,7 +277,7 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials: GhostAdminCredentials;
+        credentials: JWTCredentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -322,7 +322,7 @@ class ConnectionService {
             )
             .returning('*');
 
-        void analytics.track(AnalyticsTypes.GHOST_ADMIN_CONNECTION_INSERTED, account.id, { provider: config.provider });
+        void analytics.track(AnalyticsTypes.JWT_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
         return [{ connection: connection[0]!, operation: 'creation' }];
     }
@@ -619,7 +619,7 @@ class ConnectionService {
                 | AppCredentials
                 | OAuth2ClientCredentials
                 | TableauCredentials
-                | GhostAdminCredentials;
+                | JWTCredentials;
             if (credentials.type && credentials.type === 'OAUTH2') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
@@ -644,7 +644,7 @@ class ConnectionService {
                 connection.credentials = creds;
             }
 
-            if (credentials.type && credentials.type === 'GHOST_ADMIN') {
+            if (credentials.type && credentials.type === 'JWT') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
@@ -979,7 +979,7 @@ class ConnectionService {
             connection?.credentials?.type === 'APP' ||
             connection?.credentials?.type === 'OAUTH2_CC' ||
             connection?.credentials?.type === 'TABLEAU' ||
-            connection?.credentials?.type === 'GHOST_ADMIN'
+            connection?.credentials?.type === 'JWT'
         ) {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connectionId: connection.connection_id,
@@ -1169,7 +1169,7 @@ class ConnectionService {
     }): Promise<
         ServiceResponse<{
             refreshed: boolean;
-            credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | GhostAdminCredentials;
+            credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | JWTCredentials;
         }>
     > {
         const providerConfigKey = providerConfig.unique_key;
@@ -1177,14 +1177,7 @@ class ConnectionService {
         // fetch connection and return credentials if they are fresh
         const getConnectionAndFreshCredentials = async (): Promise<{
             connection: Connection;
-            freshCredentials:
-                | OAuth2Credentials
-                | AppCredentials
-                | AppStoreCredentials
-                | OAuth2ClientCredentials
-                | TableauCredentials
-                | GhostAdminCredentials
-                | null;
+            freshCredentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | JWTCredentials | null;
         }> => {
             const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
 
@@ -1210,7 +1203,7 @@ class ConnectionService {
                           | AppStoreCredentials
                           | OAuth2ClientCredentials
                           | TableauCredentials
-                          | GhostAdminCredentials)
+                          | JWTCredentials)
             };
         };
 
@@ -1551,33 +1544,48 @@ class ConnectionService {
         }
     }
 
-    public getGhostAdminCredentials(ghostApiKey: string): ServiceResponse<GhostAdminCredentials> {
-        const parts = ghostApiKey.split(':');
-        const id = parts[0];
-        const secret = parts[1];
+    public getJwtCredentials(
+        provider: ProviderJwt,
+        privateKeyId?: string,
+        privateKey?: string,
+        issuerId?: string,
+        apiKey?: string
+    ): ServiceResponse<JWTCredentials> {
+        if (apiKey) {
+            const apiKeyParts = apiKey.split(':');
+            if (apiKeyParts.length === 2 && apiKeyParts[0] && apiKeyParts[1]) {
+                privateKeyId = apiKeyParts[0];
+                privateKey = apiKeyParts[1];
+            } else {
+                throw new NangoError(`invalid_api_key_format`);
+            }
+        }
 
-        if (!id || !secret) {
-            throw new NangoError('invalid_ghost_api_key_format');
+        if (!privateKey) {
+            throw new NangoError(`invalid_jwt_private_key`);
         }
 
         const now = Math.floor(Date.now() / 1000);
         const payload = {
             iat: now,
-            exp: now + DEFAULT_GHOST_ADMIN_EXPIRES_AT_MS / 1000,
-            aud: '/admin/'
+            exp: now + provider.token_payload.expires_in_ms / 1000,
+            aud: provider.token_payload.token_audience
         };
 
         const header = {
-            alg: 'HS256',
-            kid: id
+            alg: provider.token_headers.algorithm,
+            kid: privateKeyId
         };
 
         try {
-            const token = this.generateJWT(payload, Buffer.from(secret, 'hex'), { algorithm: 'HS256', header });
-            const expiresAt = new Date(Date.now() + DEFAULT_GHOST_ADMIN_EXPIRES_AT_MS);
-            const credentials: GhostAdminCredentials = {
-                type: 'GHOST_ADMIN',
-                ghost_api_key: ghostApiKey,
+            const token = this.generateJWT(payload, Buffer.from(privateKey, 'hex'), { algorithm: provider.token_headers.algorithm, header });
+            const expiresAt = new Date(Date.now() + provider.token_payload.expires_in_ms);
+            const credentials: JWTCredentials = {
+                type: 'JWT',
+                api_key: apiKey || '',
+                privateKeyId: privateKey,
+                issuerId: issuerId || '',
+                privateKey: privateKey,
                 token,
                 expires_at: expiresAt
             };
@@ -1690,9 +1698,7 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         provider: Provider
-    ): Promise<
-        ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials | GhostAdminCredentials>
-    > {
+    ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials | JWTCredentials>> {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
@@ -1720,9 +1726,9 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (provider.auth_mode === 'GHOST_ADMIN') {
-            const { ghost_api_key } = connection.credentials as GhostAdminCredentials;
-            const { success, error, response: credentials } = this.getGhostAdminCredentials(ghost_api_key);
+        } else if (provider.auth_mode === 'JWT') {
+            const { api_key, privateKeyId, issuerId, privateKey } = connection.credentials as JWTCredentials;
+            const { success, error, response: credentials } = this.getJwtCredentials(provider as ProviderJwt, privateKeyId, privateKey, issuerId, api_key);
 
             if (!success || !credentials) {
                 return { success, error, response: null };

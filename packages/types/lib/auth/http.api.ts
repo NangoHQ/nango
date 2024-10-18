@@ -59,11 +59,13 @@ export type PostPublicTableauAuthorization = Endpoint<{
     };
 }>;
 
-export type PostPublicGhostAdminAuthorization = Endpoint<{
+export type PostPublicJwtAuthorization = Endpoint<{
     Method: 'POST';
     Body: {
-        ghost_api_key: string;
-        token?: string | undefined;
+        api_key?: string;
+        privateKeyId?: string;
+        issuerId?: string;
+        privateKey?: string;
     };
     Querystring: {
         connection_id?: string | undefined;
@@ -73,7 +75,7 @@ export type PostPublicGhostAdminAuthorization = Endpoint<{
     Params: {
         providerConfigKey: string;
     };
-    Path: '/auth/ghost-admin';
+    Path: '/auth/jwt';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>

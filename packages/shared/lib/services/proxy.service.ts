@@ -5,7 +5,7 @@ import * as crypto from 'node:crypto';
 import { axiosInstance as axios, SIGNATURE_METHOD } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials, GhostAdminCredentials } from '../models/Auth.js';
+import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials, JWTCredentials } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
@@ -117,7 +117,7 @@ class ProxyService {
                     token = credentials.token;
                 }
                 break;
-            case 'GHOST_ADMIN':
+            case 'JWT':
                 {
                     const credentials = connection.credentials;
                     token = credentials.token;
@@ -468,11 +468,11 @@ class ProxyService {
                     };
                 }
                 break;
-            case 'GHOST_ADMIN':
+            case 'JWT':
                 {
-                    const token = config.token as GhostAdminCredentials;
+                    const token = config.token as JWTCredentials;
                     headers = {
-                        Authorization: `Ghost ${token}`
+                        Authorization: `Bearer ${token}`
                     };
                 }
                 break;
@@ -517,7 +517,7 @@ class ProxyService {
                         default:
                             tokenPair = config.token;
                             break;
-                        case 'GHOST_ADMIN':
+                        case 'JWT':
                             if (value.includes('connectionConfig')) {
                                 value = value.replace(/connectionConfig\./g, '');
                                 tokenPair = config.connection.connection_config;

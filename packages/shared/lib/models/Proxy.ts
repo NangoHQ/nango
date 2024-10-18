@@ -1,6 +1,6 @@
 import type { ParamsSerializerOptions } from 'axios';
 import type { HTTP_VERB } from './Generic.js';
-import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials, TbaCredentials, TableauCredentials, GhostAdminCredentials } from './Auth.js';
+import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials, TbaCredentials, TableauCredentials, JWTCredentials } from './Auth.js';
 import type { Connection } from './Connection.js';
 import type { Provider } from '@nangohq/types';
 
@@ -42,7 +42,7 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
     decompress?: boolean;
     method: HTTP_VERB;
     providerName: string;
-    token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials | TbaCredentials | TableauCredentials | GhostAdminCredentials;
+    token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials | TbaCredentials | TableauCredentials | JWTCredentials;
     provider: Provider;
     connection: Connection;
 }

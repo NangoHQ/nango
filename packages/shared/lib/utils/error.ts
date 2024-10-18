@@ -498,9 +498,14 @@ export class NangoError extends Error {
                 this.message = `Invalid app secret key. Please make sure the app secret is correct.`;
                 break;
 
-            case 'invalid_ghost_api_key_format':
+            case 'invalid_api_key_format':
                 this.status = 400;
                 this.message = `Invalid API key format. It should be of "id:secret".`;
+                break;
+
+            case 'invalid_jwt_private_key':
+                this.status = 400;
+                this.message = `Invalid private key provided for JWT creation.`;
                 break;
 
             case 'no_config_found':

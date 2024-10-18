@@ -16,7 +16,7 @@ import type {
     OAuth2ClientCredentials,
     TBACredentials,
     TableauCredentials,
-    GhostAdminCredentials,
+    JWTCredentials,
     OAuthCredentialsOverride
 } from './types';
 import { AuthorizationStatus, WSMessageType } from './types.js';
@@ -288,7 +288,7 @@ export default class Nango {
             | AppStoreCredentials
             | TBACredentials
             | TableauCredentials
-            | GhostAdminCredentials
+            | JWTCredentials
             | OAuth2ClientCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
@@ -303,6 +303,24 @@ export default class Nango {
             params['apiKey'] = credentials.apiKey || '';
         }
 
+        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials || 'api_key' in credentials) {
+            const jwtParams: Record<string, string> = {};
+            if (credentials.privateKeyId) {
+                jwtParams['privateKeyId'] = credentials.privateKeyId;
+            }
+            if (credentials.issuerId) {
+                jwtParams['issuerId'] = credentials.issuerId;
+            }
+            if (credentials.privateKey) {
+                jwtParams['privateKey'] = credentials.privateKey;
+            }
+
+            if ('api_key' in credentials && credentials.api_key) {
+                jwtParams['api_key'] = credentials.api_key;
+            }
+            return { params: { ...jwtParams, ...params } } as unknown as ConnectionConfig;
+        }
+
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             const appStoreCredentials: { params: Record<string, string | string[]> } = {
                 params: {
@@ -312,7 +330,7 @@ export default class Nango {
                 }
             };
 
-            if (credentials.scope) {
+            if ('scope' in credentials && (typeof credentials.scope === 'string' || Array.isArray(credentials.scope))) {
                 appStoreCredentials.params['scope'] = credentials.scope;
             }
             return appStoreCredentials as unknown as ConnectionConfig;
@@ -357,14 +375,6 @@ export default class Nango {
             return { params: tableauCredentials } as unknown as ConnectionConfig;
         }
 
-        if ('ghost_api_key' in credentials) {
-            const ghostAdminCredentials: GhostAdminCredentials = {
-                ghost_api_key: credentials.ghost_api_key
-            };
-
-            return { params: ghostAdminCredentials } as unknown as ConnectionConfig;
-        }
-
         return { params };
     }
 
@@ -379,7 +389,7 @@ export default class Nango {
             | AppStoreCredentials
             | TBACredentials
             | TableauCredentials
-            | GhostAdminCredentials
+            | JWTCredentials
             | OAuth2ClientCredentials
             | undefined;
     }): Promise<AuthResult> {
@@ -433,6 +443,13 @@ export default class Nango {
             });
         }
 
+        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials || 'api_key' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/jwt/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as BasicApiCredentials
+            });
+        }
+
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/app-store-auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
@@ -451,13 +468,6 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/tableau/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as TableauCredentials
-            });
-        }
-
-        if ('ghost_api_key' in credentials) {
-            return await this.triggerAuth({
-                authUrl: this.hostBaseUrl + `/auth/ghost-admin/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
-                credentials: credentials as unknown as GhostAdminCredentials
             });
         }
 

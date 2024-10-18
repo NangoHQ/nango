@@ -20,7 +20,7 @@ import type {
     GetPublicListIntegrationsLegacy,
     GetPublicIntegration,
     PostConnectSessions,
-    GhostAdminCredentials
+    JWTCredentials
 } from '@nangohq/types';
 import type {
     Connection,
@@ -322,7 +322,7 @@ export class Nango {
         | CustomCredentials
         | TbaCredentials
         | TableauCredentials
-        | GhostAdminCredentials
+        | JWTCredentials
     > {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 

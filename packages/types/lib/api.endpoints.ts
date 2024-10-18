@@ -12,7 +12,7 @@ import type {
     PostPublicTableauAuthorization,
     PostPublicTbaAuthorization,
     PostPublicUnauthenticatedAuthorization,
-    PostPublicGhostAdminAuthorization
+    PostPublicJwtAuthorization
 } from './auth/http.api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
 import type { PostConnectSessions, PostInternalConnectSessions } from './connect/api';
@@ -24,7 +24,7 @@ export type PublicApiEndpoints =
     | PostDeployConfirmation
     | PostPublicTbaAuthorization
     | PostPublicTableauAuthorization
-    | PostPublicGhostAdminAuthorization
+    | PostPublicJwtAuthorization
     | PostPublicUnauthenticatedAuthorization
     | GetPublicProviders
     | GetPublicProvider

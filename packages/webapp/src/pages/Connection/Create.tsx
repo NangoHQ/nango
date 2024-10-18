@@ -53,11 +53,11 @@ export default function IntegrationCreate() {
     const [patName, setpatName] = useState('');
     const [patSecret, setpatSecret] = useState('');
     const [contentUrl, setContentUrl] = useState('');
-    const [ghostApiKey, setghostApiKey] = useState('');
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
     const [issuerId, setIssuerId] = useState('');
+    const [api_key, setJwtApiKey] = useState('');
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI(env);
     const { providerConfigKey } = useParams();
@@ -207,9 +207,12 @@ export default function IntegrationCreate() {
             };
         }
 
-        if (authMode === 'GHOST_ADMIN') {
+        if (authMode === 'JWT') {
             credentials = {
-                ghost_api_key: ghostApiKey
+                privateKeyId,
+                issuerId,
+                privateKey,
+                api_key
             };
         }
 
@@ -434,14 +437,28 @@ export default function IntegrationCreate() {
             }
         }
 
-        let ghostAdminCredentialsString = '';
-        if (integration?.authMode === 'GHOST_ADMIN') {
-            if (ghostApiKey) {
-                ghostAdminCredentialsString = `
-    credentials: {
-        ghost_api_key: '${ghostApiKey}'
-    }
-  `;
+        let jwtCredentialsString = '';
+
+        if (integration?.authMode === 'JWT') {
+            const credentials: string[] = [];
+            if (apiKey) {
+                credentials.push(`api_key: '${apiKey}'`);
+            }
+            if (privateKeyId) {
+                credentials.push(`privateKeyId: '${privateKeyId}'`);
+            }
+            if (issuerId) {
+                credentials.push(`issuerId: '${issuerId}'`);
+            }
+            if (privateKey) {
+                credentials.push(`privateKey: '${privateKey}'`);
+            }
+            if (credentials.length > 0) {
+                jwtCredentialsString = `
+                credentials: {
+                    ${credentials.join(',\n            ')}
+                }
+                `;
             }
         }
 
@@ -489,7 +506,7 @@ export default function IntegrationCreate() {
             !oauthCredentialsString &&
             !oauth2ClientCredentialsString &&
             !tableauCredentialsString &&
-            !ghostAdminCredentialsString &&
+            !jwtCredentialsString &&
             !tbaCredentialsString
                 ? ''
                 : ', { ' +
@@ -503,7 +520,7 @@ export default function IntegrationCreate() {
                       oauthCredentialsString,
                       oauth2ClientCredentialsString,
                       tableauCredentialsString,
-                      ghostAdminCredentialsString,
+                      jwtCredentialsString,
                       tbaCredentialsString
                   ]
                       .filter(Boolean)
@@ -792,27 +809,6 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                     </div>
                                 </div>
                             )}
-
-                            {integration?.authMode === 'GHOST_ADMIN' && (
-                                <div>
-                                    <div className="flex mt-6">
-                                        <label htmlFor="api_key" className="text-text-light-gray block text-sm font-semibold">
-                                            API KEY
-                                        </label>
-                                    </div>
-                                    <div className="mt-1">
-                                        <SecretInput
-                                            copy={true}
-                                            id="api_key"
-                                            name="api_key"
-                                            placeholder="API KEY"
-                                            optionalValue={ghostApiKey}
-                                            setOptionalValue={setghostApiKey}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
                             {integration?.connectionConfigParams?.map((paramName: string) => (
                                 <div key={paramName}>
                                     <div className="flex mt-6">
@@ -968,7 +964,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </div>
                             )}
 
-                            {authMode === 'APP_STORE' && (
+                            {(authMode === 'APP_STORE' || authMode === 'JWT') && !integration?.provider.includes('ghost-admin') && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
@@ -1055,6 +1051,20 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             setOptionalValue={(value) => setPrivateKey(value)}
                                             required
                                         />
+                                    </div>
+                                </div>
+                            )}
+
+                            {authMode === 'JWT' && integration?.provider.includes('ghost-admin') && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
+                                            API Key
+                                        </label>
+                                    </div>
+
+                                    <div className="mt-1">
+                                        <SecretInput copy={true} id="api_key" name="api_key" optionalValue={api_key} setOptionalValue={setJwtApiKey} required />
                                     </div>
                                 </div>
                             )}
