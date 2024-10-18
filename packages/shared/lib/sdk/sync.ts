@@ -167,6 +167,7 @@ export interface AuthModes {
     None: 'NONE';
     TBA: 'TBA';
     Tableau: 'TABLEAU';
+    Jwt: 'JWT';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 
@@ -248,6 +249,15 @@ interface TableauCredentials extends CredentialsCommon {
     token?: string;
     expires_at?: Date | undefined;
 }
+interface JWTCredentials {
+    type: AuthModes['Jwt'];
+    api_key?: string;
+    privateKeyId?: string;
+    issuerId?: string;
+    privateKey?: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
 interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
@@ -265,6 +275,7 @@ type AuthCredentials =
     | UnauthCredentials
     | TbaCredentials
     | TableauCredentials
+    | JWTCredentials
     | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
@@ -604,6 +615,7 @@ export class NangoAction {
         | CustomCredentials
         | TbaCredentials
         | TableauCredentials
+        | JWTCredentials
     > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);

@@ -132,6 +132,16 @@ export interface TableauCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
+export interface JWTCredentials {
+    type: 'JWT';
+    api_key?: string;
+    privateKeyId?: string;
+    issuerId?: string;
+    privateKey?: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
+
 export type RefreshTokenResponse = AuthorizationTokenResponse;
 
 export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {

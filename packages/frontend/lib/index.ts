@@ -16,6 +16,7 @@ import type {
     OAuth2ClientCredentials,
     TBACredentials,
     TableauCredentials,
+    JWTCredentials,
     OAuthCredentialsOverride
 } from './types';
 import { AuthorizationStatus, WSMessageType } from './types.js';
@@ -287,6 +288,7 @@ export default class Nango {
             | AppStoreCredentials
             | TBACredentials
             | TableauCredentials
+            | JWTCredentials
             | OAuth2ClientCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
@@ -301,6 +303,24 @@ export default class Nango {
             params['apiKey'] = credentials.apiKey || '';
         }
 
+        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials || 'api_key' in credentials) {
+            const jwtParams: Record<string, string> = {};
+            if (credentials.privateKeyId) {
+                jwtParams['privateKeyId'] = credentials.privateKeyId;
+            }
+            if (credentials.issuerId) {
+                jwtParams['issuerId'] = credentials.issuerId;
+            }
+            if (credentials.privateKey) {
+                jwtParams['privateKey'] = credentials.privateKey;
+            }
+
+            if ('api_key' in credentials && credentials.api_key) {
+                jwtParams['api_key'] = credentials.api_key;
+            }
+            return { params: { ...jwtParams, ...params } } as unknown as ConnectionConfig;
+        }
+
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             const appStoreCredentials: { params: Record<string, string | string[]> } = {
                 params: {
@@ -310,7 +330,7 @@ export default class Nango {
                 }
             };
 
-            if (credentials.scope) {
+            if ('scope' in credentials && (typeof credentials.scope === 'string' || Array.isArray(credentials.scope))) {
                 appStoreCredentials.params['scope'] = credentials.scope;
             }
             return appStoreCredentials as unknown as ConnectionConfig;
@@ -363,7 +383,15 @@ export default class Nango {
         credentials
     }: {
         authUrl: string;
-        credentials?: ApiKeyCredentials | BasicApiCredentials | AppStoreCredentials | TBACredentials | TableauCredentials | OAuth2ClientCredentials | undefined;
+        credentials?:
+            | ApiKeyCredentials
+            | BasicApiCredentials
+            | AppStoreCredentials
+            | TBACredentials
+            | TableauCredentials
+            | JWTCredentials
+            | OAuth2ClientCredentials
+            | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
             method: 'POST',
@@ -411,6 +439,13 @@ export default class Nango {
         if ('username' in credentials || 'password' in credentials) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as BasicApiCredentials
+            });
+        }
+
+        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials || 'api_key' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/jwt/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as BasicApiCredentials
             });
         }

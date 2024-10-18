@@ -59,6 +59,36 @@ export type PostPublicTableauAuthorization = Endpoint<{
     };
 }>;
 
+export type PostPublicJwtAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        api_key?: string;
+        privateKeyId?: string;
+        issuerId?: string;
+        privateKey?: string;
+    };
+    Querystring: {
+        connection_id?: string | undefined;
+        params?: Record<string, any> | undefined;
+        hmac?: string | undefined;
+    };
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/jwt';
+    Error:
+        | ApiError<'invalid_body'>
+        | ApiError<'invalid_query_params'>
+        | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
+        | ApiError<'invalid_auth_mode'>
+        | ApiError<'invalid_credentials'>;
+    Success: {
+        providerConfigKey: string;
+        connectionId: string;
+    };
+}>;
+
 export type PostPublicUnauthenticatedAuthorization = Endpoint<{
     Method: 'POST';
     Querystring: {

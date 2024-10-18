@@ -10,6 +10,7 @@ export interface AuthModes {
     None: 'NONE';
     TBA: 'TBA';
     Tableau: 'TABLEAU';
+    Jwt: 'JWT';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -140,6 +141,16 @@ export interface TableauCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
+export interface JWTCredentials {
+    type: AuthModes['Jwt'];
+    api_key?: string;
+    privateKeyId?: string;
+    issuerId?: string;
+    privateKey?: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
+
 export type UnauthCredentials = Record<string, never>;
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;
@@ -159,4 +170,5 @@ export type AllAuthCredentials =
     | UnauthCredentials
     | CustomCredentials
     | TbaCredentials
-    | TableauCredentials;
+    | TableauCredentials
+    | JWTCredentials;

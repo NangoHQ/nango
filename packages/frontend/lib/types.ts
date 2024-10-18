@@ -33,6 +33,7 @@ export interface ConnectionConfig {
         | AppStoreCredentials
         | TBACredentials
         | TableauCredentials
+        | JWTCredentials
         | OAuth2ClientCredentials;
 }
 
@@ -68,6 +69,13 @@ export interface TableauCredentials {
     pat_name: string;
     pat_secret: string;
     content_url?: string;
+}
+
+export interface JWTCredentials {
+    api_key?: string;
+    privateKeyId?: string;
+    issuerId?: string;
+    privateKey?: string;
 }
 
 export interface OAuth2ClientCredentials {
