@@ -40,7 +40,7 @@ const queryStringValidation = z
     })
     .strict();
 
-const paramValidation = z
+const paramsValidation = z
     .object({
         providerConfigKey: providerConfigKeySchema
     })
@@ -63,10 +63,10 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
         return;
     }
 
-    const paramVal = paramValidation.safeParse(req.params);
-    if (!paramVal.success) {
+    const paramsVal = paramsValidation.safeParse(req.params);
+    if (!paramsVal.success) {
         res.status(400).send({
-            error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramVal.error) }
+            error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramsVal.error) }
         });
         return;
     }
@@ -74,7 +74,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
     const { account, environment } = res.locals;
     const { username: userName, password: password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
     const { connection_id: receivedConnectionId, params, hmac }: PostPublicBillAuthorization['Querystring'] = queryStringVal.data;
-    const { providerConfigKey }: PostPublicBillAuthorization['Params'] = paramVal.data;
+    const { providerConfigKey }: PostPublicBillAuthorization['Params'] = paramsVal.data;
     const connectionConfig = params ? getConnectionConfig(params) : {};
 
     let logCtx: LogContext | undefined;
@@ -126,8 +126,6 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
 
         const { success, error, response: credentials } = await connectionService.getBillCredentials(provider, userName, password, organizationId, devkey);
 
-        console.log(success);
-        console.log(credentials);
         if (!success || !credentials) {
             await logCtx.error('Error during Bill credentials creation', { error, provider: config.provider });
             await logCtx.failed();
