@@ -647,33 +647,42 @@ class ConnectionService {
         await db.knex.batchInsert('_nango_connections', newConnections);
     }
 
-    public async getOldConnections({
+    public async getStaleConnections({
         days,
-        limit
+        limit,
+        cursor
     }: {
         days: number;
         limit: number;
-    }): Promise<{ connection_id: string; provider_config_key: string; account: DBTeam; environment: DBEnvironment }[]> {
+        cursor?: number | undefined;
+    }): Promise<{ connection_id: string; provider_config_key: string; account: DBTeam; environment: DBEnvironment; cursor: number }[]> {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - days);
 
-        type T = Awaited<ReturnType<ConnectionService['getOldConnections']>>;
+        type T = Awaited<ReturnType<ConnectionService['getStaleConnections']>>;
 
-        const result = await db
+        const query = db
             .knex<StoredConnection>(`_nango_connections`)
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
             .select<T>(
-                'connection_id',
-                'unique_key as provider_config_key',
+                '_nango_connections.connection_id as connection_id',
+                '_nango_connections.provider_config_key as provider_config_key',
                 db.knex.raw('row_to_json(_nango_environments.*) as environment'),
-                db.knex.raw('row_to_json(_nango_accounts.*) as account')
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                '_nango_connections.id as cursor'
             )
             .where('_nango_connections.deleted', false)
             .andWhere((builder) => builder.where('last_fetched_at', '<', dateThreshold).orWhereNull('last_fetched_at'))
+            .orderBy('_nango_connections.id', 'asc')
             .limit(limit);
 
+        if (cursor) {
+            query.andWhere('_nango_connections.id', '>', cursor);
+        }
+
+        const result = await query;
         return result || [];
     }
 
@@ -922,8 +931,8 @@ class ConnectionService {
                     });
                 }
 
-                // TODO: this leak credentials to the logs
-                const errorWithPayload = new NangoError(error!.type, connection);
+                const { credentials, ...connectionWithoutCredentials } = connection;
+                const errorWithPayload = new NangoError(error!.type, connectionWithoutCredentials);
 
                 // there was an attempt to refresh the token so clear it from the queue
                 // of connections to refresh if it failed
@@ -936,18 +945,12 @@ class ConnectionService {
                     environment,
                     config
                 });
-
-                // if the credentials were refreshed be sure to set the last fetched date
-                await this.updateLastFetched(connection.id);
             }
 
             connection.credentials = response.credentials as OAuth2Credentials;
         }
 
-        // sample this to reduce writes and load on the db
-        if (Math.random() < 0.33) {
-            await this.updateLastFetched(connection.id);
-        }
+        await this.updateLastFetched(connection.id);
 
         return Ok(connection);
     }
