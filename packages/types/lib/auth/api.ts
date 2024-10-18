@@ -10,6 +10,7 @@ export interface AuthModes {
     None: 'NONE';
     TBA: 'TBA';
     Tableau: 'TABLEAU';
+    Bill: 'BILL';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -131,6 +132,17 @@ export interface TbaCredentials {
     };
 }
 
+export interface BillCredentials extends CredentialsCommon {
+    type: AuthModes['Bill'];
+    username: string;
+    password: string;
+    organization_id: string;
+    dev_key: string;
+    session_id?: string;
+    user_id?: string;
+    expires_at?: Date | undefined;
+}
+
 export interface TableauCredentials extends CredentialsCommon {
     type: AuthModes['Tableau'];
     pat_name: string;
@@ -159,4 +171,5 @@ export type AllAuthCredentials =
     | UnauthCredentials
     | CustomCredentials
     | TbaCredentials
-    | TableauCredentials;
+    | TableauCredentials
+    | BillCredentials;
