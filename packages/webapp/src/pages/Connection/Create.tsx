@@ -442,7 +442,6 @@ export default function IntegrationCreate() {
         if (integration?.authMode === 'JWT') {
             const credentials: string[] = [];
             if (api_key) {
-                console.log('asdasdasssss');
                 credentials.push(`api_key: '${api_key}'`);
             }
             if (privateKeyId) {

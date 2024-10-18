@@ -169,7 +169,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             return;
         }
 
-        await logCtx.info('GhostAdmin connection creation was successful');
+        await logCtx.info('JWT connection creation was successful');
         await logCtx.success();
 
         const [updatedConnection] = await connectionService.upsertJWTConnection({
