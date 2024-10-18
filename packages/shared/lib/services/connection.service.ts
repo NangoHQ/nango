@@ -393,47 +393,29 @@ class ConnectionService {
         environment: DBEnvironment;
         account: DBTeam;
     }): Promise<ConnectionUpsertResponse[]> {
-        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
+        const encryptedConnection = encryptionManager.encryptConnection({
+            connection_id: connectionId,
+            provider_config_key: providerConfigKey,
+            config_id: config.id as number,
+            credentials,
+            connection_config: connectionConfig || {},
+            environment_id: environment.id,
+            metadata: metadata || null
+        });
 
-        if (storedConnection) {
-            const encryptedConnection = encryptionManager.encryptConnection({
-                connection_id: connectionId,
-                config_id: config.id as number,
-                provider_config_key: providerConfigKey,
-                credentials,
-                connection_config: connectionConfig || storedConnection.connection_config,
-                environment_id: environment.id,
-                metadata: metadata || storedConnection.metadata || null
-            });
-            (encryptedConnection as Connection).updated_at = new Date();
-            const connection = await db.knex
-                .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id!, deleted: false })
-                .update(encryptedConnection)
-                .returning('*');
-
-            void analytics.track(AnalyticsTypes.BILL_CONNECTION_INSERTED, account.id, { provider: config.provider });
-
-            return [{ connection: connection[0]!, operation: 'override' }];
-        }
-        const connection = await db.knex
+        const [connection] = await db.knex
             .from<StoredConnection>(`_nango_connections`)
-            .insert(
-                encryptionManager.encryptConnection({
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    config_id: config.id as number,
-                    credentials,
-                    metadata: metadata || null,
-                    connection_config: connectionConfig || {},
-                    environment_id: environment.id
-                })
-            )
+            .insert(encryptedConnection)
+            .onConflict(['connection_id', 'provider_config_key', 'environment_id'])
+            .merge({
+                ...encryptedConnection,
+                updated_at: new Date()
+            })
             .returning('*');
 
         void analytics.track(AnalyticsTypes.BILL_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
-        return [{ connection: connection[0]!, operation: 'creation' }];
+        return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
     }
 
     public async upsertUnauthConnection({
