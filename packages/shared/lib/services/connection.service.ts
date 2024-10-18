@@ -27,24 +27,15 @@ import type {
     BasicApiCredentials,
     ConnectionUpsertResponse
 } from '../models/Auth.js';
-import {
-    interpolateStringFromObject,
-    interpolateString,
-    parseTokenExpirationDate,
-    isTokenExpired,
-    getRedisUrl,
-    parseTableauTokenExpirationDate
-} from '../utils/utils.js';
-import { Locking } from '../utils/lock/locking.js';
-import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
-import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
-import type { KVStore } from '../utils/kvstore/KVStore.js';
+import { interpolateStringFromObject, interpolateString, parseTokenExpirationDate, isTokenExpired, parseTableauTokenExpirationDate } from '../utils/utils.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
 import { SlackService } from './notification/slack.service.js';
 import { getProvider } from './providers.js';
 import { v4 as uuidv4 } from 'uuid';
+import { locking } from '../clients/locking.js';
+import type { Lock, Locking } from '../utils/lock/locking.js';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -1119,14 +1110,15 @@ class ConnectionService {
         // NOTES:
         // - This is not a distributed lock and will not work in a multi-redis environment.
         // - It could also be unsafe in case of a Redis crash.
-        const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
+        let lock: Lock | null = null;
         try {
             const ttlInMs = 10000;
             const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
 
             let connectionToRefresh: Connection;
             try {
-                await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
+                const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
+                lock = await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
                 // Another refresh was running so we check if the credentials were refreshed
                 // If yes, we return the new credentials
                 // If not, we proceed with the refresh
@@ -1193,7 +1185,9 @@ class ConnectionService {
 
             return { success: false, error, response: null };
         } finally {
-            await this.locking.release(lockKey);
+            if (lock) {
+                await this.locking.release(lock);
+            }
         }
     }
 
@@ -1600,17 +1594,5 @@ class ConnectionService {
         }
     }
 }
-
-const locking = await (async () => {
-    let store: KVStore;
-    const url = getRedisUrl();
-    if (url) {
-        store = new RedisKVStore(url);
-        await (store as RedisKVStore).connect();
-    } else {
-        store = new InMemoryKVStore();
-    }
-    return new Locking(store);
-})();
 
 export default new ConnectionService(locking);
