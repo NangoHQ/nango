@@ -532,6 +532,14 @@ class OAuthController {
                     ...allAuthParams
                 });
 
+                if (provider.authorization_url_fragment) {
+                    const urlObj = new URL(authorizationUri);
+                    const { search } = urlObj;
+                    urlObj.search = '';
+
+                    authorizationUri = `${urlObj.toString()}#${provider.authorization_url_fragment}${search}`;
+                }
+
                 if (provider.authorization_url_replacements) {
                     const urlReplacements = provider.authorization_url_replacements || {};
 

@@ -112,20 +112,15 @@ class ConnectionController {
             providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
 
             const result: ConnectionList[] = connections.map((connection) => {
-                const list: ConnectionList = {
+                return {
                     id: connection.id,
                     connection_id: connection.connection_id,
                     provider_config_key: connection.provider,
                     provider: uniqueKeyToProvider[connection.provider] as string,
                     created: connection.created,
-                    metadata: connection.metadata
+                    metadata: connection.metadata,
+                    errors: connection.active_logs
                 };
-
-                if (isWeb) {
-                    list.active_logs = connection.active_logs;
-                }
-
-                return list;
             });
 
             res.status(200).send({

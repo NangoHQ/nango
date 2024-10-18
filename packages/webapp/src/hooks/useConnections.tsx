@@ -11,7 +11,7 @@ export function useConnections(env: string) {
 
     const loading = !data && !error;
 
-    const errorNotifications = data && data.connections ? data?.connections?.filter((connection) => connection.active_logs)?.length : 0;
+    const errorNotifications = data && data.connections ? data?.connections?.filter((connection) => connection.errors.length > 0)?.length : 0;
 
     return {
         loading,

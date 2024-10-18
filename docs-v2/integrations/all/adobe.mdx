@@ -3,7 +3,7 @@ title: Adobe
 sidebarTitle: Adobe
 ---
 
-API configuration: [`adobe`](https://nango.dev/providers.yaml)
+API configuration: [`adobe`](https://nango.dev/providers.yaml),[`adobe-umapi`](https://nango.dev/providers.yaml) for Adobe user management API
 
 ## Features
 
@@ -23,6 +23,8 @@ API configuration: [`adobe`](https://nango.dev/providers.yaml)
 -   [OAuth-related docs](https://developer.adobe.com/developer-console/docs/guides/authentication/OAuth)
 -   [Adding an Adobe service](https://developer.adobe.com/developer-console/docs/guides/services/services-add-api-oauth/)
 -   [List of OAuth scopes](https://developer.adobe.com/developer-console/docs/guides/authentication/OAuth/Scopes/)
+-   [UMAPI authentication](https://adobe-apiplatform.github.io/umapi-documentation/en/UM_Authentication.html)
+-   [UMAPI API docs](https://adobe-apiplatform.github.io/umapi-documentation/en/RefOverview.html)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
@@ -32,5 +34,8 @@ API configuration: [`adobe`](https://nango.dev/providers.yaml)
 -   Depending on the selected API, some platforms may not be available to be used with that API. Select the platform that best suits your application use case if more than one platform is available.
 -   When creating an API make, it is important to web app as the type of application you are integrating too. (Not all apps support OAuth 2.0.)
 -   To refresh the token, simply use `nango.getConnection()` to generate a new set of tokens.
+-   Adobe provides [UMAPI](https://developer.adobe.com/UMAPI/) Adobe user management API, which gives you programmatic access to users, groups, and entitlements for Adobe products and services.
+-   UMAPI is only available to the [enterprise plan](https://community.adobe.com/t5/enterprise-teams-discussions/is-the-user-management-api-available-only-for-enterprise-customers/td-p/12159610)
+-   UMAPI enforces API rate limiting, please refer to the Throttling section of each API to determine its limitations. e.g, [Throttling](https://adobe-apiplatform.github.io/umapi-documentation/en/api/getUsersREST.html#getUsersRESTThrottle) for the Get All Users in Organization API.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adobe.mdx)</Note>

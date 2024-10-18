@@ -51,7 +51,7 @@ export default function ConnectionList() {
         if (data) {
             setConnections(data.connections);
             setFilteredConnections(data.connections);
-            setNumberOfErroredConnections(data.connections.filter((connection) => connection.active_logs).length);
+            setNumberOfErroredConnections(data.connections.filter((connection) => connection.errors.length > 0).length);
         }
     }, [data]);
 
@@ -68,15 +68,15 @@ export default function ConnectionList() {
 
             if (states.length !== 0 && !states.includes('all') && !(states.includes('ok') && states.includes('error'))) {
                 if (states.includes('error')) {
-                    filtered = filtered?.filter((connection) => connection.active_logs);
+                    filtered = filtered?.filter((connection) => connection.errors.length > 0);
                 }
                 if (states.includes('ok')) {
-                    filtered = filtered?.filter((connection) => !connection.active_logs);
+                    filtered = filtered?.filter((connection) => connection.errors.length === 0);
                 }
             }
 
             setFilteredConnections(filtered || []);
-            setNumberOfErroredConnections((filtered || []).filter((connection) => connection.active_logs).length);
+            setNumberOfErroredConnections((filtered || []).filter((connection) => connection.errors.length > 0).length);
         }
     }, [connectionSearch, selectedIntegration, states, data]);
 
@@ -256,7 +256,7 @@ export default function ConnectionList() {
                                 <div className="w-24">Created</div>
                             </div>
                             {filteredConnections.map(
-                                ({ id, connection_id: connectionId, provider, provider_config_key: providerConfigKey, created: creationDate, active_logs }) => (
+                                ({ id, connection_id: connectionId, provider, provider_config_key: providerConfigKey, created: creationDate, errors }) => (
                                     <div
                                         key={`tr-${id}`}
                                         className={`flex gap-4 ${
@@ -268,7 +268,7 @@ export default function ConnectionList() {
                                     >
                                         <div className="flex items-center w-2/3 gap-2 py-2 truncate">
                                             <span className="break-words break-all truncate">{connectionId}</span>
-                                            {active_logs && <ErrorCircle />}
+                                            {errors.length > 0 && <ErrorCircle />}
                                             <CopyButton text={connectionId} />
                                         </div>
                                         <div className="flex items-center w-1/3 gap-3">

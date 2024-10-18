@@ -76,6 +76,7 @@ export interface BaseProvider {
     connection_configuration?: string[];
     connection_config?: Record<string, SimplifiedJSONSchema>;
     credentials?: Record<string, SimplifiedJSONSchema>;
+    authorization_url_fragment?: string;
 }
 
 export interface ProviderOAuth2 extends BaseProvider {

@@ -3,14 +3,14 @@ title: Apollo
 sidebarTitle: Apollo
 ---
 
-API configuration: [`apollo`](https://nango.dev/providers.yaml)
+API configuration: [`apollo`](https://nango.dev/providers.yaml), [`apollo-oauth`](https://nango.dev/providers.yaml)
 
 
 ## Features
 
 | Features | Status |
 | - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
+| [Auth (OAuth + API Key)](/integrate/guides/authorize-an-api) | ✅ |
 | [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
 | [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
 | [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
@@ -21,12 +21,16 @@ API configuration: [`apollo`](https://nango.dev/providers.yaml)
 ## Getting started
 
 -   [Generate a Apollo API token in your Apollo developer account](https://developer.apollo.io/keys/)
+-   [How to register your Oauth Application](https://knowledge.apollo.io/hc/en-us/articles/28620185633549-Use-OAuth-2-0-Authorization-Flow-to-Access-Apollo-User-Information-Partners#toc_4)
+-   [OAuth related docs](https://knowledge.apollo.io/hc/en-us/articles/28620185633549-Use-OAuth-2-0-Authorization-Flow-to-Access-Apollo-User-Information-Partners#toc_3)
+-   [List of OAuth scopes](https://docs.google.com/spreadsheets/d/1zyJYwrgOESOYAOQIDameATCYhc3_njMaOkJ5BEM57xc/edit?pli=1)
 -   [Apollo API docs](https://apolloio.github.io/apollo-api-docs/)
+-   [API rate liming](https://apolloio.github.io/apollo-api-docs/#rate-limits)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
 ## API gotchas
 
-- Apollo uses API_KEY auth mode with query param: Param `api_token` in the request url to access different endpoints.
+- Apollo offers both OAuth and API_KEY authentication modes. For the API_KEY auth mode, it uses the query parameter `api_token` in the request URL to access different endpoints.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/apollo.mdx)</Note>
