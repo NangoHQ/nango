@@ -17,8 +17,8 @@ describe('Locking', () => {
     });
 
     it('should acquire and release a lock', async () => {
-        await locking.acquire(KEY, 1000);
-        await locking.release(KEY);
+        const lock = await locking.acquire(KEY, 1000);
+        await locking.release(lock);
     });
 
     it('should throws an error if ttlInMs is not positive', async () => {
@@ -43,9 +43,9 @@ describe('Locking', () => {
     });
 
     it('should wait and acquire a released lock', async () => {
-        await locking.acquire(KEY, 1000);
+        const lock = await locking.acquire(KEY, 1000);
         setTimeout(() => {
-            locking.release(KEY);
+            locking.release(lock);
         }, 500);
         await expect(locking.tryAcquire(KEY, 200, 1000)).resolves.not.toThrow();
     });
