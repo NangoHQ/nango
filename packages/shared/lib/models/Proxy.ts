@@ -45,8 +45,6 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
     token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials | TbaCredentials | TableauCredentials | JwtCredentials;
     provider: Provider;
     connection: Connection;
-    sessionId?: string;
-    devKey?: string;
 }
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
