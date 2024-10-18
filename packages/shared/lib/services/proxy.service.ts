@@ -81,8 +81,6 @@ class ProxyService {
         let endpoint = passedEndpoint;
 
         let token;
-        let sessionId;
-        let devKey;
         switch (connection.credentials.type) {
             case 'OAUTH2':
                 {
@@ -117,14 +115,6 @@ class ProxyService {
                 {
                     const credentials = connection.credentials;
                     token = credentials.token;
-                }
-                break;
-
-            case 'BILL':
-                {
-                    const credentials = connection.credentials;
-                    sessionId = credentials.session_id;
-                    devKey = credentials.dev_key;
                 }
                 break;
         }
@@ -192,8 +182,6 @@ class ProxyService {
             method: method?.toUpperCase() as HTTP_VERB,
             provider,
             token: token || '',
-            sessionId: sessionId || '',
-            devKey: devKey || '',
             providerName,
             providerConfigKey,
             connectionId,
@@ -471,16 +459,6 @@ class ProxyService {
                     const token = config.token as TableauCredentials;
                     headers = {
                         'X-tableau-Auth': token
-                    };
-                }
-                break;
-            case 'BILL':
-                {
-                    const sessionId = config.sessionId;
-                    const devKey = config.devKey;
-                    headers = {
-                        sessionId,
-                        devKey
                     };
                 }
                 break;
