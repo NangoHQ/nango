@@ -1568,18 +1568,18 @@ class ConnectionService {
         const now = Math.floor(Date.now() / 1000);
         const payload = {
             iat: now,
-            exp: now + provider.token_payload.expires_in_ms / 1000,
-            aud: provider.token_payload.token_audience
+            exp: now + provider.token.expires_in_ms / 1000,
+            aud: provider.token.payload.aud
         };
 
         const header = {
-            alg: provider.token_headers.algorithm,
+            alg: provider.token.headers.alg,
             kid: privateKeyId
         };
 
         try {
-            const token = this.generateJWT(payload, Buffer.from(privateKey, 'hex'), { algorithm: provider.token_headers.algorithm, header });
-            const expiresAt = new Date(Date.now() + provider.token_payload.expires_in_ms);
+            const token = this.generateJWT(payload, Buffer.from(privateKey, 'hex'), { algorithm: provider.token.headers.alg, header });
+            const expiresAt = new Date(Date.now() + provider.token.expires_in_ms);
             const credentials: JWTCredentials = {
                 type: 'JWT',
                 api_key: apiKey || '',

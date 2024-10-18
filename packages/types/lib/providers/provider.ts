@@ -113,12 +113,14 @@ export interface ProviderOAuth1 extends BaseProvider {
 }
 
 export interface ProviderJwt extends BaseProvider {
-    token_headers: {
-        algorithm: string;
-    };
-    token_payload: {
+    token: {
         expires_in_ms: number;
-        token_audience: string;
+        headers: {
+            alg: string;
+        };
+        payload: {
+            aud: string;
+        };
     };
 }
 export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt;

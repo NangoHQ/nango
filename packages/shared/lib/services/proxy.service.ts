@@ -5,7 +5,7 @@ import * as crypto from 'node:crypto';
 import { axiosInstance as axios, SIGNATURE_METHOD } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
-import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials, JWTCredentials } from '../models/Auth.js';
+import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
 import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
@@ -468,14 +468,6 @@ class ProxyService {
                     };
                 }
                 break;
-            case 'JWT':
-                {
-                    const token = config.token as JWTCredentials;
-                    headers = {
-                        Authorization: `Bearer ${token}`
-                    };
-                }
-                break;
             case 'API_KEY':
                 headers = {};
                 break;
@@ -507,6 +499,7 @@ class ProxyService {
                         case 'API_KEY':
                         case 'OAUTH2_CC':
                         case 'TABLEAU':
+                        case 'JWT':
                             if (value.includes('connectionConfig')) {
                                 value = value.replace(/connectionConfig\./g, '');
                                 tokenPair = config.connection.connection_config;
@@ -516,14 +509,6 @@ class ProxyService {
                             break;
                         default:
                             tokenPair = config.token;
-                            break;
-                        case 'JWT':
-                            if (value.includes('connectionConfig')) {
-                                value = value.replace(/connectionConfig\./g, '');
-                                tokenPair = config.connection.connection_config;
-                            } else {
-                                tokenPair = config.token;
-                            }
                             break;
                     }
                     acc[key] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);

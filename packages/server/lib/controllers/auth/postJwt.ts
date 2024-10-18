@@ -1,4 +1,5 @@
 import type { NextFunction } from 'express';
+import tracer from 'dd-trace';
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP, stringifyError } from '@nangohq/utils';
@@ -17,7 +18,11 @@ import type { PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import {
+    connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
+    connectionTest as connectionTestHook
+} from '../../hooks/hooks.js';
 import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 
 const bodyValidation = z
@@ -143,6 +148,29 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         await logCtx.success();
 
         const connectionId = receivedConnectionId || connectionService.generateConnectionId();
+
+        const connectionResponse = await connectionTestHook(
+            config.provider,
+            provider,
+            credentials,
+            connectionId,
+            providerConfigKey,
+            environment.id,
+            connectionConfig,
+            tracer
+        );
+
+        if (connectionResponse.isErr()) {
+            await logCtx.error('Provided credentials are invalid', { provider: config.provider });
+            await logCtx.failed();
+
+            errorManager.errResFromNangoErr(res, connectionResponse.error);
+
+            return;
+        }
+
+        await logCtx.info('GhostAdmin connection creation was successful');
+        await logCtx.success();
 
         const [updatedConnection] = await connectionService.upsertJWTConnection({
             connectionId,
