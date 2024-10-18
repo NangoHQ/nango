@@ -10,11 +10,28 @@ export function ensureDirectoryExists(directoryName: string): void {
     }
 }
 
-export function saveResponse<T>({ directoryName, data, customFilePath }: { directoryName: string; data: T; customFilePath: string }): void {
+function saveResponse<T>({
+    directoryName,
+    data,
+    customFilePath,
+    concatenateIfExists
+}: {
+    directoryName: string;
+    data: T | T[];
+    customFilePath: string;
+    concatenateIfExists: boolean;
+}): void {
     ensureDirectoryExists(`${directoryName}/mocks`);
 
     const filePath = path.join(directoryName, customFilePath);
     ensureDirectoryExists(path.dirname(filePath));
+
+    if (fs.existsSync(filePath)) {
+        const existingData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        if (concatenateIfExists && Array.isArray(existingData) && Array.isArray(data)) {
+            data = data.concat(existingData);
+        }
+    }
 
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
@@ -43,25 +60,34 @@ export function onAxiosRequestFulfilled({
         saveResponse<Pick<Connection, 'metadata' | 'connection_config'>>({
             directoryName,
             data: { metadata: connection.metadata as Metadata, connection_config: connection.connection_config },
-            customFilePath: 'mocks/nango/getConnection.json'
+            customFilePath: 'mocks/nango/getConnection.json',
+            concatenateIfExists: false
         });
 
         saveResponse<Metadata>({
             directoryName,
             data: connection.metadata as Metadata,
-            customFilePath: 'mocks/nango/getMetadata.json'
+            customFilePath: 'mocks/nango/getMetadata.json',
+            concatenateIfExists: false
         });
 
         return response;
     }
 
-    const pathname: string = response.request.path.split('?')[0];
+    const [pathname, params] = response.request.path.split('?');
     const strippedPath = pathname.replace('/', '');
+
+    let concatenateIfExists = false;
+
+    if (params && params.includes('page')) {
+        concatenateIfExists = true;
+    }
 
     saveResponse<AxiosResponse>({
         directoryName,
         data: response.data,
-        customFilePath: `mocks/nango/${method}/${strippedPath}/${syncName}.json`
+        customFilePath: `mocks/nango/${method}/${strippedPath}/${syncName}.json`,
+        concatenateIfExists
     });
 
     return response;
