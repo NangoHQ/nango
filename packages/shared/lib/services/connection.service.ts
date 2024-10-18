@@ -642,15 +642,10 @@ class ConnectionService {
         // Parse the token expiration date.
         if (connection != null) {
             const credentials = connection.credentials as
-                |
                 | OAuth1Credentials
-
                 | OAuth2Credentials
-
                 | AppCredentials
-
                 | OAuth2ClientCredentials
-
                 | TableauCredentials
                 | JwtCredentials
                 | BillCredentials;
@@ -1258,15 +1253,10 @@ class ConnectionService {
                 freshCredentials: shouldRefresh
                     ? null
                     : (connection.credentials as
-                          |
                           | OAuth2Credentials
-
                           | AppCredentials
-
                           | AppStoreCredentials
-
                           | OAuth2ClientCredentials
-
                           | TableauCredentials
                           | JwtCredentials
                           | BillCredentials)
