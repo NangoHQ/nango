@@ -3605,6 +3605,16 @@ integrations:
                 input: IdEntity
                 endpoint: GET /single-article
                 output: Article
+            create-user:
+                description: Creates a user in Intercom
+                input: IntercomCreateUser
+                endpoint: POST /users
+                output: User
+            delete-user:
+                description: Deletes a user in Intercom
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
         syncs:
             conversations:
                 runs: every 6 hours
@@ -3636,9 +3646,18 @@ integrations:
                 track_deletes: true
                 version: 1.0.0
                 endpoint: GET /articles
+            users:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of users from Intercom
+                output: User
+                sync_type: incremental
+                endpoint: GET /users
         models:
             IdEntity:
                 id: string
+            SuccessResponse:
+                success: boolean
             Contact:
                 id: string
                 workspace_id: string
@@ -3741,6 +3760,26 @@ integrations:
                 pt-BR: ArticleContent | null
                 zh-CN: ArticleContent | null
                 zh-TW: ArticleContent | null
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            IntercomCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                external_id?: string
+                phone?: string
+                avatar?: string
+                signed_up_at?: number
+                last_seen_at?: number
+                owner_id?: string
+                unsubscribed_from_emails?: boolean
     jira:
         syncs:
             issues:
