@@ -1,38 +1,44 @@
 import * as cron from 'node-cron';
-import type { Lock } from '@nangohq/shared';
+import type { Lock, NangoError } from '@nangohq/shared';
 import { errorManager, ErrorSourceEnum, connectionService, locking } from '@nangohq/shared';
+import type { Result } from '@nangohq/utils';
 import { stringifyError, getLogger, metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
-import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from './hooks/hooks.js';
+import {
+    connectionRefreshFailed as connectionRefreshFailedHook,
+    connectionRefreshSuccess as connectionRefreshSuccessHook,
+    connectionTest
+} from './hooks/hooks.js';
 import tracer from 'dd-trace';
+import type { ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, Provider, TbaCredentials } from '@nangohq/types';
 
 const logger = getLogger('Server');
-const cronName = '[refreshTokens]';
-const cronMinutes = 10;
+const cronName = '[refreshConnections]';
+const cronMinutes = 1;
 
-export function refreshTokens(): void {
+export function refreshConnectionsCron(): void {
     cron.schedule(`*/${cronMinutes} * * * *`, () => {
         (async () => {
             const start = Date.now();
             try {
                 await exec();
             } catch (err: unknown) {
-                const e = new Error('failed_to_refresh_tokens', {
+                const e = new Error('failed_to_refresh_connections', {
                     cause: err instanceof Error ? err.message : String(err)
                 });
                 errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
             } finally {
-                metrics.duration(metrics.Types.REFRESH_TOKENS, Date.now() - start);
+                metrics.duration(metrics.Types.REFRESH_CONNECTIONS, Date.now() - start);
             }
         })().catch((error: unknown) => {
-            logger.error('Failed to execute refreshTokens cron job');
+            logger.error('Failed to execute refreshConnections cron job');
             logger.error(error);
         });
     });
 }
 
 export async function exec(): Promise<void> {
-    return await tracer.trace<Promise<void>>('nango.server.cron.connectionCheck', async (span) => {
+    return await tracer.trace<Promise<void>>('nango.server.cron.refreshConnections', async (span) => {
         let lock: Lock | undefined;
         try {
             logger.info(`${cronName} starting`);
@@ -52,7 +58,7 @@ export async function exec(): Promise<void> {
             const limit = 1000;
             // eslint-disable-next-line no-constant-condition
             while (true) {
-                const staleConnections = await connectionService.getStaleConnections({ days: 1, limit, cursor });
+                const staleConnections = await connectionService.getStaleConnections({ days: 0, limit, cursor });
                 logger.info(`${cronName} found ${staleConnections.length} stale connections`);
                 for (const staleConnection of staleConnections) {
                     if (Date.now() - startTimestamp > ttlMs) {
@@ -60,7 +66,7 @@ export async function exec(): Promise<void> {
                         return;
                     }
                     const { connection_id, environment, provider_config_key, account } = staleConnection;
-                    logger.info(`${cronName} refreshing token for connectionId: ${connection_id}, accountId: ${account.id}`);
+                    logger.info(`${cronName} refreshing connection '${connection_id}' for accountId '${account.id}'`);
                     try {
                         const credentialResponse = await connectionService.getConnectionCredentials({
                             account,
@@ -70,16 +76,17 @@ export async function exec(): Promise<void> {
                             logContextGetter,
                             instantRefresh: false,
                             onRefreshSuccess: connectionRefreshSuccessHook,
-                            onRefreshFailed: connectionRefreshFailedHook
+                            onRefreshFailed: connectionRefreshFailedHook,
+                            connectionTestHook
                         });
                         if (credentialResponse.isOk()) {
-                            metrics.increment(metrics.Types.REFRESH_TOKENS_SUCCESS);
+                            metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
                         } else {
-                            metrics.increment(metrics.Types.REFRESH_TOKENS_FAILED);
+                            metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
                         }
                     } catch (err) {
-                        logger.error(`${cronName} failed to refresh token for connectionId: ${connection_id} ${stringifyError(err)}`);
-                        metrics.increment(metrics.Types.REFRESH_TOKENS_FAILED);
+                        logger.error(`${cronName} failed to refresh connection '${connection_id}' ${stringifyError(err)}`);
+                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
                     }
                     cursor = staleConnection.cursor;
                 }
@@ -98,4 +105,16 @@ export async function exec(): Promise<void> {
             }
         }
     });
+}
+
+function connectionTestHook(
+    providerName: string,
+    provider: Provider,
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials,
+    connectionId: string,
+    providerConfigKey: string,
+    environment_id: number,
+    connection_config: ConnectionConfig
+): Promise<Result<boolean, NangoError>> {
+    return connectionTest(providerName, provider, credentials, connectionId, providerConfigKey, environment_id, connection_config, tracer);
 }

@@ -155,7 +155,8 @@ export const connectionRefreshFailed = async ({
     authError,
     environment,
     provider,
-    config
+    config,
+    action
 }: {
     connection: Connection;
     environment: DBEnvironment;
@@ -163,10 +164,11 @@ export const connectionRefreshFailed = async ({
     config: IntegrationConfig;
     authError: { type: string; description: string };
     logCtx: LogContext;
+    action: 'token_refresh' | 'connection_test';
 }): Promise<void> => {
     await errorNotificationService.auth.create({
         type: 'auth',
-        action: 'token_refresh',
+        action,
         connection_id: connection.id!,
         log_id: logCtx.id,
         active: true

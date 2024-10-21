@@ -954,7 +954,8 @@ class ConnectionService {
         logContextGetter,
         instantRefresh,
         onRefreshSuccess,
-        onRefreshFailed
+        onRefreshFailed,
+        connectionTestHook = undefined
     }: {
         account: DBTeam;
         environment: DBEnvironment;
@@ -970,7 +971,19 @@ class ConnectionService {
             environment: DBEnvironment;
             provider: Provider;
             config: ProviderConfig;
+            action: 'token_refresh' | 'connection_test';
         }) => Promise<void>;
+        connectionTestHook?:
+            | ((
+                  providerName: string,
+                  provider: Provider,
+                  credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials,
+                  connectionId: string,
+                  providerConfigKey: string,
+                  environment_id: number,
+                  connection_config: ConnectionConfig
+              ) => Promise<Result<boolean, NangoError>>)
+            | undefined;
     }): Promise<Result<Connection, NangoError>> {
         if (connectionId === null) {
             const error = new NangoError('missing_connection');
@@ -1050,7 +1063,8 @@ class ConnectionService {
                         },
                         environment,
                         provider,
-                        config
+                        config,
+                        action: 'token_refresh'
                     });
                 }
 
@@ -1071,6 +1085,58 @@ class ConnectionService {
             }
 
             connection.credentials = response.credentials as OAuth2Credentials;
+        } else if (connection?.credentials?.type === 'BASIC' || connection?.credentials?.type === 'API_KEY' || connection?.credentials?.type === 'TBA') {
+            if (connectionTestHook) {
+                const result = await connectionTestHook(
+                    config.provider,
+                    provider,
+                    connection.credentials,
+                    connection.connection_id,
+                    providerConfigKey,
+                    environment.id,
+                    connection.connection_config
+                );
+                if (result.isErr()) {
+                    const logCtx = await logContextGetter.create(
+                        { operation: { type: 'auth', action: 'connection_test' } },
+                        {
+                            account,
+                            environment,
+                            integration: config ? { id: config.id, name: config.unique_key, provider: config.provider } : undefined,
+                            connection: { id: connection.id, name: connection.connection_id }
+                        }
+                    );
+
+                    await logCtx.error('Failed to verify connection', result.error);
+                    await logCtx.failed();
+                    await onRefreshFailed({
+                        connection,
+                        logCtx,
+                        authError: {
+                            type: result.error.type,
+                            description: result.error.message
+                        },
+                        environment,
+                        provider,
+                        config,
+                        action: 'connection_test'
+                    });
+
+                    // there was an attempt to test the credentials
+                    // so clear it from the queue if it failed
+                    await this.updateLastFetched(connection.id);
+
+                    const { credentials, ...connectionWithoutCredentials } = connection;
+                    const errorWithPayload = new NangoError(result.error.type, connectionWithoutCredentials);
+                    return Err(errorWithPayload);
+                } else {
+                    await onRefreshSuccess({
+                        connection,
+                        environment,
+                        config
+                    });
+                }
+            }
         }
 
         await this.updateLastFetched(connection.id);
