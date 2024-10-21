@@ -290,7 +290,7 @@ class ConnectionService {
         const [connection] = await db.knex
             .from<StoredConnection>(`_nango_connections`)
             .insert(encryptedConnection)
-            .onConflict(['connection_id', 'provider_config_key', 'environment_id'])
+            .onConflict(['connection_id', 'provider_config_key', 'environment_id', 'deleted_at'])
             .merge({
                 ...encryptedConnection,
                 updated_at: new Date()
@@ -397,7 +397,7 @@ class ConnectionService {
         const [connection] = await db.knex
             .from<StoredConnection>(`_nango_connections`)
             .insert(encryptedConnection)
-            .onConflict(['connection_id', 'provider_config_key', 'environment_id'])
+            .onConflict(['connection_id', 'provider_config_key', 'environment_id', 'deleted_at'])
             .merge({
                 ...encryptedConnection,
                 updated_at: new Date()
