@@ -577,7 +577,7 @@ bill:
     auth_mode: BILL
     token_url: https://gateway.prod.bill.com/connect/v3/login
     proxy:
-        base_url: https://gateway.prod.bill.com/connect/
+        base_url: https://gateway.prod.bill.com/connect
     docs: https://docs.nango.dev/integrations/all/bill
 
 bitbucket:
