@@ -76,6 +76,7 @@ export interface BaseProvider {
     connection_configuration?: string[];
     connection_config?: Record<string, SimplifiedJSONSchema>;
     credentials?: Record<string, SimplifiedJSONSchema>;
+    authorization_url_fragment?: string;
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
@@ -111,4 +112,15 @@ export interface ProviderOAuth1 extends BaseProvider {
     signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
 }
 
-export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2;
+export interface ProviderJwt extends BaseProvider {
+    token: {
+        expires_in_ms: number;
+        headers: {
+            alg: string;
+        };
+        payload: {
+            aud: string;
+        };
+    };
+}
+export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt;

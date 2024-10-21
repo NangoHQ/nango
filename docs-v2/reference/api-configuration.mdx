@@ -193,7 +193,7 @@ slack:
 </ResponseField>
 
 <ResponseField name="auth_mode" type="string" >
-    The authentication mode. Must be one of: "API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU".
+    The authentication mode. Must be one of: "API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU", "JWT".
 </ResponseField>
 
 <ResponseField name="auth" type="object">
@@ -445,6 +445,10 @@ slack:
 
 <ResponseField name="webhook_routing_script" type="array">
     Specifies a script to handle external [webhooks](/understand/concepts/webhooks).
+</ResponseField>
+
+<ResponseField name="authorization_url_fragment" type="string">
+    Specifies a fragment to be appended to the authorization URL, typically used to modify the redirection flow or pass additional information in the URL before the query parameters.
 </ResponseField>
 
 <ResponseField name="connection_config" type="object">

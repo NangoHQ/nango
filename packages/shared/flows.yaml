@@ -889,7 +889,40 @@ integrations:
                 endpoint: GET /event/invitees
                 output: EventInvitee
                 description: For all events (active and canceled) retrieve the event invitees
+            users:
+                runs: every day
+                description: Fetches a list of users from Calendly
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+        actions:
+            create-user:
+                description: Creates a user in Calendly
+                endpoint: POST /users
+                output: User
+                input: CreateUser
+                scopes:
+                    - admin
+            delete-user:
+                description: Deletes a user in Calendly
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - admin
         models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                email: string
             Event:
                 id: string
                 uri: string
@@ -2402,6 +2435,114 @@ integrations:
                     coordinators: string[]
                     sourcers: string[]
                 openings: string[]
+    gusto:
+        actions:
+            create-user:
+                description: Creates a user in Gusto.
+                output: User
+                endpoint: POST /users
+                input: GustoCreateUser
+                scopes:
+                    - employees:manage
+            delete-user:
+                description: Deletes a user in Gusto.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: GustoDeleteUser
+                scopes:
+                    - employments:write
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Gusto.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - employees:read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            GustoCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth: string
+                ssn?: string
+                selfOnboarding?: boolean
+            GustoDeleteUser:
+                id: string
+                effectiveDate?: string
+                runTerminationPayroll?: boolean
+    gusto-demo:
+        actions:
+            create-user:
+                description: Creates a user in Gusto.
+                output: User
+                endpoint: POST /users
+                input: GustoCreateUser
+                scopes:
+                    - employees:manage
+            delete-user:
+                description: Deletes a user in Gusto.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: GustoDeleteUser
+                scopes:
+                    - employments:write
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Gusto.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - employees:read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            GustoCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth: string
+                ssn?: string
+                selfOnboarding?: boolean
+            GustoDeleteUser:
+                id: string
+                effectiveDate?: string
+                runTerminationPayroll?: boolean
     hackerrank-work:
         syncs:
             interviews:
@@ -3253,6 +3394,12 @@ integrations:
                 campaign_id: string
                 name: string
     intercom:
+        actions:
+            fetch-article:
+                description: Fetch a single article from Intercom
+                input: IdEntity
+                endpoint: GET /single-article
+                output: Article
         syncs:
             conversations:
                 runs: every 6 hours
@@ -3285,6 +3432,8 @@ integrations:
                 version: 1.0.0
                 endpoint: GET /articles
         models:
+            IdEntity:
+                id: string
             Contact:
                 id: string
                 workspace_id: string
@@ -3433,8 +3582,8 @@ integrations:
         models:
             JiraIssueMetadata:
                 projectIdsToSync: JiraProjectId[]
-                cloudId: string
-                baseUrl: string
+                cloudId?: string
+                baseUrl?: string
             JiraProjectId:
                 id: string
             Timestamps:

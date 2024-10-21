@@ -193,6 +193,36 @@ export default function Authorization(props: AuthorizationProps) {
                     <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.refresh_token} copy={true} />
                 </div>
             )}
+            {connection.credentials.type === 'JWT' && connection.credentials.issuerId && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Issuer ID</span>
+                    <SecretInput disabled defaultValue={connection.credentials.issuerId} copy={true} />
+                </div>
+            )}
+
+            {connection.credentials.type === 'JWT' && connection.credentials.privateKeyId && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Private Key ID</span>
+                    <SecretInput disabled defaultValue={connection.credentials.privateKeyId} copy={true} />
+                </div>
+            )}
+
+            {connection.credentials.type === 'JWT' && connection.credentials.privateKey && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">
+                        {typeof connection.credentials.privateKey === 'string' ? 'Private Key' : 'API Key'}
+                    </span>
+                    <SecretInput
+                        disabled
+                        defaultValue={
+                            typeof connection.credentials.privateKey === 'string'
+                                ? connection.credentials.privateKey
+                                : `${(connection.credentials.privateKey as { id: string; secret: string }).id}:${(connection.credentials.privateKey as { id: string; secret: string }).secret}`
+                        }
+                        copy={true}
+                    />
+                </div>
+            )}
             <div className="flex flex-col">
                 <span className="text-gray-400 text-xs uppercase mb-2">Connection Configuration</span>
                 <Prism language="json" colorScheme="dark">
