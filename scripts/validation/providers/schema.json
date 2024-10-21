@@ -212,6 +212,30 @@
                         }
                     }
                 },
+                "token": {
+                    "type": "object",
+                    "properties": {
+                        "expires_in_ms": {
+                            "type": "number"
+                        },
+                        "headers": {
+                            "type": "object",
+                            "properties": {
+                                "alg": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "payload": {
+                            "type": "object",
+                            "properties": {
+                                "aud": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
                 "redirect_uri_metadata": {
                     "type": "array",
                     "items": {
