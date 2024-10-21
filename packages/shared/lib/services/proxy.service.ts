@@ -117,6 +117,12 @@ class ProxyService {
                     token = credentials.token;
                 }
                 break;
+            case 'JWT':
+                {
+                    const credentials = connection.credentials;
+                    token = credentials.token;
+                }
+                break;
         }
 
         logs.push({
@@ -493,6 +499,7 @@ class ProxyService {
                         case 'API_KEY':
                         case 'OAUTH2_CC':
                         case 'TABLEAU':
+                        case 'JWT':
                             if (value.includes('connectionConfig')) {
                                 value = value.replace(/connectionConfig\./g, '');
                                 tokenPair = config.connection.connection_config;

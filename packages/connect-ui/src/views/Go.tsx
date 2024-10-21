@@ -39,6 +39,17 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
         pat_secret: z.string().min(1),
         content_url: z.string().min(1)
     }),
+    JWT: z.object({
+        privateKeyId: z.string().optional(),
+        issuerId: z.string().optional(),
+        privateKey: z.union([
+            z.object({
+                id: z.string(),
+                secret: z.string()
+            }),
+            z.string()
+        ])
+    }),
     TBA: z.object({
         oauth_client_id_override: z.string().min(1),
         oauth_client_secret_override: z.string().min(1),

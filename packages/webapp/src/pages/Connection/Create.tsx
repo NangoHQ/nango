@@ -205,6 +205,29 @@ export default function IntegrationCreate() {
                 content_url: contentUrl
             };
         }
+
+        if (authMode === 'JWT') {
+            if (integration?.provider.includes('ghost-admin')) {
+                const privateKeyFormat = /^([^:]+):([^:]+)$/;
+                if (!privateKeyFormat.test(privateKey)) {
+                    toast.error('The API key should be in the format id:secret.', {
+                        position: toast.POSITION.BOTTOM_CENTER
+                    });
+                    return;
+                }
+                const [id, secret] = privateKey.split(':');
+                credentials = {
+                    privateKey: { id, secret }
+                };
+            } else {
+                credentials = {
+                    privateKeyId,
+                    issuerId,
+                    privateKey
+                };
+            }
+        }
+
         const connectionConfig = {
             user_scope: authMode === 'NONE' ? undefined : selectedScopes || [],
             params,
@@ -426,6 +449,28 @@ export default function IntegrationCreate() {
             }
         }
 
+        let jwtCredentialsString = '';
+
+        if (integration?.authMode === 'JWT') {
+            const credentials: string[] = [];
+            if (privateKeyId) {
+                credentials.push(`privateKeyId: '${privateKeyId}'`);
+            }
+            if (issuerId) {
+                credentials.push(`issuerId: '${issuerId}'`);
+            }
+            if (privateKey) {
+                credentials.push(`privateKey: '${privateKey}'`);
+            }
+            if (credentials.length > 0) {
+                jwtCredentialsString = `
+                credentials: {
+                    ${credentials.join(',\n            ')}
+                }
+                `;
+            }
+        }
+
         let oauth2ClientCredentialsString = '';
 
         if (integration?.authMode === 'OAUTH2_CC') {
@@ -470,6 +515,7 @@ export default function IntegrationCreate() {
             !oauthCredentialsString &&
             !oauth2ClientCredentialsString &&
             !tableauCredentialsString &&
+            !jwtCredentialsString &&
             !tbaCredentialsString
                 ? ''
                 : ', { ' +
@@ -483,6 +529,7 @@ export default function IntegrationCreate() {
                       oauthCredentialsString,
                       oauth2ClientCredentialsString,
                       tableauCredentialsString,
+                      jwtCredentialsString,
                       tbaCredentialsString
                   ]
                       .filter(Boolean)
@@ -771,7 +818,6 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                     </div>
                                 </div>
                             )}
-
                             {integration?.connectionConfigParams?.map((paramName: string) => (
                                 <div key={paramName}>
                                     <div className="flex mt-6">
@@ -927,7 +973,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </div>
                             )}
 
-                            {authMode === 'APP_STORE' && (
+                            {(authMode === 'APP_STORE' || authMode === 'JWT') && !integration?.provider.includes('ghost-admin') && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
@@ -1012,6 +1058,27 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             name="private_key"
                                             optionalValue={privateKey}
                                             setOptionalValue={(value) => setPrivateKey(value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {authMode === 'JWT' && integration?.provider.includes('ghost-admin') && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
+                                            API Key
+                                        </label>
+                                    </div>
+
+                                    <div className="mt-1">
+                                        <SecretInput
+                                            copy={true}
+                                            id="privateKey"
+                                            name="privateKey"
+                                            optionalValue={privateKey}
+                                            setOptionalValue={setPrivateKey}
                                             required
                                         />
                                     </div>

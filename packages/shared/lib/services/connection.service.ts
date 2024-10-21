@@ -14,15 +14,16 @@ import { NangoError } from '../utils/error.js';
 import type { ConnectionConfig, Connection, StoredConnection, NangoConnection } from '../models/Connection.js';
 import type {
     Metadata,
-    ActiveLogIds,
     Provider,
+    ProviderJwt,
     ProviderOAuth2,
     AuthModeType,
     TbaCredentials,
     TableauCredentials,
     MaybePromise,
     DBTeam,
-    DBEnvironment
+    DBEnvironment,
+    JwtCredentials
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -262,6 +263,50 @@ class ConnectionService {
         void analytics.track(AnalyticsTypes.TABLEAU_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
         return [{ connection: connection[0]!, operation: 'creation' }];
+    }
+
+    public async upsertJwtConnection({
+        connectionId,
+        providerConfigKey,
+        credentials,
+        connectionConfig,
+        metadata,
+        config,
+        environment,
+        account
+    }: {
+        connectionId: string;
+        providerConfigKey: string;
+        credentials: JwtCredentials;
+        connectionConfig?: ConnectionConfig;
+        config: ProviderConfig;
+        metadata?: Metadata | null;
+        environment: DBEnvironment;
+        account: DBTeam;
+    }): Promise<ConnectionUpsertResponse[]> {
+        const encryptedConnection = encryptionManager.encryptConnection({
+            connection_id: connectionId,
+            provider_config_key: providerConfigKey,
+            config_id: config.id as number,
+            credentials,
+            connection_config: connectionConfig || {},
+            environment_id: environment.id,
+            metadata: metadata || null
+        });
+
+        const [connection] = await db.knex
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(encryptedConnection)
+            .onConflict(['connection_id', 'provider_config_key', 'environment_id'])
+            .merge({
+                ...encryptedConnection,
+                updated_at: new Date()
+            })
+            .returning('*');
+
+        void analytics.track(AnalyticsTypes.JWT_CONNECTION_INSERTED, account.id, { provider: config.provider });
+
+        return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
     }
 
     public async upsertApiConnection({
@@ -550,7 +595,13 @@ class ConnectionService {
 
         // Parse the token expiration date.
         if (connection != null) {
-            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials | AppCredentials | OAuth2ClientCredentials | TableauCredentials;
+            const credentials = connection.credentials as
+                | OAuth1Credentials
+                | OAuth2Credentials
+                | AppCredentials
+                | OAuth2ClientCredentials
+                | TableauCredentials
+                | JwtCredentials;
             if (credentials.type && credentials.type === 'OAUTH2') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
@@ -570,6 +621,12 @@ class ConnectionService {
             }
 
             if (credentials.type && credentials.type === 'TABLEAU') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'JWT') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
@@ -758,7 +815,9 @@ class ConnectionService {
     public async listConnections(
         environment_id: number,
         connectionId?: string
-    ): Promise<{ id: number; connection_id: string; provider: string; created: string; metadata: Metadata; active_logs: ActiveLogIds }[]> {
+    ): Promise<
+        { id: number; connection_id: string; provider: string; created: string; metadata: Metadata; active_logs: [{ type: string; log_id: string }] }[]
+    > {
         const queryBuilder = db.knex
             .from<Connection>(`_nango_connections`)
             .select(
@@ -768,15 +827,15 @@ class ConnectionService {
                 { created: '_nango_connections.created_at' },
                 '_nango_connections.metadata',
                 db.knex.raw(`
-                  (SELECT json_build_object(
+                  (SELECT COALESCE(json_agg(json_build_object(
+                      'type', type,
                       'log_id', log_id
-                    )
+                    )), '[]'::json)
                     FROM ${ACTIVE_LOG_TABLE}
                     WHERE _nango_connections.id = ${ACTIVE_LOG_TABLE}.connection_id
                       AND ${ACTIVE_LOG_TABLE}.active = true
-                    LIMIT 1
                   ) as active_logs
-                `)
+               `)
             )
             .where({
                 environment_id: environment_id,
@@ -901,7 +960,8 @@ class ConnectionService {
             connection?.credentials?.type === 'OAUTH2' ||
             connection?.credentials?.type === 'APP' ||
             connection?.credentials?.type === 'OAUTH2_CC' ||
-            connection?.credentials?.type === 'TABLEAU'
+            connection?.credentials?.type === 'TABLEAU' ||
+            connection?.credentials?.type === 'JWT'
         ) {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connectionId: connection.connection_id,
@@ -954,12 +1014,18 @@ class ConnectionService {
                     environment,
                     config
                 });
+
+                // if the credentials were refreshed be sure to set the last fetched date
+                await this.updateLastFetched(connection.id);
             }
 
             connection.credentials = response.credentials as OAuth2Credentials;
         }
 
-        await this.updateLastFetched(connection.id);
+        // sample this to reduce writes and load on the db
+        if (Math.random() < 0.33) {
+            await this.updateLastFetched(connection.id);
+        }
 
         return Ok(connection);
     }
@@ -1085,7 +1151,7 @@ class ConnectionService {
     }): Promise<
         ServiceResponse<{
             refreshed: boolean;
-            credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials;
+            credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | JwtCredentials;
         }>
     > {
         const providerConfigKey = providerConfig.unique_key;
@@ -1093,7 +1159,7 @@ class ConnectionService {
         // fetch connection and return credentials if they are fresh
         const getConnectionAndFreshCredentials = async (): Promise<{
             connection: Connection;
-            freshCredentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | null;
+            freshCredentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | JwtCredentials | null;
         }> => {
             const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
 
@@ -1113,7 +1179,13 @@ class ConnectionService {
                 connection,
                 freshCredentials: shouldRefresh
                     ? null
-                    : (connection.credentials as OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials)
+                    : (connection.credentials as
+                          | OAuth2Credentials
+                          | AppCredentials
+                          | AppStoreCredentials
+                          | OAuth2ClientCredentials
+                          | TableauCredentials
+                          | JwtCredentials)
             };
         };
 
@@ -1173,7 +1245,7 @@ class ConnectionService {
             }
 
             connectionToRefresh.credentials = newCredentials;
-            await this.updateConnection(connectionToRefresh);
+            await this.updateConnection({ ...connectionToRefresh, updated_at: new Date() });
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
@@ -1229,7 +1301,7 @@ class ConnectionService {
             success,
             error,
             response: rawCredentials
-        } = await this.getJWTCredentials(privateKey, tokenUrl, payload, null, {
+        } = await this.formatAndGetJWTCredentials(privateKey, tokenUrl, payload, null, {
             header: {
                 alg: 'ES256',
                 kid: connectionConfig['privateKeyId'],
@@ -1315,7 +1387,11 @@ class ConnectionService {
             payload['iss'] = connectionConfig['app_id'];
         }
 
-        const { success, error, response: rawCredentials } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
+        const {
+            success,
+            error,
+            response: rawCredentials
+        } = await this.formatAndGetJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
 
         if (!success || !rawCredentials) {
             return { success, error, response: null };
@@ -1454,6 +1530,67 @@ class ConnectionService {
         }
     }
 
+    public getJwtCredentials(
+        provider: ProviderJwt,
+        privateKey: { id: string; secret: string } | string,
+        privateKeyId?: string,
+        issuerId?: string
+    ): ServiceResponse<JwtCredentials> {
+        const originalPrivateKey = privateKey;
+        const originalPrivateKeyId = privateKeyId;
+
+        if (typeof privateKey === 'object') {
+            privateKeyId = privateKey.id;
+            privateKey = privateKey.secret;
+        }
+
+        if (!privateKey) {
+            throw new NangoError('invalid_jwt_private_key');
+        }
+        if (!privateKeyId) {
+            throw new NangoError('invalid_jwt_private_key_id');
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        const payload = {
+            ...provider.token.payload,
+            iat: now,
+            exp: now + provider.token.expires_in_ms / 1000
+        };
+        const header = {
+            ...provider.token.headers,
+            alg: provider.token.headers.alg,
+            kid: privateKeyId
+        };
+
+        try {
+            const token = this.generateJWT(payload, Buffer.from(privateKey, 'hex'), { algorithm: provider.token.headers.alg, header });
+            const expiresAt = new Date(Date.now() + provider.token.expires_in_ms);
+
+            const credentials: JwtCredentials = {
+                type: 'JWT',
+                privateKeyId: originalPrivateKeyId || '',
+                issuerId: issuerId || '',
+                privateKey: originalPrivateKey,
+                token,
+                expires_at: expiresAt
+            };
+
+            return { success: true, error: null, response: credentials };
+        } catch (err) {
+            const error = new NangoError('jwt_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
+            return { success: false, error, response: null };
+        }
+    }
+
+    private generateJWT(payload: Record<string, string | number>, secretOrPrivateKey: string | Buffer, options: object): string {
+        try {
+            return jwt.sign(payload, secretOrPrivateKey, options);
+        } catch (err) {
+            throw new NangoError('jwt_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
+        }
+    }
+
     public async shouldCapUsage({
         providerConfigKey,
         environmentId,
@@ -1482,7 +1619,7 @@ class ConnectionService {
         return false;
     }
 
-    private async getJWTCredentials(
+    private async formatAndGetJWTCredentials(
         privateKey: string,
         url: string,
         payload: Record<string, string | number>,
@@ -1497,7 +1634,7 @@ class ConnectionService {
         }
 
         try {
-            const token = jwt.sign(payload, privateKey, options);
+            const token = this.generateJWT(payload, privateKey, options);
 
             const headers = {
                 Authorization: `Bearer ${token}`
@@ -1547,7 +1684,7 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         provider: Provider
-    ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials | JwtCredentials>> {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
@@ -1569,6 +1706,15 @@ class ConnectionService {
         } else if (provider.auth_mode === 'APP_STORE') {
             const { private_key } = connection.credentials as AppStoreCredentials;
             const { success, error, response: credentials } = await this.getAppStoreCredentials(provider, connection.connection_config, private_key);
+
+            if (!success || !credentials) {
+                return { success, error, response: null };
+            }
+
+            return { success: true, error: null, response: credentials };
+        } else if (provider.auth_mode === 'JWT') {
+            const { privateKeyId, issuerId, privateKey } = connection.credentials as JwtCredentials;
+            const { success, error, response: credentials } = this.getJwtCredentials(provider as ProviderJwt, privateKey, privateKeyId, issuerId);
 
             if (!success || !credentials) {
                 return { success, error, response: null };
