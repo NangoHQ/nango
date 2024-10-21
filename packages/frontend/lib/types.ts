@@ -33,7 +33,7 @@ export interface ConnectionConfig {
         | AppStoreCredentials
         | TBACredentials
         | TableauCredentials
-        | JWTCredentials
+        | JwtCredentials
         | OAuth2ClientCredentials;
 }
 
@@ -71,11 +71,15 @@ export interface TableauCredentials {
     content_url?: string;
 }
 
-export interface JWTCredentials {
-    api_key?: string;
+export interface JwtCredentials {
     privateKeyId?: string;
     issuerId?: string;
-    privateKey?: string;
+    privateKey:
+        | {
+              id: string;
+              secret: string;
+          }
+        | string; // Colon-separated string for Ghost Admin: 'id:secret'
 }
 
 export interface OAuth2ClientCredentials {

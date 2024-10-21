@@ -57,7 +57,6 @@ export default function IntegrationCreate() {
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
     const [issuerId, setIssuerId] = useState('');
-    const [api_key, setJwtApiKey] = useState('');
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI(env);
     const { providerConfigKey } = useParams();
@@ -208,12 +207,25 @@ export default function IntegrationCreate() {
         }
 
         if (authMode === 'JWT') {
-            credentials = {
-                privateKeyId,
-                issuerId,
-                privateKey,
-                api_key
-            };
+            if (integration?.provider.includes('ghost-admin')) {
+                const privateKeyFormat = /^([^:]+):([^:]+)$/;
+                if (!privateKeyFormat.test(privateKey)) {
+                    toast.error('The API key should be in the format id:secret.', {
+                        position: toast.POSITION.BOTTOM_CENTER
+                    });
+                    return;
+                }
+                const [id, secret] = privateKey.split(':');
+                credentials = {
+                    privateKey: { id, secret }
+                };
+            } else {
+                credentials = {
+                    privateKeyId,
+                    issuerId,
+                    privateKey
+                };
+            }
         }
 
         const connectionConfig = {
@@ -441,9 +453,6 @@ export default function IntegrationCreate() {
 
         if (integration?.authMode === 'JWT') {
             const credentials: string[] = [];
-            if (api_key) {
-                credentials.push(`api_key: '${api_key}'`);
-            }
             if (privateKeyId) {
                 credentials.push(`privateKeyId: '${privateKeyId}'`);
             }
@@ -1064,7 +1073,14 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                     </div>
 
                                     <div className="mt-1">
-                                        <SecretInput copy={true} id="api_key" name="api_key" optionalValue={api_key} setOptionalValue={setJwtApiKey} required />
+                                        <SecretInput
+                                            copy={true}
+                                            id="privateKey"
+                                            name="privateKey"
+                                            optionalValue={privateKey}
+                                            setOptionalValue={setPrivateKey}
+                                            required
+                                        />
                                     </div>
                                 </div>
                             )}

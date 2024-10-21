@@ -508,6 +508,11 @@ export class NangoError extends Error {
                 this.message = `Invalid private key provided for JWT creation.`;
                 break;
 
+            case 'invalid_jwt_private_key_id':
+                this.status = 400;
+                this.message = `Invalid private key Id provided for JWT creation.`;
+                break;
+
             case 'no_config_found':
                 this.status = 400;
                 this.message = 'No nango config found. Please make sure it is present and formatted correctly.';

@@ -27,10 +27,15 @@ import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema 
 
 const bodyValidation = z
     .object({
-        api_key: z.string().optional(),
         privateKeyId: z.string().optional(),
         issuerId: z.string().optional(),
-        privateKey: z.string().optional()
+        privateKey: z.union([
+            z.object({
+                id: z.string(),
+                secret: z.string()
+            }),
+            z.string()
+        ])
     })
     .strict();
 
@@ -77,7 +82,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
     }
 
     const { account, environment } = res.locals;
-    const { api_key = '', privateKeyId = '', issuerId = '', privateKey = '' } = val.data as PostPublicJwtAuthorization['Body'];
+    const { privateKeyId = '', issuerId = '', privateKey } = val.data as PostPublicJwtAuthorization['Body'];
     const { connection_id: receivedConnectionId, params, hmac }: PostPublicJwtAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicJwtAuthorization['Params'] = paramVal.data;
     const connectionConfig = params ? getConnectionConfig(params) : {};
@@ -129,11 +134,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const {
-            success,
-            error,
-            response: credentials
-        } = connectionService.getJwtCredentials(provider as ProviderJwt, privateKeyId, privateKey, issuerId, api_key);
+        const { success, error, response: credentials } = connectionService.getJwtCredentials(provider as ProviderJwt, privateKey, privateKeyId, issuerId);
 
         if (!success || !credentials) {
             await logCtx.error('Error during JWT creation', { error, provider: config.provider });
@@ -172,7 +173,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         await logCtx.info('JWT connection creation was successful');
         await logCtx.success();
 
-        const [updatedConnection] = await connectionService.upsertJWTConnection({
+        const [updatedConnection] = await connectionService.upsertJwtConnection({
             connectionId,
             providerConfigKey,
             credentials,

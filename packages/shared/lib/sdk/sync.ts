@@ -249,12 +249,16 @@ interface TableauCredentials extends CredentialsCommon {
     token?: string;
     expires_at?: Date | undefined;
 }
-interface JWTCredentials {
+interface JwtCredentials {
     type: AuthModes['Jwt'];
-    api_key?: string;
     privateKeyId?: string;
     issuerId?: string;
-    privateKey?: string;
+    privateKey:
+        | {
+              id: string;
+              secret: string;
+          }
+        | string; // Colon-separated string for Ghost Admin: 'id:secret'
     token?: string;
     expires_at?: Date | undefined;
 }
@@ -275,7 +279,7 @@ type AuthCredentials =
     | UnauthCredentials
     | TbaCredentials
     | TableauCredentials
-    | JWTCredentials
+    | JwtCredentials
     | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
@@ -615,7 +619,7 @@ export class NangoAction {
         | CustomCredentials
         | TbaCredentials
         | TableauCredentials
-        | JWTCredentials
+        | JwtCredentials
     > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);

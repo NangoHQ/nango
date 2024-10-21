@@ -23,7 +23,7 @@ import type {
     MaybePromise,
     DBTeam,
     DBEnvironment,
-    JWTCredentials
+    JwtCredentials
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -265,7 +265,7 @@ class ConnectionService {
         return [{ connection: connection[0]!, operation: 'creation' }];
     }
 
-    public async upsertJWTConnection({
+    public async upsertJwtConnection({
         connectionId,
         providerConfigKey,
         credentials,
@@ -277,54 +277,36 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials: JWTCredentials;
+        credentials: JwtCredentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
         environment: DBEnvironment;
         account: DBTeam;
     }): Promise<ConnectionUpsertResponse[]> {
-        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
+        const encryptedConnection = encryptionManager.encryptConnection({
+            connection_id: connectionId,
+            provider_config_key: providerConfigKey,
+            config_id: config.id as number,
+            credentials,
+            connection_config: connectionConfig || {},
+            environment_id: environment.id,
+            metadata: metadata || null
+        });
 
-        if (storedConnection) {
-            const encryptedConnection = encryptionManager.encryptConnection({
-                connection_id: connectionId,
-                config_id: config.id as number,
-                provider_config_key: providerConfigKey,
-                credentials,
-                connection_config: connectionConfig || storedConnection.connection_config,
-                environment_id: environment.id,
-                metadata: metadata || storedConnection.metadata || null
-            });
-            (encryptedConnection as Connection).updated_at = new Date();
-            const connection = await db.knex
-                .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id!, deleted: false })
-                .update(encryptedConnection)
-                .returning('*');
-
-            void analytics.track(AnalyticsTypes.TABLEAU_CONNECTION_INSERTED, account.id, { provider: config.provider });
-
-            return [{ connection: connection[0]!, operation: 'override' }];
-        }
-        const connection = await db.knex
+        const [connection] = await db.knex
             .from<StoredConnection>(`_nango_connections`)
-            .insert(
-                encryptionManager.encryptConnection({
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    config_id: config.id as number,
-                    credentials,
-                    metadata: metadata || null,
-                    connection_config: connectionConfig || {},
-                    environment_id: environment.id
-                })
-            )
+            .insert(encryptedConnection)
+            .onConflict(['connection_id', 'provider_config_key', 'environment_id'])
+            .merge({
+                ...encryptedConnection,
+                updated_at: new Date()
+            })
             .returning('*');
 
         void analytics.track(AnalyticsTypes.JWT_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
-        return [{ connection: connection[0]!, operation: 'creation' }];
+        return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
     }
 
     public async upsertApiConnection({
@@ -619,7 +601,7 @@ class ConnectionService {
                 | AppCredentials
                 | OAuth2ClientCredentials
                 | TableauCredentials
-                | JWTCredentials;
+                | JwtCredentials;
             if (credentials.type && credentials.type === 'OAUTH2') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
@@ -1169,7 +1151,7 @@ class ConnectionService {
     }): Promise<
         ServiceResponse<{
             refreshed: boolean;
-            credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | JWTCredentials;
+            credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | JwtCredentials;
         }>
     > {
         const providerConfigKey = providerConfig.unique_key;
@@ -1177,7 +1159,7 @@ class ConnectionService {
         // fetch connection and return credentials if they are fresh
         const getConnectionAndFreshCredentials = async (): Promise<{
             connection: Connection;
-            freshCredentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | JWTCredentials | null;
+            freshCredentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | JwtCredentials | null;
         }> => {
             const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
 
@@ -1203,7 +1185,7 @@ class ConnectionService {
                           | AppStoreCredentials
                           | OAuth2ClientCredentials
                           | TableauCredentials
-                          | JWTCredentials)
+                          | JwtCredentials)
             };
         };
 
@@ -1546,33 +1528,33 @@ class ConnectionService {
 
     public getJwtCredentials(
         provider: ProviderJwt,
+        privateKey: { id: string; secret: string } | string,
         privateKeyId?: string,
-        privateKey?: string,
-        issuerId?: string,
-        apiKey?: string
-    ): ServiceResponse<JWTCredentials> {
-        if (apiKey) {
-            const apiKeyParts = apiKey.split(':');
-            if (apiKeyParts.length === 2 && apiKeyParts[0] && apiKeyParts[1]) {
-                privateKeyId = apiKeyParts[0];
-                privateKey = apiKeyParts[1];
-            } else {
-                throw new NangoError(`invalid_api_key_format`);
-            }
+        issuerId?: string
+    ): ServiceResponse<JwtCredentials> {
+        const originalPrivateKey = privateKey;
+        const originalPrivateKeyId = privateKeyId;
+
+        if (typeof privateKey === 'object') {
+            privateKeyId = privateKey.id;
+            privateKey = privateKey.secret;
         }
 
         if (!privateKey) {
-            throw new NangoError(`invalid_jwt_private_key`);
+            throw new NangoError('invalid_jwt_private_key');
+        }
+        if (!privateKeyId) {
+            throw new NangoError('invalid_jwt_private_key_id');
         }
 
         const now = Math.floor(Date.now() / 1000);
         const payload = {
+            ...provider.token.payload,
             iat: now,
-            exp: now + provider.token.expires_in_ms / 1000,
-            aud: provider.token.payload.aud
+            exp: now + provider.token.expires_in_ms / 1000
         };
-
         const header = {
+            ...provider.token.headers,
             alg: provider.token.headers.alg,
             kid: privateKeyId
         };
@@ -1580,12 +1562,12 @@ class ConnectionService {
         try {
             const token = this.generateJWT(payload, Buffer.from(privateKey, 'hex'), { algorithm: provider.token.headers.alg, header });
             const expiresAt = new Date(Date.now() + provider.token.expires_in_ms);
-            const credentials: JWTCredentials = {
+
+            const credentials: JwtCredentials = {
                 type: 'JWT',
-                api_key: apiKey || '',
-                privateKeyId: privateKey,
+                privateKeyId: originalPrivateKeyId || '',
                 issuerId: issuerId || '',
-                privateKey: privateKey,
+                privateKey: originalPrivateKey,
                 token,
                 expires_at: expiresAt
             };
@@ -1698,7 +1680,7 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         provider: Provider
-    ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials | JWTCredentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials | JwtCredentials>> {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
@@ -1727,8 +1709,8 @@ class ConnectionService {
 
             return { success: true, error: null, response: credentials };
         } else if (provider.auth_mode === 'JWT') {
-            const { api_key, privateKeyId, issuerId, privateKey } = connection.credentials as JWTCredentials;
-            const { success, error, response: credentials } = this.getJwtCredentials(provider as ProviderJwt, privateKeyId, privateKey, issuerId, api_key);
+            const { privateKeyId, issuerId, privateKey } = connection.credentials as JwtCredentials;
+            const { success, error, response: credentials } = this.getJwtCredentials(provider as ProviderJwt, privateKey, privateKeyId, issuerId);
 
             if (!success || !credentials) {
                 return { success, error, response: null };

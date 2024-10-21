@@ -16,7 +16,7 @@ import type {
     OAuth2ClientCredentials,
     TBACredentials,
     TableauCredentials,
-    JWTCredentials,
+    JwtCredentials,
     OAuthCredentialsOverride
 } from './types';
 import { AuthorizationStatus, WSMessageType } from './types.js';
@@ -288,7 +288,7 @@ export default class Nango {
             | AppStoreCredentials
             | TBACredentials
             | TableauCredentials
-            | JWTCredentials
+            | JwtCredentials
             | OAuth2ClientCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
@@ -303,8 +303,8 @@ export default class Nango {
             params['apiKey'] = credentials.apiKey || '';
         }
 
-        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials || 'api_key' in credentials) {
-            const jwtParams: Record<string, string> = {};
+        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials) {
+            const jwtParams: Record<string, string | { id: string; secret: string }> = {};
             if (credentials.privateKeyId) {
                 jwtParams['privateKeyId'] = credentials.privateKeyId;
             }
@@ -312,21 +312,21 @@ export default class Nango {
                 jwtParams['issuerId'] = credentials.issuerId;
             }
             if (credentials.privateKey) {
-                jwtParams['privateKey'] = credentials.privateKey;
+                if (typeof credentials.privateKey === 'string') {
+                    jwtParams['privateKey'] = credentials.privateKey;
+                } else if (typeof credentials.privateKey === 'object' && 'id' in credentials.privateKey && 'secret' in credentials.privateKey) {
+                    jwtParams['privateKey'] = credentials.privateKey;
+                }
             }
-
-            if ('api_key' in credentials && credentials.api_key) {
-                jwtParams['api_key'] = credentials.api_key;
-            }
-            return { params: { ...jwtParams, ...params } } as unknown as ConnectionConfig;
+            return { params: jwtParams } as unknown as ConnectionConfig;
         }
 
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             const appStoreCredentials: { params: Record<string, string | string[]> } = {
                 params: {
-                    privateKeyId: credentials.privateKeyId,
-                    issuerId: credentials.issuerId,
-                    privateKey: credentials.privateKey
+                    privateKeyId: credentials.privateKeyId as string,
+                    issuerId: credentials.issuerId as string,
+                    privateKey: credentials.privateKey as string
                 }
             };
 
@@ -389,7 +389,7 @@ export default class Nango {
             | AppStoreCredentials
             | TBACredentials
             | TableauCredentials
-            | JWTCredentials
+            | JwtCredentials
             | OAuth2ClientCredentials
             | undefined;
     }): Promise<AuthResult> {
@@ -443,10 +443,10 @@ export default class Nango {
             });
         }
 
-        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials || 'api_key' in credentials) {
+        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/jwt/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
-                credentials: credentials as BasicApiCredentials
+                credentials: credentials as unknown as JwtCredentials
             });
         }
 

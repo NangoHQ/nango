@@ -132,12 +132,16 @@ export interface TableauCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
-export interface JWTCredentials {
+export interface JwtCredentials {
     type: 'JWT';
-    api_key?: string;
     privateKeyId?: string;
     issuerId?: string;
-    privateKey?: string;
+    privateKey:
+        | {
+              id: string;
+              secret: string;
+          }
+        | string; // Colon-separated string for Ghost Admin: 'id:secret'
     token?: string;
     expires_at?: Date | undefined;
 }

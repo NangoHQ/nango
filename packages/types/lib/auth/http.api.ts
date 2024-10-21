@@ -62,10 +62,14 @@ export type PostPublicTableauAuthorization = Endpoint<{
 export type PostPublicJwtAuthorization = Endpoint<{
     Method: 'POST';
     Body: {
-        api_key?: string;
         privateKeyId?: string;
         issuerId?: string;
-        privateKey?: string;
+        privateKey:
+            | {
+                  id: string;
+                  secret: string;
+              }
+            | string;
     };
     Querystring: {
         connection_id?: string | undefined;
