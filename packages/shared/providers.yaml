@@ -2054,15 +2054,18 @@ ghost-admin:
         - dev-tools
         - design
         - cms
-    auth_mode: GHOST_ADMIN
+    auth_mode: JWT
+    token:
+        expires_in_ms: 300000
+        headers:
+            alg: HS256
+        payload:
+            aud: /admin/
     proxy:
         headers:
             Accept: application/json
             Accept-Version: ${connectionConfig.version}
         base_url: https://${connectionConfig.adminDomain}/ghost/api/admin/
-        verification:
-            method: GET
-            endpoint: /users
     docs: https://docs.nango.dev/integrations/all/ghost
     connection_config:
         adminDomain:

@@ -10,7 +10,7 @@ export interface AuthModes {
     None: 'NONE';
     TBA: 'TBA';
     Tableau: 'TABLEAU';
-    GhostAdmin: 'GHOST_ADMIN';
+    Jwt: 'JWT';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -141,9 +141,16 @@ export interface TableauCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
-export interface GhostAdminCredentials {
-    type: AuthModes['GhostAdmin'];
-    ghost_api_key: string;
+export interface JwtCredentials {
+    type: AuthModes['Jwt'];
+    privateKeyId?: string;
+    issuerId?: string;
+    privateKey:
+        | {
+              id: string;
+              secret: string;
+          }
+        | string; // Colon-separated string for Ghost Admin: 'id:secret'
     token?: string;
     expires_at?: Date | undefined;
 }

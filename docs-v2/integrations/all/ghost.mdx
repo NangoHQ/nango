@@ -9,7 +9,7 @@ API configuration: [`ghost-admin`](https://nango.dev/providers.yaml), [`ghost-co
 
 | Features | Status |
 | - | - |
-| [Auth (Ghost Admin + Api Key)](/integrate/guides/authorize-an-api) | ✅ |
+| [Auth (JWT + Api Key)](/integrate/guides/authorize-an-api) | ✅ |
 | [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
 | [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
 | [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
@@ -29,5 +29,6 @@ API configuration: [`ghost-admin`](https://nango.dev/providers.yaml), [`ghost-co
 ## API gotchas
 
 - Both Admin and Content API keys can be be obtained by creating a new Custom Integration under the Integrations screen in Ghost Admin.
+- For Ghost Admin, the API Key should be in the format `id:secret`.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ghost.mdx)</Note>
