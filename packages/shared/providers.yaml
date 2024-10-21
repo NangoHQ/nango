@@ -2080,13 +2080,6 @@ ghost-admin:
             description: The version of the Ghost Admin API to use
             example: 'v3.0'
             pattern: '^v\d+\.\d+$'
-    credentials:
-        apiKey:
-            type: string
-            title: API Key
-            description: The API key for your Ghost account used to generate JWTs for authentication
-            pattern: '^[a-zA-Z0-9]{24}:[a-zA-Z0-9]{64}$'
-            example: 'a1b2c3d4e5f6a7b8c9d0f4b8:1234abcd5678efgh9012ijklmnop3456qrst7890uvwx5678yzabcdef01234567'
 
 ghost-content:
     display_name: Ghost (Content API)
