@@ -381,7 +381,7 @@ class OAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: 'NONE',
+                        auth_mode: 'OAUTH2_CC',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -1118,7 +1118,7 @@ class OAuthController {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: 'APP',
+                            auth_mode: provider.auth_mode,
                             operation: res.operation
                         },
                         config.provider,

@@ -189,7 +189,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
                 connection: updatedConnection.connection,
                 environment,
                 account,
-                auth_mode: 'NONE',
+                auth_mode: 'TBA',
                 operation: updatedConnection.operation
             },
             config.provider,
