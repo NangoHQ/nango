@@ -13,7 +13,7 @@ import {
     LogActionEnum,
     getProvider
 } from '@nangohq/shared';
-import type { PostPublicTableauAuthorization } from '@nangohq/types';
+import type { PostPublicBillAuthorization } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -22,9 +22,10 @@ import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema 
 
 const bodyValidation = z
     .object({
-        pat_name: z.string().min(1),
-        pat_secret: z.string().min(1),
-        content_url: z.string().optional()
+        username: z.string().min(1),
+        password: z.string().min(1),
+        organization_id: z.string().min(1),
+        dev_key: z.string().min(1)
     })
     .strict();
 
@@ -34,17 +35,18 @@ const queryStringValidation = z
         params: z.record(z.any()).optional(),
         public_key: z.string().uuid().optional(),
         connect_session_token: connectSessionTokenSchema.optional(),
+        user_scope: z.string().optional(),
         hmac: z.string().optional()
     })
     .strict();
 
-const paramValidation = z
+const paramsValidation = z
     .object({
         providerConfigKey: providerConfigKeySchema
     })
     .strict();
 
-export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -61,32 +63,32 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         return;
     }
 
-    const paramVal = paramValidation.safeParse(req.params);
-    if (!paramVal.success) {
+    const paramsVal = paramsValidation.safeParse(req.params);
+    if (!paramsVal.success) {
         res.status(400).send({
-            error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramVal.error) }
+            error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramsVal.error) }
         });
         return;
     }
 
     const { account, environment } = res.locals;
-    const { pat_name: patName, pat_secret: patSecret, content_url: contentUrl }: PostPublicTableauAuthorization['Body'] = val.data;
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
-    const { providerConfigKey }: PostPublicTableauAuthorization['Params'] = paramVal.data;
+    const { username: userName, password: password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
+    const { connection_id: receivedConnectionId, params, hmac }: PostPublicBillAuthorization['Querystring'] = queryStringVal.data;
+    const { providerConfigKey }: PostPublicBillAuthorization['Params'] = paramsVal.data;
     const connectionConfig = params ? getConnectionConfig(params) : {};
 
     let logCtx: LogContext | undefined;
 
     try {
-        const logCtx = await logContextGetter.create(
+        logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'tableau' },
+                meta: { authType: 'bill' },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
         );
-        void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
+        void analytics.track(AnalyticsTypes.PRE_BILL_AUTH, account.id);
 
         await hmacCheck({
             environment,
@@ -113,8 +115,8 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             return;
         }
 
-        if (provider.auth_mode !== 'TABLEAU') {
-            await logCtx.error('Provider does not support Tableau auth', { provider: config.provider });
+        if (provider.auth_mode !== 'BILL') {
+            await logCtx.error('Provider does not support BILL auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -122,26 +124,23 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const {
-            success,
-            error,
-            response: credentials
-        } = await connectionService.getTableauCredentials(provider, patName, patSecret, connectionConfig, contentUrl);
+        const { success, error, response: credentials } = await connectionService.getBillCredentials(provider, userName, password, organizationId, devkey);
 
         if (!success || !credentials) {
-            await logCtx.error('Error during Tableau credentials creation', { error, provider: config.provider });
+            await logCtx.error('Error during Bill credentials creation', { error, provider: config.provider });
             await logCtx.failed();
 
-            errorManager.errRes(res, 'tableau_error');
+            errorManager.errRes(res, 'bill_error');
 
             return;
         }
 
-        await logCtx.info('Tableau credentials creation was successful');
+        const connectionId = receivedConnectionId || connectionService.generateConnectionId();
+
+        await logCtx.info('Bill connection creation was successful');
         await logCtx.success();
 
-        const connectionId = receivedConnectionId || connectionService.generateConnectionId();
-        const [updatedConnection] = await connectionService.upsertTableauConnection({
+        const [updatedConnection] = await connectionService.upsertBillConnection({
             connectionId,
             providerConfigKey,
             credentials,
@@ -159,7 +158,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                     connection: updatedConnection.connection,
                     environment,
                     account,
-                    auth_mode: 'TABLEAU',
+                    auth_mode: 'BILL',
                     operation: updatedConnection.operation
                 },
                 config.provider,
@@ -178,10 +177,10 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                 connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
                 environment,
                 account,
-                auth_mode: 'TABLEAU',
+                auth_mode: 'BILL',
                 error: {
                     type: 'unknown',
-                    description: `Error during Unauth create: ${prettyError}`
+                    description: `Error during Bill create: ${prettyError}`
                 },
                 operation: 'unknown'
             },
@@ -189,7 +188,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             logCtx
         );
         if (logCtx) {
-            await logCtx.error('Error during Tableau credentials creation', { error: err });
+            await logCtx.error('Error during Bill credentials creation', { error: err });
             await logCtx.failed();
         }
 

@@ -1,4 +1,5 @@
 import type { NextFunction } from 'express';
+import tracer from 'dd-trace';
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP, stringifyError } from '@nangohq/utils';
@@ -13,18 +14,28 @@ import {
     LogActionEnum,
     getProvider
 } from '@nangohq/shared';
-import type { PostPublicTableauAuthorization } from '@nangohq/types';
+import type { PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import {
+    connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
+    connectionTest as connectionTestHook
+} from '../../hooks/hooks.js';
 import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 
 const bodyValidation = z
     .object({
-        pat_name: z.string().min(1),
-        pat_secret: z.string().min(1),
-        content_url: z.string().optional()
+        privateKeyId: z.string().optional(),
+        issuerId: z.string().optional(),
+        privateKey: z.union([
+            z.object({
+                id: z.string(),
+                secret: z.string()
+            }),
+            z.string()
+        ])
     })
     .strict();
 
@@ -34,6 +45,7 @@ const queryStringValidation = z
         params: z.record(z.any()).optional(),
         public_key: z.string().uuid().optional(),
         connect_session_token: connectSessionTokenSchema.optional(),
+        user_scope: z.string().optional(),
         hmac: z.string().optional()
     })
     .strict();
@@ -44,7 +56,7 @@ const paramValidation = z
     })
     .strict();
 
-export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -70,23 +82,23 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
     }
 
     const { account, environment } = res.locals;
-    const { pat_name: patName, pat_secret: patSecret, content_url: contentUrl }: PostPublicTableauAuthorization['Body'] = val.data;
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
-    const { providerConfigKey }: PostPublicTableauAuthorization['Params'] = paramVal.data;
+    const { privateKeyId = '', issuerId = '', privateKey } = val.data as PostPublicJwtAuthorization['Body'];
+    const { connection_id: receivedConnectionId, params, hmac }: PostPublicJwtAuthorization['Querystring'] = queryStringVal.data;
+    const { providerConfigKey }: PostPublicJwtAuthorization['Params'] = paramVal.data;
     const connectionConfig = params ? getConnectionConfig(params) : {};
 
     let logCtx: LogContext | undefined;
 
     try {
-        const logCtx = await logContextGetter.create(
+        logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'tableau' },
+                meta: { authType: 'jwt' },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
         );
-        void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
+        void analytics.track(AnalyticsTypes.PRE_JWT_AUTH, account.id);
 
         await hmacCheck({
             environment,
@@ -113,8 +125,8 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             return;
         }
 
-        if (provider.auth_mode !== 'TABLEAU') {
-            await logCtx.error('Provider does not support Tableau auth', { provider: config.provider });
+        if (provider.auth_mode !== 'JWT') {
+            await logCtx.error('Provider does not support JWT auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -122,26 +134,46 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const {
-            success,
-            error,
-            response: credentials
-        } = await connectionService.getTableauCredentials(provider, patName, patSecret, connectionConfig, contentUrl);
+        const { success, error, response: credentials } = connectionService.getJwtCredentials(provider as ProviderJwt, privateKey, privateKeyId, issuerId);
 
         if (!success || !credentials) {
-            await logCtx.error('Error during Tableau credentials creation', { error, provider: config.provider });
+            await logCtx.error('Error during JWT creation', { error, provider: config.provider });
             await logCtx.failed();
 
-            errorManager.errRes(res, 'tableau_error');
+            errorManager.errRes(res, 'jwt_error');
 
             return;
         }
 
-        await logCtx.info('Tableau credentials creation was successful');
+        await logCtx.info('JWT connection creation was successful');
         await logCtx.success();
 
         const connectionId = receivedConnectionId || connectionService.generateConnectionId();
-        const [updatedConnection] = await connectionService.upsertTableauConnection({
+
+        const connectionResponse = await connectionTestHook(
+            config.provider,
+            provider,
+            credentials,
+            connectionId,
+            providerConfigKey,
+            environment.id,
+            connectionConfig,
+            tracer
+        );
+
+        if (connectionResponse.isErr()) {
+            await logCtx.error('Provided credentials are invalid', { provider: config.provider });
+            await logCtx.failed();
+
+            errorManager.errResFromNangoErr(res, connectionResponse.error);
+
+            return;
+        }
+
+        await logCtx.info('JWT connection creation was successful');
+        await logCtx.success();
+
+        const [updatedConnection] = await connectionService.upsertJwtConnection({
             connectionId,
             providerConfigKey,
             credentials,
@@ -159,7 +191,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                     connection: updatedConnection.connection,
                     environment,
                     account,
-                    auth_mode: 'TABLEAU',
+                    auth_mode: 'JWT',
                     operation: updatedConnection.operation
                 },
                 config.provider,
@@ -178,10 +210,10 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                 connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
                 environment,
                 account,
-                auth_mode: 'TABLEAU',
+                auth_mode: 'JWT',
                 error: {
                     type: 'unknown',
-                    description: `Error during Unauth create: ${prettyError}`
+                    description: `Error during JWT create: ${prettyError}`
                 },
                 operation: 'unknown'
             },
@@ -189,7 +221,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             logCtx
         );
         if (logCtx) {
-            await logCtx.error('Error during Tableau credentials creation', { error: err });
+            await logCtx.error('Error during JWT credentials creation', { error: err });
             await logCtx.failed();
         }
 

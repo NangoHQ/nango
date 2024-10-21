@@ -560,6 +560,26 @@ bigcommerce:
             format: uuid
             example: 123e4567-e89b-12d3-a456-426614174000
 
+bill-sandbox:
+    display_name: Bill(Connect API sandbox)
+    categories:
+        - payment
+    auth_mode: BILL
+    token_url: https://gateway.stage.bill.com/connect/v3/login
+    proxy:
+        base_url: https://gateway.stage.bill.com/connect
+    docs: https://docs.nango.dev/integrations/all/bill
+
+bill:
+    display_name: Bill(Connect API)
+    categories:
+        - payment
+    auth_mode: BILL
+    token_url: https://gateway.prod.bill.com/connect/v3/login
+    proxy:
+        base_url: https://gateway.prod.bill.com/connect
+    docs: https://docs.nango.dev/integrations/all/bill
+
 bitbucket:
     display_name: Bitbucket
     categories:
@@ -2135,6 +2155,77 @@ gitlab:
     proxy:
         base_url: https://gitlab.com
     docs: https://docs.nango.dev/integrations/all/gitlab
+
+ghost-admin:
+    display_name: Ghost (Admin API)
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: JWT
+    token:
+        expires_in_ms: 300000
+        headers:
+            alg: HS256
+        payload:
+            aud: /admin/
+    proxy:
+        headers:
+            Accept: application/json
+            Accept-Version: ${connectionConfig.version}
+        base_url: https://${connectionConfig.adminDomain}/ghost/api/admin/
+    docs: https://docs.nango.dev/integrations/all/ghost
+    connection_config:
+        adminDomain:
+            type: string
+            title: Ghost Admin Domain
+            description: The domain of your Ghost Admin which can be different from your main domain
+            example: 'mock.ghost.io'
+            pattern: '^([a-z0-9_-]+\.|)(ghost\.io|[a-z0-9_-]+\.[a-z]{2,})$'
+        version:
+            type: string
+            title: API Version
+            description: The version of the Ghost Admin API to use
+            example: 'v3.0'
+            pattern: '^v\d+\.\d+$'
+
+ghost-content:
+    display_name: Ghost (Content API)
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Accept-Version: ${connectionConfig.version}
+        base_url: https://${connectionConfig.adminDomain}/ghost/api/content/
+        query:
+            key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /tags
+    docs: https://docs.nango.dev/integrations/all/ghost
+    connection_config:
+        version:
+            type: string
+            title: API Version
+            description: The version of the Ghost Admin API to use
+            example: 'v3.0'
+            pattern: '^v\d+\.\d+$'
+        adminDomain:
+            type: string
+            title: Ghost Admin Domain
+            description: The domain of your Ghost Admin which can be different from your main domain
+            example: 'mock.ghost.io'
+            pattern: '^([a-z0-9_-]+\.|)(ghost\.io|[a-z0-9_-]+\.[a-z]{2,})$'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The content API key for your Ghost account
+            pattern: '^[a-zA-Z0-9]{26}$'
+            example: a1b2c3d4e5f6g7h8i9j0k1l2m3
 
 gong:
     display_name: Gong

@@ -59,6 +59,40 @@ export type PostPublicTableauAuthorization = Endpoint<{
     };
 }>;
 
+export type PostPublicJwtAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        privateKeyId?: string;
+        issuerId?: string;
+        privateKey:
+            | {
+                  id: string;
+                  secret: string;
+              }
+            | string;
+    };
+    Querystring: {
+        connection_id?: string | undefined;
+        params?: Record<string, any> | undefined;
+        hmac?: string | undefined;
+    };
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/jwt';
+    Error:
+        | ApiError<'invalid_body'>
+        | ApiError<'invalid_query_params'>
+        | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
+        | ApiError<'invalid_auth_mode'>
+        | ApiError<'invalid_credentials'>;
+    Success: {
+        providerConfigKey: string;
+        connectionId: string;
+    };
+}>;
+
 export type PostPublicUnauthenticatedAuthorization = Endpoint<{
     Method: 'POST';
     Querystring: {
@@ -69,6 +103,36 @@ export type PostPublicUnauthenticatedAuthorization = Endpoint<{
         providerConfigKey: string;
     };
     Path: '/auth/unauthenticated';
+    Error:
+        | ApiError<'invalid_body'>
+        | ApiError<'invalid_query_params'>
+        | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
+        | ApiError<'invalid_auth_mode'>
+        | ApiError<'invalid_credentials'>;
+    Success: {
+        providerConfigKey: string;
+        connectionId: string;
+    };
+}>;
+
+export type PostPublicBillAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        username: string;
+        password: string;
+        organization_id: string;
+        dev_key: string;
+    };
+    Querystring: {
+        connection_id?: string | undefined;
+        params?: Record<string, any> | undefined;
+        hmac?: string | undefined;
+    };
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/bill';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>

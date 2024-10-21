@@ -52,6 +52,8 @@ import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTableauAuthorization } from './controllers/auth/postTableau.js';
+import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
+import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -171,6 +173,8 @@ publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPubli
 publicAPI.route('/app-store-auth/:providerConfigKey').post(connectSessionOrPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
 publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTbaAuthorization);
 publicAPI.route('/auth/tableau/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTableauAuthorization);
+publicAPI.route('/auth/jwt/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicJwtAuthorization);
+publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBillAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
 // @deprecated

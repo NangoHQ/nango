@@ -39,11 +39,28 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
         pat_secret: z.string().min(1),
         content_url: z.string().min(1)
     }),
+    JWT: z.object({
+        privateKeyId: z.string().optional(),
+        issuerId: z.string().optional(),
+        privateKey: z.union([
+            z.object({
+                id: z.string(),
+                secret: z.string()
+            }),
+            z.string()
+        ])
+    }),
     TBA: z.object({
         oauth_client_id_override: z.string().min(1),
         oauth_client_secret_override: z.string().min(1),
         token_id: z.string().min(1),
         token_secret: z.string().min(1)
+    }),
+    BILL: z.object({
+        username: z.string().min(1),
+        password: z.string().min(1),
+        organization_id: z.string().min(1),
+        dev_key: z.string().min(1)
     }),
     CUSTOM: z.object({})
 };
@@ -200,15 +217,6 @@ export const Go: React.FC = () => {
         [provider, integration, loading, nango]
     );
 
-    useEffect(() => {
-        if (!shouldAutoTrigger || !nango) {
-            return;
-        }
-
-        // Auto submit when no fields are required (e.g: oauth2)
-        void form.handleSubmit(onSubmit)();
-    }, [shouldAutoTrigger, nango]);
-
     if (!provider || !integration) {
         // typescript pleasing or if we enter the URL directly
         return <Navigate to="/" />;
@@ -285,57 +293,62 @@ export const Go: React.FC = () => {
             <main className="h-full overflow-auto p-10 pt-1">
                 <Form {...form}>
                     <form className="flex flex-col gap-4 justify-between grow min-h-full" onSubmit={form.handleSubmit(onSubmit)}>
-                        <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger && 'border border-dark-300')}>
-                            {orderedFields.map(([name]) => {
-                                const [type, key] = name.split('.') as ['credentials' | 'params', string];
-                                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                                const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
-                                // Not all fields have a definition in providers.yaml so we fallback to default
-                                const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
-                                const isPreconfigured = preconfigured[key];
+                        {orderedFields.length > 0 && (
+                            <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger && 'border border-dark-300')}>
+                                {orderedFields.map(([name]) => {
+                                    const [type, key] = name.split('.') as ['credentials' | 'params', string];
+                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                                    const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
+                                    // Not all fields have a definition in providers.yaml so we fallback to default
+                                    const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
+                                    const isPreconfigured = preconfigured[key];
 
-                                return (
-                                    <FormField
-                                        key={name}
-                                        control={form.control}
-                                        defaultValue={isPreconfigured ?? definition?.default_value ?? ''}
-                                        // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
-                                        name={name}
-                                        render={({ field }) => {
-                                            return (
-                                                <FormItem className={cn(isPreconfigured || definition?.hidden ? 'hidden' : null)}>
-                                                    <div>
-                                                        <div className="flex gap-2 items-start pb-1">
-                                                            <FormLabel className="leading-4">{definition?.title || base?.title}</FormLabel>
-                                                            {definition?.doc_section && (
-                                                                <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
-                                                                    <IconInfoCircle size={16} />
-                                                                </Link>
-                                                            )}
+                                    return (
+                                        <FormField
+                                            key={name}
+                                            control={form.control}
+                                            defaultValue={isPreconfigured ?? definition?.default_value ?? ''}
+                                            // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
+                                            name={name}
+                                            render={({ field }) => {
+                                                return (
+                                                    <FormItem className={cn(isPreconfigured || definition?.hidden ? 'hidden' : null)}>
+                                                        <div>
+                                                            <div className="flex gap-2 items-start pb-1">
+                                                                <FormLabel className="leading-4">{definition?.title || base?.title}</FormLabel>
+                                                                {definition?.doc_section && (
+                                                                    <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
+                                                                        <IconInfoCircle size={16} />
+                                                                    </Link>
+                                                                )}
+                                                            </div>
+                                                            {definition?.description && <FormDescription>{definition.description}</FormDescription>}
                                                         </div>
-                                                        {definition?.description && <FormDescription>{definition.description}</FormDescription>}
-                                                    </div>
-                                                    <div>
-                                                        <FormControl>
-                                                            <CustomInput
-                                                                placeholder={definition?.example || definition?.title || base?.example}
-                                                                suffix={definition?.suffix}
-                                                                {...field}
-                                                                autoComplete="off"
-                                                                type={base?.secret ? 'password' : 'text'}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </div>
-                                                </FormItem>
-                                            );
-                                        }}
-                                    />
-                                );
-                            })}
-                        </div>
-                        {shouldAutoTrigger && provider.auth_mode !== 'NONE' && (
-                            <div className="text-sm text-dark-500 w-full text-center">{loading && 'A popup is opened...'}</div>
+                                                        <div>
+                                                            <FormControl>
+                                                                <CustomInput
+                                                                    placeholder={definition?.example || definition?.title || base?.example}
+                                                                    suffix={definition?.suffix}
+                                                                    {...field}
+                                                                    autoComplete="off"
+                                                                    type={base?.secret ? 'password' : 'text'}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </div>
+                                                    </FormItem>
+                                                );
+                                            }}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        )}
+                        {shouldAutoTrigger && (
+                            <div className="text-sm text-dark-500 w-full text-center">
+                                We will connect you to {provider.display_name}
+                                {provider.auth_mode === 'OAUTH2' && ". A popup will open, please make sure your browser don't block popup"}
+                            </div>
                         )}
                         <div className="flex flex-col gap-4">
                             {error && (
@@ -361,7 +374,7 @@ export const Go: React.FC = () => {
                                 size={'lg'}
                                 type="submit"
                             >
-                                {error ? 'Try Again' : 'Connect'}
+                                {error ? 'Try Again' : loading ? 'Connecting...' : 'Connect'}
                             </Button>
                         </div>
                     </form>
