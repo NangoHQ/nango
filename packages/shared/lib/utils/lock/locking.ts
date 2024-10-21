@@ -1,6 +1,10 @@
 import { stringifyError } from '@nangohq/utils';
 import type { KVStore } from '../kvstore/KVStore.js';
 
+export interface Lock {
+    readonly key: string;
+}
+
 export class Locking {
     private store: KVStore;
 
@@ -8,7 +12,7 @@ export class Locking {
         this.store = store;
     }
 
-    public async tryAcquire(key: string, ttlInMs: number, acquisitionTimeoutMs: number): Promise<{ tries: number }> {
+    public async tryAcquire(key: string, ttlInMs: number, acquisitionTimeoutMs: number): Promise<Lock> {
         if (ttlInMs <= 0) {
             throw new Error(`lock's TTL must be greater than 0`);
         }
@@ -17,20 +21,18 @@ export class Locking {
         }
 
         const start = Date.now();
-        let tries = 0;
         while (Date.now() - start < acquisitionTimeoutMs) {
             try {
                 await this.acquire(key, ttlInMs);
-                return { tries };
+                return { key };
             } catch {
-                tries += 1;
                 await new Promise((resolve) => setTimeout(resolve, 50));
             }
         }
         throw new Error(`Acquiring lock for key: ${key} timed out after ${acquisitionTimeoutMs}ms`);
     }
 
-    public async acquire(key: string, ttlInMs: number): Promise<void> {
+    public async acquire(key: string, ttlInMs: number): Promise<Lock> {
         if (ttlInMs <= 0) {
             throw new Error(`lock's TTL must be greater than 0`);
         }
@@ -39,9 +41,10 @@ export class Locking {
         } catch (err) {
             throw new Error(`Failed to acquire lock for key: ${key} ${stringifyError(err)}`);
         }
+        return { key };
     }
 
-    public async release(key: string): Promise<void> {
-        await this.store.delete(key);
+    public async release(lock: Lock): Promise<void> {
+        await this.store.delete(lock.key);
     }
 }
