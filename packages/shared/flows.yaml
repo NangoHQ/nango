@@ -607,6 +607,90 @@ integrations:
                 id: string
             BamboohrResponseStatus:
                 status: string
+    bill:
+        actions:
+            create-user:
+                description: Creates a user in Bill.
+                output: User
+                endpoint: POST /users
+                input: BillCreateUser
+            disable-user:
+                description: Archive an existing user in Bill
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Bill sandbox
+                output: User
+                sync_type: incremental
+                endpoint: GET /users
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            BillCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                roleId?: string
+                acceptTermsOfService?: boolean
+    bill-sandbox:
+        actions:
+            create-user:
+                description: Creates a user in Bill.
+                output: User
+                endpoint: POST /users
+                input: BillCreateUser
+            disable-user:
+                description: Archive an existing user in Bill
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Bill sandbox
+                output: User
+                sync_type: incremental
+                endpoint: GET /users
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            BillCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                roleId?: string
+                acceptTermsOfService?: boolean
     box:
         actions:
             create-user:
