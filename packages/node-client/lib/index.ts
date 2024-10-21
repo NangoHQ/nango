@@ -14,6 +14,7 @@ import type {
     TbaCredentials,
     TableauCredentials,
     UnauthCredentials,
+    BillCredentials,
     GetPublicProviders,
     GetPublicProvider,
     GetPublicListIntegrations,
@@ -323,6 +324,7 @@ export class Nango {
         | TbaCredentials
         | TableauCredentials
         | JwtCredentials
+        | BillCredentials
     > {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 

@@ -17,7 +17,8 @@ import type {
     TBACredentials,
     TableauCredentials,
     JwtCredentials,
-    OAuthCredentialsOverride
+    OAuthCredentialsOverride,
+    BillCredentials
 } from './types';
 import { AuthorizationStatus, WSMessageType } from './types.js';
 
@@ -290,6 +291,7 @@ export default class Nango {
             | TableauCredentials
             | JwtCredentials
             | OAuth2ClientCredentials
+            | BillCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
 
@@ -375,6 +377,17 @@ export default class Nango {
             return { params: tableauCredentials } as unknown as ConnectionConfig;
         }
 
+        if ('username' in credentials && 'password' in credentials && 'organization_id' in credentials && 'dev_key' in credentials) {
+            const BillCredentials: BillCredentials = {
+                username: credentials.username,
+                password: credentials.password,
+                organization_id: credentials.organization_id as string,
+                dev_key: credentials.dev_key as string
+            };
+
+            return { params: BillCredentials } as unknown as ConnectionConfig;
+        }
+
         return { params };
     }
 
@@ -390,6 +403,7 @@ export default class Nango {
             | TBACredentials
             | TableauCredentials
             | JwtCredentials
+            | BillCredentials
             | OAuth2ClientCredentials
             | undefined;
     }): Promise<AuthResult> {
@@ -427,6 +441,13 @@ export default class Nango {
 
         if (!credentials) {
             throw new AuthError('You must specify credentials.', 'missingCredentials');
+        }
+
+        if ('username' in credentials && 'password' in credentials && 'organization_id' in credentials && 'dev_key' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/bill/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as BillCredentials
+            });
         }
 
         if ('apiKey' in credentials) {
