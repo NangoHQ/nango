@@ -24,12 +24,13 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
     const env = useStore((state) => state.env);
     const [showEditIntegrationId, setShowEditIntegrationId] = useState(false);
     const [integrationId, setIntegrationId] = useState(integration.unique_key);
+    const [webhookSecret, setWebhookSecret] = useState(integration.custom?.webhookSecret || '');
     const [loading, setLoading] = useState(false);
 
     const onSaveIntegrationID = async () => {
         setLoading(true);
 
-        const updated = await apiPatchIntegration(env, integration.unique_key, { integrationId });
+        const updated = await apiPatchIntegration(env, integration.unique_key, { webhookSecret });
 
         setLoading(false);
         if ('error' in updated.json) {
@@ -42,9 +43,23 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
         }
     };
 
+    const onSaveWebhookSecret = async () => {
+        setLoading(true);
+
+        const updated = await apiPatchIntegration(env, integration.unique_key, { webhookSecret });
+
+        setLoading(false);
+        if ('error' in updated.json) {
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
+        } else {
+            toast({ title: 'Successfully updated webhook secret', variant: 'success' });
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations/${integrationId}`));
+        }
+    };
+
     return (
         <div className="flex flex-col gap-8">
-            <div className="flex gap-10">
+            <div className="grid grid-cols-2 gap-10">
                 <InfoBloc title="API Provider">{integration?.provider}</InfoBloc>
                 <InfoBloc title="Integration ID">
                     {showEditIntegrationId ? (
@@ -87,13 +102,13 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
                     )}
                 </InfoBloc>
             </div>
-            <div className="flex gap-10">
+            <div className="grid grid-cols-2 gap-10">
                 <InfoBloc title="Creation Date">{formatDateToInternationalFormat(integration.created_at)}</InfoBloc>
                 <InfoBloc title="Auth Type">{template.auth_mode}</InfoBloc>
             </div>
 
             {template.webhook_routing_script && (
-                <>
+                <div className="grid grid-cols-1 gap-10">
                     <InfoBloc
                         title="Webhook Url"
                         help={<p>Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks</p>}
@@ -119,13 +134,20 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
                                 id="incoming_webhook_secret"
                                 name="incoming_webhook_secret"
                                 autoComplete="one-time-code"
+                                value={webhookSecret}
                                 defaultValue={integration ? integration.custom?.webhookSecret : ''}
                                 additionalClass={`w-full`}
+                                onChange={(v) => setWebhookSecret(v.target.value)}
                                 required
                             />
+                            {integration.custom?.webhookSecret !== webhookSecret && (
+                                <Button variant={'primary'} onClick={() => onSaveWebhookSecret()} isLoading={loading}>
+                                    Save
+                                </Button>
+                            )}
                         </InfoBloc>
                     )}
-                </>
+                </div>
             )}
         </div>
     );

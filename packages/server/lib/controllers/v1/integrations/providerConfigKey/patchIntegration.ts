@@ -10,7 +10,8 @@ import { validationParams } from './getIntegration.js';
 const privateKey = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
 const validationBody = z
     .object({
-        integrationId: providerConfigKeySchema.optional()
+        integrationId: providerConfigKeySchema.optional(),
+        webhookSecret: z.string().min(0).max(255).optional()
     })
     .strict()
     .or(
@@ -111,6 +112,19 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             integration.app_link = body.appLink;
             // This is a legacy thing
             integration.custom = { private_key: Buffer.from(body.privateKey).toString('base64') };
+        }
+    }
+
+    // webhook secrets
+    if ('webhookSecret' in body) {
+        if (!integration.custom) {
+            integration.custom = {};
+        }
+        if (!body.webhookSecret) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete integration.custom['webhookSecret'];
+        } else {
+            integration.custom['webhookSecret'] = body.webhookSecret;
         }
     }
 

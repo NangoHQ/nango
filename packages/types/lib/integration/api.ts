@@ -79,7 +79,7 @@ export type PatchIntegration = Endpoint<{
     Path: '/api/v1/integrations/:providerConfigKey';
     Params: { providerConfigKey: string };
     Body:
-        | { integrationId?: string | undefined }
+        | { integrationId?: string | undefined; webhookSecret?: string | undefined }
         | {
               authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
               clientId: string;
