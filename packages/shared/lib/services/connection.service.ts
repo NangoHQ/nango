@@ -1301,7 +1301,7 @@ class ConnectionService {
             success,
             error,
             response: rawCredentials
-        } = await this.getJWTCredentials(privateKey, tokenUrl, payload, null, {
+        } = await this.formatAndGetJWTCredentials(privateKey, tokenUrl, payload, null, {
             header: {
                 alg: 'ES256',
                 kid: connectionConfig['privateKeyId'],
@@ -1387,7 +1387,11 @@ class ConnectionService {
             payload['iss'] = connectionConfig['app_id'];
         }
 
-        const { success, error, response: rawCredentials } = await this.getJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
+        const {
+            success,
+            error,
+            response: rawCredentials
+        } = await this.formatAndGetJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
 
         if (!success || !rawCredentials) {
             return { success, error, response: null };
@@ -1615,7 +1619,7 @@ class ConnectionService {
         return false;
     }
 
-    private async getJWTCredentials(
+    private async formatAndGetJWTCredentials(
         privateKey: string,
         url: string,
         payload: Record<string, string | number>,
