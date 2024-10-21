@@ -1224,7 +1224,14 @@ class ConnectionService {
     }): Promise<
         ServiceResponse<{
             refreshed: boolean;
-            credentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | JwtCredentials | BillCredentials;
+            credentials:
+                | OAuth2Credentials
+                | AppCredentials
+                | AppStoreCredentials
+                | OAuth2ClientCredentials
+                | TableauCredentials
+                | JwtCredentials
+                | BillCredentials;
         }>
     > {
         const providerConfigKey = providerConfig.unique_key;
@@ -1232,7 +1239,15 @@ class ConnectionService {
         // fetch connection and return credentials if they are fresh
         const getConnectionAndFreshCredentials = async (): Promise<{
             connection: Connection;
-            freshCredentials: OAuth2Credentials | AppCredentials | AppStoreCredentials | OAuth2ClientCredentials | TableauCredentials | JwtCredentials | BillCredentials | null;
+            freshCredentials:
+                | OAuth2Credentials
+                | AppCredentials
+                | AppStoreCredentials
+                | OAuth2ClientCredentials
+                | TableauCredentials
+                | JwtCredentials
+                | BillCredentials
+                | null;
         }> => {
             const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
 
@@ -1817,7 +1832,11 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         provider: Provider
-    ): Promise<ServiceResponse<OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials | JwtCredentials | BillCredentials>> {
+    ): Promise<
+        ServiceResponse<
+            OAuth2Credentials | OAuth2ClientCredentials | AppCredentials | AppStoreCredentials | TableauCredentials | JwtCredentials | BillCredentials
+        >
+    > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
