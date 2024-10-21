@@ -30,9 +30,9 @@ export enum Types {
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
 
-    REFRESH_TOKENS = 'nango.server.cron.refreshTokens',
-    REFRESH_TOKENS_FAILED = 'nango.server.cron.refreshTokens.failed',
-    REFRESH_TOKENS_SUCCESS = 'nango.server.cron.refreshTokens.success',
+    REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
+    REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
+    REFRESH_CONNECTIONS_SUCCESS = 'nango.server.cron.refreshConnections.success',
 
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_ACTION_INPUT = 'nango.runner.invalidActionInput',

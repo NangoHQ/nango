@@ -1,5 +1,4 @@
 import type { NextFunction } from 'express';
-import tracer from 'dd-trace';
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP, stringifyError } from '@nangohq/utils';
@@ -157,8 +156,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             connectionId,
             providerConfigKey,
             environment.id,
-            connectionConfig,
-            tracer
+            connectionConfig
         );
 
         if (connectionResponse.isErr()) {
