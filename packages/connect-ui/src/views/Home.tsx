@@ -52,7 +52,7 @@ export const Home: React.FC = () => {
     }, [data]);
 
     if (error) {
-        return <ErrorFallback />;
+        return <ErrorFallback error={error} />;
     }
 
     return <LoadingView />;
