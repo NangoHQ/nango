@@ -1776,7 +1776,116 @@ integrations:
                 track_deletes: true
                 runs: every day
                 output: Article
+            contacts:
+                description: |
+                    Fetches the list of contacts.
+                endpoint: GET /contacts
+                sync_type: incremental
+                runs: every day
+                output: Contact
+            tickets:
+                description: |
+                    Fetches the freshdesk tickets
+                endpoint: GET /tickets
+                sync_type: incremental
+                runs: every day
+                output: Ticket
+            users:
+                description: |
+                    Fetches the list of users
+                endpoint: GET /users
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: User
+        actions:
+            create-contact:
+                description: Creates a user in FreshDesk
+                output: Contact
+                endpoint: POST /contacts
+                input: CreateContact
+            delete-contact:
+                description: Deletes a contact in FreshDesk
+                endpoint: DELETE /contacts
+                output: SuccessResponse
+                input: IdEntity
+            create-user:
+                description: Creates a user in FreshDesk
+                output: User
+                endpoint: POST /users
+                input: FreshdeskCreateUser
+            delete-user:
+                description: Deletes a user in FreshDesk
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
         models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            FreshdeskCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                ticket_scope?: number
+                ticketScope?: globalAccess | groupAccess | restrictedAccess
+                occasional?: boolean
+                signature?: string
+                skill_ids?: number[]
+                group_ids?: number[]
+                role_ids?: number[]
+                agent_type?: number
+                agentType?: support | field | collaborator
+                language?: string
+                time_zone?: string
+                focus_mode?: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            Contact:
+                id: string
+                active: boolean
+                email: string
+                name: string
+                createdAt: string
+                updatedAt: string
+                companyId?: string | undefined
+                phone?: string | undefined | null
+                mobile?: string | undefined | null
+                jobTitle?: string | undefined | null
+            CreateContact:
+                name: string
+                email?: string
+                phone?: string
+                mobile?: string
+                twitter_id?:
+                    type: string
+                    unique: true
+                    required: true
+                unique_external_id?:
+                    type: string
+                    unique: true
+                    required: true
+                other_emails?: array
+                company_id?: number
+                view_all_tickets?: boolean
+                other_companies?: array
+                address?: string
+                avatar?: object
+                custom_fields?: object
+                description?: string
+                job_title?: string
+                language?: string
+                tags?: array
+                time_zone?: string
+                lookup_parameter?: string
             Timestamps:
                 created_at: string
                 updated_at: string
@@ -1810,6 +1919,18 @@ integrations:
                 meta_title?: string | undefined
                 meta_description?: string | undefined
                 meta_keywords?: string | undefined
+            Ticket:
+                id: string
+                type: string
+                priority: number
+                request_id: number
+                response_id: number
+                source: number
+                subject: string
+                to_emails: string[] | null
+                created_at: string
+                updated_at: string
+                is_escalated: boolean
     github:
         syncs:
             issues:
