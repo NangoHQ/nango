@@ -57,9 +57,9 @@ export function onAxiosRequestFulfilled({
         const connection = response.data as Connection;
 
         // getConnection could be getMetadata as well which would be cached
-        saveResponse<Pick<Connection, 'metadata' | 'connection_config'>>({
+        saveResponse<Pick<Connection, 'metadata' | 'connection_config' | 'credentials'>>({
             directoryName,
-            data: { metadata: connection.metadata as Metadata, connection_config: connection.connection_config },
+            data: { metadata: connection.metadata as Metadata, connection_config: connection.connection_config, credentials: connection.credentials },
             customFilePath: 'mocks/nango/getConnection.json',
             concatenateIfExists: false
         });
