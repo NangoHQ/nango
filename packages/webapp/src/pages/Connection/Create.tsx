@@ -481,10 +481,10 @@ export default function IntegrationCreate() {
             }
         }
 
-        const billCredentialsString = '';
+        let billCredentialsString = '';
         if (integration?.authMode === 'BILL') {
             if (apiAuthUsername && apiAuthPassword && organizationId && devKey) {
-                tableauCredentialsString = `
+                billCredentialsString = `
     credentials: {
         username: '${apiAuthUsername}',
         password: '${apiAuthPassword}',

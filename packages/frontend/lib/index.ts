@@ -381,8 +381,8 @@ export default class Nango {
             const BillCredentials: BillCredentials = {
                 username: credentials.username,
                 password: credentials.password,
-                organization_id: credentials.organization_id,
-                dev_key: credentials.dev_key
+                organization_id: credentials.organization_id as string,
+                dev_key: credentials.dev_key as string
             };
 
             return { params: BillCredentials } as unknown as ConnectionConfig;
@@ -397,21 +397,14 @@ export default class Nango {
     }: {
         authUrl: string;
         credentials?:
-            |
             | ApiKeyCredentials
-
             | BasicApiCredentials
-
             | AppStoreCredentials
-
             | TBACredentials
-
             | TableauCredentials
             | JwtCredentials
-
             | BillCredentials
             | OAuth2ClientCredentials
-
             | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
