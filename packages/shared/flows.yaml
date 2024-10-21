@@ -3394,6 +3394,12 @@ integrations:
                 campaign_id: string
                 name: string
     intercom:
+        actions:
+            fetch-article:
+                description: Fetch a single article from Intercom
+                input: IdEntity
+                endpoint: GET /single-article
+                output: Article
         syncs:
             conversations:
                 runs: every 6 hours
@@ -3426,6 +3432,8 @@ integrations:
                 version: 1.0.0
                 endpoint: GET /articles
         models:
+            IdEntity:
+                id: string
             Contact:
                 id: string
                 workspace_id: string
@@ -3574,8 +3582,8 @@ integrations:
         models:
             JiraIssueMetadata:
                 projectIdsToSync: JiraProjectId[]
-                cloudId: string
-                baseUrl: string
+                cloudId?: string
+                baseUrl?: string
             JiraProjectId:
                 id: string
             Timestamps:

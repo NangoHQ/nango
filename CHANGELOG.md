@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.18] - 2024-10-18
+
+### Added
+
+- *(integrations)* Add support for umapi (#2853) by @hassan254-prog
+- *(post-connection-scripts)* [nan-1901] add post connection scripts (#2856) by @khaliqgant
+- Expose auth or sync errors when listing connections (#2851) by @TBonnin
+- *(integration)* Add support for Apollo Oauth2 (#2847) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/691f12804cae6449d6fec49c40b2a2705edc7647 by Andres Reales. Commit message: feat(docuSign): Add DocuSign and DocuSign-sandbox integration  (#52) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/37aab8f51b3c8f1cd5be1a99783385c494198533 by Khaliq. Commit message: feat(gusto): gusto user operations (#58) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/614f8ff85ebda5d79d3b46258834ba1ddbbe74d1 by Andres Reales. Commit message: feat(calendly): Add users syncs/actions (#57) by @github-actions[bot]
+
+### Fixed
+
+- *(adobe)* Rename umapi to adobe-umapi (#2854) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/64d32bcb4d688a18ddf3976d76e6a8f5b5e2d613 by Khaliq. Commit message: fix(gusto): update description (#59) by @github-actions[bot]
+
 ## [v0.42.17] - 2024-10-17
 
 ### Added
@@ -2058,6 +2078,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.18]: https://github.com/NangoHQ/nango/compare/v0.42.17..v0.42.18
 [v0.42.17]: https://github.com/NangoHQ/nango/compare/v0.42.15..v0.42.17
 [v0.42.15]: https://github.com/NangoHQ/nango/compare/v0.42.12..v0.42.15
 [v0.42.12]: https://github.com/NangoHQ/nango/compare/v0.42.10..v0.42.12
