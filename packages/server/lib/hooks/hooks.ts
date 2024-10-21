@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Span, Tracer } from 'dd-trace';
+import type { Span } from 'dd-trace';
 import {
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
@@ -32,6 +32,7 @@ import { logContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
 import { externalPostConnection } from './connection/external-post-connection.js';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
+import tracer from 'dd-trace';
 
 const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
@@ -201,8 +202,7 @@ export const connectionTest = async (
     connectionId: string,
     providerConfigKey: string,
     environment_id: number,
-    connection_config: ConnectionConfig,
-    tracer: Tracer
+    connection_config: ConnectionConfig
 ): Promise<Result<boolean, NangoError>> => {
     const providerVerification = provider?.proxy?.verification;
 

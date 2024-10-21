@@ -1,20 +1,18 @@
 import * as cron from 'node-cron';
-import type { Lock, NangoError } from '@nangohq/shared';
+import type { Lock } from '@nangohq/shared';
 import { errorManager, ErrorSourceEnum, connectionService, locking } from '@nangohq/shared';
-import type { Result } from '@nangohq/utils';
 import { stringifyError, getLogger, metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import {
     connectionRefreshFailed as connectionRefreshFailedHook,
     connectionRefreshSuccess as connectionRefreshSuccessHook,
-    connectionTest
+    connectionTest as connectionTestHook
 } from './hooks/hooks.js';
 import tracer from 'dd-trace';
-import type { ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, Provider, TbaCredentials } from '@nangohq/types';
 
 const logger = getLogger('Server');
 const cronName = '[refreshConnections]';
-const cronMinutes = 1;
+const cronMinutes = 10;
 
 export function refreshConnectionsCron(): void {
     cron.schedule(`*/${cronMinutes} * * * *`, () => {
@@ -105,16 +103,4 @@ export async function exec(): Promise<void> {
             }
         }
     });
-}
-
-function connectionTestHook(
-    providerName: string,
-    provider: Provider,
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials,
-    connectionId: string,
-    providerConfigKey: string,
-    environment_id: number,
-    connection_config: ConnectionConfig
-): Promise<Result<boolean, NangoError>> {
-    return connectionTest(providerName, provider, credentials, connectionId, providerConfigKey, environment_id, connection_config, tracer);
 }
