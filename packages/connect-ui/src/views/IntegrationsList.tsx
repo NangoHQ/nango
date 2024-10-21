@@ -35,6 +35,7 @@ const Integrations: React.FC = () => {
     const store = useGlobal();
     const { data } = useSuspenseQuery({ queryKey: ['integrations'], queryFn: getIntegrations });
 
+    const isSingleIntegration = data.data.length === 1 && store.session?.allowed_integrations?.length === 1;
     useEffect(() => {
         async function call() {
             const integration = data.data[0];
@@ -42,7 +43,7 @@ const Integrations: React.FC = () => {
             store.set(provider.data, integration);
             await navigate({ to: '/go' });
         }
-        if (data.data.length === 1 && store.session?.allowed_integrations?.length === 1) {
+        if (isSingleIntegration) {
             void call();
         }
     }, [data, store.session]);
@@ -65,7 +66,7 @@ const Integrations: React.FC = () => {
         );
     }
 
-    if (data.data.length === 1 && store.session?.allowed_integrations?.length === 1) {
+    if (isSingleIntegration) {
         return;
     }
 
