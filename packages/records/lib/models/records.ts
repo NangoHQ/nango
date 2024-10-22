@@ -34,7 +34,7 @@ export async function getRecordsCount({ connectionId, model }: { connectionId: n
 
         return Ok(result[0]?.object_count ?? 0);
     } catch (_error) {
-        const e = new Error(`List records error for model ${model}`);
+        const e = new Error(`Count records error for model ${model}`);
         return Err(e);
     }
 }
