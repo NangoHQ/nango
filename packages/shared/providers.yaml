@@ -4303,6 +4303,41 @@ sendgrid:
             type: string
             title: API Key
             description: The API key for your Sendgrid account
+
+sedna:
+    display_name: Sedna (Oauth2)
+    auth_mode: OAUTH2_CC
+    categories:
+        - communication
+    proxy:
+        base_url: https://${connectionConfig.tenant}.sednanetwork.com/platform
+    token_url: https://${connectionConfig.tenant}.sednanetwork.com/platform/oauth/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ','
+    docs: https://docs.nango.dev/integrations/all/sedna
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name to your sedna account
+            format: tenant
+
+sedna-basic:
+    display_name: Sedna (Basic Auth)
+    auth_mode: BASIC
+    categories:
+        - communication
+    proxy:
+        base_url: https://${connectionConfig.tenant}.sednanetwork.com/platform
+    docs: https://docs.nango.dev/integrations/all/sedna
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name to your sedna account
+            format: tenant
+
 servicem8:
     display_name: ServiceM8
     categories:
