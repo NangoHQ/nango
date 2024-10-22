@@ -146,7 +146,7 @@ class SyncController {
         return syncs.map((sync) => {
             const sumObjectCount = (sync: Sync & { models: string[] }, objectCountByModel: Record<string, number>) => {
                 return sync.models.reduce((sum: number, model: string) => {
-                    return sum + Number(objectCountByModel[model] || 0);
+                    return sum + objectCountByModel[model] || 0;
                 }, 0);
             };
             const object_count = sumObjectCount(sync, objectCountByModel);
