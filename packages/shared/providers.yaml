@@ -56,6 +56,28 @@ adobe:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/adobe
 
+adobe-umapi:
+    display_name: UMAPI (Adobe User Management API)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://ims-na1.adobelogin.com/ims/token/v2
+    scope_separator: ','
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            x-api-key: ${connectionConfig.clientId}
+        retry:
+            after: 'Retry-After'
+        base_url: https://usermanagement.adobe.io
+    docs: https://docs.nango.dev/integrations/all/adobe
+    connection_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from the OAuth Server-to-Server enabled project on developer portal
+
 affinity:
     display_name: Affinity
     categories:
@@ -241,6 +263,26 @@ apollo:
             type: string
             title: API Key
             description: The API key for your Apollo account
+
+apollo-oauth:
+    display_name: Apollo (OAuth)
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://app.apollo.io
+    token_url: https://app.apollo.io/api/v1/oauth/token
+    authorization_url_fragment: oauth/authorize
+    body_format: json
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.apollo.io/api
+    docs: https://docs.nango.dev/integrations/all/apollo
 
 apple-app-store:
     display_name: Apple App Store
@@ -517,6 +559,26 @@ bigcommerce:
             description: The account UUID of your BigCommerce account
             format: uuid
             example: 123e4567-e89b-12d3-a456-426614174000
+
+bill-sandbox:
+    display_name: Bill(Connect API sandbox)
+    categories:
+        - payment
+    auth_mode: BILL
+    token_url: https://gateway.stage.bill.com/connect/v3/login
+    proxy:
+        base_url: https://gateway.stage.bill.com/connect
+    docs: https://docs.nango.dev/integrations/all/bill
+
+bill:
+    display_name: Bill(Connect API)
+    categories:
+        - payment
+    auth_mode: BILL
+    token_url: https://gateway.prod.bill.com/connect/v3/login
+    proxy:
+        base_url: https://gateway.prod.bill.com/connect
+    docs: https://docs.nango.dev/integrations/all/bill
 
 bitbucket:
     display_name: Bitbucket
@@ -846,6 +908,7 @@ calendly:
             at: 'X-Ratelimit-Reset'
     token_response_metadata:
         - owner
+    post_connection_script: calendlyPostConnection
     docs: https://docs.nango.dev/integrations/all/calendly
 
 canny:
@@ -1476,6 +1539,7 @@ docusign:
         grant_type: refresh_token
     proxy:
         base_url: https://www.docusign.net
+    post_connection_script: docusignPostConnection
     docs: https://docs.nango.dev/integrations/all/docusign
 
 docusign-sandbox:
@@ -1492,6 +1556,7 @@ docusign-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://demo.docusign.net
+    post_connection_script: docusignPostConnection
     docs: https://docs.nango.dev/integrations/all/docusign
 
 dropbox:
@@ -2091,6 +2156,77 @@ gitlab:
         base_url: https://gitlab.com
     docs: https://docs.nango.dev/integrations/all/gitlab
 
+ghost-admin:
+    display_name: Ghost (Admin API)
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: JWT
+    token:
+        expires_in_ms: 300000
+        headers:
+            alg: HS256
+        payload:
+            aud: /admin/
+    proxy:
+        headers:
+            Accept: application/json
+            Accept-Version: ${connectionConfig.version}
+        base_url: https://${connectionConfig.adminDomain}/ghost/api/admin/
+    docs: https://docs.nango.dev/integrations/all/ghost
+    connection_config:
+        adminDomain:
+            type: string
+            title: Ghost Admin Domain
+            description: The domain of your Ghost Admin which can be different from your main domain
+            example: 'mock.ghost.io'
+            pattern: '^([a-z0-9_-]+\.|)(ghost\.io|[a-z0-9_-]+\.[a-z]{2,})$'
+        version:
+            type: string
+            title: API Version
+            description: The version of the Ghost Admin API to use
+            example: 'v3.0'
+            pattern: '^v\d+\.\d+$'
+
+ghost-content:
+    display_name: Ghost (Content API)
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Accept-Version: ${connectionConfig.version}
+        base_url: https://${connectionConfig.adminDomain}/ghost/api/content/
+        query:
+            key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /tags
+    docs: https://docs.nango.dev/integrations/all/ghost
+    connection_config:
+        version:
+            type: string
+            title: API Version
+            description: The version of the Ghost Admin API to use
+            example: 'v3.0'
+            pattern: '^v\d+\.\d+$'
+        adminDomain:
+            type: string
+            title: Ghost Admin Domain
+            description: The domain of your Ghost Admin which can be different from your main domain
+            example: 'mock.ghost.io'
+            pattern: '^([a-z0-9_-]+\.|)(ghost\.io|[a-z0-9_-]+\.[a-z]{2,})$'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The content API key for your Ghost account
+            pattern: '^[a-zA-Z0-9]{26}$'
+            example: a1b2c3d4e5f6g7h8i9j0k1l2m3
+
 gong:
     display_name: Gong
     categories:
@@ -2341,6 +2477,7 @@ gusto:
         grant_type: refresh_token
     proxy:
         base_url: https://api.gusto.com
+    post_connection_script: gustoPostConnection
     docs: https://docs.nango.dev/integrations/all/gusto
 
 gusto-demo:
@@ -2356,6 +2493,7 @@ gusto-demo:
         grant_type: refresh_token
     proxy:
         base_url: https://api.gusto-demo.com
+    post_connection_script: gustoPostConnection
     docs: https://docs.nango.dev/integrations/all/gusto
 
 hackerrank-work:
@@ -2880,6 +3018,29 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://docs.nango.dev/integrations/all/linkhut
 
+loops-so:
+    display_name: Loops.so
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.loops.so/api
+        headers:
+            Accept: application/json
+            Authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/api-key
+    docs: https://docs.nango.dev/integrations/all/loops-so
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Loops.so account
+            pattern: '^[a-f0-9]{32}$'
+            example: d2d561f5ff80136f69b4b5a31b9fb3c9
+
 luma:
     display_name: Luma
     categories:
@@ -3354,6 +3515,10 @@ okta:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.okta.com
+        retry:
+            at: 'x-rate-limit-reset'
     docs: https://docs.nango.dev/integrations/all/okta
     connection_config:
         subdomain:

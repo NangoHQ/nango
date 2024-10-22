@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import tracer from 'dd-trace';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP } from '@nangohq/utils';
 import { analytics, configService, AnalyticsTypes, getConnectionConfig, connectionService, getProvider } from '@nangohq/shared';
@@ -149,8 +148,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         connectionId,
         providerConfigKey,
         environment.id,
-        connectionConfig,
-        tracer
+        connectionConfig
     );
 
     if (connectionResponse.isErr()) {
@@ -189,7 +187,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
                 connection: updatedConnection.connection,
                 environment,
                 account,
-                auth_mode: 'NONE',
+                auth_mode: 'TBA',
                 operation: updatedConnection.operation
             },
             config.provider,

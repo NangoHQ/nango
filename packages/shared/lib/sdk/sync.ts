@@ -167,6 +167,8 @@ export interface AuthModes {
     None: 'NONE';
     TBA: 'TBA';
     Tableau: 'TABLEAU';
+    Jwt: 'JWT';
+    Bill: 'BILL';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 
@@ -248,6 +250,29 @@ interface TableauCredentials extends CredentialsCommon {
     token?: string;
     expires_at?: Date | undefined;
 }
+interface JwtCredentials {
+    type: AuthModes['Jwt'];
+    privateKeyId?: string;
+    issuerId?: string;
+    privateKey:
+        | {
+              id: string;
+              secret: string;
+          }
+        | string; // Colon-separated string for Ghost Admin: 'id:secret'
+    token?: string;
+    expires_at?: Date | undefined;
+}
+interface BillCredentials extends CredentialsCommon {
+    type: AuthModes['Bill'];
+    username: string;
+    password: string;
+    organization_id: string;
+    dev_key: string;
+    session_id?: string;
+    user_id?: string;
+    expires_at?: Date | undefined;
+}
 interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
@@ -265,6 +290,8 @@ type AuthCredentials =
     | UnauthCredentials
     | TbaCredentials
     | TableauCredentials
+    | JwtCredentials
+    | BillCredentials
     | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
@@ -604,6 +631,8 @@ export class NangoAction {
         | CustomCredentials
         | TbaCredentials
         | TableauCredentials
+        | JwtCredentials
+        | BillCredentials
     > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);

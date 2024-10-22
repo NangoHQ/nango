@@ -3,7 +3,7 @@ import db, { schema, dbNamespace } from '@nangohq/database';
 import type { Sync, SyncConfig, Job as SyncJob } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
-import type { ActiveLogIds, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences, SyncTypeLiteral } from '@nangohq/types';
+import type { ActiveLog, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences, SyncTypeLiteral } from '@nangohq/types';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey,
@@ -161,7 +161,7 @@ export const getSyncByIdAndName = async (nangoConnectionId: number, name: string
 export const getSyncs = async (
     nangoConnection: Connection,
     orchestrator: Orchestrator
-): Promise<(Sync & { sync_type: SyncTypeLiteral; status: SyncStatus; active_logs: ActiveLogIds })[]> => {
+): Promise<(Sync & { sync_type: SyncTypeLiteral; status: SyncStatus; active_logs: Pick<ActiveLog, 'log_id'> })[]> => {
     const q = db.knex
         .from<Sync>(TABLE)
         .select(

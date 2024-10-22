@@ -437,6 +437,21 @@ paths:
                                                 metadata:
                                                     type: object
                                                     description: Custom metadata attached to the connection
+                                                errors:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            type:
+                                                                type: string
+                                                                example: "'auth' or 'sync'"
+                                                            log_id:
+                                                                type: string
+                                                                example: "VrnbtykXJFckCm3HP93t"
+                                                    description: |
+                                                        List of connection errors. Ex:
+                                                        - Connection credentials are invalid (type=auth)
+                                                        - Last sync for the connnection has failed (type=sync)
 
         post:
             description: Adds a connection for which you already have credentials.
@@ -1807,7 +1822,7 @@ components:
             type: string
         auth_mode:
           type: string
-          enum: ['OAUTH1','OAUTH2','OAUTH2_CC','BASIC','API_KEY','APP_STORE','CUSTOM','APP','NONE','TBA','TABLEAU']
+          enum: ['OAUTH1','OAUTH2','OAUTH2_CC','BASIC','API_KEY','APP_STORE','CUSTOM','APP','NONE','TBA','TABLEAU','JWT','BILL']
         proxy:
           properties:
             base_url:
@@ -1876,6 +1891,8 @@ components:
           type: object
         authorization_url_replacements:
           type: object
+        authorization_url_fragment:
+          type: string
         redirect_uri_metadata:
           items:
             type: string

@@ -381,7 +381,7 @@ class OAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: 'NONE',
+                        auth_mode: 'OAUTH2_CC',
                         operation: updatedConnection.operation
                     },
                     config.provider,
@@ -531,6 +531,14 @@ class OAuthController {
                     state: session.id,
                     ...allAuthParams
                 });
+
+                if (provider.authorization_url_fragment) {
+                    const urlObj = new URL(authorizationUri);
+                    const { search } = urlObj;
+                    urlObj.search = '';
+
+                    authorizationUri = `${urlObj.toString()}#${provider.authorization_url_fragment}${search}`;
+                }
 
                 if (provider.authorization_url_replacements) {
                     const urlReplacements = provider.authorization_url_replacements || {};
@@ -1110,7 +1118,7 @@ class OAuthController {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: 'APP',
+                            auth_mode: provider.auth_mode,
                             operation: res.operation
                         },
                         config.provider,

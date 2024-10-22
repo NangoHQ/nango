@@ -1,5 +1,4 @@
 import type { Request, Response, NextFunction } from 'express';
-import tracer from 'dd-trace';
 import type { ApiKeyCredentials, BasicApiCredentials } from '@nangohq/shared';
 import {
     errorManager,
@@ -122,8 +121,7 @@ class ApiAuthController {
                 connectionId,
                 providerConfigKey,
                 environment.id,
-                connectionConfig,
-                tracer
+                connectionConfig
             );
 
             if (connectionResponse.isErr()) {
@@ -296,8 +294,7 @@ class ApiAuthController {
                 connectionId,
                 providerConfigKey,
                 environment.id,
-                connectionConfig,
-                tracer
+                connectionConfig
             );
 
             if (connectionResponse.isErr()) {
@@ -329,7 +326,7 @@ class ApiAuthController {
                         connection: updatedConnection.connection,
                         environment,
                         account,
-                        auth_mode: 'BASIC',
+                        auth_mode: 'API_KEY',
                         operation: updatedConnection.operation
                     },
                     config.provider,

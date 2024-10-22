@@ -63,22 +63,24 @@ export default function Authorization(props: AuthorizationProps) {
                     </div>
                 )}
             </div>
-            {connection.credentials && connection.credentials.type === 'BASIC' && 'password' in connection.credentials && (
-                <div className="flex">
-                    {connection?.credentials.username && (
-                        <div className="flex flex-col w-1/2">
-                            <span className="text-gray-400 text-xs uppercase mb-2">Username</span>
-                            <span className="text-white">{connection?.credentials.username}</span>
-                        </div>
-                    )}
-                    {connection?.credentials.password && (
-                        <div className="flex flex-col w-1/2">
-                            <span className="text-gray-400 text-xs uppercase mb-1">Password</span>
-                            <SecretInput disabled defaultValue={connection?.credentials?.password} copy={true} />
-                        </div>
-                    )}
-                </div>
-            )}
+            {connection.credentials &&
+                (connection.credentials.type === 'BASIC' || connection.credentials.type === 'BILL') &&
+                'password' in connection.credentials && (
+                    <div className="flex">
+                        {connection?.credentials.username && (
+                            <div className="flex flex-col w-1/2">
+                                <span className="text-gray-400 text-xs uppercase mb-2">Username</span>
+                                <span className="text-white">{connection?.credentials.username}</span>
+                            </div>
+                        )}
+                        {connection?.credentials.password && (
+                            <div className="flex flex-col w-1/2">
+                                <span className="text-gray-400 text-xs uppercase mb-1">Password</span>
+                                <SecretInput disabled defaultValue={connection?.credentials?.password} copy={true} />
+                            </div>
+                        )}
+                    </div>
+                )}
             {connection.credentials && 'config_override' in connection.credentials && (
                 <>
                     {connection.credentials.config_override?.client_id && (
@@ -193,6 +195,54 @@ export default function Authorization(props: AuthorizationProps) {
                     <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.refresh_token} copy={true} />
                 </div>
             )}
+            {connection.credentials.type === 'JWT' && connection.credentials.issuerId && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Issuer ID</span>
+                    <SecretInput disabled defaultValue={connection.credentials.issuerId} copy={true} />
+                </div>
+            )}
+
+            {connection.credentials.type === 'JWT' && connection.credentials.privateKeyId && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Private Key ID</span>
+                    <SecretInput disabled defaultValue={connection.credentials.privateKeyId} copy={true} />
+                </div>
+            )}
+
+            {connection.credentials.type === 'JWT' && connection.credentials.privateKey && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">
+                        {typeof connection.credentials.privateKey === 'string' ? 'Private Key' : 'API Key'}
+                    </span>
+                    <SecretInput
+                        disabled
+                        defaultValue={
+                            typeof connection.credentials.privateKey === 'string'
+                                ? connection.credentials.privateKey
+                                : `${(connection.credentials.privateKey as { id: string; secret: string }).id}:${(connection.credentials.privateKey as { id: string; secret: string }).secret}`
+                        }
+                        copy={true}
+                    />
+                </div>
+            )}
+            {connection.credentials.type === 'BILL' && connection.credentials.organization_id && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Organization Id</span>
+                    <span className="text-white">{connection.credentials.organization_id}</span>
+                </div>
+            )}
+            {connection.credentials.type === 'BILL' && connection.credentials.dev_key && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Dev Key</span>
+                    <SecretInput disabled defaultValue={connection.credentials.dev_key} copy={true} />
+                </div>
+            )}
+            {connection.credentials.type === 'BILL' && 'session_id' in connection.credentials && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Session ID</span>
+                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.session_id} copy={true} refresh={handleForceRefresh} />
+                </div>
+            )}
             <div className="flex flex-col">
                 <span className="text-gray-400 text-xs uppercase mb-2">Connection Configuration</span>
                 <Prism language="json" colorScheme="dark">
@@ -208,6 +258,7 @@ export default function Authorization(props: AuthorizationProps) {
             {(connection.credentials.type === 'OAUTH1' ||
                 connection.credentials.type === 'OAUTH2' ||
                 connection.credentials.type === 'APP' ||
+                connection.credentials.type === 'BILL' ||
                 connection.credentials.type === 'CUSTOM') && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Raw Token Response</span>

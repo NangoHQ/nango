@@ -607,6 +607,189 @@ integrations:
                 id: string
             BamboohrResponseStatus:
                 status: string
+    bill:
+        actions:
+            create-user:
+                description: Creates a user in Bill.
+                output: User
+                endpoint: POST /users
+                input: BillCreateUser
+            disable-user:
+                description: Archive an existing user in Bill
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Bill sandbox
+                output: User
+                sync_type: incremental
+                endpoint: GET /users
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            BillCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                roleId?: string
+                acceptTermsOfService?: boolean
+    bill-sandbox:
+        actions:
+            create-user:
+                description: Creates a user in Bill.
+                output: User
+                endpoint: POST /users
+                input: BillCreateUser
+            disable-user:
+                description: Archive an existing user in Bill
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Bill sandbox
+                output: User
+                sync_type: incremental
+                endpoint: GET /users
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            BillCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                roleId?: string
+                acceptTermsOfService?: boolean
+    box:
+        actions:
+            create-user:
+                description: Creates a user in Box. Requires an enterprise account.
+                output: User
+                endpoint: POST /users
+                input: BoxCreateUser
+            delete-user:
+                description: Deletes a user in Box. Requires an enterprise account.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: BoxDeleteUser
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Box. Requires an enterprise account.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            BoxCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                address?: string
+                can_see_managed_users?: boolean
+                external_app_user_id?: string
+                is_exempt_from_device_limits?: boolean
+                is_exempt_from_login_verification?: boolean
+                is_external_collab_restricted?: boolean
+                is_platform_access_only?: boolean
+                is_sync_enabled?: boolean
+                job_title?: string
+                language?: string
+                phone?: string
+                role?: coadmin | user
+                space_amount?: number
+                status?: active| inactive| cannot_delete_edit| cannot_delete_edit_upload
+                timezone?: string
+                tracking_codes?: TrackingCode[]
+            TrackingCode:
+                type?: tracking_code
+                name?: string
+                value?: string
+            CreatedUser:
+                id: string
+                type: string
+                address?: string
+                avatar_url?: string
+                can_see_managed_users: boolean
+                created_at: string
+                enterprise: Enterprise
+                external_app_user_id?: string
+                hostname: string
+                is_exempt_from_device_limits: boolean
+                is_exempt_from_login_verification: boolean
+                is_external_collab_restricted: boolean
+                is_platform_access_only: boolean
+                is_sync_enabled: boolean
+                job_title?: string
+                language?: string
+                login: string
+                max_upload_size: integer
+                modified_at: string
+                name: string
+                notification_email: NotificationEmail
+                phone?: string
+                role: string
+                space_amount: integer
+                space_used: integer
+                status: string
+                timezone?: string
+                tracking_codes?: TrackingCode[]
+            NotificationEmail:
+                email: string
+                is_confirmed: boolean
+            Enterprise:
+                id: string
+                type: string
+                name: string
+            BoxDeleteUser:
+                id: string
+                force?: boolean
+                notify?: boolean
     cal-com-v2:
         syncs:
             events:
@@ -790,7 +973,40 @@ integrations:
                 endpoint: GET /event/invitees
                 output: EventInvitee
                 description: For all events (active and canceled) retrieve the event invitees
+            users:
+                runs: every day
+                description: Fetches a list of users from Calendly
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+        actions:
+            create-user:
+                description: Creates a user in Calendly
+                endpoint: POST /users
+                output: User
+                input: CreateUser
+                scopes:
+                    - admin
+            delete-user:
+                description: Deletes a user in Calendly
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - admin
         models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                email: string
             Event:
                 id: string
                 uri: string
@@ -1285,6 +1501,122 @@ integrations:
             TopicStatusUpdated:
                 success: string
                 result: string
+    docusign:
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from DocuSign
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - oauth
+                    - user_read
+        actions:
+            create-user:
+                description: Creates a user in DocuSign
+                output: User
+                endpoint: POST /users
+                input: DocuSignCreateUser
+                scopes:
+                    - oauth
+                    - user_write
+            delete-user:
+                description: Deletes a user in DocuSign
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - oauth
+                    - user_write
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            DocuSignCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                userName?: string
+                title?: string
+                phoneNumber?: string
+                company?: string
+                countryCode?: string
+                activationAccessCode?: string
+                settings?:
+                    language?: string
+                    timeZone?: string
+                userStatus?: string
+    docusign-sandbox:
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from DocuSign sandbox
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - oauth
+                    - user_read
+        actions:
+            create-user:
+                description: Creates a user in DocuSign sandbox
+                output: User
+                endpoint: POST /users
+                input: DocuSignCreateUser
+                scopes:
+                    - oauth
+                    - user_write
+            delete-user:
+                description: Deletes a user in DocuSign sandbox
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - oauth
+                    - user_write
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            DocuSignCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                userName?: string
+                title?: string
+                phoneNumber?: string
+                company?: string
+                countryCode?: string
+                activationAccessCode?: string
+                settings?:
+                    language?: string
+                    timeZone?: string
+                userStatus?: string
     evaluagent:
         syncs:
             users:
@@ -1528,7 +1860,116 @@ integrations:
                 track_deletes: true
                 runs: every day
                 output: Article
+            contacts:
+                description: |
+                    Fetches the list of contacts.
+                endpoint: GET /contacts
+                sync_type: incremental
+                runs: every day
+                output: Contact
+            tickets:
+                description: |
+                    Fetches the freshdesk tickets
+                endpoint: GET /tickets
+                sync_type: incremental
+                runs: every day
+                output: Ticket
+            users:
+                description: |
+                    Fetches the list of users
+                endpoint: GET /users
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: User
+        actions:
+            create-contact:
+                description: Creates a user in FreshDesk
+                output: Contact
+                endpoint: POST /contacts
+                input: CreateContact
+            delete-contact:
+                description: Deletes a contact in FreshDesk
+                endpoint: DELETE /contacts
+                output: SuccessResponse
+                input: IdEntity
+            create-user:
+                description: Creates a user in FreshDesk
+                output: User
+                endpoint: POST /users
+                input: FreshdeskCreateUser
+            delete-user:
+                description: Deletes a user in FreshDesk
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
         models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            FreshdeskCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                ticket_scope?: number
+                ticketScope?: globalAccess | groupAccess | restrictedAccess
+                occasional?: boolean
+                signature?: string
+                skill_ids?: number[]
+                group_ids?: number[]
+                role_ids?: number[]
+                agent_type?: number
+                agentType?: support | field | collaborator
+                language?: string
+                time_zone?: string
+                focus_mode?: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            Contact:
+                id: string
+                active: boolean
+                email: string
+                name: string
+                createdAt: string
+                updatedAt: string
+                companyId?: string | undefined
+                phone?: string | undefined | null
+                mobile?: string | undefined | null
+                jobTitle?: string | undefined | null
+            CreateContact:
+                name: string
+                email?: string
+                phone?: string
+                mobile?: string
+                twitter_id?:
+                    type: string
+                    unique: true
+                    required: true
+                unique_external_id?:
+                    type: string
+                    unique: true
+                    required: true
+                other_emails?: array
+                company_id?: number
+                view_all_tickets?: boolean
+                other_companies?: array
+                address?: string
+                avatar?: object
+                custom_fields?: object
+                description?: string
+                job_title?: string
+                language?: string
+                tags?: array
+                time_zone?: string
+                lookup_parameter?: string
             Timestamps:
                 created_at: string
                 updated_at: string
@@ -1562,6 +2003,18 @@ integrations:
                 meta_title?: string | undefined
                 meta_description?: string | undefined
                 meta_keywords?: string | undefined
+            Ticket:
+                id: string
+                type: string
+                priority: number
+                request_id: number
+                response_id: number
+                source: number
+                subject: string
+                to_emails: string[] | null
+                created_at: string
+                updated_at: string
+                is_escalated: boolean
     github:
         syncs:
             issues:
@@ -2187,6 +2640,114 @@ integrations:
                     coordinators: string[]
                     sourcers: string[]
                 openings: string[]
+    gusto:
+        actions:
+            create-user:
+                description: Creates a user in Gusto.
+                output: User
+                endpoint: POST /users
+                input: GustoCreateUser
+                scopes:
+                    - employees:manage
+            delete-user:
+                description: Deletes a user in Gusto.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: GustoDeleteUser
+                scopes:
+                    - employments:write
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Gusto.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - employees:read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            GustoCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth: string
+                ssn?: string
+                selfOnboarding?: boolean
+            GustoDeleteUser:
+                id: string
+                effectiveDate?: string
+                runTerminationPayroll?: boolean
+    gusto-demo:
+        actions:
+            create-user:
+                description: Creates a user in Gusto.
+                output: User
+                endpoint: POST /users
+                input: GustoCreateUser
+                scopes:
+                    - employees:manage
+            delete-user:
+                description: Deletes a user in Gusto.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: GustoDeleteUser
+                scopes:
+                    - employments:write
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Gusto.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - employees:read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            GustoCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth: string
+                ssn?: string
+                selfOnboarding?: boolean
+            GustoDeleteUser:
+                id: string
+                effectiveDate?: string
+                runTerminationPayroll?: boolean
     hackerrank-work:
         syncs:
             interviews:
@@ -2416,14 +2977,41 @@ integrations:
                 endpoint: GET /service-tickets
             contacts:
                 runs: every day
-                description: >
-                    Fetches a list of contacts from Hubspot with the primary associated
-                    company
+                description: |
+                    Fetches a list of contacts from Hubspot
                 output: Contact
+                scopes:
+                    - crm.objects.contacts.read
+                    - oauth
                 sync_type: full
                 track_deletes: true
-                version: 2.0.0
+                version: 2.0.1
                 endpoint: GET /contacts
+            companies:
+                runs: every day
+                description: |
+                    Fetches a list of companies from Hubspot
+                output: Company
+                scopes:
+                    - crm.objects.companies.read
+                    - oauth
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /companies
+            deals:
+                runs: every day
+                description: >
+                    Fetches a list of deals from Hubspot with their associated companies
+                    and contacts
+                output: Deal
+                scopes:
+                    - crm.objects.deals.read
+                    - oauth
+                    - e-commerce (standard scope)
+                    - crm.objects.line_items.read (granular scope)
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /deals
             owners:
                 runs: every day
                 description: |
@@ -2454,31 +3042,17 @@ integrations:
                 sync_type: full
                 track_deletes: true
                 endpoint: GET /knowledge-base
-            deals:
-                runs: every day
-                description: >
-                    Fetch hubspot deals with the corresponding line items and associated
-                    companies and contacts.
-                output: Deal
-                sync_type: full
-                track_deletes: true
-                endpoint: GET /deals
-                scopes:
-                    - oauth
-                    - crm.objects.deals.read
-                    - e-commerce (standard scope)
-                    - crm.objects.line_items.read (granular scope)
-            companies:
+            tasks:
                 runs: every day
                 description: |
-                    Fetch hubspot companies
-                output: Company
+                    Fetches a list of tasks from Hubspot
+                output: Task
+                scopes:
+                    - crm.objects.contacts.read
+                    - oauth
                 sync_type: full
                 track_deletes: true
-                endpoint: GET /companies
-                scopes:
-                    - oauth
-                    - crm.objects.companies.read
+                endpoint: GET /tasks
             currency-codes:
                 runs: every day
                 description: |
@@ -2497,15 +3071,32 @@ integrations:
                 output: PropertyResponse
                 endpoint: GET /properties
             create-deal:
-                description: Creates a deal in Hubspot
-                output: CreatedDeal
+                description: Creates a single deal in Hubspot
+                output: CreateUpdateDealOutput
                 endpoint: POST /deals
-                input: CreateDeal
+                input: CreateDealInput
                 scopes:
                     - oauth
                     - crm.objects.deals.write
+                    - oauth
+            update-deal:
+                description: Updates a single deal in Hubspot
+                output: CreateUpdateDealOutput
+                endpoint: PATCH /deal
+                input: UpdateDealInput
+                scopes:
+                    - crm.objects.deals.write
+                    - oauth
+            delete-deal:
+                description: Deletes a deal in Hubspot
+                input: Id
+                endpoint: DELETE /deal
+                output: SuccessResponse
+                scopes:
+                    - crm.objects.deals.write
+                    - oauth
             create-user:
-                description: Creates a user in Hubspot
+                description: Creates a single user in Hubspot
                 output: CreatedUser
                 endpoint: POST /users
                 input: CreateUser
@@ -2554,41 +3145,91 @@ integrations:
                     - crm.schemas.custom.read
             create-contact:
                 description: Create a single contact in Hubspot
-                input: CreateContact
-                endpoint: POST /contacts
-                output: Contact
+                output: CreateUpdateContactOutput
+                endpoint: POST /contact
+                input: CreateContactInput
                 scopes:
-                    - oauth
                     - crm.objects.contacts.write
+                    - oauth
             update-contact:
-                description: Update a single contact in Hubspot
-                input: UpdateContact
-                endpoint: PUT /contacts
-                output: Contact
+                description: Updates a single contact in Hubspot
+                output: CreateUpdateContactOutput
+                endpoint: PATCH /contact
+                input: UpdateContactInput
                 scopes:
-                    - oauth
                     - crm.objects.contacts.write
+                    - oauth
+            delete-contact:
+                description: Deletes a contact in Hubspot
+                input: Id
+                endpoint: DELETE /contact
+                output: SuccessResponse
+                scopes:
+                    - crm.objects.contacts.write
+                    - oauth
             create-company:
                 description: Create a single company in Hubspot
-                input: CreateCompany
-                output: Company
+                output: CreateUpdateCompanyOutput
                 endpoint: POST /company
+                input: CreateCompanyInput
                 scopes:
-                    - oauth
                     - crm.objects.companies.write
+                    - oauth
             update-company:
                 description: Update a single company in Hubspot
-                input: UpdateCompany
-                output: Company
-                endpoint: PUT /company
+                output: CreateUpdateCompanyOutput
+                endpoint: PATCH /company
+                input: UpdateCompanyInput
                 scopes:
-                    - oauth
                     - crm.objects.companies.write
+                    - oauth
+            delete-company:
+                description: Deletes a company in Hubspot
+                input: Id
+                endpoint: DELETE /company
+                output: SuccessResponse
+                scopes:
+                    - crm.objects.companies.write
+                    - oauth
+            create-task:
+                description: Creates a single task in Hubspot
+                output: CreateUpdateTaskOutput
+                endpoint: POST /task
+                input: CreateTaskInput
+                scopes:
+                    - crm.objects.contacts.write
+                    - oauth
+            update-task:
+                description: Updates a single company in Hubspot
+                output: UpdateTaskInput
+                endpoint: PATCH /task
+                input: CreateUpdateTaskOutput
+                scopes:
+                    - crm.objects.contacts.write
+                    - oauth
+            delete-task:
+                description: Deletes a task in Hubspot
+                input: Id
+                endpoint: DELETE /task
+                output: SuccessResponse
+                scopes:
+                    - crm.objects.contacts.write
+                    - oauth
+            create-note:
+                description: Creates a single note in Hubspot
+                input: Note
+                endpoint: POST /note
+                output: Note
+                scopes:
+                    - crm.objects.contacts.write
+                    - oauth
         models:
             IdEntity:
                 id: string
             SuccessResponse:
                 success: boolean
+            Id:
+                id: string
             InputProperty:
                 name: string
             PropertyResponse:
@@ -2602,7 +3243,7 @@ integrations:
                 fieldType: string
                 description: string
                 groupName: string
-                options: Option[],
+                options: Option[]
                 displayOrder: number
                 calculated: boolean
                 externalOptions: boolean
@@ -2701,32 +3342,112 @@ integrations:
                 category: string
                 content: string
                 publishDate: number
+            CreateContactInput:
+                first_name?: string | undefined
+                last_name?: string | undefined
+                email?: string | undefined
+                job_title?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                salutation?: string | undefined
+                mobile_phone_number?: string | undefined
+                website_url?: string | undefined
+                owner?: string | undefined
+            CreateUpdateContactOutput:
+                id: string
+                created_date: string
+                first_name?: string | undefined
+                last_name?: string  | undefined
+                email?: string | undefined
+                job_title?: string | undefined
+                last_contacted?: string | undefined
+                last_activity_date?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                salutation?: string | undefined
+                mobile_phone_number?: string | undefined
+                website_url?: string | undefined
+                owner?: string | undefined
+            UpdateContactInput:
+                first_name?: string | undefined
+                last_name?: string | undefined
+                email?: string | undefined
+                job_title?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                salutation?: string | undefined
+                mobile_phone_number?: string | undefined
+                website_url?: string | undefined
+                owner?: string | undefined
+                id: string
             Contact:
                 id: string
-                createdAt: string
-                updatedAt: string
-                firstName: string
-                lastName: string
-                email: string
-                primaryContactId?: string
-            CreateContact:
-                associations?: ContactAssociations[]
-                properties: object
-            ContactAssociations:
-                types?:
-                    - associationCategory?: HUBSPOT_DEFINED | USER_DEFINED | INTEGRATOR_DEFINED
-                      associationTypeId?: number
-                to?:
-                    id?: string
-            CreatedContact:
+                created_date: string
+                first_name: string | null
+                last_name: string  | null
+                email: string | null
+                job_title: string | null
+                last_contacted: string | null
+                last_activity_date: string | null
+                lead_status: string | null
+                lifecycle_stage: string | null
+                salutation: string | null
+                mobile_phone_number: string | null
+                website_url: string | null
+                owner: string | null
+            CurrencyCode:
                 id: string
-            UpdateContact:
-                contactId: string
-                input:
-                    properties: object
-                    idProperty?: string
-            UpdatedContact:
+                code: string
+                description: string
+            CreateCompanyInput:
+                name?: string | undefined
+                industry?: string | undefined
+                description?: string | undefined
+                country?: string | undefined
+                city?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                owner?: string | undefined
+                year_founded?: string | undefined
+                website_url?: string | undefined
+            UpdateCompanyInput:
+                name?: string | undefined
+                industry?: string | undefined
+                description?: string | undefined
+                country?: string | undefined
+                city?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                owner?: string | undefined
+                year_founded?: string | undefined
+                website_url?: string | undefined
                 id: string
+            CreateUpdateCompanyOutput:
+                id: string
+                created_date: string
+                name?: string | undefined
+                industry?: string | undefined
+                description?: string | undefined
+                country?: string | undefined
+                city?: string | undefined
+                lead_status?: string | undefined
+                lifecycle_stage?: string | undefined
+                owner?: string | undefined
+                year_founded?: string | undefined
+                website_url?: string | undefined
+            Company:
+                id: string
+                created_date: string | null
+                name: string | null
+                industry: string | null
+                description: string | null
+                country: string | null
+                city: string | null
+                lead_status: string | null
+                lifecycle_stage: string | null
+                owner: string | null
+                year_founded: string | null
+                website_url: string | null
             Account:
                 id: string
                 type: string
@@ -2737,94 +3458,107 @@ integrations:
                 utcOffsetMilliseconds: number
                 uiDomain: string
                 dataHostingLocation: string
+            CreateTaskInput:
+                task_type?: string | undefined
+                title?: string | undefined
+                priority?: string| undefined
+                assigned_to?: string | undefined
+                due_date?: string | undefined
+                notes?: string | undefined
+                associations?: Association[] | undefined
+            UpdateTaskInput:
+                task_type?: string | undefined
+                title?: string | undefined
+                priority?: string| undefined
+                assigned_to?: string | undefined
+                due_date?: string | undefined
+                notes?: string | undefined
+                associations?: Association[] | undefined
+                id: string
+            CreateUpdateTaskOutput:
+                id: string
+                task_type?: string | undefined
+                title?: string | undefined
+                priority?: string| undefined
+                assigned_to?: string | undefined
+                due_date?: string | undefined
+                notes?: string | undefined
+                associations?: Association[] | undefined
+            Task:
+                id: string
+                task_type: string | null
+                title: string | null
+                priority: string| null
+                assigned_to: string | null
+                due_date: string | null
+                notes: string | null
+                returned_associations?: ReturnedAssociations | undefined
+            CreateDealInput:
+                name?: string | undefined
+                amount?: string | undefined
+                close_date?: string | undefined
+                deal_description?: string | undefined
+                owner?: string | undefined
+                deal_stage?: string | undefined
+                deal_probability?: string | undefined
+                associations?: Association[] | undefined
+            UpdateDealInput:
+                name?: string | undefined
+                amount?: string | undefined
+                close_date?: string | undefined
+                deal_description?: string | undefined
+                owner?: string | undefined
+                deal_stage?: string | undefined
+                deal_probability?: string | undefined
+                associations?: Association[] | undefined
+                id: string
+            CreateUpdateDealOutput:
+                id: string
+                name?: string | undefined
+                amount?: string | undefined
+                close_date?: string | undefined
+                deal_description?: string | undefined
+                owner?: string | undefined
+                deal_stage?: string | undefined
+                deal_probability?: string | undefined
             Deal:
-                createdate: string
-                days_to_close: string
-                dealname: string
-                hs_closed_amount: string
-                hs_closed_amount_in_home_currency: string
-                hs_closed_won_count: string
-                hs_createdate: string
-                hs_days_to_close_raw: string
-                hs_deal_stage_probability_shadow: string
-                hs_is_closed_lost: string
-                hs_is_closed_won: string
-                hs_is_deal_split: string
-                hs_lastmodifieddate: string
-                hs_object_id: string
-                hs_object_source: string
-                hs_object_source_id: string
-                hs_object_source_label: string
-                hs_projected_amount: string
-                hs_projected_amount_in_home_currency: string
                 id: string
-                companies?: CompanyAssociation[]
-                contacts?:
-                    - id: string
-                lineItems?:
-                    id: string
-                    __extends: LineItemDefaultProperties
-                __string: any
-            CompanyAssociation:
-                id: string
-                primary: boolean
-            CreateDeal:
-                properties:
-                    dealname: string
-                    __string: any
-            DealDefaultProperties:
-                createdate: string
-                days_to_close: string
-                dealname: string
-                hs_closed_amount: string
-                hs_closed_amount_in_home_currency: string
-                hs_closed_won_count: string
-                hs_createdate: string
-                hs_days_to_close_raw: string
-                hs_deal_stage_probability_shadow: string
-                hs_is_closed_lost: string
-                hs_is_closed_won: string
-                hs_is_deal_split: string
-                hs_lastmodifieddate: string
-                hs_object_id: string
-                hs_object_source: string
-                hs_object_source_id: string
-                hs_object_source_label: string
-                hs_projected_amount: string
-                hs_projected_amount_in_home_currency: string
-            CreatedDeal:
-                id: string
-                properties: DealDefaultProperties
-                createdAt: string
-                updatedAt: string
-                archived: boolean
-            CurrencyCode:
-                id: string
-                code: string
-                description: string
+                name: string | null
+                amount: string | null
+                close_date: string | null
+                deal_description: string | null
+                owner: string | null
+                deal_stage: string | null
+                deal_probability: string | null
+                returned_associations?: ReturnedAssociations | undefined
+            ReturnedAssociations:
+                companies?: AssociationCompany[] | undefined
+                contacts?: AssociationContact[] | undefined
+                deals?: AssociationDeal[] | undefined
+            AssociationTypes:
+                association_category: string
+                association_type_Id: number
             Association:
+                to: number
+                types: AssociationTypes[]
+            AssociationCompany:
                 id: string
-            Company:
+                name: string | null
+            AssociationContact:
                 id: string
-                createdAt: string
-                updatedAt: string
-                name: string
-                domain: string
-                archived: boolean
-            CreateCompany:
-                associations?: CompanyAssociations[]
-                properties: object
-            CompanyAssociations:
-                types?:
-                    - associationCategory?: HUBSPOT_DEFINED | USER_DEFINED | INTEGRATOR_DEFINED
-                      associationTypeId?: number
-                to?:
-                    id?: string
-            UpdateCompany:
-                companyId: string
-                input:
-                    properties: object
-                    idProperty?: string
+                first_name: string | null
+                last_name: string | null
+            AssociationDeal:
+                id: string
+                name: string | null
+            Note:
+                id?: string | undefined
+                time_stamp: string
+                created_date?: string | undefined
+                body?: string | undefined
+                attachment_ids?: string | undefined
+                owner?: string | undefined
+                associations?: Association[] | undefined
             LineItem:
                 name: string
                 price: string
@@ -2865,6 +3599,22 @@ integrations:
                 campaign_id: string
                 name: string
     intercom:
+        actions:
+            fetch-article:
+                description: Fetch a single article from Intercom
+                input: IdEntity
+                endpoint: GET /single-article
+                output: Article
+            create-user:
+                description: Creates a user in Intercom
+                input: IntercomCreateUser
+                endpoint: POST /users
+                output: User
+            delete-user:
+                description: Deletes a user in Intercom
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
         syncs:
             conversations:
                 runs: every 6 hours
@@ -2896,7 +3646,18 @@ integrations:
                 track_deletes: true
                 version: 1.0.0
                 endpoint: GET /articles
+            users:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of users from Intercom
+                output: User
+                sync_type: incremental
+                endpoint: GET /users
         models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
             Contact:
                 id: string
                 workspace_id: string
@@ -2999,6 +3760,26 @@ integrations:
                 pt-BR: ArticleContent | null
                 zh-CN: ArticleContent | null
                 zh-TW: ArticleContent | null
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            IntercomCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                external_id?: string
+                phone?: string
+                avatar?: string
+                signed_up_at?: number
+                last_seen_at?: number
+                owner_id?: string
+                unsubscribed_from_emails?: boolean
     jira:
         syncs:
             issues:
@@ -3045,8 +3826,8 @@ integrations:
         models:
             JiraIssueMetadata:
                 projectIdsToSync: JiraProjectId[]
-                cloudId: string
-                baseUrl: string
+                cloudId?: string
+                baseUrl?: string
             JiraProjectId:
                 id: string
             Timestamps:
@@ -3103,6 +3884,65 @@ integrations:
                 id: string
                 key: string
                 self: string
+    jira-basic:
+        actions:
+            create-user:
+                description: >
+                    Creates a user in Jira. Note that this endpoint is marked as
+                    experimental and could 
+
+                    be deprecated in the future. Products are optional and allowed params
+                    are
+
+                    jira-core, jira-servicedesk, jira-product-discovery, jira-software.
+                    Defaults to 
+
+                    jira-software. Note that the last name isn't able to be set via the
+                    API and 
+
+                    the first name defaults to the email address.
+                output: User
+                endpoint: POST /users
+                input: JiraCreateUser
+            delete-user:
+                description: >
+                    Deletes a user in Jira. Note that this endpoint is marked as
+                    experimental and could 
+
+                    be deprecated in the future.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Jira
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            JiraCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                products?: string[]
     kustomer:
         syncs:
             conversations:
@@ -4053,6 +4893,81 @@ integrations:
                 firstName: string
                 lastName: string
                 isBot: boolean
+    okta:
+        actions:
+            create-user:
+                description: Creates a new user in your Okta org without credentials.
+                output: User
+                endpoint: POST /user
+                input: OktaCreateUser
+            add-group:
+                description: Adds a new group with the OKTA_GROUP type to your org
+                output: Group
+                endpoint: POST /group
+                input: OktaAddGroup
+            add-user-group:
+                description: Assigns a user to a group with the OKTA_GROUP type
+                output: SuccessResponse
+                endpoint: PUT /user-group
+                input: OktaAssignRemoveUserGroup
+            remove-user-group:
+                description: Unassigns a user from a group with the OKTA_GROUP type
+                output: SuccessResponse
+                endpoint: DELETE /user-group
+                input: OktaAssignRemoveUserGroup
+        models:
+            ActionResponseError:
+                message: string
+            OktaAddGroup:
+                description?: string | undefined
+                name: string
+            OktaUserGroupProfile:
+                description: string | null
+                name: string
+            OktaActiveDirectoryGroupProfile:
+                description: string
+                dn: string
+                externalId: string
+                name: string
+                samAccountName: string
+                windowsDomainQualifiedName: string
+            Group:
+                id: string
+                created: string
+                lastMembershipUpdated: string
+                lastUpdated: string
+                objectClass: string[]
+                type: APP_GROUP | BUILT_IN | OKTA_GROUP
+                profile: OktaUserGroupProfile | OktaActiveDirectoryGroupProfile
+            OktaAssignRemoveUserGroup:
+                groupId: string
+                userId: string
+            SuccessResponse:
+                success: boolean
+            OktaCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                login: string
+                mobilePhone?: string | undefined | null
+            User:
+                id: string
+                status: string
+                created: string
+                activated: string
+                statusChanged: string
+                lastLogin: string | null
+                lastUpdated: string
+                passwordChanged: string | null
+                type:
+                    id: string
+                profile:
+                    firstName: string | null
+                    lastName: string | null
+                    mobilePhone: string | null
+                    secondEmail: string | null
+                    login: string
+                    email: string
     outlook:
         syncs:
             emails:
@@ -5126,6 +6041,7 @@ integrations:
                 endpoint: GET /users
                 scopes:
                     - users:read
+                    - users:read.email
             channels:
                 runs: every hour
                 description: |
@@ -5188,7 +6104,7 @@ integrations:
                     real_name_normalized: string | null
                     display_name_normalized: string | null
                     email: string | null
-                    image_original: string | null
+                    image_original: string | null | undefined
                 is_admin: boolean
                 is_owner: boolean
                 is_primary_owner: boolean
@@ -6900,3 +7816,121 @@ integrations:
             ZohoMailAddUserOutput:
                 status: object
                 data: object
+    zoom:
+        actions:
+            create-user:
+                description: Creates a user in Zoom. Requires Pro account or higher
+                output: User
+                endpoint: POST /users
+                input: ZoomCreateUser
+                scopes:
+                    - user:write
+                    - user:write:admin
+            delete-user:
+                description: Deletes a user in Zoom. Requires Pro account or higher
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - user:write
+                    - user:write:admin
+            create-meeting:
+                description: Creates a meeting in Zoom.
+                endpoint: POST /meetings
+                output: Meeting
+                input: CreateMeeting
+                scopes:
+                    - meeting:write
+            delete-meeting:
+                description: Deletes a meeting in Zoom
+                endpoint: DELETE /meetings
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - meeting:write
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Zoom
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - user:read
+                    - user:read:admin
+            meetings:
+                runs: every day
+                description: |
+                    Fetches a list of meetings from Zoom
+                output: Meeting
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /meetings
+                scopes:
+                    - meeting:read
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            ZoomCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                action?: create | autoCreate | custCreate | ssoCreate
+                display_name?: string
+                type?: basic | licensed | UnassignedWithoutMeetingsBasic | None
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            Meeting:
+                id: string
+                topic: string
+                startTime: string
+                duration: number
+                timezone: string
+                joinUrl: string
+                createdAt: string
+            CreateMeeting:
+                topic: string
+                type: instant | scheduled | recurringNoFixed | recurring | screenShareOnly
+                agenda?: string
+                default_password?: boolean
+                duration?: number
+                password?: string
+                pre_schedule?: boolean
+                recurrence?:
+                    end_date_time?: string
+                    end_times?: number
+                    monthly_day?: number
+                    monthly_week?: number
+                    monthly_week_day?: number
+                    repeat_interval?: number
+                    type?: daily | weekly | monthly
+                    weekly_days?: sunday | monday | tuesday | wednesday | thursday | friday | saturday
+                settings?:
+                    host_video?: boolean
+                    participant_video?: boolean
+                    join_before_host?: boolean
+                    mute_upon_entry?: boolean
+                    approval_type?: automatic | manually | notRequired
+                    registration_type?: >-
+                        registerOnceAttendAny | registerEveryTime |
+                        registerOnceSelectOccurrences
+                    audio?: both | telephony | voip | thirdParty
+                    auto_recording?: local | cloud | none
+                    waiting_room: boolean
+                schedule_for?: string
+                start_time?: string
+                template_id?: string
+                timezone?: string

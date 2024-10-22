@@ -16,7 +16,7 @@ export class ConnectUI {
     private baseURL;
     private onEvent;
 
-    constructor({ sessionToken, baseURL = 'http://localhost:5173', onEvent }: ConnectUIProps) {
+    constructor({ sessionToken, baseURL = 'https://connect.nango.dev', onEvent }: ConnectUIProps) {
         this.sessionToken = sessionToken;
         this.baseURL = baseURL;
         this.onEvent = onEvent;

@@ -40,7 +40,7 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
     };
 
     return (
-        <div className="mt-10 flex flex-col gap-10">
+        <div className="mt-10 flex gap-10">
             {environment.callback_url && (
                 <InfoBloc
                     title="Setup URL"
@@ -50,7 +50,7 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
                     <CopyButton text={environment.callback_url.replace('oauth/callback', 'app-auth/connect')} />
                 </InfoBloc>
             )}
-            <div className="flex gap-10">
+            <div className="grid grid-cols-2 gap-10">
                 <InfoBloc title="App ID">
                     <Input
                         id="app_id"

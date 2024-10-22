@@ -4,7 +4,6 @@ import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry, ge
 import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
-import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks.js';
 import type { InternalProxyConfiguration } from '@nangohq/types';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
@@ -15,7 +14,7 @@ const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as
 
 export interface InternalNango {
     getConnection: () => Promise<Connection>;
-    proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse | AxiosError>;
+    proxy: <T = any>({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse<T> | AxiosError>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
@@ -23,22 +22,12 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
     const { connection: upsertedConnection, environment, account } = createdConnection;
     let logCtx: LogContext | undefined;
     try {
-        const credentialResponse = await connectionService.getConnectionCredentials({
-            account,
-            environment,
-            connectionId: upsertedConnection.connection_id,
-            providerConfigKey: upsertedConnection.provider_config_key,
-            logContextGetter,
-            instantRefresh: false,
-            onRefreshSuccess: connectionRefreshSuccessHook,
-            onRefreshFailed: connectionRefreshFailedHook
-        });
-
-        if (credentialResponse.isErr()) {
+        const connectionRes = await connectionService.getConnection(upsertedConnection.connection_id, upsertedConnection.provider_config_key, environment.id);
+        if (connectionRes.error || !connectionRes.response) {
             return;
         }
 
-        const { value: connection } = credentialResponse;
+        const connection = connectionRes.response;
 
         const internalConfig: InternalProxyConfiguration = {
             connection,

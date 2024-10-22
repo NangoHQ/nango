@@ -25,7 +25,7 @@
                 },
                 "auth_mode": {
                     "type": "string",
-                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU"]
+                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU", "JWT", "BILL"]
                 },
                 "authorization_method": {
                     "type": "string",
@@ -212,6 +212,30 @@
                         }
                     }
                 },
+                "token": {
+                    "type": "object",
+                    "properties": {
+                        "expires_in_ms": {
+                            "type": "number"
+                        },
+                        "headers": {
+                            "type": "object",
+                            "properties": {
+                                "alg": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "payload": {
+                            "type": "object",
+                            "properties": {
+                                "aud": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
                 "redirect_uri_metadata": {
                     "type": "array",
                     "items": {
@@ -323,6 +347,9 @@
                     "type": "boolean"
                 },
                 "webhook_routing_script": {
+                    "type": "string"
+                },
+                "authorization_url_fragment": {
                     "type": "string"
                 },
                 "connection_config": {
