@@ -4140,7 +4140,7 @@ sendgrid:
             description: The API key for your Sendgrid account
 
 sedna:
-    display_name: sedna (Oauth2)
+    display_name: Sedna (Oauth2)
     auth_mode: OAUTH2_CC
     categories:
         - communication
@@ -4159,7 +4159,7 @@ sedna:
             format: tenant
 
 sedna-basic:
-    display_name: sedna (Basic Auth)
+    display_name: Sedna (Basic Auth)
     auth_mode: BASIC
     categories:
         - communication
