@@ -10,7 +10,7 @@ export const InfoBloc: React.FC<{ title: string; help?: React.ReactNode; childre
     className
 }) => {
     return (
-        <div className={cn('flex flex-col gap-1 relative min-w-[468px]', className)}>
+        <div className={cn('flex flex-col gap-1 relative', className)}>
             <div className="flex items-center gap-2">
                 <div className="text-gray-400 text-xs uppercase">{title}</div>
                 {help && (

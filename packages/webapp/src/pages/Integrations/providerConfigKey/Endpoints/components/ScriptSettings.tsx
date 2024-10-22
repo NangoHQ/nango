@@ -138,20 +138,20 @@ export const ScriptSettings: React.FC<{
                         </DrawerClose>
                     </div>
                     <h2 className="text-xl font-semibold">Endpoint Configuration</h2>
-                    <div className="flex flex-wrap gap-10 pt-7">
-                        <div className="text-s text-text-light-gray">
-                            Nango endpoints are powered by integration scripts. Some of the following configurations can only be changed by modifying this
-                            underlying script. If the source is a template, you will need to extend it to change certain configurations (
-                            <Link to="https://docs.nango.dev/customize/guides/extend-an-integration-template" className="underline">
-                                guide
-                            </Link>
-                            ).
-                        </div>
-                        <InfoBloc title="Enabled" className="min-w-[230px]">
+                    <div className="text-s text-text-light-gray pt-7">
+                        Nango endpoints are powered by integration scripts. Some of the following configurations can only be changed by modifying this
+                        underlying script. If the source is a template, you will need to extend it to change certain configurations (
+                        <Link to="https://docs.nango.dev/customize/guides/extend-an-integration-template" className="underline">
+                            guide
+                        </Link>
+                        ).
+                    </div>
+                    <div className="grid grid-cols-2 gap-10 pt-7">
+                        <InfoBloc title="Enabled">
                             <ScriptToggle flow={flow} integration={integration} />
                         </InfoBloc>
                         {flow.is_public ? (
-                            <InfoBloc title="Source" className="min-w-[230px]">
+                            <InfoBloc title="Source">
                                 <div className="flex flex-col gap-1">
                                     <div>
                                         Template{' '}
@@ -217,19 +217,23 @@ export const ScriptSettings: React.FC<{
                                 </div>
                             </InfoBloc>
                         ) : (
-                            <InfoBloc title="Source" className="min-w-[230px]">
-                                Custom v{flow.version}
+                            <InfoBloc title="Source">Custom v{flow.version}</InfoBloc>
+                        )}
+                        <InfoBloc title="Script Type">
+                            <code className="font-code text-text-light-gray text-s bg-dark-600 px-2 rounded-md uppercase">{isSync ? 'Sync' : 'Action'}</code>
+                        </InfoBloc>
+
+                        {!flow.is_public && (
+                            <InfoBloc title="Script Name">
+                                <code className="font-code max-w-full break-all text-text-light-gray bg-dark-600 px-2 rounded-md text-xs">
+                                    {integration.integration.unique_key}/{flow.type}/{flow.name}.ts
+                                </code>
                             </InfoBloc>
                         )}
-                        <InfoBloc title="Script Type" className="min-w-[230px]">
-                            {isSync ? 'Sync' : 'Action'}
-                        </InfoBloc>
                         {isSync && (
                             <>
-                                <InfoBloc title="Sync Type" className="min-w-[230px]">
-                                    {flow.sync_type === 'FULL' ? 'Full refresh only' : 'Incremental sync'}
-                                </InfoBloc>
-                                <InfoBloc title="Sync Frequency" className="min-w-[230px]">
+                                <InfoBloc title="Sync Type">{flow.sync_type === 'FULL' ? 'Full refresh only' : 'Incremental sync'}</InfoBloc>
+                                <InfoBloc title="Sync Frequency">
                                     <div className="capitalize">{flow.runs}</div>
                                     {!flow.is_public && (
                                         <Tooltip.Tooltip delayDuration={0}>
@@ -284,27 +288,21 @@ export const ScriptSettings: React.FC<{
                                         </Dialog>
                                     )}
                                 </InfoBloc>
-                                <InfoBloc title="Sync Metadata" className="min-w-[230px]">
+                                <InfoBloc title="Sync Metadata">
                                     {flow.input ? (
                                         <code className="font-code text-xs border border-border-gray rounded-md px-1">{flow.input.name}</code>
                                     ) : (
                                         'n/a'
                                     )}
                                 </InfoBloc>
-                                <InfoBloc title="Detect Deletions" className="min-w-[230px]">
-                                    {flow.track_deletes === true ? 'Yes' : 'No'}
-                                </InfoBloc>
+                                <InfoBloc title="Detect Deletions">{flow.track_deletes === true ? 'Yes' : 'No'}</InfoBloc>
                                 {flow.webhookSubscriptions && flow.webhookSubscriptions.length > 0 && (
-                                    <InfoBloc title="Webhooks Subscriptions" className="min-w-[230px]">
-                                        {flow.webhookSubscriptions.join(', ')}
-                                    </InfoBloc>
+                                    <InfoBloc title="Webhooks Subscriptions">{flow.webhookSubscriptions.join(', ')}</InfoBloc>
                                 )}
-                                <InfoBloc title="Starts on new connection" className="min-w-[230px]">
-                                    {flow.auto_start === true ? 'Yes' : 'No'}
-                                </InfoBloc>
+                                <InfoBloc title="Starts on new connection">{flow.auto_start === true ? 'Yes' : 'No'}</InfoBloc>
                             </>
                         )}
-                        <InfoBloc title="Necessary scopes" className="min-w-[230px]">
+                        <InfoBloc title="Necessary scopes">
                             {flow.scopes && flow.scopes.length > 0
                                 ? flow.scopes.map((scope) => (
                                       <div className="font-code text-xs border border-border-gray rounded-md px-1" key={scope}>
