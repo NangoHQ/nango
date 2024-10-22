@@ -1,15 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Config as ProviderConfig, OAuth2Credentials, AuthCredentials, ConnectionList, ConnectionUpsertResponse } from '@nangohq/shared';
 import db from '@nangohq/database';
-import type {
-    TbaCredentials,
-    ApiKeyCredentials,
-    BasicApiCredentials,
-    ConnectionConfig,
-    OAuth1Credentials,
-    OAuth2ClientCredentials,
-    Connection
-} from '@nangohq/types';
+import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials } from '@nangohq/types';
 import {
     configService,
     connectionService,
@@ -55,11 +47,29 @@ class ConnectionController {
                 metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId: account.id });
             }
 
-            const credentialResponse = await connectionService.getConnectionCredentials({
+            const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
+            if (!integration) {
+                res.status(404).send({
+                    error: {
+                        code: 'unknown_provider_config',
+                        message:
+                            'Provider config not found for the given provider config key. Please make sure the provider config exists in the Nango dashboard.'
+                    }
+                });
+                return;
+            }
+
+            const connectionRes = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+            if (connectionRes.error || !connectionRes.response) {
+                errorManager.errResFromNangoErr(res, connectionRes.error);
+                return;
+            }
+
+            const credentialResponse = await connectionService.refreshOrTestCredentials({
                 account,
                 environment,
-                connectionId,
-                providerConfigKey,
+                connection: connectionRes.response,
+                integration,
                 logContextGetter,
                 instantRefresh,
                 onRefreshSuccess: connectionRefreshSuccessHook,
@@ -67,11 +77,7 @@ class ConnectionController {
             });
 
             if (credentialResponse.isErr()) {
-                if (credentialResponse.error.payload['connection']) {
-                    delete (credentialResponse.error.payload['connection'] as unknown as Partial<Connection>).credentials;
-                }
                 errorManager.errResFromNangoErr(res, credentialResponse.error);
-
                 return;
             }
 

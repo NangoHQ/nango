@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
-import type { Connection, GetConnection, IntegrationConfig } from '@nangohq/types';
+import type { GetConnection, IntegrationConfig } from '@nangohq/types';
 import { connectionService, configService, errorNotificationService } from '@nangohq/shared';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
@@ -53,67 +53,8 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     const instantRefresh = force_refresh === 'true';
     const { connectionId } = params;
 
-    const credentialResponse = await connectionService.getConnectionCredentials({
-        account,
-        environment,
-        connectionId,
-        providerConfigKey,
-        logContextGetter,
-        instantRefresh,
-        onRefreshSuccess: connectionRefreshSuccessHook,
-        onRefreshFailed: connectionRefreshFailedHook
-    });
-
-    // getConnection can create 2 types of error:
-    // - critical (e.g:missing_connection)
-    // - non-critical (failed to refresh token)
-    // In the second case we still want to return the connection, which creates this weird branching
-    const isError = credentialResponse.isErr();
-
-    if (isError && !credentialResponse.error.payload['connection']) {
-        switch (credentialResponse.error.type) {
-            case 'missing_connection':
-                res.status(400).send({
-                    error: {
-                        code: 'missing_connection',
-                        message: credentialResponse.error.message
-                    }
-                });
-                break;
-            case 'missing_provider_config':
-                res.status(400).send({
-                    error: {
-                        code: 'missing_provider_config',
-                        message: credentialResponse.error.message
-                    }
-                });
-                break;
-            case 'unknown_connection':
-                res.status(404).send({
-                    error: {
-                        code: 'unknown_connection',
-                        message: credentialResponse.error.message
-                    }
-                });
-                break;
-            case 'unknown_provider_config':
-                res.status(404).send({
-                    error: {
-                        code: 'unknown_provider_config',
-                        message: credentialResponse.error.message
-                    }
-                });
-                break;
-            default:
-                res.status(500).send({ error: { code: 'server_error' } });
-        }
-        return;
-    }
-
-    const connection = credentialResponse.isOk() ? credentialResponse.value : (credentialResponse.error.payload['connection'] as Connection);
-
-    const config: IntegrationConfig | null = await configService.getProviderConfig(connection.provider_config_key, environment.id);
-    if (!config) {
+    const integration: IntegrationConfig | null = await configService.getProviderConfig(providerConfigKey, environment.id);
+    if (!integration) {
         res.status(404).send({
             error: {
                 code: 'unknown_provider_config',
@@ -123,11 +64,53 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         return;
     }
 
-    if (isError) {
-        const errorLog = await errorNotificationService.auth.get(connection.id as number);
-        res.status(200).send({ errorLog, provider: config.provider, connection });
+    const connectionRes = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+    if (connectionRes.error || !connectionRes.response) {
+        switch (connectionRes.error?.type) {
+            case 'missing_connection':
+                res.status(400).send({
+                    error: { code: 'missing_connection', message: connectionRes.error.message }
+                });
+                break;
+            case 'missing_provider_config':
+                res.status(400).send({
+                    error: { code: 'missing_provider_config', message: connectionRes.error.message }
+                });
+                break;
+            case 'unknown_connection':
+                res.status(404).send({
+                    error: { code: 'unknown_connection', message: connectionRes.error.message }
+                });
+                break;
+            case 'unknown_provider_config':
+                res.status(404).send({
+                    error: { code: 'unknown_provider_config', message: connectionRes.error.message }
+                });
+                break;
+            default:
+                res.status(500).send({ error: { code: 'server_error' } });
+        }
         return;
     }
+
+    const credentialResponse = await connectionService.refreshOrTestCredentials({
+        account,
+        environment,
+        connection: connectionRes.response,
+        integration,
+        logContextGetter,
+        instantRefresh,
+        onRefreshSuccess: connectionRefreshSuccessHook,
+        onRefreshFailed: connectionRefreshFailedHook
+    });
+
+    if (credentialResponse.isErr()) {
+        const errorLog = await errorNotificationService.auth.get(connectionRes.response.id as number);
+        res.status(200).send({ errorLog, provider: integration.provider, connection: connectionRes.response });
+        return;
+    }
+
+    const connection = credentialResponse.value;
 
     if (instantRefresh) {
         // If we force the refresh we also specifically log a success operation (we usually only log error)
@@ -136,7 +119,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
             {
                 account,
                 environment,
-                integration: { id: config.id!, name: config.unique_key, provider: config.provider },
+                integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
                 connection: { id: connection.id!, name: connection.connection_id }
             }
         );
@@ -145,7 +128,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     }
 
     res.status(200).send({
-        provider: config.provider,
+        provider: integration.provider,
         connection,
         errorLog: null
     });

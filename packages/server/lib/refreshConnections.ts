@@ -56,21 +56,22 @@ export async function exec(): Promise<void> {
             const limit = 1000;
             // eslint-disable-next-line no-constant-condition
             while (true) {
-                const staleConnections = await connectionService.getStaleConnections({ days: 0, limit, cursor });
+                const staleConnections = await connectionService.getStaleConnections({ days: 1, limit, cursor });
                 logger.info(`${cronName} found ${staleConnections.length} stale connections`);
                 for (const staleConnection of staleConnections) {
                     if (Date.now() - startTimestamp > ttlMs) {
                         logger.info(`${cronName} time limit reached, stopping`);
                         return;
                     }
-                    const { connection_id, environment, provider_config_key, account } = staleConnection;
-                    logger.info(`${cronName} refreshing connection '${connection_id}' for accountId '${account.id}'`);
+
+                    const { connection, account, environment, integration } = staleConnection;
+                    logger.info(`${cronName} refreshing connection '${connection.connection_id}' for accountId '${account.id}'`);
                     try {
-                        const credentialResponse = await connectionService.getConnectionCredentials({
+                        const credentialResponse = await connectionService.refreshOrTestCredentials({
                             account,
                             environment,
-                            connectionId: connection_id,
-                            providerConfigKey: provider_config_key,
+                            integration,
+                            connection,
                             logContextGetter,
                             instantRefresh: false,
                             onRefreshSuccess: connectionRefreshSuccessHook,
@@ -83,7 +84,7 @@ export async function exec(): Promise<void> {
                             metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
                         }
                     } catch (err) {
-                        logger.error(`${cronName} failed to refresh connection '${connection_id}' ${stringifyError(err)}`);
+                        logger.error(`${cronName} failed to refresh connection '${connection.connection_id}' ${stringifyError(err)}`);
                         metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
                     }
                     cursor = staleConnection.cursor;
