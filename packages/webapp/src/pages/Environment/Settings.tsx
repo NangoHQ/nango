@@ -26,9 +26,11 @@ import { connectSlack } from '../../utils/slack-connection';
 import WebhookCheckboxes from './WebhookCheckboxes';
 import type { WebhookSettings as CheckboxState } from '@nangohq/types';
 import { globalEnv } from '../../utils/env';
+import { useLocalStorage } from 'react-use';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
+    const [, setShowSlackBanner] = useLocalStorage(`nango:connection:slack_banner_show`, true);
 
     const [secretKey, setSecretKey] = useState('');
     const [secretKeyRotatable, setSecretKeyRotatable] = useState(true);
@@ -354,6 +356,7 @@ export const EnvironmentSettings: React.FC = () => {
             toast.success('Slack was disconnected successfully.', { position: toast.POSITION.BOTTOM_CENTER });
             setSlackIsConnected(false);
             void mutate();
+            setShowSlackBanner(true);
         }
     };
 
