@@ -126,6 +126,7 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'auth:create_connection': 'Create connection',
     'auth:post_connection': 'Post connection script execution',
     'auth:refresh_token': 'Token refresh',
+    'auth:connection_test': 'Connection test',
     'deploy:custom': 'Deploying custom scripts',
     'deploy:prebuilt': 'Deploying pre-built flow',
     'proxy:call': 'Proxy call',
