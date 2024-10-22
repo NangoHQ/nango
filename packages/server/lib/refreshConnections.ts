@@ -36,7 +36,7 @@ export function refreshConnectionsCron(): void {
 }
 
 export async function exec(): Promise<void> {
-    return await tracer.trace<Promise<void>>('nango.server.cron.refreshConnections', async (span) => {
+    await tracer.trace<Promise<void>>('nango.server.cron.refreshConnections', async (span) => {
         let lock: Lock | undefined;
         try {
             logger.info(`${cronName} starting`);

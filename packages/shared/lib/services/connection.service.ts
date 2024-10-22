@@ -1068,13 +1068,15 @@ class ConnectionService {
                     });
                 }
 
-                const { credentials, ...connectionWithoutCredentials } = connection;
-                const errorWithPayload = new NangoError(error!.type, connectionWithoutCredentials);
+                const errorWithPayload = new NangoError(error!.type, { connection });
 
                 // there was an attempt to refresh the token so clear it from the queue
                 // of connections to refresh if it failed
                 await this.updateLastFetched(connection.id);
 
+                /**
+                 * Be careful this Error contains credentials
+                 */
                 return Err(errorWithPayload);
             } else if (response.refreshed) {
                 await onRefreshSuccess({

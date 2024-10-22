@@ -15,7 +15,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
-import type { MessageRowInsert } from '@nangohq/types';
+import type { Connection, MessageRowInsert } from '@nangohq/types';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -96,6 +96,9 @@ class ProxyController {
             });
 
             if (credentialResponse.isErr()) {
+                if (credentialResponse.error.payload['connection']) {
+                    delete (credentialResponse.error.payload['connection'] as unknown as Partial<Connection>).credentials;
+                }
                 await logCtx.error('Failed to get connection credentials', { error: credentialResponse.error });
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
