@@ -346,7 +346,7 @@ export const EnvironmentSettings: React.FC = () => {
     const disconnectSlack = async () => {
         await updateSlackNotifications(false);
 
-        const res = await apiFetch(`/api/v1/connection/admin/account-${accountUUID}-${env}?env=${env}`, {
+        const res = await apiFetch(`/api/v1/connections/admin/account-${accountUUID}-${env}?env=${env}`, {
             method: 'DELETE'
         });
 

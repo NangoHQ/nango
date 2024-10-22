@@ -131,7 +131,7 @@ We could not retrieve and/or refresh your access token due to the following erro
 
         if (res.res.status === 200) {
             toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });
-            void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
+            void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connections'), undefined);
             navigate(`/${env}/connections`, { replace: true });
         } else {
             toast.error('Failed to delete connection', { position: toast.POSITION.BOTTOM_CENTER });
