@@ -2135,6 +2135,58 @@ integrations:
                 created_at: string
                 updated_at: string
                 is_escalated: boolean
+    front:
+        syncs:
+            list-conversations:
+                runs: every day
+                description: List the conversations in the company in reverse chronological order.
+                output: Conversation
+                endpoint: GET /conversations
+                track_deletes: true
+                sync_type: full
+        models:
+            Conversation:
+                id: string
+                subject: string
+                status: archived | unassigned | deleted | assigned
+                assignee: ConversationAssignee | null
+                recipient: ConversationRecipient | null
+                tags:
+                    - id: string
+                      name: string
+                      description: string | null
+                      highlight: string | null
+                      is_private: boolean
+                      is_visible_in_conversation_lists: boolean
+                      created_at: string
+                      updated_at: string
+                links:
+                    - id: string
+                      name: string
+                      type: string
+                      external_url: string
+                      custom_fields: object
+                custom_fields: object
+                created_at: string
+                waiting_since: string
+                is_private: boolean
+                scheduled_reminders:
+                    - created_at: string
+                      scheduled_at: string
+                      updated_at: string
+            ConversationAssignee:
+                id: string
+                email: string
+                first_name: string
+                last_name: string
+                is_admin: boolean
+                is_available: boolean
+                is_blocked: boolean
+                custom_fields: object
+            ConversationRecipient:
+                name: string
+                handle: string
+                role: from | to | cc | bcc
     github:
         syncs:
             issues:
@@ -5020,21 +5072,29 @@ integrations:
                 output: User
                 endpoint: POST /user
                 input: OktaCreateUser
+                scopes:
+                    - okta.users.manage
             add-group:
                 description: Adds a new group with the OKTA_GROUP type to your org
                 output: Group
                 endpoint: POST /group
                 input: OktaAddGroup
+                scopes:
+                    - okta.groups.manage
             add-user-group:
                 description: Assigns a user to a group with the OKTA_GROUP type
                 output: SuccessResponse
                 endpoint: PUT /user-group
                 input: OktaAssignRemoveUserGroup
+                scopes:
+                    - okta.groups.manage
             remove-user-group:
                 description: Unassigns a user from a group with the OKTA_GROUP type
                 output: SuccessResponse
                 endpoint: DELETE /user-group
                 input: OktaAssignRemoveUserGroup
+                scopes:
+                    - okta.groups.manage
         models:
             ActionResponseError:
                 message: string
