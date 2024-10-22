@@ -4050,6 +4050,27 @@ quickbooks-sandbox:
         base_url: https://sandbox-quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
 
+ragieai:
+    display_name: Ragie AI
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ragie.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /
+    docs: https://docs.nango.dev/integrations/all/ragieai
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your ragie.ai account
+            example: tnt_IZ56tqGVgX9_k8CKnxQ9MvQgzDXcDGgtcjXABkwusxSOR8QzwxxeA1B
+            pattern: '^tnt_[a-zA-Z0-9_]+$'
+
 ramp:
     display_name: Ramp
     categories:
