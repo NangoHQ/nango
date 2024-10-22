@@ -106,7 +106,11 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
 
     if (credentialResponse.isErr()) {
         const errorLog = await errorNotificationService.auth.get(connectionRes.response.id as number);
+
+        // When we failed to refresh we still return a 200 because the connection is used in the UI
+        // Ultimately this could be a second endpoint so the UI displays faster and no confusion between error code
         res.status(200).send({ errorLog, provider: integration.provider, connection: connectionRes.response });
+
         return;
     }
 

@@ -1046,9 +1046,6 @@ class ConnectionService {
                 // of connections to refresh if it failed
                 await this.updateLastFetched(connection.id!);
 
-                /**
-                 * Be careful this Error contains credentials
-                 */
                 return Err(errorWithPayload);
             } else if (response.refreshed) {
                 await onRefreshSuccess({
