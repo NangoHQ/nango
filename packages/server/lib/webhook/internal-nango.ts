@@ -56,6 +56,14 @@ export const internalNango: InternalNango = {
             if (success && connection) {
                 connections = [connection];
             }
+        } else if (propName && propName.includes('metadata.')) {
+            const strippedMetadata = propName.replace('metadata.', '');
+            connections = await connectionService.findConnectionsByMetadataValue({
+                metadataProperty: strippedMetadata,
+                payloadIdentifier: get(body, connectionIdentifier),
+                configId: integration.id,
+                environmentId: integration.environment_id
+            });
         } else {
             connections = await connectionService.findConnectionsByConnectionConfigValue(
                 propName || connectionIdentifier,

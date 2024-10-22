@@ -113,6 +113,7 @@ airtable:
         response_type: code
     proxy:
         base_url: https://api.airtable.com
+    webhook_routing_script: airtableWebhookRouting
     docs: https://docs.nango.dev/integrations/all/airtable
 
 autodesk:
