@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { NangoConnection, HTTP_VERB, Connection } from '@nangohq/shared';
+import type { NangoConnection, HTTP_VERB, Connection, Sync } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import {
@@ -118,12 +118,40 @@ class SyncController {
                 return;
             }
 
-            const syncs = await getSyncs(connection, orchestrator);
+            const rawSyncs = await getSyncs(connection, orchestrator);
+
+            if (!connection.id) {
+                res.send(rawSyncs);
+                return;
+            }
+
+            const syncs = await this.addObjectCount(rawSyncs, connection.id);
 
             res.send(syncs);
         } catch (e) {
             next(e);
         }
+    }
+
+    private async addObjectCount(syncs: (Sync & { models: string[] })[], connectionId: number) {
+        const models = syncs.map((sync) => sync.models).flat();
+        const objectCountByModel: Record<string, number> = {};
+        for (const model of models) {
+            if (!(model in objectCountByModel)) {
+                const count = await recordsService.getRecordsCount({ connectionId, model });
+                objectCountByModel[model] = count.isOk() ? count.value : 0;
+            }
+        }
+
+        return syncs.map((sync) => {
+            const sumObjectCount = (sync: Sync & { models: string[] }, objectCountByModel: Record<string, number>) => {
+                return sync.models.reduce((sum: number, model: string) => {
+                    return sum + Number(objectCountByModel[model] || 0);
+                }, 0);
+            };
+            const object_count = sumObjectCount(sync, objectCountByModel);
+            return { ...sync, object_count };
+        });
     }
 
     public async getSyncs(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {

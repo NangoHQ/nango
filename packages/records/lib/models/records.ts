@@ -22,6 +22,23 @@ dayjs.extend(utc);
 
 const BATCH_SIZE = 1000;
 
+export async function getRecordsCount({ connectionId, model }: { connectionId: number; model: string }): Promise<Result<number>> {
+    try {
+        const result = (await db(RECORDS_TABLE).count('* as object_count').where({ connection_id: connectionId, model, deleted_at: null }).select()) as {
+            object_count: number;
+        }[];
+
+        if (result.length === 0) {
+            return Ok(0);
+        }
+
+        return Ok(result[0]?.object_count ?? 0);
+    } catch (_error) {
+        const e = new Error(`List records error for model ${model}`);
+        return Err(e);
+    }
+}
+
 export async function getRecords({
     connectionId,
     model,

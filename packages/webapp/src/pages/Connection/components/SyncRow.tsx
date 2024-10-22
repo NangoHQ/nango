@@ -134,6 +134,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                 </Link>
             </Table.Cell>
             <Table.Cell bordered>{formatFrequency(sync.frequency)}</Table.Cell>
+            <Table.Cell bordered>{sync.object_count ?? '-'}</Table.Cell>
             <Table.Cell bordered>
                 {sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
                     <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync?.result, sync.latest_sync?.models)}</pre>} type="dark">
