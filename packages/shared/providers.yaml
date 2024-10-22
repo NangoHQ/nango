@@ -4061,7 +4061,7 @@ ragieai:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
-            endpoint: /
+            endpoint: /documents
     docs: https://docs.nango.dev/integrations/all/ragieai
     credentials:
         apiKey:
