@@ -25,7 +25,7 @@ import type {
     DBEnvironment,
     JwtCredentials,
     BillCredentials,
-    PerimeterCredentials
+    PerimeterCredentials,
     IntegrationConfig
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
