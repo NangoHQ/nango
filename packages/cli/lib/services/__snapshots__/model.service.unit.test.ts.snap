@@ -216,12 +216,6 @@ interface JwtCredentials {
     token?: string;
     expires_at?: Date | undefined;
 }
-interface PerimeterCredentials extends CredentialsCommon {
-    type: AuthModes['Perimeter'];
-    api_key: string;
-    token?: string;
-    expires_at?: Date | undefined;
-}
 interface BillCredentials extends CredentialsCommon {
     type: AuthModes['Bill'];
     username: string;
@@ -230,6 +224,12 @@ interface BillCredentials extends CredentialsCommon {
     dev_key: string;
     session_id?: string;
     user_id?: string;
+    expires_at?: Date | undefined;
+}
+interface PerimeterCredentials extends CredentialsCommon {
+    type: AuthModes['Perimeter'];
+    api_key: string;
+    token?: string;
     expires_at?: Date | undefined;
 }
 interface CustomCredentials extends CredentialsCommon {
