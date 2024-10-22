@@ -3515,6 +3515,10 @@ okta:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.okta.com
+        retry:
+            at: 'x-rate-limit-reset'
     docs: https://docs.nango.dev/integrations/all/okta
     connection_config:
         subdomain:
