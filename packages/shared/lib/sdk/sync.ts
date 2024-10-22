@@ -169,6 +169,7 @@ export interface AuthModes {
     Tableau: 'TABLEAU';
     Jwt: 'JWT';
     Bill: 'BILL';
+    Perimeter: 'PERIMETER';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 
@@ -273,6 +274,12 @@ interface BillCredentials extends CredentialsCommon {
     user_id?: string;
     expires_at?: Date | undefined;
 }
+interface PerimeterCredentials extends CredentialsCommon {
+    type: AuthModes['Perimeter'];
+    api_key: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
 interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
@@ -292,6 +299,7 @@ type AuthCredentials =
     | TableauCredentials
     | JwtCredentials
     | BillCredentials
+    | PerimeterCredentials
     | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
@@ -633,6 +641,7 @@ export class NangoAction {
         | TableauCredentials
         | JwtCredentials
         | BillCredentials
+        | PerimeterCredentials
     > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);

@@ -34,6 +34,7 @@ export interface ConnectionConfig {
         | TBACredentials
         | TableauCredentials
         | JwtCredentials
+        | PerimeterCredentials
         | OAuth2ClientCredentials;
 }
 
@@ -92,6 +93,10 @@ export interface BillCredentials {
     password: string;
     organization_id: string;
     dev_key: string;
+}
+
+export interface PerimeterCredentials {
+    api_key: string;
 }
 
 export enum AuthorizationStatus {

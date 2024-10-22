@@ -493,6 +493,16 @@ export class NangoError extends Error {
                 this.message = `Actions are only allowed to have one model to be returned and only allow a single endpoint`;
                 break;
 
+            case 'perimeter_credentials_fetch_error':
+                this.status = 400;
+                this.message = `Error fetching Perimeter credentials`;
+                break;
+
+            case 'invalid_perimeter_credentials':
+                this.status = 400;
+                this.message = `Invalid credentials provided to create a Perimeter connection`;
+                break;
+
             case 'duplicate_endpoint':
                 this.status = 400;
                 this.message = `Duplicate endpoint "${this.payload}" found. Please make sure all endpoints are unique within an integration.`;

@@ -149,6 +149,12 @@ export default function IntegrationCreate() {
             };
         }
 
+        if (authMode === 'PERIMETER') {
+            credentials = {
+                api_key: apiKey
+            };
+        }
+
         if (authMode === 'APP_STORE') {
             credentials = {
                 privateKeyId,
@@ -481,6 +487,15 @@ export default function IntegrationCreate() {
             }
         }
 
+        const perimeterCredentialsString = '';
+        if (integration?.authMode === 'PERIMETER') {
+            apiAuthString = `
+            credentials: {
+                api_key: '${apiKey}'
+            }
+            `;
+        }
+
         let billCredentialsString = '';
         if (integration?.authMode === 'BILL') {
             if (apiAuthUsername && apiAuthPassword && organizationId && devKey) {
@@ -541,7 +556,8 @@ export default function IntegrationCreate() {
             !tableauCredentialsString &&
             !jwtCredentialsString &&
             !tbaCredentialsString &&
-            !billCredentialsString
+            !billCredentialsString &&
+            !perimeterCredentialsString
                 ? ''
                 : ', { ' +
                   [
@@ -556,7 +572,8 @@ export default function IntegrationCreate() {
                       tableauCredentialsString,
                       jwtCredentialsString,
                       tbaCredentialsString,
-                      billCredentialsString
+                      billCredentialsString,
+                      perimeterCredentialsString
                   ]
                       .filter(Boolean)
                       .join(', ') +
@@ -886,7 +903,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </div>
                             ))}
 
-                            {(authMode === 'API_KEY' || authMode === 'BASIC' || authMode === 'BILL') && (
+                            {(authMode === 'API_KEY' || authMode === 'BASIC' || authMode === 'BILL' || authMode === 'PERIMETER') && (
                                 <div>
                                     <div>
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
@@ -930,7 +947,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             </div>
                                         </div>
                                     )}
-                                    {authMode === 'API_KEY' && (
+                                    {(authMode === 'API_KEY' || authMode === 'PERIMETER') && (
                                         <div>
                                             <div className="flex mt-6">
                                                 <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">

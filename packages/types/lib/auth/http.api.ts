@@ -145,3 +145,30 @@ export type PostPublicBillAuthorization = Endpoint<{
         connectionId: string;
     };
 }>;
+
+export type PostPublicPerimeterAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        api_key: string;
+    };
+    Querystring: {
+        connection_id?: string | undefined;
+        params?: Record<string, any> | undefined;
+        hmac?: string | undefined;
+    };
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/bill';
+    Error:
+        | ApiError<'invalid_body'>
+        | ApiError<'invalid_query_params'>
+        | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
+        | ApiError<'invalid_auth_mode'>
+        | ApiError<'invalid_credentials'>;
+    Success: {
+        providerConfigKey: string;
+        connectionId: string;
+    };
+}>;

@@ -21,7 +21,8 @@ import type {
     GetPublicListIntegrationsLegacy,
     GetPublicIntegration,
     PostConnectSessions,
-    JwtCredentials
+    JwtCredentials,
+    PerimeterCredentials
 } from '@nangohq/types';
 import type {
     Connection,
@@ -325,6 +326,7 @@ export class Nango {
         | TableauCredentials
         | JwtCredentials
         | BillCredentials
+        | PerimeterCredentials
     > {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 

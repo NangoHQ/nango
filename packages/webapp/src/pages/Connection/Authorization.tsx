@@ -130,6 +130,12 @@ export default function Authorization(props: AuthorizationProps) {
                     />
                 </div>
             )}
+            {connection.credentials.type === 'PERIMETER' && connection.credentials.api_key && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">API KEY</span>
+                    <SecretInput disabled defaultValue={connection.credentials.api_key} copy={true} />
+                </div>
+            )}
             {connection.credentials.type === 'TABLEAU' && connection.credentials.pat_name && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">PAT NAME</span>
@@ -259,6 +265,7 @@ export default function Authorization(props: AuthorizationProps) {
                 connection.credentials.type === 'OAUTH2' ||
                 connection.credentials.type === 'APP' ||
                 connection.credentials.type === 'BILL' ||
+                connection.credentials.type === 'PERIMETER' ||
                 connection.credentials.type === 'CUSTOM') && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Raw Token Response</span>

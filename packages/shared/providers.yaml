@@ -3789,6 +3789,23 @@ perplexity:
             pattern: '^pplx-[a-f0-9]+$'
             example: pplx-xxxxxx
 
+perimeter81:
+    display_name: Perimeter81
+    categories:
+        - productivity
+    auth_mode: PERIMETER
+    proxy:
+        base_url: https://api.perimeter81.com/api/rest
+    token_url: https://api.${connectionConfig.domain}.com/api/v1/auth/authorize
+    docs: https://docs.nango.dev/integrations/all/perimeter
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain for Perimeter81
+            pattern: ^(perimeter81|eu\.sase\.checkpoint)$
+            example: perimeter81 | eu.sase.checkpoint
+
 personio:
     display_name: Personio
     categories:

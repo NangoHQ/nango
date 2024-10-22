@@ -16,6 +16,7 @@ import type {
     OAuth2ClientCredentials,
     TBACredentials,
     TableauCredentials,
+    PerimeterCredentials,
     JwtCredentials,
     OAuthCredentialsOverride,
     BillCredentials
@@ -292,6 +293,7 @@ export default class Nango {
             | JwtCredentials
             | OAuth2ClientCredentials
             | BillCredentials
+            | PerimeterCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
 
@@ -377,6 +379,14 @@ export default class Nango {
             return { params: tableauCredentials } as unknown as ConnectionConfig;
         }
 
+        if ('api_key' in credentials) {
+            const perimeterCredentials: PerimeterCredentials = {
+                api_key: credentials.api_key
+            };
+
+            return { params: perimeterCredentials } as unknown as ConnectionConfig;
+        }
+
         if ('username' in credentials && 'password' in credentials && 'organization_id' in credentials && 'dev_key' in credentials) {
             const BillCredentials: BillCredentials = {
                 username: credentials.username,
@@ -405,6 +415,7 @@ export default class Nango {
             | JwtCredentials
             | BillCredentials
             | OAuth2ClientCredentials
+            | PerimeterCredentials
             | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
@@ -496,6 +507,13 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/oauth2/auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as OAuth2ClientCredentials
+            });
+        }
+
+        if ('api_key' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/perimeter/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as PerimeterCredentials
             });
         }
 
