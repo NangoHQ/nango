@@ -16,7 +16,7 @@ import { migrate as migrateKeystore } from '@nangohq/keystore';
 
 import publisher from './clients/publisher.client.js';
 import { router } from './routes.js';
-import { refreshTokens } from './refreshTokens.js';
+import { refreshConnectionsCron } from './refreshConnections.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
@@ -58,7 +58,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 }
 
 await oAuthSessionService.clearStaleSessions();
-refreshTokens();
+refreshConnectionsCron();
 
 const port = getServerPort();
 server.listen(port, () => {

@@ -33,6 +33,8 @@ export * from './services/invitations.js';
 export * from './services/providers.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
+
+export * from './utils/lock/locking.js';
 export * from './clients/locking.js';
 
 export * from './utils/lock/locking.js';

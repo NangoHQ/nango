@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Span, Tracer } from 'dd-trace';
+import type { Span } from 'dd-trace';
 import {
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
@@ -32,6 +32,7 @@ import { logContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
 import { externalPostConnection } from './connection/external-post-connection.js';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
+import tracer from 'dd-trace';
 
 const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
@@ -155,7 +156,8 @@ export const connectionRefreshFailed = async ({
     authError,
     environment,
     provider,
-    config
+    config,
+    action
 }: {
     connection: Connection;
     environment: DBEnvironment;
@@ -163,10 +165,11 @@ export const connectionRefreshFailed = async ({
     config: IntegrationConfig;
     authError: { type: string; description: string };
     logCtx: LogContext;
+    action: 'token_refresh' | 'connection_test';
 }): Promise<void> => {
     await errorNotificationService.auth.create({
         type: 'auth',
-        action: 'token_refresh',
+        action,
         connection_id: connection.id!,
         log_id: logCtx.id,
         active: true
@@ -199,8 +202,7 @@ export const connectionTest = async (
     connectionId: string,
     providerConfigKey: string,
     environment_id: number,
-    connection_config: ConnectionConfig,
-    tracer: Tracer
+    connection_config: ConnectionConfig
 ): Promise<Result<boolean, NangoError>> => {
     const providerVerification = provider?.proxy?.verification;
 
