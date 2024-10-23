@@ -1411,6 +1411,44 @@ datev:
         base_url: https://api.datev.de
     docs: https://docs.nango.dev/integrations/all/datev
 
+datadog:
+    display_name: Datadog
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.siteParameter}/api
+        headers:
+            DD-API-KEY: ${apiKey}
+            DD-APPLICATION-KEY: ${connectionConfig.applicationKey}
+        verification:
+            method: GET
+            endpoint: /v1/validate
+        retry:
+            after: 'X-RateLimit-Reset'
+    docs: https://docs.nango.dev/integrations/all/datadog
+    connection_config:
+        siteParameter:
+            type: string
+            title: Site Parameter
+            description: The site parameter to datadog
+            pattern: '^(us[35]\.)?(ap1\.)?(datadoghq\.(com|eu)|ddog-gov\.com)$'
+            example: 'us5.datadoghq.com'
+        applicationKey:
+            type: string
+            title: Application Key
+            description: The application key required for read data access
+            pattern: '^[a-f0-9]{40}$'
+            example: '5d8a7b3f2dc8bce1b234e7f1a1ac54728dbf9e4a7'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Datadog account
+            pattern: '^[a-f0-9]{32}$'
+            example: '4f3c12efb9659a0b5c123b568745dbf9'
+
 deel:
     display_name: Deel
     categories:
