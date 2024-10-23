@@ -452,6 +452,7 @@
                 "integrations/all/make",
                 "integrations/all/mailgun",
                 "integrations/all/manatal",
+                "integrations/all/malwarebytes",
                 "integrations/all/medallia",
                 "integrations/all/metabase",
                 "integrations/all/microsoft",
