@@ -25,6 +25,7 @@ import type { GetConnection } from '@nangohq/types';
 import { useStore } from '../../store';
 import { getLogsUrl } from '../../utils/logs';
 import { apiDeleteConnection } from '../../hooks/useConnections';
+import { useLocalStorage } from 'react-use';
 
 export enum Tabs {
     Syncs,
@@ -35,6 +36,7 @@ export default function ShowIntegration() {
     const { mutate } = useSWRConfig();
     const env = useStore((state) => state.env);
     const { environmentAndAccount, mutate: environmentMutate } = useEnvironment(env);
+    const [showSlackBanner, setShowSlackBanner] = useLocalStorage(`nango:connection:slack_banner_show`, true);
 
     const [loaded, setLoaded] = useState(false);
     const [connectionResponse, setConnectionResponse] = useState<GetConnection['Success'] | null>(null);
@@ -129,7 +131,7 @@ We could not retrieve and/or refresh your access token due to the following erro
 
         if (res.res.status === 200) {
             toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });
-            void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
+            void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connections'), undefined);
             navigate(`/${env}/connections`, { replace: true });
         } else {
             toast.error('Failed to delete connection', { position: toast.POSITION.BOTTOM_CENTER });
@@ -296,19 +298,16 @@ We could not retrieve and/or refresh your access token due to the following erro
                 </div>
             )}
 
-            {!slackIsConnected && !isHosted() && (
-                <Info className="mt-4">
-                    <div className="flex text-sm items-center">
-                        <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
-                        Receive instant monitoring alerts on Slack.{' '}
-                        <button
-                            disabled={slackIsConnecting}
-                            onClick={createSlackConnection}
-                            className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
-                        >
-                            Set up now for the {env} environment.
-                        </button>
-                    </div>
+            {!slackIsConnected && !isHosted() && showSlackBanner && (
+                <Info className="mt-4" onClose={() => setShowSlackBanner(false)} icon={<IntegrationLogo provider="slack" height={6} width={6} />}>
+                    Receive instant monitoring alerts on Slack.{' '}
+                    <button
+                        disabled={slackIsConnecting}
+                        onClick={createSlackConnection}
+                        className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
+                    >
+                        Set up now for the {env} environment.
+                    </button>
                 </Info>
             )}
 
