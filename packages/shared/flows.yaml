@@ -1737,6 +1737,47 @@ integrations:
                     language?: string
                     timeZone?: string
                 userStatus?: string
+    dropbox:
+        actions:
+            create-user:
+                description: Creates a user in Dropbox. Requires Dropbox Business.
+                output: User
+                endpoint: POST /users
+                input: CreateUser
+                scopes:
+                    - members.write
+            delete-user:
+                description: Deletes a user in Dropbox. Requires Dropbox Business.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - members.delete
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Dropbox. Requires Dropbox Business.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - members.read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
     evaluagent:
         syncs:
             users:
