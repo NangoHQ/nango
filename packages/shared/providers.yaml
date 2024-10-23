@@ -113,6 +113,7 @@ airtable:
         response_type: code
     proxy:
         base_url: https://api.airtable.com
+    webhook_routing_script: airtableWebhookRouting
     docs: https://docs.nango.dev/integrations/all/airtable
 
 autodesk:
@@ -3224,6 +3225,20 @@ marketo:
             description: The identity URL of your Marketo account
             format: hostname
 
+malwarebytes:
+    display_name: Malwarebytes
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.malwarebytes.com/oauth2/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.malwarebytes.com
+    docs: https://docs.nango.dev/integrations/all/malwarebytes
+
 medallia:
     display_name: Medallia
     categories:
@@ -4088,6 +4103,27 @@ quickbooks-sandbox:
         base_url: https://sandbox-quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
 
+ragieai:
+    display_name: Ragie AI
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ragie.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /documents
+    docs: https://docs.nango.dev/integrations/all/ragieai
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your ragie.ai account
+            example: tnt_IZ56tqGVgX9_k8CKnxQ9MvQgzDXcDGgtcjXABkwusxSOR8QzwxxeA1B
+            pattern: '^tnt_[a-zA-Z0-9_]+$'
+
 ramp:
     display_name: Ramp
     categories:
@@ -4341,6 +4377,41 @@ sendgrid:
             type: string
             title: API Key
             description: The API key for your Sendgrid account
+
+sedna:
+    display_name: Sedna (Oauth2)
+    auth_mode: OAUTH2_CC
+    categories:
+        - communication
+    proxy:
+        base_url: https://${connectionConfig.tenant}.sednanetwork.com/platform
+    token_url: https://${connectionConfig.tenant}.sednanetwork.com/platform/oauth/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ','
+    docs: https://docs.nango.dev/integrations/all/sedna
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name to your sedna account
+            format: tenant
+
+sedna-basic:
+    display_name: Sedna (Basic Auth)
+    auth_mode: BASIC
+    categories:
+        - communication
+    proxy:
+        base_url: https://${connectionConfig.tenant}.sednanetwork.com/platform
+    docs: https://docs.nango.dev/integrations/all/sedna
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name to your sedna account
+            format: tenant
+
 servicem8:
     display_name: ServiceM8
     categories:

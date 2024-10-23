@@ -12,7 +12,7 @@ export type GetConnection = Endpoint<{
         provider_config_key: string;
         force_refresh?: 'true' | 'false';
     };
-    Path: '/api/v1/connection/:connectionId';
+    Path: '/api/v1/connections/:connectionId';
     Error:
         | ApiError<'unknown_connection'>
         | ApiError<'missing_provider_config'>
@@ -37,7 +37,7 @@ export type DeletePublicConnection = Endpoint<{
 
 export type DeleteConnection = Endpoint<{
     Method: 'DELETE';
-    Path: '/connection/:connectionId';
+    Path: '/api/v1/connections/:connectionId';
     Params: { connectionId: string };
     Querystring: { provider_config_key: string; env: string };
     Error: ApiError<'unknown_connection'> | ApiError<'unknown_provider_config'>;

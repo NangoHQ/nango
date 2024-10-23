@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { zodErrorToHTTP } from '@nangohq/utils';
 import type { DeleteConnection } from '@nangohq/types';
 import { connectionService } from '@nangohq/shared';
-import { getOrchestrator } from '../../../utils/utils.js';
+import { getOrchestrator } from '../../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
-import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
+import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 
 const validationQuery = z
     .object({
