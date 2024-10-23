@@ -17,6 +17,12 @@
         "@elastic/elasticsearch": "8.13.1",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/utils": "file:../utils",
+        "@opentelemetry/api": "^1.9.0",
+        "@opentelemetry/exporter-trace-otlp-http": "^0.54.0",
+        "@opentelemetry/resources": "^1.27.0",
+        "@opentelemetry/sdk-trace-base": "^1.27.0",
+        "@opentelemetry/sdk-trace-node": "^1.27.0",
+        "@opentelemetry/semantic-conventions": "^1.27.0",
         "zod": "3.23.8"
     },
     "devDependencies": {
