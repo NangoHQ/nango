@@ -1,4 +1,124 @@
 integrations:
+    airtable:
+        syncs:
+            tables:
+                runs: every day
+                description: >
+                    Lists all tables with their schema for all bases with a reference to
+                    the base id that
+
+                    the table belongs to
+                output: Table
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /tables
+                scopes:
+                    - schema.bases:read
+            bases:
+                runs: every day
+                description: List all bases
+                output: Base
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /bases
+                scopes:
+                    - schema.bases:read
+        actions:
+            create-webhook:
+                description: Create a webhook for a particular base
+                input: CreateWebhook
+                output: WebhookCreated
+                endpoint: POST /webhooks
+                scopes:
+                    - webhook:manage
+            list-webhooks:
+                description: List all the webhooks available for a base
+                output: WebhookResponse
+                input: BaseId
+                endpoint: GET /webhooks
+                scopes:
+                    - webhook:manage
+            delete-webhook:
+                description: Delete a webhook
+                endpoint: DELETE /webhooks
+                input: DeleteWebhook
+                output: SuccessResponse
+                scopes:
+                    - webhook:manage
+        models:
+            SuccessResponse:
+                success: boolean
+            Table:
+                baseId: string
+                baseName: string
+                id: string
+                name: string
+                views: TableView[]
+                fields: TableField[]
+                primaryFieldId: string
+            TableView:
+                id: string
+                name: string
+                type: string
+            TableField:
+                id: string
+                description: string
+                name: string
+                type: string
+                options?:
+                    __string: any
+            Base:
+                id: string
+                name: string
+                permissionLevel: none | read | comment | edit | create
+            BaseId:
+                baseId: string
+            WebhookResponse:
+                webhooks: Webhook[]
+            Webhook:
+                id: string
+                areNotificationsEnabled: boolean
+                cursorForNextPayload: number
+                isHookEnabled: boolean
+                lastSuccessfulNotificationTime: string | null
+                expirationTime?: string | undefined
+                specification: WebhookSpecification
+                lastNotificationResult: NotificationResult | null
+            NotificationResult:
+                success: boolean
+                error?:
+                    message: string
+                completionTimestamp?: string
+                durationMs?: number
+                retryNumber?: number
+                willBeRetried?: boolean
+            WebhookSpecification:
+                options:
+                    filters:
+                        recordChangeScope?: string
+                        dataTypes: string[]
+                        changeTypes?: string[]
+                        fromSources?: string[]
+                        sourceOptions?:
+                            formPageSubmission?:
+                                pageId: string
+                            formSubmission?:
+                                viewId: string
+                        watchDataInFieldIds?: string[]
+                        watchSchemasOfFieldIds?: string[]
+                    includes?:
+                        includeCellValuesInFieldIds?: string[] | all
+                        includePreviousCellValues:?: boolean
+                        includePreviousFieldDefinitions?: boolean
+            CreateWebhook:
+                baseId: string
+                specification: WebhookSpecification
+            WebhookCreated:
+                id: string
+                expirationTime: string
+            DeleteWebhook:
+                baseId: string
+                webhookId: string
     algolia:
         actions:
             create-contacts:
@@ -1617,6 +1737,47 @@ integrations:
                     language?: string
                     timeZone?: string
                 userStatus?: string
+    dropbox:
+        actions:
+            create-user:
+                description: Creates a user in Dropbox. Requires Dropbox Business.
+                output: User
+                endpoint: POST /users
+                input: CreateUser
+                scopes:
+                    - members.write
+            delete-user:
+                description: Deletes a user in Dropbox. Requires Dropbox Business.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - members.delete
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Dropbox. Requires Dropbox Business.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - members.read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
     evaluagent:
         syncs:
             users:
@@ -2015,6 +2176,58 @@ integrations:
                 created_at: string
                 updated_at: string
                 is_escalated: boolean
+    front:
+        syncs:
+            list-conversations:
+                runs: every day
+                description: List the conversations in the company in reverse chronological order.
+                output: Conversation
+                endpoint: GET /conversations
+                track_deletes: true
+                sync_type: full
+        models:
+            Conversation:
+                id: string
+                subject: string
+                status: archived | unassigned | deleted | assigned
+                assignee: ConversationAssignee | null
+                recipient: ConversationRecipient | null
+                tags:
+                    - id: string
+                      name: string
+                      description: string | null
+                      highlight: string | null
+                      is_private: boolean
+                      is_visible_in_conversation_lists: boolean
+                      created_at: string
+                      updated_at: string
+                links:
+                    - id: string
+                      name: string
+                      type: string
+                      external_url: string
+                      custom_fields: object
+                custom_fields: object
+                created_at: string
+                waiting_since: string
+                is_private: boolean
+                scheduled_reminders:
+                    - created_at: string
+                      scheduled_at: string
+                      updated_at: string
+            ConversationAssignee:
+                id: string
+                email: string
+                first_name: string
+                last_name: string
+                is_admin: boolean
+                is_available: boolean
+                is_blocked: boolean
+                custom_fields: object
+            ConversationRecipient:
+                name: string
+                handle: string
+                role: from | to | cc | bcc
     github:
         syncs:
             issues:
@@ -4900,21 +5113,29 @@ integrations:
                 output: User
                 endpoint: POST /user
                 input: OktaCreateUser
+                scopes:
+                    - okta.users.manage
             add-group:
                 description: Adds a new group with the OKTA_GROUP type to your org
                 output: Group
                 endpoint: POST /group
                 input: OktaAddGroup
+                scopes:
+                    - okta.groups.manage
             add-user-group:
                 description: Assigns a user to a group with the OKTA_GROUP type
                 output: SuccessResponse
                 endpoint: PUT /user-group
                 input: OktaAssignRemoveUserGroup
+                scopes:
+                    - okta.groups.manage
             remove-user-group:
                 description: Unassigns a user from a group with the OKTA_GROUP type
                 output: SuccessResponse
                 endpoint: DELETE /user-group
                 input: OktaAssignRemoveUserGroup
+                scopes:
+                    - okta.groups.manage
         models:
             ActionResponseError:
                 message: string
@@ -4997,7 +5218,7 @@ integrations:
                 backfillPeriodMs: number
             OutlookEmail:
                 id: string
-                sender: string
+                sender?: string
                 recipients?: string | undefined
                 date: string
                 subject: string
