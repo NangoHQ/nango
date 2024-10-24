@@ -77,7 +77,7 @@ function hasSimilarFlow(templateFlow: NangoSyncConfig, list: NangoSyncConfig[]):
         if (flow.type === templateFlow.type && flow.name === templateFlow.name) {
             return flow;
         }
-        if (flow.type === 'sync' && flow.returns.find((model) => modelsName.has(model))) {
+        if (flow.type === 'sync' && templateFlow.type === 'sync' && flow.returns.find((model) => modelsName.has(model))) {
             return flow;
         }
         if (containsSameEndpoint(flow, templateFlow)) {
