@@ -17,7 +17,6 @@ export async function up(knex: Knex): Promise<void> {
 
         // INDEXES
         await knex.schema.alterTable(TABLE, function (table) {
-            // Maybe include environment_id on uniqueness and compound index?
             table.unique(['connection_id', 'environment_id', 'model']);
             table.index(['connection_id', 'environment_id', 'model']);
         });
