@@ -54,22 +54,27 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         for (const group of Object.entries(tmp)) {
             groups.push({
                 name: group[0],
-                flows: group[1].sort((a, b) => {
-                    // Sort by length of path
-                    const lenA = (a.endpoint.path.match(/\//g) || []).length;
-                    const lenB = (b.endpoint.path.match(/\//g) || []).length;
-                    if (lenA > lenB) return 1;
-                    else if (lenA < lenB) return -1;
+                flows: group[1]
+                    .sort((a, b) => {
+                        // Sort by length of path
+                        const lenA = (a.endpoint.path.match(/\//g) || []).length;
+                        const lenB = (b.endpoint.path.match(/\//g) || []).length;
+                        if (lenA > lenB) return 1;
+                        else if (lenA < lenB) return -1;
 
-                    // Sort by method
-                    if (a.endpoint.method === 'GET' && b.endpoint.method !== 'GET') return -1;
-                    else if (a.endpoint.method === 'POST' && b.endpoint.method === 'PUT') return -1;
-                    else if (a.endpoint.method === 'PUT' && b.endpoint.method === 'PATCH') return -1;
-                    else if (a.endpoint.method === 'PATCH' && b.endpoint.method === 'DELETE') return -1;
+                        // Sort alphabetically
+                        return a.endpoint.path > b.endpoint.path ? -1 : 0;
+                    })
+                    .sort((a, b) => {
+                        if (a.endpoint.path !== b.endpoint.path) return 0;
 
-                    // Finally sort alphabetically
-                    return a.endpoint.path > b.endpoint.path ? 1 : -1;
-                })
+                        // Sort by method
+                        if (a.endpoint.method === 'GET' && b.endpoint.method !== 'GET') return -1;
+                        else if (a.endpoint.method === 'POST' && b.endpoint.method === 'PUT') return -1;
+                        else if (a.endpoint.method === 'PUT' && b.endpoint.method === 'PATCH') return -1;
+                        else if (a.endpoint.method === 'PATCH' && b.endpoint.method === 'DELETE') return -1;
+                        else return 0;
+                    })
             });
         }
 
