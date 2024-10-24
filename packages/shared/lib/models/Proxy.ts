@@ -83,7 +83,10 @@ export interface LinkPagination extends Pagination {
     link_path_in_response_body?: string;
 }
 
+export type OffsetCalculationMethod = 'per-page' | 'by-response-size';
+
 export interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
     offset_start_value?: number;
+    offset_calculation_method?: OffsetCalculationMethod;
 }

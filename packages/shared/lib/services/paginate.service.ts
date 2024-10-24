@@ -1,7 +1,14 @@
 import type { AxiosResponse } from 'axios';
 import parseLinksHeader from 'parse-link-header';
 import get from 'lodash-es/get.js';
-import type { Pagination, UserProvidedProxyConfiguration, CursorPagination, OffsetPagination, LinkPagination } from '../models/Proxy.js';
+import type {
+    Pagination,
+    UserProvidedProxyConfiguration,
+    CursorPagination,
+    OffsetPagination,
+    LinkPagination,
+    OffsetCalculationMethod
+} from '../models/Proxy.js';
 import { PaginationType } from '../models/Proxy.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 
@@ -124,6 +131,7 @@ class PaginationService {
     ): AsyncGenerator<T[], undefined, void> {
         const offsetPagination: OffsetPagination = paginationConfig;
         const offsetParameterName: string = offsetPagination.offset_name_in_request;
+        const offsetCalculatioMethod: OffsetCalculationMethod = offsetPagination.offset_calculation_method || 'by-response-size';
         let offset = offsetPagination.offset_start_value || 0;
 
         while (true) {
@@ -149,7 +157,11 @@ class PaginationService {
                 return;
             }
 
-            offset += responseData.length;
+            if (offsetCalculatioMethod === 'per-page') {
+                offset++;
+            } else {
+                offset += responseData.length;
+            }
         }
     }
 
