@@ -24,6 +24,7 @@ export interface OAuthSession {
     callbackUrl: string;
     authMode: AuthModeType;
     id: string;
+    connect_session_id: string | null;
     connectionConfig: Record<string, string>;
     environmentId: number;
     webSocketClientId: string | undefined;
