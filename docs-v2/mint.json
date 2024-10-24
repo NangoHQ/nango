@@ -372,7 +372,6 @@
                 "integrations/all/datadog",
                 "integrations/all/deel",
                 "integrations/all/dialpad",
-                "integrations/all/dialpad-sandbox",
                 "integrations/all/digitalocean",
                 "integrations/all/discord",
                 "integrations/all/discourse",
