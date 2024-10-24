@@ -137,7 +137,7 @@ export interface AuthModes {
     Tableau: 'TABLEAU';
     Jwt: 'JWT';
     Bill: 'BILL';
-    Perimeter: 'PERIMETER';
+    TwoStep: 'TWOSTEP';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 interface OAuth1Token {
@@ -226,9 +226,9 @@ interface BillCredentials extends CredentialsCommon {
     user_id?: string;
     expires_at?: Date | undefined;
 }
-interface PerimeterCredentials extends CredentialsCommon {
-    type: AuthModes['Perimeter'];
-    api_key: string;
+interface TwoStepCredentials extends CredentialsCommon {
+    type: AuthModes['TwoStep'];
+    [key: string]: any;
     token?: string;
     expires_at?: Date | undefined;
 }
@@ -236,7 +236,7 @@ interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
 type UnauthCredentials = Record<string, never>;
-type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | PerimeterCredentials | CustomCredentials;
+type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials | CustomCredentials;
 type Metadata = Record<string, unknown>;
 interface MetadataChangeResponse {
     metadata: Metadata;
@@ -356,7 +356,7 @@ export declare class NangoAction {
     put<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     patch<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     delete<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
-    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | PerimeterCredentials>;
+    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials>;
     getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection>;
     setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
     updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
