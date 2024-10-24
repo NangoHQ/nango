@@ -146,7 +146,7 @@ class OAuthController {
                 authMode: provider.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1(),
-                connect_session_id: null,
+                connectSessionId: null,
                 connectionConfig,
                 environmentId,
                 webSocketClientId: wsClientId,
