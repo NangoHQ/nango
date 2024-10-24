@@ -21,7 +21,8 @@ import * as crypto from 'node:crypto';
 
 // Enforce backend authentication before generating the HMAC digest.
 const hmac = crypto.createHmac('sha256', '<HMAC-KEY>'); // HMAC key set in your environment settings.
-hmac.update('<INTEGRATION-ID>:<CONNECTION-ID>');
+hmac.update('<INTEGRATION-ID>');
+// hmac.update('<INTEGRATION-ID>:<CONNECTION-ID>'); if explicitly setting the connection id
 const digest = hmac.digest('hex');
 ```
 
@@ -35,7 +36,8 @@ import hashlib
 
 # HMAC key set in your environment settings.
 hmac_key = '<HMAC-KEY>'
-message = '<INTEGRATION-ID>:<CONNECTION-ID>'
+message = '<INTEGRATION-ID>'
+# message = '<INTEGRATION-ID>:<CONNECTION-ID>' if explicitly setting the connection id
 
 digest = hmac.new(hmac_key.encode('utf-8'), msg=message.encode('utf-8'), digestmod=hashlib.sha256).hexdigest()
 ```
@@ -53,7 +55,8 @@ import java.security.NoSuchAlgorithmException;
 public class Main {
     public static void main(String[] args) throws NoSuchAlgorithmException, InvalidKeyException {
         String hmacKey = "<HMAC-KEY>";
-        String message = "<INTEGRATION-ID>:<CONNECTION-ID>";
+        String message = "<INTEGRATION-ID>";
+        // String message = "<INTEGRATION-ID>:<CONNECTION-ID>"; if explicitly setting the connection id
 
         Mac hmac = Mac.getInstance("HmacSHA256");
         SecretKeySpec secret_key = new SecretKeySpec(hmacKey.getBytes(), "HmacSHA256");
@@ -79,7 +82,8 @@ public class Main {
 require 'openssl'
 
 hmac_key = '<HMAC-KEY>'
-message = '<INTEGRATION-ID>:<CONNECTION-ID>'
+message = '<INTEGRATION-ID>'
+# message = '<INTEGRATION-ID>:<CONNECTION-ID>' if explicitly setting the connection id
 
 digest = OpenSSL::HMAC.hexdigest('SHA256', hmac_key, message)
 ```
@@ -99,7 +103,8 @@ import (
 
 func main() {
     hmacKey := "<HMAC-KEY>"
-    message := "<INTEGRATION-ID>:<CONNECTION-ID>"
+    message := "<INTEGRATION-ID>"
+    // message := "<INTEGRATION-ID>:<CONNECTION-ID>" if explicitly setting the connection id
 
     hmac := hmac.New(sha256.New, []byte(hmacKey))
     hmac.Write([]byte(message))
@@ -119,7 +124,8 @@ use sha2::Sha256;
 type HmacSha256 = Hmac<Sha256>;
 
 let hmac_key = "<HMAC-KEY>";
-let message = "<INTEGRATION-ID>:<CONNECTION-ID>";
+let message = "<INTEGRATION-ID>";
+// let message = "<INTEGRATION-ID>:<CONNECTION-ID>"; if explicitly setting the connection id
 
 let mut mac = HmacSha256::new_varkey(hmac_key.as_bytes()).expect("HMAC can take key of any size");
 mac.update(message.as_bytes());
@@ -134,7 +140,8 @@ let digest = hex::encode(result.into_bytes());
 ```php
 <?php
 $hmacKey = '<HMAC-KEY>';
-$message = '<INTEGRATION-ID>:<CONNECTION-ID>';
+$message = '<INTEGRATION-ID>:';
+// $message = '<INTEGRATION-ID>:<CONNECTION-ID>'; if explicitly setting the connection id
 
 $digest = hash_hmac('sha256', $message, $hmacKey);
 ?>
@@ -151,7 +158,7 @@ Your backend should keep the secret HMAC key private and not reveal it to your f
 In the frontend, pass the HMAC signature in `nango.auth()` ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
 
 ```ts
-nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', { hmac: '<HMAC-DIGEST>' });
+nango.auth('<INTEGRATION-ID>', { hmac: '<HMAC-DIGEST>' });
 ```
 
 Enable the HMAC checkbox in the _Environment Settings_ tab in the Nango UI. 
