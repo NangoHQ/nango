@@ -63,7 +63,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
                         else if (lenA < lenB) return -1;
 
                         // Sort alphabetically
-                        return a.endpoint.path > b.endpoint.path ? -1 : 0;
+                        return a.endpoint.path > b.endpoint.path ? 1 : -1;
                     })
                     .sort((a, b) => {
                         if (a.endpoint.path !== b.endpoint.path) return 0;
