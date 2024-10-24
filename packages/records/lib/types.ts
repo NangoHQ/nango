@@ -58,3 +58,10 @@ export interface UpsertSummary {
     deletedKeys?: string[];
     nonUniqueKeys: string[];
 }
+
+export interface RecordCount {
+    model: string;
+    connectionId: number;
+    environmentId: number;
+    object_count: number;
+}

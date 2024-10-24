@@ -120,12 +120,7 @@ class SyncController {
 
             const rawSyncs = await getSyncs(connection, orchestrator);
 
-            if (!connection.id) {
-                res.send(rawSyncs);
-                return;
-            }
-
-            const syncs = await this.addObjectCount(rawSyncs, connection.id);
+            const syncs = await this.addObjectCount(rawSyncs, connection.id!, environment.id);
 
             res.send(syncs);
         } catch (e) {
@@ -133,25 +128,21 @@ class SyncController {
         }
     }
 
-    private async addObjectCount(syncs: (Sync & { models: string[] })[], connectionId: number) {
-        const models = syncs.map((sync) => sync.models).flat();
-        const objectCountByModel: Record<string, number> = {};
-        for (const model of models) {
-            if (!(model in objectCountByModel)) {
-                const count = await recordsService.getRecordsCount({ connectionId, model });
-                objectCountByModel[model] = count.isOk() ? count.value : 0;
-            }
-        }
+    private async addObjectCount(syncs: (Sync & { models: string[] })[], connectionId: number, environmentId: number) {
+        const objectCountByModelResult = await recordsService.getRecordCountsByModel({ connectionId, environmentId });
 
-        return syncs.map((sync) => {
-            const sumObjectCount = (sync: Sync & { models: string[] }, objectCountByModel: Record<string, number>) => {
-                return sync.models.reduce((sum: number, model: string) => {
-                    return sum + (objectCountByModel[model] ?? 0);
-                }, 0);
-            };
-            const object_count = sumObjectCount(sync, objectCountByModel);
-            return { ...sync, object_count };
-        });
+        if (objectCountByModelResult.isOk()) {
+            const objectCountByModel = objectCountByModelResult.unwrap();
+            return syncs.map((sync) => {
+                let objectCountSum = 0;
+                for (const model of sync.models) {
+                    objectCountSum = objectCountSum + (objectCountByModel[model]?.object_count ?? 0);
+                }
+                return { ...sync, object_count: objectCountSum };
+            });
+        } else {
+            return syncs.map((sync) => ({ ...sync, object_count: null }));
+        }
     }
 
     public async getSyncs(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {

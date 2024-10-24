@@ -6,6 +6,7 @@ import type {
     FormattedRecordWithMetadata,
     GetRecordsResponse,
     LastAction,
+    RecordCount,
     ReturnedRecord,
     UnencryptedRecord,
     UpsertSummary
@@ -22,13 +23,26 @@ dayjs.extend(utc);
 
 const BATCH_SIZE = 1000;
 
-export async function getRecordsCount({ connectionId, model }: { connectionId: number; model: string }): Promise<Result<number>> {
+export async function getRecordCountsByModel({
+    connectionId,
+    environmentId
+}: {
+    connectionId: number;
+    environmentId: number;
+}): Promise<Result<Record<string, RecordCount>>> {
     try {
-        const [result] = await db.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, model }).select('object_count');
+        const results = await db
+            .from(RECORD_COUNTS_TABLE)
+            .where({
+                connection_id: connectionId,
+                environment_id: environmentId
+            })
+            .select('*');
 
-        return Ok(result ? Number(result.object_count) : 0);
+        const countsByModel: Record<string, RecordCount> = results.reduce((acc, result) => ({ ...acc, [result.model]: result }), {});
+        return Ok(countsByModel);
     } catch (_error) {
-        const e = new Error(`Count records error for model ${model}`);
+        const e = new Error(`Count records error for connection ${connectionId} and environment ${environmentId}`);
         return Err(e);
     }
 }
@@ -250,7 +264,7 @@ export async function upsert({
                         environment_id: environmentId,
                         object_count: Math.max(0, delta_count)
                     })
-                    .onConflict(['connection_id', 'model'])
+                    .onConflict(['connection_id', 'environment_id', 'model'])
                     .merge({
                         object_count: trx.raw(`${RECORD_COUNTS_TABLE}.object_count + ?`, [delta_count]),
                         updated_at: trx.fn.now()
@@ -382,8 +396,8 @@ export async function deleteRecordsBySyncId({
     return { totalDeletedRecords };
 }
 
-export async function deleteRecordCount({ connectionId, model }: { connectionId: number; model: string }): Promise<void> {
-    await db.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, model }).del();
+export async function deleteRecordCount({ connectionId, environmentId, model }: { connectionId: number; environmentId: number; model: string }): Promise<void> {
+    await db.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
 }
 
 // Mark all non-deleted records that don't belong to currentGeneration as deleted
