@@ -16,10 +16,12 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
+import { linkConnection } from '../services/endUser.service.js';
+import db from '@nangohq/database';
 
 class AppStoreAuthController {
     async auth(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { environment, account } = res.locals;
+        const { environment, account, authType } = res.locals;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
 
@@ -145,9 +147,6 @@ class AppStoreAuthController {
                 return;
             }
 
-            await logCtx.info('App Store auth creation was successful');
-            await logCtx.success();
-
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
@@ -157,23 +156,35 @@ class AppStoreAuthController {
                 environmentId: environment.id,
                 accountId: account.id
             });
-
-            if (updatedConnection) {
-                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-                void connectionCreatedHook(
-                    {
-                        connection: updatedConnection.connection,
-                        environment,
-                        account,
-                        auth_mode: 'APP_STORE',
-                        operation: updatedConnection.operation
-                    },
-                    config.provider,
-                    logContextGetter,
-                    undefined,
-                    logCtx
-                );
+            if (!updatedConnection) {
+                res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
+                await logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                return;
             }
+
+            if (authType === 'connectSession') {
+                const session = res.locals.connectSession;
+                await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+            }
+
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+            await logCtx.info('App Store auth creation was successful');
+            await logCtx.success();
+
+            void connectionCreatedHook(
+                {
+                    connection: updatedConnection.connection,
+                    environment,
+                    account,
+                    auth_mode: 'APP_STORE',
+                    operation: updatedConnection.operation
+                },
+                config.provider,
+                logContextGetter,
+                undefined,
+                logCtx
+            );
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
