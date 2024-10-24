@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Loading, useModal } from '@geist-ui/core';
+import type React from 'react';
 import { useState, useEffect, Fragment } from 'react';
 import { toast } from 'react-toastify';
 import useSWR, { useSWRConfig } from 'swr';
@@ -32,7 +33,7 @@ export enum Tabs {
     Authorization
 }
 
-export default function ShowIntegration() {
+export const ConnectionShow: React.FC = () => {
     const { mutate } = useSWRConfig();
     const env = useStore((state) => state.env);
     const { environmentAndAccount, mutate: environmentMutate } = useEnvironment(env);
@@ -331,4 +332,4 @@ We could not retrieve and/or refresh your access token due to the following erro
             </Helmet>
         </DashboardLayout>
     );
-}
+};

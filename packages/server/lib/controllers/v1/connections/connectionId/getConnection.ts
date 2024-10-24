@@ -28,10 +28,10 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         return;
     }
 
-    const queryParamValues = queryStringValidation.safeParse(req.query);
-    if (!queryParamValues.success) {
+    const queryStringValues = queryStringValidation.safeParse(req.query);
+    if (!queryStringValues.success) {
         res.status(400).send({
-            error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) }
+            error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryStringValues.error) }
         });
         return;
     }
@@ -46,10 +46,10 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
 
     const { environment, account } = res.locals;
 
-    const queryParams = queryParamValues.data;
+    const queryString: GetConnection['Querystring'] = queryStringValues.data;
     const params = paramValue.data;
 
-    const { provider_config_key: providerConfigKey, force_refresh } = queryParams;
+    const { provider_config_key: providerConfigKey, force_refresh } = queryString;
     const instantRefresh = force_refresh === 'true';
     const { connectionId } = params;
 

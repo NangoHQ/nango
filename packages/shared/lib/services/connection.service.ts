@@ -25,7 +25,8 @@ import type {
     DBEnvironment,
     JwtCredentials,
     BillCredentials,
-    IntegrationConfig
+    IntegrationConfig,
+    DBConnection
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -349,7 +350,7 @@ class ConnectionService {
         const connection = await db.knex
             .from<StoredConnection>(`_nango_connections`)
             .insert(
-                encryptionManager.encryptApiConnection({
+                encryptionManager.encryptConnection({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
                     config_id: config_id as number,
@@ -895,20 +896,48 @@ class ConnectionService {
         return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
     }
 
-    public async listConnections(
-        environment_id: number,
-        connectionId?: string
-    ): Promise<
-        { id: number; connection_id: string; provider: string; created: string; metadata: Metadata; active_logs: [{ type: string; log_id: string }] }[]
-    > {
-        const queryBuilder = db.knex
+    public async count({ environmentId }: { environmentId: number }): Promise<{ total: number; withError: number }> {
+        const query = db.knex
+            .from(`_nango_connections`)
+            .select<{ total_connection: string; with_error: string }>(
+                db.knex.raw('COUNT(_nango_connections.*) as total_connection'),
+                db.knex.raw('COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type IS NOT NULL) as with_error')
+            )
+            .leftJoin('_nango_active_logs', (join) => {
+                join.on('_nango_active_logs.connection_id', '_nango_connections.id').andOnVal('active', true).andOnVal('type', 'auth');
+            })
+            .where({
+                '_nango_connections.environment_id': environmentId,
+                '_nango_connections.deleted': false
+            })
+            .first();
+        const res = await query;
+        if (!res) {
+            return { total: 0, withError: 0 };
+        }
+
+        return { total: Number(res.total_connection), withError: Number(res.with_error) };
+    }
+
+    public async listConnections({
+        environmentId,
+        integrationIds,
+        withError,
+        search,
+        limit = 1000,
+        page = 0
+    }: {
+        environmentId: number;
+        integrationIds?: string[] | undefined;
+        withError?: boolean | undefined;
+        search?: string | undefined;
+        limit?: number;
+        page?: number | undefined;
+    }): Promise<{ connection: DBConnection; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
+        const subQuery = db.knex
             .from<Connection>(`_nango_connections`)
             .select(
-                { id: '_nango_connections.id' },
-                { connection_id: '_nango_connections.connection_id' },
-                { provider: '_nango_connections.provider_config_key' },
-                { created: '_nango_connections.created_at' },
-                '_nango_connections.metadata',
+                db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw(`
                   (SELECT COALESCE(json_agg(json_build_object(
                       'type', type,
@@ -918,32 +947,39 @@ class ConnectionService {
                     WHERE _nango_connections.id = ${ACTIVE_LOG_TABLE}.connection_id
                       AND ${ACTIVE_LOG_TABLE}.active = true
                   ) as active_logs
-               `)
+               `),
+                '_nango_configs.provider'
             )
+            .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .where({
-                environment_id: environment_id,
-                deleted: false
+                '_nango_connections.environment_id': environmentId,
+                '_nango_connections.deleted': false
             })
-            .groupBy(
-                '_nango_connections.id',
-                '_nango_connections.connection_id',
-                '_nango_connections.provider_config_key',
-                '_nango_connections.created_at',
-                '_nango_connections.metadata'
-            );
+            .orderBy('_nango_connections.connection_id');
 
-        if (connectionId) {
-            queryBuilder.where({
-                connection_id: connectionId
-            });
+        if (search) {
+            subQuery.whereRaw('connection_id LIKE ?', `%${search}%`);
+        }
+        if (integrationIds) {
+            subQuery.whereIn('_nango_configs.unique_key', integrationIds);
         }
 
-        return queryBuilder;
-    }
+        subQuery.limit(limit);
+        subQuery.offset(page * limit);
 
-    public async getAllNames(environment_id: number): Promise<string[]> {
-        const connections = await this.listConnections(environment_id);
-        return [...new Set(connections.map((config) => config.connection_id))];
+        const query = db.knex
+            .select<{ connection: DBConnection; active_logs: [{ type: string; log_id: string }]; provider: string }[]>('*')
+            .from(subQuery.as('rows'));
+
+        if (withError === false) {
+            query.whereRaw("rows.active_logs::jsonb = '[]'");
+        } else if (withError === true) {
+            query.whereRaw("rows.active_logs::jsonb <> '[]'");
+        }
+
+        console.log(query.toSQL(), { withError });
+
+        return await query;
     }
 
     public async deleteConnection({

@@ -16,7 +16,7 @@ import { useMeta } from '../hooks/useMeta';
 import { useSignout } from '../utils/user';
 import { HomeIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useEnvironment } from '../hooks/useEnvironment';
-import { useConnections } from '../hooks/useConnections';
+import { useConnectionsCount } from '../hooks/useConnections';
 import { useUser } from '../hooks/useUser';
 import { globalEnv } from '../utils/env';
 
@@ -53,7 +53,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const { meta } = useMeta();
     const { user: me } = useUser();
     const env = useStore((state) => state.env);
-    const { errorNotifications } = useConnections(env);
+    const { data } = useConnectionsCount(env);
     const setEnv = useStore((state) => state.setEnv);
     const { mutate } = useEnvironment(env);
     const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
@@ -159,7 +159,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                     }`}
                                 >
                                     <Icon className="w-[18px] h-[18px]" />
-                                    {item.name === 'Connections' && errorNotifications > 0 && (
+                                    {item.name === 'Connections' && data?.data.withError && data.data.withError > 0 && (
                                         <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>
                                     )}
                                     <p>{item.name}</p>

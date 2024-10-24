@@ -119,7 +119,7 @@ class ConfigController {
 
             const configs = await configService.listProviderConfigs(environment.id);
 
-            const connections = await connectionService.listConnections(environment.id);
+            const connections = await connectionService.listConnections({ environmentId: environment.id });
 
             const integrations = await Promise.all(
                 configs.map(async (config: ProviderConfig) => {
@@ -131,7 +131,7 @@ class ConfigController {
                         uniqueKey: config.unique_key,
                         provider: config.provider,
                         scripts: activeFlows.length,
-                        connection_count: connections.filter((connection) => connection.provider === config.unique_key).length,
+                        connection_count: connections.filter((value) => value.provider === config.unique_key).length,
                         creationDate: config.created_at
                     };
 
