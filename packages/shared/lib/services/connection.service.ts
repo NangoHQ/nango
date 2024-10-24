@@ -349,7 +349,7 @@ class ConnectionService {
         const connection = await db.knex
             .from<StoredConnection>(`_nango_connections`)
             .insert(
-                encryptionManager.encryptApiConnection({
+                encryptionManager.encryptConnection({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
                     config_id: config_id as number,
