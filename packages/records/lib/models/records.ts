@@ -41,7 +41,7 @@ export async function getRecordCountsByModel({
 
         const countsByModel: Record<string, RecordCount> = results.reduce((acc, result) => ({ ...acc, [result.model]: result }), {});
         return Ok(countsByModel);
-    } catch (_error) {
+    } catch {
         const e = new Error(`Count records error for connection ${connectionId} and environment ${environmentId}`);
         return Err(e);
     }
