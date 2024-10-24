@@ -68,16 +68,14 @@ class PaginationService {
 
             yield responseData;
 
-            const tmpNextCursor = get(response.data, cursorPagination.cursor_path_in_response);
-            if (typeof tmpNextCursor === 'number') {
-                nextCursor = tmpNextCursor; // Cursor can be "0" so we need to be careful with if(nextCursor)
-            } else if (typeof tmpNextCursor === 'string') {
-                nextCursor = tmpNextCursor.trim();
+            nextCursor = get(response.data, cursorPagination.cursor_path_in_response);
+            if (typeof nextCursor === 'string') {
+                nextCursor = nextCursor.trim();
                 if (!nextCursor) {
-                    return;
+                    nextCursor = undefined;
                 }
-            } else {
-                return;
+            } else if (typeof nextCursor !== 'number') {
+                nextCursor = undefined;
             }
         } while (typeof nextCursor !== 'undefined');
     }
