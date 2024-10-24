@@ -50,6 +50,7 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
             z.string()
         ])
     }),
+    TWOSTEP: z.object({}).catchall(z.any()),
     TBA: z.object({
         oauth_client_id_override: z.string().min(1),
         oauth_client_secret_override: z.string().min(1),

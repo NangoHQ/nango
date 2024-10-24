@@ -4,6 +4,7 @@ import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost }
 import environmentService from '../services/environment.service.js';
 import type { Connection } from '../models/Connection.js';
 import type { DBEnvironment } from '@nangohq/types';
+import get from 'lodash-es/get.js';
 
 export { cloudHost, stagingHost };
 
@@ -208,6 +209,39 @@ export function interpolateObjectValues(obj: Record<string, string | undefined>,
         }
     }
     return interpolated;
+}
+
+export function interpolateObject(obj: Record<string, any>, dynamicValues: Record<string, any>): Record<string, any> {
+    const interpolated: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'string') {
+            interpolated[key] = interpolateString(value, dynamicValues);
+        } else if (typeof value === 'object' && value !== null) {
+            interpolated[key] = interpolateObject(value, dynamicValues);
+        } else {
+            interpolated[key] = value;
+        }
+    }
+
+    return interpolated;
+}
+
+export function stripCredential(obj: any): any {
+    if (typeof obj === 'string') {
+        return obj.replace(/credential\./g, '');
+    } else if (typeof obj === 'object' && obj !== null) {
+        const strippedObject: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+            strippedObject[key] = stripCredential(value);
+        }
+        return strippedObject;
+    }
+    return obj;
+}
+
+export function extractValueByPath(obj: Record<string, any>, path: string): any {
+    return get(obj, path);
 }
 
 export function connectionCopyWithParsedConnectionConfig(connection: Connection) {
