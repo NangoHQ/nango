@@ -369,11 +369,13 @@ export async function update({
 
 export async function deleteRecordsBySyncId({
     connectionId,
+    environmentId,
     model,
     syncId,
     limit = 5000
 }: {
     connectionId: number;
+    environmentId: number;
     model: string;
     syncId: string;
     limit?: number;
@@ -392,6 +394,7 @@ export async function deleteRecordsBySyncId({
             .del();
         totalDeletedRecords += deletedRecords;
     } while (deletedRecords >= limit);
+    await deleteRecordCount({ connectionId, environmentId, model });
 
     return { totalDeletedRecords };
 }

@@ -132,14 +132,10 @@ class SyncController {
         const objectCountByModelResult = await recordsService.getRecordCountsByModel({ connectionId, environmentId });
 
         if (objectCountByModelResult.isOk()) {
-            const objectCountByModel = objectCountByModelResult.unwrap();
-            return syncs.map((sync) => {
-                let objectCountSum = 0;
-                for (const model of sync.models) {
-                    objectCountSum = objectCountSum + (objectCountByModel[model]?.object_count ?? 0);
-                }
-                return { ...sync, object_count: objectCountSum };
-            });
+            return syncs.map((sync) => ({
+                ...sync,
+                object_count: sync.models.reduce((sum, model) => sum + (objectCountByModelResult.value[model]?.object_count ?? 0), 0)
+            }));
         } else {
             return syncs.map((sync) => ({ ...sync, object_count: null }));
         }

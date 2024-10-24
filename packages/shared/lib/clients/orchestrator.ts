@@ -32,8 +32,17 @@ import environmentService from '../services/environment.service.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 export interface RecordsServiceInterface {
-    deleteRecordsBySyncId({ connectionId, model, syncId }: { connectionId: number; model: string; syncId: string }): Promise<{ totalDeletedRecords: number }>;
-    deleteRecordCount({ connectionId, environmentId, model }: { connectionId: number; environmentId: number; model: string }): Promise<void>;
+    deleteRecordsBySyncId({
+        connectionId,
+        environmentId,
+        model,
+        syncId
+    }: {
+        connectionId: number;
+        environmentId: number;
+        model: string;
+        syncId: string;
+    }): Promise<{ totalDeletedRecords: number }>;
 }
 
 export interface OrchestratorClientInterface {
@@ -590,8 +599,7 @@ export class Orchestrator {
                     await clearLastSyncDate(syncId);
                     const syncConfig = await getSyncConfigBySyncId(syncId);
                     for (const model of syncConfig?.models || []) {
-                        const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, model });
-                        await recordsService.deleteRecordCount({ connectionId, environmentId, model });
+                        const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
                         await logCtx.info(`Records for model ${model} were deleted successfully`, del);
                     }
 
