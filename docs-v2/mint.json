@@ -369,6 +369,7 @@
                 "integrations/all/coupa-compass",
                 "integrations/all/coros",
                 "integrations/all/datev",
+                "integrations/all/datadog",
                 "integrations/all/deel",
                 "integrations/all/dialpad",
                 "integrations/all/digitalocean",
