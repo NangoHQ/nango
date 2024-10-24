@@ -130,6 +130,7 @@ export interface MetadataChangeResponse {
 
 export interface Connection {
     id?: number;
+    end_user_id: number | null;
     created_at: Date;
     updated_at: Date;
     provider_config_key: string;

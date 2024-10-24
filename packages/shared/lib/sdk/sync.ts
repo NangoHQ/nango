@@ -314,6 +314,7 @@ interface Connection {
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     credentials: AuthCredentials;
+    end_user_id: number | null;
 }
 
 export class ActionError<T = Record<string, unknown>> extends Error {
