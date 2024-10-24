@@ -25,7 +25,8 @@ import type {
     DBEnvironment,
     JwtCredentials,
     BillCredentials,
-    PerimeterCredentials,
+    TwoStepCredentials,
+    ProviderTwoStep,
     IntegrationConfig
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
@@ -42,7 +43,16 @@ import type {
     BasicApiCredentials,
     ConnectionUpsertResponse
 } from '../models/Auth.js';
-import { interpolateStringFromObject, interpolateString, parseTokenExpirationDate, isTokenExpired, parseTableauTokenExpirationDate } from '../utils/utils.js';
+import {
+    interpolateStringFromObject,
+    interpolateString,
+    parseTokenExpirationDate,
+    isTokenExpired,
+    parseTableauTokenExpirationDate,
+    interpolateObject,
+    extractValueByPath,
+    stripCredential
+} from '../utils/utils.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -423,7 +433,7 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials: PerimeterCredentials;
+        credentials: TwoStepCredentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -685,7 +695,7 @@ class ConnectionService {
                 | OAuth2ClientCredentials
                 | TableauCredentials
                 | JwtCredentials
-                | PerimeterCredentials
+                | TwoStepCredentials
                 | BillCredentials;
             if (credentials.type && credentials.type === 'OAUTH2') {
                 const creds = credentials;
@@ -723,7 +733,7 @@ class ConnectionService {
                 connection.credentials = creds;
             }
 
-            if (credentials.type && credentials.type === 'PERIMETER') {
+            if (credentials.type && credentials.type === 'TWOSTEP') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
@@ -1052,7 +1062,7 @@ class ConnectionService {
             connection?.credentials?.type === 'TABLEAU' ||
             connection?.credentials?.type === 'JWT' ||
             connection?.credentials?.type === 'BILL' ||
-            connection?.credentials?.type === 'PERIMETER'
+            connection?.credentials?.type === 'TWOSTEP'
         ) {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connectionId: connection.connection_id,
@@ -1174,7 +1184,7 @@ class ConnectionService {
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderOAuth2): AuthCredentials {
+    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderOAuth2 | ProviderTwoStep): AuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
@@ -1229,7 +1239,7 @@ class ConnectionService {
                     expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
                 } else if (rawCreds['expires_in']) {
                     const expiresIn = Number.parseInt(rawCreds['expires_in'], 10);
-                    const multiplier = template?.expires_in_unit === 'milliseconds' ? 1 : 1000;
+                    const multiplier = template && 'expires_in_unit' in template && template.expires_in_unit === 'milliseconds' ? 1 : 1000;
                     expiresAt = new Date(Date.now() + expiresIn * multiplier);
                 } else {
                     expiresAt = new Date(Date.now() + DEFAULT_EXPIRES_AT_MS);
@@ -1286,22 +1296,40 @@ class ConnectionService {
                 return billCredentials;
             }
 
-            case 'PERIMETER': {
-                if (!rawCreds['data']['accessToken']) {
+            case 'TWOSTEP': {
+                if (!template || !('token_response' in template)) {
+                    throw new NangoError(`Token response structure is missing for TWOSTEP.`);
+                }
+
+                const tokenPath = template.token_response.token;
+                const expirationPath = template.token_response.token_expiration;
+                const expirationFormula = template.token_response.token_expiration_formula;
+
+                const token = extractValueByPath(rawCreds, tokenPath);
+                const expiration = extractValueByPath(rawCreds, expirationPath);
+
+                if (!token) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
                 let expiresAt: Date | undefined;
-                if (rawCreds['data']['accessTokenExpire']) {
-                    expiresAt = parseTokenExpirationDate(rawCreds['data']['accessTokenExpire']);
+
+                if (expirationFormula === 'expireAt' && expiration) {
+                    expiresAt = parseTokenExpirationDate(expiration);
+                } else if (expirationFormula === 'expireIn' && expiration) {
+                    const expiresIn = Number.parseInt(expiration, 10);
+                    expiresAt = new Date(Date.now() + expiresIn * 1000);
+                } else if (template.token_expires_in_ms) {
+                    expiresAt = new Date(Date.now() + template.token_expires_in_ms);
                 }
-                const perimeterCredentials: PerimeterCredentials = {
-                    type: 'PERIMETER',
-                    token: rawCreds['data']['accessToken'],
+
+                const twoStepCredentials: TwoStepCredentials = {
+                    type: 'TWOSTEP',
+                    token: token,
                     expires_at: expiresAt,
-                    raw: rawCreds,
-                    api_key: ''
+                    raw: rawCreds
                 };
-                return perimeterCredentials;
+
+                return twoStepCredentials;
             }
 
             default:
@@ -1333,7 +1361,7 @@ class ConnectionService {
                 | OAuth2ClientCredentials
                 | TableauCredentials
                 | JwtCredentials
-                | PerimeterCredentials
+                | TwoStepCredentials
                 | BillCredentials;
         }>
     > {
@@ -1349,7 +1377,7 @@ class ConnectionService {
                 | OAuth2ClientCredentials
                 | TableauCredentials
                 | JwtCredentials
-                | PerimeterCredentials
+                | TwoStepCredentials
                 | BillCredentials
                 | null;
         }> => {
@@ -1378,7 +1406,7 @@ class ConnectionService {
                           | OAuth2ClientCredentials
                           | TableauCredentials
                           | JwtCredentials
-                          | PerimeterCredentials
+                          | TwoStepCredentials
                           | BillCredentials)
             };
         };
@@ -1847,35 +1875,56 @@ class ConnectionService {
         }
     }
 
-    public async getPerimeterCredentials(
-        provider: Provider,
-        apiKey: string,
+    public async getTwoStepCredentials(
+        provider: ProviderTwoStep,
+        dynamicCredentials: Record<string, any>,
         connectionConfig: Record<string, string>
-    ): Promise<ServiceResponse<PerimeterCredentials>> {
+    ): Promise<ServiceResponse<TwoStepCredentials>> {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig)).toString();
-        const postBody = {
-            grantType: 'api_key',
-            apiKey: apiKey
-        };
 
-        const headers: Record<string, string> = {
-            'Content-Type': 'application/json'
-        };
+        const postBody: Record<string, any> = {};
 
-        const requestOptions = { headers };
+        if (provider.token_params) {
+            for (const [key, value] of Object.entries(provider.token_params)) {
+                const strippedValue = stripCredential(value);
+
+                if (typeof strippedValue === 'object' && strippedValue !== null) {
+                    postBody[key] = interpolateObject(strippedValue, dynamicCredentials);
+                } else if (typeof strippedValue === 'string') {
+                    postBody[key] = interpolateString(strippedValue, dynamicCredentials);
+                } else {
+                    postBody[key] = strippedValue;
+                }
+            }
+        }
+
+        const headers: Record<string, string> = {};
+
+        if (provider.token_headers) {
+            for (const [key, value] of Object.entries(provider.token_headers)) {
+                headers[key] = value;
+            }
+        }
 
         try {
-            const response = await axios.post(url, postBody, requestOptions);
+            const requestOptions = { headers };
+
+            const response = await axios.post(url.toString(), JSON.stringify(postBody), requestOptions);
 
             if (response.status !== 200) {
-                return { success: false, error: new NangoError('invalid_perimeter_credentials'), response: null };
+                return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
             }
 
             const { data } = response;
 
-            const parsedCreds = this.parseRawCredentials(data, 'PERIMETER') as PerimeterCredentials;
-            parsedCreds.api_key = apiKey;
+            const parsedCreds = this.parseRawCredentials(data, 'TWOSTEP', provider) as TwoStepCredentials;
+
+            for (const [key, value] of Object.entries(dynamicCredentials)) {
+                if (value !== undefined) {
+                    parsedCreds[key] = value;
+                }
+            }
 
             return { success: true, error: null, response: parsedCreds };
         } catch (e: any) {
@@ -1883,8 +1932,8 @@ class ConnectionService {
                 message: e.message || 'Unknown error',
                 name: e.name || 'Error'
             };
-            logger.error(`Error fetching Perimeter81 credentials tokens ${stringifyError(e)}`);
-            const error = new NangoError('perimeter_credentials_fetch_error', errorPayload);
+            logger.error(`Error fetching TwoStep credentials tokens ${stringifyError(e)}`);
+            const error = new NangoError('two_step_credentials_fetch_error', errorPayload);
 
             return { success: false, error, response: null };
         }
@@ -1979,22 +2028,7 @@ class ConnectionService {
         return Boolean(tokenExpirationCondition);
     }
 
-    private async getNewCredentials(
-        connection: Connection,
-        providerConfig: ProviderConfig,
-        provider: Provider
-    ): Promise<
-        ServiceResponse<
-            | OAuth2Credentials
-            | OAuth2ClientCredentials
-            | AppCredentials
-            | AppStoreCredentials
-            | TableauCredentials
-            | JwtCredentials
-            | BillCredentials
-            | PerimeterCredentials
-        >
-    > {
+    private async getNewCredentials(connection: Connection, providerConfig: ProviderConfig, provider: Provider): Promise<ServiceResponse> {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
@@ -2061,9 +2095,13 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (provider.auth_mode === 'PERIMETER') {
-            const { api_key } = connection.credentials as PerimeterCredentials;
-            const { success, error, response: credentials } = await this.getPerimeterCredentials(provider, api_key, connection.connection_config);
+        } else if (provider.auth_mode === 'TWOSTEP') {
+            const { token, expires_at, type, raw, ...dynamicCredentials } = connection.credentials as TwoStepCredentials;
+            const {
+                success,
+                error,
+                response: credentials
+            } = await this.getTwoStepCredentials(provider as ProviderTwoStep, dynamicCredentials, connection.connection_config);
 
             if (!success || !credentials) {
                 return { success, error, response: null };

@@ -12,7 +12,7 @@ export interface AuthModes {
     Tableau: 'TABLEAU';
     Jwt: 'JWT';
     Bill: 'BILL';
-    Perimeter: 'PERIMETER';
+    TwoStep: 'TWOSTEP';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -168,9 +168,9 @@ export interface JwtCredentials {
     expires_at?: Date | undefined;
 }
 
-export interface PerimeterCredentials extends CredentialsCommon {
-    type: AuthModes['Perimeter'];
-    api_key: string;
+export interface TwoStepCredentials extends CredentialsCommon {
+    type: AuthModes['TwoStep'];
+    [key: string]: any;
     token?: string;
     expires_at?: Date | undefined;
 }
@@ -197,4 +197,4 @@ export type AllAuthCredentials =
     | TableauCredentials
     | JwtCredentials
     | BillCredentials
-    | PerimeterCredentials;
+    | TwoStepCredentials;

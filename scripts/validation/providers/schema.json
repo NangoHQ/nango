@@ -39,7 +39,7 @@
                         "TABLEAU",
                         "JWT",
                         "BILL",
-                        "PERIMETER"
+                        "TWOSTEP"
                     ]
                 },
                 "authorization_method": {
@@ -303,6 +303,28 @@
                             "type": "string"
                         }
                     }
+                },
+                "token_headers": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "token_response": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "token": {
+                            "type": "string"
+                        },
+                        "token_expiration": {
+                            "type": "string"
+                        },
+                        "token_expiration_formula": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "token_expires_in_ms": {
+                    "type": "number"
                 },
                 "token_request_auth_method": {
                     "type": "string",

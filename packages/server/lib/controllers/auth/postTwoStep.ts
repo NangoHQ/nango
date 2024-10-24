@@ -13,18 +13,14 @@ import {
     LogActionEnum,
     getProvider
 } from '@nangohq/shared';
-import type { PostPublicPerimeterAuthorization } from '@nangohq/types';
+import type { PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 
-const bodyValidation = z
-    .object({
-        api_key: z.string().min(1)
-    })
-    .strict();
+const bodyValidation = z.object({}).catchall(z.any()).strict();
 
 const queryStringValidation = z
     .object({
@@ -43,7 +39,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicPerimeterAuthorization = asyncWrapper<PostPublicPerimeterAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -69,9 +65,9 @@ export const postPublicPerimeterAuthorization = asyncWrapper<PostPublicPerimeter
     }
 
     const { account, environment } = res.locals;
-    const { api_key: apiKey }: PostPublicPerimeterAuthorization['Body'] = val.data;
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicPerimeterAuthorization['Querystring'] = queryStringVal.data;
-    const { providerConfigKey }: PostPublicPerimeterAuthorization['Params'] = paramsVal.data;
+    const bodyData: PostPublicTwoStepAuthorization['Body'] = val.data;
+    const { connection_id: receivedConnectionId, params, hmac }: PostPublicTwoStepAuthorization['Querystring'] = queryStringVal.data;
+    const { providerConfigKey }: PostPublicTwoStepAuthorization['Params'] = paramsVal.data;
     const connectionConfig = params ? getConnectionConfig(params) : {};
 
     let logCtx: LogContext | undefined;
@@ -80,7 +76,7 @@ export const postPublicPerimeterAuthorization = asyncWrapper<PostPublicPerimeter
         logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'Perimeter' },
+                meta: { authType: 'TwoStep' },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
@@ -112,8 +108,8 @@ export const postPublicPerimeterAuthorization = asyncWrapper<PostPublicPerimeter
             return;
         }
 
-        if (provider.auth_mode !== 'PERIMETER') {
-            await logCtx.error('Provider does not support PERIMETER auth', { provider: config.provider });
+        if (provider.auth_mode !== 'TWOSTEP') {
+            await logCtx.error('Provider does not support TWOSTEP auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -121,10 +117,14 @@ export const postPublicPerimeterAuthorization = asyncWrapper<PostPublicPerimeter
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const { success, error, response: credentials } = await connectionService.getPerimeterCredentials(provider, apiKey, connectionConfig);
+        const {
+            success,
+            error,
+            response: credentials
+        } = await connectionService.getTwoStepCredentials(provider as ProviderTwoStep, bodyData, connectionConfig);
 
         if (!success || !credentials) {
-            await logCtx.error('Error during Perimeter credentials creation', { error, provider: config.provider });
+            await logCtx.error('Error during TwoStep credentials creation', { error, provider: config.provider });
             await logCtx.failed();
 
             errorManager.errRes(res, 'perimeter_error');
@@ -134,7 +134,7 @@ export const postPublicPerimeterAuthorization = asyncWrapper<PostPublicPerimeter
 
         const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
-        await logCtx.info('Perimeter connection creation was successful');
+        await logCtx.info('TwoStep connection creation was successful');
         await logCtx.success();
 
         const [updatedConnection] = await connectionService.upsertPerimeterConnection({
@@ -155,7 +155,7 @@ export const postPublicPerimeterAuthorization = asyncWrapper<PostPublicPerimeter
                     connection: updatedConnection.connection,
                     environment,
                     account,
-                    auth_mode: 'PERIMETER',
+                    auth_mode: 'TWOSTEP',
                     operation: updatedConnection.operation
                 },
                 config.provider,
@@ -174,10 +174,10 @@ export const postPublicPerimeterAuthorization = asyncWrapper<PostPublicPerimeter
                 connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
                 environment,
                 account,
-                auth_mode: 'PERIMETER',
+                auth_mode: 'TWOSTEP',
                 error: {
                     type: 'unknown',
-                    description: `Error during Perimeter create: ${prettyError}`
+                    description: `Error during TwoStep create: ${prettyError}`
                 },
                 operation: 'unknown'
             },
@@ -185,7 +185,7 @@ export const postPublicPerimeterAuthorization = asyncWrapper<PostPublicPerimeter
             logCtx
         );
         if (logCtx) {
-            await logCtx.error('Error during Perimeter credentials creation', { error: err });
+            await logCtx.error('Error during TwoStep credentials creation', { error: err });
             await logCtx.failed();
         }
 

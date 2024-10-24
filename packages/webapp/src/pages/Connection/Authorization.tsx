@@ -130,10 +130,22 @@ export default function Authorization(props: AuthorizationProps) {
                     />
                 </div>
             )}
-            {connection.credentials.type === 'PERIMETER' && connection.credentials.api_key && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">API KEY</span>
-                    <SecretInput disabled defaultValue={connection.credentials.api_key} copy={true} />
+            {connection.credentials?.type === 'TWOSTEP' && (
+                <div>
+                    {Object.keys(connection.credentials)
+                        .filter((key) => !['type', 'token', 'expires_at', 'raw'].includes(key))
+                        .map((key) => {
+                            const value = (connection.credentials as Record<string, string>)[key];
+
+                            return (
+                                <div className="flex flex-col" key={key}>
+                                    <span className="text-gray-400 text-xs uppercase mb-1">
+                                        {key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
+                                    </span>
+                                    <SecretInput disabled defaultValue={value} copy={true} />
+                                </div>
+                            );
+                        })}
                 </div>
             )}
             {connection.credentials.type === 'TABLEAU' && connection.credentials.pat_name && (
@@ -265,7 +277,7 @@ export default function Authorization(props: AuthorizationProps) {
                 connection.credentials.type === 'OAUTH2' ||
                 connection.credentials.type === 'APP' ||
                 connection.credentials.type === 'BILL' ||
-                connection.credentials.type === 'PERIMETER' ||
+                connection.credentials.type === 'TWOSTEP' ||
                 connection.credentials.type === 'CUSTOM') && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Raw Token Response</span>

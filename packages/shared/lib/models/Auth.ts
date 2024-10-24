@@ -65,7 +65,7 @@ export type AuthCredentials =
     | TbaCredentials
     | TableauCredentials
     | BillCredentials
-    | PerimeterCredentials;
+    | TwoStepCredentials;
 
 export interface AppCredentials {
     type?: 'APP';
@@ -153,9 +153,9 @@ export interface JwtCredentials {
     expires_at?: Date | undefined;
 }
 
-export interface PerimeterCredentials extends CredentialsCommon {
-    type: 'PERIMETER';
-    api_key: string;
+export interface TwoStepCredentials extends CredentialsCommon {
+    type: 'TWOSTEP';
+    [key: string]: any;
     token?: string;
     expires_at?: Date | undefined;
 }

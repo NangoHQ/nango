@@ -146,11 +146,9 @@ export type PostPublicBillAuthorization = Endpoint<{
     };
 }>;
 
-export type PostPublicPerimeterAuthorization = Endpoint<{
+export type PostPublicTwoStepAuthorization = Endpoint<{
     Method: 'POST';
-    Body: {
-        api_key: string;
-    };
+    Body: Record<string, any>;
     Querystring: {
         connection_id?: string | undefined;
         params?: Record<string, any> | undefined;
@@ -159,7 +157,7 @@ export type PostPublicPerimeterAuthorization = Endpoint<{
     Params: {
         providerConfigKey: string;
     };
-    Path: '/auth/bill';
+    Path: '/auth/two-step';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
