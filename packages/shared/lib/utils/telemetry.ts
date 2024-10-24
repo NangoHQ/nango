@@ -44,10 +44,10 @@ class Telemetry {
     private logInstance: v2.LogsApi | undefined;
     constructor() {
         try {
-            if ((isCloud || isEnterprise) && process.env['DD_API_KEY'] && process.env['DD_APP_KEY']) {
+            if ((isCloud || isEnterprise) && process.env['DD_API_KEY'] && process.env['DD_APP_KEY'] && process.env['DD_SITE']) {
                 const configuration = client.createConfiguration();
                 configuration.setServerVariables({
-                    site: 'us3.datadoghq.com'
+                    site: process.env['DD_SITE']
                 });
                 this.logInstance = new v2.LogsApi(configuration);
             }
