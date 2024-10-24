@@ -67,7 +67,13 @@ export async function exec(): Promise<void> {
         // hard delete records
         let deletedRecords = 0;
         for (const model of sync.models) {
-            const res = await records.deleteRecordsBySyncId({ connectionId: sync.connectionId, model, syncId: sync.id, limit: limitRecords });
+            const res = await records.deleteRecordsBySyncId({
+                connectionId: sync.connectionId,
+                environmentId: sync.environmentId,
+                model,
+                syncId: sync.id,
+                limit: limitRecords
+            });
             deletedRecords += res.totalDeletedRecords;
         }
         metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_RECORDS, deletedRecords);
