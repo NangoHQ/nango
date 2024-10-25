@@ -20,7 +20,7 @@ export class RoutingSpanProcessor implements SpanProcessor {
             for (const route of routes) {
                 const processor = new BatchSpanProcessor(
                     new OTLPTraceExporter({
-                        url: `${route.routingEndpoint.replace(/\/$/, '')}/traces`, // trim trailing slash if present
+                        url: `${route.routingEndpoint}/traces`,
                         headers: route.routingHeaders
                     })
                 );
@@ -48,7 +48,7 @@ export class RoutingSpanProcessor implements SpanProcessor {
                 }
 
                 const traceExporter = new OTLPTraceExporter({
-                    url: `${route.routingEndpoint.replace(/\/$/, '')}/traces`,
+                    url: `${route.routingEndpoint}/traces`,
                     headers: route.routingHeaders
                 });
                 const newProcessor = new BatchSpanProcessor(traceExporter);
