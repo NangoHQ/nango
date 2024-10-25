@@ -17,8 +17,8 @@ export async function up(knex: Knex): Promise<void> {
 
         // INDEXES
         await knex.schema.alterTable(TABLE, function (table) {
-            table.unique(['connection_id', 'environment_id', 'model']);
-            table.index(['connection_id', 'environment_id', 'model']);
+            table.unique(['environment_id', 'connection_id', 'model']);
+            table.index(['environment_id', 'connection_id', 'model']);
         });
     });
 }

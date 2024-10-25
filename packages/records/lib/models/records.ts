@@ -37,7 +37,7 @@ export async function getRecordCountsByModel({
                 connection_id: connectionId,
                 environment_id: environmentId
             })
-            .select('*');
+            .select<RecordCount[]>('*');
 
         const countsByModel: Record<string, RecordCount> = results.reduce((acc, result) => ({ ...acc, [result.model]: result }), {});
         return Ok(countsByModel);
