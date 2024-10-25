@@ -86,7 +86,6 @@ adyen:
     authorization_url: https://ca-${connectionConfig.environment}.adyen.com/ca/ca/oauth/connect.shtml
     token_url: https://oauth-${connectionConfig.environment}.adyen.com/v1/token
     scope_separator: ' '
-    decode_url: false
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -94,6 +93,8 @@ adyen:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.resource}-${connectionConfig.environment}.adyen.com
     docs: https://docs.nango.dev/integrations/all/adyen
     connection_config:
         environment:
@@ -101,7 +102,14 @@ adyen:
             title: Environment
             description: The environment to use
             pattern: '^(live|test)$'
-            example: 'live|test'
+            example: live|test
+        resource:
+            type: string
+            title: Resource
+            description: The resource to use for your various requests
+            pattern: '^[a-z0-9_-]+$'
+            example: kyc
+            suffix: -(live|test).adyen.com
 
 affinity:
     display_name: Affinity
