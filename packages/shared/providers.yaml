@@ -78,6 +78,31 @@ adobe-umapi:
             title: Client ID
             description: The Client ID from the OAuth Server-to-Server enabled project on developer portal
 
+adyen:
+    display_name: Adyen
+    categories:
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://ca-${connectionConfig.environment}.adyen.com/ca/ca/oauth/connect.shtml
+    token_url: https://oauth-${connectionConfig.environment}.adyen.com/v1/token
+    scope_separator: ' '
+    decode_url: false
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/adyen
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The environment to use
+            pattern: '^(live|test)$'
+            example: 'live|test'
+
 affinity:
     display_name: Affinity
     categories:
