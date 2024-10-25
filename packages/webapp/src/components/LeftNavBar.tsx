@@ -103,7 +103,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         let newPath = `/${pathSegments.join('/')}`;
 
         // If on 'integration' or 'connections' subpages beyond the second level, redirect to their parent page
-        if (pathSegments[1] === 'integration' && pathSegments.length > 2) {
+        if (pathSegments[1] === 'integrations' && pathSegments.length > 2) {
             newPath = `/${newEnv}/integrations`;
         } else if (pathSegments[1] === 'connections' && pathSegments.length > 2) {
             newPath = `/${newEnv}/connections`;

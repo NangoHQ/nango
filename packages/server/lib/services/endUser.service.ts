@@ -1,5 +1,5 @@
 import type knex from 'knex';
-import type { EndUser } from '@nangohq/types';
+import type { EndUser, StoredConnection } from '@nangohq/types';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
@@ -163,4 +163,12 @@ export async function deleteEndUser(
         return Err(new EndUserError({ code: 'not_found', message: `End user '${endUserId}' not found`, payload: { endUserId, accountId, environmentId } }));
     }
     return Ok(undefined);
+}
+
+export async function linkConnection(db: knex.Knex, { endUserId, connection }: { endUserId: number; connection: Pick<StoredConnection, 'id'> }) {
+    await db<StoredConnection>('_nango_connections').where({ id: connection.id! }).update({ end_user_id: endUserId });
+}
+
+export async function unlinkConnection(db: knex.Knex, { connection }: { connection: Pick<StoredConnection, 'id'> }) {
+    await db<StoredConnection>('_nango_connections').where({ id: connection.id! }).update({ end_user_id: null });
 }

@@ -64,12 +64,14 @@ export class EncryptionManager extends Encryption {
         return decryptedEnvironment;
     }
 
-    public encryptConnection(connection: Omit<Connection, 'created_at' | 'updated_at'>): Omit<StoredConnection, 'created_at' | 'updated_at'> {
+    public encryptConnection(
+        connection: Omit<Connection, 'created_at' | 'updated_at' | 'end_user_id'>
+    ): Omit<StoredConnection, 'created_at' | 'updated_at' | 'end_user_id'> {
         if (!this.shouldEncrypt()) {
             return connection;
         }
 
-        const storedConnection = Object.assign({}, connection) as Omit<StoredConnection, 'created_at' | 'updated_at'>;
+        const storedConnection = Object.assign({}, connection) as Omit<StoredConnection, 'created_at' | 'updated_at' | 'end_user_id'>;
 
         const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
         const encryptedCreds = { encrypted_credentials: encryptedClientSecret };

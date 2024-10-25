@@ -166,7 +166,6 @@ publicAPI.options('*', publicAPICorsHandler); // Pre-flight
 
 // API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
-publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 
 publicAPI.route('/oauth/connect/:providerConfigKey').get(connectSessionOrPublicAuth, oauthController.oauthRequest.bind(oauthController));
@@ -182,6 +181,8 @@ publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionO
 
 // @deprecated
 publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
+
+publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 
 // API Admin routes
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
