@@ -56,10 +56,10 @@ class PaginationService {
     ): AsyncGenerator<T[], undefined, void> {
         const cursorPagination: CursorPagination = paginationConfig;
 
-        let nextCursor: string | undefined;
+        let nextCursor: string | number | undefined;
 
-        while (true) {
-            if (nextCursor) {
+        do {
+            if (typeof nextCursor !== 'undefined') {
                 updatedBodyOrParams[cursorPagination.cursor_name_in_request] = nextCursor;
             }
 
@@ -76,11 +76,15 @@ class PaginationService {
             yield responseData;
 
             nextCursor = get(response.data, cursorPagination.cursor_path_in_response);
-
-            if (!nextCursor || nextCursor.trim().length === 0) {
-                return;
+            if (typeof nextCursor === 'string') {
+                nextCursor = nextCursor.trim();
+                if (!nextCursor) {
+                    nextCursor = undefined;
+                }
+            } else if (typeof nextCursor !== 'number') {
+                nextCursor = undefined;
             }
-        }
+        } while (typeof nextCursor !== 'undefined');
     }
 
     public async *link<T>(
