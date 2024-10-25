@@ -6,6 +6,15 @@ import type { Merge } from 'type-fest';
 export type ApiConnection = Pick<Merge<Connection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
     provider: string;
     errors: [{ type: string; log_id: string }];
+    endUser: {
+        id: string;
+        displayName: string | null;
+        email: string;
+        organization: {
+            id: string;
+            displayName: string | null;
+        } | null;
+    } | null;
 };
 export type GetConnections = Endpoint<{
     Method: 'GET';

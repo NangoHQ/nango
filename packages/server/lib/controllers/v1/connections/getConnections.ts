@@ -49,7 +49,7 @@ export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
 
     res.status(200).send({
         data: connections.map((data) => {
-            return connectionToApi(data.connection, data.provider, data.active_logs);
+            return connectionToApi({ data: data.connection, provider: data.provider, activeLog: data.active_logs, endUser: data.end_user });
         })
     });
 });

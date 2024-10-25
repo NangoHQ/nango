@@ -26,7 +26,8 @@ import type {
     JwtCredentials,
     BillCredentials,
     IntegrationConfig,
-    DBConnection
+    DBConnection,
+    DBEndUser
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -933,11 +934,12 @@ class ConnectionService {
         search?: string | undefined;
         limit?: number;
         page?: number | undefined;
-    }): Promise<{ connection: DBConnection; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
+    }): Promise<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
         const subQuery = db.knex
             .from<Connection>(`_nango_connections`)
             .select(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
+                db.knex.raw('row_to_json(end_users.*) as end_user'),
                 db.knex.raw(`
                   (SELECT COALESCE(json_agg(json_build_object(
                       'type', type,
@@ -951,6 +953,7 @@ class ConnectionService {
                 '_nango_configs.provider'
             )
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
             .where({
                 '_nango_connections.environment_id': environmentId,
                 '_nango_connections.deleted': false
@@ -958,7 +961,10 @@ class ConnectionService {
             .orderBy('_nango_connections.connection_id');
 
         if (search) {
-            subQuery.whereRaw('connection_id LIKE ?', `%${search}%`);
+            subQuery
+                .whereRaw('connection_id ILIKE ?', `%${search}%`)
+                .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
+                .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
         }
         if (integrationIds) {
             subQuery.whereIn('_nango_configs.unique_key', integrationIds);
@@ -968,7 +974,7 @@ class ConnectionService {
         subQuery.offset(page * limit);
 
         const query = db.knex
-            .select<{ connection: DBConnection; active_logs: [{ type: string; log_id: string }]; provider: string }[]>('*')
+            .select<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>('*')
             .from(subQuery.as('rows'));
 
         if (withError === false) {
@@ -976,8 +982,6 @@ class ConnectionService {
         } else if (withError === true) {
             query.whereRaw("rows.active_logs::jsonb <> '[]'");
         }
-
-        console.log(query.toSQL(), { withError });
 
         return await query;
     }

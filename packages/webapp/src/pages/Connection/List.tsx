@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import * as Table from '../../components/ui/Table';
 
 import { Input } from '../../components/ui/input/Input';
@@ -28,6 +28,7 @@ import type { ApiConnection } from '@nangohq/types';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { ErrorCircle } from '../../components/ui/label/error-circle';
 import Spinner from '../../components/ui/Spinner';
+import { AvatarCustom } from '../../components/AvatarCustom';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -36,6 +37,7 @@ const filterErrors = [
 ];
 
 export const ConnectionList: React.FC = () => {
+    const navigate = useNavigate();
     const env = useStore((state) => state.env);
     const connectUI = useRef<ConnectUI>();
 
@@ -43,7 +45,6 @@ export const ConnectionList: React.FC = () => {
     const { list: listIntegration } = useListIntegration(env);
     const { data: connectionsCount } = useConnectionsCount(env);
 
-    // const [connections, setConnections] = useState<ApiConnection[]>([]);
     const [selectedIntegration, setSelectedIntegration] = useState<string[]>(defaultFilter);
     const [search, setSearch] = useState<string>('');
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
@@ -94,6 +95,9 @@ export const ConnectionList: React.FC = () => {
                 if (event.type === 'close') {
                     // we refresh on close so user can see the diff
                     void mutate();
+                } else if (event.type === 'connect') {
+                    navigate(`/${env}/connections/${event.payload.providerConfigKey}/${event.payload.connectionId}`);
+                    void mutate();
                 }
             }
         });
@@ -138,12 +142,24 @@ export const ConnectionList: React.FC = () => {
                 header: 'Customer',
                 size: 300,
                 cell: ({ row }) => {
+                    const data = row.original;
                     return (
-                        <Link to={`/${env}/connections/${row.original.provider_config_key}/${row.original.connection_id}`} className="cursor-pointer">
-                            <div className="flex gap-2 items-center">
-                                <span className="break-words break-all truncate">{row.original.connection_id}</span>
-                                {row.original.errors.length > 0 && <ErrorCircle />}
-                            </div>
+                        <Link to={`/${env}/connections/${data.provider_config_key}/${data.connection_id}`} className="cursor-pointer">
+                            {data.endUser ? (
+                                <div className="flex gap-3 items-center">
+                                    <AvatarCustom displayName={data.endUser.displayName || data.endUser.email} />
+                                    <div className="flex flex-col">
+                                        <div className="text-white">{data.endUser.displayName ? data.endUser.displayName : data.endUser.email}</div>
+                                        {data.endUser.displayName && <div className="text-dark-500 text-xs font-code">{data.endUser.email}</div>}
+                                    </div>
+                                    {row.original.errors.length > 0 && <ErrorCircle />}
+                                </div>
+                            ) : (
+                                <div className="flex gap-2 items-center">
+                                    <span className="break-words break-all truncate">{data.connection_id}</span>
+                                    {row.original.errors.length > 0 && <ErrorCircle />}
+                                </div>
+                            )}
                         </Link>
                     );
                 }
@@ -168,7 +184,7 @@ export const ConnectionList: React.FC = () => {
                 header: 'Connection ID',
                 size: 150,
                 cell: ({ row }) => {
-                    return <div>{row.original.connection_id}</div>;
+                    return <div className="truncate">{row.original.connection_id}</div>;
                 }
             },
             {
@@ -190,7 +206,7 @@ export const ConnectionList: React.FC = () => {
         columns,
         getCoreRowModel: getCoreRowModel()
     });
-    const hasFiltered = debouncedSearch || selectedIntegration[0] !== 'all';
+    const hasFiltered = debouncedSearch || selectedIntegration[0] !== 'all' || filterWithError[0] !== 'all';
 
     if (error) {
         return (
@@ -207,7 +223,7 @@ export const ConnectionList: React.FC = () => {
         );
     }
 
-    if (!connections && !readyToDisplay) {
+    if (!connections || !readyToDisplay) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
                 <h2 className="text-3xl font-semibold text-white mb-4">Connections</h2>
@@ -227,7 +243,7 @@ export const ConnectionList: React.FC = () => {
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 <div className="flex gap-2">
                     {globalEnv.features.connectUI && <Button onClick={onClickConnectUI}>Open Connect UI (beta)</Button>}
-                    {connections && connections.length > 0 && (
+                    {(connections || readyToDisplay) && (
                         <Link
                             to={`/${env}/connections/create`}
                             className="flex items-center mt-auto px-4 h-8 rounded-md text-sm text-black bg-white hover:bg-gray-300"
