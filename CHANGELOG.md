@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.20] - 2024-10-25
+
+### Added
+
+- *(integrations)* Add support for dialpad sandbox (#2885) by @StephenCole19
+- *(validations)* Add provider name and remove credentials and connection_config from interpolation checks (#2894) by @hassan254-prog
+- *(integrations)* Add support for elevio (#2896) by @hassan254-prog
+- *(integrations)* Add support for apaleo (#2898) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5c830a77dc088a6bfa7b600caa59de7380c004c3 by Khaliq. Commit message: feat(datadog): datadog user operations (#72) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/bbc2526b09b3d55e1dfc9bba7cce78a13349e670 by Khaliq. Commit message: feat(sharepoint-improvements): Sharepoint improvements (#73) by @github-actions[bot]
+
+### Fixed
+
+- *(pagination)* Handle number cursor (#2886) by @bodinsamuel
+- *(flows)* Endpoint deduplication conflict (#2887) by @bodinsamuel
+- Use DD_SITE env var instead of hardcoded value (#2888) by @TBonnin
+
 ## [v0.42.19] - 2024-10-25
 
 ### Added
@@ -2129,6 +2149,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.20]: https://github.com/NangoHQ/nango/compare/v0.42.19..v0.42.20
 [v0.42.19]: https://github.com/NangoHQ/nango/compare/v0.42.18..v0.42.19
 [v0.42.18]: https://github.com/NangoHQ/nango/compare/v0.42.17..v0.42.18
 [v0.42.17]: https://github.com/NangoHQ/nango/compare/v0.42.15..v0.42.17
