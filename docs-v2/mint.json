@@ -323,6 +323,7 @@
                 "integrations/all/anrok",
                 "integrations/all/anthropic",
                 "integrations/all/amplitude",
+                "integrations/all/apaleo",
                 "integrations/all/apollo",
                 "integrations/all/apple-app-store",
                 "integrations/all/asana",
