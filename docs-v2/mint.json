@@ -344,6 +344,7 @@
                 "integrations/all/bill",
                 "integrations/all/blackbaud",
                 "integrations/all/boldsign",
+                "integrations/all/booking-com",
                 "integrations/all/box",
                 "integrations/all/braintree",
                 "integrations/all/brex",
