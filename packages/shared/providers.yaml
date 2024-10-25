@@ -1501,6 +1501,23 @@ dialpad:
         base_url: https://dialpad.com
     docs: https://docs.nango.dev/integrations/all/dialpad
 
+dialpad-sandbox:
+    display_name: Dialpad (sandbox)
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    authorization_url: https://sandbox.dialpad.com/oauth2/authorize
+    token_url: https://sandbox.dialpad.com/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sandbox.dialpad.com
+    docs: https://docs.nango.dev/integrations/all/dialpad
+
 digitalocean:
     display_name: DigitalOcean
     categories:
@@ -3237,6 +3254,15 @@ malwarebytes:
         grant_type: client_credentials
     proxy:
         base_url: https://api.malwarebytes.com
+        headers:
+            accountId: ${connectionConfig.accountId}
+    connection_config:
+        accountId:
+            type: string
+            title: Account Id
+            description: The Nebula account id
+            pattern: '[\da-fA-F]{8}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{12}$'
+            example: 9256034b-7967-4253-a5d9-260663e4fa4f
     docs: https://docs.nango.dev/integrations/all/malwarebytes
 
 medallia:
