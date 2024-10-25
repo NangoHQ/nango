@@ -19,6 +19,9 @@ import publisher from '../clients/publisher.client.js';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
+import { linkConnection } from '../services/endUser.service.js';
+import db from '@nangohq/database';
+import { getConnectSession } from '../services/connectSession.service.js';
 
 class AppAuthController {
     async connect(req: Request, res: Response<any, never>, _next: NextFunction) {
@@ -179,23 +182,37 @@ class AppAuthController {
                 environmentId: environment.id,
                 accountId: account.id
             });
-
-            if (updatedConnection) {
-                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-                void connectionCreatedHook(
-                    {
-                        connection: updatedConnection.connection,
-                        environment,
-                        account,
-                        auth_mode: 'APP',
-                        operation: updatedConnection.operation
-                    },
-                    session.provider,
-                    logContextGetter,
-                    undefined,
-                    logCtx
-                );
+            if (!updatedConnection) {
+                await logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
             }
+
+            if (session.connectSessionId) {
+                const connectSession = await getConnectSession(db.knex, { id: session.connectSessionId, accountId: account.id, environmentId: environment.id });
+                if (connectSession.isErr()) {
+                    await logCtx.error('Failed to get session');
+                    await logCtx.failed();
+                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                }
+
+                await linkConnection(db.knex, { endUserId: connectSession.value.endUserId, connection: updatedConnection.connection });
+            }
+
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+            void connectionCreatedHook(
+                {
+                    connection: updatedConnection.connection,
+                    environment,
+                    account,
+                    auth_mode: 'APP',
+                    operation: updatedConnection.operation
+                },
+                session.provider,
+                logContextGetter,
+                undefined,
+                logCtx
+            );
 
             await logCtx.info('App connection was successful and credentials were saved');
             await logCtx.success();

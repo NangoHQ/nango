@@ -368,7 +368,7 @@ export function useGetConnectionListAPI(env: string) {
 
     return async () => {
         try {
-            const res = await apiFetch(`/api/v1/connection?env=${env}`);
+            const res = await apiFetch(`/api/v1/connections?env=${env}`);
 
             if (res.status === 401) {
                 return signout();
@@ -391,7 +391,7 @@ export function useGetConnectionDetailsAPI(env: string) {
     return async (connectionId: string, providerConfigKey: string, force_refresh: boolean) => {
         try {
             const res = await apiFetch(
-                `/api/v1/connection/${encodeURIComponent(connectionId)}?env=${env}&provider_config_key=${encodeURIComponent(
+                `/api/v1/connections/${encodeURIComponent(connectionId)}?env=${env}&provider_config_key=${encodeURIComponent(
                     providerConfigKey
                 )}&force_refresh=${force_refresh}`
             );
