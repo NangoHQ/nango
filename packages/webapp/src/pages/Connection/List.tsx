@@ -36,6 +36,61 @@ const filterErrors = [
     { name: 'Error', value: 'error' }
 ];
 
+const columns: ColumnDef<ApiConnection>[] = [
+    {
+        accessorKey: 'id',
+        header: 'Customer',
+        size: 300,
+        cell: ({ row }) => {
+            const data = row.original;
+            return (
+                <div className="flex gap-3 items-center">
+                    <AvatarCustom displayName={data.endUser ? data.endUser.displayName || data.endUser.email : data.connection_id} />
+
+                    {data.endUser ? (
+                        <div className="flex flex-col overflow-hidden">
+                            <div className="text-white break-words break-all truncate">{data.endUser.email}</div>
+
+                            <div className="text-dark-500 text-xs font-code flex gap-2">
+                                {data.endUser.displayName && <span>{data.endUser.displayName}</span>}
+                                {data.endUser.organization?.displayName && <span>({data.endUser.organization?.displayName})</span>}
+                            </div>
+                        </div>
+                    ) : (
+                        <span className="break-words break-all truncate">{data.connection_id}</span>
+                    )}
+                    {row.original.errors.length > 0 && <ErrorCircle />}
+                </div>
+            );
+        }
+    },
+    {
+        accessorKey: 'provider_config_key',
+        header: 'Integration',
+        size: 180,
+        cell: ({ row }) => {
+            return (
+                <div className="flex gap-2 items-center">
+                    <IntegrationLogo provider={row.original.provider} height={7} width={7} />
+                    <p className="break-words break-all">{row.original.provider_config_key}</p>
+                </div>
+            );
+        }
+    },
+    {
+        accessorKey: 'created_at',
+        header: 'Created',
+        size: 80,
+        cell: ({ row }) => {
+            return (
+                <time dateTime={row.original.created_at} title={row.original.created_at} className="text-right">
+                    {formatDateToInternationalFormat(row.original.created_at)}
+                </time>
+            );
+        }
+    }
+];
+
 export const ConnectionList: React.FC = () => {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
@@ -135,72 +190,6 @@ export const ConnectionList: React.FC = () => {
         return data?.flatMap((d) => d.data) || [];
     }, [data]);
 
-    const columns = useMemo<ColumnDef<ApiConnection>[]>(() => {
-        return [
-            {
-                accessorKey: 'id',
-                header: 'Customer',
-                size: 300,
-                cell: ({ row }) => {
-                    const data = row.original;
-                    return (
-                        <Link to={`/${env}/connections/${data.provider_config_key}/${data.connection_id}`} className="cursor-pointer">
-                            {data.endUser ? (
-                                <div className="flex gap-3 items-center">
-                                    <AvatarCustom displayName={data.endUser.displayName || data.endUser.email} />
-                                    <div className="flex flex-col">
-                                        <div className="text-white">{data.endUser.displayName ? data.endUser.displayName : data.endUser.email}</div>
-                                        {data.endUser.displayName && <div className="text-dark-500 text-xs font-code">{data.endUser.email}</div>}
-                                    </div>
-                                    {row.original.errors.length > 0 && <ErrorCircle />}
-                                </div>
-                            ) : (
-                                <div className="flex gap-2 items-center">
-                                    <span className="break-words break-all truncate">{data.connection_id}</span>
-                                    {row.original.errors.length > 0 && <ErrorCircle />}
-                                </div>
-                            )}
-                        </Link>
-                    );
-                }
-            },
-            {
-                accessorKey: 'provider_config_key',
-                header: 'Integration',
-                size: 180,
-                cell: ({ row }) => {
-                    return (
-                        <Link to={`/${env}/integrations/${row.original.provider_config_key}`} className="cursor-pointer">
-                            <div className="flex gap-2 items-center">
-                                <IntegrationLogo provider={row.original.provider} height={7} width={7} />
-                                <p className="break-words break-all">{row.original.provider_config_key}</p>
-                            </div>
-                        </Link>
-                    );
-                }
-            },
-            {
-                accessorKey: 'connection_id',
-                header: 'Connection ID',
-                size: 150,
-                cell: ({ row }) => {
-                    return <div className="truncate">{row.original.connection_id}</div>;
-                }
-            },
-            {
-                accessorKey: 'created_at',
-                header: 'Created',
-                size: 100,
-                cell: ({ row }) => {
-                    return (
-                        <time dateTime={row.original.created_at} title={row.original.created_at} className="text-right">
-                            {formatDateToInternationalFormat(row.original.created_at)}
-                        </time>
-                    );
-                }
-            }
-        ];
-    }, [env]);
     const table = useReactTable({
         data: connections || [],
         columns,
@@ -332,7 +321,14 @@ export const ConnectionList: React.FC = () => {
 
                                 {table.getRowModel().rows?.length > 0 &&
                                     table.getRowModel().rows.map((row) => (
-                                        <Table.Row key={row.original.id} data-state={row.getIsSelected() && 'selected'}>
+                                        <Table.Row
+                                            key={row.original.id}
+                                            data-state={row.getIsSelected() && 'selected'}
+                                            className="hover:cursor-pointer"
+                                            onClick={() => {
+                                                navigate(`/${env}/connections/${row.original.provider_config_key}/${row.original.connection_id}`);
+                                            }}
+                                        >
                                             {row.getVisibleCells().map((cell) => (
                                                 <Table.Cell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Cell>
                                             ))}

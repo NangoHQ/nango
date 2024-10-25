@@ -958,7 +958,7 @@ class ConnectionService {
                 '_nango_connections.environment_id': environmentId,
                 '_nango_connections.deleted': false
             })
-            .orderBy('_nango_connections.connection_id');
+            .orderBy('_nango_connections.created_at');
 
         if (search) {
             subQuery
