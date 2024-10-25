@@ -2,11 +2,11 @@ import type { LogContextGetter } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { InternalNango } from './internal-nango.js';
 
-export type WebhookHandler = (
+export type WebhookHandler<T = any> = (
     internalNango: InternalNango,
     integration: ProviderConfig,
     headers: Record<string, any>,
-    body: any,
+    body: T,
     rawBody: string,
     logContextGetter: LogContextGetter
 ) => Promise<WebhookResponse>;
@@ -20,3 +20,13 @@ export type WebhookResponse =
     | undefined;
 
 export type WebhookHandlersMap = Record<string, WebhookHandler>;
+
+export interface AirtableWebhookReference {
+    base: {
+        id: string;
+    };
+    webhook: {
+        id: string;
+    };
+    timestamp: string;
+}
