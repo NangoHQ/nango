@@ -70,7 +70,7 @@ RUN true \
 # Clean src
 RUN true \
   && rm -rf packages/*/src \
-  && rm -rf packages/*/lib \
+  # && rm -rf packages/*/lib will break database migrations because they are not compiled; barely saves a few MBs
   && rm -rf packages/*/public \
   && rm -rf packages/*/node_modules
 

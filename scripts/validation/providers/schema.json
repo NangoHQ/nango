@@ -25,7 +25,7 @@
                 },
                 "auth_mode": {
                     "type": "string",
-                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU", "JWT"]
+                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU", "JWT", "BILL"]
                 },
                 "authorization_method": {
                     "type": "string",
@@ -158,6 +158,10 @@
                                 },
                                 "offset_start_value": {
                                     "type": "number"
+                                },
+                                "offset_calculation_method": {
+                                    "type": "string",
+                                    "enum": ["per-page", "by-response-size"]
                                 },
                                 "response_path": {
                                     "type": "string"

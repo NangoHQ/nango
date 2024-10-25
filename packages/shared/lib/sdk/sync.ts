@@ -130,6 +130,7 @@ interface LinkPagination extends Pagination {
 interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
     offset_start_value?: number;
+    offset_calculation_method?: 'per-page' | 'by-response-size';
 }
 
 interface RetryHeaderConfig {
@@ -168,6 +169,7 @@ export interface AuthModes {
     TBA: 'TBA';
     Tableau: 'TABLEAU';
     Jwt: 'JWT';
+    Bill: 'BILL';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 
@@ -262,6 +264,16 @@ interface JwtCredentials {
     token?: string;
     expires_at?: Date | undefined;
 }
+interface BillCredentials extends CredentialsCommon {
+    type: AuthModes['Bill'];
+    username: string;
+    password: string;
+    organization_id: string;
+    dev_key: string;
+    session_id?: string;
+    user_id?: string;
+    expires_at?: Date | undefined;
+}
 interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
@@ -280,6 +292,7 @@ type AuthCredentials =
     | TbaCredentials
     | TableauCredentials
     | JwtCredentials
+    | BillCredentials
     | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
@@ -302,6 +315,7 @@ interface Connection {
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     credentials: AuthCredentials;
+    end_user_id: number | null;
 }
 
 export class ActionError<T = Record<string, unknown>> extends Error {
@@ -620,6 +634,7 @@ export class NangoAction {
         | TbaCredentials
         | TableauCredentials
         | JwtCredentials
+        | BillCredentials
     > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);

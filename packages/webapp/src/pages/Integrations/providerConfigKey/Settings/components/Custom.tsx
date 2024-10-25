@@ -51,7 +51,7 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
             </InfoBloc>
 
             <div className="flex flex-col gap-10 mt-10">
-                <div className="flex gap-10">
+                <div className="grid grid-cols-2 gap-10">
                     <InfoBloc title="App ID">
                         <Input
                             id="app_id"

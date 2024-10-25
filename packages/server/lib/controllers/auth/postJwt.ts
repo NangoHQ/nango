@@ -1,5 +1,4 @@
 import type { NextFunction } from 'express';
-import tracer from 'dd-trace';
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP, stringifyError } from '@nangohq/utils';
@@ -24,6 +23,8 @@ import {
     connectionTest as connectionTestHook
 } from '../../hooks/hooks.js';
 import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { linkConnection } from '../../services/endUser.service.js';
+import db from '@nangohq/database';
 
 const bodyValidation = z
     .object({
@@ -81,7 +82,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, authType } = res.locals;
     const { privateKeyId = '', issuerId = '', privateKey } = val.data as PostPublicJwtAuthorization['Body'];
     const { connection_id: receivedConnectionId, params, hmac }: PostPublicJwtAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicJwtAuthorization['Params'] = paramVal.data;
@@ -145,9 +146,6 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             return;
         }
 
-        await logCtx.info('JWT connection creation was successful');
-        await logCtx.success();
-
         const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
         const connectionResponse = await connectionTestHook(
@@ -157,8 +155,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             connectionId,
             providerConfigKey,
             environment.id,
-            connectionConfig,
-            tracer
+            connectionConfig
         );
 
         if (connectionResponse.isErr()) {
@@ -170,9 +167,6 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             return;
         }
 
-        await logCtx.info('JWT connection creation was successful');
-        await logCtx.success();
-
         const [updatedConnection] = await connectionService.upsertJwtConnection({
             connectionId,
             providerConfigKey,
@@ -183,23 +177,35 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             environment,
             account
         });
-
-        if (updatedConnection) {
-            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-            void connectionCreatedHook(
-                {
-                    connection: updatedConnection.connection,
-                    environment,
-                    account,
-                    auth_mode: 'JWT',
-                    operation: updatedConnection.operation
-                },
-                config.provider,
-                logContextGetter,
-                undefined,
-                logCtx
-            );
+        if (!updatedConnection) {
+            res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
+            await logCtx.error('Failed to create connection');
+            await logCtx.failed();
+            return;
         }
+
+        if (authType === 'connectSession') {
+            const session = res.locals.connectSession;
+            await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+        }
+
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+        await logCtx.info('JWT connection creation was successful');
+        await logCtx.success();
+
+        void connectionCreatedHook(
+            {
+                connection: updatedConnection.connection,
+                environment,
+                account,
+                auth_mode: 'JWT',
+                operation: updatedConnection.operation
+            },
+            config.provider,
+            logContextGetter,
+            undefined,
+            logCtx
+        );
 
         res.status(200).send({ providerConfigKey, connectionId });
     } catch (err) {

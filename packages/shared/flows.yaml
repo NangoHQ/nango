@@ -1,4 +1,124 @@
 integrations:
+    airtable:
+        syncs:
+            tables:
+                runs: every day
+                description: >
+                    Lists all tables with their schema for all bases with a reference to
+                    the base id that
+
+                    the table belongs to
+                output: Table
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /tables
+                scopes:
+                    - schema.bases:read
+            bases:
+                runs: every day
+                description: List all bases
+                output: Base
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /bases
+                scopes:
+                    - schema.bases:read
+        actions:
+            create-webhook:
+                description: Create a webhook for a particular base
+                input: CreateWebhook
+                output: WebhookCreated
+                endpoint: POST /webhooks
+                scopes:
+                    - webhook:manage
+            list-webhooks:
+                description: List all the webhooks available for a base
+                output: WebhookResponse
+                input: BaseId
+                endpoint: GET /webhooks
+                scopes:
+                    - webhook:manage
+            delete-webhook:
+                description: Delete a webhook
+                endpoint: DELETE /webhooks
+                input: DeleteWebhook
+                output: SuccessResponse
+                scopes:
+                    - webhook:manage
+        models:
+            SuccessResponse:
+                success: boolean
+            Table:
+                baseId: string
+                baseName: string
+                id: string
+                name: string
+                views: TableView[]
+                fields: TableField[]
+                primaryFieldId: string
+            TableView:
+                id: string
+                name: string
+                type: string
+            TableField:
+                id: string
+                description: string
+                name: string
+                type: string
+                options?:
+                    __string: any
+            Base:
+                id: string
+                name: string
+                permissionLevel: none | read | comment | edit | create
+            BaseId:
+                baseId: string
+            WebhookResponse:
+                webhooks: Webhook[]
+            Webhook:
+                id: string
+                areNotificationsEnabled: boolean
+                cursorForNextPayload: number
+                isHookEnabled: boolean
+                lastSuccessfulNotificationTime: string | null
+                expirationTime?: string | undefined
+                specification: WebhookSpecification
+                lastNotificationResult: NotificationResult | null
+            NotificationResult:
+                success: boolean
+                error?:
+                    message: string
+                completionTimestamp?: string
+                durationMs?: number
+                retryNumber?: number
+                willBeRetried?: boolean
+            WebhookSpecification:
+                options:
+                    filters:
+                        recordChangeScope?: string
+                        dataTypes: string[]
+                        changeTypes?: string[]
+                        fromSources?: string[]
+                        sourceOptions?:
+                            formPageSubmission?:
+                                pageId: string
+                            formSubmission?:
+                                viewId: string
+                        watchDataInFieldIds?: string[]
+                        watchSchemasOfFieldIds?: string[]
+                    includes?:
+                        includeCellValuesInFieldIds?: string[] | all
+                        includePreviousCellValues:?: boolean
+                        includePreviousFieldDefinitions?: boolean
+            CreateWebhook:
+                baseId: string
+                specification: WebhookSpecification
+            WebhookCreated:
+                id: string
+                expirationTime: string
+            DeleteWebhook:
+                baseId: string
+                webhookId: string
     algolia:
         actions:
             create-contacts:
@@ -607,6 +727,90 @@ integrations:
                 id: string
             BamboohrResponseStatus:
                 status: string
+    bill:
+        actions:
+            create-user:
+                description: Creates a user in Bill.
+                output: User
+                endpoint: POST /users
+                input: BillCreateUser
+            disable-user:
+                description: Archive an existing user in Bill
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Bill sandbox
+                output: User
+                sync_type: incremental
+                endpoint: GET /users
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            BillCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                roleId?: string
+                acceptTermsOfService?: boolean
+    bill-sandbox:
+        actions:
+            create-user:
+                description: Creates a user in Bill.
+                output: User
+                endpoint: POST /users
+                input: BillCreateUser
+            disable-user:
+                description: Archive an existing user in Bill
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Bill sandbox
+                output: User
+                sync_type: incremental
+                endpoint: GET /users
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            BillCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                roleId?: string
+                acceptTermsOfService?: boolean
     box:
         actions:
             create-user:
@@ -1349,6 +1553,47 @@ integrations:
                 body:
                     storage: object
                     atlas_doc_format: object
+    datadog:
+        actions:
+            create-user:
+                description: Creates a user in Datadog.
+                output: User
+                endpoint: POST /users
+                input: CreateUser
+                scopes:
+                    - user_access_invite
+            disable-user:
+                description: Disables a user in Datadog
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - user_access_manage
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Datadog.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - user_access_read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
     discourse:
         syncs:
             active-users:
@@ -1533,6 +1778,47 @@ integrations:
                     language?: string
                     timeZone?: string
                 userStatus?: string
+    dropbox:
+        actions:
+            create-user:
+                description: Creates a user in Dropbox. Requires Dropbox Business.
+                output: User
+                endpoint: POST /users
+                input: CreateUser
+                scopes:
+                    - members.write
+            delete-user:
+                description: Deletes a user in Dropbox. Requires Dropbox Business.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - members.delete
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Dropbox. Requires Dropbox Business.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - members.read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
     evaluagent:
         syncs:
             users:
@@ -1776,7 +2062,116 @@ integrations:
                 track_deletes: true
                 runs: every day
                 output: Article
+            contacts:
+                description: |
+                    Fetches the list of contacts.
+                endpoint: GET /contacts
+                sync_type: incremental
+                runs: every day
+                output: Contact
+            tickets:
+                description: |
+                    Fetches the freshdesk tickets
+                endpoint: GET /tickets
+                sync_type: incremental
+                runs: every day
+                output: Ticket
+            users:
+                description: |
+                    Fetches the list of users
+                endpoint: GET /users
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: User
+        actions:
+            create-contact:
+                description: Creates a user in FreshDesk
+                output: Contact
+                endpoint: POST /contacts
+                input: CreateContact
+            delete-contact:
+                description: Deletes a contact in FreshDesk
+                endpoint: DELETE /contacts
+                output: SuccessResponse
+                input: IdEntity
+            create-user:
+                description: Creates a user in FreshDesk
+                output: User
+                endpoint: POST /users
+                input: FreshdeskCreateUser
+            delete-user:
+                description: Deletes a user in FreshDesk
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
         models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            FreshdeskCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                ticket_scope?: number
+                ticketScope?: globalAccess | groupAccess | restrictedAccess
+                occasional?: boolean
+                signature?: string
+                skill_ids?: number[]
+                group_ids?: number[]
+                role_ids?: number[]
+                agent_type?: number
+                agentType?: support | field | collaborator
+                language?: string
+                time_zone?: string
+                focus_mode?: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            Contact:
+                id: string
+                active: boolean
+                email: string
+                name: string
+                createdAt: string
+                updatedAt: string
+                companyId?: string | undefined
+                phone?: string | undefined | null
+                mobile?: string | undefined | null
+                jobTitle?: string | undefined | null
+            CreateContact:
+                name: string
+                email?: string
+                phone?: string
+                mobile?: string
+                twitter_id?:
+                    type: string
+                    unique: true
+                    required: true
+                unique_external_id?:
+                    type: string
+                    unique: true
+                    required: true
+                other_emails?: array
+                company_id?: number
+                view_all_tickets?: boolean
+                other_companies?: array
+                address?: string
+                avatar?: object
+                custom_fields?: object
+                description?: string
+                job_title?: string
+                language?: string
+                tags?: array
+                time_zone?: string
+                lookup_parameter?: string
             Timestamps:
                 created_at: string
                 updated_at: string
@@ -1810,6 +2205,70 @@ integrations:
                 meta_title?: string | undefined
                 meta_description?: string | undefined
                 meta_keywords?: string | undefined
+            Ticket:
+                id: string
+                type: string
+                priority: number
+                request_id: number
+                response_id: number
+                source: number
+                subject: string
+                to_emails: string[] | null
+                created_at: string
+                updated_at: string
+                is_escalated: boolean
+    front:
+        syncs:
+            list-conversations:
+                runs: every day
+                description: List the conversations in the company in reverse chronological order.
+                output: Conversation
+                endpoint: GET /conversations
+                track_deletes: true
+                sync_type: full
+        models:
+            Conversation:
+                id: string
+                subject: string
+                status: archived | unassigned | deleted | assigned
+                assignee: ConversationAssignee | null
+                recipient: ConversationRecipient | null
+                tags:
+                    - id: string
+                      name: string
+                      description: string | null
+                      highlight: string | null
+                      is_private: boolean
+                      is_visible_in_conversation_lists: boolean
+                      created_at: string
+                      updated_at: string
+                links:
+                    - id: string
+                      name: string
+                      type: string
+                      external_url: string
+                      custom_fields: object
+                custom_fields: object
+                created_at: string
+                waiting_since: string
+                is_private: boolean
+                scheduled_reminders:
+                    - created_at: string
+                      scheduled_at: string
+                      updated_at: string
+            ConversationAssignee:
+                id: string
+                email: string
+                first_name: string
+                last_name: string
+                is_admin: boolean
+                is_available: boolean
+                is_blocked: boolean
+                custom_fields: object
+            ConversationRecipient:
+                name: string
+                handle: string
+                role: from | to | cc | bcc
     github:
         syncs:
             issues:
@@ -2807,6 +3266,16 @@ integrations:
                 sync_type: full
                 track_deletes: true
                 endpoint: GET /deals
+            products:
+                runs: every day
+                description: |
+                    Fetches a list of products from Hubspot
+                output: Product
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /products
+                scopes:
+                    - e-commerce
             owners:
                 runs: every day
                 description: |
@@ -2865,6 +3334,21 @@ integrations:
                 input: InputProperty
                 output: PropertyResponse
                 endpoint: GET /properties
+            create-property:
+                description: Create a property in Hubspot
+                input: CreatePropertyInput
+                output: CreatedProperty
+                endpoint: POST /properties
+                scopes:
+                    - oauth
+                    - crm.schemas.orders.write
+                    - crm.objects.orders.write
+                    - crm.schemas.contacts.write
+                    - crm.schemas.carts.write
+                    - crm.schemas.deals.write
+                    - crm.objects.users.write
+                    - crm.schemas.companies.write
+                    - crm.objects.carts.write
             create-deal:
                 description: Creates a single deal in Hubspot
                 output: CreateUpdateDealOutput
@@ -2890,6 +3374,14 @@ integrations:
                 scopes:
                     - crm.objects.deals.write
                     - oauth
+            fetch-pipelines:
+                description: Fetch all pipelines for an object type. Defaults to deals
+                input: OptionalObjectType
+                output: PipelineOutput
+                endpoint: GET /pipelines
+                scopes:
+                    - oauth
+                    - crm.objects.deals.read
             create-user:
                 description: Creates a single user in Hubspot
                 output: CreatedUser
@@ -3025,6 +3517,11 @@ integrations:
                 success: boolean
             Id:
                 id: string
+            Timestamps:
+                updatedAt: string
+                createdAt: string
+            OptionalObjectType:
+                objectType?: string
             InputProperty:
                 name: string
             PropertyResponse:
@@ -3057,6 +3554,65 @@ integrations:
                 value: string
                 displayOrder: number
                 hidden: boolean
+            CreatePropertyInput:
+                objectType: string
+                data: CustomProperty
+            CustomProperty:
+                hidden?: boolean
+                displayOrder?: number
+                description?: string
+                label: string
+                type: string
+                formField?: boolean
+                groupName: string
+                referencedObjectType?: string
+                name: string
+                options?: CustomPropertyOption[]
+                calculationFormula?: string
+                hasUniqueValue?: boolean
+                fieldType: string
+                externalOptions?: boolean
+            CustomPropertyOption:
+                hidden: boolean
+                displayOrder?: number
+                description?: string
+                label: string
+                value: string
+            CreatedProperty:
+                createdUserId: string
+                hidden: boolean
+                modificationMetadata:
+                    readOnlyOptions?: boolean
+                    readOnlyValue: boolean
+                    readOnlyDefinition: boolean
+                    archivable: boolean
+                displayOrder: number
+                description: string
+                showCurrencySymbol?: boolean
+                label: string
+                type: string
+                hubspotDefined?: boolean
+                formField: boolean
+                dataSensitivity?: string
+                createdAt: string
+                archivedAt?: string
+                archived: boolean
+                groupName: string
+                referencedObjectType?: string
+                name: string
+                options:
+                    - hidden: boolean
+                      displayOrder: number
+                      description: string
+                      label: string
+                      value: string
+                calculationFormula?: string
+                hasUniqueValue: boolean
+                fieldType: string
+                updatedUserId: string
+                calculated: boolean
+                externalOptions: boolean
+                updatedAt: string
             RoleResponse:
                 results: Role[]
             Role:
@@ -3379,6 +3935,41 @@ integrations:
             CustomObject:
                 id: string
                 __string: any
+            Product:
+                updatedAt: string
+                createdAt: string
+                id: string
+                amount: number | null
+                description: string | null
+                discount: number | null
+                sku: string | null
+                url: string | null
+                name: string
+                price: string
+                quantity: number | null
+                recurringBillingFrequency: number | null
+                tax: null | number
+            PipelineOutput:
+                pipelines: Pipeline[]
+            Pipeline:
+                updatedAt: string
+                createdAt: string
+                label: string
+                displayOrder: number
+                id: string
+                archived: boolean
+                stages: Stage[]
+            Stage:
+                updatedAt: string
+                createdAt: string
+                label: string
+                displayOrder: number
+                metadata:
+                    isClosed: boolean
+                    probability: string
+                id: string
+                archived: boolean
+                writePermissions: string
     instantly:
         actions:
             set-campaign-name:
@@ -3400,6 +3991,16 @@ integrations:
                 input: IdEntity
                 endpoint: GET /single-article
                 output: Article
+            create-user:
+                description: Creates a user in Intercom
+                input: IntercomCreateUser
+                endpoint: POST /users
+                output: User
+            delete-user:
+                description: Deletes a user in Intercom
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
         syncs:
             conversations:
                 runs: every 6 hours
@@ -3431,9 +4032,18 @@ integrations:
                 track_deletes: true
                 version: 1.0.0
                 endpoint: GET /articles
+            users:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of users from Intercom
+                output: User
+                sync_type: incremental
+                endpoint: GET /users
         models:
             IdEntity:
                 id: string
+            SuccessResponse:
+                success: boolean
             Contact:
                 id: string
                 workspace_id: string
@@ -3536,6 +4146,26 @@ integrations:
                 pt-BR: ArticleContent | null
                 zh-CN: ArticleContent | null
                 zh-TW: ArticleContent | null
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            IntercomCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                external_id?: string
+                phone?: string
+                avatar?: string
+                signed_up_at?: number
+                last_seen_at?: number
+                owner_id?: string
+                unsubscribed_from_emails?: boolean
     jira:
         syncs:
             issues:
@@ -4649,6 +5279,89 @@ integrations:
                 firstName: string
                 lastName: string
                 isBot: boolean
+    okta:
+        actions:
+            create-user:
+                description: Creates a new user in your Okta org without credentials.
+                output: User
+                endpoint: POST /user
+                input: OktaCreateUser
+                scopes:
+                    - okta.users.manage
+            add-group:
+                description: Adds a new group with the OKTA_GROUP type to your org
+                output: Group
+                endpoint: POST /group
+                input: OktaAddGroup
+                scopes:
+                    - okta.groups.manage
+            add-user-group:
+                description: Assigns a user to a group with the OKTA_GROUP type
+                output: SuccessResponse
+                endpoint: PUT /user-group
+                input: OktaAssignRemoveUserGroup
+                scopes:
+                    - okta.groups.manage
+            remove-user-group:
+                description: Unassigns a user from a group with the OKTA_GROUP type
+                output: SuccessResponse
+                endpoint: DELETE /user-group
+                input: OktaAssignRemoveUserGroup
+                scopes:
+                    - okta.groups.manage
+        models:
+            ActionResponseError:
+                message: string
+            OktaAddGroup:
+                description?: string | undefined
+                name: string
+            OktaUserGroupProfile:
+                description: string | null
+                name: string
+            OktaActiveDirectoryGroupProfile:
+                description: string
+                dn: string
+                externalId: string
+                name: string
+                samAccountName: string
+                windowsDomainQualifiedName: string
+            Group:
+                id: string
+                created: string
+                lastMembershipUpdated: string
+                lastUpdated: string
+                objectClass: string[]
+                type: APP_GROUP | BUILT_IN | OKTA_GROUP
+                profile: OktaUserGroupProfile | OktaActiveDirectoryGroupProfile
+            OktaAssignRemoveUserGroup:
+                groupId: string
+                userId: string
+            SuccessResponse:
+                success: boolean
+            OktaCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                login: string
+                mobilePhone?: string | undefined | null
+            User:
+                id: string
+                status: string
+                created: string
+                activated: string
+                statusChanged: string
+                lastLogin: string | null
+                lastUpdated: string
+                passwordChanged: string | null
+                type:
+                    id: string
+                profile:
+                    firstName: string | null
+                    lastName: string | null
+                    mobilePhone: string | null
+                    secondEmail: string | null
+                    login: string
+                    email: string
     outlook:
         syncs:
             emails:
@@ -4678,7 +5391,7 @@ integrations:
                 backfillPeriodMs: number
             OutlookEmail:
                 id: string
-                sender: string
+                sender?: string
                 recipients?: string | undefined
                 date: string
                 subject: string

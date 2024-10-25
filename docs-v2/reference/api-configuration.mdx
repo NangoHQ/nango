@@ -193,7 +193,7 @@ slack:
 </ResponseField>
 
 <ResponseField name="auth_mode" type="string" >
-    The authentication mode. Must be one of: "API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU", "JWT".
+    The authentication mode. Must be one of: "API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU", "JWT", "BILL".
 </ResponseField>
 
 <ResponseField name="auth" type="object">
@@ -322,6 +322,9 @@ slack:
                 </ResponseField>
                 <ResponseField name="offset_name_in_request" type="string">
                     The name of the offset parameter in the request.
+                </ResponseField>
+                <ResponseField name="offset_calculation_method" type="string">
+                    The method to calculate the offset in the request. Must be one of: "per-page" or "by-response-size". Optional parameter that defaults to "by-response-size".
                 </ResponseField>
                 <ResponseField name="offset_start_value" type="number">
                     The starting value for the offset.

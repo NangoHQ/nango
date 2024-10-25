@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import tracer from 'dd-trace';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP } from '@nangohq/utils';
 import { analytics, configService, AnalyticsTypes, getConnectionConfig, connectionService, getProvider } from '@nangohq/shared';
@@ -8,6 +7,8 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionTest as connectionTestHook } from '../../hooks/hooks.js';
 import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { linkConnection } from '../../services/endUser.service.js';
+import db from '@nangohq/database';
 
 const bodyValidation = z
     .object({
@@ -59,7 +60,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, authType } = res.locals;
 
     const body: PostPublicTbaAuthorization['Body'] = val.data;
 
@@ -149,8 +150,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         connectionId,
         providerConfigKey,
         environment.id,
-        connectionConfig,
-        tracer
+        connectionConfig
     );
 
     if (connectionResponse.isErr()) {
@@ -163,9 +163,6 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
 
         return;
     }
-
-    await logCtx.info('Tba connection creation was successful');
-    await logCtx.success();
 
     const [updatedConnection] = await connectionService.upsertTbaConnection({
         connectionId,
@@ -181,23 +178,35 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         environment,
         account
     });
-
-    if (updatedConnection) {
-        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-        void connectionCreatedHook(
-            {
-                connection: updatedConnection.connection,
-                environment,
-                account,
-                auth_mode: 'TBA',
-                operation: updatedConnection.operation
-            },
-            config.provider,
-            logContextGetter,
-            undefined,
-            logCtx
-        );
+    if (!updatedConnection) {
+        res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
+        await logCtx.error('Failed to create connection');
+        await logCtx.failed();
+        return;
     }
+
+    if (authType === 'connectSession') {
+        const session = res.locals.connectSession;
+        await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+    }
+
+    await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+    await logCtx.info('Tba connection creation was successful');
+    await logCtx.success();
+
+    void connectionCreatedHook(
+        {
+            connection: updatedConnection.connection,
+            environment,
+            account,
+            auth_mode: 'TBA',
+            operation: updatedConnection.operation
+        },
+        config.provider,
+        logContextGetter,
+        undefined,
+        logCtx
+    );
 
     res.status(200).send({ providerConfigKey, connectionId });
 });

@@ -3,7 +3,7 @@ import { cva } from 'class-variance-authority';
 import type { VariantProps } from 'class-variance-authority';
 import { cn } from '../../utils/utils';
 
-const alertVariants = cva('relative w-full rounded-lg border px-3 py-1.5 text-sm flex gap-2 items-center', {
+const alertVariants = cva('relative w-full rounded-lg border px-3 py-1.5 text-sm flex gap-2 items-center flex items-center', {
     variants: {
         variant: {
             default: 'bg-blue-base-35 border-blue-base text-blue-base',
