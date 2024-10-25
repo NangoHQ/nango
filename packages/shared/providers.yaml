@@ -1542,7 +1542,7 @@ dixa:
         apiType:
             type: string
             title: Api Type
-            description: The Api type to your requests
+            description: The Api type for your requests
             pattern: '^dev\|exports$'
             example: 'dev|exports'
 
