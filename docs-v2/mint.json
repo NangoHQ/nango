@@ -353,6 +353,7 @@
                 "integrations/all/canny",
                 "integrations/all/certn",
                 "integrations/all/chargebee",
+                "integrations/all/chattermill",
                 "integrations/all/checkr-partner",
                 "integrations/all/checkout-com",
                 "integrations/all/circle-so",

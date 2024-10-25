@@ -994,6 +994,33 @@ chargebee:
             example: domain
             suffix: .chargebee.com
 
+chattermill:
+    display_name: Chattermill
+    categories:
+        - support
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.chattermill.com
+        headers:
+            Authorization: Bearer ${apiKey}
+            Accept: application/json
+            Content-Type: application/json
+    docs: https://docs.nango.dev/integrations/all/chattermill
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Chattermill account
+    connection_config:
+        subdomain:
+            type: string
+            title: Chattermill subdomain
+            description: The subdomain for your api requests
+            pattern: '^(app|api|backend)$'
+            example: 'app|api|backend'
+            suffix: .chattermill.com
+
 checkr-partner:
     display_name: Checkr Partner
     categories:
