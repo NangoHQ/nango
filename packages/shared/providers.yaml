@@ -248,6 +248,28 @@ anthropic:
             title: API Key
             description: The API key for your Anthropic account
 
+apaleo:
+    display_name: Apaleo
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://identity.apaleo.com/connect/authorize
+    token_url: https://identity.apaleo.com/connect/token
+    scope_separator: ' '
+    token_params:
+        grant_type: authorization_code
+    authorization_params:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.apaleo.com
+        headers:
+            Content-Type: application/json
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/apaleo
+
 apollo:
     display_name: Apollo
     categories:
