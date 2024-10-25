@@ -1553,6 +1553,47 @@ integrations:
                 body:
                     storage: object
                     atlas_doc_format: object
+    datadog:
+        actions:
+            create-user:
+                description: Creates a user in Datadog.
+                output: User
+                endpoint: POST /users
+                input: CreateUser
+                scopes:
+                    - user_access_invite
+            disable-user:
+                description: Disables a user in Datadog
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - user_access_manage
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Datadog.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+                scopes:
+                    - user_access_read
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
     discourse:
         syncs:
             active-users:
