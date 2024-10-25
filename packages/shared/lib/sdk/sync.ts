@@ -130,6 +130,7 @@ interface LinkPagination extends Pagination {
 interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
     offset_start_value?: number;
+    offset_calculation_method?: 'per-page' | 'by-response-size';
 }
 
 interface RetryHeaderConfig {
