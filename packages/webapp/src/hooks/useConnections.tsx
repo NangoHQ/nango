@@ -4,7 +4,7 @@ import { apiFetch, swrFetcher } from '../utils/api';
 import type { DeleteConnection } from '@nangohq/types';
 
 export function useConnections(env: string) {
-    const { data, error, mutate } = useSWR<{ connections: ConnectionList[] }>(`/api/v1/connection?env=${env}`, swrFetcher, {
+    const { data, error, mutate } = useSWR<{ connections: ConnectionList[] }>(`/api/v1/connections?env=${env}`, swrFetcher, {
         refreshInterval: 10000,
         keepPreviousData: false
     });
@@ -23,7 +23,7 @@ export function useConnections(env: string) {
 }
 
 export async function apiDeleteConnection(params: DeleteConnection['Params'], query: DeleteConnection['Querystring']) {
-    const res = await apiFetch(`/api/v1/connection/${params.connectionId}?${new URLSearchParams(query).toString()}`, {
+    const res = await apiFetch(`/api/v1/connections/${params.connectionId}?${new URLSearchParams(query).toString()}`, {
         method: 'DELETE'
     });
 

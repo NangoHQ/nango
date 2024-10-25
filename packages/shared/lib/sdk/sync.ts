@@ -130,6 +130,7 @@ interface LinkPagination extends Pagination {
 interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
     offset_start_value?: number;
+    offset_calculation_method?: 'per-page' | 'by-response-size';
 }
 
 interface RetryHeaderConfig {
@@ -322,6 +323,7 @@ interface Connection {
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     credentials: AuthCredentials;
+    end_user_id: number | null;
 }
 
 export class ActionError<T = Record<string, unknown>> extends Error {

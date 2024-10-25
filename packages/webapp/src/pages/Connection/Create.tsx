@@ -261,7 +261,7 @@ export default function IntegrationCreate() {
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
-                void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
+                void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connections'), undefined);
                 navigate(`/${env}/connections`, { replace: true });
             })
             .catch((err: unknown) => {

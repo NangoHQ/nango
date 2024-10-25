@@ -42,10 +42,14 @@ if (validator.errors) {
 }
 
 const invalidInterpolation = /(?<!(\$|]))\{/g;
-const match = [...providersYaml.toString().matchAll(invalidInterpolation)];
-if (match.length > 0) {
-    console.error(chalk.red('error'), 'providers.yaml contains interpolation errors. A `{` does not have a `$` in front of it.');
-    process.exit(1);
+for (const [providerKey, provider] of Object.entries(providersJson)) {
+    const { credentials, connection_config, ...providerWithoutSensitive } = provider;
+    const strippedProviderYaml = jsYaml.dump({ [providerKey]: providerWithoutSensitive });
+    const match = [...strippedProviderYaml.matchAll(invalidInterpolation)];
+    if (match.length > 0) {
+        console.error(chalk.red('error'), 'Provider', chalk.blue(providerKey), `contains interpolation errors. A \`{\` does not have a \`$\` in front of it.`);
+        process.exit(1);
+    }
 }
 
 console.log('✅ JSON schema valid');

@@ -360,7 +360,7 @@ class ConnectionService {
         const connection = await db.knex
             .from<StoredConnection>(`_nango_connections`)
             .insert(
-                encryptionManager.encryptApiConnection({
+                encryptionManager.encryptConnection({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
                     config_id: config_id as number,
@@ -903,6 +903,36 @@ class ConnectionService {
             .select('*')
             .where({ environment_id: environmentId })
             .whereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
+
+        if (!result || result.length == 0) {
+            return null;
+        }
+
+        return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
+    }
+
+    public async findConnectionsByMetadataValue({
+        metadataProperty,
+        payloadIdentifier,
+        configId,
+        environmentId
+    }: {
+        metadataProperty: string;
+        payloadIdentifier: string;
+        configId: number | undefined;
+        environmentId: number;
+    }): Promise<Connection[] | null> {
+        if (!configId) {
+            return null;
+        }
+
+        const result = await db.knex
+            .from<StoredConnection>(`_nango_connections`)
+            .select('*')
+            .where({ environment_id: environmentId, config_id: configId })
+            // escape the question mark so it doesn't try to bind it as a parameter
+            .where(db.knex.raw(`metadata->? \\? ?`, [metadataProperty, payloadIdentifier]))
+            .andWhere('deleted', false);
 
         if (!result || result.length == 0) {
             return null;

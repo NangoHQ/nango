@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 import type { GetConnection, IntegrationConfig } from '@nangohq/types';
 import { connectionService, configService, errorNotificationService } from '@nangohq/shared';
-import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
+import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
-import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
+import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 
 const queryStringValidation = z
     .object({
