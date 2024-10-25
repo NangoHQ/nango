@@ -3254,6 +3254,15 @@ malwarebytes:
         grant_type: client_credentials
     proxy:
         base_url: https://api.malwarebytes.com
+        headers:
+            accountId: ${connectionConfig.accountId}
+    connection_config:
+        accountId:
+            type: string
+            title: Account Id
+            description: The Nebula account id
+            pattern: '[\da-fA-F]{8}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{12}$'
+            example: 9256034b-7967-4253-a5d9-260663e4fa4f
     docs: https://docs.nango.dev/integrations/all/malwarebytes
 
 medallia:
