@@ -2835,6 +2835,24 @@ keap:
         base_url: https://api.infusionsoft.com
     docs: https://docs.nango.dev/integrations/all/keap
 
+keeper:
+    display_name: Keeper
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://keepersecurity.com
+    docs: https://docs.nango.dev/integrations/all/keeper
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your node keeper account
+            pattern: '^[A-Za-z0-9+/=]+$'
+            example: 'J9b7kgdL2gf14d5F9p67zYXVrTZPTMEnl3/EmwwI9K2='
+
 klipfolio:
     display_name: Klipfolio
     categories:
