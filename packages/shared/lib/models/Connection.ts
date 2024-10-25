@@ -7,6 +7,7 @@ export type ConnectionConfig = Record<string, any>;
 export interface BaseConnection extends TimestampsAndDeleted {
     id?: number;
     config_id?: number;
+    end_user_id: number | null;
     provider_config_key: string; // TO deprecate
     connection_id: string;
     connection_config: ConnectionConfig;
