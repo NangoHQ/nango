@@ -224,6 +224,7 @@ export const connectionTest = async (
 
     const connection: Connection = {
         id: -1,
+        end_user_id: null,
         provider_config_key: providerConfigKey,
         connection_id: connectionId,
         credentials,

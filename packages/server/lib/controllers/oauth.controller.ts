@@ -47,6 +47,9 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { errorToObject, stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
+import { linkConnection } from '../services/endUser.service.js';
+import db from '@nangohq/database';
+import { getConnectSession } from '../services/connectSession.service.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -146,6 +149,7 @@ class OAuthController {
                 authMode: provider.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1(),
+                connectSessionId: res.locals.connectSession ? res.locals.connectSession.id : null,
                 connectionConfig,
                 environmentId,
                 webSocketClientId: wsClientId,
@@ -242,7 +246,7 @@ class OAuthController {
     }
 
     public async oauth2RequestCC(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { environment, account } = res.locals;
+        const { environment, account, authType } = res.locals;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -361,9 +365,6 @@ class OAuthController {
                 return;
             }
 
-            await logCtx.info('OAuth2 client credentials creation was successful');
-            await logCtx.success();
-
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
@@ -373,23 +374,34 @@ class OAuthController {
                 environmentId: environment.id,
                 accountId: account.id
             });
-
-            if (updatedConnection) {
-                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-                void connectionCreatedHook(
-                    {
-                        connection: updatedConnection.connection,
-                        environment,
-                        account,
-                        auth_mode: 'OAUTH2_CC',
-                        operation: updatedConnection.operation
-                    },
-                    config.provider,
-                    logContextGetter,
-                    undefined,
-                    logCtx
-                );
+            if (!updatedConnection) {
+                res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
+                await logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                return;
             }
+
+            if (authType === 'connectSession') {
+                const session = res.locals.connectSession;
+                await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+            }
+
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+            await logCtx.info('OAuth2 client credentials creation was successful');
+            await logCtx.success();
+            void connectionCreatedHook(
+                {
+                    connection: updatedConnection.connection,
+                    environment,
+                    account,
+                    auth_mode: 'OAUTH2_CC',
+                    operation: updatedConnection.operation
+                },
+                config.provider,
+                logContextGetter,
+                undefined,
+                logCtx
+            );
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
@@ -1078,6 +1090,22 @@ class OAuthController {
                 environmentId: session.environmentId,
                 accountId: account.id
             });
+            if (!updatedConnection) {
+                await logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+            }
+
+            if (session.connectSessionId) {
+                const connectSession = await getConnectSession(db.knex, { id: session.connectSessionId, accountId: account.id, environmentId: environment.id });
+                if (connectSession.isErr()) {
+                    await logCtx.error('Failed to get session');
+                    await logCtx.failed();
+                    return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                }
+
+                await linkConnection(db.knex, { endUserId: connectSession.value.endUserId, connection: updatedConnection.connection });
+            }
 
             await logCtx.debug(
                 `OAuth connection successful${provider.auth_mode === 'CUSTOM' && !installationId ? ' and request for app approval is pending' : ''}`,
@@ -1090,25 +1118,23 @@ class OAuthController {
                 }
             );
 
-            if (updatedConnection) {
-                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-                // don't initiate a sync if custom because this is the first step of the oauth flow
-                const initiateSync = provider.auth_mode === 'CUSTOM' ? false : true;
-                const runPostConnectionScript = true;
-                void connectionCreatedHook(
-                    {
-                        connection: updatedConnection.connection,
-                        environment,
-                        account,
-                        auth_mode: provider.auth_mode,
-                        operation: updatedConnection.operation
-                    },
-                    session.provider,
-                    logContextGetter,
-                    { initiateSync, runPostConnectionScript },
-                    logCtx
-                );
-            }
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+            // don't initiate a sync if custom because this is the first step of the oauth flow
+            const initiateSync = provider.auth_mode === 'CUSTOM' ? false : true;
+            const runPostConnectionScript = true;
+            void connectionCreatedHook(
+                {
+                    connection: updatedConnection.connection,
+                    environment,
+                    account,
+                    auth_mode: provider.auth_mode,
+                    operation: updatedConnection.operation
+                },
+                session.provider,
+                logContextGetter,
+                { initiateSync, runPostConnectionScript },
+                logCtx
+            );
 
             if (provider.auth_mode === 'CUSTOM' && installationId) {
                 pending = false;
@@ -1250,6 +1276,26 @@ class OAuthController {
                     environmentId: environment.id,
                     accountId: account.id
                 });
+                if (!updatedConnection) {
+                    await logCtx.error('Failed to create connection');
+                    await logCtx.failed();
+                    return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                }
+
+                if (session.connectSessionId) {
+                    const connectSession = await getConnectSession(db.knex, {
+                        id: session.connectSessionId,
+                        accountId: account.id,
+                        environmentId: environment.id
+                    });
+                    if (connectSession.isErr()) {
+                        await logCtx.error('Failed to get session');
+                        await logCtx.failed();
+                        return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    }
+
+                    await linkConnection(db.knex, { endUserId: connectSession.value.endUserId, connection: updatedConnection.connection });
+                }
 
                 await logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
 
@@ -1261,28 +1307,26 @@ class OAuthController {
                     authMode: String(provider.auth_mode)
                 });
 
-                if (updatedConnection) {
-                    await logCtx.enrichOperation({
-                        connectionId: updatedConnection.connection.id!,
-                        connectionName: updatedConnection.connection.connection_id
-                    });
-                    // syncs not support for oauth1
-                    const initiateSync = false;
-                    const runPostConnectionScript = true;
-                    void connectionCreatedHook(
-                        {
-                            connection: updatedConnection.connection,
-                            environment,
-                            account,
-                            auth_mode: provider.auth_mode,
-                            operation: updatedConnection.operation
-                        },
-                        session.provider,
-                        logContextGetter,
-                        { initiateSync, runPostConnectionScript },
-                        logCtx
-                    );
-                }
+                await logCtx.enrichOperation({
+                    connectionId: updatedConnection.connection.id!,
+                    connectionName: updatedConnection.connection.connection_id
+                });
+                // syncs not support for oauth1
+                const initiateSync = false;
+                const runPostConnectionScript = true;
+                void connectionCreatedHook(
+                    {
+                        connection: updatedConnection.connection,
+                        environment,
+                        account,
+                        auth_mode: provider.auth_mode,
+                        operation: updatedConnection.operation
+                    },
+                    session.provider,
+                    logContextGetter,
+                    { initiateSync, runPostConnectionScript },
+                    logCtx
+                );
                 await logCtx.success();
 
                 return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);

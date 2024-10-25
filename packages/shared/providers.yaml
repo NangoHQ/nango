@@ -113,6 +113,7 @@ airtable:
         response_type: code
     proxy:
         base_url: https://api.airtable.com
+    webhook_routing_script: airtableWebhookRouting
     docs: https://docs.nango.dev/integrations/all/airtable
 
 autodesk:
@@ -1438,6 +1439,44 @@ datev:
         base_url: https://api.datev.de
     docs: https://docs.nango.dev/integrations/all/datev
 
+datadog:
+    display_name: Datadog
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.siteParameter}/api
+        headers:
+            DD-API-KEY: ${apiKey}
+            DD-APPLICATION-KEY: ${connectionConfig.applicationKey}
+        verification:
+            method: GET
+            endpoint: /v1/validate
+        retry:
+            after: 'X-RateLimit-Reset'
+    docs: https://docs.nango.dev/integrations/all/datadog
+    connection_config:
+        siteParameter:
+            type: string
+            title: Site Parameter
+            description: The site parameter to datadog
+            pattern: '^(us[35]\.)?(ap1\.)?(datadoghq\.(com|eu)|ddog-gov\.com)$'
+            example: 'us5.datadoghq.com'
+        applicationKey:
+            type: string
+            title: Application Key
+            description: The application key required for read data access
+            pattern: '^[a-f0-9]{40}$'
+            example: '5d8a7b3f2dc8bce1b234e7f1a1ac54728dbf9e4a7'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Datadog account
+            pattern: '^[a-f0-9]{32}$'
+            example: '4f3c12efb9659a0b5c123b568745dbf9'
+
 deel:
     display_name: Deel
     categories:
@@ -1487,6 +1526,23 @@ dialpad:
         grant_type: refresh_token
     proxy:
         base_url: https://dialpad.com
+    docs: https://docs.nango.dev/integrations/all/dialpad
+
+dialpad-sandbox:
+    display_name: Dialpad (sandbox)
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    authorization_url: https://sandbox.dialpad.com/oauth2/authorize
+    token_url: https://sandbox.dialpad.com/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sandbox.dialpad.com
     docs: https://docs.nango.dev/integrations/all/dialpad
 
 digitalocean:
@@ -3213,6 +3269,29 @@ marketo:
             description: The identity URL of your Marketo account
             format: hostname
 
+malwarebytes:
+    display_name: Malwarebytes
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.malwarebytes.com/oauth2/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.malwarebytes.com
+        headers:
+            accountId: ${connectionConfig.accountId}
+    connection_config:
+        accountId:
+            type: string
+            title: Account Id
+            description: The Nebula account id
+            pattern: '[\da-fA-F]{8}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{12}$'
+            example: 9256034b-7967-4253-a5d9-260663e4fa4f
+    docs: https://docs.nango.dev/integrations/all/malwarebytes
+
 medallia:
     display_name: Medallia
     categories:
@@ -3506,6 +3585,23 @@ notion:
             limit_name_in_request: page_size
             response_path: results
     docs: https://docs.nango.dev/integrations/all/notion
+
+notion-scim:
+    display_name: Notion (SCIM API)
+    categories:
+        - knowledge-base
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.notion.com/scim
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/notion
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Notion account
 
 odoo:
     display_name: Odoo
@@ -4077,6 +4173,27 @@ quickbooks-sandbox:
         base_url: https://sandbox-quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
 
+ragieai:
+    display_name: Ragie AI
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ragie.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /documents
+    docs: https://docs.nango.dev/integrations/all/ragieai
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your ragie.ai account
+            example: tnt_IZ56tqGVgX9_k8CKnxQ9MvQgzDXcDGgtcjXABkwusxSOR8QzwxxeA1B
+            pattern: '^tnt_[a-zA-Z0-9_]+$'
+
 ramp:
     display_name: Ramp
     categories:
@@ -4330,6 +4447,41 @@ sendgrid:
             type: string
             title: API Key
             description: The API key for your Sendgrid account
+
+sedna:
+    display_name: Sedna (Oauth2)
+    auth_mode: OAUTH2_CC
+    categories:
+        - communication
+    proxy:
+        base_url: https://${connectionConfig.tenant}.sednanetwork.com/platform
+    token_url: https://${connectionConfig.tenant}.sednanetwork.com/platform/oauth/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ','
+    docs: https://docs.nango.dev/integrations/all/sedna
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name to your sedna account
+            format: tenant
+
+sedna-basic:
+    display_name: Sedna (Basic Auth)
+    auth_mode: BASIC
+    categories:
+        - communication
+    proxy:
+        base_url: https://${connectionConfig.tenant}.sednanetwork.com/platform
+    docs: https://docs.nango.dev/integrations/all/sedna
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name to your sedna account
+            format: tenant
+
 servicem8:
     display_name: ServiceM8
     categories:
