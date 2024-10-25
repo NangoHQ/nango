@@ -3187,6 +3187,66 @@ integrations:
                 track_editor_paste: boolean
                 show_copy_paste_prompt: boolean
                 ide_config: string
+    harvest:
+        syncs:
+            users:
+                description: |
+                    Fetches the list of users in Harvest
+                endpoint: GET /users
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: User
+                scopes:
+                    - administrator
+                    - manager
+        actions:
+            create-user:
+                description: Creates a user in Harvest
+                output: User
+                endpoint: POST /users
+                input: HarvestCreateUser
+                scopes:
+                    - administrator
+                    - manager
+            delete-user:
+                description: Deletes a user in Harvest
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - administrator
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            CreateUser:
+                first_name: string
+                last_name: string
+                email: string
+            HarvestCreateUser:
+                first_name: string
+                last_name: string
+                email: string
+                timezone?: string
+                has_access_to_all_future_projects?: boolean
+                is_contractor?: boolean
+                is_active?: boolean
+                weekly_capacity?: integer
+                default_hourly_rate?: decimal
+                cost_rate?: decimal
+                roles?: string[]
+                access_roles?: >-
+                    administrator | manager | member | project_creator |
+                    billable_rates_manager | managed_projects_invoice_drafter |
+                    managed_projects_invoice_manager | client_and_task_manager |
+                    time_and_expenses_manager | estimates_manager
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
     hibob-service-user:
         syncs:
             employees:
