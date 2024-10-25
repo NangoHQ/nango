@@ -1629,6 +1629,32 @@ elevenlabs:
             title: API Key
             description: The API key for your ElevenLabs account
 
+elevio:
+    display_name: Elevio
+    categories:
+        - knowledge-base
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.elev.io
+        headers:
+            x-api-key: ${apiKey}
+            Authorization: Bearer ${connectionConfig.jwt}
+    docs: https://docs.nango.dev/integrations/all/elevio
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key to your Elevio account
+            pattern: '\b[a-f0-9]{40}\b'
+            example: 'x12z67890dd34t8gq5j01ycc75912348'
+    connection_config:
+        jwt:
+            type: string
+            title: JWT
+            description: The JWT to your Elevio account
+            pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
+
 entrata:
     display_name: Entrata
     categories:
