@@ -1501,6 +1501,23 @@ dialpad:
         base_url: https://dialpad.com
     docs: https://docs.nango.dev/integrations/all/dialpad
 
+dialpad-sandbox:
+    display_name: Dialpad (sandbox)
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    authorization_url: https://sandbox.dialpad.com/oauth2/authorize
+    token_url: https://sandbox.dialpad.com/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sandbox.dialpad.com
+    docs: https://docs.nango.dev/integrations/all/dialpad
+
 digitalocean:
     display_name: DigitalOcean
     categories:
