@@ -367,6 +367,7 @@
                 "integrations/all/contentstack",
                 "integrations/all/coupa-compass",
                 "integrations/all/coros",
+                "integrations/all/databricks",
                 "integrations/all/datev",
                 "integrations/all/deel",
                 "integrations/all/dialpad",
