@@ -80,6 +80,14 @@ export class RoutingSpanProcessor implements SpanProcessor {
                 this.processors.set(route.routingId, { processor: newProcessor, routeHash: routeHash });
             }
 
+            // remove processors that are no longer needed
+            for (const [routingId, processor] of this.processors) {
+                if (!routes.find((r) => r.routingId === routingId)) {
+                    toShutdown.push(processor.processor);
+                    this.processors.delete(routingId);
+                }
+            }
+
             // Shutdown old processors
             await Promise.all(toShutdown.map((p) => p.shutdown()));
         } catch (err) {
