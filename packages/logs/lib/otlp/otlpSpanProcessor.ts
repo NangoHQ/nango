@@ -1,4 +1,5 @@
-import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace-base';
+import type { ReadableSpan, Span, SpanExporter, SpanProcessor } from '@opentelemetry/sdk-trace-base';
+import type { ExportResult } from '@opentelemetry/core';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import type { Attributes, Context } from '@opentelemetry/api';
@@ -12,18 +13,46 @@ interface BatchSpanProcessorWithRouteHash {
     routeHash: number;
 }
 
+class LoggingSpanExporter implements SpanExporter {
+    private routeConfig: RouteConfig;
+    private exporter: OTLPTraceExporter;
+
+    constructor({ exporter, routeConfig }: { exporter: OTLPTraceExporter; routeConfig: RouteConfig }) {
+        this.exporter = exporter;
+        this.routeConfig = routeConfig;
+    }
+
+    export(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void): void {
+        const cb = (result: ExportResult) => {
+            if (result.code !== 0) {
+                logger.error('OTLP export failed', {
+                    error: result.error,
+                    routingId: this.routeConfig.routingId,
+                    endpoint: this.routeConfig.routingEndpoint
+                });
+            }
+            resultCallback(result);
+        };
+        this.exporter.export(spans, cb);
+    }
+
+    shutdown(): Promise<void> {
+        return this.exporter.shutdown();
+    }
+
+    forceFlush?(): Promise<void> {
+        return this.exporter.forceFlush();
+    }
+}
+
 export class RoutingSpanProcessor implements SpanProcessor {
     private processors = new Map<string, BatchSpanProcessorWithRouteHash>();
 
     constructor(routes: RouteConfig[]) {
         try {
             for (const route of routes) {
-                const processor = new BatchSpanProcessor(
-                    new OTLPTraceExporter({
-                        url: `${route.routingEndpoint}/traces`,
-                        headers: route.routingHeaders
-                    })
-                );
+                const exporter = this.newExporter(route);
+                const processor = new BatchSpanProcessor(exporter);
                 const routeHash = stringToHash(JSON.stringify(route));
                 this.processors.set(route.routingId, { processor, routeHash: routeHash });
             }
@@ -46,12 +75,8 @@ export class RoutingSpanProcessor implements SpanProcessor {
                     }
                     toShutdown.push(existing.processor);
                 }
-
-                const traceExporter = new OTLPTraceExporter({
-                    url: `${route.routingEndpoint}/traces`,
-                    headers: route.routingHeaders
-                });
-                const newProcessor = new BatchSpanProcessor(traceExporter);
+                const exporter = this.newExporter(route);
+                const newProcessor = new BatchSpanProcessor(exporter);
                 this.processors.set(route.routingId, { processor: newProcessor, routeHash: routeHash });
             }
 
@@ -60,6 +85,16 @@ export class RoutingSpanProcessor implements SpanProcessor {
         } catch (err) {
             logger.error(`failed_to_update_routing_span_processor ${stringifyError(err)}`);
         }
+    }
+
+    private newExporter(route: RouteConfig): SpanExporter {
+        return new LoggingSpanExporter({
+            routeConfig: route,
+            exporter: new OTLPTraceExporter({
+                url: `${route.routingEndpoint}/traces`,
+                headers: route.routingHeaders
+            })
+        });
     }
 
     private getProcessorForSpan(span: { attributes: Attributes }): BatchSpanProcessor | undefined {

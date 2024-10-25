@@ -38,7 +38,7 @@ export class OtlpSpan {
             }
 
             const spanName = `nango.${operation.operation.type}.${operation.operation.action}`.toLowerCase();
-            this.span = otlp.tracer.startSpan(spanName, { attributes });
+            this.span = otlp.tracer.startSpan(spanName, { attributes, root: true });
         }
     }
 

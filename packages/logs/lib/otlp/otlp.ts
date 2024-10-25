@@ -32,7 +32,9 @@ function registerRoutes(routes: RouteConfig[]) {
             routingProcessor.updateRoutes(routes);
         } else {
             routingProcessor = new RoutingSpanProcessor(routes);
-            const provider = new NodeTracerProvider({ resource: new Resource({ [ATTR_SERVICE_NAME]: 'nango-otlp' }) });
+            const provider = new NodeTracerProvider({
+                resource: new Resource({ [ATTR_SERVICE_NAME]: 'nango-otlp' })
+            });
             provider.addSpanProcessor(routingProcessor);
             provider.register();
         }
