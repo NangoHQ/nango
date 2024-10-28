@@ -421,7 +421,7 @@ class ConnectionService {
         return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
     }
 
-    public async upsertPerimeterConnection({
+    public async upsetTwoStepConnection({
         connectionId,
         providerConfigKey,
         credentials,
@@ -460,7 +460,7 @@ class ConnectionService {
             })
             .returning('*');
 
-        void analytics.track(AnalyticsTypes.PERIMETER_CONNECTION_INSERTED, account.id, { provider: config.provider });
+        void analytics.track(AnalyticsTypes.TWO_STEP_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
         return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
     }
