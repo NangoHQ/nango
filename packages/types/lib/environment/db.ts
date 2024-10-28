@@ -39,7 +39,7 @@ export interface DBEnvironment extends Timestamps {
     slack_notifications: boolean;
 
     webhook_receive_url?: string;
-    otlp_settings?: { endpoint: string; headers: Record<string, string> } | null;
+    otlp_settings: { endpoint: string; headers: Record<string, string> } | null;
 }
 
 export interface ExternalWebhook extends Timestamps {

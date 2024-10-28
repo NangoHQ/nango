@@ -78,6 +78,39 @@ adobe-umapi:
             title: Client ID
             description: The Client ID from the OAuth Server-to-Server enabled project on developer portal
 
+adyen:
+    display_name: Adyen
+    categories:
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://ca-${connectionConfig.environment}.adyen.com/ca/ca/oauth/connect.shtml
+    token_url: https://oauth-${connectionConfig.environment}.adyen.com/v1/token
+    scope_separator: ' '
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.resource}-${connectionConfig.environment}.adyen.com
+    docs: https://docs.nango.dev/integrations/all/adyen
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The environment to use
+            pattern: '^(live|test)$'
+            example: live|test
+        resource:
+            type: string
+            title: Resource
+            description: The resource to use for your various requests
+            pattern: '^[a-z0-9_-]+$'
+            example: kyc
+            suffix: -(live|test).adyen.com
+
 affinity:
     display_name: Affinity
     categories:
@@ -99,6 +132,24 @@ aircall:
         scope: public_api
     token_params:
         grant_type: authorization_code
+    docs: https://docs.nango.dev/integrations/all/aircall
+
+aircall-basic:
+    display_name: Aircall (basic auth)
+    categories:
+        - support
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.aircall.io
+        verification:
+            method: GET
+            endpoint: /v1/ping
+        paginate:
+            type: link
+            link_path_in_response_body: meta.next_page_link
+            response_path: results
+        retry:
+            at: 'X-AircallApi-Reset'
     docs: https://docs.nango.dev/integrations/all/aircall
 
 airtable:
@@ -710,6 +761,23 @@ box:
     proxy:
         base_url: https://api.box.com
     docs: https://docs.nango.dev/integrations/all/box
+
+booking-com:
+    display_name: Booking.com
+    categories:
+        - ecommerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.environmentType}-xml.booking.com
+    docs: https://docs.nango.dev/integrations/all/booking-com
+    connection_config:
+        environmentType:
+            type: string
+            title: Environment Type
+            description: The environment type for your various requests
+            pattern: '^(secure-supply|supply)$'
+            example: secure-supply|supply
+            suffix: -xml.booking.com
 
 braintree:
     display_name: Braintree
@@ -1883,6 +1951,10 @@ expensify:
     categories:
         - productivity
     auth_mode: BASIC
+    proxy:
+        base_url: https://integrations.expensify.com/Integration-Server/
+        headers:
+            Content-Type: application/x-www-form-urlencoded
     docs: https://docs.nango.dev/integrations/all/expensify
 
 factorial:
@@ -2385,6 +2457,13 @@ google:
             cursor_name_in_request: pageToken
             response_path: items
     docs: https://docs.nango.dev/integrations/all/google
+
+google-analytics:
+    display_name: Google Analytics
+    alias: google
+    categories:
+        - analytics
+    docs: https://docs.nango.dev/integrations/all/google-analytics
 
 google-calendar:
     display_name: Google Calendar
@@ -2938,6 +3017,34 @@ keap:
     proxy:
         base_url: https://api.infusionsoft.com
     docs: https://docs.nango.dev/integrations/all/keap
+
+keeper-scim:
+    display_name: Keeper(SCIM)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://keepersecurity.com/api/rest/scim/v2/${connectionConfig.node}
+        verification:
+            method: GET
+            endpoint: /Users
+    docs: https://docs.nango.dev/integrations/all/keeper
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your node keeper account
+            pattern: '^[A-Za-z0-9+/=]+$'
+            example: 'J9b7kgdL2gf14d5F9p67zYXVrTZPTMEnl3/EmwwI9K2='
+    connection_config:
+        node:
+            type: string
+            title: Node
+            description: The node id to your Keeper account
+            pattern: '^\d{15}$'
+            example: '123435384338765'
 
 klipfolio:
     display_name: Klipfolio
