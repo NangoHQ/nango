@@ -32,6 +32,7 @@ export async function launchProvidersSync() {
     providers = parseProviders(rawProviders);
 
     if (providersUrl) {
+        logger.info(`monitoring providers from ${providersUrl} every ${reloadInterval}ms`);
         setInterval(async () => {
             try {
                 const maybeNewProviders = await loadProvidersRaw();
