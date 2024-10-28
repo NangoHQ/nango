@@ -729,6 +729,23 @@ box:
         base_url: https://api.box.com
     docs: https://docs.nango.dev/integrations/all/box
 
+booking-com:
+    display_name: Booking.com
+    categories:
+        - ecommerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.environmentType}-xml.booking.com
+    docs: https://docs.nango.dev/integrations/all/booking-com
+    connection_config:
+        environmentType:
+            type: string
+            title: Environment Type
+            description: The environment type for your various requests
+            pattern: '^(secure-supply|supply)$'
+            example: secure-supply|supply
+            suffix: -xml.booking.com
+
 braintree:
     display_name: Braintree
     categories:
