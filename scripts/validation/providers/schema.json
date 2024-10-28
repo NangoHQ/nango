@@ -390,6 +390,9 @@
                                 "suffix": {
                                     "type": "string"
                                 },
+                                "optional": {
+                                    "type": "boolean"
+                                },
                                 "doc_section": {
                                     "type": "string",
                                     "pattern": "^#[a-z0-9-]+$"
