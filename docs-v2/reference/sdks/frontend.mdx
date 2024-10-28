@@ -63,7 +63,11 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
   </ResponseField>
 
   <ResponseField name="baseURL" type="string">
-    The base URL that the client will reach, default: `https://api.nango.dev`
+    The base URL to load the UI, default: `https://connect.nango.dev`
+  </ResponseField>
+
+  <ResponseField name="baseURL" type="string">
+    The base URL to reach Nango API, default: `https://api.nango.dev`
   </ResponseField>
 
   <ResponseField name="onEvent" type="function">
