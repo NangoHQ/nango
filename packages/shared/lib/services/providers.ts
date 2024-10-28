@@ -1,5 +1,5 @@
 import path from 'node:path';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import yaml from 'js-yaml';
 import type { Provider, ProviderAlias } from '@nangohq/types';
 import { NangoError } from '../utils/error.js';
@@ -11,7 +11,7 @@ let providers: Record<string, Provider> | undefined = undefined;
 
 export function getProviders() {
     if (!providers) {
-        providers = loadProvidersYaml();
+        throw new NangoError('providers_not_loaded');
     }
 
     return providers;
@@ -22,26 +22,40 @@ export function getProvider(providerName: string): Provider | null {
     return providers?.[providerName] ?? null;
 }
 
-function getProvidersPath() {
+export async function launchProvidersSync() {
+    providers = await loadProvidersYaml();
+
+    setTimeout(async () => {
+        providers = await loadProvidersYaml();
+    }, 30000);
+}
+
+async function getProvidersPath() {
     // find the providers.yaml file
     // recursively searching in parent directories
-    const findProvidersYaml = (dir: string): string => {
+    const findProvidersYaml = async (dir: string): Promise<string> => {
         const providersYamlPath = path.join(dir, 'providers.yaml');
-        if (fs.existsSync(providersYamlPath)) {
+
+        try {
+            await fs.stat(providersYamlPath);
             return providersYamlPath;
+        } catch {
+            const parentDir = path.dirname(dir);
+            if (parentDir === dir) {
+                throw new NangoError('providers_yaml_not_found');
+            }
+            return findProvidersYaml(parentDir);
         }
-        const parentDir = path.dirname(dir);
-        if (parentDir === dir) {
-            throw new NangoError('providers_yaml_not_found');
-        }
-        return findProvidersYaml(parentDir);
     };
     return findProvidersYaml(dirname());
 }
 
-function loadProvidersYaml(): Record<string, Provider> | undefined {
+async function loadProvidersYaml(): Promise<Record<string, Provider> | undefined> {
     try {
-        const fileEntries = yaml.load(fs.readFileSync(getProvidersPath()).toString()) as Record<string, Provider | ProviderAlias>;
+        const providersPath = await getProvidersPath();
+        const rawFile = (await fs.readFile(providersPath)).toString();
+
+        const fileEntries = yaml.load(rawFile) as Record<string, Provider | ProviderAlias>;
 
         if (fileEntries == null) {
             throw new NangoError('provider_template_loading_failed');
