@@ -2,6 +2,9 @@ import './tracer.js';
 import { server } from './server.js';
 import { stringifyError } from '@nangohq/utils';
 import { logger } from './utils.js';
+import { launchProvidersSync } from '@nangohq/shared';
+
+await launchProvidersSync();
 
 try {
     const port = parseInt(process.argv[2] || '') || 3006;
