@@ -40,7 +40,8 @@ describe('Environment service', () => {
             updated_at: expect.toBeIsoDate(),
             uuid: expect.any(String),
             webhook_url: null,
-            webhook_url_secondary: null
+            webhook_url_secondary: null,
+            otlp_settings: null
         });
 
         expect(env.secret_key).not.toEqual(env.secret_key_hashed);

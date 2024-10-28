@@ -249,6 +249,28 @@ anthropic:
             title: API Key
             description: The API key for your Anthropic account
 
+apaleo:
+    display_name: Apaleo
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://identity.apaleo.com/connect/authorize
+    token_url: https://identity.apaleo.com/connect/token
+    scope_separator: ' '
+    token_params:
+        grant_type: authorization_code
+    authorization_params:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.apaleo.com
+        headers:
+            Content-Type: application/json
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/apaleo
+
 apollo:
     display_name: Apollo
     categories:
@@ -1684,6 +1706,32 @@ elevenlabs:
             type: string
             title: API Key
             description: The API key for your ElevenLabs account
+
+elevio:
+    display_name: Elevio
+    categories:
+        - knowledge-base
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.elev.io
+        headers:
+            x-api-key: ${apiKey}
+            Authorization: Bearer ${connectionConfig.jwt}
+    docs: https://docs.nango.dev/integrations/all/elevio
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key to your Elevio account
+            pattern: '\b[a-f0-9]{40}\b'
+            example: 'x12z67890dd34t8gq5j01ycc75912348'
+    connection_config:
+        jwt:
+            type: string
+            title: JWT
+            description: The JWT to your Elevio account
+            pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
 
 entrata:
     display_name: Entrata
