@@ -315,6 +315,7 @@
             "pages": [
                 "integrations/all/accelo",
                 "integrations/all/adobe",
+                "integrations/all/adyen",
                 "integrations/all/affinity",
                 "integrations/all/aircall",
                 "integrations/all/airtable",
