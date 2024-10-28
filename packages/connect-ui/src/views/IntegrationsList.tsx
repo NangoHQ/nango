@@ -10,7 +10,7 @@ import type { ApiPublicIntegration, GetPublicProvider } from '@nangohq/types';
 import { ErrorFallback } from '@/components/ErrorFallback';
 import { LoadingView } from '@/components/LoadingView';
 import { Button } from '@/components/ui/button';
-import { getIntegrations, getProvider } from '@/lib/api';
+import { APIError, getIntegrations, getProvider } from '@/lib/api';
 import { triggerClose } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 import NoIntegrationSVG from '@/svg/nointegrations.svg?react';
@@ -44,6 +44,7 @@ const Integrations: React.FC = () => {
             await navigate({ to: '/go' });
         }
         if (isSingleIntegration) {
+            store.setIsSingleIntegration(true);
             void call();
         }
     }, [data, store.session]);
@@ -108,7 +109,13 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
         try {
             provider = await getProvider({ provider: integration.provider });
         } catch (err) {
-            console.log(err);
+            if (err instanceof APIError) {
+                setError(() => {
+                    // Trick to catch async error in the global state
+                    throw err;
+                });
+                return;
+            }
             setError('An error occurred while loading configuration');
             setLoading(false);
             return;
