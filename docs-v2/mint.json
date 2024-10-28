@@ -371,6 +371,7 @@
                 "integrations/all/contentstack",
                 "integrations/all/coupa-compass",
                 "integrations/all/coros",
+                "integrations/all/databricks",
                 "integrations/all/datev",
                 "integrations/all/datadog",
                 "integrations/all/deel",

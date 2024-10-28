@@ -1476,6 +1476,44 @@ coupa-compass:
             description: The domain of your Coupa Compass account
             format: hostname
 
+databricks-account:
+    display_name: Databricks (Account Level)
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://accounts.cloud.databricks.com/oidc/accounts/${connectionConfig.accountId}/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://accounts.cloud.databricks.com/api/2.0/accounts/${connectionConfig.accountId}
+    docs: https://docs.nango.dev/integrations/all/databricks
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: The ID to your account
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+
+databricks-workspace:
+    display_name: Databricks (Workspace Level)
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.databricksInstance}/oidc/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.databricksInstance}/api/2.0/
+    docs: https://docs.nango.dev/integrations/all/databricks
+    connection_config:
+        databricksInstance:
+            type: string
+            title: Databricks Instance
+            description: The instance to your databricks deployment
+            pattern: '^[a-z0-9_-]+(\.[a-z0-9_-]+)*$'
+            example: dbc-a1b2345c-d6e7.cloud.databricks.com
+
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     display_name: Datev
