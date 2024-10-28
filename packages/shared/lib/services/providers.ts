@@ -7,6 +7,7 @@ import { dirname } from '../utils/utils.js';
 import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('providers');
+const providersUrl = process.env['PROVIDERS_URL'];
 let providers: Record<string, Provider> | undefined = undefined;
 
 export function getProviders() {
@@ -25,13 +26,15 @@ export function getProvider(providerName: string): Provider | null {
 export async function launchProvidersSync() {
     providers = await loadProvidersYaml();
 
-    setTimeout(async () => {
-        try {
-            providers = await loadProvidersYaml();
-        } catch (err) {
-            logger.error('Failed to load providers.yaml', err);
-        }
-    }, 30000);
+    if (providersUrl) {
+        setTimeout(async () => {
+            try {
+                providers = await loadProvidersYaml();
+            } catch (err) {
+                logger.error('Failed to load providers.yaml', err);
+            }
+        }, 30000);
+    }
 }
 
 async function getProvidersPath() {
@@ -55,8 +58,20 @@ async function getProvidersPath() {
 }
 
 async function loadProvidersYaml(): Promise<Record<string, Provider> | undefined> {
-    const providersPath = await getProvidersPath();
-    const rawFile = (await fs.readFile(providersPath)).toString();
+    let rawFile: string | undefined;
+
+    if (!providersUrl) {
+        const providersPath = await getProvidersPath();
+        rawFile = (await fs.readFile(providersPath)).toString();
+    } else {
+        const response = await fetch(providersUrl);
+        if (response.ok) {
+            rawFile = await response.text();
+        } else {
+            throw new NangoError('provider_template_loading_fetch_failed');
+        }
+        logger.debug('Loaded providers.yaml from URL');
+    }
 
     const fileEntries = yaml.load(rawFile) as Record<string, Provider | ProviderAlias>;
 
