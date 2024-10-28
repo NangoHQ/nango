@@ -6,7 +6,11 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc -b && vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "prod:unsafe": "serve dist -p 3007"
+    },
+    "dependencies": {
+        "serve": "14.2.4"
     },
     "devDependencies": {
         "@hookform/resolvers": "3.9.0",
