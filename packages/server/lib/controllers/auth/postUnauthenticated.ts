@@ -9,6 +9,8 @@ import { logContextGetter } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
+import { linkConnection } from '../../services/endUser.service.js';
+import db from '@nangohq/database';
 
 const queryStringValidation = z
     .object({
@@ -45,7 +47,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, authType } = res.locals;
     const { connection_id: receivedConnectionId, hmac }: PostPublicUnauthenticatedAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicUnauthenticatedAuthorization['Params'] = paramVal.data;
 
@@ -95,25 +97,35 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             account
         });
 
+        if (!updatedConnection) {
+            res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
+            await logCtx.error('Failed to create connection');
+            await logCtx.failed();
+            return;
+        }
+
+        if (authType === 'connectSession') {
+            const session = res.locals.connectSession;
+            await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+        }
+
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
         await logCtx.info('Unauthenticated connection creation was successful');
         await logCtx.success();
 
-        if (updatedConnection) {
-            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-            void connectionCreated(
-                {
-                    connection: updatedConnection.connection,
-                    environment,
-                    account,
-                    auth_mode: 'NONE',
-                    operation: updatedConnection.operation
-                },
-                config.provider,
-                logContextGetter,
-                undefined,
-                logCtx
-            );
-        }
+        void connectionCreated(
+            {
+                connection: updatedConnection.connection,
+                environment,
+                account,
+                auth_mode: 'NONE',
+                operation: updatedConnection.operation
+            },
+            config.provider,
+            logContextGetter,
+            undefined,
+            logCtx
+        );
 
         res.status(200).send({ providerConfigKey, connectionId });
     } catch (err) {

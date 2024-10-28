@@ -30,7 +30,7 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
     const onSaveIntegrationID = async () => {
         setLoading(true);
 
-        const updated = await apiPatchIntegration(env, integration.unique_key, { webhookSecret });
+        const updated = await apiPatchIntegration(env, integration.unique_key, { integrationId });
 
         setLoading(false);
         if ('error' in updated.json) {

@@ -159,6 +159,10 @@
                                 "offset_start_value": {
                                     "type": "number"
                                 },
+                                "offset_calculation_method": {
+                                    "type": "string",
+                                    "enum": ["per-page", "by-response-size"]
+                                },
                                 "response_path": {
                                     "type": "string"
                                 },

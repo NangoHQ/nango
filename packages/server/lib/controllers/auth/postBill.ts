@@ -19,6 +19,8 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { linkConnection } from '../../services/endUser.service.js';
+import db from '@nangohq/database';
 
 const bodyValidation = z
     .object({
@@ -71,7 +73,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, authType } = res.locals;
     const { username: userName, password: password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
     const { connection_id: receivedConnectionId, params, hmac }: PostPublicBillAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBillAuthorization['Params'] = paramsVal.data;
@@ -137,9 +139,6 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
 
         const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
-        await logCtx.info('Bill connection creation was successful');
-        await logCtx.success();
-
         const [updatedConnection] = await connectionService.upsertBillConnection({
             connectionId,
             providerConfigKey,
@@ -150,23 +149,35 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
             environment,
             account
         });
-
-        if (updatedConnection) {
-            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-            void connectionCreatedHook(
-                {
-                    connection: updatedConnection.connection,
-                    environment,
-                    account,
-                    auth_mode: 'BILL',
-                    operation: updatedConnection.operation
-                },
-                config.provider,
-                logContextGetter,
-                undefined,
-                logCtx
-            );
+        if (!updatedConnection) {
+            res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
+            await logCtx.error('Failed to create connection');
+            await logCtx.failed();
+            return;
         }
+
+        if (authType === 'connectSession') {
+            const session = res.locals.connectSession;
+            await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+        }
+
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+        await logCtx.info('Bill connection creation was successful');
+        await logCtx.success();
+
+        void connectionCreatedHook(
+            {
+                connection: updatedConnection.connection,
+                environment,
+                account,
+                auth_mode: 'BILL',
+                operation: updatedConnection.operation
+            },
+            config.provider,
+            logContextGetter,
+            undefined,
+            logCtx
+        );
 
         res.status(200).send({ providerConfigKey, connectionId });
     } catch (err) {
