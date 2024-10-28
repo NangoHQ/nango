@@ -1901,6 +1901,10 @@ expensify:
     categories:
         - productivity
     auth_mode: BASIC
+    proxy:
+        base_url: https://integrations.expensify.com/Integration-Server/
+        headers:
+            Content-Type: application/x-www-form-urlencoded
     docs: https://docs.nango.dev/integrations/all/expensify
 
 factorial:
