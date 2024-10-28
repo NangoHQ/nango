@@ -27,7 +27,7 @@ export async function launchProvidersSync() {
     providers = await loadProvidersYaml();
 
     if (providersUrl) {
-        setTimeout(async () => {
+        setInterval(async () => {
             try {
                 providers = await loadProvidersYaml();
             } catch (err) {
@@ -64,7 +64,12 @@ async function loadProvidersYaml(): Promise<Record<string, Provider> | undefined
         const providersPath = await getProvidersPath();
         rawFile = (await fs.readFile(providersPath)).toString();
     } else {
-        const response = await fetch(providersUrl);
+        const url = new URL(providersUrl);
+
+        // bust caches
+        url.searchParams.set('t', Date.now().toString());
+
+        const response = await fetch(url);
         if (response.ok) {
             rawFile = await response.text();
         } else {
