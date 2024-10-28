@@ -1477,7 +1477,7 @@ coupa-compass:
             format: hostname
 
 databricks-account:
-    display_name: Databricks(Account Level)
+    display_name: Databricks (Account Level)
     categories:
         - analytics
     auth_mode: OAUTH2_CC
@@ -1492,11 +1492,11 @@ databricks-account:
             type: string
             title: Account ID
             description: The ID to your account
-            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            format: uuid
             example: 123e4567-e89b-12d3-a456-426614174000
 
 databricks-workspace:
-    display_name: Databricks(Workspace Level)
+    display_name: Databricks (Workspace Level)
     categories:
         - analytics
     auth_mode: OAUTH2_CC
@@ -1504,19 +1504,13 @@ databricks-workspace:
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://${connectionConfig.workspaceUrl}/api/2.0/
+        base_url: https://${connectionConfig.databricksInstance}/api/2.0/
     docs: https://docs.nango.dev/integrations/all/databricks
     connection_config:
         databricksInstance:
             type: string
             title: Databricks Instance
             description: The instance to your databricks deployment
-            pattern: '^[a-z0-9_-]+(\.[a-z0-9_-]+)*$'
-            example: dbc-a1b2345c-d6e7.cloud.databricks.com
-        workspaceUrl:
-            type: string
-            title: Workspace URL
-            description: The base workspace URL to your account
             pattern: '^[a-z0-9_-]+(\.[a-z0-9_-]+)*$'
             example: dbc-a1b2345c-d6e7.cloud.databricks.com
 
