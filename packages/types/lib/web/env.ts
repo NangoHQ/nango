@@ -12,6 +12,5 @@ export interface WindowEnv {
         auth: boolean;
         managedAuth: boolean;
         interactiveDemo: boolean;
-        connectUI: boolean;
     };
 }

@@ -74,7 +74,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                                         return (
                                             <Link
                                                 to={`/${env}/integrations/${integration.integration.unique_key}/endpoint?${usp.toString()}`}
-                                                key={flow.name}
+                                                key={`${flow.name}-${flow.endpoint.path}`}
                                                 className="contents"
                                             >
                                                 <Table.Row>

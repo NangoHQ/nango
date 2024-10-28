@@ -4394,6 +4394,7 @@ salesforce:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
+            optional: true
 
 salesforce-sandbox:
     display_name: Salesforce (sandbox)

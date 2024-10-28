@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import * as Table from '../../components/ui/Table';
 
@@ -14,7 +14,7 @@ import { useStore } from '../../store';
 import Button from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { baseUrl, formatDateToInternationalFormat } from '../../utils/utils';
-import type { ConnectUI } from '@nangohq/frontend';
+import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import Nango from '@nangohq/frontend';
 import { useDebounce, useUnmount } from 'react-use';
 import { globalEnv } from '../../utils/env';
@@ -29,6 +29,9 @@ import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { ErrorCircle } from '../../components/ui/label/error-circle';
 import Spinner from '../../components/ui/Spinner';
 import { AvatarCustom } from '../../components/AvatarCustom';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../components/ui/DropdownMenu';
+import { IconChevronDown } from '@tabler/icons-react';
+import { useToast } from '../../hooks/useToast';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -93,8 +96,11 @@ const columns: ColumnDef<ApiConnection>[] = [
 
 export const ConnectionList: React.FC = () => {
     const navigate = useNavigate();
+    const toast = useToast();
     const env = useStore((state) => state.env);
+
     const connectUI = useRef<ConnectUI>();
+    const hasConnected = useRef<AuthResult | undefined>();
 
     const { environmentAndAccount } = useEnvironment(env);
     const { list: listIntegration } = useListIntegration(env);
@@ -133,6 +139,22 @@ export const ConnectionList: React.FC = () => {
         setSelectedIntegration(values);
     };
 
+    const onEvent: OnConnectEvent = useCallback(
+        (event) => {
+            if (event.type === 'close') {
+                void mutate();
+                if (hasConnected.current) {
+                    toast.toast({ title: `Connected to ${hasConnected.current.providerConfigKey}`, variant: 'success' });
+                }
+            } else if (event.type === 'connect') {
+                void mutate();
+                console.log('connected', event);
+                hasConnected.current = event.payload;
+            }
+        },
+        [toast]
+    );
+
     const onClickConnectUI = () => {
         if (!environmentAndAccount) {
             return;
@@ -146,21 +168,13 @@ export const ConnectionList: React.FC = () => {
 
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
-            onEvent: (event) => {
-                if (event.type === 'close') {
-                    // we refresh on close so user can see the diff
-                    void mutate();
-                } else if (event.type === 'connect') {
-                    navigate(`/${env}/connections/${event.payload.providerConfigKey}/${event.payload.connectionId}`);
-                    void mutate();
-                }
-            }
+            onEvent
         });
 
         // We defer the token creation so the iframe can open and display a loading screen
         //   instead of blocking the main loop and no visual clue for the end user
         setTimeout(async () => {
-            const res = await apiConnectSessions(env);
+            const res = await apiConnectSessions(env, {});
             if ('error' in res.json) {
                 return;
             }
@@ -231,16 +245,26 @@ export const ConnectionList: React.FC = () => {
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 <div className="flex gap-2">
-                    {globalEnv.features.connectUI && <Button onClick={onClickConnectUI}>Open Connect UI (beta)</Button>}
-                    {(connections || readyToDisplay) && (
-                        <Link
-                            to={`/${env}/connections/create`}
-                            className="flex items-center mt-auto px-4 h-8 rounded-md text-sm text-black bg-white hover:bg-gray-300"
-                        >
+                    <div className="flex items-center bg-white rounded-md">
+                        <Button onClick={onClickConnectUI} className="rounded-r-none">
                             <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
                             Add Connection
-                        </Link>
-                    )}
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant={'icon'} size={'xs'} className="text-dark-500 hover:text-dark-800 focus:text-dark-800">
+                                    <IconChevronDown stroke={1} size={18} />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-white border-white top-1">
+                                <DropdownMenuItem asChild>
+                                    <Link to={`/${env}/connections/create`}>
+                                        <Button className="text-dark-500 hover:text-dark-800">Add Connection (headless)</Button>
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
             </div>
             {connections && (connections.length > 0 || hasFiltered) && (
@@ -267,7 +291,7 @@ export const ConnectionList: React.FC = () => {
                                 onKeyUp={handleInputChange}
                             />
                         </div>
-                        <div className="flex">
+                        <div className="flex gap-2">
                             <MultiSelect
                                 label="Integrations"
                                 options={integrations}
@@ -364,24 +388,21 @@ export const ConnectionList: React.FC = () => {
                 </>
             )}
             {connections && connections.length === 0 && !hasFiltered && (
-                <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
+                <div className="flex flex-col gap-2 border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
                     <h2 className="text-2xl text-center w-full">Connect to an external API</h2>
-                    <div className="my-2 text-gray-400">
-                        Connections can be created by using the{' '}
-                        <Link to="https://docs.nango.dev/reference/sdks/frontend" className="text-blue-400">
-                            nango frontend sdk
+                    <div className="text-gray-400">
+                        Connections can be created by using{' '}
+                        <Link to="https://docs.nango.dev/integrate/guides/authorize-an-api#authorize-users-from-your-app" className="text-blue-500">
+                            Nango Connect
                         </Link>
                         , or manually here.
                     </div>
-                    <Link
-                        to={`/${env}/connections/create`}
-                        className="flex justify-center w-auto items-center mt-5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300"
-                    >
-                        <span className="flex">
+                    <div className="flex my-2 items-center bg-white rounded-md">
+                        <Button onClick={onClickConnectUI} className="rounded-r-none">
                             <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
                             Add Connection
-                        </span>
-                    </Link>
+                        </Button>
+                    </div>
                 </div>
             )}
         </DashboardLayout>
