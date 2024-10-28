@@ -1,4 +1,39 @@
 integrations:
+    aircall-basic:
+        actions:
+            create-user:
+                description: Creates a user in Aircall.
+                output: User
+                endpoint: POST /users
+                input: CreateUser
+            delete-user:
+                description: Deletes a user in Aircall
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Aircall.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
     airtable:
         syncs:
             tables:
@@ -1996,7 +2031,7 @@ integrations:
                 description?: string
             ExactInvoiceCreateInput:
                 customerId: string
-                journal: number
+                journal?: number
                 currency?: EUR
                 description?: string
                 createdAt?: date
