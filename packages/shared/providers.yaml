@@ -3639,6 +3639,23 @@ miro:
         base_url: https://api.miro.com
     docs: https://docs.nango.dev/integrations/all/miro
 
+miro-scim:
+    display_name: Miro (SCIM API)
+    categories:
+        - design
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://miro.com/api
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/miro
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Miro scim account
+
 monday:
     display_name: Monday
     categories:
@@ -3774,7 +3791,7 @@ notion-scim:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Notion account
+            description: The API key for your Notion scim account
 
 odoo:
     display_name: Odoo
