@@ -8,6 +8,7 @@ import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('providers');
 const providersUrl = process.env['PROVIDERS_URL'];
+const reloadInterval = parseInt(process.env['PROVIDERS_RELOAD_INTERVAL'] || '30000');
 let providers: Record<string, Provider> | undefined = undefined;
 
 export function getProviders() {
@@ -33,7 +34,7 @@ export async function launchProvidersSync() {
             } catch (err) {
                 logger.error('Failed to load providers.yaml', err);
             }
-        }, 30000);
+        }, reloadInterval);
     }
 }
 
