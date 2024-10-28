@@ -1101,10 +1101,17 @@ checkout-com-sandbox:
 
 chorus:
     display_name: Chorus
-    auth_mode: BASIC
+    auth_mode: API_KEY
     proxy:
         base_url: https://chorus.ai
+        headers:
+            Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Chorus account
 
 circle-so:
     display_name: Circle.so
