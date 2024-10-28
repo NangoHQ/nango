@@ -101,6 +101,24 @@ aircall:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/aircall
 
+aircall-basic:
+    display_name: Aircall (basic auth)
+    categories:
+        - support
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.aircall.io
+        verification:
+            method: GET
+            endpoint: /v1/ping
+        paginate:
+            type: link
+            link_path_in_response_body: meta.next_page_link
+            response_path: results
+        retry:
+            at: 'X-AircallApi-Reset'
+    docs: https://docs.nango.dev/integrations/all/aircall
+
 airtable:
     display_name: Airtable
     categories:
@@ -2945,6 +2963,34 @@ keap:
     proxy:
         base_url: https://api.infusionsoft.com
     docs: https://docs.nango.dev/integrations/all/keap
+
+keeper-scim:
+    display_name: Keeper(SCIM)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://keepersecurity.com/api/rest/scim/v2/${connectionConfig.node}
+        verification:
+            method: GET
+            endpoint: /Users
+    docs: https://docs.nango.dev/integrations/all/keeper
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your node keeper account
+            pattern: '^[A-Za-z0-9+/=]+$'
+            example: 'J9b7kgdL2gf14d5F9p67zYXVrTZPTMEnl3/EmwwI9K2='
+    connection_config:
+        node:
+            type: string
+            title: Node
+            description: The node id to your Keeper account
+            pattern: '^\d{15}$'
+            example: '123435384338765'
 
 klipfolio:
     display_name: Klipfolio
