@@ -2386,6 +2386,13 @@ google:
             response_path: items
     docs: https://docs.nango.dev/integrations/all/google
 
+google-analytics:
+    display_name: Google Analytics
+    alias: google
+    categories:
+        - analytics
+    docs: https://docs.nango.dev/integrations/all/google-analytics
+
 google-calendar:
     display_name: Google Calendar
     categories:
