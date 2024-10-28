@@ -34,7 +34,7 @@ For OAuth, the `nango.auth()` method will trigger the OAuth flow in a popup, to 
 
 ```js
 nango
-    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
+    .auth('<INTEGRATION-ID>')
     .then((result) => {
         // Show success UI.
     })
@@ -51,7 +51,7 @@ For API keys, the `nango.auth()` method is used to store the end-user's API key 
 
 ```js
 nango
-    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+    .auth('<INTEGRATION-ID>', {
         credentials: {
             apiKey: '<END-USER-API-KEY>'
         }
@@ -72,7 +72,7 @@ For Basic Auth, the `nango.auth()` method is used to store the end-user's userna
 
 ```js
 nango
-    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+    .auth('<INTEGRATION-ID>', {
         credentials: {
             username: '<END-USER-API-KEY>',
             password: '<END-USER-PASSWORD>'
@@ -108,7 +108,7 @@ For example, Zendesk has the following authorization URL, where the subdomain is
 For these cases, you must provide this configuration when calling `nango.auth()` ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
 
 ```js
-nango.auth('zendesk', '<CONNECTION-ID>', {
+nango.auth('zendesk', {
     params: { subdomain: '<ZENDESK-SUBDOMAIN>' }
 });
 ```
@@ -116,7 +116,7 @@ nango.auth('zendesk', '<CONNECTION-ID>', {
 In some cases you might want to override the scopes provided by an integration at the connection level. For this case you can pass in the scopes to `nango.auth`:
 
 ```js
-nango.auth('zendesk', '<CONNECTION-ID>', {
+nango.auth('zendesk', {
     params: { oauth_scopes_override: 'custom-connection-scope' }
 });
 ```
