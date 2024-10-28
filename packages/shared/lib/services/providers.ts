@@ -92,7 +92,7 @@ async function loadProvidersRaw(): Promise<string> {
     return rawFile;
 }
 
-function parseProviders(rawFile: string): Promise<Record<string, Provider>> {
+function parseProviders(rawFile: string): Record<string, Provider> {
     const fileEntries = yaml.load(rawFile) as Record<string, Provider | ProviderAlias>;
 
     if (fileEntries == null) {
