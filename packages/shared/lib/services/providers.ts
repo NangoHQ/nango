@@ -40,7 +40,7 @@ export async function launchProvidersSync() {
                 if (newProvidersHash !== providersHash) {
                     providersHash = newProvidersHash;
                     providers = parseProviders(rawProviders);
-                    logger.info(`providers updated to hash ${providersHash}`);
+                    logger.info(`providers updated to ${providersHash}`);
                 }
             } catch (err) {
                 logger.error('Failed to load providers.yaml', err);
