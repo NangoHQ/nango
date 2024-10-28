@@ -5,10 +5,12 @@ import type { Provider, ProviderAlias } from '@nangohq/types';
 import { NangoError } from '../utils/error.js';
 import { dirname } from '../utils/utils.js';
 import { getLogger } from '@nangohq/utils';
+import { createHash } from 'node:crypto';
 
 const logger = getLogger('providers');
 const providersUrl = process.env['PROVIDERS_URL'];
 const reloadInterval = parseInt(process.env['PROVIDERS_RELOAD_INTERVAL'] || '30000');
+let providersHash: string | undefined = undefined;
 let providers: Record<string, Provider> | undefined = undefined;
 
 export function getProviders() {
@@ -25,12 +27,21 @@ export function getProvider(providerName: string): Provider | null {
 }
 
 export async function launchProvidersSync() {
-    providers = await loadProvidersYaml();
+    const rawProviders = await loadProvidersRaw();
+    providersHash = createHash('sha1').update(rawProviders).digest('hex');
+    providers = parseProviders(rawProviders);
 
     if (providersUrl) {
         setInterval(async () => {
             try {
-                providers = await loadProvidersYaml();
+                const maybeNewProviders = await loadProvidersRaw();
+                const newProvidersHash = createHash('sha1').update(maybeNewProviders).digest('hex');
+
+                if (newProvidersHash !== providersHash) {
+                    providersHash = newProvidersHash;
+                    providers = parseProviders(rawProviders);
+                    logger.info(`providers updated to hash ${providersHash}`);
+                }
             } catch (err) {
                 logger.error('Failed to load providers.yaml', err);
             }
@@ -58,7 +69,7 @@ async function getProvidersPath() {
     return findProvidersYaml(dirname());
 }
 
-async function loadProvidersYaml(): Promise<Record<string, Provider> | undefined> {
+async function loadProvidersRaw(): Promise<string> {
     let rawFile: string | undefined;
 
     if (!providersUrl) {
@@ -76,9 +87,12 @@ async function loadProvidersYaml(): Promise<Record<string, Provider> | undefined
         } else {
             throw new NangoError('provider_template_loading_fetch_failed');
         }
-        logger.debug('Loaded providers.yaml from URL');
     }
 
+    return rawFile;
+}
+
+function parseProviders(rawFile: string): Promise<Record<string, Provider>> {
     const fileEntries = yaml.load(rawFile) as Record<string, Provider | ProviderAlias>;
 
     if (fileEntries == null) {
