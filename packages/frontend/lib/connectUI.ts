@@ -3,9 +3,23 @@ import type { ConnectUIEvent, ConnectUIEventToken } from './types';
 
 export type OnConnectEvent = (event: ConnectUIEvent) => MaybePromise<void>;
 export interface ConnectUIProps {
+    /**
+     * The unique token to identify your user. It is required to make UI work but can be set asynchronously.
+     */
     sessionToken?: string;
+    /**
+     * The base URL to load the UI
+     * @default `https://connect.nango.dev`
+     */
     baseURL?: string;
+    /**
+     * The base URL to reach Nango API
+     * @default `https://api.nango.dev`
+     */
     apiURL?: string;
+    /**
+     * A callback to listen to events sent by Nango Connect
+     */
     onEvent?: OnConnectEvent;
 }
 
