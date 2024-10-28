@@ -27,26 +27,28 @@ export function getProvider(providerName: string): Provider | null {
 }
 
 export async function launchProvidersSync() {
-    const rawProviders = await loadProvidersRaw();
-    providersHash = createHash('sha1').update(rawProviders).digest('hex');
-    providers = parseProviders(rawProviders);
+    await loadProviders();
 
     if (providersUrl) {
         logger.info(`monitoring providers from ${providersUrl} every ${reloadInterval}ms`);
         setInterval(async () => {
             try {
-                const maybeNewProviders = await loadProvidersRaw();
-                const newProvidersHash = createHash('sha1').update(maybeNewProviders).digest('hex');
-
-                if (newProvidersHash !== providersHash) {
-                    providersHash = newProvidersHash;
-                    providers = parseProviders(rawProviders);
-                    logger.info(`providers updated to ${providersHash}`);
-                }
+                await loadProviders();
             } catch (err) {
                 logger.error('Failed to load providers.yaml', err);
             }
         }, reloadInterval);
+    }
+}
+
+async function loadProviders() {
+    const maybeNewProviders = await loadProvidersRaw();
+    const newProvidersHash = createHash('sha1').update(maybeNewProviders).digest('hex');
+
+    if (newProvidersHash !== providersHash) {
+        providersHash = newProvidersHash;
+        providers = parseProviders(maybeNewProviders);
+        logger.info(`providers updated to ${providersHash}`);
     }
 }
 
