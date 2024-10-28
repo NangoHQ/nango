@@ -34,7 +34,7 @@ Nango is a single API to interact with all other external APIs. It should be the
 Initiate a new OAuth flow from your frontend:
 
 ```js
-nango.auth('github', 'user123');
+nango.openConnectUI();
 ```
 
 Get structured objects from external APIs from your backend:
@@ -58,6 +58,7 @@ Nango's flexibility ensures it supports any API integration:
 # 🔌 250+ pre-built APIs & integrations, or build your own!
 
 [Over 250 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
+
 - **Accounting**: Netsuite, Quickbooks, Xero, ...
 - **Communications**: Slack, Discord, Teams, ...
 - **CRMs**: Hubspot, Salesforce, ...
@@ -83,6 +84,7 @@ Sign up for free and try the interactive demo:
 # 🙋‍♀️ Why is Nango open-source?
 
 Our mission is to enable all SaaS to seamlessly integrate together. By being open source, every engineer can contribute improvements to the platform for everyone:
+
 - [Contribute an API](https://docs.nango.dev/customize/guides/contribute-an-api)
 - [Create a custom integration](https://docs.nango.dev/customize/guides/create-a-custom-integration)
 - [Extend an integration template](https://docs.nango.dev/customize/guides/extend-an-integration-template)
@@ -104,4 +106,3 @@ Thank you for continuously making Nango better ❤️
 # 🐻 History
 
 Pizzly (a simple service for OAuth) was initially developed by the team at [Bearer](https://www.bearer.com/?ref=pizzly) with contributions of more than 40 individuals. Over time the focus of Bearer shifted and they could no longer maintain Pizzly. In late 2022 the team at [Nango](https://www.nango.dev) adopted the project and has since maintained and evolved it together with the growing Nango community.
-

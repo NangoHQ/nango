@@ -11,6 +11,8 @@ interface State {
     isSingleIntegration: boolean;
     session: ConnectSessionPayload | null;
     nango: Nango | null;
+    apiURL: string;
+    setApiURL: (value: string) => void;
     setSessionToken: (value: string) => void;
     setSession: (value: ConnectSessionPayload) => void;
     setNango: (value: Nango) => void;
@@ -28,6 +30,8 @@ export const useGlobal = create<State>((set) => ({
     isSingleIntegration: false,
     session: null,
     nango: null,
+    apiURL: 'https://api.nango.dev',
+    setApiURL: (value) => set({ apiURL: value }),
     setSessionToken: (value) => set({ sessionToken: value }),
     setSession: (value) => set({ session: value }),
     setNango: (value) => set({ nango: value }),

@@ -24,7 +24,7 @@ let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
       </ResponseField>
 
       <ResponseField name="host" type="string">
-        Omitting the host points to Nango Cloud. For local development, use `http://localhost:3003`. Use your instance URL if self-hosting. 
+        Omitting the host points to Nango Cloud. For local development, use `http://localhost:3003`. Use your instance URL if self-hosting.
       </ResponseField>
 
       <ResponseField name="websocketsPath" type="string">
@@ -47,7 +47,39 @@ let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
 </Expandable>
 
 
-# Collect & store end-user credentials
+# Connect using Nango Connect UI
+
+Nango provides a UI component that guides your app’s users through automatically and securely setting up an integration. This UI is hosted on Nango's servers and requires minimal setup on your end to get started quickly.
+This is the recommended way to use Nango in your frontend.
+
+```js
+const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
+```
+
+**Parameters**
+<Expandable>
+  <ResponseField name="sessionToken" type="string">
+    The unique token to identify your user. It is required but can be set asynchronously.
+  </ResponseField>
+
+  <ResponseField name="baseURL" type="string">
+    The base URL that the client will reach, default: `https://api.nango.dev`
+  </ResponseField>
+
+  <ResponseField name="onEvent" type="function">
+    A callback to listen to events sent by Nango Connect
+  </ResponseField>
+</Expandable>
+
+**Response**
+
+<Expandable>
+  <ResponseField name="connectUI" type="ConnectUI">
+    The class to manipulate Nango Connect
+  </ResponseField>
+</Expandable>
+
+# Connect using the headless client
 
 You store end-user credentials with the `nango.auth` method. It creates a [connection](/understand/concepts/connections) in Nango.
 
@@ -58,7 +90,7 @@ You store end-user credentials with the `nango.auth` method. It creates a [conne
 For OAuth, this will open a modal to let the user log in to their external account.
 
 ```js
-const result = await nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>').catch((error) => {
+const result = await nango.auth('<INTEGRATION-ID>').catch((error) => {
 ...
 });
 ```
@@ -70,7 +102,7 @@ const result = await nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>').catch((er
 For API key authorization, pass the end-user's previously-collected API key directly in the parameters.
 
 ```js
-const result = await nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+const result = await nango.auth('<INTEGRATION-ID>', {
     credentials: { apiKey: '<END-USER-API-KEY>' }
 }).catch((error) => {
     ...
@@ -84,7 +116,7 @@ const result = await nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
 For Basic Auth, pass the end-user's previously-collected username & password in the parameters.
 
 ```js
-const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+const result = nango.auth('<INTEGRATION-ID>', {
     credentials: { username: '<END-USER-API-KEY>', password: '<END-USER-PASSWORD>' }
 }).catch((error) => {
     ...
@@ -100,7 +132,7 @@ const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
     The integration ID that you can find in the integration settings on the Nango UI.
   </ResponseField>
 
-  <ResponseField name="connectionId" type="string" required>
+  <ResponseField name="connectionId" type="string">
     The connection ID that you can find in the _Connections_ tab on the Nango UI.
   </ResponseField>
 
@@ -119,11 +151,11 @@ const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
       </ResponseField>
 
       <ResponseField name="authorization_params" type="object">
-        For OAuth, specify the query parameters of the authorization URL. 
+        For OAuth, specify the query parameters of the authorization URL.
       </ResponseField>
 
       <ResponseField name="user_scope" type="string[]">
-        For Slack OAuth, specify user-specific scopes. 
+        For Slack OAuth, specify user-specific scopes.
       </ResponseField>
 
       <ResponseField name="credentials" type="object">
@@ -179,6 +211,11 @@ const result = nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
     </Expandable>
   </ResponseField>
 </Expandable>
+
+By default we are auto generating the `connectionId` which is the unique identifier of this connection but ou can also specify it like this:
+```js
+const result = await nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>');
+```
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

@@ -5,6 +5,7 @@ export type OnConnectEvent = (event: ConnectUIEvent) => MaybePromise<void>;
 export interface ConnectUIProps {
     sessionToken?: string;
     baseURL?: string;
+    apiURL?: string;
     onEvent?: OnConnectEvent;
 }
 
@@ -15,11 +16,13 @@ export class ConnectUI {
     private listener: ((this: Window, ev: MessageEvent) => any) | null = null;
     private sessionToken;
     private baseURL;
+    private apiURL;
     private onEvent;
 
-    constructor({ sessionToken, baseURL = 'https://connect.nango.dev', onEvent }: ConnectUIProps) {
+    constructor({ sessionToken, baseURL = 'https://connect.nango.dev', apiURL = 'https://api.nango.dev', onEvent }: ConnectUIProps) {
         this.sessionToken = sessionToken;
         this.baseURL = baseURL;
+        this.apiURL = apiURL;
         this.onEvent = onEvent;
     }
 
@@ -28,10 +31,14 @@ export class ConnectUI {
      */
     open() {
         console.log('Opening connect ui');
+        const baseURL = new URL(this.baseURL);
+        if (this.apiURL) {
+            baseURL.searchParams.append('apiURL', this.apiURL);
+        }
 
         // Create an iframe that will contain the ConnectUI on top of existing UI
         const iframe = document.createElement('iframe');
-        iframe.src = new URL(this.baseURL).href;
+        iframe.src = baseURL.href;
         iframe.id = 'connect-ui';
         iframe.style.position = 'fixed';
         iframe.style.zIndex = '9999';

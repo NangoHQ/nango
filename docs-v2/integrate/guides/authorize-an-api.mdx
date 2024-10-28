@@ -43,7 +43,7 @@ Your can test the authorization flow directly in the Nango UI, using your own ex
 In production, the authorization flow will be triggered from your app, promping each of your customers' to enter their external account credentials (cf. next section).
 </Tip>
 
-On the Nango integration page, click `Connect` to test the authorization. After authorizing API access for one of the modes described below, a [connection](/understand/concepts/connections) should be successfully created in the _Connections_ tab.
+On the Nango integration page, click `Add Connection` to test the authorization. After authorizing API access for one of the modes described below, a [connection](/understand/concepts/connections) should be successfully created in the _Connections_ tab.
 
 **For OAuth**
 
@@ -59,94 +59,109 @@ The authorization flow will vary based on the API, but you will most likely have
 
 # Authorize users from your app
 
-### Integrate the frontend SDK
+Nango Connect requires a unique temporary token to securely authenticate your users.
 
-Once you have tested that the authorization flow works for your own external account, you can trigger authorization flows for your customers from your app with the Nango SDK.
+<img src="/images/connect-ui/steps.png" alt="Nango Connect UI required steps" />
 
-Get your `Public Key` from the _Environment Settings_ tab.
+<Tip>You can check a live implementation in our <a href="https://github.com/NangoHQ/sample-app?rel=connect-ui-guide"> Sample App</a></Tip>
 
-In your frontend, initiate Nango ([reference](/reference/sdks/frontend#instantiate-the-frontend-sdk)):
+## Step 1: Generate a Session token
 
-```ts
+To securely authenticate your users, we need a dedicated token generated on your backend and passed to the frontend. This security measure allows us to strictly identify authenticated users and pre-filter allowed integrations.
+
+On **your backend**, you need an API endpoint that your frontend contacts, which will then communicate with the Nango API. Once you get back the token, forward it to Nango Connect.
+This token has a lifespan of 30 minutes after which it expires.
+
+```javascript
+import { Nango } from '@nangohq/node';
+
+const nango = new Nango({ secretKey: process.env['NANGO_SECRET_KEY'] });
+
+api.post('/sessionToken', (req, res) => {
+  // Ask Nango for a secure token
+  const res = await nango.createConnectSession({
+    end_user: {
+      id: user.id,
+      email: user.email,
+      display_name: user.displayName,
+    },
+    allowed_integrations: ['bamboohr'],
+  });
+
+  // Send this token back to your frontend
+  res.status(200).send({
+    sessionToken: res.data.token
+  });
+});
+```
+
+<Card title="POST /connect/sessions" icon="code" href="/reference/api/connect/sessions/create" horizontal>
+  Not using the SDK? Check our HTTP API reference
+</Card>
+
+## Step 2: Trigger Auth Flow
+
+In **your frontend**, you need to load our SDK and open Nango Connect
+
+```js
 import Nango from '@nangohq/frontend';
 
-let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
+const nango = new Nango({ publicKey: process.env.PUBLIC_NANGO_PUBLIC_KEY });
+
+function setSessionToken(connect) {
+  const res = await fetch('/sessionToken', { method: 'POST' });
+  connect.setSessionToken(res.sessionToken);
+}
+
+const connect = nango.openConnectUI();
+await setSessionToken(connect);
 ```
 
-Initiate the authorization flow ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
+<Tip>It's recommended to set the `sessionToken` asynchronously to be able to display the UI loading to your users before it's ready for better UX</Tip>
 
-<Tabs>
+## Step 3: Link Connection ID to your user
 
-<Tab title="OAuth">
+In **your frontend**, the Connect UI will send back an event when a user connects or closes the modal. You can register an event listener and respond appropriately.
 
-For OAuth, the `nango.auth()` method will trigger the OAuth flow in a popup, to let the user log in to their external account.
+When a user completes a flow, you will receive a `connect` event. This event contains the `providerConfigKey`, which is the id of your integration and a `connectionId`, which is the auto-generated id that represents the couple user + integration.
 
 ```js
-nango
-    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
-    .then((result) => {
-        // Show success UI.
-    })
-    .catch((error) => {
-        // Show failure UI.
-    });
+[...]
+
+function saveConnectionId(authResults) {
+  await fetch('/connection', { method: 'POST', body: authResults });
+}
+
+nango.openConnectUI({
+  sessionToken: await getSessionToken(),
+
+  // Listen to events
+  onEvent: (event) => {
+    if (event.type === 'connect') {
+      void saveConnectionId(event.payload);
+    }
+  },
+});
 ```
 
-</Tab>
+In your backend, associate this connectionId to your end user.
 
-<Tab title="API Key">
+```javascript
+api.post('/connection', (req, res) => {
+  await User.update({
+    connectionId: req.body.connectionId,
+    integrationId: req.body.providerConfigKey,
+  });
 
-For API keys, the `nango.auth()` method is used to store the end-user's API key (that you have previously collected from them).
-
-```js
-nango
-    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
-        credentials: {
-            apiKey: '<END-USER-API-KEY>'
-        }
-    })
-    .then((result) => {
-        // Show success UI.
-    })
-    .catch((error) => {
-        // Show failure UI.
-    });
+  res.status(200).send({
+    success: true
+  });
+});
 ```
 
-</Tab>
+<Tip>If you have multiple integrations you will have to store multiple `connectionId`s</Tip>
 
-<Tab title="Basic Auth">
-
-For Basic Auth, the `nango.auth()` method is used to store the end-user's username & password (that you have previously collected from them).
-
-```js
-nango
-    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
-        credentials: {
-            username: '<END-USER-API-KEY>',
-            password: '<END-USER-PASSWORD>'
-        }
-    })
-    .then((result) => {
-        // Show success UI.
-    })
-    .catch((error) => {
-        // Show failure UI.
-    });
-```
-</Tab>
-
-</Tabs>
-
-<Tip>
-Nango will automatically collect, store, and refresh the API credentials as needed.
-</Tip>
-
-<Info>
-Before using Nango in production, we advise [securing the frontend SDK](/integrate/guides/advanced/secure-frontend-sdk).
-</Info>
-
-### Listen for webhooks
+## Listen for webhooks
 
 Your backend is notified by Nango when an authorization attempt is completed, successful or not.
 
@@ -177,45 +192,15 @@ For each successful authorization attempt, persist the connection ID & integrati
 Before using Nango in production, we advise [verifying webhook signatures](/integrate/guides/advanced/verify-webhooks-from-nango).
 </Info>
 
-### APIs requiring connection-specific configuration for authorization
+# You are ready
 
-Some APIs require connection-specific configuration (e.g. Zendesk, Shopify).
+Your users can now launch Nango Connect and connect to any of your integrations, Nango is taking care of the rest.
 
-For example, Zendesk has the following authorization URL, where the subdomain is specific to a user's Zendesk account:
 
-`https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new`
+<Card title="Want to build your own UI?" icon="code" href="/integrate/guides/advanced/authorize-an-api-headless" horizontal>
+  Use the Headless API to create your custom experience
+</Card>
 
-For these cases, you must provide this configuration when calling `nango.auth()` ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
-
-```js
-nango.auth('zendesk', '<CONNECTION-ID>', {
-    params: { subdomain: '<ZENDESK-SUBDOMAIN>' }
-});
-```
-
-In some cases you might want to override the scopes provided by an integration at the connection level. For this case you can pass in the scopes to `nango.auth`:
-
-```js
-nango.auth('zendesk', '<CONNECTION-ID>', {
-    params: { oauth_scopes_override: 'custom-connection-scope' }
-});
-```
-
-This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/sdks/node#get-a-connection-with-credentials)), API ([reference](/reference/api/connection/get)), and the Nango UI.
-
-# Troubleshoot authorization errors
-
-If an authorization request fails, you can analyze the relevant log in the _Logs_ tab of the Nango UI.
-
-# Use a custom callback URL
-
-You can personalize Nango's callback URL (e.g. use your domain). If you are using Nango Cloud, follow these steps:
-
-1. Add a new endpoint in your app, e.g. `https://EXAMPLE.com/oauth-callback`. All requests to this endpoint should redirect to `https://api.nango.dev/oauth/callback` and **pass along all original parameters**. The easiest way to do this is with a 308 redirect.
-2. Change the registered OAuth callback URL with all API providers. Otherwise, they will refuse new flows!
-3. When ready, change your Nango callback URL in the _Environment Settings_ tab.
-
-If you are self-hosting Nango, follow the instructions [here](/host/self-host/self-hosting-instructions) to change your callback URL.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
