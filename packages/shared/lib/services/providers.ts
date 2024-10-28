@@ -26,7 +26,11 @@ export async function launchProvidersSync() {
     providers = await loadProvidersYaml();
 
     setTimeout(async () => {
-        providers = await loadProvidersYaml();
+        try {
+            providers = await loadProvidersYaml();
+        } catch (err) {
+            logger.error('Failed to load providers.yaml', err);
+        }
     }, 30000);
 }
 
@@ -51,34 +55,29 @@ async function getProvidersPath() {
 }
 
 async function loadProvidersYaml(): Promise<Record<string, Provider> | undefined> {
-    try {
-        const providersPath = await getProvidersPath();
-        const rawFile = (await fs.readFile(providersPath)).toString();
+    const providersPath = await getProvidersPath();
+    const rawFile = (await fs.readFile(providersPath)).toString();
 
-        const fileEntries = yaml.load(rawFile) as Record<string, Provider | ProviderAlias>;
+    const fileEntries = yaml.load(rawFile) as Record<string, Provider | ProviderAlias>;
 
-        if (fileEntries == null) {
-            throw new NangoError('provider_template_loading_failed');
-        }
-
-        for (const key in fileEntries) {
-            const entry = fileEntries[key];
-
-            if (entry && 'alias' in entry) {
-                if (Object.keys(entry).length <= 0) {
-                    logger.error('Failed to find alias', entry.alias);
-                    continue;
-                }
-
-                const { alias, ...overrides } = entry;
-                const aliasData = fileEntries[entry.alias] as Provider;
-                fileEntries[key] = { ...aliasData, ...overrides };
-            }
-        }
-
-        return fileEntries as Record<string, Provider>;
-    } catch (err) {
-        logger.error('Failed to load providers.yaml', err);
+    if (fileEntries == null) {
+        throw new NangoError('provider_template_loading_failed');
     }
-    return;
+
+    for (const key in fileEntries) {
+        const entry = fileEntries[key];
+
+        if (entry && 'alias' in entry) {
+            if (Object.keys(entry).length <= 0) {
+                logger.error('Failed to find alias', entry.alias);
+                continue;
+            }
+
+            const { alias, ...overrides } = entry;
+            const aliasData = fileEntries[entry.alias] as Provider;
+            fileEntries[key] = { ...aliasData, ...overrides };
+        }
+    }
+
+    return fileEntries as Record<string, Provider>;
 }
