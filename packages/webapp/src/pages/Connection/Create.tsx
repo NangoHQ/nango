@@ -463,21 +463,28 @@ export default function IntegrationCreate() {
 
         if (integration?.authMode === 'JWT') {
             const credentials: string[] = [];
-            if (privateKeyId) {
-                credentials.push(`privateKeyId: '${privateKeyId}'`);
+
+            if (integration.provider.includes('ghost-admin')) {
+                const [id = '', secret = ''] = privateKey.split(':');
+                credentials.push(`privateKey: { id: '${id}', secret: '${secret}' }`);
+            } else {
+                if (privateKeyId) {
+                    credentials.push(`privateKeyId: '${privateKeyId}'`);
+                }
+                if (issuerId) {
+                    credentials.push(`issuerId: '${issuerId}'`);
+                }
+                if (privateKey) {
+                    credentials.push(`privateKey: '${privateKey}'`);
+                }
             }
-            if (issuerId) {
-                credentials.push(`issuerId: '${issuerId}'`);
-            }
-            if (privateKey) {
-                credentials.push(`privateKey: '${privateKey}'`);
-            }
+
             if (credentials.length > 0) {
                 jwtCredentialsString = `
-                credentials: {
-                    ${credentials.join(',\n            ')}
-                }
-                `;
+    credentials: {
+        ${credentials.join(',\n            ')}
+    }
+    `;
             }
         }
 
