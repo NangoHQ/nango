@@ -95,7 +95,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
     };
 
     return (
-        <Table.Row>
+        <Table.Row className="text-white">
             <Table.Cell bordered>
                 <div className="w-36 max-w-3xl truncate">{sync.name}</div>
             </Table.Cell>
