@@ -80,7 +80,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 };
 
 export const Go: React.FC = () => {
-    const { provider, integration, session, setIsDirty } = useGlobal();
+    const { provider, integration, session, isSingleIntegration, setIsDirty } = useGlobal();
     const nango = useNango();
 
     const [loading, setLoading] = useState(false);
@@ -257,7 +257,7 @@ export const Go: React.FC = () => {
                         setError(null);
                     }}
                 >
-                    Try Again
+                    Back
                 </Button>
             </main>
         );
@@ -267,11 +267,15 @@ export const Go: React.FC = () => {
         <>
             <header className="flex flex-col gap-8 p-10">
                 <div className="flex justify-between">
-                    <Link to="/" onClick={() => setIsDirty(false)}>
-                        <Button className="gap-1" title="Back to integrations list" variant={'transparent'}>
-                            <IconArrowLeft stroke={1} /> back
-                        </Button>
-                    </Link>
+                    {!isSingleIntegration ? (
+                        <Link to="/" onClick={() => setIsDirty(false)}>
+                            <Button className="gap-1" title="Back to integrations list" variant={'transparent'}>
+                                <IconArrowLeft stroke={1} /> back
+                            </Button>
+                        </Link>
+                    ) : (
+                        <div></div>
+                    )}
                     <Button size={'icon'} title="Close UI" variant={'transparent'} onClick={() => triggerClose()}>
                         <IconX stroke={1} />
                     </Button>
@@ -281,14 +285,6 @@ export const Go: React.FC = () => {
                         <img src={integration.logo} />
                     </div>
                     <h1 className="font-semibold text-xl text-dark-800">Link {provider.display_name} Account</h1>
-                    {provider.docs_connect && (
-                        <p className="text-dark-500">
-                            Stuck?{' '}
-                            <Link className="underline text-dark-800" target="_blank" to={provider.docs_connect}>
-                                View connection guide
-                            </Link>
-                        </p>
-                    )}
                 </div>
             </header>
             <main className="h-full overflow-auto p-10 pt-1">
@@ -303,6 +299,7 @@ export const Go: React.FC = () => {
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
                                     const isPreconfigured = preconfigured[key];
+                                    const isOptional = definition && 'optional' in definition && definition.optional === true;
 
                                     return (
                                         <FormField
@@ -316,7 +313,9 @@ export const Go: React.FC = () => {
                                                     <FormItem className={cn(isPreconfigured || definition?.hidden ? 'hidden' : null)}>
                                                         <div>
                                                             <div className="flex gap-2 items-start pb-1">
-                                                                <FormLabel className="leading-4">{definition?.title || base?.title}</FormLabel>
+                                                                <FormLabel className="leading-4">
+                                                                    {definition?.title || base?.title} {!isOptional && <span className="text-red-base">*</span>}
+                                                                </FormLabel>
                                                                 {definition?.doc_section && (
                                                                     <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
                                                                         <IconInfoCircle size={16} />
@@ -367,6 +366,14 @@ export const Go: React.FC = () => {
                                     </div>
                                     A pre-configured field set by the administrator is invalid, please reach out to the support
                                 </div>
+                            )}
+                            {provider.docs_connect && (
+                                <p className="text-dark-500 text-center">
+                                    Need help?{' '}
+                                    <Link className="underline text-dark-800" target="_blank" to={provider.docs_connect}>
+                                        View connection guide
+                                    </Link>
+                                </p>
                             )}
                             <Button
                                 className="w-full"
