@@ -165,12 +165,6 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                         Schedule Paused
                     </Tag>
                 )}
-
-                {sync.schedule_status === 'DELETED' && (
-                    <Tag bgClassName="bg-red-base bg-opacity-30" textClassName="text-red-base">
-                        Schedule Deleted
-                    </Tag>
-                )}
             </Table.Cell>
             <Table.Cell bordered>
                 <Popover>
