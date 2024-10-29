@@ -564,6 +564,7 @@ describe('Proxy service configure', () => {
             providerName: 'provider-1',
             connection: {
                 environment_id: 1,
+                end_user_id: null,
                 connection_id: 'connection-1',
                 provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
@@ -598,6 +599,7 @@ describe('Proxy service configure', () => {
             providerName: 'provider-1',
             connection: {
                 environment_id: 1,
+                end_user_id: null,
                 connection_id: 'connection-1',
                 provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
@@ -633,6 +635,7 @@ describe('Proxy service configure', () => {
             providerName: 'provider-1',
             connection: {
                 environment_id: 1,
+                end_user_id: null,
                 connection_id: 'connection-1',
                 provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
@@ -668,6 +671,7 @@ describe('Proxy service configure', () => {
             providerName: 'unknown',
             connection: {
                 environment_id: 1,
+                end_user_id: null,
                 connection_id: 'connection-1',
                 provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
@@ -709,6 +713,7 @@ describe('Proxy service configure', () => {
             providerName: 'github',
             connection: {
                 environment_id: 1,
+                end_user_id: null,
                 connection_id: 'connection-1',
                 provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,

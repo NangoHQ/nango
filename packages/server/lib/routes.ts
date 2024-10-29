@@ -29,7 +29,7 @@ import type { Response, Request, RequestHandler } from 'express';
 import { isCloud, isEnterprise, isBasicAuthEnabled, isTest, isLocal, basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import { getConnection as getConnectionWeb } from './controllers/v1/connection/get.js';
+import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
 import { patchSettings } from './controllers/v1/environment/webhook/patchSettings.js';
@@ -87,7 +87,7 @@ import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js'
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
-import { deleteConnection } from './controllers/v1/connection/deleteConnection.js';
+import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
@@ -163,7 +163,6 @@ publicAPI.options('*', publicAPICorsHandler); // Pre-flight
 
 // API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
-publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 
 publicAPI.route('/oauth/connect/:providerConfigKey').get(connectSessionOrPublicAuth, oauthController.oauthRequest.bind(oauthController));
@@ -179,6 +178,8 @@ publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionO
 
 // @deprecated
 publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
+
+publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 
 // API Admin routes
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
@@ -310,10 +311,10 @@ web.route('/api/v1/integrations/:providerConfigKey/flows').get(webAuth, getInteg
 
 web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 
-web.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
-web.route('/api/v1/connection/:connectionId').get(webAuth, getConnectionWeb);
-web.route('/api/v1/connection/:connectionId').delete(webAuth, deleteConnection);
-web.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
+web.route('/api/v1/connections').get(webAuth, connectionController.listConnections.bind(connectionController));
+web.route('/api/v1/connections/:connectionId').get(webAuth, getConnectionWeb);
+web.route('/api/v1/connections/:connectionId').delete(webAuth, deleteConnection);
+web.route('/api/v1/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 
 web.route('/api/v1/user').get(webAuth, getUser);
 web.route('/api/v1/user').patch(webAuth, patchUser);

@@ -78,6 +78,39 @@ adobe-umapi:
             title: Client ID
             description: The Client ID from the OAuth Server-to-Server enabled project on developer portal
 
+adyen:
+    display_name: Adyen
+    categories:
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://ca-${connectionConfig.environment}.adyen.com/ca/ca/oauth/connect.shtml
+    token_url: https://oauth-${connectionConfig.environment}.adyen.com/v1/token
+    scope_separator: ' '
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.resource}-${connectionConfig.environment}.adyen.com
+    docs: https://docs.nango.dev/integrations/all/adyen
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The environment to use
+            pattern: '^(live|test)$'
+            example: live|test
+        resource:
+            type: string
+            title: Resource
+            description: The resource to use for your various requests
+            pattern: '^[a-z0-9_-]+$'
+            example: kyc
+            suffix: -(live|test).adyen.com
+
 affinity:
     display_name: Affinity
     categories:
@@ -101,6 +134,24 @@ aircall:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/aircall
 
+aircall-basic:
+    display_name: Aircall (basic auth)
+    categories:
+        - support
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.aircall.io
+        verification:
+            method: GET
+            endpoint: /v1/ping
+        paginate:
+            type: link
+            link_path_in_response_body: meta.next_page_link
+            response_path: results
+        retry:
+            at: 'X-AircallApi-Reset'
+    docs: https://docs.nango.dev/integrations/all/aircall
+
 airtable:
     display_name: Airtable
     categories:
@@ -113,6 +164,7 @@ airtable:
         response_type: code
     proxy:
         base_url: https://api.airtable.com
+    webhook_routing_script: airtableWebhookRouting
     docs: https://docs.nango.dev/integrations/all/airtable
 
 autodesk:
@@ -247,6 +299,28 @@ anthropic:
             type: string
             title: API Key
             description: The API key for your Anthropic account
+
+apaleo:
+    display_name: Apaleo
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://identity.apaleo.com/connect/authorize
+    token_url: https://identity.apaleo.com/connect/token
+    scope_separator: ' '
+    token_params:
+        grant_type: authorization_code
+    authorization_params:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.apaleo.com
+        headers:
+            Content-Type: application/json
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/apaleo
 
 apollo:
     display_name: Apollo
@@ -688,6 +762,23 @@ box:
         base_url: https://api.box.com
     docs: https://docs.nango.dev/integrations/all/box
 
+booking-com:
+    display_name: Booking.com
+    categories:
+        - ecommerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.environmentType}-xml.booking.com
+    docs: https://docs.nango.dev/integrations/all/booking-com
+    connection_config:
+        environmentType:
+            type: string
+            title: Environment Type
+            description: The environment type for your various requests
+            pattern: '^(secure-supply|supply)$'
+            example: secure-supply|supply
+            suffix: -xml.booking.com
+
 braintree:
     display_name: Braintree
     categories:
@@ -1078,10 +1169,17 @@ checkout-com-sandbox:
 
 chorus:
     display_name: Chorus
-    auth_mode: BASIC
+    auth_mode: API_KEY
     proxy:
         base_url: https://chorus.ai
+        headers:
+            Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Chorus account
 
 circle-so:
     display_name: Circle.so
@@ -1385,6 +1483,44 @@ coupa-compass:
             description: The domain of your Coupa Compass account
             format: hostname
 
+databricks-account:
+    display_name: Databricks (Account Level)
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://accounts.cloud.databricks.com/oidc/accounts/${connectionConfig.accountId}/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://accounts.cloud.databricks.com/api/2.0/accounts/${connectionConfig.accountId}
+    docs: https://docs.nango.dev/integrations/all/databricks
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: The ID to your account
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+
+databricks-workspace:
+    display_name: Databricks (Workspace Level)
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.databricksInstance}/oidc/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.databricksInstance}/api/2.0/
+    docs: https://docs.nango.dev/integrations/all/databricks
+    connection_config:
+        databricksInstance:
+            type: string
+            title: Databricks Instance
+            description: The instance to your databricks deployment
+            pattern: '^[a-z0-9_-]+(\.[a-z0-9_-]+)*$'
+            example: dbc-a1b2345c-d6e7.cloud.databricks.com
+
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     display_name: Datev
@@ -1410,6 +1546,44 @@ datev:
     proxy:
         base_url: https://api.datev.de
     docs: https://docs.nango.dev/integrations/all/datev
+
+datadog:
+    display_name: Datadog
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.siteParameter}/api
+        headers:
+            DD-API-KEY: ${apiKey}
+            DD-APPLICATION-KEY: ${connectionConfig.applicationKey}
+        verification:
+            method: GET
+            endpoint: /v1/validate
+        retry:
+            after: 'X-RateLimit-Reset'
+    docs: https://docs.nango.dev/integrations/all/datadog
+    connection_config:
+        siteParameter:
+            type: string
+            title: Site Parameter
+            description: The site parameter to datadog
+            pattern: '^(us[35]\.)?(ap1\.)?(datadoghq\.(com|eu)|ddog-gov\.com)$'
+            example: 'us5.datadoghq.com'
+        applicationKey:
+            type: string
+            title: Application Key
+            description: The application key required for read data access
+            pattern: '^[a-f0-9]{40}$'
+            example: '5d8a7b3f2dc8bce1b234e7f1a1ac54728dbf9e4a7'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Datadog account
+            pattern: '^[a-f0-9]{32}$'
+            example: '4f3c12efb9659a0b5c123b568745dbf9'
 
 deel:
     display_name: Deel
@@ -1460,6 +1634,23 @@ dialpad:
         grant_type: refresh_token
     proxy:
         base_url: https://dialpad.com
+    docs: https://docs.nango.dev/integrations/all/dialpad
+
+dialpad-sandbox:
+    display_name: Dialpad (sandbox)
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    authorization_url: https://sandbox.dialpad.com/oauth2/authorize
+    token_url: https://sandbox.dialpad.com/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sandbox.dialpad.com
     docs: https://docs.nango.dev/integrations/all/dialpad
 
 digitalocean:
@@ -1652,6 +1843,32 @@ elevenlabs:
             title: API Key
             description: The API key for your ElevenLabs account
 
+elevio:
+    display_name: Elevio
+    categories:
+        - knowledge-base
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.elev.io
+        headers:
+            x-api-key: ${apiKey}
+            Authorization: Bearer ${connectionConfig.jwt}
+    docs: https://docs.nango.dev/integrations/all/elevio
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key to your Elevio account
+            pattern: '\b[a-f0-9]{40}\b'
+            example: 'x12z67890dd34t8gq5j01ycc75912348'
+    connection_config:
+        jwt:
+            type: string
+            title: JWT
+            description: The JWT to your Elevio account
+            pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
+
 entrata:
     display_name: Entrata
     categories:
@@ -1802,6 +2019,10 @@ expensify:
     categories:
         - productivity
     auth_mode: BASIC
+    proxy:
+        base_url: https://integrations.expensify.com/Integration-Server/
+        headers:
+            Content-Type: application/x-www-form-urlencoded
     docs: https://docs.nango.dev/integrations/all/expensify
 
 factorial:
@@ -2304,6 +2525,13 @@ google:
             cursor_name_in_request: pageToken
             response_path: items
     docs: https://docs.nango.dev/integrations/all/google
+
+google-analytics:
+    display_name: Google Analytics
+    alias: google
+    categories:
+        - analytics
+    docs: https://docs.nango.dev/integrations/all/google-analytics
 
 google-calendar:
     display_name: Google Calendar
@@ -2858,6 +3086,34 @@ keap:
         base_url: https://api.infusionsoft.com
     docs: https://docs.nango.dev/integrations/all/keap
 
+keeper-scim:
+    display_name: Keeper(SCIM)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://keepersecurity.com/api/rest/scim/v2/${connectionConfig.node}
+        verification:
+            method: GET
+            endpoint: /Users
+    docs: https://docs.nango.dev/integrations/all/keeper
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your node keeper account
+            pattern: '^[A-Za-z0-9+/=]+$'
+            example: 'J9b7kgdL2gf14d5F9p67zYXVrTZPTMEnl3/EmwwI9K2='
+    connection_config:
+        node:
+            type: string
+            title: Node
+            description: The node id to your Keeper account
+            pattern: '^\d{15}$'
+            example: '123435384338765'
+
 klipfolio:
     display_name: Klipfolio
     categories:
@@ -3209,6 +3465,29 @@ marketo:
             description: The identity URL of your Marketo account
             format: hostname
 
+malwarebytes:
+    display_name: Malwarebytes
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.malwarebytes.com/oauth2/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.malwarebytes.com
+        headers:
+            accountId: ${connectionConfig.accountId}
+    connection_config:
+        accountId:
+            type: string
+            title: Account Id
+            description: The Nebula account id
+            pattern: '[\da-fA-F]{8}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{12}$'
+            example: 9256034b-7967-4253-a5d9-260663e4fa4f
+    docs: https://docs.nango.dev/integrations/all/malwarebytes
+
 medallia:
     display_name: Medallia
     categories:
@@ -3383,6 +3662,23 @@ miro:
         base_url: https://api.miro.com
     docs: https://docs.nango.dev/integrations/all/miro
 
+miro-scim:
+    display_name: Miro (SCIM API)
+    categories:
+        - design
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://miro.com/api
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/miro
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Miro scim account
+
 monday:
     display_name: Monday
     categories:
@@ -3502,6 +3798,23 @@ notion:
             limit_name_in_request: page_size
             response_path: results
     docs: https://docs.nango.dev/integrations/all/notion
+
+notion-scim:
+    display_name: Notion (SCIM API)
+    categories:
+        - knowledge-base
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.notion.com/scim
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/notion
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Notion scim account
 
 odoo:
     display_name: Odoo
@@ -4073,6 +4386,27 @@ quickbooks-sandbox:
         base_url: https://sandbox-quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
 
+ragieai:
+    display_name: Ragie AI
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ragie.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /documents
+    docs: https://docs.nango.dev/integrations/all/ragieai
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your ragie.ai account
+            example: tnt_IZ56tqGVgX9_k8CKnxQ9MvQgzDXcDGgtcjXABkwusxSOR8QzwxxeA1B
+            pattern: '^tnt_[a-zA-Z0-9_]+$'
+
 ramp:
     display_name: Ramp
     categories:
@@ -4252,6 +4586,7 @@ salesforce:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
+            optional: true
 
 salesforce-sandbox:
     display_name: Salesforce (sandbox)
@@ -4326,6 +4661,41 @@ sendgrid:
             type: string
             title: API Key
             description: The API key for your Sendgrid account
+
+sedna:
+    display_name: Sedna (Oauth2)
+    auth_mode: OAUTH2_CC
+    categories:
+        - communication
+    proxy:
+        base_url: https://${connectionConfig.tenant}.sednanetwork.com/platform
+    token_url: https://${connectionConfig.tenant}.sednanetwork.com/platform/oauth/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ','
+    docs: https://docs.nango.dev/integrations/all/sedna
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name to your sedna account
+            format: tenant
+
+sedna-basic:
+    display_name: Sedna (Basic Auth)
+    auth_mode: BASIC
+    categories:
+        - communication
+    proxy:
+        base_url: https://${connectionConfig.tenant}.sednanetwork.com/platform
+    docs: https://docs.nango.dev/integrations/all/sedna
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name to your sedna account
+            format: tenant
+
 servicem8:
     display_name: ServiceM8
     categories:

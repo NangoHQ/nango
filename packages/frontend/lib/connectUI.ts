@@ -1,10 +1,11 @@
 import type { MaybePromise } from '@nangohq/types';
 import type { ConnectUIEvent, ConnectUIEventToken } from './types';
 
+export type OnConnectEvent = (event: ConnectUIEvent) => MaybePromise<void>;
 export interface ConnectUIProps {
     sessionToken?: string;
     baseURL?: string;
-    onEvent?: (event: ConnectUIEvent) => MaybePromise<void>;
+    onEvent?: OnConnectEvent;
 }
 
 export class ConnectUI {

@@ -2,6 +2,77 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.20] - 2024-10-25
+
+### Added
+
+- *(integrations)* Add support for dialpad sandbox (#2885) by @StephenCole19
+- *(validations)* Add provider name and remove credentials and connection_config from interpolation checks (#2894) by @hassan254-prog
+- *(integrations)* Add support for elevio (#2896) by @hassan254-prog
+- *(integrations)* Add support for apaleo (#2898) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5c830a77dc088a6bfa7b600caa59de7380c004c3 by Khaliq. Commit message: feat(datadog): datadog user operations (#72) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/bbc2526b09b3d55e1dfc9bba7cce78a13349e670 by Khaliq. Commit message: feat(sharepoint-improvements): Sharepoint improvements (#73) by @github-actions[bot]
+
+### Fixed
+
+- *(pagination)* Handle number cursor (#2886) by @bodinsamuel
+- *(flows)* Endpoint deduplication conflict (#2887) by @bodinsamuel
+- Use DD_SITE env var instead of hardcoded value (#2888) by @TBonnin
+
+## [v0.42.19] - 2024-10-25
+
+### Added
+
+- *(integrations)* Platform changes to add JWT as an auth_mode (#2840) by @hassan254-prog
+- *(integration)* Add support for ghost APIs (#2841) by @hassan254-prog
+- *(integrations)* Add support for bill (#2852) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/1be625c44e798c684362708d6fe6b7d34fed122f by Andres Reales. Commit message: feat(freshdesk): add Freshdesk users integration (#63) by @github-actions[bot]
+- *(connection)* Add deleted_at to the upsert functions (#2864) by @hassan254-prog
+- Basic/apikey credentials check cron job (#2862) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f9b5a6da1b1cb7a095d79f8c9bf62cee32199974 by Hassan_Wari. Commit message: feat(integrations): add bill integrations (#62) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7d7b6097fe5798bc3d64c4e6c0bb796e5a553c65 by Andres Reales. Commit message: feat(Intercom): add users syncs and actions to intercom integration (#64) by @github-actions[bot]
+- *(providers)* Add proxy fields to okta (#2867) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/620bbfd8754dc6b242f0d2d0e0e4cda7fcbfbd69 by Hassan_Wari. Commit message: feat(integrations): add okta integrations (#65) by @github-actions[bot]
+- *(ui)* Add missing script name, webhook secret update (#2865) by @bodinsamuel
+- *(integrations)* Add support for sedna (#2869) by @hassan254-prog
+- *(docs)* Add code snippet to ghost-admin (#2871) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/2b5aa3d6f42d91a6ad4f5b56dbdc7849ac3c764c by Hassan_Wari. Commit message: feat(integrations): add front integrations (#67) by @github-actions[bot]
+- *(integrations)* Add support for ragie.ai (#2876) by @Marfuen
+- *(webhooks)* [nan-1909] add in webhook support for airtable (#2875) by @khaliqgant
+- *(integrations)* Add support for malwarebytes (#2877) by @hassan254-prog
+- *(integrations)* Add support for datadog (#2879) by @hassan254-prog
+- *(notion-scim)* Support notion SCIM (#2880) by @khaliqgant
+- *(connections)* Add FK to end users (#2883) by @bodinsamuel
+- *(connections)* Link to end_user on success (#2884) by @bodinsamuel
+- *(malwarebytes)* Add malwarebytes required header (#2889) by @khaliqgant
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/6f59edcc16a7268cee5a5d7f2857f869c9e69a38 by Khaliq. Commit message: feat(intercom): [nan-1916] add fetch article action (#60) by @github-actions[bot]
+- RefreshTokens cron to use redis based locking  (#2859) by @TBonnin
+- Connect UI (#2863) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5d31fe1ef6ef48f48e36cbe6351a9dabd7c6482e by Khaliq. Commit message: feat(airtable): [nan-1909] add airtable operations (#68) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/ad5ab482e8d9386cc9058122f01b43298f2707fc by Khaliq. Commit message: feat(dropbox): Add Dropbox operations (#69) by @github-actions[bot]
+- Typo in node client (#2873) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/a6f831c553f66b659b6334819e6817915c6c6bbd by Khaliq. Commit message: feat(hubspot): [nan-1888] [nan-1900] Hubspot products sync and create-property (#70) by @github-actions[bot]
+- Typo in nango.yaml (#2881) by @bodinsamuel
+
+### Fixed
+
+- *(response-saver)* Concat paginated responses (#2857) by @khaliqgant
+- *(connect-ui)* Skip integrations list when only one integration is allowed (#2837) by @bodinsamuel
+- *(bill.com)* Remove version to be able to put in the script (#2860) by @khaliqgant
+- Lock can be released even when not holding the lock (#2858) by @TBonnin
+- *(ui)* Allow to dismiss slack banner (#2866) by @bodinsamuel
+- *(connection)* GetConnectionCredentials should return credentials even on error (#2870) by @bodinsamuel
+- *(api)* Rename internal api connection->connections (#2872) by @bodinsamuel
+- *(ui)* Integration rename, env switch when showing one integration (#2878) by @bodinsamuel
+- *(dockerfile)* Do not clean up source (#2882) by @bodinsamuel
+- *(pagination)* [nan-1958] per page offset pagination (#2890) by @khaliqgant
+
 ## [v0.42.18] - 2024-10-18
 
 ### Added
@@ -2078,6 +2149,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.20]: https://github.com/NangoHQ/nango/compare/v0.42.19..v0.42.20
+[v0.42.19]: https://github.com/NangoHQ/nango/compare/v0.42.18..v0.42.19
 [v0.42.18]: https://github.com/NangoHQ/nango/compare/v0.42.17..v0.42.18
 [v0.42.17]: https://github.com/NangoHQ/nango/compare/v0.42.15..v0.42.17
 [v0.42.15]: https://github.com/NangoHQ/nango/compare/v0.42.12..v0.42.15

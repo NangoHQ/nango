@@ -7,6 +7,8 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import db from '@nangohq/database';
+import { getOtlpRoutes } from '@nangohq/shared';
+import { otlp } from '@nangohq/logs';
 
 const logger = getLogger('Jobs');
 
@@ -67,6 +69,8 @@ try {
     cronAutoIdleDemo();
     deleteSyncsData();
     timeoutLogsOperations();
+
+    otlp.register(getOtlpRoutes);
 } catch (err) {
     logger.error(stringifyError(err));
     process.exit(1);

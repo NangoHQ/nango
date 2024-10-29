@@ -158,7 +158,7 @@ await nango.listIntegrations()
 Returns a specific integration.
 
 ```js
-await nango.getIntegration({ unique_key: <UNIQUE_KEY> });
+await nango.getIntegration({ uniqueKey: <UNIQUE_KEY> });
 
 // Deprecated
 await nango.getIntegration(<INTEGRATION-ID>);
@@ -167,8 +167,8 @@ await nango.getIntegration(<INTEGRATION-ID>);
 **Parameters**
 
 <Expandable>
-    <ResponseField name="unique_key" type="string" required>
-         The integration ID (`unique_key`)
+    <ResponseField name="uniqueKey" type="string" required>
+         The integration ID
     </ResponseField>
     <ResponseField name="include" type="array">
         Include sensitive data. Allowed values: `webhook`

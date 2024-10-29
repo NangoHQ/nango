@@ -4,7 +4,7 @@ import { getLogger, Encryption } from '@nangohq/utils';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
-import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
+import type { Connection, StoredConnection } from '../models/Connection.js';
 import db from '@nangohq/database';
 import { hashSecretKey } from '../services/environment.service.js';
 
@@ -64,29 +64,14 @@ export class EncryptionManager extends Encryption {
         return decryptedEnvironment;
     }
 
-    public encryptApiConnection(connection: ApiConnection): Omit<StoredConnection, 'created_at' | 'updated_at'> {
+    public encryptConnection(
+        connection: Omit<Connection, 'created_at' | 'updated_at' | 'end_user_id'>
+    ): Omit<StoredConnection, 'created_at' | 'updated_at' | 'end_user_id'> {
         if (!this.shouldEncrypt()) {
             return connection;
         }
 
-        const storedConnection = Object.assign({}, connection) as Omit<StoredConnection, 'created_at' | 'updated_at'>;
-
-        const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
-        const encryptedCreds = { encrypted_credentials: encryptedClientSecret };
-
-        storedConnection.credentials = encryptedCreds;
-        storedConnection.credentials_iv = iv;
-        storedConnection.credentials_tag = authTag;
-
-        return storedConnection;
-    }
-
-    public encryptConnection(connection: Omit<Connection, 'created_at' | 'updated_at'>): Omit<StoredConnection, 'created_at' | 'updated_at'> {
-        if (!this.shouldEncrypt()) {
-            return connection;
-        }
-
-        const storedConnection = Object.assign({}, connection) as Omit<StoredConnection, 'created_at' | 'updated_at'>;
+        const storedConnection = Object.assign({}, connection) as Omit<StoredConnection, 'created_at' | 'updated_at' | 'end_user_id'>;
 
         const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
         const encryptedCreds = { encrypted_credentials: encryptedClientSecret };
