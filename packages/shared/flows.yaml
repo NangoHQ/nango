@@ -2056,23 +2056,84 @@ integrations:
                 success: boolean
     expensify:
         actions:
+            create-user:
+                description: |
+                    Create a user in the account
+                endpoint: POST /users
+                input: CreateUser
+                output: ExpsensifyNullableUser
+            disable-user:
+                description: Disables a user in Expensify
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: ExpensifyDisableUser
             list-policies:
                 description: >
                     Action to fetch a list of policies with some relevant information
                     about them
-                endpoint: POST /expensify/list-policy
-                input: ExpensifyListPolicyInput
+                endpoint: POST /policies
                 output: ExpensifyListPolicyOutput
+                version: 2.0.0
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Expensify.
+                output: ExpsensifyNullableUser
+                track_deletes: true
+                sync_type: full
+                endpoint: GET /users
         models:
-            ExpensifyListPolicyInput:
-                requestJobDescription: RequestJobDescription
-                inputSettings: InputSettings
-            RequestJobDescription:
-                type: string
-            InputSettings:
-                type: string
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            ExpensifyDisableUser:
+                id: string
+                email: string
+            ExpsensifyNullableUser:
+                id: string | null
+                firstName: string | null
+                lastName: string | null
+                email: string
             ExpensifyListPolicyOutput:
-                policyList: array
+                policies: Policy[]
+            Policy:
+                id: string
+                type: string
+                name: string
+                shouldShowAutoApprovalOptions: boolean
+                role: string
+                areCompanyCardsEnabled: boolean
+                shouldShowCustomReportTitleOption: boolean
+                areExpensifyCardsEnabled: boolean
+                areRulesEnabled: boolean
+                areConnectionsEnabled: boolean
+                approvalMode: string
+                areCategoriesEnabled: boolean
+                areReportFieldsEnabled: boolean
+                areWorkflowsEnabled: boolean
+                outputCurrency: string
+                owner: string
+                areInvoicesEnabled: boolean
+                createdAt: string
+                eReceipts: boolean
+                shouldShowAutoReimbursementLimitOption: boolean
+                areDistanceRatesEnabled: boolean
+                isPolicyExpenseChatEnabled: string
+                ownerAccountID: number
+                areTagsEnabled: boolean
     fireflies:
         actions:
             add-to-live:
