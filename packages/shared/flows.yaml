@@ -6504,11 +6504,109 @@ integrations:
 
                     Data Validation: Parses all incoming data with Zod. Does not fail on
                     parsing error will instead log parse error and return result.
-                scopes: offline_access,api
+                scopes:
+                    - offline_access
+                    - api
                 input: SalesforceEntity
                 version: 1.0.0
                 output: SalesforceFieldSchema
                 endpoint: GET /salesforce/fetch-fields
+            create-contact:
+                description: Create a single contact in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: CreateContactInput
+                output: ActionResponse
+                endpoint: POST /salesforce/create-contact
+            update-contact:
+                description: Update a single contact in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: UpdateContactInput
+                output: SuccessResponse
+                endpoint: PATCH /salesforce/update-contact
+            delete-contact:
+                description: Delete a single contact in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: IdEntity
+                output: SuccessResponse
+                endpoint: DELETE /salesforce/delete-contact
+            create-lead:
+                description: Create a single lead in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: CreateLeadInput
+                output: ActionResponse
+                endpoint: POST /salesforce/create-lead
+            update-lead:
+                description: Update a single lead in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: UpdateLeadInput
+                output: SuccessResponse
+                endpoint: PATCH /salesforce/update-lead
+            delete-lead:
+                description: Delete a single lead in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: IdEntity
+                output: SuccessResponse
+                endpoint: DELETE /salesforce/delete-lead
+            create-account:
+                description: Create a single account in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: CreateAccountInput
+                output: ActionResponse
+                endpoint: POST /salesforce/create-account
+            update-account:
+                description: Update a single account in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: UpdateAccountInput
+                output: SuccessResponse
+                endpoint: PATCH /salesforce/update-account
+            delete-account:
+                description: Delete a single account in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: IdEntity
+                output: SuccessResponse
+                endpoint: DELETE /salesforce/delete-account
+            create-opportunity:
+                description: Create a single opportunity in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: CreateOpportunityInput
+                output: ActionResponse
+                endpoint: POST /salesforce/create-opportunity
+            update-opportunity:
+                description: Update a single opportunity in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: UpdateOpportunityInput
+                output: SuccessResponse
+                endpoint: PATCH /salesforce/update-opportunity
+            delete-opportunity:
+                description: Delete a single opportunity in salesforce
+                scopes:
+                    - offline_access
+                    - api
+                input: IdEntity
+                output: SuccessResponse
+                endpoint: DELETE /salesforce/delete-opportunity
         syncs:
             accounts:
                 runs: every hour
@@ -6516,7 +6614,7 @@ integrations:
                     Fetches a list of accounts from salesforce
                 output: Account
                 sync_type: incremental
-                version: 1.0.0
+                version: 1.0.1
                 endpoint: GET /salesforce/accounts
             contacts:
                 runs: every hour
@@ -6524,8 +6622,21 @@ integrations:
                     Fetches a list of contacts from salesforce
                 output: Contact
                 sync_type: incremental
-                version: 1.0.0
+                scopes:
+                    - offline_access
+                    - api
+                version: 1.0.1
                 endpoint: GET /salesforce/contacts
+            leads:
+                runs: every hour
+                description: |
+                    Fetches a list of leads from salesforce
+                output: Lead
+                sync_type: incremental
+                scopes:
+                    - offline_access
+                    - api
+                endpoint: GET /salesforce/leads
             deals:
                 runs: every hour
                 description: |
@@ -6552,21 +6663,201 @@ integrations:
                 sync_type: incremental
                 version: 1.0.0
                 endpoint: GET /salesforce/tickets
+            opportunities:
+                runs: every hour
+                description: |
+                    Fetches a list of opportunities from salesforce
+                output: Opportunity
+                sync_type: incremental
+                scopes:
+                    - offline_access
+                    - api
+                endpoint: GET /salesforce/opportunities
         models:
-            Account:
+            IdEntity:
                 id: string
-                name: string
-                website: string | null
-                description: string | null
-                no_employees: number | null
-                last_modified_date: string
+            ActionResponse:
+                id: string
+                success: boolean
+                errors: array
+            SuccessResponse:
+                success: boolean
             Contact:
                 id: string
                 first_name: string | null
+                middle_name: string | null
                 last_name: string
-                email: string | null
+                account_name: string | null
                 account_id: string | null
+                email: string | null
+                owner_id: string
+                owner_name: string
+                mobile: string | null
+                phone: string | null
+                salutation: string | null
+                title: string | null
                 last_modified_date: string
+            CommonContactInput:
+                first_name?: string | undefined
+                middle_name?: string | undefined
+                account_id?: string | undefined
+                owner_id?: string | undefined
+                email?: string | undefined
+                mobile?: string | undefined
+                phone?: string | undefined
+                salutation?: string | undefined
+                title?: string | undefined
+            CreateContactInput:
+                first_name?: string | undefined
+                middle_name?: string | undefined
+                account_id?: string | undefined
+                owner_id?: string | undefined
+                email?: string | undefined
+                mobile?: string | undefined
+                phone?: string | undefined
+                salutation?: string | undefined
+                title?: string | undefined
+                last_name: string
+            UpdateContactInput:
+                first_name?: string | undefined
+                middle_name?: string | undefined
+                account_id?: string | undefined
+                owner_id?: string | undefined
+                email?: string | undefined
+                mobile?: string | undefined
+                phone?: string | undefined
+                salutation?: string | undefined
+                title?: string | undefined
+                last_name?: string | undefined
+            Lead:
+                id: string
+                first_name: string | null
+                middle_name: string | null
+                last_name: string
+                company_name: string
+                email: string | null
+                owner_id: string
+                owner_name: string
+                phone: string | null
+                salutation: string | null
+                title: string | null
+                website: string | null
+                industry: string | null
+                last_modified_date: string
+            CommonLeadInput:
+                first_name?: string | undefined
+                middle_name?: string | undefined
+                email?: string | undefined
+                owner_id?: string | undefined
+                phone?: string | undefined
+                salutation?: string | undefined
+                title?: string | undefined
+                website?: string | undefined
+                industry?: string | undefined
+            CreateLeadInput:
+                first_name?: string | undefined
+                middle_name?: string | undefined
+                email?: string | undefined
+                owner_id?: string | undefined
+                phone?: string | undefined
+                salutation?: string | undefined
+                title?: string | undefined
+                website?: string | undefined
+                industry?: string | undefined
+                last_name: string
+                company_name: string
+            UpdateLeadInput:
+                first_name?: string | undefined
+                middle_name?: string | undefined
+                email?: string | undefined
+                owner_id?: string | undefined
+                phone?: string | undefined
+                salutation?: string | undefined
+                title?: string | undefined
+                website?: string | undefined
+                industry?: string | undefined
+                last_name?: string | undefined
+                company_name?: string | undefined
+            Account:
+                id: string
+                name: string
+                description: string | null
+                website: string | null
+                industry: string | null
+                billing_city: string | null
+                billing_country: string | null
+                owner_id: string
+                owner_name: string
+                last_modified_date: string
+            CommonAccountInput:
+                description?: string | undefined
+                website?: string | undefined
+                industry?: string | undefined
+                billing_city?: string | undefined
+                billing_country?: string | undefined
+                owner_id?: string | undefined
+            CreateAccountInput:
+                description?: string | undefined
+                website?: string | undefined
+                industry?: string | undefined
+                billing_city?: string | undefined
+                billing_country?: string | undefined
+                owner_id?: string | undefined
+                name: string
+            UpdateAccountInput:
+                description?: string | undefined
+                website?: string | undefined
+                industry?: string | undefined
+                billing_city?: string | undefined
+                billing_country?: string | undefined
+                owner_id?: string | undefined
+                name?: string | undefined
+            Opportunity:
+                id: string
+                opportunity_name: string
+                account_name: string | null
+                account_id: string | null
+                amount: number | null
+                description: string | null
+                close_date: string
+                created_by_id: string
+                created_by: string
+                owner_id: string
+                owner_name: string
+                stage: string
+                probability: number | null
+                type: string | null
+                last_modified_date: string
+            CommonOpportunityInput:
+                account_id?: string | undefined
+                amount?: number | undefined
+                description?: string | undefined
+                created_by_id?: string | undefined
+                owner_id?: string | undefined
+                probability?: number | undefined
+                type?: string | undefined
+            CreateOpportunityInput:
+                account_id?: string | undefined
+                amount?: number | undefined
+                description?: string | undefined
+                created_by_id?: string | undefined
+                owner_id?: string | undefined
+                probability?: number | undefined
+                type?: string | undefined
+                opportunity_name: string
+                close_date: string
+                stage: string
+            UpdateOpportunityInput:
+                account_id?: string | undefined
+                amount?: number | undefined
+                description?: string | undefined
+                created_by_id?: string | undefined
+                owner_id?: string | undefined
+                probability?: number | undefined
+                type?: string | undefined
+                opportunity_name?: string | undefined
+                close_date?: string | undefined
+                stage?: string | undefined
             Deal:
                 id: string
                 name: string
