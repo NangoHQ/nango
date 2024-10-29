@@ -4485,6 +4485,64 @@ integrations:
                 lastName: string
                 email: string
                 products?: string[]
+    keeper-scim:
+        actions:
+            create-user:
+                description: Creates a user in Keeper
+                input: KeeperCreateUser
+                endpoint: POST /users
+                output: User
+            delete-user:
+                description: Deletes a user in Keeper
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                description: |
+                    Fetches the list of users from Keeper
+                endpoint: GET /users
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: User
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            KeeperCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                active?: boolean
+                externalId?: string
+                phoneNumbers?: PhoneNumber[]
+                photos?: Photo[]
+                addresses?: Address[]
+                title?: string
+            PhoneNumber:
+                type: work | mobile | other
+                value: string
+            Photo:
+                type: photo | thumbnail
+                value: string
+            Address:
+                type: work
+                streetAddress?: string
+                locality?: string
+                region?: string
+                postalCode?: string
+                country?: string
     kustomer:
         syncs:
             conversations:
