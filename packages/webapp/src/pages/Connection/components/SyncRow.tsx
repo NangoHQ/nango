@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 
 import { toast } from 'react-toastify';
-import { Tooltip } from '@geist-ui/core';
 import * as Table from '../../../components/ui/Table';
 import { Tag } from '../../../components/ui/label/Tag';
 import { Link } from 'react-router-dom';
@@ -25,6 +24,7 @@ import Button from '../../../components/ui/button/Button';
 import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import { PopoverContent } from '@radix-ui/react-popover';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
+import { SimpleTooltip } from '../../../components/ui/Tooltip';
 
 export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; provider: string | null; reload: () => void }> = ({
     sync,
@@ -104,50 +104,52 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
     return (
         <Table.Row>
             <Table.Cell bordered>
-                <div className="w-36 max-w-3xl ml-1 truncate">{sync.name}</div>
+                <div className="w-36 max-w-3xl truncate">{sync.name}</div>
             </Table.Cell>
             <Table.Cell bordered>
                 <div className="w-36 max-w-3xl truncate">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</div>
             </Table.Cell>
             <Table.Cell bordered>
-                <Link to={logUrl} title="See execution logs">
-                    {sync.status === 'PAUSED' && (
-                        <Tag bgClassName="bg-yellow-500 bg-opacity-30" textClassName="text-yellow-500">
-                            Paused
-                        </Tag>
-                    )}
-                    {(sync.status === 'ERROR' || sync.status === 'STOPPED') && (
-                        <Tag bgClassName="bg-red-base bg-opacity-30" textClassName="text-red-base">
-                            Failed
-                        </Tag>
-                    )}
-                    {sync.status === 'RUNNING' && (
-                        <Tag bgClassName="bg-blue-base bg-opacity-30" textClassName="text-blue-base">
-                            Syncing
-                        </Tag>
-                    )}
-                    {sync.status === 'SUCCESS' && (
-                        <Tag bgClassName="bg-green-base bg-opacity-30" textClassName="text-green-base">
-                            Success
-                        </Tag>
-                    )}
-                </Link>
-            </Table.Cell>
-            <Table.Cell bordered>{formatFrequency(sync.frequency)}</Table.Cell>
-            <Table.Cell bordered>
-                {sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
-                    <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync?.result, sync.latest_sync?.models)}</pre>} type="dark">
-                        <Link to={logUrl} className="block w-32 ml-1">
-                            {formatDateToUSFormat(sync.latest_sync?.updated_at)}
-                        </Link>
-                    </Tooltip>
-                ) : (
-                    <Link to={logUrl} className="">
-                        {formatDateToUSFormat(sync.latest_sync?.updated_at)}
+                <SimpleTooltip tooltipContent={getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}>
+                    <Link to={logUrl}>
+                        {sync.latest_sync.status === 'PAUSED' && (
+                            <Tag bgClassName="bg-yellow-500 bg-opacity-30" textClassName="text-yellow-500">
+                                Paused
+                            </Tag>
+                        )}
+                        {sync.latest_sync.status === 'STOPPED' && (
+                            <Tag bgClassName="bg-red-base bg-opacity-30" textClassName="text-red-base">
+                                Failed
+                            </Tag>
+                        )}
+                        {sync.latest_sync.status === 'RUNNING' && (
+                            <Tag bgClassName="bg-blue-base bg-opacity-30" textClassName="text-blue-base">
+                                Syncing
+                            </Tag>
+                        )}
+                        {sync.latest_sync.status === 'SUCCESS' && (
+                            <Tag bgClassName="bg-green-base bg-opacity-30" textClassName="text-green-base">
+                                Success
+                            </Tag>
+                        )}
                     </Link>
-                )}
+                </SimpleTooltip>
             </Table.Cell>
-            <Table.Cell bordered>
+            <Table.Cell bordered className="text-center">
+                {formatFrequency(sync.frequency)}
+            </Table.Cell>
+            <Table.Cell bordered className="text-center">
+                <SimpleTooltip
+                    tooltipContent={
+                        sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
+                            <pre>{parseLatestSyncResult(sync.latest_sync?.result, sync.latest_sync?.models)}</pre>
+                        ) : undefined
+                    }
+                >
+                    <Link to={logUrl}>{formatDateToUSFormat(sync.latest_sync?.updated_at)}</Link>
+                </SimpleTooltip>
+            </Table.Cell>
+            <Table.Cell bordered className="text-center">
                 {sync.schedule_status === 'STARTED' && (
                     <>
                         {interpretNextRun(sync.futureActionTimes) === '-' ? (
@@ -157,10 +159,19 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                         )}
                     </>
                 )}
-                {sync.schedule_status === 'STARTED' && !sync.futureActionTimes && <span className="">-</span>}
-                {sync.schedule_status !== 'STARTED' && <span className="">-</span>}
+
+                {sync.schedule_status === 'PAUSED' && (
+                    <Tag bgClassName="bg-yellow-500 bg-opacity-30" textClassName="text-yellow-500">
+                        Schedule Paused
+                    </Tag>
+                )}
+
+                {sync.schedule_status === 'DELETED' && (
+                    <Tag bgClassName="bg-red-base bg-opacity-30" textClassName="text-red-base">
+                        Schedule Deleted
+                    </Tag>
+                )}
             </Table.Cell>
-            <Table.Cell bordered>{getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}</Table.Cell>
             <Table.Cell bordered>
                 <Popover>
                     <PopoverTrigger asChild>
@@ -243,9 +254,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                         <ArrowPathRoundedSquareIcon className="flex h-6 w-6" />
                                         <div className="pl-2 flex gap-2 items-center">
                                             Trigger execution (incremental)
-                                            <Tooltip
-                                                type="dark"
-                                                text={
+                                            <SimpleTooltip
+                                                tooltipContent={
                                                     <div className="flex text-white text-sm">
                                                         Incremental: the existing cache and the last sync date will be preserved, only new/updated data will be
                                                         synced.
@@ -253,7 +263,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                                 }
                                             >
                                                 {!syncCommandButtonsDisabled && <QuestionMarkCircledIcon />}
-                                            </Tooltip>
+                                            </SimpleTooltip>
                                         </div>
                                     </Button>
                                 )}
@@ -265,9 +275,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                                 <ArrowPathRoundedSquareIcon className="flex h-6 w-6" />
                                                 <div className="pl-2 flex gap-2 items-center">
                                                     Trigger execution (full refresh)
-                                                    <Tooltip
-                                                        type="dark"
-                                                        text={
+                                                    <SimpleTooltip
+                                                        tooltipContent={
                                                             <div className="flex text-white text-sm">
                                                                 Full refresh: the existing cache and last sync date will be deleted, all historical data will be
                                                                 resynced.
@@ -275,7 +284,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                                         }
                                                     >
                                                         {!syncCommandButtonsDisabled && <QuestionMarkCircledIcon />}
-                                                    </Tooltip>
+                                                    </SimpleTooltip>
                                                 </div>
                                             </Button>
                                         </DialogTrigger>

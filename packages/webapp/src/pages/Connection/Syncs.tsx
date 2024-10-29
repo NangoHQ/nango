@@ -47,13 +47,12 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                 <Table.Table>
                     <Table.Header>
                         <Table.Row>
-                            <Table.Head className="w-[180px]">Name</Table.Head>
-                            <Table.Head className="w-[180px]">Synced Models</Table.Head>
-                            <Table.Head className="w-[80px]">Status</Table.Head>
-                            <Table.Head className="w-[80px]">Frequency</Table.Head>
-                            <Table.Head className="w-[120px]">Last Sync Start</Table.Head>
-                            <Table.Head className="w-[130px]">Next Sync Start</Table.Head>
-                            <Table.Head className="w-[120px]">Last Run</Table.Head>
+                            <Table.Head className="w-[120px]">Sync Name</Table.Head>
+                            <Table.Head className="w-[120px]">Models</Table.Head>
+                            <Table.Head className="w-[120px]">Last Execution</Table.Head>
+                            <Table.Head className="w-[80px] text-center">Frequency</Table.Head>
+                            <Table.Head className="w-[120px] text-center">Last Sync Start</Table.Head>
+                            <Table.Head className="w-[130px] text-center">Next Sync Start</Table.Head>
                             <Table.Head className="w-[40px]"></Table.Head>
                         </Table.Row>
                     </Table.Header>
