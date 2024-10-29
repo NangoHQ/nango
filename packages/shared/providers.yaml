@@ -5668,6 +5668,9 @@ whatsapp-business:
             Authorization: Bearer ${apiKey}
             Content-Type: application/json
         base_url: https://graph.facebook.com
+        verification:
+            endpoint: /v21.0/me
+            method: GET
     docs: https://docs.nango.dev/integrations/all/whatsapp-business
     credentials:
         apiKey:
