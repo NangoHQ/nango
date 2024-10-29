@@ -4,14 +4,7 @@ import { toast } from 'react-toastify';
 import * as Table from '../../../components/ui/Table';
 import { Tag } from '../../../components/ui/label/Tag';
 import { Link } from 'react-router-dom';
-import {
-    EllipsisHorizontalIcon,
-    PlayCircleIcon,
-    PauseCircleIcon,
-    QueueListIcon,
-    ArrowPathRoundedSquareIcon,
-    StopCircleIcon
-} from '@heroicons/react/24/outline';
+import { EllipsisHorizontalIcon, QueueListIcon } from '@heroicons/react/24/outline';
 import { formatFrequency, getRunTime, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun } from '../../../utils/utils';
 import { getLogsUrl } from '../../../utils/logs';
 import { UserFacingSyncCommand } from '../../../types';
@@ -23,8 +16,8 @@ import type { Connection } from '@nangohq/types';
 import Button from '../../../components/ui/button/Button';
 import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import { PopoverContent } from '@radix-ui/react-popover';
-import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import { SimpleTooltip } from '../../../components/ui/Tooltip';
+import { IconClockPause, IconClockPlay, IconPlayerPlay, IconRefresh, IconX } from '@tabler/icons-react';
 
 export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; provider: string | null; reload: () => void }> = ({
     sync,
@@ -174,11 +167,11 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="z-10">
-                        <div className=" bg-black rounded border border-neutral-700">
-                            <div className="flex flex-col w-[320px]">
+                        <div className="bg-active-gray rounded">
+                            <div className="flex flex-col w-[240px] p-[10px]">
                                 <Button
                                     variant="zombie"
-                                    className="w-full"
+                                    className="w-full rounded hover:bg-black text-gray-400"
                                     disabled={syncCommandButtonsDisabled}
                                     onClick={async () => {
                                         setShowPauseStartLoader(true);
@@ -194,20 +187,20 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                 >
                                     {sync.schedule_status !== 'STARTED' ? (
                                         <>
-                                            <PlayCircleIcon className="flex h-6 w-6" />
-                                            <span className="pl-2">Start schedule</span>
+                                            <IconClockPlay className="flex h-4 w-4" />
+                                            <span className="pl-2">Resume Schedule</span>
                                         </>
                                     ) : (
                                         <>
-                                            <PauseCircleIcon className="flex h-6 w-6" />
-                                            <span className="pl-2 ">Pause schedule</span>
+                                            <IconClockPause className="flex h-4 w-4" />
+                                            <span className="pl-2 ">Pause Schedule</span>
                                         </>
                                     )}
                                 </Button>
                                 {sync.status === 'RUNNING' && (
                                     <Button
                                         variant="zombie"
-                                        className="w-full"
+                                        className="w-full rounded hover:bg-black text-gray-400"
                                         disabled={syncCommandButtonsDisabled}
                                         onClick={() => {
                                             setShowInterruptLoader(true);
@@ -215,14 +208,14 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                         }}
                                         isLoading={showInterruptLoader}
                                     >
-                                        <StopCircleIcon className="flex h-6 w-6" />
-                                        <span className="pl-2">Interrupt execution</span>
+                                        <IconX className="flex h-4 w-4" />
+                                        <span className="pl-2">Cancel Execution</span>
                                     </Button>
                                 )}
-                                {sync.status !== 'RUNNING' && sync.sync_type === 'full' && (
+                                {sync.status !== 'RUNNING' && (
                                     <Button
                                         variant="zombie"
-                                        className="w-full"
+                                        className="w-full rounded hover:bg-black text-gray-400"
                                         disabled={syncCommandButtonsDisabled}
                                         isLoading={showTriggerIncrementalLoader}
                                         onClick={() => {
@@ -230,56 +223,22 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                             void syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name);
                                         }}
                                     >
-                                        <ArrowPathRoundedSquareIcon className="flex h-6 w-6" />
+                                        <IconPlayerPlay className="flex h-4 w-4" />
                                         <div className="pl-2 flex gap-2 items-center">Trigger execution</div>
-                                    </Button>
-                                )}
-                                {sync.status !== 'RUNNING' && sync.sync_type === 'incremental' && (
-                                    <Button
-                                        variant="zombie"
-                                        className="w-full"
-                                        disabled={syncCommandButtonsDisabled}
-                                        isLoading={showTriggerIncrementalLoader}
-                                        onClick={() => {
-                                            setShowTriggerIncrementalLoader(true);
-                                            void syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name);
-                                        }}
-                                    >
-                                        <ArrowPathRoundedSquareIcon className="flex h-6 w-6" />
-                                        <div className="pl-2 flex gap-2 items-center">
-                                            Trigger execution (incremental)
-                                            <SimpleTooltip
-                                                tooltipContent={
-                                                    <div className="flex text-white text-sm">
-                                                        Incremental: the existing cache and the last sync date will be preserved, only new/updated data will be
-                                                        synced.
-                                                    </div>
-                                                }
-                                            >
-                                                {!syncCommandButtonsDisabled && <QuestionMarkCircledIcon />}
-                                            </SimpleTooltip>
-                                        </div>
                                     </Button>
                                 )}
 
                                 {sync.status !== 'RUNNING' && (
                                     <Dialog open={openConfirm} onOpenChange={setOpenConfirm}>
                                         <DialogTrigger asChild>
-                                            <Button variant="zombie" className="w-full" disabled={syncCommandButtonsDisabled} isLoading={modalSpinner}>
-                                                <ArrowPathRoundedSquareIcon className="flex h-6 w-6" />
-                                                <div className="pl-2 flex gap-2 items-center">
-                                                    Trigger execution (full refresh)
-                                                    <SimpleTooltip
-                                                        tooltipContent={
-                                                            <div className="flex text-white text-sm">
-                                                                Full refresh: the existing cache and last sync date will be deleted, all historical data will be
-                                                                resynced.
-                                                            </div>
-                                                        }
-                                                    >
-                                                        {!syncCommandButtonsDisabled && <QuestionMarkCircledIcon />}
-                                                    </SimpleTooltip>
-                                                </div>
+                                            <Button
+                                                variant="zombie"
+                                                className="w-full rounded hover:bg-black text-gray-400"
+                                                disabled={syncCommandButtonsDisabled}
+                                                isLoading={modalSpinner}
+                                            >
+                                                <IconRefresh className="flex h-4 w-4" />
+                                                <div className="pl-2 flex gap-2 items-center">Refresh Execution</div>
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent>
@@ -305,8 +264,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                 )}
 
                                 <Link to={logUrl} className="w-full">
-                                    <Button variant="zombie" className="w-full gap-4">
-                                        <QueueListIcon className="flex h-6 w-6 text-gray-400 cursor-pointer" />
+                                    <Button variant="zombie" className="w-full gap-4 rounded hover:bg-black text-gray-400">
+                                        <QueueListIcon className="flex h-4 w-4 cursor-pointer" />
                                         View Logs
                                     </Button>
                                 </Link>
