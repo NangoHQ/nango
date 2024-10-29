@@ -1714,6 +1714,29 @@ discourse:
             title: API Key
             description: The API key for your Discourse account
 
+dixa:
+    display_name: Dixa
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiType}.dixa.io
+        headers:
+            Authorization: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/dixa
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Dixa account
+    connection_config:
+        apiType:
+            type: string
+            title: Api Type
+            description: The Api type for your requests
+            pattern: '^dev\|exports$'
+            example: 'dev|exports'
+
 docusign:
     display_name: DocuSign
     categories:

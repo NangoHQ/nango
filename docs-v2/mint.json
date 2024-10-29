@@ -380,6 +380,7 @@
                 "integrations/all/digitalocean",
                 "integrations/all/discord",
                 "integrations/all/discourse",
+                "integrations/all/dixa",
                 "integrations/all/dropbox",
                 "integrations/all/docusign",
                 "integrations/all/e-conomic",
