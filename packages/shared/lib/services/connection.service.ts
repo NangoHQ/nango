@@ -1027,10 +1027,11 @@ class ConnectionService {
             .orderBy('_nango_connections.created_at', 'desc');
 
         if (search) {
-            subQuery
-                .whereRaw('connection_id ILIKE ?', `%${search}%`)
-                .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
-                .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
+            subQuery.where(function () {
+                this.whereRaw('connection_id ILIKE ?', `%${search}%`)
+                    .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
+                    .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
+            });
         }
         if (integrationIds) {
             subQuery.whereIn('_nango_configs.unique_key', integrationIds);
@@ -2102,7 +2103,22 @@ class ConnectionService {
         return Boolean(tokenExpirationCondition);
     }
 
-    private async getNewCredentials(connection: Connection, providerConfig: ProviderConfig, provider: Provider): Promise<ServiceResponse> {
+    private async getNewCredentials(
+        connection: Connection,
+        providerConfig: ProviderConfig,
+        provider: Provider
+    ): Promise<
+        ServiceResponse<
+            | OAuth2Credentials
+            | OAuth2ClientCredentials
+            | AppCredentials
+            | AppStoreCredentials
+            | TableauCredentials
+            | JwtCredentials
+            | BillCredentials
+            | TwoStepCredentials
+        >
+    > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;

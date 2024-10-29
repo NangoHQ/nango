@@ -34,10 +34,11 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
         return;
     }
 
-    const queryStringValues = queryStringValidation.safeParse(req.query);
-    if (!queryStringValues.success) {
+    const queryParamValues = queryStringValidation.safeParse(req.query);
+
+    if (!queryParamValues.success) {
         res.status(400).send({
-            error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryStringValues.error) }
+            error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) }
         });
         return;
     }
@@ -51,7 +52,7 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
         return;
     }
 
-    const environmentName = queryStringValues.data.customEnvironment;
+    const environmentName = queryParamValues.data.customEnvironment;
 
     let environment = await environmentService.getByEnvironmentName(account.id, environmentName);
 
