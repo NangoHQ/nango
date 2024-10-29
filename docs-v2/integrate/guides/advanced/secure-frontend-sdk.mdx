@@ -4,6 +4,8 @@ sidebarTitle: 'Secure the frontend SDK'
 description: 'Step-by-step guide on how to secure the frontend SDK.'
 ---
 
+<Tip>This guide is only relevant if your are using the Headlesss API; Nango Connect is secure by default.</Tip>
+
 Before moving to production, you must ensure nobody else can create a new connection.
 
 Add a secret HMAC key (large, random value) in your _Environment Settings_ tab in the Nango UI.
@@ -154,10 +156,10 @@ In the frontend, pass the HMAC signature in `nango.auth()` ([reference](/referen
 nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', { hmac: '<HMAC-DIGEST>' });
 ```
 
-Enable the HMAC checkbox in the _Environment Settings_ tab in the Nango UI. 
+Enable the HMAC checkbox in the _Environment Settings_ tab in the Nango UI.
 
 <Warning>
-Nango will reject auth calls without a proper HMAC signature, so make sure your code is ready before you flip the switch! 
+Nango will reject auth calls without a proper HMAC signature, so make sure your code is ready before you flip the switch!
 </Warning>
 
 <Tip>
