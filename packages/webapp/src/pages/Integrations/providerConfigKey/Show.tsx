@@ -83,6 +83,7 @@ export const ShowIntegration: React.FC = () => {
 
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
+            apiURL: globalEnv.apiUrl,
             onEvent: onEvent
         });
 

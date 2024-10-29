@@ -167,6 +167,7 @@ export const ConnectionList: React.FC = () => {
 
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
+            apiURL: globalEnv.apiUrl,
             onEvent
         });
 
