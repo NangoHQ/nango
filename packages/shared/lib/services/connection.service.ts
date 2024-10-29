@@ -2058,7 +2058,22 @@ class ConnectionService {
         return Boolean(tokenExpirationCondition);
     }
 
-    private async getNewCredentials(connection: Connection, providerConfig: ProviderConfig, provider: Provider): Promise<ServiceResponse> {
+    private async getNewCredentials(
+        connection: Connection,
+        providerConfig: ProviderConfig,
+        provider: Provider
+    ): Promise<
+        ServiceResponse<
+            | OAuth2Credentials
+            | OAuth2ClientCredentials
+            | AppCredentials
+            | AppStoreCredentials
+            | TableauCredentials
+            | JwtCredentials
+            | BillCredentials
+            | TwoStepCredentials
+        >
+    > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
