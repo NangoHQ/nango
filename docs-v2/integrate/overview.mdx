@@ -17,16 +17,16 @@ Nango guides the user through the (O)Auth flow in a popup window.
 Store the `connectionId` & `integrationId` in your database to retrieve the user's data later.
 
 ```ts Frontend: Trigger the OAuth flow.
-const integrationId = 'zendesk';
-const connectionId = 'user123';
-
 // Shows authorization popup to the user.
-const result = await nango.auth(integrationId, connectionId);
-
-if (result.ok) {
-    // The auth flow succeeded. The integration is set up!
-    saveToDatabase(connectionId, integrationId);
-}
+await nango.openConnectUI({
+    sessionToken,
+    onEvent: (event) {
+        if (event.type === 'connect') {
+            // The auth flow succeeded. The integration is set up!
+            saveToDatabase(connectionId, integrationId);
+        }
+    }
+});
 ```
 
 <Tip>

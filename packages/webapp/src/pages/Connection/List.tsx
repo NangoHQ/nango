@@ -123,6 +123,7 @@ export default function ConnectionList() {
 
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
+            apiURL: globalEnv.apiUrl,
             onEvent: (event) => {
                 if (event.type === 'close') {
                     // we refresh on close so user can see the diff
