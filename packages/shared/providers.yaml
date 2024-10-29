@@ -5707,6 +5707,28 @@ webflow:
         base_url: https://api.webflow.com
     docs: https://docs.nango.dev/integrations/all/webflow
 
+whatsapp-business:
+    display_name: WhatsApp Business
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+            Content-Type: application/json
+        base_url: https://graph.facebook.com
+        verification:
+            endpoint: /v21.0/me
+            method: GET
+    docs: https://docs.nango.dev/integrations/all/whatsapp-business
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The access token to your whatsapp account
+            pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
+
 whoop:
     display_name: Whoop
     categories:
