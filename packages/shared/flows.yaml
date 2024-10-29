@@ -6371,6 +6371,72 @@ integrations:
                 customer_ref: Reference
                 currency_ref?: Reference
                 project_ref?: Reference
+    ring-central:
+        actions:
+            create-user:
+                description: Creates a user in RingCentral
+                input: RingCentralCreateUser
+                endpoint: POST /users
+                output: User
+                scopes:
+                    - EditAccounts
+            delete-user:
+                description: Deletes a user in RingCentral
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - EditAccounts
+        syncs:
+            users:
+                description: |
+                    Fetches the list of users from RingCentral
+                endpoint: GET /users
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: User
+                scopes:
+                    - ReadAccounts
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            RingCentralCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                active?: boolean
+                externalId?: string
+                phoneNumbers?: PhoneNumber[]
+                photos?: Photo[]
+                addresses?: Address[]
+                title?: string
+                urn:ietf:params:scim:schemas:extension:enterprise:2.0:User?:
+                    department: string
+            PhoneNumber:
+                type: work | mobile | other
+                value: string
+            Photo:
+                type: photo
+                value: string
+            Address:
+                type: work
+                streetAddress?: string
+                locality?: string
+                region?: string
+                postalCode?: string
+                country?: string
     salesforce:
         actions:
             fetch-fields:
