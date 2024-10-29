@@ -142,7 +142,7 @@ class ConfigController {
                         }
 
                         // Check if provider is of type ProviderTwoStep
-                        if (provider.auth_mode === 'TWOSTEP') {
+                        if (provider.auth_mode === 'TWO_STEP') {
                             integration['credentialParams'] = parseCredentialParamsFromTemplate(provider as ProviderTwoStep);
                         }
                     }

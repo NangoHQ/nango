@@ -96,7 +96,7 @@ export interface BillCredentials {
 }
 
 export interface TwoStepCredentials {
-    type: 'TWOSTEP';
+    type: 'TWO_STEP';
 }
 
 export enum AuthorizationStatus {

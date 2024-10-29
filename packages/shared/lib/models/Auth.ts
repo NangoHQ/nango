@@ -155,7 +155,7 @@ export interface JwtCredentials {
 }
 
 export interface TwoStepCredentials extends CredentialsCommon {
-    type: 'TWOSTEP';
+    type: 'TWO_STEP';
     [key: string]: any;
     token?: string;
     expires_at?: Date | undefined;

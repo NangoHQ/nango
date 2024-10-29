@@ -239,9 +239,9 @@ export default function IntegrationCreate() {
                 dev_key: devKey
             };
         }
-        if (authMode === 'TWOSTEP') {
+        if (authMode === 'TWO_STEP') {
             credentials = {
-                type: 'TWOSTEP',
+                type: 'TWO_STEP',
                 ...credentialsState
             };
         }
@@ -544,7 +544,7 @@ export default function IntegrationCreate() {
         }
 
         let twoStepCredentialsString = '';
-        if (authMode === 'TWOSTEP') {
+        if (authMode === 'TWO_STEP') {
             const credentialEntries = Object.entries(credentialsState);
 
             if (credentialEntries.length > 0) {
@@ -1208,7 +1208,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                     </div>
                                 </div>
                             )}
-                            {authMode === 'TWOSTEP' && (
+                            {authMode === 'TWO_STEP' && (
                                 <div>
                                     {integration?.credentialParams?.map((paramName: string) => (
                                         <div key={paramName}>

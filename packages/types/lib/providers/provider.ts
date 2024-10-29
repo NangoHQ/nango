@@ -129,7 +129,7 @@ export interface ProviderTwoStep extends BaseProvider {
     token_response: {
         token: string;
         token_expiration: string;
-        token_expiration_formula: 'expireAt' | 'expireIn';
+        token_expiration_strategy: 'expireAt' | 'expireIn';
     };
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;

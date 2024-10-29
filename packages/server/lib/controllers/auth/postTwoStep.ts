@@ -110,8 +110,8 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             return;
         }
 
-        if (provider.auth_mode !== 'TWOSTEP') {
-            await logCtx.error('Provider does not support TWOSTEP auth', { provider: config.provider });
+        if (provider.auth_mode !== 'TWO_STEP') {
+            await logCtx.error('Provider does not support TWO_STEP auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -136,7 +136,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
         const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
-        const [updatedConnection] = await connectionService.upsetTwoStepConnection({
+        const [updatedConnection] = await connectionService.upsertTwoStepConnection({
             connectionId,
             providerConfigKey,
             credentials,
@@ -168,7 +168,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 connection: updatedConnection.connection,
                 environment,
                 account,
-                auth_mode: 'TWOSTEP',
+                auth_mode: 'TWO_STEP',
                 operation: updatedConnection.operation
             },
             config.provider,
@@ -186,7 +186,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
                 environment,
                 account,
-                auth_mode: 'TWOSTEP',
+                auth_mode: 'TWO_STEP',
                 error: {
                     type: 'unknown',
                     description: `Error during TwoStep create: ${prettyError}`

@@ -130,7 +130,7 @@ export default function Authorization(props: AuthorizationProps) {
                     />
                 </div>
             )}
-            {connection.credentials?.type === 'TWOSTEP' && (
+            {connection.credentials?.type === 'TWO_STEP' && (
                 <div>
                     {Object.keys(connection.credentials)
                         .filter((key) => !['type', 'token', 'expires_at', 'raw'].includes(key))
@@ -277,7 +277,7 @@ export default function Authorization(props: AuthorizationProps) {
                 connection.credentials.type === 'OAUTH2' ||
                 connection.credentials.type === 'APP' ||
                 connection.credentials.type === 'BILL' ||
-                connection.credentials.type === 'TWOSTEP' ||
+                connection.credentials.type === 'TWO_STEP' ||
                 connection.credentials.type === 'CUSTOM') && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Raw Token Response</span>

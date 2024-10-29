@@ -421,7 +421,7 @@ class ConnectionService {
         return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
     }
 
-    public async upsetTwoStepConnection({
+    public async upsertTwoStepConnection({
         connectionId,
         providerConfigKey,
         credentials,
@@ -733,7 +733,7 @@ class ConnectionService {
                 connection.credentials = creds;
             }
 
-            if (credentials.type && credentials.type === 'TWOSTEP') {
+            if (credentials.type && credentials.type === 'TWO_STEP') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
@@ -1092,7 +1092,7 @@ class ConnectionService {
             connection?.credentials?.type === 'TABLEAU' ||
             connection?.credentials?.type === 'JWT' ||
             connection?.credentials?.type === 'BILL' ||
-            connection?.credentials?.type === 'TWOSTEP'
+            connection?.credentials?.type === 'TWO_STEP'
         ) {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connectionId: connection.connection_id,
@@ -1326,14 +1326,14 @@ class ConnectionService {
                 return billCredentials;
             }
 
-            case 'TWOSTEP': {
+            case 'TWO_STEP': {
                 if (!template || !('token_response' in template)) {
-                    throw new NangoError(`Token response structure is missing for TWOSTEP.`);
+                    throw new NangoError(`Token response structure is missing for TWO_STEP.`);
                 }
 
                 const tokenPath = template.token_response.token;
                 const expirationPath = template.token_response.token_expiration;
-                const expirationFormula = template.token_response.token_expiration_formula;
+                const expirationStrategy = template.token_response.token_expiration_strategy;
 
                 const token = extractValueByPath(rawCreds, tokenPath);
                 const expiration = extractValueByPath(rawCreds, expirationPath);
@@ -1343,9 +1343,9 @@ class ConnectionService {
                 }
                 let expiresAt: Date | undefined;
 
-                if (expirationFormula === 'expireAt' && expiration) {
+                if (expirationStrategy === 'expireAt' && expiration) {
                     expiresAt = parseTokenExpirationDate(expiration);
-                } else if (expirationFormula === 'expireIn' && expiration) {
+                } else if (expirationStrategy === 'expireIn' && expiration) {
                     const expiresIn = Number.parseInt(expiration, 10);
                     expiresAt = new Date(Date.now() + expiresIn * 1000);
                 } else if (template.token_expires_in_ms) {
@@ -1353,7 +1353,7 @@ class ConnectionService {
                 }
 
                 const twoStepCredentials: TwoStepCredentials = {
-                    type: 'TWOSTEP',
+                    type: 'TWO_STEP',
                     token: token,
                     expires_at: expiresAt,
                     raw: rawCreds
@@ -1948,7 +1948,7 @@ class ConnectionService {
 
             const { data } = response;
 
-            const parsedCreds = this.parseRawCredentials(data, 'TWOSTEP', provider) as TwoStepCredentials;
+            const parsedCreds = this.parseRawCredentials(data, 'TWO_STEP', provider) as TwoStepCredentials;
 
             for (const [key, value] of Object.entries(dynamicCredentials)) {
                 if (value !== undefined) {
@@ -2125,7 +2125,7 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (provider.auth_mode === 'TWOSTEP') {
+        } else if (provider.auth_mode === 'TWO_STEP') {
             const { token, expires_at, type, raw, ...dynamicCredentials } = connection.credentials as TwoStepCredentials;
             const {
                 success,

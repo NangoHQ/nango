@@ -39,7 +39,7 @@
                         "TABLEAU",
                         "JWT",
                         "BILL",
-                        "TWOSTEP"
+                        "TWO_STEP"
                     ]
                 },
                 "authorization_method": {
@@ -322,7 +322,7 @@
                         "token_expiration": {
                             "type": "string"
                         },
-                        "token_expiration_formula": {
+                        "token_expiration_strategy": {
                             "type": "string"
                         }
                     }

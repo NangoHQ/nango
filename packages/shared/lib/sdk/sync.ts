@@ -170,7 +170,7 @@ export interface AuthModes {
     Tableau: 'TABLEAU';
     Jwt: 'JWT';
     Bill: 'BILL';
-    TwoStep: 'TWOSTEP';
+    TwoStep: 'TWO_STEP';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 

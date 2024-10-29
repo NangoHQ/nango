@@ -390,7 +390,7 @@ export default class Nango {
             return { params: BillCredentials } as unknown as ConnectionConfig;
         }
 
-        if ('type' in credentials && credentials.type === 'TWOSTEP') {
+        if ('type' in credentials && credentials.type === 'TWO_STEP') {
             const twoStepCredentials: Record<string, any> = { ...credentials };
 
             return { params: twoStepCredentials } as unknown as ConnectionConfig;
@@ -452,7 +452,7 @@ export default class Nango {
             throw new AuthError('You must specify credentials.', 'missingCredentials');
         }
 
-        if ('type' in credentials && credentials['type'] === 'TWOSTEP') {
+        if ('type' in credentials && credentials['type'] === 'TWO_STEP') {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/two-step/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as TwoStepCredentials

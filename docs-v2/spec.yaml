@@ -1822,7 +1822,7 @@ components:
             type: string
         auth_mode:
           type: string
-          enum: ['OAUTH1','OAUTH2','OAUTH2_CC','BASIC','API_KEY','APP_STORE','CUSTOM','APP','NONE','TBA','TABLEAU','JWT','BILL','TWOSTEP']
+          enum: ['OAUTH1','OAUTH2','OAUTH2_CC','BASIC','API_KEY','APP_STORE','CUSTOM','APP','NONE','TBA','TABLEAU','JWT','BILL','TWO_STEP']
         proxy:
           properties:
             base_url:
