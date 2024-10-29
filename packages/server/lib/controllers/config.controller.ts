@@ -118,12 +118,10 @@ class ConfigController {
         try {
             const { environment } = res.locals;
 
-            const configs = await configService.listProviderConfigs(environment.id);
-
-            const connections = await connectionService.listConnections({ environmentId: environment.id });
+            const configs = await configService.listIntegrationForApi(environment.id);
 
             const integrations = await Promise.all(
-                configs.map(async (config: ProviderConfig) => {
+                configs.map(async (config) => {
                     const provider = getProvider(config.provider);
                     const activeFlows = await getFlowConfigsByParams(environment.id, config.unique_key);
 
@@ -132,10 +130,12 @@ class ConfigController {
                         uniqueKey: config.unique_key,
                         provider: config.provider,
                         scripts: activeFlows.length,
-                        connection_count: connections.filter((value) => value.provider === config.unique_key).length,
+                        connection_count: Number(config.connection_count),
                         creationDate: config.created_at
                     };
 
+                    // Used by legacy connection create
+                    // TODO: remove this
                     if (provider) {
                         if (provider.auth_mode !== 'APP' && provider.auth_mode !== 'CUSTOM') {
                             integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);

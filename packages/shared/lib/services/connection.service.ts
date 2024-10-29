@@ -982,6 +982,10 @@ class ConnectionService {
         return { total: Number(res.total_connection), withError: Number(res.with_error) };
     }
 
+    /**
+     * List connections with associated data (active_logs, end_users) and pagination
+     * If you want the raw list, use something else
+     */
     public async listConnections({
         environmentId,
         integrationIds,

@@ -42,6 +42,12 @@ export type GetConnectionsCount = Endpoint<{
     };
 }>;
 
+export type ApiPublicConnection = Pick<Connection, 'id' | 'connection_id' | 'provider_config_key'> & {
+    created: string;
+    metadata: Record<string, unknown> | null;
+    provider: string;
+    errors: [{ type: string; log_id: string }];
+};
 export type GetPublicConnections = Endpoint<{
     Method: 'GET';
     Querystring: {
@@ -50,7 +56,7 @@ export type GetPublicConnections = Endpoint<{
     };
     Path: '/connection';
     Success: {
-        connections: any[];
+        connections: ApiPublicConnection[];
     };
 }>;
 
