@@ -369,7 +369,7 @@ paths:
                       items:
                           type: string
                           enum: [webhook]
-                  description: The integration ID (unique_key) that you created in Nango.
+                  description: Include additional sensitive data
             responses:
                 '200':
                     description: Successfully returned an integration
