@@ -213,28 +213,44 @@ export function formatQuantity(quantity: number): string {
     return quantityFormatter.format(quantity);
 }
 
+const unitMap: Record<string, string> = {
+    minutes: 'm',
+    minute: 'm',
+    mins: 'm',
+    min: 'm',
+    hours: 'h',
+    hour: 'h',
+    days: 'd',
+    day: 'd',
+    months: 'mos',
+    month: 'mo',
+    years: 'y',
+    year: 'y'
+};
+
+const phraseMap: Record<string, string> = {
+    'every half day': '12h',
+    'every half hour': '30m',
+    'every quarter hour': '15m',
+    'every hour': '1h',
+    'every day': '1d',
+    'every month': '30d',
+    'every week': '1w'
+};
+
 export function formatFrequency(frequency: string): string {
-    const unitMap: Record<string, string> = {
-        minutes: 'm',
-        minute: 'm',
-        mins: 'm',
-        min: 'm',
-        hours: 'h',
-        hour: 'h',
-        days: 'd',
-        day: 'd',
-        months: 'mos',
-        month: 'mo',
-        years: 'y',
-        year: 'y'
-    };
+    if (phraseMap[frequency]) {
+        return phraseMap[frequency];
+    }
 
     // 1. replace every: every 5 minutes -> 5 minutes
     frequency = frequency.replace('every', '').trim();
+
     // 2. prefix with `1` if no quantity. Ex: every day -> day -> 1day
     if (!/^\d/.test(frequency)) {
         frequency = '1' + frequency;
     }
+
     // 3. replace unit by shortname if possible: Ex: 5 minutes -> 5m
     for (const [unit, abbreviation] of Object.entries(unitMap)) {
         if (frequency.includes(unit)) {
