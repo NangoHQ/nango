@@ -5,7 +5,7 @@ import express from 'express';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import http from 'node:http';
-import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getServerPort, getWebsocketsPath, launchProvidersSync } from '@nangohq/shared';
+import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getServerPort, getWebsocketsPath, monitorProviders } from '@nangohq/shared';
 import { getLogger, requestLoggerMiddleware } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { KnexDatabase } from '@nangohq/database';
@@ -58,7 +58,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 }
 
 // Kick off keeping providers in sync
-await launchProvidersSync();
+await monitorProviders();
 
 await oAuthSessionService.clearStaleSessions();
 refreshConnectionsCron();

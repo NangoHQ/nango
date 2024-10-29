@@ -26,7 +26,7 @@ export function getProvider(providerName: string): Provider | null {
     return providers?.[providerName] ?? null;
 }
 
-export async function launchProvidersSync() {
+export async function monitorProviders() {
     await loadProviders();
 
     if (providersUrl) {
