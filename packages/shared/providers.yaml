@@ -5658,7 +5658,7 @@ webflow:
     docs: https://docs.nango.dev/integrations/all/webflow
 
 whatsapp-business:
-    display_name: whatsapp
+    display_name: WhatsApp Business
     categories:
         - communication
         - marketing
