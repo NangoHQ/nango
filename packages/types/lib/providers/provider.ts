@@ -27,6 +27,7 @@ export interface SimplifiedJSONSchema {
     description: string;
     example?: string;
     pattern?: string;
+    optional?: boolean;
     format?: string;
     order: number;
     default_value?: string;
