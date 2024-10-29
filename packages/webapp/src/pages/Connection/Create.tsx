@@ -58,6 +58,7 @@ export default function IntegrationCreate() {
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
+    const [credentialsState, setCredentialsState] = useState<Record<string, string>>({});
     const [issuerId, setIssuerId] = useState('');
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI(env);
@@ -238,6 +239,12 @@ export default function IntegrationCreate() {
                 dev_key: devKey
             };
         }
+        if (authMode === 'TWO_STEP') {
+            credentials = {
+                type: 'TWO_STEP',
+                ...credentialsState
+            };
+        }
         const connectionConfig = {
             user_scope: authMode === 'NONE' ? undefined : selectedScopes || [],
             params,
@@ -298,6 +305,13 @@ export default function IntegrationCreate() {
         const params = connectionConfigParams ? Object.assign({}, connectionConfigParams) : {}; // Copy object to update UI.
         params[e.target.name.replace('connection-config-', '')] = e.target.value;
         setConnectionConfigParams(params);
+    };
+
+    const handleCredentialParamsChange = (paramName: string, value: string) => {
+        setCredentialsState((prevState) => ({
+            ...prevState,
+            [paramName]: value
+        }));
     };
 
     const handleAuthorizationParamsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -529,6 +543,20 @@ export default function IntegrationCreate() {
             }
         }
 
+        let twoStepCredentialsString = '';
+        if (authMode === 'TWO_STEP') {
+            const credentialEntries = Object.entries(credentialsState);
+
+            if (credentialEntries.length > 0) {
+                const credentialsString = credentialEntries.map(([key, value]) => `${key}: '${value}'`).join(',\n        ');
+
+                twoStepCredentialsString = `
+        credentials: {
+            ${credentialsString}
+        }
+        `;
+            }
+        }
         const connectionConfigStr =
             !connectionConfigParamsStr &&
             !authorizationParamsStr &&
@@ -541,7 +569,8 @@ export default function IntegrationCreate() {
             !tableauCredentialsString &&
             !jwtCredentialsString &&
             !tbaCredentialsString &&
-            !billCredentialsString
+            !billCredentialsString &&
+            !twoStepCredentialsString
                 ? ''
                 : ', { ' +
                   [
@@ -556,7 +585,8 @@ export default function IntegrationCreate() {
                       tableauCredentialsString,
                       jwtCredentialsString,
                       tbaCredentialsString,
-                      billCredentialsString
+                      billCredentialsString,
+                      twoStepCredentialsString
                   ]
                       .filter(Boolean)
                       .join(', ') +
@@ -1178,7 +1208,29 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                     </div>
                                 </div>
                             )}
+                            {authMode === 'TWO_STEP' && (
+                                <div>
+                                    {integration?.credentialParams?.map((paramName: string) => (
+                                        <div key={paramName}>
+                                            <div className="flex mt-6">
+                                                <label htmlFor={`credential-${paramName}`} className="text-text-light-gray block text-sm font-semibold">
+                                                    {paramName.charAt(0).toUpperCase() + paramName.slice(1)}
+                                                </label>
+                                            </div>
 
+                                            <div className="mt-1">
+                                                <SecretInput
+                                                    copy={true}
+                                                    id={`credential-${paramName}`}
+                                                    name={`credential-${paramName}`}
+                                                    optionalValue={credentialsState[paramName]}
+                                                    setOptionalValue={(value) => handleCredentialParamsChange(paramName, value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                             <div>
                                 {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}
                                 <div className="flex">

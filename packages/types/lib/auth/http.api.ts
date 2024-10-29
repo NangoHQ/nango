@@ -145,3 +145,28 @@ export type PostPublicBillAuthorization = Endpoint<{
         connectionId: string;
     };
 }>;
+
+export type PostPublicTwoStepAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: Record<string, any>;
+    Querystring: {
+        connection_id?: string | undefined;
+        params?: Record<string, any> | undefined;
+        hmac?: string | undefined;
+    };
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/two-step';
+    Error:
+        | ApiError<'invalid_body'>
+        | ApiError<'invalid_query_params'>
+        | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
+        | ApiError<'invalid_auth_mode'>
+        | ApiError<'invalid_credentials'>;
+    Success: {
+        providerConfigKey: string;
+        connectionId: string;
+    };
+}>;

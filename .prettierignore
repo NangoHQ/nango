@@ -6,3 +6,4 @@ templates
 **/node_modules/**
 config/events/*.json
 docs-v2/**
+!docs-v2/spec.yaml

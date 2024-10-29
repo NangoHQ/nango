@@ -25,7 +25,22 @@
                 },
                 "auth_mode": {
                     "type": "string",
-                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU", "JWT", "BILL"]
+                    "enum": [
+                        "API_KEY",
+                        "APP",
+                        "APP_STORE",
+                        "BASIC",
+                        "NONE",
+                        "OAUTH1",
+                        "OAUTH2",
+                        "OAUTH2_CC",
+                        "CUSTOM",
+                        "TBA",
+                        "TABLEAU",
+                        "JWT",
+                        "BILL",
+                        "TWO_STEP"
+                    ]
                 },
                 "authorization_method": {
                     "type": "string",
@@ -292,6 +307,28 @@
                             "type": "string"
                         }
                     }
+                },
+                "token_headers": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "token_response": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "token": {
+                            "type": "string"
+                        },
+                        "token_expiration": {
+                            "type": "string"
+                        },
+                        "token_expiration_strategy": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "token_expires_in_ms": {
+                    "type": "number"
                 },
                 "token_request_auth_method": {
                     "type": "string",

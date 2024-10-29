@@ -24,7 +24,6 @@ import { Info } from '../../components/Info';
 import { Skeleton } from '../../components/ui/Skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import type { ApiConnection } from '@nangohq/types';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { ErrorCircle } from '../../components/ui/label/error-circle';
 import Spinner from '../../components/ui/Spinner';
@@ -32,6 +31,7 @@ import { AvatarCustom } from '../../components/AvatarCustom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../components/ui/DropdownMenu';
 import { IconChevronDown } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
+import type { ApiConnection } from '@nangohq/types';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -148,7 +148,6 @@ export const ConnectionList: React.FC = () => {
                 }
             } else if (event.type === 'connect') {
                 void mutate();
-                console.log('connected', event);
                 hasConnected.current = event.payload;
             }
         },
