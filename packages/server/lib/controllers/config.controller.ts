@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
 import type { StandardNangoConfig, Config as ProviderConfig, IntegrationWithCreds, Integration as ProviderIntegration, NangoSyncConfig } from '@nangohq/shared';
 import { isHosted } from '@nangohq/utils';
-import type { AuthModeType } from '@nangohq/types';
+import type { AuthModeType, ProviderTwoStep } from '@nangohq/types';
 import {
     flowService,
     errorManager,
@@ -19,7 +19,7 @@ import {
     getProvider,
     getProviders
 } from '@nangohq/shared';
-import { parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
+import { parseConnectionConfigParamsFromTemplate, parseCredentialParamsFromTemplate } from '../utils/utils.js';
 import type { RequestLocals } from '../utils/express.js';
 
 export interface Integration {
@@ -30,6 +30,7 @@ export interface Integration {
     scripts: number;
     creationDate: Date | undefined;
     connectionConfigParams?: string[];
+    credentialParams?: string[];
 }
 
 export interface ListIntegration {
@@ -135,8 +136,15 @@ class ConfigController {
                         creationDate: config.created_at
                     };
 
-                    if (provider && provider.auth_mode !== 'APP' && provider.auth_mode !== 'CUSTOM') {
-                        integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);
+                    if (provider) {
+                        if (provider.auth_mode !== 'APP' && provider.auth_mode !== 'CUSTOM') {
+                            integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);
+                        }
+
+                        // Check if provider is of type ProviderTwoStep
+                        if (provider.auth_mode === 'TWO_STEP') {
+                            integration['credentialParams'] = parseCredentialParamsFromTemplate(provider as ProviderTwoStep);
+                        }
                     }
 
                     return integration;
