@@ -23,8 +23,12 @@ export const getConnectionsCount = asyncWrapper<GetConnectionsCount>(async (req,
     const { environment } = res.locals;
 
     const count = await connectionService.count({ environmentId: environment.id });
+    if (count.isErr()) {
+        res.status(200).send({ data: { total: 0, withAuthError: 0 } });
+        return;
+    }
 
     res.status(200).send({
-        data: count
+        data: count.value
     });
 });

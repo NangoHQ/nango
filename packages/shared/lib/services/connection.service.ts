@@ -959,7 +959,7 @@ class ConnectionService {
         return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
     }
 
-    public async count({ environmentId }: { environmentId: number }): Promise<{ total: number; withAuthError: number }> {
+    public async count({ environmentId }: { environmentId: number }): Promise<Result<{ total: number; withAuthError: number }>> {
         const query = db.knex
             .from(`_nango_connections`)
             .select<{ total_connection: string; with_auth_error: string }>(
@@ -976,10 +976,10 @@ class ConnectionService {
             .first();
         const res = await query;
         if (!res) {
-            return { total: 0, withAuthError: 0 };
+            return Err('failed_to_count');
         }
 
-        return { total: Number(res.total_connection), withAuthError: Number(res.with_auth_error) };
+        return Ok({ total: Number(res.total_connection), withAuthError: Number(res.with_auth_error) });
     }
 
     /**
