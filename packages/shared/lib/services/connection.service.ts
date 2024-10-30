@@ -959,12 +959,12 @@ class ConnectionService {
         return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
     }
 
-    public async count({ environmentId }: { environmentId: number }): Promise<{ total: number; withError: number }> {
+    public async count({ environmentId }: { environmentId: number }): Promise<Result<{ total: number; withAuthError: number }>> {
         const query = db.knex
             .from(`_nango_connections`)
-            .select<{ total_connection: string; with_error: string }>(
+            .select<{ total_connection: string; with_auth_error: string }>(
                 db.knex.raw('COUNT(_nango_connections.*) as total_connection'),
-                db.knex.raw('COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type IS NOT NULL) as with_error')
+                db.knex.raw('COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type IS NOT NULL) as with_auth_error')
             )
             .leftJoin('_nango_active_logs', (join) => {
                 join.on('_nango_active_logs.connection_id', '_nango_connections.id').andOnVal('active', true).andOnVal('type', 'auth');
@@ -976,10 +976,10 @@ class ConnectionService {
             .first();
         const res = await query;
         if (!res) {
-            return { total: 0, withError: 0 };
+            return Err('failed_to_count');
         }
 
-        return { total: Number(res.total_connection), withError: Number(res.with_error) };
+        return Ok({ total: Number(res.total_connection), withAuthError: Number(res.with_auth_error) });
     }
 
     /**
