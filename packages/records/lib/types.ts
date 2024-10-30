@@ -63,6 +63,6 @@ export interface RecordCount {
     model: string;
     connection_id: number;
     environment_id: number;
-    object_count: number;
+    count: number;
     updated_at: string;
 }

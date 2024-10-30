@@ -255,20 +255,22 @@ export async function upsert({
                     }
                 });
 
-                const delta_count = chunkSummary.addedKeys.length - (chunkSummary.deletedKeys?.length ?? 0);
-                await trx
-                    .from(RECORD_COUNTS_TABLE)
-                    .insert({
-                        connection_id: connectionId,
-                        model,
-                        environment_id: environmentId,
-                        object_count: Math.max(0, delta_count)
-                    })
-                    .onConflict(['connection_id', 'environment_id', 'model'])
-                    .merge({
-                        object_count: trx.raw(`${RECORD_COUNTS_TABLE}.object_count + ?`, [delta_count]),
-                        updated_at: trx.fn.now()
-                    });
+                const delta = chunkSummary.addedKeys.length - (chunkSummary.deletedKeys?.length ?? 0);
+                if (delta !== 0) {
+                    await trx
+                        .from(RECORD_COUNTS_TABLE)
+                        .insert({
+                            connection_id: connectionId,
+                            model,
+                            environment_id: environmentId,
+                            count: Math.max(0, delta)
+                        })
+                        .onConflict(['connection_id', 'environment_id', 'model'])
+                        .merge({
+                            count: trx.raw(`${RECORD_COUNTS_TABLE}.count + EXCLUDED.count`),
+                            updated_at: trx.fn.now()
+                        });
+                }
             }
         });
 

@@ -59,7 +59,7 @@ export interface SyncResponse {
         models: string[];
     };
     active_logs: Pick<ActiveLog, 'log_id'> | null;
-    object_count: number;
+    record_count: number;
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL' | 'CANCEL';

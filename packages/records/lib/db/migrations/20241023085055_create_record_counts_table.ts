@@ -6,11 +6,11 @@ export async function up(knex: Knex): Promise<void> {
     await knex.transaction(async (trx) => {
         // TABLE
         await trx.raw(`
-            CREATE TABLE "${TABLE}" (
-                connection_id integer NOT NULL,
+            CREATE TABLE IF NOT EXISTS "${TABLE}" (
                 environment_id integer NOT NULL,
+                connection_id integer NOT NULL,
                 model character varying(255) NOT NULL,
-                object_count integer NOT NULL,
+                count integer NOT NULL,
                 updated_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -24,7 +24,6 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
-    // TABLE
-    // INDEXES are dropped automatically
     await knex.raw(`DROP TABLE IF EXISTS "${TABLE}"`);
+    // Note: INDEXES are dropped automatically
 }
