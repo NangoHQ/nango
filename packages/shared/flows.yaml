@@ -8330,6 +8330,7 @@ integrations:
                 output: CreatedTicket
                 endpoint: POST /tickets
                 input: TicketCreate
+                version: 1.0.1
                 description: Create a Zendesk ticket
                 scopes:
                     - tickets:write
@@ -8349,6 +8350,17 @@ integrations:
                     is not provided
                 scopes:
                     - users:write
+            search-tickets:
+                output: SearchTicketOutput
+                endpoint: GET /search-tickets
+                input: SearchTicketInput
+                description: >
+                    An action that performs a search for tickets in Zendesk based on the
+                    specified filter. It can take up to a few minutes for new tickets and
+                    users to be indexed for search. If new resources don't appear in your
+                    search results, wait a few minutes and try again.
+                scopes:
+                    - read
         models:
             IdEntity:
                 id: string
@@ -8437,9 +8449,9 @@ integrations:
                 url: string
                 created_at: string
                 updated_at: string
-                subject: string
+                subject: string | null
                 description: string
-                priority: string
+                priority: string | null
                 status: string
             Ticket:
                 requester_id: number
@@ -8499,6 +8511,27 @@ integrations:
                 via_followup_source_id: number
                 via_id: number
                 voice_comment: object
+            SearchTicketInput:
+                query: string
+            SearchTicketOutput:
+                tickets: SearchTicket[]
+            SearchTicket:
+                id: string
+                url: string
+                external_id: string | null
+                requester_id: string
+                requester_name: string
+                assignee_id: string
+                assignee_name: string
+                assignee_avatar: string | null
+                status: string
+                created_at: string
+                updated_at: string
+                is_public: boolean
+                subject: string | null
+                description: string
+                priority: string | null
+                tags: string[]
     zoho-crm:
         syncs:
             accounts:
