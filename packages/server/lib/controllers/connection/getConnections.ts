@@ -7,7 +7,8 @@ import { z } from 'zod';
 
 const validationQuery = z
     .object({
-        connectionId: z.string().max(255).optional()
+        connectionId: z.string().min(1).max(255).optional(),
+        search: z.string().min(1).max(255).optional()
     })
     .strict();
 
@@ -24,7 +25,12 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
     const queryParam: GetPublicConnections['Querystring'] = queryParamValues.data;
 
     void analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, account.id);
-    const connections = await connectionService.listConnections({ environmentId: environment.id, search: queryParam.connectionId, limit: 10000 });
+    const connections = await connectionService.listConnections({
+        environmentId: environment.id,
+        connectionId: queryParam.connectionId,
+        search: queryParam.search,
+        limit: 10000
+    });
 
     res.status(200).send({
         connections: connections.map((data) => {

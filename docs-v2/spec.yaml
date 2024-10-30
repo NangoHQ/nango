@@ -397,7 +397,12 @@ paths:
                   in: query
                   schema:
                       type: string
-                  description: Search in the list of connections (will search in connection ID or end user profile).
+                  description: Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                  description: Search connections. Will search in connection ID or end user profile.
             responses:
                 '200':
                     description: Successfully returned a list of connections

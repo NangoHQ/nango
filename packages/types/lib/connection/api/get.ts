@@ -52,6 +52,7 @@ export type GetPublicConnections = Endpoint<{
     Method: 'GET';
     Querystring: {
         connectionId?: string | undefined;
+        search?: string | undefined;
     };
     Path: '/connection';
     Success: {
