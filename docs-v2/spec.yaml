@@ -2100,15 +2100,7 @@ components:
                     type: object
                     additionalProperties:
                         type: object
-                        additionalProperties: false
-                        required:
-                            - code
+                        description: the unique name of an integration
                         properties:
-                            code:
-                                type: string
-                            message:
-                                type: string
-                            errors:
-                                type: array
-                                items:
-                                    type: object
+                            connection_config:
+                                type: object
