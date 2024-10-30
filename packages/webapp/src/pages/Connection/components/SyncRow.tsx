@@ -103,30 +103,37 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                 <div className="w-36 max-w-3xl truncate">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</div>
             </Table.Cell>
             <Table.Cell bordered>
-                <SimpleTooltip tooltipContent={getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}>
-                    <Link to={logUrl}>
-                        {sync.latest_sync.status === 'PAUSED' && (
-                            <Tag bgClassName="bg-yellow-500 bg-opacity-30" textClassName="text-yellow-500">
-                                Paused
-                            </Tag>
-                        )}
-                        {sync.latest_sync.status === 'STOPPED' && (
-                            <Tag bgClassName="bg-red-base bg-opacity-30" textClassName="text-red-base">
-                                Failed
-                            </Tag>
-                        )}
-                        {sync.latest_sync.status === 'RUNNING' && (
-                            <Tag bgClassName="bg-blue-base bg-opacity-30" textClassName="text-blue-base">
-                                Syncing
-                            </Tag>
-                        )}
-                        {sync.latest_sync.status === 'SUCCESS' && (
-                            <Tag bgClassName="bg-green-base bg-opacity-30" textClassName="text-green-base">
-                                Success
-                            </Tag>
-                        )}
-                    </Link>
-                </SimpleTooltip>
+                {sync.latest_sync && (
+                    <SimpleTooltip tooltipContent={getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}>
+                        <Link to={logUrl}>
+                            {sync.latest_sync.status === 'PAUSED' && (
+                                <Tag bgClassName="bg-yellow-500 bg-opacity-30" textClassName="text-yellow-500">
+                                    Paused
+                                </Tag>
+                            )}
+                            {sync.latest_sync.status === 'STOPPED' && (
+                                <Tag bgClassName="bg-red-base bg-opacity-30" textClassName="text-red-base">
+                                    Failed
+                                </Tag>
+                            )}
+                            {sync.latest_sync.status === 'RUNNING' && (
+                                <Tag bgClassName="bg-blue-base bg-opacity-30" textClassName="text-blue-base">
+                                    Syncing
+                                </Tag>
+                            )}
+                            {sync.latest_sync.status === 'SUCCESS' && (
+                                <Tag bgClassName="bg-green-base bg-opacity-30" textClassName="text-green-base">
+                                    Success
+                                </Tag>
+                            )}
+                        </Link>
+                    </SimpleTooltip>
+                )}
+                {!sync.latest_sync && (
+                    <Tag bgClassName="bg-gray-500 bg-opacity-30" textClassName="text-gray-500">
+                        NEVER RUN
+                    </Tag>
+                )}
             </Table.Cell>
             <Table.Cell bordered className="text-center">
                 {formatFrequency(sync.frequency)}
