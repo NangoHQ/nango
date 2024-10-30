@@ -27,4 +27,4 @@ COPY packages/keystore/ packages/keystore/
 RUN npm pkg delete scripts.prepare
 RUN npm ci --omit=dev
 
-CMD ./packages/server/entrypoint.sh
+CMD ["packages/server/entrypoint.sh"]

@@ -1,23 +1,26 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
+
+dir=$(pwd)
+
+echo "prout $dir "
+echo "$dir/packages/server/dist/server.js"
 
 # https://docs.docker.com/engine/containers/multi-service_container/
 
-# server
-
 # connect ui
 if [ "$FLAG_SERVE_CONNECT_UI" == "true" ]; then
-  node ./dist/server.js &
+  node "$dir/packages/server/dist/server.js" &
 
   # This is not recommended, you should server UI from a dedicated static website hosting
   npm run -w @nangohq/connect-ui prod:unsafe &
+
+  # Wait for any process to exit
+  wait -n
+
+  # Exit with status of process that exited first
+  exit $?
 else
-  node ./dist/server.js
+  node "$dir/packages/server/dist/server.js"
 fi
-
-# Wait for any process to exit
-wait -n
-
-# Exit with status of process that exited first
-exit $?
