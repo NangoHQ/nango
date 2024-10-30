@@ -16,7 +16,7 @@ import type { Connection } from '@nangohq/types';
 import Button from '../../../components/ui/button/Button';
 import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import { PopoverContent } from '@radix-ui/react-popover';
-import { SimpleTooltip } from '../../../components/ui/Tooltip';
+import { SimpleTooltip } from '../../../components/SimpleTooltip';
 import { IconClockPause, IconClockPlay, IconPlayerPlay, IconRefresh, IconX } from '@tabler/icons-react';
 
 export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; provider: string | null; reload: () => void }> = ({

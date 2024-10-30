@@ -23,23 +23,4 @@ const TooltipContent = React.forwardRef<React.ElementRef<typeof TooltipPrimitive
 );
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
-interface SimpleTooltipProps {
-    tooltipContent: React.ReactElement | string | undefined;
-}
-
-function SimpleTooltip(props: React.PropsWithChildren<SimpleTooltipProps>) {
-    if (!props.tooltipContent) {
-        return <>{props.children}</>;
-    }
-
-    return (
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipContent>{props.tooltipContent}</TooltipContent>
-                <TooltipTrigger>{props.children}</TooltipTrigger>
-            </Tooltip>
-        </TooltipProvider>
-    );
-}
-
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, SimpleTooltip };
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
