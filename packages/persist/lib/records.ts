@@ -7,7 +7,7 @@ import { logContextGetter } from '@nangohq/logs';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
-export type PersistType = 'save' | 'delete' | 'update';
+export type PersistType = 'save' | 'delete' | 'update' | 'patch';
 export const recordsPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
 
 export async function persistRecords({
