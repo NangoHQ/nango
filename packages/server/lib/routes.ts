@@ -98,6 +98,9 @@ import { postConnectSessions } from './controllers/connect/postSessions.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
+import { getConnections } from './controllers/v1/connections/getConnections.js';
+import { getPublicConnections } from './controllers/connection/getConnections.js';
+import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
 
 export const router = express.Router();
 
@@ -206,7 +209,7 @@ publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListInteg
 publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
 
 publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
-publicAPI.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
+publicAPI.route('/connection').get(apiAuth, getPublicConnections);
 publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);
 publicAPI.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
 publicAPI.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadataLegacy.bind(connectionController));
@@ -313,7 +316,8 @@ web.route('/api/v1/integrations/:providerConfigKey/flows').get(webAuth, getInteg
 
 web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 
-web.route('/api/v1/connections').get(webAuth, connectionController.listConnections.bind(connectionController));
+web.route('/api/v1/connections').get(webAuth, getConnections);
+web.route('/api/v1/connections/count').get(webAuth, getConnectionsCount);
 web.route('/api/v1/connections/:connectionId').get(webAuth, getConnectionWeb);
 web.route('/api/v1/connections/:connectionId').delete(webAuth, deleteConnection);
 web.route('/api/v1/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));

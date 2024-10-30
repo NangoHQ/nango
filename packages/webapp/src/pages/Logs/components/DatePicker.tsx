@@ -106,7 +106,7 @@ export const DatePicker: React.FC<{
             <PopoverTrigger asChild>
                 <Button
                     variant="zombieGray"
-                    size={'xs'}
+                    size={'sm'}
                     className={cn('flex-grow truncate text-text-light-gray', period && selectedPreset?.name !== 'last24h' && 'text-white')}
                 >
                     <CalendarIcon />

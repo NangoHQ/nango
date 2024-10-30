@@ -369,7 +369,7 @@ paths:
                       items:
                           type: string
                           enum: [webhook]
-                  description: The integration ID (unique_key) that you created in Nango.
+                  description: Include additional sensitive data
             responses:
                 '200':
                     description: Successfully returned an integration
@@ -418,6 +418,8 @@ paths:
                                                 - provider
                                                 - provider_config_key
                                                 - created
+                                                - metadata
+                                                - errors
                                             properties:
                                                 id:
                                                     type: integer
@@ -435,8 +437,10 @@ paths:
                                                     type: string
                                                     description: Connection creation date.
                                                 metadata:
-                                                    type: object
-                                                    description: Custom metadata attached to the connection
+                                                    oneOf:
+                                                        - type: null
+                                                        - type: object
+                                                          description: Custom metadata attached to the connection
                                                 errors:
                                                     type: array
                                                     items:
