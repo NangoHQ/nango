@@ -333,7 +333,7 @@ export async function update({
 
                     const { record: oldRecord, ...oldRecordRest } = rawOldRecord;
 
-                    const record = records.find((record) => record.external_id === oldRecord.id);
+                    const record = records.find((record) => record.external_id === rawOldRecord.external_id);
 
                     const newRecord: FormattedRecord = {
                         ...oldRecordRest,
