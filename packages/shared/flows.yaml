@@ -2754,7 +2754,7 @@ integrations:
                 version: 1.0.3
                 output: Document
                 sync_type: full
-                endpoint: GET /google-drive/documents
+                endpoint: GET /documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
             fetch-document:
@@ -2768,8 +2768,8 @@ integrations:
                     string can be used to recreate the file in its original format using
                     an external tool.
                 output: string
-                version: 1.0.1
-                endpoint: GET /google-drive/fetch-document
+                version: 1.0.2
+                endpoint: GET /fetch-document
                 scopes: https://www.googleapis.com/auth/drive.readonly
         models:
             DocumentMetadata:
