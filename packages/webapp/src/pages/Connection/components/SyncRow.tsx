@@ -20,13 +20,13 @@ import type { RunSyncCommand, SyncResponse } from '../../../types';
 import { useRunSyncAPI } from '../../../utils/api';
 import { useStore } from '../../../store';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
-import type { Connection } from '@nangohq/types';
+import type { ApiConnectionFull } from '@nangohq/types';
 import Button from '../../../components/ui/button/Button';
 import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import { PopoverContent } from '@radix-ui/react-popover';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 
-export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; provider: string | null }> = ({ sync, connection, provider }) => {
+export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFull; provider: string | null }> = ({ sync, connection, provider }) => {
     const env = useStore((state) => state.env);
     const runCommandSyncAPI = useRunSyncAPI(env);
 
@@ -63,6 +63,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
     const logUrl = useMemo(() => {
         return getLogsUrl({
             env,
+            integrations: connection.provider_config_key,
             connections: connection?.connection_id,
             syncs: sync.name,
             day: sync.latest_sync?.updated_at ? new Date(sync.latest_sync.updated_at) : null

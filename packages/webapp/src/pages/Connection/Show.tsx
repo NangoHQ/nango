@@ -1,14 +1,12 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { useModal } from '@geist-ui/core';
 import type React from 'react';
 import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
 import { useSWRConfig } from 'swr';
+import { unstable_serialize } from 'swr/infinite';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../components/ui/Dialog';
 
 import { LeftNavBarItems } from '../../components/LeftNavBar';
-import ActionModal from '../../components/ui/ActionModal';
-import { TrashIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { Info } from '../../components/Info';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
@@ -27,6 +25,8 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { useSyncs } from '../../hooks/useSyncs';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { AvatarCustom } from '../../components/AvatarCustom';
+import { IconTrash } from '@tabler/icons-react';
+import { useToast } from '../../hooks/useToast';
 
 export enum Tabs {
     Syncs,
@@ -36,8 +36,8 @@ export enum Tabs {
 export const ConnectionShow: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { setVisible, bindings } = useModal();
-    const { mutate } = useSWRConfig();
+    const { mutate, cache } = useSWRConfig();
+    const { toast } = useToast();
     const { connectionId, providerConfigKey } = useParams();
     const [showSlackBanner, setShowSlackBanner] = useLocalStorage(`nango:connection:slack_banner_show`, true);
 
@@ -46,16 +46,14 @@ export const ConnectionShow: React.FC = () => {
     const { environmentAndAccount, mutate: environmentMutate } = useEnvironment(env);
 
     const [slackIsConnecting, setSlackIsConnecting] = useState(false);
-    const [forceRefresh, setForceRefresh] = useState<'true' | 'false'>('false');
-    const [modalShowSpinner, setModalShowSpinner] = useState(false);
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
     const [slackIsConnected, setSlackIsConnected] = useState(true);
-    const {
-        data: connection,
-        error,
-        loading
-    } = useConnection({ env, provider_config_key: providerConfigKey!, force_refresh: forceRefresh }, { connectionId: connectionId! });
+    const { data: connection, error, loading } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
     const { data: syncs, error: errorSyncs, loading: loadingSyncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
+
+    // Modal delete
+    const [open, setOpen] = useState(false);
+    const [loadingDelete, setLoadingDelete] = useState(false);
 
     useEffect(() => {
         if (environmentAndAccount) {
@@ -72,19 +70,34 @@ export const ConnectionShow: React.FC = () => {
         }
     }, [location]);
 
-    const deleteButtonClicked = async () => {
-        if (!connectionId || !providerConfigKey) return;
+    const onDelete = async () => {
+        if (!connectionId || !providerConfigKey) {
+            return;
+        }
 
-        setModalShowSpinner(true);
+        setLoadingDelete(true);
         const res = await apiDeleteConnection({ connectionId }, { provider_config_key: providerConfigKey, env });
-        setModalShowSpinner(false);
+        setLoadingDelete(false);
 
         if (res.res.status === 200) {
-            toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });
-            void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connections'), undefined);
+            toast({ title: `Connection deleted!`, variant: 'success' });
+
+            // Both are mandatory because SWR is bad
+            // Since 2021 https://github.com/vercel/swr/issues?q=is%3Aissue+infinite+cache
+            await mutate(
+                unstable_serialize(() => '/api/v1/connections?env=dev&page=0'),
+                undefined,
+                { revalidate: false }
+            );
+            for await (const key of cache.keys()) {
+                if (key.startsWith('/api/v1/connections')) {
+                    cache.delete(key);
+                }
+            }
+
             navigate(`/${env}/connections`, { replace: true });
         } else {
-            toast.error('Failed to delete connection', { position: toast.POSITION.BOTTOM_CENTER });
+            toast({ title: `Failed to delete connection`, variant: 'error' });
         }
     };
 
@@ -94,12 +107,12 @@ export const ConnectionShow: React.FC = () => {
         const { uuid: accountUUID, host: hostUrl } = environmentAndAccount;
         const onFinish = () => {
             void environmentMutate();
-            toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+            toast({ title: `Slack connection created!`, variant: 'success' });
             setSlackIsConnecting(false);
         };
 
         const onFailure = () => {
-            toast.error('Failed to create Slack connection!', { position: toast.POSITION.BOTTOM_CENTER });
+            toast({ title: `Failed to create Slack connection!`, variant: 'error' });
             setSlackIsConnecting(false);
         };
         await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
@@ -130,7 +143,7 @@ export const ConnectionShow: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent error={error || errorSyncs} page={LeftNavBarItems.TeamSettings} />;
+        return <ErrorPageComponent title="Connection" error={error || errorSyncs} page={LeftNavBarItems.TeamSettings} />;
     }
 
     if (!connection || !syncs) {
@@ -139,15 +152,6 @@ export const ConnectionShow: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
-            <ActionModal
-                bindings={bindings}
-                modalTitle="Delete connection?"
-                modalContent="All credentials & synced data associated with this connection will be deleted."
-                modalAction={() => deleteButtonClicked()}
-                modalShowSpinner={modalShowSpinner}
-                modalTitleColor="text-red-500"
-                setVisible={setVisible}
-            />
             <div className="mx-auto">
                 <div className="flex gap-4 justify-between">
                     <div className="flex gap-6">
@@ -186,17 +190,26 @@ export const ConnectionShow: React.FC = () => {
                             )}
                         </div>
                     </div>
-                    <Button
-                        variant="zinc"
-                        size="sm"
-                        className="flex cursor-pointer text-gray-400 neutral-700 items-center mt-4"
-                        onClick={() => {
-                            setVisible(true);
-                        }}
-                    >
-                        <TrashIcon className="flex h-5 w-5" />
-                        <span className="px-1">Delete</span>
-                    </Button>
+
+                    <Dialog open={open} onOpenChange={setOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant={'emptyFaded'}>
+                                <IconTrash stroke={1} size={18} /> Delete
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogTitle>Delete connection?</DialogTitle>
+                            <DialogDescription>All credentials & synced data associated with this connection will be deleted.</DialogDescription>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button variant={'zinc'}>Cancel</Button>
+                                </DialogClose>
+                                <Button variant={'danger'} onClick={onDelete} isLoading={loadingDelete}>
+                                    Delete
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
 
@@ -278,7 +291,7 @@ export const ConnectionShow: React.FC = () => {
 
             <section className="mt-10">
                 {activeTab === Tabs.Syncs && <Syncs syncs={syncs} connection={connection.connection} provider={connection.provider} />}
-                {activeTab === Tabs.Authorization && <Authorization connection={connection.connection} forceRefresh={() => setForceRefresh('true')} />}
+                {activeTab === Tabs.Authorization && <Authorization endUser={connection.endUser} connection={connection.connection} />}
             </section>
             <Helmet>
                 <style>{'.no-border-modal footer { border-top: none !important; }'}</style>

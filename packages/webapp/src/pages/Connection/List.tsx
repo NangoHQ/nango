@@ -31,7 +31,7 @@ import { AvatarCustom } from '../../components/AvatarCustom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../components/ui/DropdownMenu';
 import { IconChevronDown } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
-import type { ApiConnection } from '@nangohq/types';
+import type { ApiConnectionSimple } from '@nangohq/types';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -39,7 +39,7 @@ const filterErrors = [
     { name: 'Error', value: 'error' }
 ];
 
-const columns: ColumnDef<ApiConnection>[] = [
+const columns: ColumnDef<ApiConnectionSimple>[] = [
     {
         accessorKey: 'id',
         header: 'Customer',

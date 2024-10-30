@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import type { SyncResponse } from '../../types';
-import type { Connection } from '@nangohq/types';
+import type { ApiConnectionFull } from '@nangohq/types';
 import { SyncRow } from './components/SyncRow';
 import * as Table from '../../components/ui/Table';
 import { useStore } from '../../store';
 
 interface SyncsProps {
     syncs: SyncResponse[] | undefined;
-    connection: Connection;
+    connection: ApiConnectionFull;
     provider: string | null;
 }
 

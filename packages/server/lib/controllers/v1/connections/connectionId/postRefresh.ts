@@ -1,13 +1,11 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
-import type { DBConnection, GetConnection } from '@nangohq/types';
+import type { PostConnectionRefresh } from '@nangohq/types';
 import { connectionService, configService, errorNotificationService } from '@nangohq/shared';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
-import { endUserToApi } from '../../../../formatters/endUser.js';
-import { connectionFullToApi } from '../../../../formatters/connection.js';
 
 const queryStringValidation = z
     .object({
@@ -22,7 +20,7 @@ const paramValidation = z
     })
     .strict();
 
-export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
+export const getConnectionRefresh = asyncWrapper<PostConnectionRefresh>(async (req, res) => {
     const emptyBody = requireEmptyBody(req);
     if (emptyBody) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(emptyBody.error) } });
@@ -64,13 +62,13 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         return;
     }
 
-    const connectionRes = await connectionService.getConnectionForPrivateApi({ connectionId, providerConfigKey, environmentId: environment.id });
-    if (!connectionRes) {
+    const connectionRes = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+    if (connectionRes.error) {
         res.status(404).send({ error: { code: 'not_found', message: 'Failed to find connection' } });
         return;
     }
 
-    let connection = connectionRes.connection;
+    let connection = connectionRes.response!;
 
     const credentialResponse = await connectionService.refreshOrTestCredentials({
         account,
@@ -78,21 +76,17 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         connection,
         integration,
         logContextGetter,
-        instantRefresh: false,
+        instantRefresh: true,
         onRefreshSuccess: connectionRefreshSuccessHook,
         onRefreshFailed: connectionRefreshFailedHook
     });
     if (credentialResponse.isErr()) {
         const errorLog = await errorNotificationService.auth.get(connection.id!);
 
-        // When we failed to refresh we still return a 200 because the connection is used in the UI
-        // Ultimately this could be a second endpoint so the UI displays faster and no confusion between error code
-        res.status(200).send({
-            data: {
-                errorLog,
-                provider: integration.provider,
-                connection: connectionFullToApi(connection as DBConnection),
-                endUser: endUserToApi(connectionRes.end_user)
+        res.status(400).send({
+            error: {
+                code: 'failed_to_refresh',
+                payload: errorLog
             }
         });
 
@@ -101,12 +95,22 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
 
     connection = credentialResponse.value;
 
+    // If we force the refresh we also specifically log a success operation (we usually only log error)
+    const logCtx = await logContextGetter.create(
+        { operation: { type: 'auth', action: 'refresh_token' } },
+        {
+            account,
+            environment,
+            integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
+            connection: { id: connection.id!, name: connection.connection_id }
+        }
+    );
+    await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
+    await logCtx.success();
+
     res.status(200).send({
         data: {
-            provider: integration.provider,
-            connection: connectionFullToApi(connection as DBConnection),
-            endUser: endUserToApi(connectionRes.end_user),
-            errorLog: null
+            success: true
         }
     });
 });
