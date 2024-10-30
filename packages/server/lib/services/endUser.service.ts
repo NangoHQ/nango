@@ -1,23 +1,9 @@
 import type knex from 'knex';
-import type { EndUser, StoredConnection } from '@nangohq/types';
+import type { DBEndUser, DBInsertEndUser, EndUser, StoredConnection } from '@nangohq/types';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
 const END_USERS_TABLE = 'end_users';
-
-interface DBEndUser {
-    readonly id: number;
-    readonly end_user_id: string;
-    readonly account_id: number;
-    readonly environment_id: number;
-    readonly email: string;
-    readonly display_name?: string | null;
-    readonly organization_id?: string | null;
-    readonly organization_display_name?: string | null;
-    readonly created_at: Date;
-    readonly updated_at: Date | null;
-}
-type DbInsertEndUser = Omit<DBEndUser, 'id' | 'created_at' | 'updated_at'>;
 
 const EndUserMapper = {
     to: (endUser: EndUser): DBEndUser => {
@@ -76,7 +62,7 @@ export async function createEndUser(
         environmentId
     }: Pick<EndUser, 'endUserId' | 'email' | 'displayName' | 'organization' | 'accountId' | 'environmentId'>
 ): Promise<Result<EndUser, EndUserError>> {
-    const dbEndUser: DbInsertEndUser = {
+    const dbEndUser: DBInsertEndUser = {
         end_user_id: endUserId,
         account_id: accountId,
         environment_id: environmentId,

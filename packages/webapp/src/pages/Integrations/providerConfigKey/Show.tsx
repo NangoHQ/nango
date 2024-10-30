@@ -1,4 +1,4 @@
-import { useParams, Link, Routes, Route, useLocation } from 'react-router-dom';
+import { useParams, Link, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import Button from '../../../components/ui/button/Button';
@@ -10,19 +10,34 @@ import { useGetIntegration } from '../../../hooks/useIntegration';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { Info } from '../../../components/Info';
 import PageNotFound from '../../PageNotFound';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../../components/ui/DropdownMenu';
+import { IconChevronDown } from '@tabler/icons-react';
+import { useEnvironment } from '../../../hooks/useEnvironment';
+import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
+import Nango from '@nangohq/frontend';
+import { baseUrl } from '../../../utils/utils';
+import { globalEnv } from '../../../utils/env';
+import { apiConnectSessions } from '../../../hooks/useConnect';
+import { useToast } from '../../../hooks/useToast';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
+    const toast = useToast();
+    const navigate = useNavigate();
     const location = useLocation();
     const ref = useRef<HTMLDivElement>(null);
 
     const env = useStore((state) => state.env);
 
+    const { environmentAndAccount } = useEnvironment(env);
     const { data, loading, error } = useGetIntegration(env, providerConfigKey!);
     const [tab, setTab] = useState<string>('');
+
+    const connectUI = useRef<ConnectUI>();
+    const hasConnected = useRef<string | undefined>();
 
     useEffect(() => {
         if (location.pathname.match(/\/settings/)) {
@@ -39,6 +54,49 @@ export const ShowIntegration: React.FC = () => {
             ref.current.scrollTo({ top: 150 });
         }
     }, [location]);
+
+    const onEvent: OnConnectEvent = useCallback(
+        (event) => {
+            if (event.type === 'close') {
+                if (hasConnected.current) {
+                    toast.toast({ title: `Connected to ${data?.integration.unique_key}`, variant: 'success' });
+                    navigate(`/${env}/connections/${data?.integration.unique_key}/${hasConnected.current}`);
+                }
+            } else if (event.type === 'connect') {
+                console.log('connected', event);
+                hasConnected.current = event.payload.connectionId;
+            }
+        },
+        [toast]
+    );
+
+    const onClickConnectUI = () => {
+        if (!environmentAndAccount) {
+            return;
+        }
+
+        const nango = new Nango({
+            host: environmentAndAccount.host || baseUrl(),
+            websocketsPath: environmentAndAccount.environment.websockets_path || '',
+            publicKey: environmentAndAccount.environment.public_key
+        });
+
+        connectUI.current = nango.openConnectUI({
+            baseURL: globalEnv.connectUrl,
+            apiURL: globalEnv.apiUrl,
+            onEvent: onEvent
+        });
+
+        // We defer the token creation so the iframe can open and display a loading screen
+        //   instead of blocking the main loop and no visual clue for the end user
+        setTimeout(async () => {
+            const res = await apiConnectSessions(env, { allowed_integrations: [data!.integration.unique_key] });
+            if ('error' in res.json) {
+                return;
+            }
+            connectUI.current!.setSessionToken(res.json.data.token);
+        }, 10);
+    };
 
     if (loading) {
         return (
@@ -112,12 +170,26 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                 </div>
                 <div className="shrink-0">
-                    <Link to={`/${env}/connections/create/${data.integration.unique_key}`}>
-                        <Button variant="primary" size="sm">
-                            <PlusIcon />
+                    <div className="flex items-center bg-white rounded-md">
+                        <Button onClick={onClickConnectUI} className="rounded-r-none">
+                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
                             Add Connection
                         </Button>
-                    </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant={'icon'} size={'xs'} className="text-dark-500 hover:text-dark-800 focus:text-dark-800">
+                                    <IconChevronDown stroke={1} size={18} />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-white border-white top-1">
+                                <DropdownMenuItem asChild>
+                                    <Link to={`/${env}/connections/create`}>
+                                        <Button className="text-dark-500 hover:text-dark-800">Add Connection (headless)</Button>
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
             </div>
 
