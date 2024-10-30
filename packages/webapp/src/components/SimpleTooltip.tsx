@@ -1,20 +1,17 @@
+import type React from 'react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/Tooltip';
 
-interface SimpleTooltipProps {
-    tooltipContent: React.ReactNode;
-}
-
-export function SimpleTooltip(props: React.PropsWithChildren<SimpleTooltipProps>) {
-    if (!props.tooltipContent) {
-        return <>{props.children}</>;
+export const SimpleTooltip: React.FC<React.PropsWithChildren<{ tooltipContent: React.ReactNode }>> = ({ tooltipContent, children }) => {
+    if (!tooltipContent) {
+        return <>{children}</>;
     }
 
     return (
         <TooltipProvider>
             <Tooltip>
-                <TooltipContent>{props.tooltipContent}</TooltipContent>
-                <TooltipTrigger>{props.children}</TooltipTrigger>
+                <TooltipContent>{tooltipContent}</TooltipContent>
+                <TooltipTrigger>{children}</TooltipTrigger>
             </Tooltip>
         </TooltipProvider>
     );
-}
+};
