@@ -988,6 +988,7 @@ class ConnectionService {
      */
     public async listConnections({
         environmentId,
+        connectionId,
         integrationIds,
         withError,
         search,
@@ -995,6 +996,7 @@ class ConnectionService {
         page = 0
     }: {
         environmentId: number;
+        connectionId?: string | undefined;
         integrationIds?: string[] | undefined;
         withError?: boolean | undefined;
         search?: string | undefined;
@@ -1035,6 +1037,9 @@ class ConnectionService {
         }
         if (integrationIds) {
             subQuery.whereIn('_nango_configs.unique_key', integrationIds);
+        }
+        if (connectionId) {
+            subQuery.where('_nango_connections.connection_id', connectionId);
         }
 
         subQuery.limit(limit);
