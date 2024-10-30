@@ -88,10 +88,17 @@ class ConfigService {
     }
 
     async listIntegrationForApi(environment_id: number): Promise<(ProviderConfig & { connection_count: string })[]> {
+        const connectionCountSubquery = db
+            .knex('_nango_connections')
+            .count('* as connection_count')
+            .where({
+                '_nango_connections.environment_id': db.knex.ref('_nango_configs.environment_id'),
+                '_nango_connections.config_id': db.knex.ref('_nango_configs.id'),
+                deleted: false
+            })
+            .as('connection_count');
         const res = await db.knex
-            .select<
-                (ProviderConfig & { connection_count: string })[]
-            >('*', db.knex.raw(`(SELECT COUNT(*) FROM _nango_connections WHERE _nango_connections.environment_id = _nango_configs.environment_id AND _nango_connections.config_id = _nango_configs.id AND deleted = false) as connection_count`))
+            .select<(ProviderConfig & { connection_count: string })[]>('*', connectionCountSubquery)
             .from<ProviderConfig>(`_nango_configs`)
             .where({ environment_id, deleted: false })
             .orderBy('provider', 'asc')

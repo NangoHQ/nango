@@ -3,7 +3,7 @@ export function toAcronym(name: string): string {
         // remove all tag-like sequences: [Shared][Prod]
         .replace(/\[[^\]]*\]/g, '')
         // replace noisy chars with spaces
-        .replace(/[/._&:-]/g, ' ')
+        .replace(/[/._&:#:;@|?-]/g, ' ')
         // remove ad-hoc key words
         .replace(/(https?|www|test|dev|(pre)?prod(uction| |$)|demo|poc|wip)/gi, '');
 
