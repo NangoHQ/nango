@@ -5,6 +5,7 @@ import type { DeletePublicConnection } from '@nangohq/types';
 import { connectionService } from '@nangohq/shared';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
+import { connectionDeleted as connectionDeletedHook } from '../hooks/hooks.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 
 const validationQuery = z
@@ -49,7 +50,8 @@ export const deletePublicConnection = asyncWrapper<DeletePublicConnection>(async
         providerConfigKey: query.provider_config_key,
         environmentId: environment.id,
         logContextGetter,
-        orchestrator
+        orchestrator,
+        connectionDeletedHook
     });
 
     res.status(200).send({ success: deleted > 0 });

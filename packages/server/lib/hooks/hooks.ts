@@ -30,7 +30,8 @@ import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
-import { externalPostConnection } from './connection/external-post-connection.js';
+import preDeletion from './connection/pre-deletion.js';
+import { externalPostConnection } from './connection/creation/external-post-connection.js';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 import tracer from 'dd-trace';
 
@@ -98,6 +99,10 @@ export const connectionCreated = async (
         type: 'auth',
         logCtx
     });
+};
+
+export const connectionDeleted = async ({ connection, logContextGetter } : { connection: Connection; logContextGetter: LogContextGetter }): Promise<void> => {
+    await preDeletion(connection, logContextGetter);
 };
 
 export const connectionCreationFailed = async (failedConnectionPayload: RecentlyFailedConnection, provider: string, logCtx?: LogContext): Promise<void> => {

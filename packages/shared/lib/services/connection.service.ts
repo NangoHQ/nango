@@ -951,13 +951,15 @@ class ConnectionService {
         providerConfigKey,
         environmentId,
         orchestrator,
-        logContextGetter
+        logContextGetter,
+        connectionDeletedHook
     }: {
         connection: Connection;
         providerConfigKey: string;
         environmentId: number;
         orchestrator: Orchestrator;
         logContextGetter: LogContextGetter;
+        connectionDeletedHook: ({ connection, logContextGetter } : { connection: Connection; logContextGetter: LogContextGetter }) => MaybePromise<void>
     }): Promise<number> {
         const del = await db.knex
             .from<Connection>(`_nango_connections`)
@@ -969,9 +971,12 @@ class ConnectionService {
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
+        await connectionDeletedHook({ connection, logContextGetter });
+
         await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
         const slackService = new SlackService({ logContextGetter, orchestrator });
         await slackService.closeOpenNotificationForConnection({ connectionId: connection.id!, environmentId });
+
 
         return del;
     }

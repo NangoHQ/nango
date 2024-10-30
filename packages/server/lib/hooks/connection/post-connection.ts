@@ -1,7 +1,7 @@
 import type { AxiosError, AxiosResponse } from 'axios';
 import type { RecentlyCreatedConnection, Connection, ConnectionConfig, UserProvidedProxyConfiguration } from '@nangohq/shared';
 import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry, getProvider } from '@nangohq/shared';
-import * as postConnectionHandlers from './index.js';
+import * as postConnectionHandlers from './creation/index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { InternalProxyConfiguration } from '@nangohq/types';
