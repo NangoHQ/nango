@@ -169,7 +169,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
             <Table.Cell bordered>
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant={'zombie'}>
+                        <Button variant="zombie">
                             <EllipsisHorizontalIcon className="flex h-5 w-5 cursor-pointer" />
                         </Button>
                     </PopoverTrigger>
@@ -177,8 +177,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                         <div className="bg-active-gray rounded">
                             <div className="flex flex-col w-[240px] p-[10px]">
                                 <Button
-                                    variant="zombie"
-                                    className="w-full rounded hover:bg-black text-gray-400"
+                                    variant="popoverItem"
                                     disabled={syncCommandButtonsDisabled}
                                     onClick={async () => {
                                         setShowPauseStartLoader(true);
@@ -206,8 +205,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                 </Button>
                                 {sync.status === 'RUNNING' && (
                                     <Button
-                                        variant="zombie"
-                                        className="w-full rounded hover:bg-black text-gray-400"
+                                        variant="popoverItem"
                                         disabled={syncCommandButtonsDisabled}
                                         onClick={() => {
                                             setShowInterruptLoader(true);
@@ -221,8 +219,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                 )}
                                 {sync.status !== 'RUNNING' && (
                                     <Button
-                                        variant="zombie"
-                                        className="w-full rounded hover:bg-black text-gray-400"
+                                        variant="popoverItem"
                                         disabled={syncCommandButtonsDisabled}
                                         isLoading={showTriggerIncrementalLoader}
                                         onClick={() => {
@@ -238,12 +235,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                 {sync.status !== 'RUNNING' && (
                                     <Dialog open={openConfirm} onOpenChange={setOpenConfirm}>
                                         <DialogTrigger asChild>
-                                            <Button
-                                                variant="zombie"
-                                                className="w-full rounded hover:bg-black text-gray-400"
-                                                disabled={syncCommandButtonsDisabled}
-                                                isLoading={modalSpinner}
-                                            >
+                                            <Button variant="popoverItem" disabled={syncCommandButtonsDisabled} isLoading={modalSpinner}>
                                                 <IconRefresh className="flex h-4 w-4" />
                                                 <div className="pl-2 flex gap-2 items-center">Refresh Execution</div>
                                             </Button>
@@ -271,9 +263,9 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                 )}
 
                                 <Link to={logUrl} className="w-full">
-                                    <Button variant="zombie" className="w-full gap-4 rounded hover:bg-black text-gray-400">
+                                    <Button variant="popoverItem">
                                         <QueueListIcon className="flex h-4 w-4 cursor-pointer" />
-                                        View Logs
+                                        <div className="pl-2 flex gap-2 items-center">View Logs</div>
                                     </Button>
                                 </Link>
                             </div>
