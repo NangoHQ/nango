@@ -135,10 +135,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                     </Tag>
                 )}
             </Table.Cell>
-            <Table.Cell bordered className="text-center">
-                {formatFrequency(sync.frequency)}
-            </Table.Cell>
-            <Table.Cell bordered className="text-center">
+            <Table.Cell bordered>{formatFrequency(sync.frequency)}</Table.Cell>
+            <Table.Cell bordered>
                 <SimpleTooltip
                     tooltipContent={
                         sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
@@ -149,7 +147,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                     <Link to={logUrl}>{formatDateToUSFormat(sync.latest_sync?.updated_at)}</Link>
                 </SimpleTooltip>
             </Table.Cell>
-            <Table.Cell bordered className="text-center">
+            <Table.Cell bordered>
                 {sync.schedule_status === 'STARTED' && (
                     <>
                         {interpretNextRun(sync.futureActionTimes) === '-' ? (

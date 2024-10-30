@@ -50,9 +50,9 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                             <Table.Head className="w-[120px]">Sync Name</Table.Head>
                             <Table.Head className="w-[120px]">Models</Table.Head>
                             <Table.Head className="w-[120px]">Last Execution</Table.Head>
-                            <Table.Head className="w-[80px] text-center">Frequency</Table.Head>
-                            <Table.Head className="w-[120px] text-center">Last Sync Start</Table.Head>
-                            <Table.Head className="w-[130px] text-center">Next Sync Start</Table.Head>
+                            <Table.Head className="w-[80px]">Frequency</Table.Head>
+                            <Table.Head className="w-[120px]">Last Sync Start</Table.Head>
+                            <Table.Head className="w-[130px]">Next Sync Start</Table.Head>
                             <Table.Head className="w-[40px]"></Table.Head>
                         </Table.Row>
                     </Table.Header>
