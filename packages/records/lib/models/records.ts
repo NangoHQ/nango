@@ -6,8 +6,10 @@ import type {
     FormattedRecordWithMetadata,
     GetRecordsResponse,
     LastAction,
+    RecordData,
     ReturnedRecord,
     UnencryptedRecord,
+    UnencryptedRecordData,
     UpsertSummary
 } from '../types.js';
 import { decryptRecord, decryptRecords, encryptRecords } from '../utils/encryption.js';
@@ -17,6 +19,7 @@ import { logger } from '../utils/logger.js';
 import { Err, Ok, retry } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
+import deepmerge from 'deepmerge';
 
 dayjs.extend(utc);
 
@@ -323,6 +326,78 @@ export async function update({
 
         return Err(errorMessage);
     }
+}
+
+export async function patch({
+    records,
+    connectionId,
+    model
+}: {
+    records: FormattedRecord[];
+    connectionId: number;
+    model: string;
+}): Promise<Result<UpsertSummary>> {
+    const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
+
+    if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
+        return Err(
+            `There are no records to patch because there were no records that were not duplicates to insert, but there were ${records.length} records received for the "${model}" model.`
+        );
+    }
+
+    try {
+        const updatedKeys: string[] = [];
+        await db.transaction(async (trx) => {
+            for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
+                const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
+
+                updatedKeys.push(...(await getUpdatedKeys({ records: chunk, connectionId, model, trx })));
+
+                const recordsToUpdate: FormattedRecord[] = [];
+                const rawOldRecords = await getRecordsByExternalIds({ externalIds: updatedKeys, connectionId, model, trx });
+                for (const rawOldRecord of rawOldRecords) {
+                    if (!rawOldRecord) {
+                        continue;
+                    }
+
+                    const { record: oldRecord, ...oldRecordRest } = rawOldRecord;
+                    const record = records.find((record) => record.external_id === rawOldRecord.external_id);
+
+                    if (record) {
+                        const newRecord: FormattedRecord = patchMerge(oldRecordRest, oldRecord, record.json);
+                        recordsToUpdate.push(newRecord);
+                    }
+                }
+                const encryptedRecords = encryptRecords(recordsToUpdate);
+                await trx.from(RECORDS_TABLE).insert(encryptedRecords).onConflict(['connection_id', 'external_id', 'model']).merge();
+            }
+        });
+
+        return Ok({
+            addedKeys: [],
+            updatedKeys,
+            deletedKeys: [],
+            nonUniqueKeys
+        });
+    } catch (error: any) {
+        let errorMessage = `Failed to update records to table ${RECORDS_TABLE}.\n`;
+        errorMessage += `Model: ${model}, Nango Connection ID: ${connectionId}.\n`;
+        errorMessage += `Attempted to update: ${recordsWithoutDuplicates.length} records\n`;
+
+        if ('code' in error) errorMessage += `Error code: ${(error as { code: string }).code}.\n`;
+        if ('detail' in error) errorMessage += `Detail: ${(error as { detail: string }).detail}.\n`;
+        if ('message' in error) errorMessage += `Error Message: ${(error as { message: string }).message}`;
+
+        return Err(errorMessage);
+    }
+}
+
+function patchMerge(envelope: Omit<FormattedRecord, 'record'>, oldRecordData: UnencryptedRecordData, newRecordData: RecordData): FormattedRecord {
+    return {
+        ...envelope,
+        json: deepmerge<UnencryptedRecordData, RecordData>(oldRecordData, newRecordData),
+        updated_at: new Date()
+    };
 }
 
 export async function deleteRecordsBySyncId({

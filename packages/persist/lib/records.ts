@@ -69,6 +69,12 @@ export async function persistRecords({
                 return recordsService.update({ records, connectionId: nangoConnectionId, model });
             };
             break;
+        case 'patch':
+            softDelete = false;
+            persistFunction = async (records: FormattedRecord[]) => {
+                return recordsService.patch({ records, connectionId: nangoConnectionId, model });
+            };
+            break;
     }
 
     const formatting = recordsFormatter.formatRecords({

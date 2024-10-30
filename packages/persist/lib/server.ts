@@ -7,6 +7,7 @@ import { routeHandler as postLogHandler, path as logsPath } from './routes/envir
 import { routeHandler as postRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/postRecords.js';
 import { routeHandler as putRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/putRecords.js';
 import { routeHandler as deleteRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteRecords.js';
+import { routeHandler as patchRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/patchRecords.js';
 import { recordsPath } from './records.js';
 
 const logger = getLogger('Persist');
@@ -29,6 +30,7 @@ createRoute(server, postLogHandler);
 createRoute(server, postRecordsHandler);
 createRoute(server, deleteRecordsHandler);
 createRoute(server, putRecordsHandler);
+createRoute(server, patchRecordsHandler);
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);
