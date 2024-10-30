@@ -142,7 +142,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                 <SimpleTooltip
                     tooltipContent={
                         sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
-                            <pre>{parseLatestSyncResult(sync.latest_sync?.result, sync.latest_sync?.models)}</pre>
+                            <pre className="text-left">{parseLatestSyncResult(sync.latest_sync?.result, sync.latest_sync?.models)}</pre>
                         ) : undefined
                     }
                 >
