@@ -359,7 +359,7 @@ export const ConnectionList: React.FC = () => {
                                         </Table.Row>
                                     ))}
 
-                                {connections.length <= 0 && hasFiltered && (
+                                {connections.length <= 0 && hasFiltered && !loading && (
                                     <Table.Row>
                                         <Table.Cell colSpan={columns.length} className="h-24 text-center p-0 pt-4">
                                             <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
