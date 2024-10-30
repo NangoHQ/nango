@@ -1192,6 +1192,66 @@ export class NangoSync extends NangoAction {
         return true;
     }
 
+    public async batchPatch<T = any>(results: Partial<T>[], model: string): Promise<boolean | null> {
+        this.exitSyncIfAborted();
+        if (!results || results.length === 0) {
+            if (this.dryRun) {
+                logger.info('batchPatch received an empty array. No records to update.');
+            }
+            return true;
+        }
+
+        if (this.dryRun) {
+            this.logMessages?.messages.push(`A batch patch call would update the following data to the ${model} model:`);
+            for (const msg of results) {
+                this.logMessages?.messages.push(msg);
+            }
+            if (this.logMessages && this.logMessages.counts) {
+                this.logMessages.counts.updated = Number(this.logMessages.counts.updated) + results.length;
+            }
+            return null;
+        }
+
+        for (let i = 0; i < results.length; i += this.batchSize) {
+            const batch = results.slice(i, i + this.batchSize);
+            let response: AxiosResponse;
+            try {
+                response = await retryWithBackoff(
+                    async () => {
+                        return await this.persistApi({
+                            method: 'PATCH',
+                            url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
+                            headers: {
+                                Authorization: `Bearer ${this.nango.secretKey}`
+                            },
+                            data: {
+                                model,
+                                records: batch,
+                                providerConfigKey: this.providerConfigKey,
+                                connectionId: this.connectionId,
+                                activityLogId: this.activityLogId
+                            }
+                        });
+                    },
+                    { retry: httpRetryStrategy }
+                );
+            } catch (err) {
+                logger.error('Internal error', err instanceof AxiosError ? err.code : err);
+                throw new Error('Failed to patch records due to an internal error', { cause: err });
+            }
+
+            if (response.status > 299) {
+                logger.error(
+                    `Request to persist API (batchPatch) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
+                    this.stringify()
+                );
+                const message = 'error' in response.data && 'message' in response.data.error ? response.data.error.message : JSON.stringify(response.data);
+                throw new Error(message);
+            }
+        }
+        return true;
+    }
+
     public override async getMetadata<T = Metadata>(): Promise<T> {
         this.exitSyncIfAborted();
         if (this.dryRun && this.stubbedMetadata) {
