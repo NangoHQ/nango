@@ -77,7 +77,11 @@ export function formatDateToShortUSFormat(dateString: string): string {
     return `${parts[1]}, ${parts[0]}`;
 }
 
-export function formatDateToUSFormat(dateString: string): string {
+export function formatDateToUSFormat(dateString?: string): string {
+    if (!dateString) {
+        return '-';
+    }
+
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
         month: 'short',
