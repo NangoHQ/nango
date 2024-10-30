@@ -6508,9 +6508,9 @@ integrations:
                     - offline_access
                     - api
                 input: SalesforceEntity
-                version: 1.0.0
+                version: 1.0.1
                 output: SalesforceFieldSchema
-                endpoint: GET /salesforce/fetch-fields
+                endpoint: GET /fields
             create-contact:
                 description: Create a single contact in salesforce
                 scopes:
@@ -6518,7 +6518,8 @@ integrations:
                     - api
                 input: CreateContactInput
                 output: ActionResponse
-                endpoint: POST /salesforce/create-contact
+                endpoint: POST /contacts
+                version: 1.0.0
             update-contact:
                 description: Update a single contact in salesforce
                 scopes:
@@ -6526,7 +6527,8 @@ integrations:
                     - api
                 input: UpdateContactInput
                 output: SuccessResponse
-                endpoint: PATCH /salesforce/update-contact
+                endpoint: PATCH /contacts
+                version: 1.0.0
             delete-contact:
                 description: Delete a single contact in salesforce
                 scopes:
@@ -6534,7 +6536,8 @@ integrations:
                     - api
                 input: IdEntity
                 output: SuccessResponse
-                endpoint: DELETE /salesforce/delete-contact
+                endpoint: DELETE /contacts
+                version: 1.0.0
             create-lead:
                 description: Create a single lead in salesforce
                 scopes:
@@ -6542,7 +6545,8 @@ integrations:
                     - api
                 input: CreateLeadInput
                 output: ActionResponse
-                endpoint: POST /salesforce/create-lead
+                endpoint: POST /leads
+                version: 1.0.0
             update-lead:
                 description: Update a single lead in salesforce
                 scopes:
@@ -6550,7 +6554,8 @@ integrations:
                     - api
                 input: UpdateLeadInput
                 output: SuccessResponse
-                endpoint: PATCH /salesforce/update-lead
+                endpoint: PATCH /leads
+                version: 1.0.0
             delete-lead:
                 description: Delete a single lead in salesforce
                 scopes:
@@ -6558,7 +6563,8 @@ integrations:
                     - api
                 input: IdEntity
                 output: SuccessResponse
-                endpoint: DELETE /salesforce/delete-lead
+                endpoint: DELETE /leads
+                version: 1.0.0
             create-account:
                 description: Create a single account in salesforce
                 scopes:
@@ -6566,7 +6572,8 @@ integrations:
                     - api
                 input: CreateAccountInput
                 output: ActionResponse
-                endpoint: POST /salesforce/create-account
+                endpoint: POST /accounts
+                version: 1.0.0
             update-account:
                 description: Update a single account in salesforce
                 scopes:
@@ -6574,7 +6581,8 @@ integrations:
                     - api
                 input: UpdateAccountInput
                 output: SuccessResponse
-                endpoint: PATCH /salesforce/update-account
+                endpoint: PATCH /accounts
+                version: 1.0.0
             delete-account:
                 description: Delete a single account in salesforce
                 scopes:
@@ -6582,7 +6590,8 @@ integrations:
                     - api
                 input: IdEntity
                 output: SuccessResponse
-                endpoint: DELETE /salesforce/delete-account
+                endpoint: DELETE /accounts
+                version: 1.0.0
             create-opportunity:
                 description: Create a single opportunity in salesforce
                 scopes:
@@ -6590,7 +6599,8 @@ integrations:
                     - api
                 input: CreateOpportunityInput
                 output: ActionResponse
-                endpoint: POST /salesforce/create-opportunity
+                endpoint: POST /opportunities
+                version: 1.0.0
             update-opportunity:
                 description: Update a single opportunity in salesforce
                 scopes:
@@ -6598,7 +6608,8 @@ integrations:
                     - api
                 input: UpdateOpportunityInput
                 output: SuccessResponse
-                endpoint: PATCH /salesforce/update-opportunity
+                endpoint: PATCH /opportunities
+                version: 1.0.0
             delete-opportunity:
                 description: Delete a single opportunity in salesforce
                 scopes:
@@ -6606,7 +6617,8 @@ integrations:
                     - api
                 input: IdEntity
                 output: SuccessResponse
-                endpoint: DELETE /salesforce/delete-opportunity
+                endpoint: DELETE /opportunities
+                version: 1.0.0
         syncs:
             accounts:
                 runs: every hour
@@ -6614,8 +6626,8 @@ integrations:
                     Fetches a list of accounts from salesforce
                 output: Account
                 sync_type: incremental
-                version: 1.0.1
-                endpoint: GET /salesforce/accounts
+                version: 1.0.2
+                endpoint: GET /accounts
             contacts:
                 runs: every hour
                 description: |
@@ -6625,8 +6637,8 @@ integrations:
                 scopes:
                     - offline_access
                     - api
-                version: 1.0.1
-                endpoint: GET /salesforce/contacts
+                version: 1.0.2
+                endpoint: GET /contacts
             leads:
                 runs: every hour
                 description: |
@@ -6636,33 +6648,34 @@ integrations:
                 scopes:
                     - offline_access
                     - api
-                endpoint: GET /salesforce/leads
+                endpoint: GET /leads
+                version: 1.0.0
             deals:
                 runs: every hour
                 description: |
                     Fetches a list of deals from salesforce
                 output: Deal
                 sync_type: incremental
-                version: 1.0.0
-                endpoint: GET /salesforce/deals
+                version: 1.0.1
+                endpoint: GET /deals
             articles:
                 runs: every day
                 description: |
                     Fetches a list of articles from salesforce
                 output: Article
                 input: SalesforceMetadata
-                version: 1.0.0
+                version: 1.0.1
                 auto_start: false
                 sync_type: incremental
-                endpoint: GET /salesforce/articles
+                endpoint: GET /articles
             tickets:
                 runs: every day
                 description: |
                     Fetches a list of tickets from salesforce
                 output: Ticket
                 sync_type: incremental
-                version: 1.0.0
-                endpoint: GET /salesforce/tickets
+                version: 1.0.1
+                endpoint: GET /tickets
             opportunities:
                 runs: every hour
                 description: |
@@ -6672,7 +6685,8 @@ integrations:
                 scopes:
                     - offline_access
                     - api
-                endpoint: GET /salesforce/opportunities
+                endpoint: GET /opportunities
+                version: 1.0.0
         models:
             IdEntity:
                 id: string
