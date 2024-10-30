@@ -397,7 +397,7 @@ paths:
                   in: query
                   schema:
                       type: string
-                  description: Filter the list of connections based on this connection ID.
+                  description: Search in the list of connections (will search in connection ID or end user profile).
             responses:
                 '200':
                     description: Successfully returned a list of connections

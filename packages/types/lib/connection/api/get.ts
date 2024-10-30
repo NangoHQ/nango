@@ -51,7 +51,6 @@ export type ApiPublicConnection = Pick<Connection, 'id' | 'connection_id' | 'pro
 export type GetPublicConnections = Endpoint<{
     Method: 'GET';
     Querystring: {
-        env: string;
         connectionId?: string | undefined;
     };
     Path: '/connection';
