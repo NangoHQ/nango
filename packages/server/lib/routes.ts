@@ -32,7 +32,8 @@ import tracer from 'dd-trace';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
-import { patchSettings } from './controllers/v1/environment/webhook/patchSettings.js';
+import { postSettings as postOtlpSettings } from './controllers/v1/environment/otlp/postSettings.js';
+import { patchSettings as patchWebhookSettings } from './controllers/v1/environment/webhook/patchSettings.js';
 import { updatePrimaryUrl } from './controllers/v1/environment/webhook/updatePrimaryUrl.js';
 import { updateSecondaryUrl } from './controllers/v1/environment/webhook/updateSecondaryUrl.js';
 import {
@@ -301,7 +302,8 @@ web.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.up
 web.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
 web.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
 web.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
-web.route('/api/v1/environment/webhook/settings').patch(webAuth, patchSettings);
+web.route('/api/v1/environment/webhook/settings').patch(webAuth, patchWebhookSettings);
+web.route('/api/v1/environment/otlp/settings').post(webAuth, postOtlpSettings);
 web.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 

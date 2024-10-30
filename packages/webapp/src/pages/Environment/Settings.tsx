@@ -12,6 +12,7 @@ import {
     useEditHmacEnabledAPI,
     useEditHmacKeyAPI,
     useEditEnvVariablesAPI,
+    useEditOtlpSettingsAPI,
     apiFetch
 } from '../../utils/api';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
@@ -43,6 +44,10 @@ export const EnvironmentSettings: React.FC = () => {
     const [callbackUrl, setCallbackUrl] = useState('');
     const [hostUrl, setHostUrl] = useState('');
 
+    const [otlpEndpoint, setOtlpEndpoint] = useState('');
+    const [otlpEditMode, setOtlpEditMode] = useState(false);
+    const [otlpHeaders, setOtlpHeaders] = useState<Record<string, string>>({});
+
     const [webhookUrl, setWebhookUrl] = useState('');
     const [callbackEditMode, setCallbackEditMode] = useState(false);
     const [webhookEditMode, setWebhookEditMode] = useState(false);
@@ -71,6 +76,7 @@ export const EnvironmentSettings: React.FC = () => {
     const editHmacEnabled = useEditHmacEnabledAPI(env);
     const editHmacKey = useEditHmacKeyAPI(env);
     const editEnvVariables = useEditEnvVariablesAPI(env);
+    const editOtlpSettings = useEditOtlpSettingsAPI(env);
 
     const { setVisible, bindings } = useModal();
     const { setVisible: setSecretVisible, bindings: secretBindings } = useModal();
@@ -118,6 +124,9 @@ export const EnvironmentSettings: React.FC = () => {
         setSlackConnectedChannel(slack_notifications_channel);
 
         setEnvVariables(env_variables);
+
+        setOtlpEndpoint(environment.otlp_settings?.endpoint || '');
+        setOtlpHeaders(environment.otlp_settings?.headers || {});
     }, [environmentAndAccount]);
 
     const handleCallbackSave = async (e: React.SyntheticEvent) => {
@@ -256,6 +265,67 @@ export const EnvironmentSettings: React.FC = () => {
             toast.success('Environment variables updated!', { position: toast.POSITION.BOTTOM_CENTER });
             void mutate();
         }
+    };
+
+    const handleOtlpEndpointSave = async (e: React.SyntheticEvent) => {
+        e.preventDefault();
+
+        const target = e.target as typeof e.target & {
+            otlp_endpoint: { value: string };
+        };
+
+        const res = await editOtlpSettings({
+            endpoint: target.otlp_endpoint.value,
+            headers: otlpHeaders
+        });
+
+        if (res?.status === 200) {
+            toast.success('OpenTelemetry endpoint updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            setOtlpEditMode(false);
+            setOtlpEndpoint(target.otlp_endpoint.value);
+            void mutate();
+        }
+
+        setOtlpEditMode(false);
+    };
+
+    const inputtedOtlpHeaders = (form: HTMLFormElement) => {
+        let newOtlpHeaders = {};
+        const formData = new FormData(form);
+        const entries = Array.from(formData.entries());
+        for (let i = 0; i < entries.length - 1; i = i + 2) {
+            const [[, header], [, value]] = entries.slice(i, i + 2);
+            newOtlpHeaders = {
+                ...newOtlpHeaders,
+                [header.toString()]: value
+            };
+        }
+        return newOtlpHeaders;
+    };
+
+    const handleSaveOtlpHeaders = async (e: React.SyntheticEvent) => {
+        e.preventDefault();
+        const headers = inputtedOtlpHeaders(e.target as HTMLFormElement);
+        const res = await editOtlpSettings({
+            endpoint: otlpEndpoint,
+            headers
+        });
+        if (res?.status === 200) {
+            toast.success('OpenTelemetry Headers updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            void mutate();
+        }
+    };
+
+    const handleAddOtlpHeader = (e: React.SyntheticEvent) => {
+        e.preventDefault();
+        const form = (e.target as HTMLElement).closest('form');
+        const headers = form ? inputtedOtlpHeaders(form) : otlpHeaders;
+        setOtlpHeaders({ ...headers, '': '' });
+    };
+
+    const handleRemoveOtlpHeader = (header: string) => {
+        const { [header]: _, ...newHeaders } = otlpHeaders;
+        setOtlpHeaders(newHeaders);
     };
 
     const handleActivatePublicKey = () => {
@@ -987,6 +1057,111 @@ export const EnvironmentSettings: React.FC = () => {
                                     </div>
                                 </form>
                             </div>
+                        </div>
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex items-center mb-2">
+                                    <label htmlFor="otlp_endpoint" className="text-text-light-gray text-sm font-semibold">
+                                        OpenTelemetry Endpoint
+                                    </label>
+                                    <Tooltip text={<div className="flex text-black text-sm">Export telemetry data to your own OpenTelemetry backend.</div>}>
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
+                                </div>
+                                {otlpEditMode && (
+                                    <form className="mt-2" onSubmit={handleOtlpEndpointSave}>
+                                        <div className="flex">
+                                            <input
+                                                id="otlp_endpoint"
+                                                name="otlp_endpoint"
+                                                autoComplete="new-password"
+                                                type="url"
+                                                defaultValue={otlpEndpoint}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                            />
+                                            <button
+                                                type="submit"
+                                                className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
+                                    </form>
+                                )}
+                                {!otlpEditMode && (
+                                    <div className="flex">
+                                        <Prism language="bash" colorScheme="dark" className="w-full">
+                                            {otlpEndpoint || '\u0000'}
+                                        </Prism>
+                                        <button
+                                            onClick={() => setOtlpEditMode(!otlpEditMode)}
+                                            className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            {otlpEndpoint.length > 0 && (
+                                <div className="mx-8 mt-8">
+                                    <div className="flex items-center mb-2">
+                                        <label htmlFor="email" className="text-text-light-gray text-sm font-semibold">
+                                            OpenTelemetry Endpoint Headers
+                                        </label>
+                                    </div>
+                                    <form className="mt-2" onSubmit={handleSaveOtlpHeaders}>
+                                        {Object.entries(otlpHeaders).map(([key, value], index) => (
+                                            <div key={key} className="flex items-center mt-2">
+                                                <input
+                                                    id={`otlp_header_${key || index}`}
+                                                    name={`otlp_header_${key || index}`}
+                                                    defaultValue={key}
+                                                    autoComplete="new-password"
+                                                    required
+                                                    type="text"
+                                                    className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none mr-3"
+                                                />
+                                                <input
+                                                    id={`otlp_header_value_${value || index}`}
+                                                    name={`otlp_header_value_${value || index}`}
+                                                    defaultValue={value}
+                                                    required
+                                                    autoComplete="new-password"
+                                                    type="password"
+                                                    onMouseEnter={(e) => (e.currentTarget.type = 'text')}
+                                                    onMouseLeave={(e) => {
+                                                        if (document.activeElement !== e.currentTarget) {
+                                                            e.currentTarget.type = 'password';
+                                                        }
+                                                    }}
+                                                    onFocus={(e) => (e.currentTarget.type = 'text')}
+                                                    onBlur={(e) => (e.currentTarget.type = 'password')}
+                                                    className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                                />
+                                                <button
+                                                    onClick={() => handleRemoveOtlpHeader(key)}
+                                                    className="flex hover:bg-hover-gray text-white h-11 ml-4 px-4 pt-3 text-sm"
+                                                    type="button"
+                                                >
+                                                    <TrashIcon className="flex h-5 w-5 text-white" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <div className="flex justify-end mt-4">
+                                            <button
+                                                onClick={handleAddOtlpHeader}
+                                                className="hover:bg-hover-gray bg-gray-800 text-white flex h-11 rounded-md px-4 pt-3 text-sm mr-4"
+                                                type="button"
+                                            >
+                                                Add OpenTelemetry Endpoint Header
+                                            </button>
+                                            <button type="submit" className="hover:bg-gray-200 bg-white text-gray-700 flex h-11 rounded-md px-4 pt-3 text-sm">
+                                                Save OpenTelemetry Endpoint Headers
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
