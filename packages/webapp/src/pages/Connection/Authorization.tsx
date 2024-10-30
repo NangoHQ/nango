@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { Prism } from '@mantine/prism';
-import { Loading } from '@geist-ui/core';
 
 import PrismPlus from '../../components/ui/prism/PrismPlus';
 import type { Connection } from '@nangohq/types';
@@ -8,25 +6,15 @@ import { formatDateToShortUSFormat } from '../../utils/utils';
 import SecretInput from '../../components/ui/input/SecretInput';
 import { CopyButton } from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
+import type React from 'react';
 
 interface AuthorizationProps {
     connection: Connection;
-    forceRefresh: () => Promise<void>;
-    loaded: boolean;
-    syncLoaded: boolean;
+    forceRefresh: () => void;
 }
 
-export default function Authorization(props: AuthorizationProps) {
-    const { connection, forceRefresh, loaded } = props;
-    const [refreshing, setRefreshing] = useState(false);
-
-    const handleForceRefresh = async () => {
-        setRefreshing(true);
-        await forceRefresh();
-        setRefreshing(false);
-    };
-
-    if (!loaded) return <Loading spaceRatio={2.5} className="top-24" />;
+export const Authorization: React.FC<AuthorizationProps> = (props) => {
+    const { connection, forceRefresh } = props;
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
@@ -169,7 +157,7 @@ export default function Authorization(props: AuthorizationProps) {
             {connection.credentials && 'token' in connection.credentials && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Token</span>
-                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.token} copy={true} refresh={handleForceRefresh} />
+                    <SecretInput disabled value={connection.credentials.token} copy={true} refresh={forceRefresh} />
                 </div>
             )}
             {(connection.credentials.type === 'OAUTH2' || connection.credentials.type === 'APP') && connection.credentials.access_token && (
@@ -177,9 +165,9 @@ export default function Authorization(props: AuthorizationProps) {
                     <span className="text-gray-400 text-xs uppercase mb-1">Access Token</span>
                     <SecretInput
                         disabled
-                        value={refreshing ? 'Refreshing...' : connection.credentials.access_token}
+                        value={connection.credentials.access_token}
                         copy={true}
-                        refresh={connection.credentials.type === 'OAUTH2' && connection.credentials.refresh_token ? handleForceRefresh : undefined}
+                        refresh={connection.credentials.type === 'OAUTH2' && connection.credentials.refresh_token ? forceRefresh : undefined}
                     />
                 </div>
             )}
@@ -210,7 +198,7 @@ export default function Authorization(props: AuthorizationProps) {
             {connection.credentials.type === 'OAUTH2' && connection.credentials.refresh_token && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Refresh Token</span>
-                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.refresh_token} copy={true} />
+                    <SecretInput disabled value={connection.credentials.refresh_token} copy={true} />
                 </div>
             )}
             {connection.credentials.type === 'JWT' && connection.credentials.issuerId && (
@@ -258,7 +246,7 @@ export default function Authorization(props: AuthorizationProps) {
             {connection.credentials.type === 'BILL' && 'session_id' in connection.credentials && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Session ID</span>
-                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.session_id} copy={true} refresh={handleForceRefresh} />
+                    <SecretInput disabled value={connection.credentials.session_id} copy={true} refresh={forceRefresh} />
                 </div>
             )}
             <div className="flex flex-col">
@@ -288,4 +276,4 @@ export default function Authorization(props: AuthorizationProps) {
             )}
         </div>
     );
-}
+};

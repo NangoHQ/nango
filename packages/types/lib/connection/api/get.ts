@@ -2,19 +2,12 @@ import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
 import type { Connection } from '../db.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { Merge } from 'type-fest';
+import type { ApiEndUser } from '../../endUser/index.js';
 
 export type ApiConnection = Pick<Merge<Connection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
     provider: string;
     errors: [{ type: string; log_id: string }];
-    endUser: {
-        id: string;
-        displayName: string | null;
-        email: string;
-        organization: {
-            id: string;
-            displayName: string | null;
-        } | null;
-    } | null;
+    endUser: ApiEndUser | null;
 };
 export type GetConnections = Endpoint<{
     Method: 'GET';
@@ -78,9 +71,12 @@ export type GetConnection = Endpoint<{
         | ApiError<'missing_connection'>
         | ApiError<'unknown_provider_config'>;
     Success: {
-        provider: string | null;
-        connection: Connection;
-        errorLog: ActiveLog | null;
+        data: {
+            provider: string | null;
+            connection: Connection;
+            endUser: ApiEndUser | null;
+            errorLog: ActiveLog | null;
+        };
     };
 }>;
 

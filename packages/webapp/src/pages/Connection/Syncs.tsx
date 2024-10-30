@@ -4,24 +4,16 @@ import type { SyncResponse } from '../../types';
 import type { Connection } from '@nangohq/types';
 import { SyncRow } from './components/SyncRow';
 import * as Table from '../../components/ui/Table';
-import Spinner from '../../components/ui/Spinner';
 import { useStore } from '../../store';
 
 interface SyncsProps {
     syncs: SyncResponse[] | undefined;
     connection: Connection;
     provider: string | null;
-    loaded: boolean;
-    syncLoaded: boolean;
-    reload: () => void;
 }
 
-export default function Syncs({ syncs, connection, provider, reload, loaded, syncLoaded }: SyncsProps) {
+export const Syncs: React.FC<SyncsProps> = ({ syncs, connection, provider }) => {
     const env = useStore((state) => state.env);
-
-    if (!loaded || !syncLoaded || syncs === null) {
-        return <Spinner />;
-    }
 
     return (
         <div className="h-fit rounded-md text-white">
@@ -59,11 +51,11 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                     </Table.Header>
                     <Table.Body>
                         {syncs.map((sync) => (
-                            <SyncRow key={sync.id} sync={sync} connection={connection} reload={reload} provider={provider} />
+                            <SyncRow key={sync.id} sync={sync} connection={connection} provider={provider} />
                         ))}
                     </Table.Body>
                 </Table.Table>
             )}
         </div>
     );
-}
+};

@@ -26,12 +26,7 @@ import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import { PopoverContent } from '@radix-ui/react-popover';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 
-export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; provider: string | null; reload: () => void }> = ({
-    sync,
-    connection,
-    provider,
-    reload
-}) => {
+export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; provider: string | null }> = ({ sync, connection, provider }) => {
     const env = useStore((state) => state.env);
     const runCommandSyncAPI = useRunSyncAPI(env);
 
@@ -53,7 +48,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
         const res = await runCommandSyncAPI('RUN_FULL', sync.schedule_id, sync.nango_connection_id, sync.id, sync.name, provider || '');
 
         if (res?.status === 200) {
-            reload();
+            // reload();
             toast.success('The full resync was successfully triggered', { position: toast.POSITION.BOTTOM_CENTER });
         } else {
             const data = await res?.json();
@@ -89,7 +84,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
         const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, provider || '');
 
         if (res?.status === 200) {
-            reload();
+            // reload();
             const niceCommand = UserFacingSyncCommand[command];
             toast.success(`The sync was successfully ${niceCommand}`, { position: toast.POSITION.BOTTOM_CENTER });
         } else {

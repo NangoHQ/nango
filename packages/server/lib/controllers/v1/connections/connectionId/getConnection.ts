@@ -1,11 +1,12 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetConnection, IntegrationConfig } from '@nangohq/types';
+import type { GetConnection } from '@nangohq/types';
 import { connectionService, configService, errorNotificationService } from '@nangohq/shared';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { endUserToApi } from '../../../../formatters/endUser.js';
 
 const queryStringValidation = z
     .object({
@@ -53,7 +54,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     const instantRefresh = force_refresh === 'true';
     const { connectionId } = params;
 
-    const integration: IntegrationConfig | null = await configService.getProviderConfig(providerConfigKey, environment.id);
+    const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
     if (!integration) {
         res.status(404).send({
             error: {
@@ -64,57 +65,36 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         return;
     }
 
-    const connectionRes = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
-    if (connectionRes.error || !connectionRes.response) {
-        switch (connectionRes.error?.type) {
-            case 'missing_connection':
-                res.status(400).send({
-                    error: { code: 'missing_connection', message: connectionRes.error.message }
-                });
-                break;
-            case 'missing_provider_config':
-                res.status(400).send({
-                    error: { code: 'missing_provider_config', message: connectionRes.error.message }
-                });
-                break;
-            case 'unknown_connection':
-                res.status(404).send({
-                    error: { code: 'unknown_connection', message: connectionRes.error.message }
-                });
-                break;
-            case 'unknown_provider_config':
-                res.status(404).send({
-                    error: { code: 'unknown_provider_config', message: connectionRes.error.message }
-                });
-                break;
-            default:
-                res.status(500).send({ error: { code: 'server_error' } });
-        }
+    const connectionRes = await connectionService.getConnectionForPrivateApi({ connectionId, providerConfigKey, environmentId: environment.id });
+
+    if (!connectionRes) {
+        res.status(400).send({ error: { code: 'missing_connection', message: 'Failed to find connection' } });
         return;
     }
+
+    let connection = connectionRes.connection;
 
     const credentialResponse = await connectionService.refreshOrTestCredentials({
         account,
         environment,
-        connection: connectionRes.response,
+        connection,
         integration,
         logContextGetter,
         instantRefresh,
         onRefreshSuccess: connectionRefreshSuccessHook,
         onRefreshFailed: connectionRefreshFailedHook
     });
-
     if (credentialResponse.isErr()) {
-        const errorLog = await errorNotificationService.auth.get(connectionRes.response.id as number);
+        const errorLog = await errorNotificationService.auth.get(connection.id!);
 
         // When we failed to refresh we still return a 200 because the connection is used in the UI
         // Ultimately this could be a second endpoint so the UI displays faster and no confusion between error code
-        res.status(200).send({ errorLog, provider: integration.provider, connection: connectionRes.response });
+        res.status(200).send({ data: { errorLog, provider: integration.provider, connection, endUser: endUserToApi(connectionRes.end_user) } });
 
         return;
     }
 
-    const connection = credentialResponse.value;
+    connection = credentialResponse.value;
 
     if (instantRefresh) {
         // If we force the refresh we also specifically log a success operation (we usually only log error)
@@ -132,8 +112,11 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     }
 
     res.status(200).send({
-        provider: integration.provider,
-        connection,
-        errorLog: null
+        data: {
+            provider: integration.provider,
+            connection,
+            endUser: endUserToApi(connectionRes.end_user),
+            errorLog: null
+        }
     });
 });
