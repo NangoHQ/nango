@@ -2663,6 +2663,8 @@ gorgias:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.subdomain}.gorgias.com
+        retry:
+            after: 'Retry-after'
     docs: https://docs.nango.dev/integrations/all/gorgias
     connection_config:
         subdomain:
