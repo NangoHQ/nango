@@ -7849,8 +7849,8 @@ integrations:
                 runs: every hour
                 output: Contact
                 sync_type: incremental
-                endpoint: GET /xero/contacts
-                version: 1.0.0
+                endpoint: GET /contacts
+                version: 1.0.1
             accounts:
                 description: >
                     Fetches all accounts in Xero (chart of accounts). Incremental sync,
@@ -7859,8 +7859,8 @@ integrations:
                 scopes: accounting.settings
                 output: Account
                 sync_type: incremental
-                endpoint: GET /xero/accounts
-                version: 1.0.0
+                endpoint: GET /accounts
+                version: 1.0.1
             items:
                 description: >
                     Fetches all items in Xero. Incremental sync, does not detect deletes,
@@ -7871,8 +7871,8 @@ integrations:
                 scopes: accounting.settings
                 output: Item
                 sync_type: incremental
-                endpoint: GET /xero/items
-                version: 1.0.0
+                endpoint: GET /items
+                version: 1.0.1
             invoices:
                 description: |
                     Fetches all invoices in Xero. Incremental sync.
@@ -7880,8 +7880,8 @@ integrations:
                 scopes: accounting.transactions
                 output: Invoice
                 sync_type: incremental
-                endpoint: GET /xero/invoices
-                version: 1.0.0
+                endpoint: GET /invoices
+                version: 1.0.1
             payments:
                 description: |
                     Fetches all payments in Xero. Incremental sync.
@@ -7889,8 +7889,8 @@ integrations:
                 scopes: accounting.transactions
                 output: Payment
                 sync_type: incremental
-                endpoint: GET /xero/payments
-                version: 1.0.0
+                endpoint: GET /payments
+                version: 1.0.1
         actions:
             create-contact:
                 description: |
@@ -7899,8 +7899,8 @@ integrations:
                 input: CreateContact[]
                 scopes: accounting.contacts
                 output: ContactActionResponse
-                endpoint: POST /xero/contacts
-                version: 1.0.0
+                endpoint: POST /contacts
+                version: 1.0.1
             update-contact:
                 description: >
                     Updates one or multiple contacts in Xero. Only fields that are passed
@@ -7909,8 +7909,8 @@ integrations:
                 input: Contact[]
                 scopes: accounting.contacts
                 output: ContactActionResponse
-                endpoint: PUT /xero/contacts
-                version: 1.0.0
+                endpoint: PUT /contacts
+                version: 1.0.1
             create-invoice:
                 description: |
                     Creates one or more invoices in Xero.
@@ -7918,8 +7918,8 @@ integrations:
                 input: CreateInvoice[]
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
-                endpoint: POST /xero/invoices
-                version: 1.0.1
+                endpoint: POST /invoices
+                version: 1.0.2
             update-invoice:
                 description: |
                     Updates one or more invoices in Xero. To delete an invoice
@@ -7929,8 +7929,8 @@ integrations:
                 input: UpdateInvoice[]
                 scopes: accounting.transactions
                 output: InvoiceActionResponse
-                endpoint: PUT /xero/invoices
-                version: 1.0.1
+                endpoint: PUT /invoices
+                version: 1.0.2
             create-credit-note:
                 description: |
                     Creates one or more credit notes in Xero.
@@ -7938,16 +7938,16 @@ integrations:
                 input: CreditNote[]
                 scopes: accounting.transactions
                 output: CreditNoteActionResponse
-                endpoint: POST /xero/creditnotes
-                version: 1.0.0
+                endpoint: POST /creditnotes
+                version: 1.0.1
             update-credit-note:
                 description: |
                     Updates one or more credit notes in Xero.
                 input: CreditNote[]
                 scopes: accounting.transactions
                 output: CreditNoteActionResponse
-                endpoint: PUT /xero/creditnotes
-                version: 1.0.0
+                endpoint: PUT /creditnotes
+                version: 1.0.1
             create-payment:
                 description: |
                     Creates one or more payments in Xero.
@@ -7955,8 +7955,8 @@ integrations:
                 scopes: accounting.transactions
                 input: CreatePayment[]
                 output: PaymentActionResponse
-                endpoint: POST /xero/payments
-                version: 1.0.0
+                endpoint: POST /payments
+                version: 1.0.1
             create-item:
                 description: |
                     Creates one or more items in Xero.
@@ -7964,16 +7964,16 @@ integrations:
                 scopes: accounting.settings
                 input: Item[]
                 output: ItemActionResponse
-                endpoint: POST /xero/items
-                version: 1.0.0
+                endpoint: POST /items
+                version: 1.0.1
             update-item:
                 description: |
                     Updates one or more items in Xero.
                 scopes: accounting.settings
                 input: Item[]
                 output: ItemActionResponse
-                endpoint: PUT /xero/items
-                version: 1.0.0
+                endpoint: PUT /items
+                version: 1.0.1
         models:
             ActionErrorResponse:
                 message: string
