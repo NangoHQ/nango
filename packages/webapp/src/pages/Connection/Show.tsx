@@ -18,7 +18,6 @@ import { isHosted } from '../../utils/utils';
 import { connectSlack } from '../../utils/slack-connection';
 
 import { useStore } from '../../store';
-import { getLogsUrl } from '../../utils/logs';
 import { apiDeleteConnection, useConnection } from '../../hooks/useConnections';
 import { useLocalStorage } from 'react-use';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -232,50 +231,6 @@ export const ConnectionShow: React.FC = () => {
                 </ul>
             </section>
 
-            {activeTab === Tabs.Authorization && connection.errorLog && (
-                <div className="flex my-4">
-                    <Info variant={'destructive'}>
-                        <div>
-                            There was an error refreshing the credentials
-                            <Link
-                                to={getLogsUrl({
-                                    env,
-                                    operationId: connection.errorLog.log_id,
-                                    connections: connection.connection.connection_id,
-                                    day: connection.errorLog?.created_at
-                                })}
-                                className="ml-1 cursor-pointer underline"
-                            >
-                                (logs).
-                            </Link>
-                        </div>
-                    </Info>
-                </div>
-            )}
-
-            {activeTab === Tabs.Syncs && syncs && syncs.some((sync) => sync.active_logs?.log_id) && (
-                <div className="flex my-4">
-                    <Info variant={'destructive'}>
-                        <div>
-                            Last sync execution failed for the following sync
-                            {syncs.filter((sync) => sync.active_logs?.log_id).length > 1 ? 's' : ''}:{' '}
-                            {syncs
-                                .filter((sync) => sync.active_logs?.log_id)
-                                .map((sync, index) => (
-                                    <div key={sync.name}>
-                                        {sync.name} (
-                                        <Link className="underline" to={getLogsUrl({ env, operationId: sync.active_logs?.log_id, syncs: sync.name })}>
-                                            logs
-                                        </Link>
-                                        ){index < syncs.filter((sync) => sync.active_logs?.log_id).length - 1 && ', '}
-                                    </div>
-                                ))}
-                            .
-                        </div>
-                    </Info>
-                </div>
-            )}
-
             {!slackIsConnected && !isHosted() && showSlackBanner && (
                 <Info className="mt-4" onClose={() => setShowSlackBanner(false)} icon={<IntegrationLogo provider="slack" height={6} width={6} />}>
                     Receive instant monitoring alerts on Slack.{' '}
@@ -291,7 +246,9 @@ export const ConnectionShow: React.FC = () => {
 
             <section className="mt-10">
                 {activeTab === Tabs.Syncs && <Syncs syncs={syncs} connection={connection.connection} provider={connection.provider} />}
-                {activeTab === Tabs.Authorization && <Authorization endUser={connection.endUser} connection={connection.connection} />}
+                {activeTab === Tabs.Authorization && (
+                    <Authorization endUser={connection.endUser} connection={connection.connection} errorLog={connection.errorLog} />
+                )}
             </section>
             <Helmet>
                 <style>{'.no-border-modal footer { border-top: none !important; }'}</style>

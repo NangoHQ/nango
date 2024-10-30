@@ -1,7 +1,7 @@
 import { Prism } from '@mantine/prism';
 
 import PrismPlus from '../../components/ui/prism/PrismPlus';
-import type { ApiConnectionFull, ApiEndUser } from '@nangohq/types';
+import type { ActiveLog, ApiConnectionFull, ApiEndUser } from '@nangohq/types';
 import { formatDateToShortUSFormat } from '../../utils/utils';
 import SecretInput from '../../components/ui/input/SecretInput';
 import { CopyButton } from '../../components/ui/button/CopyButton';
@@ -12,13 +12,17 @@ import { useState } from 'react';
 import { useStore } from '../../store';
 import { useToast } from '../../hooks/useToast';
 import { mutate } from 'swr';
+import { getLogsUrl } from '../../utils/logs';
+import { Info } from '../../components/Info';
+import { Link } from 'react-router-dom';
 
 interface AuthorizationProps {
     connection: ApiConnectionFull;
+    errorLog: ActiveLog | null;
     endUser: ApiEndUser | null;
 }
 
-export const Authorization: React.FC<AuthorizationProps> = ({ connection, endUser }) => {
+export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorLog, endUser }) => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
@@ -40,6 +44,19 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, endUse
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
+            {errorLog && (
+                <div className="flex my-4">
+                    <Info variant={'destructive'}>
+                        There was an error refreshing the credentials
+                        <Link
+                            to={getLogsUrl({ env, operationId: errorLog.log_id, connections: connection.connection_id, day: errorLog.created_at })}
+                            className="ml-1 cursor-pointer underline"
+                        >
+                            (logs).
+                        </Link>
+                    </Info>
+                </div>
+            )}
             <div className="grid grid-cols-3 gap-5">
                 {endUser?.id && (
                     <div className="flex flex-col">
