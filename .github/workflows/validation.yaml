@@ -31,3 +31,6 @@ jobs:
                   npm ci
 
                   npx tsx scripts/validation/providers/validate.ts
+
+            - name: Validate OpenAPI
+              run: npm run test:openapi
