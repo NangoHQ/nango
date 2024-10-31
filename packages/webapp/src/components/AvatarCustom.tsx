@@ -27,7 +27,7 @@ type OrgProps = {
     displayName: string;
 } & AvatarProps;
 
-const knownEmailsProviders = new Set<string>([
+const knownEmailProviders = new Set<string>([
     'aol.com',
     'duck.com',
     'example.com',
@@ -55,7 +55,7 @@ export const AvatarOrganization: React.FC<OrgProps> = ({ email, displayName, ...
     const acronym = useMemo(() => {
         if (email && globalEnv.publicLogoDevKey) {
             const domain = email.split('@')[1];
-            if (!knownEmailsProviders.has(domain)) {
+            if (!knownEmailProviders.has(domain)) {
                 return { type: 'domain', display: toAcronym(domain), full: domain };
             }
         }
