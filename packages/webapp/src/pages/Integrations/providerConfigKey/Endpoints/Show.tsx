@@ -9,7 +9,20 @@ import { EndpointsList } from './components/List';
 import { EndpointOne } from './components/One';
 import PageNotFound from '../../../PageNotFound';
 
-const allowedGroup = ['customers', 'invoices', 'payments', 'tickets'];
+const allowedGroup = [
+    'customers',
+    'invoices',
+    'payments',
+    'tickets',
+    'users',
+    'articles',
+    'accounts',
+    'contacts',
+    'employees',
+    'deals',
+    'opportunities',
+    'leads'
+];
 export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['data'] }> = ({ integration }) => {
     const env = useStore((state) => state.env);
     const { providerConfigKey } = useParams();

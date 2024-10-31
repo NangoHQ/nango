@@ -2754,7 +2754,7 @@ integrations:
                 version: 1.0.3
                 output: Document
                 sync_type: full
-                endpoint: GET /google-drive/documents
+                endpoint: GET /documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
             fetch-document:
@@ -2768,8 +2768,8 @@ integrations:
                     string can be used to recreate the file in its original format using
                     an external tool.
                 output: string
-                version: 1.0.1
-                endpoint: GET /google-drive/fetch-document
+                version: 1.0.2
+                endpoint: GET /fetch-document
                 scopes: https://www.googleapis.com/auth/drive.readonly
         models:
             DocumentMetadata:
@@ -5620,6 +5620,55 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+    perimeter81:
+        actions:
+            create-user:
+                description: Creates a user in Perimeter81
+                input: Perimeter81CreateUser
+                endpoint: POST /users
+                output: User
+            delete-user:
+                description: Deletes a user in Perimeter81
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                description: |
+                    Fetches the list of users from Perimeter81
+                endpoint: GET /users
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: User
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            Perimeter81CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                idpType?: string
+                accessGroups?: string[]
+                emailVerified?: boolean
+                inviteMessage?: string
+                origin?: string
+                profileData?:
+                    roleName?: string
+                    phone?: string
+                    icon?: string
+                    origin?: string
     pipedrive:
         syncs:
             activities:
@@ -8330,6 +8379,7 @@ integrations:
                 output: CreatedTicket
                 endpoint: POST /tickets
                 input: TicketCreate
+                version: 1.0.1
                 description: Create a Zendesk ticket
                 scopes:
                     - tickets:write
@@ -8349,6 +8399,17 @@ integrations:
                     is not provided
                 scopes:
                     - users:write
+            search-tickets:
+                output: SearchTicketOutput
+                endpoint: GET /search-tickets
+                input: SearchTicketInput
+                description: >
+                    An action that performs a search for tickets in Zendesk based on the
+                    specified filter. It can take up to a few minutes for new tickets and
+                    users to be indexed for search. If new resources don't appear in your
+                    search results, wait a few minutes and try again.
+                scopes:
+                    - read
         models:
             IdEntity:
                 id: string
@@ -8437,9 +8498,9 @@ integrations:
                 url: string
                 created_at: string
                 updated_at: string
-                subject: string
+                subject: string | null
                 description: string
-                priority: string
+                priority: string | null
                 status: string
             Ticket:
                 requester_id: number
@@ -8499,6 +8560,27 @@ integrations:
                 via_followup_source_id: number
                 via_id: number
                 voice_comment: object
+            SearchTicketInput:
+                query: string
+            SearchTicketOutput:
+                tickets: SearchTicket[]
+            SearchTicket:
+                id: string
+                url: string
+                external_id: string | null
+                requester_id: string
+                requester_name: string
+                assignee_id: string
+                assignee_name: string
+                assignee_avatar: string | null
+                status: string
+                created_at: string
+                updated_at: string
+                is_public: boolean
+                subject: string | null
+                description: string
+                priority: string | null
+                tags: string[]
     zoho-crm:
         syncs:
             accounts:

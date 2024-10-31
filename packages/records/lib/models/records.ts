@@ -6,12 +6,13 @@ import type {
     FormattedRecordWithMetadata,
     GetRecordsResponse,
     LastAction,
+    RecordCount,
     ReturnedRecord,
     UnencryptedRecord,
     UpsertSummary
 } from '../types.js';
 import { decryptRecord, decryptRecords, encryptRecords } from '../utils/encryption.js';
-import { RECORDS_TABLE } from '../constants.js';
+import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
 import { logger } from '../utils/logger.js';
 import { Err, Ok, retry } from '@nangohq/utils';
@@ -21,6 +22,30 @@ import type { Knex } from 'knex';
 dayjs.extend(utc);
 
 const BATCH_SIZE = 1000;
+
+export async function getRecordCountsByModel({
+    connectionId,
+    environmentId
+}: {
+    connectionId: number;
+    environmentId: number;
+}): Promise<Result<Record<string, RecordCount>>> {
+    try {
+        const results = await db
+            .from(RECORD_COUNTS_TABLE)
+            .where({
+                connection_id: connectionId,
+                environment_id: environmentId
+            })
+            .select<RecordCount[]>('*');
+
+        const countsByModel: Record<string, RecordCount> = results.reduce((acc, result) => ({ ...acc, [result.model]: result }), {});
+        return Ok(countsByModel);
+    } catch {
+        const e = new Error(`Count records error for connection ${connectionId} and environment ${environmentId}`);
+        return Err(e);
+    }
+}
 
 export async function getRecords({
     connectionId,
@@ -182,11 +207,13 @@ export async function getRecords({
 export async function upsert({
     records,
     connectionId,
+    environmentId,
     model,
     softDelete = false
 }: {
     records: FormattedRecord[];
     connectionId: number;
+    environmentId: number;
     model: string;
     softDelete?: boolean;
 }): Promise<Result<UpsertSummary>> {
@@ -227,6 +254,23 @@ export async function upsert({
                         return false;
                     }
                 });
+
+                const delta = chunkSummary.addedKeys.length - (chunkSummary.deletedKeys?.length ?? 0);
+                if (delta !== 0) {
+                    await trx
+                        .from(RECORD_COUNTS_TABLE)
+                        .insert({
+                            connection_id: connectionId,
+                            model,
+                            environment_id: environmentId,
+                            count: Math.max(0, delta)
+                        })
+                        .onConflict(['connection_id', 'environment_id', 'model'])
+                        .merge({
+                            count: trx.raw(`${RECORD_COUNTS_TABLE}.count + EXCLUDED.count`),
+                            updated_at: trx.fn.now()
+                        });
+                }
             }
         });
 
@@ -327,11 +371,13 @@ export async function update({
 
 export async function deleteRecordsBySyncId({
     connectionId,
+    environmentId,
     model,
     syncId,
     limit = 5000
 }: {
     connectionId: number;
+    environmentId: number;
     model: string;
     syncId: string;
     limit?: number;
@@ -350,8 +396,13 @@ export async function deleteRecordsBySyncId({
             .del();
         totalDeletedRecords += deletedRecords;
     } while (deletedRecords >= limit);
+    await deleteRecordCount({ connectionId, environmentId, model });
 
     return { totalDeletedRecords };
+}
+
+export async function deleteRecordCount({ connectionId, environmentId, model }: { connectionId: number; environmentId: number; model: string }): Promise<void> {
+    await db.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
 }
 
 // Mark all non-deleted records that don't belong to currentGeneration as deleted
