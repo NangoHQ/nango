@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import * as Table from '../../components/ui/Table';
 
 import { Input } from '../../components/ui/input/Input';
@@ -31,7 +31,7 @@ import { AvatarOrganization } from '../../components/AvatarCustom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../components/ui/DropdownMenu';
 import { IconChevronDown } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
-import type { ApiConnection } from '@nangohq/types';
+import type { ApiConnectionSimple } from '@nangohq/types';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -39,7 +39,7 @@ const filterErrors = [
     { name: 'Error', value: 'error' }
 ];
 
-const columns: ColumnDef<ApiConnection>[] = [
+const columns: ColumnDef<ApiConnectionSimple>[] = [
     {
         accessorKey: 'id',
         header: 'Customer',
@@ -98,7 +98,6 @@ const columns: ColumnDef<ApiConnection>[] = [
 ];
 
 export const ConnectionList: React.FC = () => {
-    const navigate = useNavigate();
     const toast = useToast();
     const env = useStore((state) => state.env);
 
@@ -348,21 +347,20 @@ export const ConnectionList: React.FC = () => {
 
                                 {table.getRowModel().rows?.length > 0 &&
                                     table.getRowModel().rows.map((row) => (
-                                        <Table.Row
+                                        <Link
                                             key={row.original.id}
-                                            data-state={row.getIsSelected() && 'selected'}
-                                            className="hover:cursor-pointer"
-                                            onClick={() => {
-                                                navigate(`/${env}/connections/${row.original.provider_config_key}/${row.original.connection_id}`);
-                                            }}
+                                            to={`/${env}/connections/${row.original.provider_config_key}/${row.original.connection_id}`}
+                                            className="contents"
                                         >
-                                            {row.getVisibleCells().map((cell) => (
-                                                <Table.Cell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Cell>
-                                            ))}
-                                        </Table.Row>
+                                            <Table.Row data-state={row.getIsSelected() && 'selected'} className="hover:cursor-pointer">
+                                                {row.getVisibleCells().map((cell) => (
+                                                    <Table.Cell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Cell>
+                                                ))}
+                                            </Table.Row>
+                                        </Link>
                                     ))}
 
-                                {connections.length <= 0 && hasFiltered && (
+                                {connections.length <= 0 && hasFiltered && !loading && (
                                     <Table.Row>
                                         <Table.Cell colSpan={columns.length} className="h-24 text-center p-0 pt-4">
                                             <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
