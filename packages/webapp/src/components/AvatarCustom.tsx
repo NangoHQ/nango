@@ -22,10 +22,10 @@ export const AvatarCustom: React.FC<Props> = ({ displayName, ...props }) => {
     );
 };
 
-interface OrgProps {
+type OrgProps = {
     email?: string | null;
     displayName: string;
-}
+} & AvatarProps;
 
 const knownEmailsProviders = new Set<string>([
     'aol.com',
@@ -51,7 +51,7 @@ const knownEmailsProviders = new Set<string>([
     'yahoo.co.uk',
     'yahoo.com'
 ]);
-export const AvatarOrganization: React.FC<OrgProps> = ({ email, displayName }) => {
+export const AvatarOrganization: React.FC<OrgProps> = ({ email, displayName, ...props }) => {
     const acronym = useMemo(() => {
         if (email && globalEnv.publicLogoDevKey) {
             const domain = email.split('@')[1];
@@ -63,9 +63,9 @@ export const AvatarOrganization: React.FC<OrgProps> = ({ email, displayName }) =
     }, [email, displayName]);
 
     return (
-        <Avatar data-avatar>
+        <Avatar data-avatar {...props}>
             {acronym.type === 'domain' && (
-                <AvatarImage src={`https://img.logo.dev/${acronym.full}?size=80&token=${globalEnv.publicLogoDevKey}`} className="p-2" />
+                <AvatarImage src={`https://img.logo.dev/${acronym.full}?size=80&token=${globalEnv.publicLogoDevKey}`} className="p-1.5" />
             )}
             <AvatarFallback delayMs={0}>{acronym.display}</AvatarFallback>
         </Avatar>
