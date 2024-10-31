@@ -173,7 +173,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                     </PopoverTrigger>
                     <PopoverContent align="end" className="z-10">
                         <div className="bg-active-gray rounded">
-                            <div className="flex flex-col w-[340px] p-[10px]">
+                            <div className="flex flex-col w-[260px] p-[10px]">
                                 <Button
                                     variant="popoverItem"
                                     disabled={syncCommandButtonsDisabled}
@@ -226,7 +226,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                         }}
                                     >
                                         <IconPlayerPlay className="flex h-4 w-4" />
-                                        <div className="pl-2 flex gap-2 items-center">Trigger Execution (Incremental)</div>
+                                        <div className="pl-2 flex gap-2 items-center">Trigger Incremental</div>
                                     </Button>
                                 )}
 
@@ -235,7 +235,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
                                         <DialogTrigger asChild>
                                             <Button variant="popoverItem" disabled={syncCommandButtonsDisabled} isLoading={modalSpinner}>
                                                 <IconRefresh className="flex h-4 w-4" />
-                                                <div className="pl-2 flex gap-2 items-center">Trigger Execution (Full Refresh)</div>
+                                                <div className="pl-2 flex gap-2 items-center">Trigger Refresh</div>
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent>
