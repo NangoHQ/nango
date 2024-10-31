@@ -5620,6 +5620,55 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+    perimeter81:
+        actions:
+            create-user:
+                description: Creates a user in Perimeter81
+                input: Perimeter81CreateUser
+                endpoint: POST /users
+                output: User
+            delete-user:
+                description: Deletes a user in Perimeter81
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                description: |
+                    Fetches the list of users from Perimeter81
+                endpoint: GET /users
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: User
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            Perimeter81CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                idpType?: string
+                accessGroups?: string[]
+                emailVerified?: boolean
+                inviteMessage?: string
+                origin?: string
+                profileData?:
+                    roleName?: string
+                    phone?: string
+                    icon?: string
+                    origin?: string
     pipedrive:
         syncs:
             activities:
