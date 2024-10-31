@@ -27,7 +27,7 @@ export interface StoredConnection extends BaseConnection {
 }
 
 // TODO: fix BaseConnection directly
-export type DBConnection = Merge<BaseConnection, { id: number; config_id: number }>;
+export type DBConnection = Merge<BaseConnection, { id: number; config_id: number; credentials: Record<string, any> }>;
 
 export interface Connection extends BaseConnection {
     credentials: AllAuthCredentials;

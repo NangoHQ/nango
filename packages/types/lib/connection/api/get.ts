@@ -1,20 +1,13 @@
 import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
-import type { Connection } from '../db.js';
+import type { DBConnection } from '../db.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { Merge } from 'type-fest';
+import type { ApiEndUser } from '../../endUser/index.js';
 
-export type ApiConnection = Pick<Merge<Connection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
+export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
     provider: string;
     errors: [{ type: string; log_id: string }];
-    endUser: {
-        id: string;
-        displayName: string | null;
-        email: string;
-        organization: {
-            id: string;
-            displayName: string | null;
-        } | null;
-    } | null;
+    endUser: ApiEndUser | null;
 };
 export type GetConnections = Endpoint<{
     Method: 'GET';
@@ -27,7 +20,7 @@ export type GetConnections = Endpoint<{
     };
     Path: '/api/v1/connections';
     Success: {
-        data: ApiConnection[];
+        data: ApiConnectionSimple[];
     };
 }>;
 
@@ -42,7 +35,7 @@ export type GetConnectionsCount = Endpoint<{
     };
 }>;
 
-export type ApiPublicConnection = Pick<Connection, 'id' | 'connection_id' | 'provider_config_key'> & {
+export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key'> & {
     created: string;
     metadata: Record<string, unknown> | null;
     provider: string;
@@ -51,8 +44,8 @@ export type ApiPublicConnection = Pick<Connection, 'id' | 'connection_id' | 'pro
 export type GetPublicConnections = Endpoint<{
     Method: 'GET';
     Querystring: {
-        env: string;
         connectionId?: string | undefined;
+        search?: string | undefined;
     };
     Path: '/connection';
     Success: {
@@ -60,6 +53,7 @@ export type GetPublicConnections = Endpoint<{
     };
 }>;
 
+export type ApiConnectionFull = Merge<DBConnection, ApiTimestamps>;
 export type GetConnection = Endpoint<{
     Method: 'GET';
     Params: {
@@ -68,19 +62,33 @@ export type GetConnection = Endpoint<{
     Querystring: {
         env: string;
         provider_config_key: string;
-        force_refresh?: 'true' | 'false' | undefined;
     };
     Path: '/api/v1/connections/:connectionId';
-    Error:
-        | ApiError<'unknown_connection'>
-        | ApiError<'missing_provider_config'>
-        | ApiError<'unknown_provider'>
-        | ApiError<'missing_connection'>
-        | ApiError<'unknown_provider_config'>;
+    Error: ApiError<'unknown_provider_config'>;
     Success: {
-        provider: string | null;
-        connection: Connection;
-        errorLog: ActiveLog | null;
+        data: {
+            provider: string | null;
+            connection: ApiConnectionFull;
+            endUser: ApiEndUser | null;
+            errorLog: ActiveLog | null;
+        };
+    };
+}>;
+export type PostConnectionRefresh = Endpoint<{
+    Method: 'POST';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        env: string;
+        provider_config_key: string;
+    };
+    Path: '/api/v1/connections/:connectionId/refresh';
+    Error: ApiError<'unknown_provider_config'> | ApiError<'failed_to_refresh', any, ActiveLog | null>;
+    Success: {
+        data: {
+            success: boolean;
+        };
     };
 }>;
 
