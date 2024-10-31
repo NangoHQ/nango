@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 
-import { toast } from 'react-toastify';
 import { Tooltip } from '@geist-ui/core';
 import * as Table from '../../../components/ui/Table';
 import { Tag } from '../../../components/ui/label/Tag';
@@ -20,18 +19,17 @@ import type { RunSyncCommand, SyncResponse } from '../../../types';
 import { useRunSyncAPI } from '../../../utils/api';
 import { useStore } from '../../../store';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
-import type { Connection } from '@nangohq/types';
+import type { ApiConnectionFull } from '@nangohq/types';
 import Button from '../../../components/ui/button/Button';
 import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import { PopoverContent } from '@radix-ui/react-popover';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
+import { useToast } from '../../../hooks/useToast';
+import { mutate } from 'swr';
 
-export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; provider: string | null; reload: () => void }> = ({
-    sync,
-    connection,
-    provider,
-    reload
-}) => {
+export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFull; provider: string | null }> = ({ sync, connection, provider }) => {
+    const { toast } = useToast();
+
     const env = useStore((state) => state.env);
     const runCommandSyncAPI = useRunSyncAPI(env);
 
@@ -53,11 +51,11 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
         const res = await runCommandSyncAPI('RUN_FULL', sync.schedule_id, sync.nango_connection_id, sync.id, sync.name, provider || '');
 
         if (res?.status === 200) {
-            reload();
-            toast.success('The full resync was successfully triggered', { position: toast.POSITION.BOTTOM_CENTER });
+            await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`), undefined);
+            toast({ title: `The full resync was successfully triggered`, variant: 'success' });
         } else {
             const data = await res?.json();
-            toast.error(data.error, { position: toast.POSITION.BOTTOM_CENTER });
+            toast({ title: data.error, variant: 'error' });
         }
 
         setModalShowSpinner(false);
@@ -68,6 +66,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
     const logUrl = useMemo(() => {
         return getLogsUrl({
             env,
+            integrations: connection.provider_config_key,
             connections: connection?.connection_id,
             syncs: sync.name,
             day: sync.latest_sync?.updated_at ? new Date(sync.latest_sync.updated_at) : null
@@ -89,12 +88,12 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: Connection; pro
         const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, provider || '');
 
         if (res?.status === 200) {
-            reload();
+            await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`), undefined);
             const niceCommand = UserFacingSyncCommand[command];
-            toast.success(`The sync was successfully ${niceCommand}`, { position: toast.POSITION.BOTTOM_CENTER });
+            toast({ title: `The sync was successfully ${niceCommand}`, variant: 'success' });
         } else {
             const data = await res?.json();
-            toast.error(data.error, { position: toast.POSITION.BOTTOM_CENTER });
+            toast({ title: data.error, variant: 'error' });
         }
 
         setSyncCommandButtonsDisabled(false);

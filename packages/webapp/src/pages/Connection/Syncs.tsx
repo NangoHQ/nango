@@ -1,30 +1,48 @@
 import { Link } from 'react-router-dom';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import type { SyncResponse } from '../../types';
-import type { Connection } from '@nangohq/types';
+import type { ApiConnectionFull } from '@nangohq/types';
 import { SyncRow } from './components/SyncRow';
 import * as Table from '../../components/ui/Table';
-import Spinner from '../../components/ui/Spinner';
 import { useStore } from '../../store';
+import { Info } from '../../components/Info';
+import { getLogsUrl } from '../../utils/logs';
+import { Fragment } from 'react/jsx-runtime';
 
 interface SyncsProps {
     syncs: SyncResponse[] | undefined;
-    connection: Connection;
+    connection: ApiConnectionFull;
     provider: string | null;
-    loaded: boolean;
-    syncLoaded: boolean;
-    reload: () => void;
 }
 
-export default function Syncs({ syncs, connection, provider, reload, loaded, syncLoaded }: SyncsProps) {
+export const Syncs: React.FC<SyncsProps> = ({ syncs, connection, provider }) => {
     const env = useStore((state) => state.env);
-
-    if (!loaded || !syncLoaded || syncs === null) {
-        return <Spinner />;
-    }
 
     return (
         <div className="h-fit rounded-md text-white">
+            {syncs && syncs.some((sync) => sync.active_logs?.log_id) && (
+                <div className="flex my-4">
+                    <Info variant={'destructive'}>
+                        <div>
+                            Last sync execution failed for the following sync
+                            {syncs.filter((sync) => sync.active_logs?.log_id).length > 1 ? 's' : ''}:{' '}
+                            {syncs
+                                .filter((sync) => sync.active_logs?.log_id)
+                                .map((sync, index) => (
+                                    <Fragment key={sync.name}>
+                                        {sync.name} (
+                                        <Link className="underline" to={getLogsUrl({ env, operationId: sync.active_logs?.log_id, syncs: sync.name })}>
+                                            logs
+                                        </Link>
+                                        ){index < syncs.filter((sync) => sync.active_logs?.log_id).length - 1 && ', '}
+                                    </Fragment>
+                                ))}
+                            .
+                        </div>
+                    </Info>
+                </div>
+            )}
+
             {!syncs || syncs.length === 0 ? (
                 <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
                     <h2 className="text-xl text-center w-full">
@@ -59,11 +77,11 @@ export default function Syncs({ syncs, connection, provider, reload, loaded, syn
                     </Table.Header>
                     <Table.Body>
                         {syncs.map((sync) => (
-                            <SyncRow key={sync.id} sync={sync} connection={connection} reload={reload} provider={provider} />
+                            <SyncRow key={sync.id} sync={sync} connection={connection} provider={provider} />
                         ))}
                     </Table.Body>
                 </Table.Table>
             )}
         </div>
     );
-}
+};
