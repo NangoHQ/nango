@@ -91,18 +91,24 @@ export const getSyncJobByRunId = async (run_id: string): Promise<SyncJob | null>
     return null;
 };
 
-export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<void> => {
-    return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
-        status,
-        updated_at: new Date()
-    });
+export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<SyncJob | null> => {
+    const [job] = await schema()
+        .from<SyncJob>(SYNC_JOB_TABLE)
+        .where({ id, deleted: false })
+        .update({
+            status,
+            updated_at: new Date()
+        })
+        .returning('*');
+    return job || null;
 };
 
-export const updateLatestJobSyncStatus = async (sync_id: string, status: SyncStatus): Promise<void> => {
+export const updateLatestJobSyncStatus = async (sync_id: string, status: SyncStatus): Promise<SyncJob | null> => {
     const latestJob = await getLatestSyncJob(sync_id);
     if (latestJob && latestJob.id) {
-        updateSyncJobStatus(latestJob.id, status);
+        return updateSyncJobStatus(latestJob.id, status);
     }
+    return null;
 };
 
 /**
