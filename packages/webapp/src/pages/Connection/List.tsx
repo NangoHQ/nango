@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import * as Table from '../../components/ui/Table';
 
 import { Input } from '../../components/ui/input/Input';
@@ -95,7 +95,6 @@ const columns: ColumnDef<ApiConnection>[] = [
 ];
 
 export const ConnectionList: React.FC = () => {
-    const navigate = useNavigate();
     const toast = useToast();
     const env = useStore((state) => state.env);
 
@@ -345,18 +344,17 @@ export const ConnectionList: React.FC = () => {
 
                                 {table.getRowModel().rows?.length > 0 &&
                                     table.getRowModel().rows.map((row) => (
-                                        <Table.Row
+                                        <Link
                                             key={row.original.id}
-                                            data-state={row.getIsSelected() && 'selected'}
-                                            className="hover:cursor-pointer"
-                                            onClick={() => {
-                                                navigate(`/${env}/connections/${row.original.provider_config_key}/${row.original.connection_id}`);
-                                            }}
+                                            to={`/${env}/connections/${row.original.provider_config_key}/${row.original.connection_id}`}
+                                            className="contents"
                                         >
-                                            {row.getVisibleCells().map((cell) => (
-                                                <Table.Cell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Cell>
-                                            ))}
-                                        </Table.Row>
+                                            <Table.Row data-state={row.getIsSelected() && 'selected'} className="hover:cursor-pointer">
+                                                {row.getVisibleCells().map((cell) => (
+                                                    <Table.Cell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Cell>
+                                                ))}
+                                            </Table.Row>
+                                        </Link>
                                     ))}
 
                                 {connections.length <= 0 && hasFiltered && (
