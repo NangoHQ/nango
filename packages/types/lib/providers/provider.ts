@@ -27,6 +27,7 @@ export interface SimplifiedJSONSchema {
     description: string;
     example?: string;
     pattern?: string;
+    optional?: boolean;
     format?: string;
     order: number;
     default_value?: string;
@@ -77,6 +78,7 @@ export interface BaseProvider {
     connection_config?: Record<string, SimplifiedJSONSchema>;
     credentials?: Record<string, SimplifiedJSONSchema>;
     authorization_url_fragment?: string;
+    body_format?: OAuthBodyFormatType;
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
@@ -92,7 +94,6 @@ export interface ProviderOAuth2 extends BaseProvider {
         grant_type: 'refresh_token';
     };
     authorization_method?: OAuthAuthorizationMethodType;
-    body_format?: OAuthBodyFormatType;
 
     refresh_url?: string;
     expires_in_unit?: 'milliseconds';
@@ -123,4 +124,14 @@ export interface ProviderJwt extends BaseProvider {
         };
     };
 }
-export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt;
+export interface ProviderTwoStep extends BaseProvider {
+    token_headers?: Record<string, string>;
+    token_response: {
+        token: string;
+        token_expiration: string;
+        token_expiration_strategy: 'expireAt' | 'expireIn';
+    };
+    token_expires_in_ms?: number;
+    proxy_header_authorization?: string;
+}
+export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep;

@@ -16,8 +16,8 @@ import { InteractiveDemo } from './pages/InteractiveDemo';
 import IntegrationList from './pages/Integrations/List';
 import CreateIntegration from './pages/Integrations/Create';
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
-import ConnectionList from './pages/Connection/List';
-import Connection from './pages/Connection/Show';
+import { ConnectionList } from './pages/Connection/List';
+import { ConnectionShow } from './pages/Connection/Show';
 import ConnectionCreate from './pages/Connection/Create';
 import { EnvironmentSettings } from './pages/Environment/Settings';
 import { PrivateRoute } from './components/PrivateRoute';
@@ -85,7 +85,7 @@ const App = () => {
                             <Route path="/:env/connections" element={<ConnectionList />} />
                             <Route path="/:env/connections/create" element={<ConnectionCreate />} />
                             <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
-                            <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
+                            <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<ConnectionShow />} />
                             <Route path="/:env/activity" element={<Navigate to={`/${env}/logs`} replace={true} />} />
                             <Route path="/:env/logs" element={<LogsSearch />} />
                             <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />

@@ -9,7 +9,7 @@ API configuration: [`chorus`](https://nango.dev/providers.yaml)
 
 | Features | Status |
 | - | - |
-| [Auth (Basic)](/integrate/guides/authorize-an-api) | ✅ |
+| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
 | [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
 | [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
 | [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
@@ -19,13 +19,14 @@ API configuration: [`chorus`](https://nango.dev/providers.yaml)
 
 ## Getting started
 
--   [Chorus basic auth related docs](https://api-docs.chorus.ai/#authentication)
+-   [Chorus auth related docs](https://api-docs.chorus.ai/#authentication)
 -   [Chorus API docs](https://api-docs.chorus.ai/#intro)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
 ## API gotchas
 
-- Chorus uses `Basic` auth mode to access different endpoints. Provide your `username` as the Username value and `password` as the Password value.
+- Chorus uses `API_KEY` auth mode with `Authorization: Bearer ${apiKey}` in the request header to access different endpoints.
+- API tokens can be generated for each Chorus user, and is managed via the Personal Settings page within the Chorus application.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/chorus.mdx)</Note>

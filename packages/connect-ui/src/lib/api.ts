@@ -5,10 +5,6 @@ import type { ApiError, Endpoint, GetConnectSession, GetPublicListIntegrations, 
 
 import { useGlobal } from './store';
 
-// Temp solution, ideally we can launch this without having to rebuild the whole UI
-// TODO: remove hardcoded value
-export const API_HOSTNAME: string = import.meta.env.VITE_API_HOSTNAME || 'http://localhost:3003';
-
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     let res = tpl;
     for (const [key, value] of Object.entries(data)) {
@@ -25,7 +21,7 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
         (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }),
     method?: RequestInit['method']
 ): Promise<TEndpoint['Success']> {
-    const url = new URL(API_HOSTNAME);
+    const url = new URL(useGlobal.getState().apiURL);
     url.pathname = opts.params ? uriParamsReplacer(path, opts.params) : path;
 
     if (opts?.query) {
