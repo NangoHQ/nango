@@ -27,7 +27,7 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { ErrorCircle } from '../../components/ui/label/error-circle';
 import Spinner from '../../components/ui/Spinner';
-import { AvatarCustom } from '../../components/AvatarCustom';
+import { AvatarOrganization } from '../../components/AvatarCustom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../components/ui/DropdownMenu';
 import { IconChevronDown } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
@@ -48,7 +48,10 @@ const columns: ColumnDef<ApiConnection>[] = [
             const data = row.original;
             return (
                 <div className="flex gap-3 items-center">
-                    <AvatarCustom displayName={data.endUser ? data.endUser.displayName || data.endUser.email : data.connection_id} />
+                    <AvatarOrganization
+                        email={data.endUser?.email ? data.endUser.email : null}
+                        displayName={data.endUser ? data.endUser.displayName || data.endUser.email : data.connection_id}
+                    />
 
                     {data.endUser ? (
                         <div className="flex flex-col overflow-hidden">
