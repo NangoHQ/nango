@@ -65,12 +65,13 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     }
 
     const connectionRes = await connectionService.getConnectionForPrivateApi({ connectionId, providerConfigKey, environmentId: environment.id });
-    if (!connectionRes) {
+    if (connectionRes.isErr()) {
         res.status(404).send({ error: { code: 'not_found', message: 'Failed to find connection' } });
         return;
     }
 
-    let connection = connectionRes.connection;
+    let connection = connectionRes.value.connection;
+    const endUser = connectionRes.value.end_user;
 
     const credentialResponse = await connectionService.refreshOrTestCredentials({
         account,
@@ -92,7 +93,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
                 errorLog,
                 provider: integration.provider,
                 connection: connectionFullToApi(connection as DBConnection),
-                endUser: endUserToApi(connectionRes.end_user)
+                endUser: endUserToApi(endUser)
             }
         });
 
@@ -105,7 +106,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         data: {
             provider: integration.provider,
             connection: connectionFullToApi(connection as DBConnection),
-            endUser: endUserToApi(connectionRes.end_user),
+            endUser: endUserToApi(endUser),
             errorLog: null
         }
     });

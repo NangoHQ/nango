@@ -753,7 +753,7 @@ class ConnectionService {
         connectionId: string;
         providerConfigKey: string;
         environmentId: number;
-    }): Promise<{ connection: Connection; end_user: DBEndUser } | null> {
+    }): Promise<Result<{ connection: Connection; end_user: DBEndUser }>> {
         const result = await db.knex
             .select<{
                 connection: DBConnection;
@@ -764,10 +764,10 @@ class ConnectionService {
             .where({ connection_id: connectionId, provider_config_key: providerConfigKey, '_nango_connections.environment_id': environmentId, deleted: false })
             .first();
         if (!result) {
-            return null;
+            return Err('failed_to_fetch_connection');
         }
 
-        return { connection: encryptionManager.decryptConnection(result.connection)!, end_user: result.end_user };
+        return Ok({ connection: encryptionManager.decryptConnection(result.connection)!, end_user: result.end_user });
     }
 
     public async updateConnection(connection: Connection) {
