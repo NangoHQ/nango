@@ -161,7 +161,7 @@ export const getSyncByIdAndName = async (nangoConnectionId: number, name: string
 export const getSyncs = async (
     nangoConnection: Connection,
     orchestrator: Orchestrator
-): Promise<(Sync & { sync_type: SyncTypeLiteral; status: SyncStatus; active_logs: Pick<ActiveLog, 'log_id'> })[]> => {
+): Promise<(Sync & { sync_type: SyncTypeLiteral; status: SyncStatus; active_logs: Pick<ActiveLog, 'log_id'>; models: string[] })[]> => {
     const q = db.knex
         .from<Sync>(TABLE)
         .select(

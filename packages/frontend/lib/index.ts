@@ -16,6 +16,7 @@ import type {
     OAuth2ClientCredentials,
     TBACredentials,
     TableauCredentials,
+    TwoStepCredentials,
     JwtCredentials,
     OAuthCredentialsOverride,
     BillCredentials
@@ -292,6 +293,7 @@ export default class Nango {
             | JwtCredentials
             | OAuth2ClientCredentials
             | BillCredentials
+            | TwoStepCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
 
@@ -388,6 +390,12 @@ export default class Nango {
             return { params: BillCredentials } as unknown as ConnectionConfig;
         }
 
+        if ('type' in credentials && credentials.type === 'TWO_STEP') {
+            const twoStepCredentials: Record<string, any> = { ...credentials };
+
+            return { params: twoStepCredentials } as unknown as ConnectionConfig;
+        }
+
         return { params };
     }
 
@@ -405,6 +413,7 @@ export default class Nango {
             | JwtCredentials
             | BillCredentials
             | OAuth2ClientCredentials
+            | TwoStepCredentials
             | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
@@ -441,6 +450,13 @@ export default class Nango {
 
         if (!credentials) {
             throw new AuthError('You must specify credentials.', 'missingCredentials');
+        }
+
+        if ('type' in credentials && credentials['type'] === 'TWO_STEP') {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/two-step/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as TwoStepCredentials
+            });
         }
 
         if ('username' in credentials && 'password' in credentials && 'organization_id' in credentials && 'dev_key' in credentials) {

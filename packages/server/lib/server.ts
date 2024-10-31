@@ -5,13 +5,13 @@ import express from 'express';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import http from 'node:http';
-import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getServerPort, getWebsocketsPath } from '@nangohq/shared';
+import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getOtlpRoutes, getServerPort, getWebsocketsPath } from '@nangohq/shared';
 import { getLogger, requestLoggerMiddleware } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { KnexDatabase } from '@nangohq/database';
 import migrate from './utils/migrate.js';
 import { migrate as migrateRecords } from '@nangohq/records';
-import { start as migrateLogs } from '@nangohq/logs';
+import { start as migrateLogs, otlp } from '@nangohq/logs';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 
 import publisher from './clients/publisher.client.js';
@@ -59,6 +59,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 
 await oAuthSessionService.clearStaleSessions();
 refreshConnectionsCron();
+otlp.register(getOtlpRoutes);
 
 const port = getServerPort();
 server.listen(port, () => {

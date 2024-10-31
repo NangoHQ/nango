@@ -16,7 +16,7 @@ import { useMeta } from '../hooks/useMeta';
 import { useSignout } from '../utils/user';
 import { HomeIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useEnvironment } from '../hooks/useEnvironment';
-import { useConnections } from '../hooks/useConnections';
+import { useConnectionsCount } from '../hooks/useConnections';
 import { useUser } from '../hooks/useUser';
 import { globalEnv } from '../utils/env';
 
@@ -53,7 +53,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const { meta } = useMeta();
     const { user: me } = useUser();
     const env = useStore((state) => state.env);
-    const { errorNotifications } = useConnections(env);
+    const { data } = useConnectionsCount(env);
     const setEnv = useStore((state) => state.setEnv);
     const { mutate } = useEnvironment(env);
     const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
@@ -159,7 +159,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                     }`}
                                 >
                                     <Icon className="w-[18px] h-[18px]" />
-                                    {item.name === 'Connections' && errorNotifications > 0 && (
+                                    {item.name === 'Connections' && data?.data.withAuthError !== undefined && data.data.withAuthError > 0 && (
                                         <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>
                                     )}
                                     <p>{item.name}</p>
@@ -179,7 +179,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             </div>
                             <span className="items-center w-32 text-gray-400 justify-center text-left text-sm truncate">{me?.email}</span>
                         </div>
-                        <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />
+                        {globalEnv.features.auth && <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />}
                         {globalEnv.features.auth && showUserSettings && (
                             <div className="absolute bottom-[45px] text-sm left-0 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded">
                                 <ul className="text-gray-400 space-y-1 p-0.5 px-1">

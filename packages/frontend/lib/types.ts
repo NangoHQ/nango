@@ -34,6 +34,7 @@ export interface ConnectionConfig {
         | TBACredentials
         | TableauCredentials
         | JwtCredentials
+        | TwoStepCredentials
         | OAuth2ClientCredentials;
 }
 
@@ -92,6 +93,10 @@ export interface BillCredentials {
     password: string;
     organization_id: string;
     dev_key: string;
+}
+
+export interface TwoStepCredentials {
+    type: 'TWO_STEP';
 }
 
 export enum AuthorizationStatus {

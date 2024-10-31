@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import type { Request } from 'express';
 import type { User } from '@nangohq/shared';
-import type { Provider } from '@nangohq/types';
+import type { Provider, ProviderTwoStep } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
@@ -176,6 +176,32 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
         ]
             .map(cleanParamName)
             .filter((value, index, array) => array.indexOf(value) === index); // remove duplicates
+    }
+
+    return [];
+}
+
+export function parseCredentialParamsFromTemplate(provider: ProviderTwoStep): string[] {
+    const cleanParamName = (param: string) => param.replace('${credential.', '').replace('}', '');
+
+    const extractCredentialParams = (params: Record<string, any>): string[] => {
+        const matches: string[] = [];
+
+        for (const value of Object.values(params)) {
+            if (typeof value === 'string') {
+                const foundMatches = value.match(/\${credential\.([^{}]*)}/g) || [];
+                matches.push(...foundMatches);
+            } else if (typeof value === 'object' && value !== null) {
+                matches.push(...extractCredentialParams(value)); // Recursively search in nested objects
+            }
+        }
+
+        return matches;
+    };
+
+    if (provider.token_params || provider.token_headers) {
+        const tokenParamsMatches = provider.token_params ? extractCredentialParams(provider.token_params) : [];
+        return [...new Set(tokenParamsMatches.map(cleanParamName))]; // Remove duplicates
     }
 
     return [];

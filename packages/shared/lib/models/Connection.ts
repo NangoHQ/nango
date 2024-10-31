@@ -1,4 +1,3 @@
-import type { ApiKeyCredentials, BasicApiCredentials } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 import type { AuthModeType, Metadata, AuthOperationType, AllAuthCredentials, DBTeam, DBEnvironment, ActiveLog } from '@nangohq/types';
 
@@ -47,19 +46,6 @@ export interface RecentlyFailedConnection {
     operation: AuthOperationType;
     environment: DBEnvironment;
     account: DBTeam;
-}
-
-export interface ApiConnection {
-    id?: number;
-    connection_id: string;
-    provider_config_key: string;
-    config_id?: number;
-    environment_id: number;
-    metadata?: Metadata | null;
-    connection_config: ConnectionConfig;
-    credentials_iv?: string | null;
-    credentials_tag?: string | null;
-    credentials: BasicApiCredentials | ApiKeyCredentials;
 }
 
 export interface NangoConnection {
