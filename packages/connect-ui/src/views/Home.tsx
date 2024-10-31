@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
+import { useSearchParam } from 'react-use';
 
 import type { ConnectUIEventToken } from '@nangohq/frontend';
 
@@ -12,9 +13,10 @@ import { useGlobal } from '@/lib/store';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
-    const { sessionToken, setSession, setSessionToken } = useGlobal();
+    const { sessionToken, setApiURL, setSession, setSessionToken } = useGlobal();
 
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
+    const apiURL = useSearchParam('apiURL');
 
     useEffect(() => {
         // Listen to parent
@@ -43,6 +45,10 @@ export const Home: React.FC = () => {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        if (apiURL) setApiURL(apiURL);
+    }, [apiURL]);
 
     useEffect(() => {
         if (data) {

@@ -1085,6 +1085,33 @@ chargebee:
             example: domain
             suffix: .chargebee.com
 
+chattermill:
+    display_name: Chattermill
+    categories:
+        - support
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.chattermill.com
+        headers:
+            Authorization: Bearer ${apiKey}
+            Accept: application/json
+            Content-Type: application/json
+    docs: https://docs.nango.dev/integrations/all/chattermill
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Chattermill account
+    connection_config:
+        subdomain:
+            type: string
+            title: Chattermill subdomain
+            description: The subdomain for your api requests
+            pattern: '^(app|api|backend)$'
+            example: 'app|api|backend'
+            suffix: .chattermill.com
+
 checkr-partner:
     display_name: Checkr Partner
     categories:
@@ -1169,10 +1196,17 @@ checkout-com-sandbox:
 
 chorus:
     display_name: Chorus
-    auth_mode: BASIC
+    auth_mode: API_KEY
     proxy:
         base_url: https://chorus.ai
+        headers:
+            Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Chorus account
 
 circle-so:
     display_name: Circle.so
@@ -1476,6 +1510,44 @@ coupa-compass:
             description: The domain of your Coupa Compass account
             format: hostname
 
+databricks-account:
+    display_name: Databricks (Account Level)
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://accounts.cloud.databricks.com/oidc/accounts/${connectionConfig.accountId}/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://accounts.cloud.databricks.com/api/2.0/accounts/${connectionConfig.accountId}
+    docs: https://docs.nango.dev/integrations/all/databricks
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: The ID to your account
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+
+databricks-workspace:
+    display_name: Databricks (Workspace Level)
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.databricksInstance}/oidc/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.databricksInstance}/api/2.0/
+    docs: https://docs.nango.dev/integrations/all/databricks
+    connection_config:
+        databricksInstance:
+            type: string
+            title: Databricks Instance
+            description: The instance to your databricks deployment
+            pattern: '^[a-z0-9_-]+(\.[a-z0-9_-]+)*$'
+            example: dbc-a1b2345c-d6e7.cloud.databricks.com
+
 #Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     display_name: Datev
@@ -1668,6 +1740,29 @@ discourse:
             type: string
             title: API Key
             description: The API key for your Discourse account
+
+dixa:
+    display_name: Dixa
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiType}.dixa.io
+        headers:
+            Authorization: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/dixa
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Dixa account
+    connection_config:
+        apiType:
+            type: string
+            title: Api Type
+            description: The Api type for your requests
+            pattern: '^dev\|exports$'
+            example: 'dev|exports'
 
 docusign:
     display_name: DocuSign
@@ -2568,6 +2663,8 @@ gorgias:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.subdomain}.gorgias.com
+        retry:
+            after: 'Retry-after'
     docs: https://docs.nango.dev/integrations/all/gorgias
     connection_config:
         subdomain:
@@ -3594,6 +3691,23 @@ miro:
         base_url: https://api.miro.com
     docs: https://docs.nango.dev/integrations/all/miro
 
+miro-scim:
+    display_name: Miro (SCIM API)
+    categories:
+        - design
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://miro.com/api
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/miro
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Miro scim account
+
 monday:
     display_name: Monday
     categories:
@@ -3729,7 +3843,7 @@ notion-scim:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Notion account
+            description: The API key for your Notion scim account
 
 odoo:
     display_name: Odoo
@@ -4039,6 +4153,32 @@ perplexity:
             description: The API key for your Perplexity account
             pattern: '^pplx-[a-f0-9]+$'
             example: pplx-xxxxxx
+
+perimeter81:
+    display_name: Perimeter81
+    categories:
+        - productivity
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://api.perimeter81.com/api/rest
+    token_url: https://api.${connectionConfig.domain}.com/api/v1/auth/authorize
+    token_params:
+        apiKey: ${credential.apiKey}
+        grantType: api_key
+    token_headers:
+        Content-Type: application/json
+    token_response:
+        token: data.accessToken
+        token_expiration: data.accessTokenExpire
+        token_expiration_strategy: expireAt
+    docs: https://docs.nango.dev/integrations/all/perimeter81
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain for Perimeter81
+            pattern: '^(perimeter81|eu\.sase\.checkpoint)$'
+            example: 'perimeter81 | eu.sase.checkpoint'
 
 personio:
     display_name: Personio
@@ -4501,6 +4641,7 @@ salesforce:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
+            optional: true
 
 salesforce-sandbox:
     display_name: Salesforce (sandbox)
@@ -5277,6 +5418,23 @@ trello:
         base_url: https://api.trello.com
     docs: https://docs.nango.dev/integrations/all/trello
 
+trello-scim:
+    display_name: Trello (SCIM API)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://trello.com/scim/
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/trello
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Trello scim account
+
 tsheetsteam:
     display_name: TSheets
     categories:
@@ -5593,6 +5751,28 @@ webflow:
     proxy:
         base_url: https://api.webflow.com
     docs: https://docs.nango.dev/integrations/all/webflow
+
+whatsapp-business:
+    display_name: WhatsApp Business
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+            Content-Type: application/json
+        base_url: https://graph.facebook.com
+        verification:
+            endpoint: /v21.0/me
+            method: GET
+    docs: https://docs.nango.dev/integrations/all/whatsapp-business
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The access token to your whatsapp account
+            pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
 
 whoop:
     display_name: Whoop

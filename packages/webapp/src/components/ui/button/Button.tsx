@@ -28,7 +28,7 @@ export const buttonStyles = cva(
             },
             size: {
                 xs: 'h-6 py-0.5 px-2 text-xs',
-                sm: 'h-8 px-2',
+                sm: 'h-8 px-3',
                 md: 'h-8 py-2 px-4',
                 lg: 'h-11 px-4'
             }

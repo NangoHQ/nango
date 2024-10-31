@@ -38,6 +38,7 @@
         "@nangohq/frontend": "^0.42.20",
         "@nangohq/server": "file:../server",
         "@nangohq/types": "file:../types",
+        "@radix-ui/react-avatar": "1.1.1",
         "@radix-ui/react-dialog": "1.1.1",
         "@radix-ui/react-dropdown-menu": "2.1.1",
         "@radix-ui/react-hover-card": "1.1.1",

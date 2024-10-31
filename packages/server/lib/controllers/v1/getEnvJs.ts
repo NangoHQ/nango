@@ -17,8 +17,7 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
             scripts: flagHasScripts,
             auth: flagHasAuth,
             managedAuth: flagHasManagedAuth,
-            interactiveDemo: isCloud || isLocal,
-            connectUI: isCloud || isLocal
+            interactiveDemo: isCloud || isLocal
         }
     };
     res.setHeader('content-type', 'text/javascript');
