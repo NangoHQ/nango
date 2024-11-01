@@ -8403,6 +8403,7 @@ integrations:
                 output: SearchTicketOutput
                 endpoint: GET /search-tickets
                 input: SearchTicketInput
+                version: 1.0.1
                 description: >
                     An action that performs a search for tickets in Zendesk based on the
                     specified filter. It can take up to a few minutes for new tickets and
@@ -8570,8 +8571,8 @@ integrations:
                 external_id: string | null
                 requester_id: string
                 requester_name: string
-                assignee_id: string
-                assignee_name: string
+                assignee_id: string | null
+                assignee_name: string | null
                 assignee_avatar: string | null
                 status: string
                 created_at: string
