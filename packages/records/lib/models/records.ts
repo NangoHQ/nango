@@ -345,8 +345,10 @@ export async function update({
                     };
                     recordsToUpdate.push(newRecord);
                 }
-                const encryptedRecords = encryptRecords(recordsToUpdate);
-                await trx.from(RECORDS_TABLE).insert(encryptedRecords).onConflict(['connection_id', 'external_id', 'model']).merge();
+                if (recordsToUpdate.length > 0) {
+                    const encryptedRecords = encryptRecords(recordsToUpdate);
+                    await trx.from(RECORDS_TABLE).insert(encryptedRecords).onConflict(['connection_id', 'external_id', 'model']).merge();
+                }
             }
         });
 
