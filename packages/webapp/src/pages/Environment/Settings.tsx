@@ -1073,6 +1073,7 @@ export const EnvironmentSettings: React.FC = () => {
                                         <div className="flex">
                                             <input
                                                 id="otlp_endpoint"
+                                                placeholder="https://my.otlp.collector:4318/v1/"
                                                 name="otlp_endpoint"
                                                 autoComplete="new-password"
                                                 type="url"

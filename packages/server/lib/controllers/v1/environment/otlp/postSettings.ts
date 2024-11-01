@@ -6,7 +6,7 @@ import { environmentService, featureFlags } from '@nangohq/shared';
 
 const bodyValidation = z
     .object({
-        endpoint: z.string(),
+        endpoint: z.string().url(),
         headers: z.record(z.string())
     })
     .strict();
