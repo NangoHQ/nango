@@ -263,7 +263,7 @@ export async function upsert({
                             connection_id: connectionId,
                             model,
                             environment_id: environmentId,
-                            count: Math.max(0, delta)
+                            count: delta
                         })
                         .onConflict(['connection_id', 'environment_id', 'model'])
                         .merge({
@@ -421,23 +421,40 @@ export async function markNonCurrentGenerationRecordsAsDeleted({
     generation: number;
 }): Promise<string[]> {
     const now = db.fn.now(6);
-    return (await db
-        .from<FormattedRecord>(RECORDS_TABLE)
-        .where({
-            connection_id: connectionId,
-            model,
-            sync_id: syncId,
-            deleted_at: null
-        })
-        .whereNot({
-            sync_job_id: generation
-        })
-        .update({
-            deleted_at: now,
-            updated_at: now,
-            sync_job_id: generation
-        })
-        .returning('id')) as unknown as string[];
+    let res: string[] = [];
+    return db.transaction(async (trx) => {
+        res = (await trx
+            .from<FormattedRecord>(RECORDS_TABLE)
+            .where({
+                connection_id: connectionId,
+                model,
+                sync_id: syncId,
+                deleted_at: null
+            })
+            .whereNot({
+                sync_job_id: generation
+            })
+            .update({
+                deleted_at: now,
+                updated_at: now,
+                sync_job_id: generation
+            })
+            .returning('id')) as unknown as string[];
+
+        // update records count
+        const count = res.length;
+        if (count > 0) {
+            await trx(RECORD_COUNTS_TABLE)
+                .where({
+                    connection_id: connectionId,
+                    model
+                })
+                .update({
+                    count: trx.raw('GREATEST(0, count - ?)', [count])
+                });
+        }
+        return res;
+    });
 }
 
 /**
