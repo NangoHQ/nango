@@ -265,6 +265,27 @@ export function formatFrequency(frequency: string): string {
     return frequency;
 }
 
+export function formatRecordsCount(count: number): string {
+    const thresholds = [
+        { value: 1e12, suffix: 'T' }, // Trillion and above
+        { value: 1e9, suffix: 'B' }, // Billion
+        { value: 1e6, suffix: 'M' }, // Million
+        { value: 1e3, suffix: 'K' } // Thousand
+    ];
+
+    // Handle all cases with the same logic
+    for (const { value, suffix } of thresholds) {
+        if (count >= value) {
+            const number = count / value;
+            if (Number.isInteger(number)) {
+                return `${number.toLocaleString()}${suffix}`;
+            }
+            return `${Number(number.toFixed(1)).toLocaleString()}${suffix}`;
+        }
+    }
+    return count.toLocaleString();
+}
+
 // https://stackoverflow.com/a/42186143
 export function stringArrayEqual(prev: string[], next: string[]) {
     // can't use toSorted yet
