@@ -14,6 +14,7 @@ import type { ApiConnectionFull } from '@nangohq/types';
 import Button from '../../../components/ui/button/Button';
 import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import { PopoverContent } from '@radix-ui/react-popover';
+import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import { SimpleTooltip } from '../../../components/SimpleTooltip';
 import { IconClockPause, IconClockPlay, IconPlayerPlay, IconRefresh, IconX } from '@tabler/icons-react';
 import { useToast } from '../../../hooks/useToast';
@@ -171,7 +172,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                     </PopoverTrigger>
                     <PopoverContent align="end" className="z-10">
                         <div className="bg-active-gray rounded">
-                            <div className="flex flex-col w-[260px] p-[10px]">
+                            <div className="flex flex-col w-[240px] p-[10px]">
                                 <Button
                                     variant="popoverItem"
                                     disabled={syncCommandButtonsDisabled}
@@ -224,7 +225,14 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                         }}
                                     >
                                         <IconPlayerPlay className="flex h-4 w-4" />
-                                        <div className="pl-2 flex gap-2 items-center">Trigger Incremental</div>
+                                        <div className="pl-2 flex gap-2 items-center">
+                                            Trigger {sync.sync_type === 'incremental' ? 'Incremental' : 'Execution'}
+                                            {sync.sync_type === 'incremental' && (
+                                                <SimpleTooltip tooltipContent="Incremental: the existing cache and the last sync date will be preserved, only new/updated data will be synced.">
+                                                    {!syncCommandButtonsDisabled && <QuestionMarkCircledIcon />}
+                                                </SimpleTooltip>
+                                            )}
+                                        </div>
                                     </Button>
                                 )}
 
@@ -233,7 +241,12 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                         <DialogTrigger asChild>
                                             <Button variant="popoverItem" disabled={syncCommandButtonsDisabled} isLoading={modalSpinner}>
                                                 <IconRefresh className="flex h-4 w-4" />
-                                                <div className="pl-2 flex gap-2 items-center">Trigger Refresh</div>
+                                                <div className="pl-2 flex gap-2 items-center">
+                                                    Trigger Full Refresh
+                                                    <SimpleTooltip tooltipContent="Full refresh: the existing cache and last sync date will be deleted, all historical data will be resynced.">
+                                                        {!syncCommandButtonsDisabled && <QuestionMarkCircledIcon />}
+                                                    </SimpleTooltip>
+                                                </div>
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent>
