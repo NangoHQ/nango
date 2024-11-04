@@ -6,7 +6,6 @@ const VERSION_REGEX = /nango-cli\/([0-9.]+)/;
 export function cliVersionCheck(minVersion: string) {
     return (req: Request, res: Response, next: NextFunction) => {
         const userAgent = req.headers['user-agent'];
-        console.log(userAgent);
         if (!userAgent) {
             // Could be strictly enforced
             next();
@@ -14,13 +13,11 @@ export function cliVersionCheck(minVersion: string) {
         }
 
         const match = userAgent.match(VERSION_REGEX);
-        console.log({ match });
         if (!match || match.length <= 1 || !match[1]) {
             // Could be strictly enforced
             next();
             return;
         }
-        console.log({ match: match[1], minVersion }, semver.lt(minVersion, match[1]));
 
         if (semver.gt(minVersion, match[1])) {
             res.status(400).send({

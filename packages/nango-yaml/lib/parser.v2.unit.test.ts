@@ -235,7 +235,7 @@ describe('parse', () => {
             expect(parser.warnings).toStrictEqual([]);
             expect(parser.parsed?.integrations[0]?.actions).toMatchObject([
                 {
-                    endpoint: { GET: '/ticketing/tickets/{Found:id}' }
+                    endpoint: { method: 'GET', path: '/ticketing/tickets/{Found:id}' }
                 }
             ]);
         });

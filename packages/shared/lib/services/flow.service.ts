@@ -48,7 +48,7 @@ class FlowService {
                 models: models as NangoModelV1
             };
 
-            const { success, response } = loadStandardConfig(nangoConfig, false);
+            const { success, response } = loadStandardConfig(nangoConfig);
 
             if (success && response) {
                 if (rawName) {

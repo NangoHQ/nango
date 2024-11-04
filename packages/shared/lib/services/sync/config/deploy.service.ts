@@ -13,13 +13,13 @@ import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { env, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import { nangoConfigFile } from '../../nango-config.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { Merge } from 'type-fest';
 import type { JSONSchema7 } from 'json-schema';
 import type { Config } from '../../../models/Provider.js';
 import type { NangoSyncConfig } from '../../../models/NangoConfig.js';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 const TABLE = dbNamespace + 'sync_configs';
 const SYNC_TABLE = dbNamespace + 'syncs';
