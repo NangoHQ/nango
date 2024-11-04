@@ -6699,14 +6699,6 @@ integrations:
                     - api
                 endpoint: GET /leads
                 version: 1.0.0
-            deals:
-                runs: every hour
-                description: |
-                    Fetches a list of deals from salesforce
-                output: Deal
-                sync_type: incremental
-                version: 1.0.1
-                endpoint: GET /deals
             articles:
                 runs: every day
                 description: |
