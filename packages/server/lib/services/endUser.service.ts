@@ -1,4 +1,4 @@
-import type knex from 'knex';
+import type { Knex } from '@nangohq/database';
 import type { DBEndUser, DBInsertEndUser, EndUser, StoredConnection } from '@nangohq/types';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -52,7 +52,7 @@ export class EndUserError extends Error {
 }
 
 export async function createEndUser(
-    db: knex.Knex,
+    db: Knex,
     {
         endUserId,
         email,
@@ -85,7 +85,7 @@ export async function createEndUser(
 }
 
 export async function getEndUser(
-    db: knex.Knex,
+    db: Knex,
     props: { endUserId: string; accountId: number; environmentId: number } | { id: number; accountId: number; environmentId: number }
 ): Promise<Result<EndUser, EndUserError>> {
     const endUser = await db<DBEndUser>(END_USERS_TABLE)
@@ -108,7 +108,7 @@ export async function getEndUser(
 }
 
 export async function updateEndUser(
-    db: knex.Knex,
+    db: Knex,
     {
         endUserId,
         accountId,
@@ -141,7 +141,7 @@ export async function updateEndUser(
 }
 
 export async function deleteEndUser(
-    db: knex.Knex,
+    db: Knex,
     { endUserId, accountId, environmentId }: { endUserId: string; accountId: number; environmentId: number }
 ): Promise<Result<void, EndUserError>> {
     const deleted = await db<DBEndUser>(END_USERS_TABLE).where({ end_user_id: endUserId, account_id: accountId, environment_id: environmentId }).delete();
@@ -151,10 +151,10 @@ export async function deleteEndUser(
     return Ok(undefined);
 }
 
-export async function linkConnection(db: knex.Knex, { endUserId, connection }: { endUserId: number; connection: Pick<StoredConnection, 'id'> }) {
+export async function linkConnection(db: Knex, { endUserId, connection }: { endUserId: number; connection: Pick<StoredConnection, 'id'> }) {
     await db<StoredConnection>('_nango_connections').where({ id: connection.id! }).update({ end_user_id: endUserId });
 }
 
-export async function unlinkConnection(db: knex.Knex, { connection }: { connection: Pick<StoredConnection, 'id'> }) {
+export async function unlinkConnection(db: Knex, { connection }: { connection: Pick<StoredConnection, 'id'> }) {
     await db<StoredConnection>('_nango_connections').where({ id: connection.id! }).update({ end_user_id: null });
 }
