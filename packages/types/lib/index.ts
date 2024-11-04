@@ -47,6 +47,7 @@ export type * from './nangoYaml/index.js';
 
 export type * from './environment/db.js';
 export type * from './environment/api/webhook.js';
+export type * from './environment/api/otlp.js';
 export type * from './webhooks/api.js';
 export type * from './flow/http.api.js';
 
