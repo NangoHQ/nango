@@ -27,7 +27,18 @@ import type {
     RecordMetadata,
     RecordLastAction,
     NangoRecord,
-    ActiveLog
+    JwtCredentials,
+    TwoStepCredentials,
+    CredentialsCommon,
+    TableauCredentials,
+    BillCredentials,
+    GetPublicProviders,
+    GetPublicProvider,
+    GetPublicListIntegrations,
+    GetPublicListIntegrationsLegacy,
+    GetPublicIntegration,
+    GetPublicConnections,
+    PostConnectSessions
 } from '@nangohq/types';
 
 export type {
@@ -54,10 +65,25 @@ export type {
     AppStoreCredentials,
     UnauthCredentials,
     CustomCredentials,
-    TbaCredentials
+    CredentialsCommon,
+    TableauCredentials,
+    BillCredentials,
+    TbaCredentials,
+    JwtCredentials,
+    TwoStepCredentials
 };
 export type { HTTP_VERB, NangoSyncEndpoint };
 export type { RecordMetadata, RecordLastAction, NangoRecord };
+
+export type {
+    GetPublicProviders,
+    GetPublicProvider,
+    GetPublicListIntegrations,
+    GetPublicListIntegrationsLegacy,
+    GetPublicIntegration,
+    GetPublicConnections,
+    PostConnectSessions
+};
 
 export interface NangoProps {
     host?: string;
@@ -141,16 +167,6 @@ export interface Connection {
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     credentials: AllAuthCredentials;
-}
-
-export interface ConnectionList {
-    id: number;
-    connection_id: string;
-    provider_config_key: string;
-    provider: string;
-    created: string;
-    metadata?: Metadata | null;
-    errors: Pick<ActiveLog, 'log_id' | 'type'>[];
 }
 
 export interface IntegrationWithCreds extends Integration {
