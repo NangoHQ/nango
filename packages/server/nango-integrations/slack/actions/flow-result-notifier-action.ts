@@ -1,4 +1,4 @@
-import type { NangoAction, SlackMessage, SlackResponse } from './models';
+import type { NangoAction, SlackMessage, SlackResponse } from '../../models';
 
 export default async function runAction(nango: NangoAction, input: SlackMessage): Promise<SlackResponse | null> {
     const connection = await nango.getConnection();
