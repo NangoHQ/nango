@@ -2788,7 +2788,7 @@ integrations:
                     but metadata can be set using the `backfillPeriodMs` property
                     to change the lookback. The property should be set in milliseconds.
                 input: OptionalBackfillSetting
-                version: 1.0.2
+                version: 1.0.3
                 scopes:
                     - https://www.googleapis.com/auth/gmail.readonly
                 output: GmailEmail
@@ -2820,7 +2820,7 @@ integrations:
                 recipients?: string | undefined
                 date: string
                 subject: string
-                body: string
+                body?: string | undefined
                 attachments: Attachments[]
                 threadId: string
             GmailEmailInput:
