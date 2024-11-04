@@ -1,14 +1,16 @@
+# yaml-language-server: $schema=./../../cli/lib/nango.yaml.schema.v2.json
 integrations:
     slack:
-        flow-result-notifier-action:
-            type: action
-            returns: SlackResponse
-            inputs: SlackMessage
-            description: |
-                Post a message to a particular slack channel
-                of a flow result
-                Details: Post a message to a pre specified channel.
-                Required scope(s): chat:write, incoming-webhook, channels:join
+        actions:
+            flow-result-notifier-action:
+                output: SlackResponse
+                input: SlackMessage
+                endpoint: POST /message
+                description: |
+                    Post a message to a particular slack channel
+                    of a flow result
+                    Details: Post a message to a pre specified channel.
+                    Required scope(s): chat:write, incoming-webhook, channels:join
 
 models:
     SlackMessage:
