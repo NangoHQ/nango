@@ -47,7 +47,7 @@ export interface SyncResponse {
     schedule_id: string;
     status: 'SUCCESS' | 'RUNNING' | 'STOPPED' | 'PAUSED' | 'ERROR';
     sync_type: SyncTypeLiteral;
-    latest_sync: {
+    latest_sync?: {
         created_at: string;
         updated_at: string;
         type: 'INITIAL' | 'INCREMENTAL';
@@ -59,6 +59,7 @@ export interface SyncResponse {
         models: string[];
     };
     active_logs: Pick<ActiveLog, 'log_id'> | null;
+    record_count: number;
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL' | 'CANCEL';

@@ -58,7 +58,7 @@ export const sendSync = async ({
         syncName,
         model,
         // For backward compatibility reason we are sending the syncType as INITIAL instead of FULL
-        syncType: operation === 'INCREMENTAL' ? 'INCREMENTAL' : 'INITIAL'
+        syncType: operation === 'FULL' ? 'INITIAL' : operation
     };
     let finalBody: NangoSyncWebhookBody;
 

@@ -4,4 +4,4 @@ export interface SyncResult {
     deleted: number;
 }
 
-export type SyncType = 'INCREMENTAL' | 'FULL';
+export type SyncType = 'INCREMENTAL' | 'FULL' | 'WEBHOOK';

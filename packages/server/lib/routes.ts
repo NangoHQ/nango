@@ -101,6 +101,7 @@ import { postInternalConnectSessions } from './controllers/v1/connect/sessions/p
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
+import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 
 export const router = express.Router();
 
@@ -319,6 +320,7 @@ web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(co
 web.route('/api/v1/connections').get(webAuth, getConnections);
 web.route('/api/v1/connections/count').get(webAuth, getConnectionsCount);
 web.route('/api/v1/connections/:connectionId').get(webAuth, getConnectionWeb);
+web.route('/api/v1/connections/:connectionId/refresh').post(webAuth, getConnectionRefresh);
 web.route('/api/v1/connections/:connectionId').delete(webAuth, deleteConnection);
 web.route('/api/v1/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 

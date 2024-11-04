@@ -226,7 +226,13 @@ const runJob = async (
     if (formatting.isErr()) {
         throw new Error(`failed to format records`);
     }
-    const upserting = await recordsService.upsert({ records: formatting.value, connectionId: connection.id as number, model, softDelete });
+    const upserting = await recordsService.upsert({
+        records: formatting.value,
+        connectionId: connection.id as number,
+        environmentId: connection.environment_id,
+        model,
+        softDelete
+    });
     if (upserting.isErr()) {
         throw new Error(`failed to upsert records: ${upserting.error.message}`);
     }
@@ -300,7 +306,12 @@ async function populateRecords(
 
     const chunkSize = 1000;
     for (let i = 0; i < records.length; i += chunkSize) {
-        const res = await recordsService.upsert({ records: records.slice(i, i + chunkSize), connectionId: connection.id!, model });
+        const res = await recordsService.upsert({
+            records: records.slice(i, i + chunkSize),
+            connectionId: connection.id!,
+            environmentId: connection.environment_id,
+            model
+        });
         if (res.isErr()) {
             throw new Error(`Failed to upsert records: ${res.error.message}`);
         }

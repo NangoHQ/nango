@@ -4,7 +4,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 import type { GetConnections } from '@nangohq/types';
 import { envSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionService } from '@nangohq/shared';
-import { connectionToApi } from '../../../formatters/connection.js';
+import { connectionSimpleToApi } from '../../../formatters/connection.js';
 
 const queryStringValidation = z
     .object({
@@ -49,7 +49,7 @@ export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
 
     res.status(200).send({
         data: connections.map((data) => {
-            return connectionToApi({ data: data.connection, provider: data.provider, activeLog: data.active_logs, endUser: data.end_user });
+            return connectionSimpleToApi({ data: data.connection, provider: data.provider, activeLog: data.active_logs, endUser: data.end_user });
         })
     });
 });

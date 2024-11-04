@@ -363,50 +363,6 @@ export function useGetProvidersAPI(env: string) {
     };
 }
 
-export function useGetConnectionListAPI(env: string) {
-    const signout = useSignout();
-
-    return async () => {
-        try {
-            const res = await apiFetch(`/api/v1/connections?env=${env}`);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useGetConnectionDetailsAPI(env: string) {
-    const signout = useSignout();
-
-    return async (connectionId: string, providerConfigKey: string, force_refresh: boolean) => {
-        try {
-            const res = await apiFetch(
-                `/api/v1/connections/${encodeURIComponent(connectionId)}?env=${env}&provider_config_key=${encodeURIComponent(
-                    providerConfigKey
-                )}&force_refresh=${force_refresh}`
-            );
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useRequestPasswordResetAPI() {
     return async (email: string) => {
         try {
@@ -437,38 +393,10 @@ export function useResetPasswordAPI() {
     };
 }
 
-export function useGetSyncAPI(env: string) {
-    return async (connectionId: string, providerConfigKey: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/sync?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
-                method: 'GET'
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useGetHmacAPI(env: string) {
     return async (providerConfigKey: string, connectionId: string) => {
         try {
             const res = await apiFetch(`/api/v1/environment/hmac?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
-                method: 'GET'
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useGetAllSyncsAPI(env: string) {
-    return async () => {
-        try {
-            const res = await apiFetch(`/api/v1/syncs?env=${env}`, {
                 method: 'GET'
             });
 
