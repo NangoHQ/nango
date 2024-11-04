@@ -43,7 +43,7 @@
         "js-yaml": "^4.1.0",
         "npm-package-arg": "^10.1.0",
         "promptly": "^3.2.0",
-        "semver": "^7.5.2",
+        "semver": "^7.5.4",
         "ts-json-schema-generator": "^2.3.0",
         "ts-node": "^10.9.1",
         "tsup": "^8.1.0",

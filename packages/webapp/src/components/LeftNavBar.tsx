@@ -179,7 +179,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             </div>
                             <span className="items-center w-32 text-gray-400 justify-center text-left text-sm truncate">{me?.email}</span>
                         </div>
-                        <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />
+                        {globalEnv.features.auth && <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />}
                         {globalEnv.features.auth && showUserSettings && (
                             <div className="absolute bottom-[45px] text-sm left-0 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded">
                                 <ul className="text-gray-400 space-y-1 p-0.5 px-1">

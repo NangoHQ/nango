@@ -22,11 +22,11 @@ import type {
     GetPublicIntegration,
     PostConnectSessions,
     JwtCredentials,
-    TwoStepCredentials
+    TwoStepCredentials,
+    GetPublicConnections
 } from '@nangohq/types';
 import type {
     Connection,
-    ConnectionList,
     CreateConnectionOAuth1,
     CreateConnectionOAuth2,
     Integration,
@@ -265,13 +265,27 @@ export class Nango {
 
     /**
      * Returns a list of connections, optionally filtered by connection ID
-     * @param connectionId - Optional. The ID of the connection to retrieve details of
+     * @param connectionId - Optional. Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations
+     * @param search - Optional. Search connections. Will search in connection ID or end user profile.
      * @returns A promise that resolves with an array of connection objects
      */
-    public async listConnections(connectionId?: string): Promise<{ connections: ConnectionList[] }> {
-        const response = await this.listConnectionDetails(connectionId);
+    public async listConnections(connectionId?: string, search?: string): Promise<GetPublicConnections['Success']> {
+        const url = new URL(`${this.serverUrl}/connection`);
+        if (connectionId) {
+            url.searchParams.append('connectionId', connectionId);
+        }
+        if (search) {
+            url.searchParams.append('search', search);
+        }
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
         return response.data;
     }
+
     /**
      * Returns a connection object, which also contains access credentials and full credentials payload
      * @param providerConfigKey - The integration ID used to create the connection (i.e Unique Key)
@@ -939,24 +953,6 @@ export class Nango {
         };
 
         return this.http.get(url, { params: params, headers: this.enrichHeaders(headers) });
-    }
-
-    /**
-     * Retrieves details of all connections from the server or details of a specific connection if a connection ID is provided
-     * @param connectionId - Optional. This is the unique connection identifier used to identify this connection
-     * @returns A promise that resolves with the response containing connection details
-     */
-    private async listConnectionDetails(connectionId?: string): Promise<AxiosResponse<{ connections: ConnectionList[] }>> {
-        let url = `${this.serverUrl}/connection?`;
-        if (connectionId) {
-            url = url.concat(`connectionId=${connectionId}`);
-        }
-
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-
-        return this.http.get(url, { headers: this.enrichHeaders(headers) });
     }
 
     /**

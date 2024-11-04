@@ -32,7 +32,8 @@ import tracer from 'dd-trace';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
-import { patchSettings } from './controllers/v1/environment/webhook/patchSettings.js';
+import { postSettings as postOtlpSettings } from './controllers/v1/environment/otlp/postSettings.js';
+import { patchSettings as patchWebhookSettings } from './controllers/v1/environment/webhook/patchSettings.js';
 import { updatePrimaryUrl } from './controllers/v1/environment/webhook/updatePrimaryUrl.js';
 import { updateSecondaryUrl } from './controllers/v1/environment/webhook/updateSecondaryUrl.js';
 import {
@@ -101,6 +102,7 @@ import { postInternalConnectSessions } from './controllers/v1/connect/sessions/p
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
+import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 
 export const router = express.Router();
 
@@ -300,7 +302,8 @@ web.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.up
 web.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
 web.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
 web.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
-web.route('/api/v1/environment/webhook/settings').patch(webAuth, patchSettings);
+web.route('/api/v1/environment/webhook/settings').patch(webAuth, patchWebhookSettings);
+web.route('/api/v1/environment/otlp/settings').post(webAuth, postOtlpSettings);
 web.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
@@ -319,6 +322,7 @@ web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(co
 web.route('/api/v1/connections').get(webAuth, getConnections);
 web.route('/api/v1/connections/count').get(webAuth, getConnectionsCount);
 web.route('/api/v1/connections/:connectionId').get(webAuth, getConnectionWeb);
+web.route('/api/v1/connections/:connectionId/refresh').post(webAuth, getConnectionRefresh);
 web.route('/api/v1/connections/:connectionId').delete(webAuth, deleteConnection);
 web.route('/api/v1/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 

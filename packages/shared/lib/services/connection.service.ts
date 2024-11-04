@@ -745,6 +745,31 @@ class ConnectionService {
         return { success: true, error: null, response: connection };
     }
 
+    public async getConnectionForPrivateApi({
+        connectionId,
+        providerConfigKey,
+        environmentId
+    }: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+    }): Promise<Result<{ connection: Connection; end_user: DBEndUser }>> {
+        const result = await db.knex
+            .select<{
+                connection: DBConnection;
+                end_user: DBEndUser;
+            }>(db.knex.raw('row_to_json(_nango_connections.*) as connection'), db.knex.raw('row_to_json(end_users.*) as end_user'))
+            .from(`_nango_connections`)
+            .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
+            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, '_nango_connections.environment_id': environmentId, deleted: false })
+            .first();
+        if (!result) {
+            return Err('failed_to_fetch_connection');
+        }
+
+        return Ok({ connection: encryptionManager.decryptConnection(result.connection)!, end_user: result.end_user });
+    }
+
     public async updateConnection(connection: Connection) {
         await db.knex
             .from<StoredConnection>(`_nango_connections`)

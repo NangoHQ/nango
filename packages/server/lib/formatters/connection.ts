@@ -1,6 +1,6 @@
-import type { ApiConnection, ApiPublicConnection, DBConnection, DBEndUser } from '@nangohq/types';
+import type { ApiConnectionFull, ApiConnectionSimple, ApiPublicConnection, DBConnection, DBEndUser } from '@nangohq/types';
 
-export function connectionToApi({
+export function connectionSimpleToApi({
     data,
     provider,
     activeLog,
@@ -10,7 +10,7 @@ export function connectionToApi({
     provider: string;
     activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;
-}): ApiConnection {
+}): ApiConnectionSimple {
     return {
         id: data.id,
         connection_id: data.connection_id,
@@ -27,6 +27,15 @@ export function connectionToApi({
             : null,
         created_at: String(data.created_at),
         updated_at: String(data.updated_at)
+    };
+}
+export function connectionFullToApi(connection: DBConnection): ApiConnectionFull {
+    return {
+        ...connection,
+        id: connection.id,
+        config_id: connection.config_id,
+        created_at: String(connection.created_at),
+        updated_at: String(connection.updated_at)
     };
 }
 
