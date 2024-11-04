@@ -23,7 +23,7 @@ import { useLocalStorage } from 'react-use';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { useSyncs } from '../../hooks/useSyncs';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
-import { AvatarCustom } from '../../components/AvatarCustom';
+import { AvatarOrganization } from '../../components/AvatarCustom';
 import { IconTrash } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
 
@@ -164,8 +164,9 @@ export const ConnectionShow: React.FC = () => {
                             </Link>
 
                             <div className="absolute -bottom-3 -right-3">
-                                <AvatarCustom
+                                <AvatarOrganization
                                     size={'sm'}
+                                    email={connection.endUser?.email ? connection.endUser.email : null}
                                     displayName={
                                         connection.endUser ? connection.endUser.displayName || connection.endUser.email : connection.connection.connection_id
                                     }
