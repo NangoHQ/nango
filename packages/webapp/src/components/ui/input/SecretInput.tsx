@@ -12,11 +12,12 @@ type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
     setOptionalValue?: (value: string) => void;
     additionalClass?: string;
     tall?: boolean;
+    refreshing?: boolean;
     refresh?: () => void;
 };
 
 const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function PasswordField(
-    { className, copy, optionalValue, setOptionalValue, defaultValue, refresh, ...props },
+    { className, copy, optionalValue, setOptionalValue, defaultValue, refreshing, refresh, ...props },
     ref
 ) {
     const [isSecretVisible, setIsSecretVisible] = useState(false);
@@ -40,6 +41,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                 className={cn(className)}
                 value={value || ''}
                 onChange={(e) => updateValue(e.currentTarget.value)}
+                disabled={refreshing === true}
                 {...props}
                 after={
                     <div className={`flex items-center gap-1 bg-active-gray`}>
@@ -47,7 +49,11 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                             {isSecretVisible ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                         </Button>
                         {copy && <CopyButton text={(props.value || optionalValue || defaultValue)?.toString() || ''} />}
-                        {refresh && <ArrowPathIcon className="flex h-4 w-4 cursor-pointer text-gray-500" onClick={refresh} />}
+                        {refresh && (
+                            <Button variant={'icon'} size="xs" isLoading={refreshing === true} onClick={refresh}>
+                                <ArrowPathIcon className="flex h-4 w-4 cursor-pointer text-gray-500" />
+                            </Button>
+                        )}
                     </div>
                 }
             />

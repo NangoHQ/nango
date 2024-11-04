@@ -26,3 +26,13 @@ export interface DBEndUser {
     readonly updated_at: Date | null;
 }
 export type DBInsertEndUser = Omit<DBEndUser, 'id' | 'created_at' | 'updated_at'>;
+
+export interface ApiEndUser {
+    id: string;
+    displayName: string | null;
+    email: string;
+    organization: {
+        id: string;
+        displayName: string | null;
+    } | null;
+}

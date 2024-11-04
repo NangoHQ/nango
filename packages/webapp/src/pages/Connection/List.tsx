@@ -27,11 +27,11 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { ErrorCircle } from '../../components/ui/label/error-circle';
 import Spinner from '../../components/ui/Spinner';
-import { AvatarCustom } from '../../components/AvatarCustom';
+import { AvatarOrganization } from '../../components/AvatarCustom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../components/ui/DropdownMenu';
 import { IconChevronDown } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
-import type { ApiConnection } from '@nangohq/types';
+import type { ApiConnectionSimple } from '@nangohq/types';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -39,7 +39,7 @@ const filterErrors = [
     { name: 'Error', value: 'error' }
 ];
 
-const columns: ColumnDef<ApiConnection>[] = [
+const columns: ColumnDef<ApiConnectionSimple>[] = [
     {
         accessorKey: 'id',
         header: 'Customer',
@@ -48,7 +48,10 @@ const columns: ColumnDef<ApiConnection>[] = [
             const data = row.original;
             return (
                 <div className="flex gap-3 items-center">
-                    <AvatarCustom displayName={data.endUser ? data.endUser.displayName || data.endUser.email : data.connection_id} />
+                    <AvatarOrganization
+                        email={data.endUser?.email ? data.endUser.email : null}
+                        displayName={data.endUser ? data.endUser.displayName || data.endUser.email : data.connection_id}
+                    />
 
                     {data.endUser ? (
                         <div className="flex flex-col overflow-hidden">
@@ -357,7 +360,7 @@ export const ConnectionList: React.FC = () => {
                                         </Link>
                                     ))}
 
-                                {connections.length <= 0 && hasFiltered && (
+                                {connections.length <= 0 && hasFiltered && !loading && (
                                     <Table.Row>
                                         <Table.Cell colSpan={columns.length} className="h-24 text-center p-0 pt-4">
                                             <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">

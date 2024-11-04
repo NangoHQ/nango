@@ -208,6 +208,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             records: {} as Record<string, SyncResult>,
             runTimeSecs: runTime
         };
+        const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
         for (const model of nangoProps.syncConfig.models) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
@@ -268,49 +269,45 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
 
             syncPayload.records[model] = { added, updated, deleted };
 
-            const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
-            if (webhookSettings) {
-                const environment = await environmentService.getById(nangoProps.environmentId);
-                if (environment) {
-                    const span = tracer.startSpan('jobs.sync.webhook', {
-                        tags: {
-                            environmentId: nangoProps.environmentId,
-                            connectionId: nangoProps.connectionId,
-                            syncId: nangoProps.syncId,
-                            syncJobId: nangoProps.syncJobId,
-                            syncSuccess: true,
-                            model
-                        }
-                    });
-                    void tracer.scope().activate(span, async () => {
-                        try {
-                            const res = await sendSyncWebhook({
-                                connection: connection,
-                                environment: environment,
-                                webhookSettings,
-                                syncName: nangoProps.syncConfig.sync_name,
-                                model,
-                                now: nangoProps.startedAt,
-                                success: true,
-                                responseResults: {
-                                    added,
-                                    updated,
-                                    deleted
-                                },
-                                operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL,
-                                logCtx
-                            });
+            if (webhookSettings && environment) {
+                const span = tracer.startSpan('jobs.sync.webhook', {
+                    tags: {
+                        environmentId: nangoProps.environmentId,
+                        connectionId: nangoProps.connectionId,
+                        syncId: nangoProps.syncId,
+                        syncJobId: nangoProps.syncJobId,
+                        syncSuccess: true,
+                        model
+                    }
+                });
+                void tracer.scope().activate(span, async () => {
+                    try {
+                        const res = await sendSyncWebhook({
+                            connection: connection,
+                            environment: environment!,
+                            webhookSettings,
+                            syncName: nangoProps.syncConfig.sync_name,
+                            model,
+                            now: nangoProps.startedAt,
+                            success: true,
+                            responseResults: {
+                                added,
+                                updated,
+                                deleted
+                            },
+                            operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL,
+                            logCtx
+                        });
 
-                            if (res.isErr()) {
-                                throw new Error(`Failed to send webhook for sync: ${nangoProps.syncConfig.sync_name}`);
-                            }
-                        } catch (err: unknown) {
-                            span?.setTag('error', err);
-                        } finally {
-                            span.finish();
+                        if (res.isErr()) {
+                            throw new Error(`Failed to send webhook for sync: ${nangoProps.syncConfig.sync_name}`);
                         }
-                    });
-                }
+                    } catch (err: unknown) {
+                        span?.setTag('error', err);
+                    } finally {
+                        span.finish();
+                    }
+                });
             }
 
             await telemetry.log(
