@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
-import type { NangoConfigMetadata, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
+import type { NangoConfigMetadata, NangoSyncEndpointVerbose, ScriptTypeLiteral } from '@nangohq/types';
 import type { SyncType } from './Sync.js';
 import type { JSONSchema7 } from 'json-schema';
 
@@ -17,7 +17,7 @@ export interface NangoIntegrationDataV1 {
     sync_config_id?: number;
     pre_built?: boolean;
     is_public?: boolean;
-    endpoint?: string | string[];
+    endpoint?: string | string[] | NangoSyncEndpointVerbose | NangoSyncEndpointVerbose[];
     nango_yaml_version?: string;
     enabled?: boolean;
 }
@@ -120,7 +120,7 @@ export interface NangoSyncConfig {
     track_deletes?: boolean;
     returns: string[];
     models: NangoSyncModel[];
-    endpoints: NangoSyncEndpoint[];
+    endpoints: NangoSyncEndpointVerbose[];
     is_public?: boolean | null;
     pre_built?: boolean | null;
     version?: string | null;

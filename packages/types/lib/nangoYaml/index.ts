@@ -34,7 +34,7 @@ export interface NangoYamlV2Integration {
     'post-connection-scripts'?: string[];
 }
 export interface NangoYamlV2IntegrationSync {
-    endpoint: string | string[];
+    endpoint: string | string[] | NangoSyncEndpointVerbose | NangoSyncEndpointVerbose[];
     output: string | string[];
     description?: string;
     sync_type?: SyncTypeLiteral;
@@ -85,7 +85,7 @@ export interface NangoYamlParsedIntegration {
 export interface ParsedNangoSync {
     name: string;
     type: 'sync';
-    endpoints: NangoSyncEndpoint[];
+    endpoints: NangoSyncEndpointVerbose[];
     description: string;
     sync_type: SyncTypeLiteral;
     track_deletes: boolean;
@@ -105,7 +105,7 @@ export interface ParsedNangoAction {
     description: string;
     input: string | null;
     output: string[] | null;
-    endpoint: NangoSyncEndpoint | null;
+    endpoint: NangoSyncEndpointVerbose | null;
     scopes: string[];
     usedModels: string[];
     version: string;
@@ -128,7 +128,8 @@ export interface NangoModelField {
     union?: boolean | undefined;
     optional?: boolean | undefined;
 }
-
-export type NangoSyncEndpoint = {
-    [key in HTTP_VERB]?: string | undefined;
-};
+export interface NangoSyncEndpointVerbose {
+    method: HTTP_VERB;
+    path: string;
+    section?: string;
+}

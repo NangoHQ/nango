@@ -4,9 +4,7 @@ import fs from 'fs';
 import { dirname } from '../utils/utils.js';
 import { getPublicConfig } from './sync/config/config.service.js';
 import { loadStandardConfig } from './nango-config.service.js';
-import remoteFileService from './file/remote.service.js';
-import type { NangoConfig, NangoIntegration, NangoSyncConfig, NangoModelV1, StandardNangoConfig } from '../models/NangoConfig.js';
-import type { HTTP_VERB } from '../models/Generic.js';
+import type { NangoConfig, NangoIntegration, NangoModelV1, StandardNangoConfig } from '../models/NangoConfig.js';
 import { errorManager } from '../index.js';
 import { stringifyError } from '@nangohq/utils';
 import type { ScriptTypeLiteral } from '@nangohq/types';
@@ -50,7 +48,7 @@ class FlowService {
                 models: models as NangoModelV1
             };
 
-            const { success, response } = loadStandardConfig(nangoConfig, false, true);
+            const { success, response } = loadStandardConfig(nangoConfig, false);
 
             if (success && response) {
                 if (rawName) {
@@ -124,76 +122,6 @@ class FlowService {
         }
 
         return null;
-    }
-
-    public getActionAsNangoConfig(provider: string, name: string): NangoConfig | null {
-        const integrations = this.getAllAvailableFlowsAsStandardConfig();
-
-        let foundAction: NangoSyncConfig | null = null;
-        let foundProvider = '';
-
-        for (const integration of integrations) {
-            if (integration.providerConfigKey === provider) {
-                foundProvider = integration.rawName || provider;
-                for (const action of integration.actions) {
-                    if (action.name === name) {
-                        foundAction = action;
-                    }
-                }
-            }
-        }
-
-        if (!foundAction) {
-            return null;
-        }
-
-        const nangoConfig = {
-            integrations: {
-                [foundProvider]: {
-                    [foundAction.name]: {
-                        sync_config_id: foundAction.id,
-                        runs: '',
-                        type: foundAction.type,
-                        returns: foundAction.returns,
-                        input: foundAction.input,
-                        track_deletes: false,
-                        auto_start: false,
-                        attributes: foundAction.attributes,
-                        fileLocation: remoteFileService.getRemoteFileLocationForPublicTemplate(foundProvider, foundAction.name),
-                        version: '1',
-                        pre_built: true,
-                        is_public: true,
-                        metadata: {
-                            description: foundAction.description,
-                            scopes: foundAction.scopes
-                        }
-                    }
-                }
-            },
-            models: {}
-        } as NangoConfig;
-
-        return nangoConfig;
-    }
-
-    public getPublicActionByPathAndMethod(provider: string, path: string, method: string): string | null {
-        let foundAction = null;
-        const integrations = this.getAllAvailableFlowsAsStandardConfig();
-
-        for (const integration of integrations) {
-            if (integration.providerConfigKey === provider) {
-                for (const action of integration.actions) {
-                    const endpoints = Array.isArray(action.endpoints) ? action.endpoints : [action.endpoints];
-                    for (const endpoint of endpoints) {
-                        if (endpoint[method as HTTP_VERB] && endpoint[method as HTTP_VERB] === path) {
-                            foundAction = action.name;
-                        }
-                    }
-                }
-            }
-        }
-
-        return foundAction;
     }
 
     public async getAddedPublicFlows(environmentId: number) {

@@ -446,7 +446,6 @@ class ProxyService {
 
     /**
      * Construct Headers
-     * @param {ApplicationConstructedProxyConfiguration} config
      */
     public constructHeaders(config: ApplicationConstructedProxyConfiguration, method: HTTP_VERB, url: string): Record<string, string> {
         let headers = {};

@@ -1,7 +1,7 @@
 import type {
     HTTP_VERB,
     NangoModel,
-    NangoSyncEndpoint,
+    NangoSyncEndpointVerbose,
     NangoYamlParsedIntegration,
     NangoYamlV2,
     NangoYamlV2Integration,
@@ -85,7 +85,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 modelNames.add(modelInput.name);
             }
 
-            const endpoints: NangoSyncEndpoint[] = [];
+            const endpoints: NangoSyncEndpointVerbose[] = [];
             if (sync.endpoint) {
                 const tmp = Array.isArray(sync.endpoint) ? sync.endpoint : [sync.endpoint];
 
@@ -95,11 +95,15 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 }
 
                 for (const endpoint of tmp) {
-                    const split = endpoint.split(' ');
-                    if (split.length === 2) {
-                        endpoints.push({ [split[0] as HTTP_VERB]: split[1] });
+                    if (typeof endpoint === 'string') {
+                        const split = endpoint.split(' ');
+                        if (split.length === 2) {
+                            endpoints.push({ method: split[0] as HTTP_VERB, path: split[1]! });
+                        } else {
+                            endpoints.push({ method: 'POST', path: split[0]! });
+                        }
                     } else {
-                        endpoints.push({ GET: split[0]! });
+                        endpoints.push(endpoint);
                     }
                 }
             }
@@ -163,13 +167,13 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 modelNames.add(modelInput.name);
             }
 
-            const endpoint: NangoSyncEndpoint = {};
+            let endpoint: NangoSyncEndpointVerbose | null = null;
             if (action.endpoint) {
                 const split = action.endpoint.split(' ');
                 if (split.length === 2) {
-                    endpoint[split[0]! as HTTP_VERB] = split[1]!;
+                    endpoint = { method: split[0] as HTTP_VERB, path: split[1]! };
                 } else {
-                    endpoint['POST'] = split[0]!;
+                    endpoint = { method: 'POST', path: split[0]! };
                 }
             }
 

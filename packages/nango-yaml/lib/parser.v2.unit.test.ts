@@ -25,7 +25,7 @@ describe('parse', () => {
                         {
                             auto_start: true,
                             description: '',
-                            endpoints: [{ GET: '/provider/top' }],
+                            endpoints: [{ method: 'GET', path: '/provider/top' }],
                             input: 'GithubIssue',
                             name: 'top',
                             output: ['GithubIssue'],
@@ -44,7 +44,7 @@ describe('parse', () => {
                         {
                             description: '',
                             input: 'Anonymous_provider_action_createIssue_input',
-                            endpoint: { POST: '/test' },
+                            endpoint: { method: 'POST', path: '/test' },
                             name: 'createIssue',
                             output: ['GithubIssue'],
                             scopes: [],
@@ -92,7 +92,7 @@ describe('parse', () => {
                         {
                             description: '',
                             input: null,
-                            endpoint: { POST: '/test' },
+                            endpoint: { method: 'POST', path: '/test' },
                             name: 'createIssue',
                             output: ['Start'],
                             scopes: [],
@@ -131,7 +131,7 @@ describe('parse', () => {
                         {
                             auto_start: true,
                             description: '',
-                            endpoints: [{ GET: '/provider/top' }],
+                            endpoints: [{ method: 'GET', path: '/provider/top' }],
                             input: 'Anonymous_provider_sync_top_input',
                             name: 'top',
                             output: ['Anonymous_provider_sync_top_output'],

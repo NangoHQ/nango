@@ -59,11 +59,8 @@ export const flowConfig = z
             .array(
                 z
                     .object({
-                        GET: z.string().optional(),
-                        POST: z.string().optional(),
-                        PATCH: z.string().optional(),
-                        PUT: z.string().optional(),
-                        DELETE: z.string().optional()
+                        method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
+                        path: z.string()
                     })
                     .strict()
             )

@@ -5,7 +5,7 @@ import { getSyncsByProviderConfigAndSyncName } from '../sync.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
 import connectionService from '../../connection.service.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
-import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
+import type { ServiceResponse } from '../../../models/Generic.js';
 import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType, Sync } from '../../../models/Sync.js';
 import type { DBEnvironment, DBTeam, IncomingFlowConfig, IncomingPreBuiltFlowConfig, NangoModel, PostConnectionScriptByProvider } from '@nangohq/types';
 import { postConnectionScriptService } from '../post-connection.service.js';
@@ -129,13 +129,11 @@ export async function deploy({
 
         const endpoints: SyncEndpoint[] = [];
 
-        // TODO: fix this
+        // TODO: fix this (edit: fix what? :facepalm:)
         flowIds.forEach((row, index) => {
             const flow = flows[index] as IncomingFlowConfig;
             if (flow.endpoints && row.id) {
-                flow.endpoints.forEach((endpoint, endpointIndex: number) => {
-                    const method = Object.keys(endpoint)[0] as HTTP_VERB;
-                    const path = endpoint[method] as string;
+                flow.endpoints.forEach(({ method, path }, endpointIndex: number) => {
                     const res: SyncEndpoint = {
                         sync_config_id: row.id as number,
                         method,
@@ -287,9 +285,7 @@ export async function upgradePreBuilt({
 
         // update endpoints
         if (flow.endpoints) {
-            flow.endpoints.forEach((endpoint, endpointIndex) => {
-                const method = Object.keys(endpoint)[0] as HTTP_VERB;
-                const path = endpoint[method] as string;
+            flow.endpoints.forEach(({ method, path }, endpointIndex) => {
                 const res: SyncEndpoint = {
                     sync_config_id: newSyncConfigId,
                     method,
@@ -579,9 +575,7 @@ export async function deployPreBuilt({
         syncConfigs.forEach((row, index) => {
             const sync = configs[index] as IncomingPreBuiltFlowConfig;
             if (sync.endpoints && row.id) {
-                sync.endpoints.forEach((endpoint, endpointIndex) => {
-                    const method = Object.keys(endpoint)[0] as HTTP_VERB;
-                    const path = endpoint[method] as string;
+                sync.endpoints.forEach(({ method, path }, endpointIndex) => {
                     const res: SyncEndpoint = {
                         sync_config_id: row.id as number,
                         method,

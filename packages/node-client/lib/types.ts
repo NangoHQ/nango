@@ -12,7 +12,7 @@ import type {
     AuthModeType,
     AuthModes,
     HTTP_VERB,
-    NangoSyncEndpoint,
+    NangoSyncEndpointVerbose,
     AllAuthCredentials,
     OAuth1Credentials,
     OAuth2Credentials,
@@ -72,7 +72,7 @@ export type {
     JwtCredentials,
     TwoStepCredentials
 };
-export type { HTTP_VERB, NangoSyncEndpoint };
+export type { HTTP_VERB, NangoSyncEndpointVerbose };
 export type { RecordMetadata, RecordLastAction, NangoRecord };
 
 export type {
@@ -269,7 +269,7 @@ export interface NangoSyncConfig {
     track_deletes?: boolean;
     returns: string[];
     models: NangoSyncModel[];
-    endpoints: NangoSyncEndpoint[];
+    endpoints: NangoSyncEndpointVerbose[];
     is_public?: boolean;
     pre_built?: boolean;
     version?: string | null;

@@ -14,12 +14,12 @@ import { SyncType } from '../models/Sync.js';
 import localFileService from './file/local.service.js';
 import { NangoError } from '../utils/error.js';
 import { determineVersion, getInterval, isJsOrTsType } from '@nangohq/nango-yaml';
-import type { NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
+import type { NangoSyncEndpointVerbose, ScriptTypeLiteral } from '@nangohq/types';
 
 export const nangoConfigFile = 'nango.yaml';
 export const SYNC_FILE_EXTENSION = 'js';
 
-export function loadStandardConfig(configData: NangoConfig, showMessages = false, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[] | null> {
+export function loadStandardConfig(configData: NangoConfig, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[] | null> {
     try {
         if (!configData) {
             return { success: false, error: new NangoError('no_config_found'), response: null };
@@ -31,7 +31,7 @@ export function loadStandardConfig(configData: NangoConfig, showMessages = false
         }
 
         const configServiceResponse =
-            version === 'v1' ? convertConfigObject(configData as NangoConfigV1) : convertV2ConfigObject(configData as NangoConfigV2, showMessages, isPublic);
+            version === 'v1' ? convertConfigObject(configData as NangoConfigV1) : convertV2ConfigObject(configData as NangoConfigV2, isPublic);
 
         return configServiceResponse;
     } catch (error: any) {
@@ -149,35 +149,25 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
     return { success: true, error: null, response: output };
 }
 
-const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB, singleAllowedMethod = false, showMessages = false) => {
-    let endpoints: NangoSyncEndpoint[] = [];
+function assignEndpoints(rawEndpoint: string, defaultMethod: HTTP_VERB): NangoSyncEndpointVerbose[] {
     const endpoint = rawEndpoint.split(' ');
 
     if (endpoint.length > 1) {
-        const method = singleAllowedMethod ? defaultMethod : (endpoint[0]?.toUpperCase() as HTTP_VERB);
-
-        if (singleAllowedMethod && showMessages && endpoint[0]?.toUpperCase() !== defaultMethod) {
-            console.log(`A sync only allows for a ${defaultMethod} method. The provided ${endpoint[0]?.toUpperCase()} method will be ignored.`);
-        }
-
-        endpoints = [
+        return [
             {
-                [method]: endpoint[1] as string
-            }
-        ];
-    } else {
-        if (showMessages && !singleAllowedMethod) {
-            console.log(`No HTTP method provided for endpoint ${endpoint[0]}. Defaulting to ${defaultMethod}.`);
-        }
-        endpoints = [
-            {
-                [defaultMethod]: endpoint[0] as string
+                method: endpoint[0] as HTTP_VERB,
+                path: endpoint[1] as string
             }
         ];
     }
 
-    return endpoints;
-};
+    return [
+        {
+            method: defaultMethod,
+            path: endpoint[0] as string
+        }
+    ];
+}
 
 const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputModel: NangoSyncModel, config: NangoConfig): ServiceResponse<NangoSyncModel> => {
     if (Object.keys(inputModel).length > 0) {
@@ -221,7 +211,7 @@ const isEnabled = (script: NangoIntegrationDataV2): boolean => {
     return false;
 };
 
-export function convertV2ConfigObject(config: NangoConfigV2, showMessages = false, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[]> {
+export function convertV2ConfigObject(config: NangoConfigV2, isPublic?: boolean | null): ServiceResponse<StandardNangoConfig[]> {
     const output: StandardNangoConfig[] = [];
     const allModelNames = config.models ? Object.keys(config.models) : [];
 
@@ -247,7 +237,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             success: builtSyncSuccess,
             error: builtSyncError,
             response: builtSyncs
-        } = buildSyncs({ syncs, allModelNames, config, providerConfigKey, showMessages, isPublic, allModels, allEndpoints });
+        } = buildSyncs({ syncs, allModelNames, config, providerConfigKey, isPublic, allModels, allEndpoints });
 
         if (!builtSyncSuccess || !builtSyncs) {
             return { success: builtSyncSuccess, error: builtSyncError, response: null };
@@ -257,7 +247,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             success: builtActionSuccess,
             error: builtActionError,
             response: builtActions
-        } = buildActions({ actions, allModelNames, config, providerConfigKey, showMessages, isPublic, allModels, allEndpoints });
+        } = buildActions({ actions, allModelNames, config, providerConfigKey, isPublic, allModels, allEndpoints });
 
         if (!builtActionSuccess || !builtActions) {
             return { success: builtActionSuccess, error: builtActionError, response: null };
@@ -339,7 +329,6 @@ function buildSyncs({
     allModelNames,
     config,
     providerConfigKey,
-    showMessages,
     isPublic,
     allModels,
     allEndpoints
@@ -348,7 +337,6 @@ function buildSyncs({
     allModelNames: string[];
     config: NangoConfigV2;
     providerConfigKey: string;
-    showMessages: boolean;
     isPublic: boolean | null | undefined;
     allModels: string[];
     allEndpoints: string[];
@@ -379,7 +367,7 @@ function buildSyncs({
             }
         }
 
-        let endpoints: NangoSyncEndpoint[] = [];
+        let endpoints: NangoSyncEndpointVerbose[] = [];
         if (sync?.endpoint) {
             if (Array.isArray(sync.endpoint)) {
                 if (sync.endpoint?.length !== sync.output?.length) {
@@ -387,7 +375,7 @@ function buildSyncs({
                     return { success: false, error, response: null };
                 }
                 for (const endpoint of sync.endpoint) {
-                    endpoints.push(...assignEndpoints(endpoint, 'GET', true, showMessages));
+                    endpoints.push(...assignEndpoints(endpoint, 'GET'));
 
                     if (!allEndpoints.includes(endpoint)) {
                         allEndpoints.push(endpoint);
@@ -397,7 +385,7 @@ function buildSyncs({
                     }
                 }
             } else {
-                endpoints = assignEndpoints(sync.endpoint, 'GET', true, showMessages);
+                endpoints = assignEndpoints(sync.endpoint, 'GET');
 
                 if (sync.output && Array.isArray(sync.output) && sync.output?.length > 1) {
                     const error = new NangoError('endpoint_output_mismatch', syncName);
@@ -414,10 +402,6 @@ function buildSyncs({
         }
 
         const scopes = sync?.scopes || sync?.metadata?.scopes || [];
-
-        if (!sync?.runs && showMessages) {
-            console.log(`No runs property found for sync "${syncName}". Defaulting to every day.`);
-        }
 
         const runs = sync?.runs || 'every day';
 
@@ -480,7 +464,6 @@ function buildActions({
     allModelNames,
     config,
     providerConfigKey,
-    showMessages,
     isPublic,
     allModels,
     allEndpoints
@@ -489,7 +472,6 @@ function buildActions({
     allModelNames: string[];
     config: NangoConfigV2;
     providerConfigKey: string;
-    showMessages: boolean;
     isPublic: boolean | null | undefined;
     allModels: string[];
     allEndpoints: string[];
@@ -528,7 +510,7 @@ function buildActions({
             }
         }
 
-        let endpoints: NangoSyncEndpoint[] = [];
+        let endpoints: NangoSyncEndpointVerbose[] = [];
         let actionEndpoint: string;
 
         if (action?.endpoint) {
@@ -543,7 +525,7 @@ function buildActions({
                 actionEndpoint = action?.endpoint;
             }
 
-            endpoints = assignEndpoints(actionEndpoint, 'POST', false, showMessages);
+            endpoints = assignEndpoints(actionEndpoint, 'POST');
             if (actionEndpoint?.includes('{') && actionEndpoint.includes('}')) {
                 const { success, error, response } = parseModelInEndpoint(actionEndpoint, allModelNames, inputModel!, config);
                 if (!success || !response) {

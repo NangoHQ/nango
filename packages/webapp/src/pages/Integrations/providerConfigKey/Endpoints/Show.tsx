@@ -3,7 +3,7 @@ import { Skeleton } from '../../../../components/ui/Skeleton';
 import { useGetIntegrationFlows } from '../../../../hooks/useIntegration';
 import { useStore } from '../../../../store';
 import { useMemo } from 'react';
-import type { GetIntegration, HTTP_VERB, NangoSyncConfig } from '@nangohq/types';
+import type { GetIntegration, NangoSyncConfig } from '@nangohq/types';
 import type { FlowGroup, NangoSyncConfigWithEndpoint } from './components/List';
 import { EndpointsList } from './components/List';
 import { EndpointOne } from './components/One';
@@ -39,14 +39,12 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         const tmp: Record<string, NangoSyncConfigWithEndpoint[]> = {};
         for (const flow of data.flows) {
             for (const endpoint of flow.endpoints) {
-                const entries = Object.entries(endpoint)[0];
-                const paths = entries[1].split('/');
-
-                const path = paths[1];
-                if (!path) {
+                const paths = endpoint.path.split('/');
+                const firstPath = paths[1];
+                if (!firstPath) {
                     continue;
                 }
-                const groupName = allowedGroup.includes(path) ? path : 'others';
+                const groupName = allowedGroup.includes(firstPath) ? firstPath : 'others';
 
                 let group = tmp[groupName];
                 if (!group) {
@@ -54,7 +52,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
                     tmp[groupName] = group;
                 }
 
-                group.push({ ...flow, endpoint: { method: entries[0] as HTTP_VERB, path: entries[1] } });
+                group.push({ ...flow, endpoint });
             }
 
             if (flow.endpoints.length <= 0) {
@@ -107,10 +105,9 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         }
 
         for (const flow of data.flows) {
-            for (const endpointObj of flow.endpoints) {
-                const endpoint = Object.entries(endpointObj)[0];
-                if (endpoint[0] === method && endpoint[1] === path) {
-                    return { ...flow, endpoint: { method: method as HTTP_VERB, path } };
+            for (const endpoint of flow.endpoints) {
+                if (endpoint.method === method && endpoint.path === path) {
+                    return { ...flow, endpoint };
                 }
             }
         }
