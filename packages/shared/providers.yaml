@@ -544,7 +544,8 @@ aws-iam:
         - dev-tools
     auth_mode: BASIC
     proxy:
-        base_url: https://iam.amazonaws.com/${connectionConfig.region}
+        base_url: https://iam.amazonaws.com
+        connection_base_url: ${connectionConfig.region}
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/aws

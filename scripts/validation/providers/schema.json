@@ -137,6 +137,9 @@
                         "base_url": {
                             "type": "string"
                         },
+                        "connection_base_url": {
+                            "type": "string"
+                        },
                         "decompress": {
                             "type": "boolean"
                         },
