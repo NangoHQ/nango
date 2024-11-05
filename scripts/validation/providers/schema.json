@@ -39,7 +39,8 @@
                         "TABLEAU",
                         "JWT",
                         "BILL",
-                        "TWO_STEP"
+                        "TWO_STEP",
+                        "WSSE"
                     ]
                 },
                 "authorization_method": {
