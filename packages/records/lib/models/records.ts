@@ -315,7 +315,7 @@ export async function update({
 
                 const oldRecords = await getRecordsToUpdate({ records: chunk, connectionId, model, trx });
                 if (oldRecords.length === 0) {
-                    logger.warn(`Did not find any record to update: ${{ connectionId, model }}`);
+                    logger.warning(`Did not find any record to update: ${{ connectionId, model }}`);
                 }
 
                 const recordsToUpdate: FormattedRecord[] = [];
