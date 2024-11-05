@@ -1,4 +1,21 @@
-# yaml-language-server: $schema=./../../scripts/validation/providers/schema.json
+twenty-crm:
+    display_name: Twenty CRM
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.twenty.com/rest
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            after: 'Retry-After'
+    docs: https://docs.nango.dev/integrations/all/twenty-crm
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Twenty CRM account
+
 accelo:
     display_name: Accelo
     categories:
