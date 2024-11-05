@@ -91,7 +91,7 @@ RUN true \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
 
 # Do not use root to run the app
-USER node
+# USER node
 
 WORKDIR /app/nango
 
