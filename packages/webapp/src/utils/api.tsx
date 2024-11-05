@@ -319,6 +319,40 @@ export function useEditWebhookSecondaryUrlAPI(env: string) {
     };
 }
 
+export function useEditOtlpSettingsAPI(env: string) {
+    const signout = useSignout();
+
+    return async ({ endpoint, headers }: { endpoint: string; headers: Record<string, string> }) => {
+        try {
+            const options = {
+                method: 'POST',
+                body: JSON.stringify({ endpoint, headers })
+            };
+
+            const res = await apiFetch(`/api/v1/environment/otlp/settings?env=${env}`, options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            if (res.status === 403) {
+                const { error } = await res.json();
+                const msg = 'message' in error ? error.message : 'Forbidden';
+                toast.error(msg, { position: toast.POSITION.BOTTOM_CENTER });
+                return;
+            }
+
+            if (res.status !== 200) {
+                return serverErrorToast();
+            }
+
+            return res;
+        } catch {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useGetIntegrationListAPI(env: string) {
     const signout = useSignout();
 

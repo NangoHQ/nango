@@ -21,8 +21,6 @@ export interface FormattedRecord {
 
 export type FormattedRecordWithMetadata = FormattedRecord & RecordMetadata;
 
-export type UnencryptedRecord = FormattedRecord & { record: UnencryptedRecordData };
-
 export interface EncryptedRecordData {
     iv: string;
     authTag: string;

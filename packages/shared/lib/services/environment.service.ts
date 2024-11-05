@@ -336,6 +336,10 @@ class EnvironmentService {
         return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ hmac_key: hmacKey }, ['id']);
     }
 
+    async editOtlpSettings(environmentId: number, otlpSettings: { endpoint: string; headers: Record<string, string> } | null): Promise<DBEnvironment | null> {
+        return db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId }).update({ otlp_settings: otlpSettings }, ['id']);
+    }
+
     async getEnvironmentVariables(environment_id: number): Promise<DBEnvironmentVariable[] | null> {
         const result = await db.knex.select('*').from<DBEnvironmentVariable>(`_nango_environment_variables`).where({ environment_id });
 

@@ -27,7 +27,16 @@ export function securityMiddlewares(): RequestHandler[] {
                 connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://*.sentry.io', hostPublic, hostApi, hostWs.href, 'https://*.posthog.com'],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl],
-                imgSrc: ["'self'", 'data:', hostPublic, hostApi, 'https://*.google-analytics.com', 'https://*.googleapis.com', 'https://*.posthog.com'],
+                imgSrc: [
+                    "'self'",
+                    'data:',
+                    hostPublic,
+                    hostApi,
+                    'https://*.google-analytics.com',
+                    'https://*.googleapis.com',
+                    'https://*.posthog.com',
+                    'https://img.logo.dev'
+                ],
                 manifestSrc: "'self'",
                 mediaSrc: "'self'",
                 objectSrc: "'self'",
