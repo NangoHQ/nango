@@ -9,12 +9,12 @@ import type {
     NangoIntegrationDataV2,
     LayoutMode
 } from '../models/NangoConfig.js';
-import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
+import type { ServiceResponse } from '../models/Generic.js';
 import { SyncType } from '../models/Sync.js';
 import localFileService from './file/local.service.js';
 import { NangoError } from '../utils/error.js';
-import { determineVersion, getInterval, isJsOrTsType } from '@nangohq/nango-yaml';
-import type { NangoSyncEndpointVerbose } from '@nangohq/types';
+import { determineVersion, getInterval, isJsOrTsType, parseEndpoint } from '@nangohq/nango-yaml';
+import type { NangoSyncEndpointV2 } from '@nangohq/types';
 
 /**
  * Legacy parser only used for flows.yaml
@@ -147,25 +147,6 @@ function convertConfigObject(config: NangoConfigV1): ServiceResponse<StandardNan
         output.push(simplifiedIntegration);
     }
     return { success: true, error: null, response: output };
-}
-
-function parseEndpoint(rawEndpoint: string | NangoSyncEndpointVerbose, defaultMethod: HTTP_VERB): NangoSyncEndpointVerbose {
-    if (typeof rawEndpoint === 'string') {
-        const endpoint = rawEndpoint.split(' ');
-        if (endpoint.length > 1) {
-            return {
-                method: endpoint[0] as HTTP_VERB,
-                path: endpoint[1] as string
-            };
-        }
-
-        return {
-            method: defaultMethod,
-            path: endpoint[0] as string
-        };
-    }
-
-    return rawEndpoint;
 }
 
 const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputModel: NangoSyncModel, config: NangoConfig): ServiceResponse<NangoSyncModel> => {
@@ -333,7 +314,7 @@ function buildSyncs({
             }
         }
 
-        const endpoints: NangoSyncEndpointVerbose[] = [];
+        const endpoints: NangoSyncEndpointV2[] = [];
         if (sync?.endpoint) {
             if (Array.isArray(sync.endpoint)) {
                 for (const endpoint of sync.endpoint) {
@@ -435,10 +416,10 @@ function buildActions({
             }
         }
 
-        let endpoint: NangoSyncEndpointVerbose | undefined;
+        let endpoint: NangoSyncEndpointV2 | undefined;
 
         if (action?.endpoint) {
-            endpoint = parseEndpoint(action.endpoint as string | NangoSyncEndpointVerbose, 'POST');
+            endpoint = parseEndpoint(action.endpoint as string | NangoSyncEndpointV2, 'POST');
             if (endpoint.path?.includes('{') && endpoint.path.includes('}')) {
                 const { success, error, response } = parseModelInEndpoint(endpoint.path, allModelNames, inputModel!, config);
                 if (!success || !response) {

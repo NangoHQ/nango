@@ -7,7 +7,17 @@ import connectionService from '../../connection.service.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
 import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType, Sync } from '../../../models/Sync.js';
-import type { DBEnvironment, DBTeam, IncomingFlowConfig, IncomingPreBuiltFlowConfig, NangoModel, PostConnectionScriptByProvider } from '@nangohq/types';
+import type {
+    DBEnvironment,
+    DBTeam,
+    CleanedIncomingFlowConfig,
+    IncomingPreBuiltFlowConfig,
+    NangoModel,
+    PostConnectionScriptByProvider,
+    NangoSyncEndpointV2,
+    IncomingFlowConfig,
+    HTTP_METHOD
+} from '@nangohq/types';
 import { postConnectionScriptService } from '../post-connection.service.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
@@ -27,8 +37,22 @@ const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 
 const nameOfType = 'sync/action';
 
-type FlowParsed = Merge<IncomingFlowConfig, { model_schema: NangoModel[] }>;
+type FlowParsed = Merge<CleanedIncomingFlowConfig, { model_schema: NangoModel[] }>;
 type FlowWithoutScript = Omit<FlowParsed, 'fileBody'>;
+
+export function cleanIncomingFlow(flowConfigs: IncomingFlowConfig[]): CleanedIncomingFlowConfig[] {
+    const cleaned: CleanedIncomingFlowConfig[] = [];
+    for (const flow of flowConfigs) {
+        const parsedEndpoints = flow.endpoints
+            ? flow.endpoints.map<NangoSyncEndpointV2>((endpoint) => {
+                  const entries = Object.entries(endpoint) as [HTTP_METHOD, string][];
+                  return { method: entries[0]![0], path: entries[0]![1] };
+              })
+            : [];
+        cleaned.push({ ...flow, endpoints: parsedEndpoints });
+    }
+    return cleaned;
+}
 
 export async function deploy({
     environment,
@@ -43,7 +67,7 @@ export async function deploy({
 }: {
     environment: DBEnvironment;
     account: DBTeam;
-    flows: IncomingFlowConfig[];
+    flows: CleanedIncomingFlowConfig[];
     jsonSchema?: JSONSchema7 | undefined;
     postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
     nangoYamlBody: string;
@@ -131,7 +155,7 @@ export async function deploy({
 
         // TODO: fix this (edit: fix what? :facepalm:)
         flowIds.forEach((row, index) => {
-            const flow = flows[index] as IncomingFlowConfig;
+            const flow = flows[index] as CleanedIncomingFlowConfig;
             if (flow.endpoints && row.id) {
                 flow.endpoints.forEach(({ method, path }, endpointIndex: number) => {
                     const res: SyncEndpoint = {

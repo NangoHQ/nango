@@ -57,12 +57,23 @@ export const flowConfig = z
         input: z.union([z.string().max(255), z.any()]).optional(),
         endpoints: z
             .array(
-                z
-                    .object({
-                        method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
-                        path: z.string()
-                    })
-                    .strict()
+                z.union([
+                    z
+                        .object({
+                            method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
+                            path: z.string()
+                        })
+                        .strict(),
+                    z
+                        .object({
+                            GET: z.string().optional(),
+                            POST: z.string().optional(),
+                            PATCH: z.string().optional(),
+                            PUT: z.string().optional(),
+                            DELETE: z.string().optional()
+                        })
+                        .strict()
+                ])
             )
             .optional(),
         syncName: z.string(),

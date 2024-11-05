@@ -1,4 +1,4 @@
-export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type SyncTypeLiteral = 'incremental' | 'full';
 export type ScriptFileType = 'actions' | 'syncs' | 'post-connection-scripts';
 export type ScriptTypeLiteral = 'action' | 'sync';
@@ -34,7 +34,7 @@ export interface NangoYamlV2Integration {
     'post-connection-scripts'?: string[];
 }
 export interface NangoYamlV2IntegrationSync {
-    endpoint: string | string[] | NangoSyncEndpointVerbose | NangoSyncEndpointVerbose[];
+    endpoint: string | string[] | NangoSyncEndpointV2 | NangoSyncEndpointV2[];
     output: string | string[];
     description?: string;
     sync_type?: SyncTypeLiteral;
@@ -85,7 +85,7 @@ export interface NangoYamlParsedIntegration {
 export interface ParsedNangoSync {
     name: string;
     type: 'sync';
-    endpoints: NangoSyncEndpointVerbose[];
+    endpoints: NangoSyncEndpointV2[];
     description: string;
     sync_type: SyncTypeLiteral;
     track_deletes: boolean;
@@ -105,7 +105,7 @@ export interface ParsedNangoAction {
     description: string;
     input: string | null;
     output: string[] | null;
-    endpoint: NangoSyncEndpointVerbose | null;
+    endpoint: NangoSyncEndpointV2 | null;
     scopes: string[];
     usedModels: string[];
     version: string;
@@ -128,8 +128,13 @@ export interface NangoModelField {
     union?: boolean | undefined;
     optional?: boolean | undefined;
 }
-export interface NangoSyncEndpointVerbose {
-    method: HTTP_VERB;
+
+export type NangoSyncEndpointOld = {
+    [key in HTTP_METHOD]?: string | undefined;
+};
+
+export interface NangoSyncEndpointV2 {
+    method: HTTP_METHOD;
     path: string;
     section?: string;
 }

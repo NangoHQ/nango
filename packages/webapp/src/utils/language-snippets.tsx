@@ -1,4 +1,4 @@
-import type { NangoModel, NangoSyncEndpointVerbose } from '@nangohq/types';
+import type { NangoModel, NangoSyncEndpointV2 } from '@nangohq/types';
 import type { TargetId } from 'httpsnippet-lite';
 import { HTTPSnippet } from 'httpsnippet-lite';
 import type { NangoSyncModel } from '../types';
@@ -73,7 +73,7 @@ export async function httpSnippet({
     input
 }: {
     baseUrl: string;
-    endpoint: NangoSyncEndpointVerbose;
+    endpoint: NangoSyncEndpointV2;
     secretKey: string;
     connectionId: string;
     providerConfigKey: string;

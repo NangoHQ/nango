@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 import semver from 'semver';
 
 const VERSION_REGEX = /nango-cli\/([0-9.]+)/;
-export function cliVersionCheck(minVersion: string) {
+export function cliMinVersion(minVersion: string) {
     return (req: Request, res: Response, next: NextFunction) => {
         const userAgent = req.headers['user-agent'];
         if (!userAgent) {

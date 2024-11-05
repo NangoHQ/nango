@@ -9,11 +9,11 @@ import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { NangoConfigV1, StandardNangoConfig, NangoSyncConfig } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
-import type { DBSyncConfig, NangoSyncEndpointVerbose, SlimSync } from '@nangohq/types';
+import type { DBSyncConfig, NangoSyncEndpointV2, SlimSync } from '@nangohq/types';
 
 const TABLE = dbNamespace + 'sync_configs';
 
-type ExtendedSyncConfig = SyncConfig & { provider: string; unique_key: string; endpoints_object: NangoSyncEndpointVerbose[] };
+type ExtendedSyncConfig = SyncConfig & { provider: string; unique_key: string; endpoints_object: NangoSyncEndpointV2[] };
 
 function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): StandardNangoConfig[] {
     const tmp: Record<string, StandardNangoConfig> = {};

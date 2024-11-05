@@ -1,7 +1,6 @@
 import type {
-    HTTP_VERB,
     NangoModel,
-    NangoSyncEndpointVerbose,
+    NangoSyncEndpointV2,
     NangoYamlParsedIntegration,
     NangoYamlV2,
     NangoYamlV2Integration,
@@ -13,7 +12,7 @@ import type {
 } from '@nangohq/types';
 import { NangoYamlParser } from './parser.js';
 import { ParserErrorEndpointsMismatch, ParserErrorInvalidRuns } from './errors.js';
-import { getInterval } from './helpers.js';
+import { getInterval, parseEndpoint } from './helpers.js';
 
 export class NangoYamlParserV2 extends NangoYamlParser {
     parse(): boolean {
@@ -85,7 +84,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 modelNames.add(modelInput.name);
             }
 
-            const endpoints: NangoSyncEndpointVerbose[] = [];
+            const endpoints: NangoSyncEndpointV2[] = [];
             if (sync.endpoint) {
                 const tmp = Array.isArray(sync.endpoint) ? sync.endpoint : [sync.endpoint];
 
@@ -95,16 +94,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 }
 
                 for (const endpoint of tmp) {
-                    if (typeof endpoint === 'string') {
-                        const split = endpoint.split(' ');
-                        if (split.length === 2) {
-                            endpoints.push({ method: split[0] as HTTP_VERB, path: split[1]! });
-                        } else {
-                            endpoints.push({ method: 'POST', path: split[0]! });
-                        }
-                    } else {
-                        endpoints.push(endpoint);
-                    }
+                    endpoints.push(parseEndpoint(endpoint, 'GET'));
                 }
             }
 
@@ -167,14 +157,9 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 modelNames.add(modelInput.name);
             }
 
-            let endpoint: NangoSyncEndpointVerbose | null = null;
+            let endpoint: NangoSyncEndpointV2 | null = null;
             if (action.endpoint) {
-                const split = action.endpoint.split(' ');
-                if (split.length === 2) {
-                    endpoint = { method: split[0] as HTTP_VERB, path: split[1]! };
-                } else {
-                    endpoint = { method: 'POST', path: split[0]! };
-                }
+                endpoint = parseEndpoint(action.endpoint, 'POST');
             }
 
             const parsedAction: ParsedNangoAction = {

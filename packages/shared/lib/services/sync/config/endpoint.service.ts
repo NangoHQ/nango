@@ -2,7 +2,7 @@ import { schema, dbNamespace } from '@nangohq/database';
 import configService from '../../config.service.js';
 import type { SyncConfig } from '../../../models/Sync.js';
 import type { NangoConnection } from '../../../models/Connection.js';
-import type { HTTP_VERB } from '../../../models/Generic.js';
+import type { HTTP_METHOD } from '../../../models/Generic.js';
 
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
@@ -12,7 +12,7 @@ interface ActionOrModel {
     model?: string;
 }
 
-export async function getActionOrModelByEndpoint(nangoConnection: NangoConnection, method: HTTP_VERB, path: string): Promise<ActionOrModel> {
+export async function getActionOrModelByEndpoint(nangoConnection: NangoConnection, method: HTTP_METHOD, path: string): Promise<ActionOrModel> {
     const config = await configService.getProviderConfig(nangoConnection.provider_config_key, nangoConnection.environment_id);
     if (!config) {
         throw new Error('Provider config not found');
