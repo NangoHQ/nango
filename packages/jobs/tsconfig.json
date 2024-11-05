@@ -24,6 +24,9 @@
             "path": "../runner"
         },
         {
+            "path": "../types"
+        },
+        {
             "path": "../utils"
         },
         {

@@ -81,8 +81,8 @@
         "@types/uuid": "8.3.4",
         "@types/ws": "8.5.4",
         "get-port": "7.1.0",
-        "nodemon": "3.0.1",
-        "type-fest": "4.25.0",
+        "nodemon": "3.1.7",
+        "type-fest": "4.26.1",
         "typescript": "5.3.3",
         "vitest": "1.6.0"
     }
