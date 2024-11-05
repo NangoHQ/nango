@@ -48,6 +48,9 @@ export function cleanIncomingFlow(flowConfigs: IncomingFlowConfig[]): CleanedInc
     for (const flow of flowConfigs) {
         const parsedEndpoints = flow.endpoints
             ? flow.endpoints.map<NangoSyncEndpointV2>((endpoint) => {
+                  if ('path' in endpoint) {
+                      return endpoint;
+                  }
                   const entries = Object.entries(endpoint) as [HTTP_METHOD, string][];
                   return { method: entries[0]![0], path: entries[0]![1] };
               })
