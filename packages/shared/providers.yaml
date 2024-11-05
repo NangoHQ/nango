@@ -1,21 +1,3 @@
-twenty-crm:
-    display_name: Twenty CRM
-    categories:
-        - crm
-    auth_mode: API_KEY
-    proxy:
-        base_url: https://api.twenty.com/rest
-        headers:
-            Authorization: Bearer ${apiKey}
-        retry:
-            after: 'Retry-After'
-    docs: https://docs.nango.dev/integrations/all/twenty-crm
-    credentials:
-        apiKey:
-            type: string
-            title: API Key
-            description: The API key for your Twenty CRM account
-
 accelo:
     display_name: Accelo
     categories:
@@ -5594,6 +5576,27 @@ twinfield:
         - offline_access
     disable_pkce: true
     docs: https://docs.nango.dev/integrations/all/twinfield
+
+twenty-crm:
+    display_name: Twenty CRM
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.twenty.com/rest
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            after: 'Retry-After'
+        verification:
+            method: GET
+            endpoint: /companies
+    docs: https://docs.nango.dev/integrations/all/twenty-crm
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Twenty CRM account
 
 typeform:
     display_name: Typeform
