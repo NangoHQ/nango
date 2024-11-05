@@ -170,3 +170,31 @@ export type PostPublicTwoStepAuthorization = Endpoint<{
         connectionId: string;
     };
 }>;
+
+export type PostPublicWsseAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        username: string;
+        password: string;
+    };
+    Querystring: {
+        connection_id?: string | undefined;
+        params?: Record<string, any> | undefined;
+        hmac?: string | undefined;
+    };
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/wsse';
+    Error:
+        | ApiError<'invalid_body'>
+        | ApiError<'invalid_query_params'>
+        | ApiError<'unknown_provider_config'>
+        | ApiError<'unknown_provider_template'>
+        | ApiError<'invalid_auth_mode'>
+        | ApiError<'invalid_credentials'>;
+    Success: {
+        providerConfigKey: string;
+        connectionId: string;
+    };
+}>;

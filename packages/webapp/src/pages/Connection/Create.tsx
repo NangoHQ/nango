@@ -137,11 +137,18 @@ export default function IntegrationCreate() {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         Object.keys(params).forEach((key) => params[key] === '' && delete params[key]);
 
-        if (authMode === 'BASIC') {
+        if (authMode === 'BASIC' || authMode === 'WSSE') {
             credentials = {
                 username: apiAuthUsername,
                 password: apiAuthPassword
             };
+
+            if (authMode === 'WSSE') {
+                credentials = {
+                    ...credentials,
+                    type: 'WSSE'
+                };
+            }
         }
 
         if (authMode === 'API_KEY') {
@@ -408,11 +415,16 @@ export default function IntegrationCreate() {
   `;
         }
 
-        if (integration?.authMode === 'BASIC') {
+        if (integration?.authMode === 'BASIC' || integration?.authMode === 'WSSE') {
             apiAuthString = `
     credentials: {
       username: '${apiAuthUsername}',
-      password: '${apiAuthPassword}'
+      password: '${apiAuthPassword}'${
+          integration.authMode === 'WSSE'
+              ? `,
+      Type: 'WSSE'`
+              : ''
+      }
     }
   `;
         }
@@ -923,7 +935,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </div>
                             ))}
 
-                            {(authMode === 'API_KEY' || authMode === 'BASIC' || authMode === 'BILL') && (
+                            {(authMode === 'API_KEY' || authMode === 'BASIC' || authMode === 'BILL' || authMode === 'WSSE') && (
                                 <div>
                                     <div>
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
@@ -932,7 +944,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                         <p className="mt-3 mb-5">{authMode}</p>
                                     </div>
 
-                                    {(authMode === 'BASIC' || authMode === 'BILL') && (
+                                    {(authMode === 'BASIC' || authMode === 'BILL' || authMode === 'WSSE') && (
                                         <div>
                                             <div className="flex mt-6">
                                                 <label htmlFor="username" className="text-text-light-gray block text-sm font-semibold">

@@ -134,4 +134,9 @@ export interface ProviderTwoStep extends BaseProvider {
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
 }
-export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep;
+export interface ProviderWsse extends BaseProvider {
+    token: {
+        expires_in_ms: number;
+    };
+}
+export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep | ProviderWsse;

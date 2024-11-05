@@ -172,6 +172,14 @@ export interface BillCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
+export interface WsseCredentials {
+    type: 'WSSE';
+    username: string;
+    password: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
+
 export type RefreshTokenResponse = AuthorizationTokenResponse;
 
 export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {

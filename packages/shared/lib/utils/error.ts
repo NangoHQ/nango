@@ -682,6 +682,11 @@ export class NangoError extends Error {
                 this.message = `An internal error occurred during the script execution`;
                 break;
 
+            case 'wsse_token_generation_error':
+                this.status = 500;
+                this.message = `An error occured while generating an WSSE token`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

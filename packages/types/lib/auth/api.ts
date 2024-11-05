@@ -13,6 +13,7 @@ export interface AuthModes {
     Jwt: 'JWT';
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
+    Wsse: 'WSSE';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -175,6 +176,14 @@ export interface TwoStepCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
+export interface WsseCredentials {
+    type: AuthModes['Wsse'];
+    username: string;
+    password: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
+
 export type UnauthCredentials = Record<string, never>;
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;
@@ -197,4 +206,5 @@ export type AllAuthCredentials =
     | TableauCredentials
     | JwtCredentials
     | BillCredentials
-    | TwoStepCredentials;
+    | TwoStepCredentials
+    | WsseCredentials;

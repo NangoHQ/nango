@@ -19,7 +19,8 @@ import type {
     TwoStepCredentials,
     JwtCredentials,
     OAuthCredentialsOverride,
-    BillCredentials
+    BillCredentials,
+    WsseCredentials
 } from './types';
 import { AuthorizationStatus, WSMessageType } from './types.js';
 
@@ -294,8 +295,19 @@ export default class Nango {
             | OAuth2ClientCredentials
             | BillCredentials
             | TwoStepCredentials
+            | WsseCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
+
+        if ('type' in credentials && 'username' in credentials && 'password' in credentials && credentials.type === 'WSSE') {
+            const wsseCredentials: WsseCredentials = {
+                type: credentials.type,
+                username: credentials.username,
+                password: credentials.password
+            };
+
+            return { params: wsseCredentials } as unknown as ConnectionConfig;
+        }
 
         if ('username' in credentials) {
             params['username'] = credentials.username || '';
@@ -414,6 +426,7 @@ export default class Nango {
             | BillCredentials
             | OAuth2ClientCredentials
             | TwoStepCredentials
+            | WsseCredentials
             | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
@@ -456,6 +469,13 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/two-step/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as TwoStepCredentials
+            });
+        }
+
+        if ('type' in credentials && credentials['type'] === 'WSSE' && 'username' in credentials && 'password' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/wsse/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as WsseCredentials
             });
         }
 

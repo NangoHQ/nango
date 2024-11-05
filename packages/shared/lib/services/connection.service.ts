@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import type { Knex } from '@nangohq/database';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
@@ -29,7 +30,9 @@ import type {
     DBConnection,
     DBEndUser,
     TwoStepCredentials,
-    ProviderTwoStep
+    ProviderTwoStep,
+    ProviderWsse,
+    WsseCredentials
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -467,6 +470,50 @@ class ConnectionService {
         return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
     }
 
+    public async upsertWsseConnection({
+        connectionId,
+        providerConfigKey,
+        credentials,
+        connectionConfig,
+        metadata,
+        config,
+        environment,
+        account
+    }: {
+        connectionId: string;
+        providerConfigKey: string;
+        credentials: WsseCredentials;
+        connectionConfig?: ConnectionConfig;
+        config: ProviderConfig;
+        metadata?: Metadata | null;
+        environment: DBEnvironment;
+        account: DBTeam;
+    }): Promise<ConnectionUpsertResponse[]> {
+        const encryptedConnection = encryptionManager.encryptConnection({
+            connection_id: connectionId,
+            provider_config_key: providerConfigKey,
+            config_id: config.id as number,
+            credentials,
+            connection_config: connectionConfig || {},
+            environment_id: environment.id,
+            metadata: metadata || null
+        });
+
+        const [connection] = await db.knex
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(encryptedConnection)
+            .onConflict(['connection_id', 'provider_config_key', 'environment_id', 'deleted_at'])
+            .merge({
+                ...encryptedConnection,
+                updated_at: new Date()
+            })
+            .returning('*');
+
+        void analytics.track(AnalyticsTypes.WSSE_CONNECTION_INSERTED, account.id, { provider: config.provider });
+
+        return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
+    }
+
     public async upsertUnauthConnection({
         connectionId,
         providerConfigKey,
@@ -698,7 +745,8 @@ class ConnectionService {
                 | TableauCredentials
                 | JwtCredentials
                 | TwoStepCredentials
-                | BillCredentials;
+                | BillCredentials
+                | WsseCredentials;
             if (credentials.type && credentials.type === 'OAUTH2') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
@@ -730,6 +778,12 @@ class ConnectionService {
             }
 
             if (credentials.type && credentials.type === 'BILL') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'WSSE') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
@@ -1167,7 +1221,8 @@ class ConnectionService {
             connection?.credentials?.type === 'TABLEAU' ||
             connection?.credentials?.type === 'JWT' ||
             connection?.credentials?.type === 'BILL' ||
-            connection?.credentials?.type === 'TWO_STEP'
+            connection?.credentials?.type === 'TWO_STEP' ||
+            connection?.credentials?.type === 'WSSE'
         ) {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connectionId: connection.connection_id,
@@ -1467,7 +1522,8 @@ class ConnectionService {
                 | TableauCredentials
                 | JwtCredentials
                 | TwoStepCredentials
-                | BillCredentials;
+                | BillCredentials
+                | WsseCredentials;
         }>
     > {
         const providerConfigKey = providerConfig.unique_key;
@@ -1484,6 +1540,7 @@ class ConnectionService {
                 | JwtCredentials
                 | TwoStepCredentials
                 | BillCredentials
+                | WsseCredentials
                 | null;
         }> => {
             const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
@@ -1512,7 +1569,8 @@ class ConnectionService {
                           | TableauCredentials
                           | JwtCredentials
                           | TwoStepCredentials
-                          | BillCredentials)
+                          | BillCredentials
+                          | WsseCredentials)
             };
         };
 
@@ -2044,6 +2102,38 @@ class ConnectionService {
         }
     }
 
+    public getWsseCredentials(provider: ProviderWsse, username: string, password: string): ServiceResponse<WsseCredentials> {
+        try {
+            const nonce = crypto.randomBytes(16).toString('hex');
+
+            const timestamp = new Date().toISOString();
+
+            const sha1Hash = crypto
+                .createHash('sha1')
+                .update(nonce + timestamp + password)
+                .digest('hex');
+
+            const passwordDigest = Buffer.from(sha1Hash, 'hex').toString('base64');
+
+            const token = `UsernameToken Username="${username}", PasswordDigest="${passwordDigest}", Nonce="${nonce}", Created="${timestamp}"`;
+
+            const expiresAt = new Date(Date.now() + provider.token.expires_in_ms);
+
+            const credentials: WsseCredentials = {
+                type: 'WSSE',
+                username,
+                password,
+                token,
+                expires_at: expiresAt
+            };
+
+            return { success: true, error: null, response: credentials };
+        } catch (err) {
+            const error = new NangoError('wsse_token_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
+            return { success: false, error, response: null };
+        }
+    }
+
     public async shouldCapUsage({
         providerConfigKey,
         environmentId,
@@ -2147,6 +2237,7 @@ class ConnectionService {
             | JwtCredentials
             | BillCredentials
             | TwoStepCredentials
+            | WsseCredentials
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
@@ -2222,6 +2313,15 @@ class ConnectionService {
                 error,
                 response: credentials
             } = await this.getTwoStepCredentials(provider as ProviderTwoStep, dynamicCredentials, connection.connection_config);
+
+            if (!success || !credentials) {
+                return { success, error, response: null };
+            }
+
+            return { success: true, error: null, response: credentials };
+        } else if (provider.auth_mode === 'WSSE') {
+            const { username, password } = connection.credentials as WsseCredentials;
+            const { success, error, response: credentials } = this.getWsseCredentials(provider as ProviderWsse, username, password);
 
             if (!success || !credentials) {
                 return { success, error, response: null };
