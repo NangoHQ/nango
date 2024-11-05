@@ -136,5 +136,4 @@ export type NangoSyncEndpointOld = {
 export interface NangoSyncEndpointV2 {
     method: HTTP_METHOD;
     path: string;
-    section?: string;
 }

@@ -52,7 +52,7 @@ export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlow
     syncName?: string; // legacy
     nango_config_id?: number;
     fileBody?: IncomingScriptFiles;
-    endpoints?: NangoSyncEndpointV2[] | undefined;
+    endpoints: NangoSyncEndpointV2[];
 }
 
 export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {

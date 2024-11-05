@@ -40,6 +40,9 @@ const nameOfType = 'sync/action';
 type FlowParsed = Merge<CleanedIncomingFlowConfig, { model_schema: NangoModel[] }>;
 type FlowWithoutScript = Omit<FlowParsed, 'fileBody'>;
 
+/**
+ * Transform received incoming flow from the CLI to an internally standard object
+ */
 export function cleanIncomingFlow(flowConfigs: IncomingFlowConfig[]): CleanedIncomingFlowConfig[] {
     const cleaned: CleanedIncomingFlowConfig[] = [];
     for (const flow of flowConfigs) {
@@ -152,27 +155,14 @@ export async function deploy({
             .returning('id');
 
         const endpoints: SyncEndpoint[] = [];
-
-        // TODO: fix this (edit: fix what? :facepalm:)
-        flowIds.forEach((row, index) => {
-            const flow = flows[index] as CleanedIncomingFlowConfig;
-            if (flow.endpoints && row.id) {
-                flow.endpoints.forEach(({ method, path }, endpointIndex: number) => {
-                    const res: SyncEndpoint = {
-                        sync_config_id: row.id as number,
-                        method,
-                        path,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    };
-                    const model = flow.models[endpointIndex] as string;
-                    if (model) {
-                        res.model = model;
-                    }
-                    endpoints.push(res);
-                });
+        for (const [index, row] of flowIds.entries()) {
+            const flow = flows[index];
+            if (!flow) {
+                continue;
             }
-        });
+
+            endpoints.push(...endpointToSyncEndpoint(flow, row.id!));
+        }
 
         if (endpoints.length > 0) {
             await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
@@ -256,13 +246,13 @@ export async function upgradePreBuilt({
     const { sync_name: name, is_public, type } = syncConfig;
     const { unique_key: provider_config_key, provider } = config;
 
-    const file_location = (await remoteFileService.copy(
+    const file_location = await remoteFileService.copy(
         `${provider}/dist`,
         `${name}-${provider}.js`,
         `${env}/account/${account.id}/environment/${environment.id}/config/${syncConfig.nango_config_id}/${name}-v${flow.version}.js`,
         environment.id,
         `${name}-${provider_config_key}.js`
-    )) as string;
+    );
 
     if (!file_location) {
         await logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: name, version: flow.version });
@@ -317,7 +307,7 @@ export async function upgradePreBuilt({
                     created_at: now,
                     updated_at: now
                 };
-                const model = flowData.models[endpointIndex] as string;
+                const model = flowData.models[endpointIndex];
                 if (model) {
                     res.model = model;
                 }
@@ -485,21 +475,21 @@ export async function deployPreBuilt({
         const version = bumpedVersion || '0.0.1';
 
         const jsFile = typeof config.fileBody === 'string' ? config.fileBody : config.fileBody?.js;
-        let file_location = '';
+        let file_location: string | null = null;
         if (is_public) {
-            file_location = (await remoteFileService.copy(
+            file_location = await remoteFileService.copy(
                 `${config.public_route}/dist`,
                 `${sync_name}-${config.provider}.js`,
                 `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
                 environment.id,
                 `${sync_name}-${provider_config_key}.js`
-            )) as string;
+            );
         } else {
-            file_location = (await remoteFileService.upload(
+            file_location = await remoteFileService.upload(
                 jsFile as string,
                 `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
                 environment.id
-            )) as string;
+            );
         }
 
         if (!file_location) {
@@ -596,25 +586,14 @@ export async function deployPreBuilt({
         });
 
         const endpoints: SyncEndpoint[] = [];
-        syncConfigs.forEach((row, index) => {
-            const sync = configs[index] as IncomingPreBuiltFlowConfig;
-            if (sync.endpoints && row.id) {
-                sync.endpoints.forEach(({ method, path }, endpointIndex) => {
-                    const res: SyncEndpoint = {
-                        sync_config_id: row.id as number,
-                        method,
-                        path,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    };
-                    const model = sync.models[endpointIndex] as string;
-                    if (model) {
-                        res.model = model;
-                    }
-                    endpoints.push(res);
-                });
+        for (const [index, row] of syncConfigs.entries()) {
+            const flow = configs[index];
+            if (!flow) {
+                continue;
             }
-        });
+
+            endpoints.push(...endpointToSyncEndpoint(flow, row.id!));
+        }
 
         if (endpoints.length > 0) {
             await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
@@ -908,4 +887,24 @@ function findModelInModelSchema(fields: NangoModel['fields']) {
     }
 
     return models;
+}
+
+function endpointToSyncEndpoint(flow: Pick<CleanedIncomingFlowConfig, 'endpoints' | 'models'>, sync_config_id: number) {
+    const endpoints: SyncEndpoint[] = [];
+    for (const [endpointIndex, endpoint] of flow.endpoints.entries()) {
+        const res: SyncEndpoint = {
+            sync_config_id,
+            method: endpoint.method,
+            path: endpoint.path,
+            created_at: new Date(),
+            updated_at: new Date()
+        };
+        const model = flow.models[endpointIndex];
+        if (model) {
+            res.model = model;
+        }
+        endpoints.push(res);
+    }
+
+    return endpoints;
 }
