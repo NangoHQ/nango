@@ -3,7 +3,7 @@ import * as Table from '../../../components/ui/Table';
 import { Tag } from '../../../components/ui/label/Tag';
 import { Link } from 'react-router-dom';
 import { EllipsisHorizontalIcon, QueueListIcon } from '@heroicons/react/24/outline';
-import { formatFrequency, getRunTime, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun, formatRecordsCount } from '../../../utils/utils';
+import { formatFrequency, getRunTime, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun, formatQuantity } from '../../../utils/utils';
 import { getLogsUrl } from '../../../utils/logs';
 import { UserFacingSyncCommand } from '../../../types';
 import type { RunSyncCommand, SyncResponse } from '../../../types';
@@ -136,7 +136,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
             </Table.Cell>
             <Table.Cell bordered>{formatFrequency(sync.frequency)}</Table.Cell>
             <Table.Cell bordered>
-                <SimpleTooltip tooltipContent={sync.record_count.toLocaleString()}>{formatRecordsCount(sync.record_count)}</SimpleTooltip>
+                <SimpleTooltip tooltipContent={sync.record_count.toLocaleString()}>{formatQuantity(sync.record_count)}</SimpleTooltip>
             </Table.Cell>
             <Table.Cell bordered>
                 <SimpleTooltip
