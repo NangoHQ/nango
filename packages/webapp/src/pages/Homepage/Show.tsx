@@ -94,11 +94,11 @@ export const Homepage: React.FC = () => {
                 {globalEnv.features.scripts && (
                     <InsightChart
                         title="Webhook"
-                        type="webhook_external"
-                        desc="External webhooks received"
+                        type="webhook:incoming"
+                        desc="Incoming webhooks jobs"
                         help={
                             <div>
-                                No external webhooks received in the last 14 days.{' '}
+                                No incoming webhooks received in the last 14 days.{' '}
                                 <Link to="https://docs.nango.dev/integrate/guides/receive-webhooks-from-an-api" className="underline text-white">
                                     Learn more
                                 </Link>

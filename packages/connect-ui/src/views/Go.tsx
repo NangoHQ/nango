@@ -347,7 +347,7 @@ export const Go: React.FC = () => {
                         {shouldAutoTrigger && (
                             <div className="text-sm text-dark-500 w-full text-center">
                                 We will connect you to {provider.display_name}
-                                {provider.auth_mode === 'OAUTH2' && ". A popup will open, please make sure your browser don't block popup"}
+                                {provider.auth_mode === 'OAUTH2' && ". A popup will open, please make sure your browser doesn't block popup"}
                             </div>
                         )}
                         <div className="flex flex-col gap-4">
