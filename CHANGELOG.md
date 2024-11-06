@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.22] - 2024-11-06
+
+### Added
+
+- *(runner)* Add graceful shutdown and error handling (#2949) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/3277a8297b79ac511c738970f78099bfe711b555 by Hassan_Wari. Commit message: feat(aws-iam): add user operations (#89) by @github-actions[bot]
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/4dea5183161008e6aec39b430104e71a6037e0e3 by Daniel Roy Lwetabe. Commit message: feat(okta): list all users (#98) by @github-actions[bot]
+
+### Fixed
+
+- *(cli)* Migrate-to-directories parsing issue (#2948) by @bodinsamuel
+- *(jobs)* Use new docker image (#2945) by @bodinsamuel
+- *(cli)* Pin all internal packages (#2951) by @bodinsamuel
+
 ## [v0.42.21] - 2024-11-06
 
 ### Added
@@ -2220,6 +2237,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.22]: https://github.com/NangoHQ/nango/compare/v0.42.21..v0.42.22
 [v0.42.21]: https://github.com/NangoHQ/nango/compare/v0.42.20..v0.42.21
 [v0.42.20]: https://github.com/NangoHQ/nango/compare/v0.42.19..v0.42.20
 [v0.42.19]: https://github.com/NangoHQ/nango/compare/v0.42.18..v0.42.19
