@@ -87,16 +87,16 @@ export const directoryMigration = async (loadLocation: string, debug?: boolean):
         return;
     }
 
-    for (const [providerConfigKey, integration] of Object.entries(response.parsed.integrations)) {
-        const integrationPath = path.join(loadLocation, providerConfigKey);
+    for (const integration of response.parsed.integrations) {
+        const integrationPath = path.join(loadLocation, integration.providerConfigKey);
         await createDirectory(integrationPath, debug);
 
         if (integration.syncs) {
             const syncsPath: string = path.join(integrationPath, 'syncs');
             await createDirectory(syncsPath, debug);
-            for (const sync of Object.keys(integration.syncs)) {
-                const syncPath: string = path.join(syncsPath, `${sync}.ts`);
-                const moved = await moveFile(path.join(loadLocation, `${sync}.ts`), syncPath, debug);
+            for (const sync of integration.syncs) {
+                const syncPath: string = path.join(syncsPath, `${sync.name}.ts`);
+                const moved = await moveFile(path.join(loadLocation, `${sync.name}.ts`), syncPath, debug);
                 if (moved) {
                     await updateModelImport(syncPath, debug);
                 }
@@ -106,9 +106,9 @@ export const directoryMigration = async (loadLocation: string, debug?: boolean):
         if (integration.actions) {
             const actionsPath: string = path.join(integrationPath, 'actions');
             await createDirectory(actionsPath, debug);
-            for (const action of Object.keys(integration.actions)) {
-                const actionPath: string = path.join(actionsPath, `${action}.ts`);
-                const moved = await moveFile(path.join(loadLocation, `${action}.ts`), actionPath, debug);
+            for (const action of integration.actions) {
+                const actionPath: string = path.join(actionsPath, `${action.name}.ts`);
+                const moved = await moveFile(path.join(loadLocation, `${action.name}.ts`), actionPath, debug);
                 if (moved) {
                     await updateModelImport(actionPath, debug);
                 }
