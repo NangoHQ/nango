@@ -5494,6 +5494,15 @@ integrations:
                 lastName: string
                 isBot: boolean
     okta:
+        syncs:
+            users:
+                description: Fetches lists users in your org
+                runs: every day
+                output: User
+                endpoint: GET /users
+                sync_type: incremental
+                scopes:
+                    - okta.users.read
         actions:
             create-user:
                 description: Creates a new user in your Okta org without credentials.
