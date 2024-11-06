@@ -6,7 +6,7 @@ import { RECORDS_TABLE } from '../constants.js';
 import { db } from '../db/client.js';
 import * as Records from '../models/records.js';
 import { formatRecords } from '../helpers/format.js';
-import type { UnencryptedRecordData, UpsertSummary } from '../types.js';
+import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '../types.js';
 
 describe('Records service', () => {
     beforeAll(async () => {
@@ -29,12 +29,24 @@ describe('Records service', () => {
             { id: '3', name: 'Max Doe' },
             { id: '4', name: 'Mike Doe' }
         ];
-        const res = await upsertRecords(records, connectionId, environmentId, model, syncId, 1);
-        expect(res).toStrictEqual({ addedKeys: ['1', '2', '3', '4'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: ['1'] });
+        const inserted = await upsertRecords(records, connectionId, environmentId, model, syncId, 1);
+        expect(inserted).toStrictEqual({ addedKeys: ['1', '2', '3', '4'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: ['1'] });
 
-        const newRecords = [{ id: '2', name: 'Jane Moe' }];
-        const updateRes = await updateRecords(newRecords, connectionId, model, syncId, 2);
-        expect(updateRes).toStrictEqual({ addedKeys: [], updatedKeys: ['2'], deletedKeys: [], nonUniqueKeys: [] });
+        const newRecords = [
+            { id: '1', name: 'John Doe' }, // same
+            { id: '2', name: 'Jane Moe' } // updated
+        ];
+        const upserted = await upsertRecords(newRecords, connectionId, environmentId, model, syncId, 2);
+        expect(upserted).toStrictEqual({ addedKeys: [], updatedKeys: ['2'], deletedKeys: [], nonUniqueKeys: [] });
+
+        const after = await db.select<FormattedRecord[]>('*').from('nango_records.records').where({ connection_id: connectionId, model });
+        expect(after.find((r) => r.external_id === '1')?.sync_job_id).toBe(2);
+        expect(after.find((r) => r.external_id === '2')?.sync_job_id).toBe(2);
+        expect(after.find((r) => r.external_id === '3')?.sync_job_id).toBe(1);
+        expect(after.find((r) => r.external_id === '4')?.sync_job_id).toBe(1);
+
+        const updated = await updateRecords([{ id: '1', name: 'Maurice Doe' }], connectionId, model, syncId, 3);
+        expect(updated).toStrictEqual({ addedKeys: [], updatedKeys: ['1'], deletedKeys: [], nonUniqueKeys: [] });
     });
 
     it('Should be able to encrypt and insert 2000 records under 2 seconds', async () => {
@@ -181,6 +193,41 @@ describe('Records service', () => {
         expect(runTime).toBeLessThan(5000);
 
         expect(allRecordsLength).toBe(numOfRecords);
+    });
+
+    it('Should return correct added records count when upserting concurrently', async () => {
+        const connectionId = 1;
+        const environmentId = 2;
+        const model = 'my-model';
+        const syncId = '00000000-0000-0000-0000-000000000000';
+        const records = formatRecords({
+            data: [{ id: '1', name: 'John Doe' }],
+            connectionId,
+            model,
+            syncId,
+            syncJobId: 1,
+            softDelete: false
+        }).unwrap();
+
+        // upserting the same record concurrently
+        const res = (
+            await Promise.all([
+                Records.upsert({ records, connectionId, environmentId, model }),
+                Records.upsert({ records, connectionId, environmentId, model }),
+                Records.upsert({ records, connectionId, environmentId, model }),
+                Records.upsert({ records, connectionId, environmentId, model }),
+                Records.upsert({ records, connectionId, environmentId, model })
+            ])
+        ).map((r) => r.unwrap());
+        const agg = res.reduce((acc, curr) => {
+            return {
+                addedKeys: acc.addedKeys.concat(curr.addedKeys),
+                updatedKeys: acc.updatedKeys.concat(curr.updatedKeys),
+                deletedKeys: (acc.deletedKeys || []).concat(curr.deletedKeys || []),
+                nonUniqueKeys: acc.nonUniqueKeys.concat(curr.nonUniqueKeys)
+            };
+        });
+        expect(agg).toStrictEqual({ addedKeys: ['1'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] });
     });
 });
 
