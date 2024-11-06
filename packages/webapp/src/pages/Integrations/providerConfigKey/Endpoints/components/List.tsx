@@ -1,4 +1,4 @@
-import type { GetIntegration, HTTP_VERB, NangoSyncConfig } from '@nangohq/types';
+import type { GetIntegration, NangoSyncConfig, NangoSyncEndpointV2 } from '@nangohq/types';
 import * as Table from '../../../../../components/ui/Table';
 import { HttpLabel } from '../../../../../components/HttpLabel';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
@@ -11,7 +11,7 @@ import { Info } from '../../../../../components/Info';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../../../../components/ui/Tooltip';
 import { Prism } from '@mantine/prism';
 
-export type NangoSyncConfigWithEndpoint = NangoSyncConfig & { endpoint: { method: HTTP_VERB; path: string } };
+export type NangoSyncConfigWithEndpoint = NangoSyncConfig & { endpoint: NangoSyncEndpointV2 };
 export interface FlowGroup {
     name: string;
     flows: NangoSyncConfigWithEndpoint[];
@@ -70,7 +70,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                                 </Table.Header>
                                 <Table.Body>
                                     {flows.map((flow) => {
-                                        const usp = new URLSearchParams(flow.endpoint);
+                                        const usp = new URLSearchParams(flow.endpoint as unknown as Record<string, string>);
                                         return (
                                             <Link
                                                 to={`/${env}/integrations/${integration.integration.unique_key}/endpoint?${usp.toString()}`}

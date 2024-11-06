@@ -120,27 +120,19 @@ export abstract class NangoYamlParser {
                     const find = getRecursiveModelNames(this.modelsParser, sync.input);
                     find.forEach((name) => usedModelsSync.add(name));
                 }
-                for (const endpointByVerb of sync.endpoints) {
-                    for (const [verb, endpoint] of Object.entries(endpointByVerb)) {
-                        if (!endpoint) {
-                            continue; // TS pleasing
-                        }
+                for (const endpoint of sync.endpoints) {
+                    const str = `${endpoint.method} ${endpoint.path}`;
+                    if (endpoints.has(str)) {
+                        this.errors.push(new ParserErrorDuplicateEndpoint({ endpoint: str, path: [integrationName, 'syncs', sync.name, '[endpoints]'] }));
+                        continue;
+                    }
 
-                        const str = `${verb} ${endpoint}`;
-                        if (endpoints.has(str)) {
-                            this.errors.push(new ParserErrorDuplicateEndpoint({ endpoint: str, path: [integrationName, 'syncs', sync.name, '[endpoints]'] }));
-                            continue;
-                        }
-
-                        endpoints.add(str);
-                        const modelInUrl = endpoint.match(/{([^}]+)}/);
-                        if (modelInUrl) {
-                            const modelName = modelInUrl[1]!;
-                            if (!this.modelsParser.get(modelName)) {
-                                this.errors.push(
-                                    new ParserErrorModelNotFound({ model: modelName, path: [integrationName, 'syncs', sync.name, '[endpoints]'] })
-                                );
-                            }
+                    endpoints.add(str);
+                    const modelInUrl = endpoint.path.match(/{([^}]+)}/);
+                    if (modelInUrl) {
+                        const modelName = modelInUrl[1]!;
+                        if (!this.modelsParser.get(modelName)) {
+                            this.errors.push(new ParserErrorModelNotFound({ model: modelName, path: [integrationName, 'syncs', sync.name, '[endpoints]'] }));
                         }
                     }
                 }
@@ -195,27 +187,19 @@ export abstract class NangoYamlParser {
                     find.forEach((name) => usedModelsAction.add(name));
                 }
                 if (action.endpoint) {
-                    for (const [verb, endpoint] of Object.entries(action.endpoint)) {
-                        if (!endpoint) {
-                            continue; // TS pleasing
-                        }
+                    const endpoint = action.endpoint;
 
-                        const str = `${verb} ${endpoint}`;
-                        if (endpoints.has(str)) {
-                            this.errors.push(
-                                new ParserErrorDuplicateEndpoint({ endpoint: str, path: [integrationName, 'actions', action.name, '[endpoint]'] })
-                            );
-                            continue;
-                        }
-                        endpoints.add(str);
-                        const modelInUrl = endpoint.match(/{([^}]+)}/);
-                        if (modelInUrl) {
-                            const modelName = modelInUrl[1]!.split(':')[0]!;
-                            if (!this.modelsParser.get(modelName)) {
-                                this.errors.push(
-                                    new ParserErrorModelNotFound({ model: modelName, path: [integrationName, 'syncs', action.name, '[endpoint]'] })
-                                );
-                            }
+                    const str = `${endpoint.method} ${endpoint.path}`;
+                    if (endpoints.has(str)) {
+                        this.errors.push(new ParserErrorDuplicateEndpoint({ endpoint: str, path: [integrationName, 'actions', action.name, '[endpoint]'] }));
+                        continue;
+                    }
+                    endpoints.add(str);
+                    const modelInUrl = endpoint.path.match(/{([^}]+)}/);
+                    if (modelInUrl) {
+                        const modelName = modelInUrl[1]!.split(':')[0]!;
+                        if (!this.modelsParser.get(modelName)) {
+                            this.errors.push(new ParserErrorModelNotFound({ model: modelName, path: [integrationName, 'syncs', action.name, '[endpoint]'] }));
                         }
                     }
                 }
