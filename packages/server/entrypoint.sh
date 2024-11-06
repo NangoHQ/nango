@@ -12,7 +12,7 @@ echo "$dir/packages/server/dist/server.js"
 if [ "$FLAG_SERVE_CONNECT_UI" == "true" ]; then
   node "$dir/packages/server/dist/server.js" &
 
-  # This is not recommended, you should server UI from a dedicated static website hosting
+  # This is not recommended, you should serve Connect UI from a dedicated static website hosting
   npm run -w @nangohq/connect-ui serve:unsafe &
 
   # Wait for any process to exit
