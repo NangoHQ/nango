@@ -128,6 +128,7 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
         provider.authorization_url ||
         provider.proxy?.base_url ||
         provider.proxy?.headers ||
+        provider.proxy?.connection_base_url ||
         provider.proxy?.verification ||
         provider.authorization_params ||
         provider.token_params
@@ -135,6 +136,7 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
         const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
         const tokenUrlMatches = typeof provider.token_url === 'string' ? provider.token_url.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
         const authorizationUrlMatches = provider.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const connectionBaseUrlMatches = provider.proxy?.connection_base_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
         const authorizationParamsMatches = provider.authorization_params
             ? Object.values(provider.authorization_params).flatMap((param) =>
                   typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []
@@ -169,6 +171,7 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
         return [
             ...tokenUrlMatches,
             ...authorizationUrlMatches,
+            ...connectionBaseUrlMatches,
             ...authorizationParamsMatches,
             ...tokenParamsMatches,
             ...proxyMatches,

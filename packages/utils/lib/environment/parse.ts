@@ -28,6 +28,10 @@ export const ENVS = z.object({
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
 
+    // Connect
+    NANGO_PUBLIC_CONNECT_URL: z.string().url().optional(),
+    NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
+
     // Persist
     PERSIST_SERVICE_URL: z.string().url().optional(),
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),

@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { NangoConnection, HTTP_VERB, Connection, Sync } from '@nangohq/shared';
+import type { NangoConnection, HTTP_METHOD, Connection, Sync } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import {
@@ -231,7 +231,7 @@ class SyncController {
                 return;
             }
 
-            const { action, model } = await getActionOrModelByEndpoint(connection as NangoConnection, req.method as HTTP_VERB, path);
+            const { action, model } = await getActionOrModelByEndpoint(connection as NangoConnection, req.method as HTTP_METHOD, path);
             if (action) {
                 const input = req.body || req.params[1];
                 req.body = {};

@@ -2,6 +2,77 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.42.21] - 2024-11-06
+
+### Added
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/903441952b0a7f47d21a7b0b39a6f7e34f71a6b5 by Andres Reales. Commit message: feat(harvest): add Harvest integration (#71) by @github-actions[bot]
+- Add migration for otlp settings (#2891) by @TBonnin
+- *(integrations)* Add support for keeper (#2893) by @hassan254-prog
+- *(aircall-basic)* [nan-1963] add aircall basic auth provider (#2907) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/9ffe0c90d2fec727b25a4c52985765a033fc3b40 by Khaliq. Commit message: feat(aircall): add user operations (#77) by @github-actions[bot]
+- *(integrations)* Add support for google analytics (#2906) by @hassan254-prog
+- *(integrations)* Add support for booking.com (#2904) by @hassan254-prog
+- *(integrations)* Add support for adyen (#2902) by @hassan254-prog
+- Add OpenTelemetry export (#2892) by @TBonnin
+- *(connect)* Allow optional params, cosmetic fixes (#2909) by @bodinsamuel
+- *(integrations)* Add support for databricks (#2895) by @hassan254-prog
+- *(miro-scim)* Add miro scim (#2911) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/27a700a6ba830b5a619d409c6d7b5bd06ebb4bf6 by Andres Reales. Commit message: feat(ring-central): add RingCentral users integration  (#78) by @github-actions[bot]
+- *(integrations)* Add support for Dixa (#2899) by @hassan254-prog
+- *(integrations)* Add support for chattermill (#2900) by @hassan254-prog
+- *(integrations)* Add support for whatsapp business (#2903) by @hassan254-prog
+- *(integrations)* Add TwoStep as a new auth_mode for Perimeter 81 (#2868) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/084831131c9bd9d7445632c384e9c6d22e36a1d7 by Hassan_Wari. Commit message: feat(salesforce): add salesforce integrations (#75) by @github-actions[bot]
+- *(ui)* List connections refactor, show end user profile (#2897) by @bodinsamuel
+- *(integrations)* Add retry header (#2917) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/aaef56b31798bd0e97d4f3ec94ba7a669b3b1de3 by Khaliq. Commit message: fix(g-drive): add includeAllDrives query param (#87) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/deff79d1fe635fb13dec55623f6f054892011f8c by Hassan_Wari. Commit message: feat(integrations): add zendesk search action  (#86) by @github-actions[bot]
+- *(trello-scim)* Add trello scim (#2926) by @khaliqgant
+- Add support for record count (#2874) by @mbiddle153
+- *(webapp)* Syncs Table UI (#2916) by @nalanj
+- *(ui)* Display organization logo automatically (#2930) by @bodinsamuel
+- Add settings for OpenTelemetry export (#2922) by @TBonnin
+- *(asana-scim)* Asana scim provider (#2943) by @khaliqgant
+- *(integrations)* Add support for aws-iam (#2929) by @hassan254-prog
+- *(nango-yaml)* Endpoint explicit definition (#2940) by @bodinsamuel
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/cfa56973dcc1a0c044e9e7ce5a6f50bd2012ae4f by Khaliq. Commit message: feat(expensify): expensify User operations (#79) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/a467a360bbf6191d328b10c5c8de1f7dad030f8f by Andres Reales. Commit message: feat(keeper): Add Keeper users integration (#80) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5d68ba94b591071831e9fc4906ec0a0fa38954fb by Andres Reales. Commit message: feat(perimeter81): Add users endpoints to Perimeter81 integration (#81) by @github-actions[bot]
+- Clean up packages (#2932) by @bodinsamuel
+- *(server)* Slack integration to v2 (#2939) by @bodinsamuel
+
+### Fixed
+
+- *(db)* Drop NANGO_DB_MIGRATION_FOLDER (#2901) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/12c02183dd7f15df28464168342ec79aac9193bc by Khaliq. Commit message: fix(outlook): version bump (#76) by @github-actions[bot]
+- *(expensify)* Update expensify proxy settings (#2908) by @khaliqgant
+- *(integrations)* Fix auth-mode for chorus (#2915) by @hassan254-prog
+- *(connect)* Document connect ui, add apiURL param (#2912) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/676a094e2a593765a84a5a2e142e3e6dbb37406c by Khaliq. Commit message: fix(xero): Fix xero endpoints & tweak precommit script to generate tests (#82) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/aa73bd21fca513021b1a5af3115bc8dac566a053 by Khaliq. Commit message: fix(salesforce): update endpoints and bump versions (#83) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/93f717de010fec4d5ba2ced563d393051c090e30 by Khaliq. Commit message: fix(drive): supportsAllDrives option (#85) by @github-actions[bot]
+- *(api)* Reup search in /connections (#2921) by @bodinsamuel
+- *(api)* Reup previous behavior of connectionId for GET /connection (#2923) by @bodinsamuel
+- Openapi spec bad merge add CI (#2927) by @bodinsamuel
+- *(ui)* Various improvments (#2928) by @bodinsamuel
+- *(webapp)* Split privateKey for ghost-admin (#2913) by @hassan254-prog
+- *(ui)* Connection Show refactor (#2918) by @bodinsamuel
+- *(records)* Fix id comparison check in update (#2924) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/03428dc4ac5fc2a16d8e631d592c1329a3a0dd56 by Hassan_Wari. Commit message: fix(zendesk): fix zendesk search ticket integration (#93) by @github-actions[bot]
+- Records update webhook should be sent when coming from webhook exec (#2934) by @TBonnin
+- BatchUpdate fails with query is empty if no records (#2937) by @TBonnin
+- *(records)* Update records count when marking records as deleted (#2935) by @TBonnin
+- *(connection page)* Tooltips and trigger menu action (#2938) by @TBonnin
+- *(node-client)* Update listConnections (#2931) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/51404c068bbcaf8a9c046b66f1f833403a0c473a by Mungai Hosea. Commit message: fix: Hosea/ext 211 clean up salesforce templates (#94) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/da9bf55feee952bf70945ea87327d43f4848ffaf by Khaliq. Commit message: fix(gmail-body): update body could be empty (#95) by @github-actions[bot]
+- Records update bugs and inefficiency (#2941) by @TBonnin
+- *(connect)* Serve in docker image (#2914) by @bodinsamuel
+
 ## [v0.42.20] - 2024-10-25
 
 ### Added
@@ -2149,6 +2220,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.42.21]: https://github.com/NangoHQ/nango/compare/v0.42.20..v0.42.21
 [v0.42.20]: https://github.com/NangoHQ/nango/compare/v0.42.19..v0.42.20
 [v0.42.19]: https://github.com/NangoHQ/nango/compare/v0.42.18..v0.42.19
 [v0.42.18]: https://github.com/NangoHQ/nango/compare/v0.42.17..v0.42.18

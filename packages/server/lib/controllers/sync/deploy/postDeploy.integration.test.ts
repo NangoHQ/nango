@@ -104,7 +104,7 @@ describe(`POST ${endpoint}`, () => {
                             syncName: 'test',
                             fileBody: { js: 'js file', ts: 'ts file' },
                             providerConfigKey: 'unauthenticated',
-                            endpoints: [{ GET: '/path' }],
+                            endpoints: [{ method: 'GET', path: '/path' }],
                             runs: 'every day',
                             type: 'sync',
                             attributes: {},
@@ -151,7 +151,7 @@ describe(`POST ${endpoint}`, () => {
                             auto_start: false,
                             description: 'a',
                             enabled: true,
-                            endpoints: [{ GET: '/path' }],
+                            endpoints: [{ method: 'GET', path: '/path' }],
                             input: {
                                 fields: [{ array: false, name: 'id', optional: false, tsType: true, value: 'number' }],
                                 name: 'Input'

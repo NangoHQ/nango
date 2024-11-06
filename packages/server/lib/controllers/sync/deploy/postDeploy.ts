@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { PostDeploy } from '@nangohq/types';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { AnalyticsTypes, analytics, deploy, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
+import { AnalyticsTypes, analytics, cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
 import { flowConfigs, jsonSchema, postConnectionScriptsByProvider } from './postConfirmation.js';
@@ -44,7 +44,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
     } = await deploy({
         environment,
         account,
-        flows: body.flowConfigs,
+        flows: cleanIncomingFlow(body.flowConfigs),
         nangoYamlBody: body.nangoYamlBody,
         postConnectionScriptsByProvider: body.postConnectionScriptsByProvider,
         debug: body.debug,
