@@ -6,7 +6,11 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc -b && vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "serve:unsafe": "serve dist -p ${NANGO_CONNECT_UI_PORT:-3009}"
+    },
+    "dependencies": {
+        "serve": "14.2.4"
     },
     "devDependencies": {
         "@hookform/resolvers": "3.9.0",
