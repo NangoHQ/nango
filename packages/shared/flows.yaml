@@ -632,6 +632,50 @@ integrations:
             NoteObject:
                 value: string
                 type: string
+    aws-iam:
+        actions:
+            create-user:
+                description: Creates a user in AWS IAM.
+                output: User
+                endpoint: POST /users
+                input: AWSCreateUser
+            delete-user:
+                description: >
+                    Delete an existing user in AWS IAM. When you delete a user, you must
+                    delete the items attached to the user manually, or the deletion fails.
+                endpoint: DELETE /users
+                output: SuccessResponse
+                input: UserNamEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from AWS IAM
+                output: User
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /users
+        models:
+            UserNamEntity:
+                userName: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            AWSCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                userName?: string
     bamboohr-basic:
         syncs:
             employees:
