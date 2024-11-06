@@ -472,7 +472,7 @@ describe('generate function tests', () => {
 
         await directoryMigration(dir);
         expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
-        expect(fs.existsSync(join(dir, 'hubspot/actions/create-contacts.ts'))).toBe(true);
+        expect(fs.existsSync(join(dir, 'hubspot/actions/create-contact.ts'))).toBe(true);
         expect(fs.existsSync(join(dir, 'contacts.ts'))).toBe(false);
         expect(fs.existsSync(join(dir, 'create-contacts.ts'))).toBe(false);
 
