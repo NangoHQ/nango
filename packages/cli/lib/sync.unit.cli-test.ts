@@ -464,7 +464,7 @@ describe('generate function tests', () => {
         expect(success).toBe(true);
     });
 
-    it('should be able to migrate-to-directories ', async () => {
+    it('should be able to migrate-to-directories', async () => {
         const dir = await getTestDirectory('old-directory-migrate');
         init({ absolutePath: dir });
 
