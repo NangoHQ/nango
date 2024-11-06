@@ -471,13 +471,13 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, 'nango-yaml/v2/non-nested-integrations'), dir);
 
         await directoryMigration(dir);
-        expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
         expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
         expect(fs.existsSync(join(dir, 'hubspot/actions/create-contacts.ts'))).toBe(true);
         expect(fs.existsSync(join(dir, 'contacts.ts'))).toBe(false);
         expect(fs.existsSync(join(dir, 'create-contacts.ts'))).toBe(false);
 
         const success = await compileAllFiles({ fullPath: dir, debug: false });
+        expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
         expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
 
         expect(success).toBe(true);
