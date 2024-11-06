@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./../../scripts/validation/providers/schema.json
 accelo:
     display_name: Accelo
     categories:
