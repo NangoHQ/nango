@@ -3937,6 +3937,7 @@ okta-preview:
     token_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/token
     proxy:
         base_url: https://${connectionConfig.subdomain}.oktapreview.com
+    docs: https://docs.nango.dev/integrations/all/okta
     connection_config:
         subdomain:
             type: string
