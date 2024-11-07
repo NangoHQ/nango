@@ -78,6 +78,7 @@ export const ENVS = z.object({
 
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
+    MAILGUN_URL: z.string().url().optional(),
 
     // Postgres
     NANGO_DATABASE_URL: z.string().url().optional(),
