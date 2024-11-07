@@ -1,4 +1,4 @@
-import type { EncryptedRecordData, FormattedRecord, UnencryptedRecord, UnencryptedRecordData } from '../types';
+import type { EncryptedRecordData, FormattedRecord, UnencryptedRecordData } from '../types';
 import { Encryption } from '@nangohq/utils';
 import { envs } from '../env.js';
 
@@ -14,7 +14,7 @@ function isEncrypted(data: UnencryptedRecordData | EncryptedRecordData): data is
     return 'encryptedValue' in data;
 }
 
-export function decryptRecord(record: FormattedRecord): UnencryptedRecordData {
+export function decryptRecordData(record: FormattedRecord): UnencryptedRecordData {
     const encryptionManager = getEncryption();
     const { json } = record;
     if (isEncrypted(json)) {
@@ -23,17 +23,6 @@ export function decryptRecord(record: FormattedRecord): UnencryptedRecordData {
         return JSON.parse(decryptedString) as UnencryptedRecordData;
     }
     return json;
-}
-
-export function decryptRecords(records: FormattedRecord[]): UnencryptedRecord[] {
-    const decryptedRecords: UnencryptedRecord[] = [];
-    for (const record of records) {
-        decryptedRecords.push({
-            ...record,
-            record: decryptRecord(record)
-        });
-    }
-    return decryptedRecords;
 }
 
 export function encryptRecords(records: FormattedRecord[]): FormattedRecord[] {

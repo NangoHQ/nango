@@ -1,16 +1,23 @@
 import type { estypes } from '@elastic/elasticsearch';
 import { indexMessages } from '../es/schema.js';
 import { client } from '../es/client.js';
-import type { InsightsHistogramEntry } from '@nangohq/types';
+import type { ConcatOperationList, InsightsHistogramEntry, OperationList } from '@nangohq/types';
 
-export async function retrieveInsights(opts: { accountId: number; environmentId: number; type: string }) {
+export async function retrieveInsights(opts: { accountId: number; environmentId: number; type: OperationList['type'] | ConcatOperationList }) {
     const query: estypes.QueryDslQueryContainer = {
         bool: {
-            must: [{ term: { accountId: opts.accountId } }, { term: { environmentId: opts.environmentId } }, { term: { 'operation.type': opts.type } }],
+            must: [{ term: { accountId: opts.accountId } }, { term: { environmentId: opts.environmentId } }],
             must_not: { exists: { field: 'parentId' } },
             should: []
         }
     };
+
+    if (opts.type.includes(':')) {
+        const split = opts.type.split(':');
+        (query.bool!.must! as estypes.QueryDslQueryContainer[]).push({ term: { 'operation.type': split[0] } }, { term: { 'operation.action': split[1] } });
+    } else {
+        (query.bool!.must! as estypes.QueryDslQueryContainer[]).push({ term: { 'operation.type': opts.type } });
+    }
 
     const res = await client.search<
         never,

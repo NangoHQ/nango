@@ -30,7 +30,7 @@ export const forwardWebhook = async ({
     }
 
     const logCtx = await logContextGetter.create(
-        { operation: { type: 'webhook', action: 'outgoing' }, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() },
+        { operation: { type: 'webhook', action: 'forward' }, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() },
         {
             account,
             environment,
@@ -60,7 +60,7 @@ export const forwardWebhook = async ({
             incomingHeaders: webhookOriginalHeaders
         });
 
-        result ? await logCtx.success() : await logCtx.failed();
+        result.isOk() ? await logCtx.success() : await logCtx.failed();
 
         return;
     }
@@ -79,7 +79,7 @@ export const forwardWebhook = async ({
             incomingHeaders: webhookOriginalHeaders
         });
 
-        if (!result) {
+        if (result.isErr()) {
             success = false;
         }
     }

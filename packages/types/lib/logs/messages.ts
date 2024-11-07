@@ -53,7 +53,7 @@ export interface OperationAdmin {
 }
 export interface OperationWebhook {
     type: 'webhook';
-    action: 'incoming' | 'outgoing';
+    action: 'incoming' | 'forward';
 }
 export interface OperationDeploy {
     type: 'deploy';
