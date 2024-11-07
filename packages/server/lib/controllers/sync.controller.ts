@@ -523,6 +523,7 @@ class SyncController {
                 provider_config_key as string,
                 syncNames,
                 orchestrator,
+                recordsService,
                 connection_id as string,
                 false,
                 connection

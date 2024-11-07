@@ -311,6 +311,7 @@ export class SyncManagerService {
         providerConfigKey: string,
         syncNames: string[],
         orchestrator: Orchestrator,
+        recordsService: RecordsServiceInterface,
         connectionId?: string,
         includeJobStatus = false,
         optionalConnection?: Connection | null
@@ -333,7 +334,7 @@ export class SyncManagerService {
                     continue;
                 }
 
-                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator });
+                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator, recordsService });
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -348,7 +349,7 @@ export class SyncManagerService {
             }
 
             for (const sync of syncs) {
-                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator });
+                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator, recordsService });
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -417,13 +418,15 @@ export class SyncManagerService {
         environmentId,
         providerConfigKey,
         includeJobStatus,
-        orchestrator
+        orchestrator,
+        recordsService
     }: {
         sync: Sync;
         environmentId: number;
         providerConfigKey: string;
         includeJobStatus: boolean;
         orchestrator: Orchestrator;
+        recordsService: RecordsServiceInterface;
     }): Promise<ReportedSyncJobStatus> {
         const latestJob = await getLatestSyncJob(sync.id);
         const schedules = await orchestrator.searchSchedules([{ syncId: sync.id, environmentId }]);
@@ -432,13 +435,27 @@ export class SyncManagerService {
         }
         const schedule = schedules.value.get(sync.id);
         let frequency = sync.frequency;
+        const syncConfig = await getSyncConfigByParams(environmentId, sync.name, providerConfigKey);
         if (!frequency) {
-            const syncConfig = await getSyncConfigByParams(environmentId, sync.name, providerConfigKey);
             frequency = syncConfig?.runs || null;
         }
         if (!schedule) {
             throw new Error(`Schedule for sync ${sync.id} and environment ${environmentId} not found`);
         }
+
+        const countRes = await recordsService.getRecordCountsByModel({ connectionId: sync.nango_connection_id, environmentId });
+        if (countRes.isErr()) {
+            logger.error(`Failed to get record count for sync ${sync.id} in environment ${environmentId}: ${stringifyError(countRes.error)}`);
+        }
+        const recordCount: Record<string, number> =
+            syncConfig?.models.reduce(
+                (acc, model) => {
+                    acc[model] = countRes.isOk() ? countRes.value[model]?.count || 0 : 0;
+                    return acc;
+                },
+                {} as Record<string, number>
+            ) || {};
+
         return {
             id: sync.id,
             type: latestJob?.type === SyncType.INCREMENTAL ? latestJob.type : 'INITIAL',
@@ -449,6 +466,7 @@ export class SyncManagerService {
             frequency,
             latestResult: latestJob?.result,
             latestExecutionStatus: latestJob?.status,
+            recordCount,
             ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})
         } as ReportedSyncJobStatus;
     }
