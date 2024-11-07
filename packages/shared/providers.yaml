@@ -3931,22 +3931,12 @@ okta:
             suffix: .okta.com
 
 okta-preview:
+    alias: okta
     display_name: Okta (Preview)
-    auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/authorize
     token_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/token
-    authorization_params:
-        response_type: code
-        response_mode: query
-    token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.subdomain}.oktapreview.com
-        retry:
-            at: 'x-rate-limit-reset'
-    docs: https://docs.nango.dev/integrations/all/okta
     connection_config:
         subdomain:
             type: string
