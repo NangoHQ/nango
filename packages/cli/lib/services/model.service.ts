@@ -6,11 +6,11 @@ import type { JSONSchema7 } from 'json-schema';
 import tsj from 'ts-json-schema-generator';
 import type { NangoModel, NangoModelField, NangoYamlParsed } from '@nangohq/types';
 import type { ServiceResponse } from '@nangohq/shared';
-import { NANGO_VERSION } from '@nangohq/shared';
 import { printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
 import { parse } from './config.service.js';
 import { shouldQuote } from '@nangohq/nango-yaml';
+import { NANGO_VERSION } from '../version.js';
 
 export type ModelsMap = Map<string, Record<string, any>>;
 

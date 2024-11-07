@@ -21,7 +21,7 @@ function bump_other_pkg {
     folder=$1
     package=$2
     pushd "$GIT_ROOT_DIR/packages/$folder"
-    npm install @nangohq/$package@$VERSION
+    npm install -E @nangohq/$package@$VERSION
     popd
 }
 
@@ -41,6 +41,8 @@ sed -E "s/NANGO_VERSION = '[0-9a-fA-F.-]+/NANGO_VERSION = '$VERSION/" ./shared/l
 mv tmp ./shared/lib/version.ts
 sed -E "s/NANGO_VERSION = '[0-9a-fA-F.-]+/NANGO_VERSION = '$VERSION/" ./node-client/lib/version.ts >tmp
 mv tmp ./node-client/lib/version.ts
+sed -E "s/NANGO_VERSION = '[0-9a-fA-F.-]+/NANGO_VERSION = '$VERSION/" ./cli/lib/version.ts >tmp
+mv tmp ./cli/lib/version.ts
 popd
 
 # build codebase
