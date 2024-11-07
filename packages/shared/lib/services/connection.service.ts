@@ -509,7 +509,7 @@ class ConnectionService {
             })
             .returning('*');
 
-        void analytics.track(AnalyticsTypes.WSSE_CONNECTION_INSERTED, account.id, { provider: config.provider });
+        void analytics.track(AnalyticsTypes.SIGNATURE_BASED_CONNECTION_INSERTED, account.id, { provider: config.provider });
 
         return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
     }

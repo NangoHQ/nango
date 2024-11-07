@@ -88,12 +88,12 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
         logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'wsse' },
+                meta: { authType: 'signaturebased' },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
         );
-        void analytics.track(AnalyticsTypes.PRE_WSSE_AUTH, account.id);
+        void analytics.track(AnalyticsTypes.PRE_SIGNATURE_BASED_AUTH, account.id);
 
         await hmacCheck({
             environment,
@@ -139,7 +139,7 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
             await logCtx.error('Error during SignatureBased credentials creation', { error, provider: config.provider });
             await logCtx.failed();
 
-            errorManager.errRes(res, 'wsse_error');
+            errorManager.errRes(res, 'signaturebased_error');
 
             return;
         }

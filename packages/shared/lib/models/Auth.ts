@@ -172,8 +172,8 @@ export interface BillCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
-export interface WsseCredentials {
-    type: 'WSSE';
+export interface SignatureBasedCredentials {
+    type: 'SIGNATURE_BASED';
     username: string;
     password: string;
     token?: string;

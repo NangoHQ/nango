@@ -1,8 +1,16 @@
 import type { ParamsSerializerOptions } from 'axios';
 import type { HTTP_VERB } from './Generic.js';
-import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials, TbaCredentials, TableauCredentials, JwtCredentials } from './Auth.js';
+import type {
+    BasicApiCredentials,
+    ApiKeyCredentials,
+    AppCredentials,
+    TbaCredentials,
+    TableauCredentials,
+    JwtCredentials,
+    SignatureBasedCredentials
+} from './Auth.js';
 import type { Connection } from './Connection.js';
-import type { Provider, TwoStepCredentials, SignatureBasedCredentials } from '@nangohq/types';
+import type { Provider, TwoStepCredentials } from '@nangohq/types';
 
 export interface File {
     fieldname: string;
