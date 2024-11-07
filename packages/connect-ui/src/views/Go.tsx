@@ -63,7 +63,7 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
         organization_id: z.string().min(1),
         dev_key: z.string().min(1)
     }),
-    WSSE: z.object({
+    SIGNATURE_BASED: z.object({
         username: z.string().min(1),
         password: z.string().min(1),
         type: z.string().min(1)

@@ -760,4 +760,25 @@ describe('Proxy service configure', () => {
         expect(error).toBeNull();
         expect(logs.length).toBe(4);
     });
+
+    it('Should correctly insert headers with dynamic values for signature based', () => {
+        const config = {
+            provider: {
+                auth_mode: 'SIGNATURE_BASED',
+                proxy: {
+                    headers: {
+                        'X-WSSE': '${accessToken}'
+                    }
+                }
+            },
+            token: 'some-oauth-access-token'
+        };
+
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+
+        expect(result).toEqual({
+            Authorization: 'Bearer some-oauth-access-token',
+            'X-WSSE': 'some-oauth-access-token'
+        });
+    });
 });

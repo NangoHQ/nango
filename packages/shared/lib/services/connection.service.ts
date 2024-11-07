@@ -31,8 +31,8 @@ import type {
     DBEndUser,
     TwoStepCredentials,
     ProviderTwoStep,
-    ProviderWsse,
-    WsseCredentials
+    ProviderSignatureBased,
+    SignatureBasedCredentials
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -470,7 +470,7 @@ class ConnectionService {
         return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
     }
 
-    public async upsertWsseConnection({
+    public async upsertSignatureBasedConnection({
         connectionId,
         providerConfigKey,
         credentials,
@@ -482,7 +482,7 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials: WsseCredentials;
+        credentials: SignatureBasedCredentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -746,7 +746,7 @@ class ConnectionService {
                 | JwtCredentials
                 | TwoStepCredentials
                 | BillCredentials
-                | WsseCredentials;
+                | SignatureBasedCredentials;
             if (credentials.type && credentials.type === 'OAUTH2') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
@@ -783,7 +783,7 @@ class ConnectionService {
                 connection.credentials = creds;
             }
 
-            if (credentials.type && credentials.type === 'WSSE') {
+            if (credentials.type && credentials.type === 'SIGNATURE_BASED') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
@@ -1222,7 +1222,7 @@ class ConnectionService {
             connection?.credentials?.type === 'JWT' ||
             connection?.credentials?.type === 'BILL' ||
             connection?.credentials?.type === 'TWO_STEP' ||
-            connection?.credentials?.type === 'WSSE'
+            connection?.credentials?.type === 'SIGNATURE_BASED'
         ) {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connectionId: connection.connection_id,
@@ -1523,7 +1523,7 @@ class ConnectionService {
                 | JwtCredentials
                 | TwoStepCredentials
                 | BillCredentials
-                | WsseCredentials;
+                | SignatureBasedCredentials;
         }>
     > {
         const providerConfigKey = providerConfig.unique_key;
@@ -1540,7 +1540,7 @@ class ConnectionService {
                 | JwtCredentials
                 | TwoStepCredentials
                 | BillCredentials
-                | WsseCredentials
+                | SignatureBasedCredentials
                 | null;
         }> => {
             const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
@@ -1570,7 +1570,7 @@ class ConnectionService {
                           | JwtCredentials
                           | TwoStepCredentials
                           | BillCredentials
-                          | WsseCredentials)
+                          | SignatureBasedCredentials)
             };
         };
 
@@ -2102,7 +2102,34 @@ class ConnectionService {
         }
     }
 
-    public getWsseCredentials(provider: ProviderWsse, username: string, password: string): ServiceResponse<WsseCredentials> {
+    public getSignatureBasedCredentials(provider: ProviderSignatureBased, username: string, password: string): ServiceResponse<SignatureBasedCredentials> {
+        try {
+            let token: string;
+
+            if (provider.signature_protocol === 'WSSE') {
+                token = this.generateWsseCredentials(username, password);
+            } else {
+                throw new NangoError('unsupported_signature_protocol', { message: 'Signature protocol not supported' });
+            }
+
+            const expiresAt = new Date(Date.now() + provider.token.expires_in_ms);
+
+            const credentials: SignatureBasedCredentials = {
+                type: 'SIGNATURE_BASED',
+                username,
+                password,
+                token,
+                expires_at: expiresAt
+            };
+
+            return { success: true, error: null, response: credentials };
+        } catch (err) {
+            const error = new NangoError('signature_based_token_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
+            return { success: false, error, response: null };
+        }
+    }
+
+    private generateWsseCredentials(username: string, password: string): string {
         try {
             const nonce = crypto.randomBytes(16).toString('hex');
 
@@ -2117,20 +2144,9 @@ class ConnectionService {
 
             const token = `UsernameToken Username="${username}", PasswordDigest="${passwordDigest}", Nonce="${nonce}", Created="${timestamp}"`;
 
-            const expiresAt = new Date(Date.now() + provider.token.expires_in_ms);
-
-            const credentials: WsseCredentials = {
-                type: 'WSSE',
-                username,
-                password,
-                token,
-                expires_at: expiresAt
-            };
-
-            return { success: true, error: null, response: credentials };
+            return token;
         } catch (err) {
-            const error = new NangoError('wsse_token_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
-            return { success: false, error, response: null };
+            throw new NangoError('wsse_token_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
         }
     }
 
@@ -2237,7 +2253,7 @@ class ConnectionService {
             | JwtCredentials
             | BillCredentials
             | TwoStepCredentials
-            | WsseCredentials
+            | SignatureBasedCredentials
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
@@ -2319,9 +2335,9 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (provider.auth_mode === 'WSSE') {
-            const { username, password } = connection.credentials as WsseCredentials;
-            const { success, error, response: credentials } = this.getWsseCredentials(provider as ProviderWsse, username, password);
+        } else if (provider.auth_mode === 'SIGNATURE_BASED') {
+            const { username, password } = connection.credentials as SignatureBasedCredentials;
+            const { success, error, response: credentials } = this.getSignatureBasedCredentials(provider as ProviderSignatureBased, username, password);
 
             if (!success || !credentials) {
                 return { success, error, response: null };

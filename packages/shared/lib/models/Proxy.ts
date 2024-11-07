@@ -2,7 +2,7 @@ import type { ParamsSerializerOptions } from 'axios';
 import type { HTTP_VERB } from './Generic.js';
 import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials, TbaCredentials, TableauCredentials, JwtCredentials } from './Auth.js';
 import type { Connection } from './Connection.js';
-import type { Provider, TwoStepCredentials, WsseCredentials } from '@nangohq/types';
+import type { Provider, TwoStepCredentials, SignatureBasedCredentials } from '@nangohq/types';
 
 export interface File {
     fieldname: string;
@@ -51,7 +51,7 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
         | TableauCredentials
         | JwtCredentials
         | TwoStepCredentials
-        | WsseCredentials;
+        | SignatureBasedCredentials;
     provider: Provider;
     connection: Connection;
 }

@@ -36,7 +36,7 @@ export interface ConnectionConfig {
         | JwtCredentials
         | TwoStepCredentials
         | OAuth2ClientCredentials
-        | WsseCredentials;
+        | SignatureBasedCredentials;
 }
 
 export interface OAuthCredentialsOverride {
@@ -100,8 +100,8 @@ export interface TwoStepCredentials {
     type: 'TWO_STEP';
 }
 
-export interface WsseCredentials {
-    type: 'WSSE';
+export interface SignatureBasedCredentials {
+    type: 'SIGNATURE_BASED';
     username: string;
     password: string;
 }

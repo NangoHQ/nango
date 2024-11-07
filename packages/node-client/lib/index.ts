@@ -24,7 +24,7 @@ import type {
     JwtCredentials,
     TwoStepCredentials,
     GetPublicConnections,
-    WsseCredentials
+    SignatureBasedCredentials
 } from '@nangohq/types';
 import type {
     Connection,
@@ -342,7 +342,7 @@ export class Nango {
         | JwtCredentials
         | BillCredentials
         | TwoStepCredentials
-        | WsseCredentials
+        | SignatureBasedCredentials
     > {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 

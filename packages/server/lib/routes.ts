@@ -56,7 +56,7 @@ import { postPublicTableauAuthorization } from './controllers/auth/postTableau.j
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
 import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
-import { postPublicWsseAuthorization } from './controllers/auth/postWsse.js';
+import { postPublicSignatureBasedAuthorization } from './controllers/auth/postSignatureBased.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -182,7 +182,7 @@ publicAPI.route('/auth/tableau/:providerConfigKey').post(connectSessionOrPublicA
 publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTwoStepAuthorization);
 publicAPI.route('/auth/jwt/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicJwtAuthorization);
 publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBillAuthorization);
-publicAPI.route('/auth/wsse/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicWsseAuthorization);
+publicAPI.route('/auth/signature-based/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureBasedAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
 // @deprecated

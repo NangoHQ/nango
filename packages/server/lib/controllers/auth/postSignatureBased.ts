@@ -13,7 +13,7 @@ import {
     LogActionEnum,
     getProvider
 } from '@nangohq/shared';
-import type { PostPublicWsseAuthorization, ProviderWsse } from '@nangohq/types';
+import type { PostPublicSignatureBasedAuthorization, ProviderSignatureBased } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -51,7 +51,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicWsseAuthorization = asyncWrapper<PostPublicWsseAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSignatureBasedAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -77,9 +77,9 @@ export const postPublicWsseAuthorization = asyncWrapper<PostPublicWsseAuthorizat
     }
 
     const { account, environment, authType } = res.locals;
-    const { username, password }: PostPublicWsseAuthorization['Body'] = val.data;
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicWsseAuthorization['Querystring'] = queryStringVal.data;
-    const { providerConfigKey }: PostPublicWsseAuthorization['Params'] = paramsVal.data;
+    const { username, password }: PostPublicSignatureBasedAuthorization['Body'] = val.data;
+    const { connection_id: receivedConnectionId, params, hmac }: PostPublicSignatureBasedAuthorization['Querystring'] = queryStringVal.data;
+    const { providerConfigKey }: PostPublicSignatureBasedAuthorization['Params'] = paramsVal.data;
     const connectionConfig = params ? getConnectionConfig(params) : {};
 
     let logCtx: LogContext | undefined;
@@ -120,8 +120,8 @@ export const postPublicWsseAuthorization = asyncWrapper<PostPublicWsseAuthorizat
             return;
         }
 
-        if (provider.auth_mode !== 'WSSE') {
-            await logCtx.error('Provider does not support WSSE auth', { provider: config.provider });
+        if (provider.auth_mode !== 'SIGNATURE_BASED') {
+            await logCtx.error('Provider does not support SIGNATURE_BASED auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -129,10 +129,14 @@ export const postPublicWsseAuthorization = asyncWrapper<PostPublicWsseAuthorizat
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const { success, error, response: credentials } = connectionService.getWsseCredentials(provider as ProviderWsse, username, password);
+        const {
+            success,
+            error,
+            response: credentials
+        } = connectionService.getSignatureBasedCredentials(provider as ProviderSignatureBased, username, password);
 
         if (!success || !credentials) {
-            await logCtx.error('Error during Wsse credentials creation', { error, provider: config.provider });
+            await logCtx.error('Error during SignatureBased credentials creation', { error, provider: config.provider });
             await logCtx.failed();
 
             errorManager.errRes(res, 'wsse_error');
@@ -161,7 +165,7 @@ export const postPublicWsseAuthorization = asyncWrapper<PostPublicWsseAuthorizat
             return;
         }
 
-        const [updatedConnection] = await connectionService.upsertWsseConnection({
+        const [updatedConnection] = await connectionService.upsertSignatureBasedConnection({
             connectionId,
             providerConfigKey,
             credentials,
@@ -184,7 +188,7 @@ export const postPublicWsseAuthorization = asyncWrapper<PostPublicWsseAuthorizat
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-        await logCtx.info('Wsse connection creation was successful');
+        await logCtx.info('SignatureBased connection creation was successful');
         await logCtx.success();
 
         void connectionCreatedHook(
@@ -192,7 +196,7 @@ export const postPublicWsseAuthorization = asyncWrapper<PostPublicWsseAuthorizat
                 connection: updatedConnection.connection,
                 environment,
                 account,
-                auth_mode: 'WSSE',
+                auth_mode: 'SIGNATURE_BASED',
                 operation: updatedConnection.operation
             },
             config.provider,
@@ -210,10 +214,10 @@ export const postPublicWsseAuthorization = asyncWrapper<PostPublicWsseAuthorizat
                 connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
                 environment,
                 account,
-                auth_mode: 'WSSE',
+                auth_mode: 'SIGNATURE_BASED',
                 error: {
                     type: 'unknown',
-                    description: `Error during Wsse create: ${prettyError}`
+                    description: `Error during SignatureBased create: ${prettyError}`
                 },
                 operation: 'unknown'
             },
@@ -221,7 +225,7 @@ export const postPublicWsseAuthorization = asyncWrapper<PostPublicWsseAuthorizat
             logCtx
         );
         if (logCtx) {
-            await logCtx.error('Error during Wsse credentials creation', { error: err });
+            await logCtx.error('Error during SignatureBased credentials creation', { error: err });
             await logCtx.failed();
         }
 

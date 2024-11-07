@@ -20,7 +20,7 @@ import type {
     JwtCredentials,
     OAuthCredentialsOverride,
     BillCredentials,
-    WsseCredentials
+    SignatureBasedCredentials
 } from './types';
 import { AuthorizationStatus, WSMessageType } from './types.js';
 
@@ -295,18 +295,18 @@ export default class Nango {
             | OAuth2ClientCredentials
             | BillCredentials
             | TwoStepCredentials
-            | WsseCredentials
+            | SignatureBasedCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
 
-        if ('type' in credentials && 'username' in credentials && 'password' in credentials && credentials.type === 'WSSE') {
-            const wsseCredentials: WsseCredentials = {
+        if ('type' in credentials && 'username' in credentials && 'password' in credentials && credentials.type === 'SIGNATURE_BASED') {
+            const signatureBasedCredentials: SignatureBasedCredentials = {
                 type: credentials.type,
                 username: credentials.username,
                 password: credentials.password
             };
 
-            return { params: wsseCredentials } as unknown as ConnectionConfig;
+            return { params: signatureBasedCredentials } as unknown as ConnectionConfig;
         }
 
         if ('username' in credentials) {
@@ -426,7 +426,7 @@ export default class Nango {
             | BillCredentials
             | OAuth2ClientCredentials
             | TwoStepCredentials
-            | WsseCredentials
+            | SignatureBasedCredentials
             | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
@@ -472,10 +472,11 @@ export default class Nango {
             });
         }
 
-        if ('type' in credentials && credentials['type'] === 'WSSE' && 'username' in credentials && 'password' in credentials) {
+        if ('type' in credentials && credentials['type'] === 'SIGNATURE_BASED' && 'username' in credentials && 'password' in credentials) {
             return await this.triggerAuth({
-                authUrl: this.hostBaseUrl + `/auth/wsse/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
-                credentials: credentials as unknown as WsseCredentials
+                authUrl:
+                    this.hostBaseUrl + `/auth/signature-based/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as SignatureBasedCredentials
             });
         }
 

@@ -498,6 +498,16 @@ export class NangoError extends Error {
                 this.message = `Error fetching Two Step credentials`;
                 break;
 
+            case 'signature_based_token_generation_error':
+                this.status = 400;
+                this.message = `Error generating signature based token`;
+                break;
+
+            case 'unsupported_signature_protocol':
+                this.status = 400;
+                this.message = `Signature protocol not currently supported`;
+                break;
+
             case 'invalid_two_step_credentials':
                 this.status = 400;
                 this.message = `Invalid credentials provided to create a Two Step connection`;

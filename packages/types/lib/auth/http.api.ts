@@ -171,7 +171,7 @@ export type PostPublicTwoStepAuthorization = Endpoint<{
     };
 }>;
 
-export type PostPublicWsseAuthorization = Endpoint<{
+export type PostPublicSignatureBasedAuthorization = Endpoint<{
     Method: 'POST';
     Body: {
         username: string;
@@ -185,7 +185,7 @@ export type PostPublicWsseAuthorization = Endpoint<{
     Params: {
         providerConfigKey: string;
     };
-    Path: '/auth/wsse';
+    Path: '/auth/signature-based';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>

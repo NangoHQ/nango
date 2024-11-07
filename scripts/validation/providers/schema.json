@@ -39,7 +39,8 @@
                         "TABLEAU",
                         "JWT",
                         "BILL",
-                        "TWO_STEP"
+                        "TWO_STEP",
+                        "SIGNATURE_BASED"
                     ]
                 },
                 "authorization_method": {
@@ -291,6 +292,10 @@
                 "signature_method": {
                     "type": "string",
                     "enum": ["HMAC-SHA1", "PLAINTEXT"]
+                },
+                "signature_protocol": {
+                    "type": "string",
+                    "enum": ["WSSE"]
                 },
                 "token_expiration_buffer": {
                     "type": "number"

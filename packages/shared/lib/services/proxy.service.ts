@@ -123,6 +123,12 @@ class ProxyService {
                     token = credentials.token;
                 }
                 break;
+            case 'SIGNATURE_BASED':
+                {
+                    const credentials = connection.credentials;
+                    token = credentials.token;
+                }
+                break;
         }
 
         logs.push({
@@ -488,6 +494,7 @@ class ProxyService {
                     let tokenPair;
                     switch (config.provider.auth_mode) {
                         case 'OAUTH2':
+                        case 'SIGNATURE_BASED':
                             if (value.includes('connectionConfig')) {
                                 value = value.replace(/connectionConfig\./g, '');
                                 tokenPair = config.connection.connection_config;
