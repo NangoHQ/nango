@@ -137,7 +137,11 @@ integrations:
         );
         expect(res).toMatchObject([
             {
-                msg: 'endpoint must be a URL (or an array of URLs) with an HTTP verb, i.e: "GET /tickets/ticket"',
+                msg: `endpoint must be a URL (or an array of URLs) with an HTTP verb, i.e:
+- endpoint: GET /tickets
+- endpoint:
+    method: GET
+    path: /tickets`,
                 path: '/integrations/test/syncs/foobar/endpoint'
             }
         ]);
