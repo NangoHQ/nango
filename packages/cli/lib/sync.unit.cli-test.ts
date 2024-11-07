@@ -254,11 +254,12 @@ describe('generate function tests', () => {
                 }
             }
         };
+
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(join(dir, 'nango.yaml'), yamlData, 'utf8');
 
         const acc: string[] = [];
-        consoleMock.mockImplementation((m) => acc.push(stripAnsi(m)));
+        consoleMock.mockImplementation((m) => acc.push(typeof m === 'string' ? stripAnsi(m) : m));
         generate({ debug: false, fullPath: dir });
 
         expect(acc).toStrictEqual([
@@ -332,6 +333,7 @@ describe('generate function tests', () => {
                 }
             }
         };
+
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(join(dir, 'nango.yaml'), yamlData, 'utf8');
         generate({ debug: false, fullPath: dir });
@@ -559,15 +561,6 @@ describe('generate function tests', () => {
             debug: false
         });
         expect(result).toBe(false);
-    });
-});
-
-describe('migration', () => {
-    // Not the best but until we have a logger it will work
-    const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
-
-    afterEach(() => {
-        consoleMock.mockReset();
     });
 
     it('should be able to migrate-endpoints', async () => {
