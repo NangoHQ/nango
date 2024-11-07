@@ -133,6 +133,7 @@ aircall:
     token_params:
         grant_type: authorization_code
     docs: https://docs.nango.dev/integrations/all/aircall
+    docs_connect: https://docs.nango.dev/integrations/all/aircall/connect
 
 aircall-basic:
     display_name: Aircall (basic auth)
@@ -1037,6 +1038,7 @@ calendly:
         - owner
     post_connection_script: calendlyPostConnection
     docs: https://docs.nango.dev/integrations/all/calendly
+    docs_connect: https://docs.nango.dev/integrations/all/calendly/connect
 
 canny:
     display_name: Canny
