@@ -61,7 +61,8 @@ export const flowConfig = z
                     z
                         .object({
                             method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
-                            path: z.string()
+                            path: z.string(),
+                            entity: z.string().min(1).max(64).optional()
                         })
                         .strict(),
                     z

@@ -9,7 +9,7 @@ import { compileAllFiles, compileSingleFile, getFileToCompile } from './services
 import parserService from './services/parser.service.js';
 import { copyDirectoryAndContents, removeVersion, fixturesPath, getTestDirectory } from './tests/helpers.js';
 import { parse } from './services/config.service.js';
-import { directoryMigration } from './services/migration.service.js';
+import { directoryMigration, endpointMigration } from './services/migration.service.js';
 
 describe('generate function tests', () => {
     // Not the best but until we have a logger it will work
@@ -559,5 +559,28 @@ describe('generate function tests', () => {
             debug: false
         });
         expect(result).toBe(false);
+    });
+});
+
+describe('migration', () => {
+    // Not the best but until we have a logger it will work
+    const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    afterEach(() => {
+        consoleMock.mockReset();
+    });
+
+    it('should be able to migrate-endpoints', async () => {
+        const dir = await getTestDirectory('old-endpoint');
+        init({ absolutePath: dir });
+
+        const dest = join(dir, 'nango.yaml');
+        await fs.promises.copyFile(join(fixturesPath, 'nango-yaml/v2/nango.yaml'), dest);
+
+        endpointMigration(dir);
+
+        const content = await fs.promises.readFile(dest, 'utf8');
+
+        expect(content).toMatchSnapshot();
     });
 });

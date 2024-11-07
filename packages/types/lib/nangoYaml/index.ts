@@ -27,6 +27,11 @@ export interface NangoYamlV2 {
     integrations: Record<string, NangoYamlV2Integration>;
     models: NangoYamlModel;
 }
+export interface NangoYamlV2Endpoint {
+    method?: HTTP_METHOD;
+    path: string;
+    entity?: string | undefined;
+}
 export interface NangoYamlV2Integration {
     provider?: string;
     syncs?: Record<string, NangoYamlV2IntegrationSync>;
@@ -34,7 +39,7 @@ export interface NangoYamlV2Integration {
     'post-connection-scripts'?: string[];
 }
 export interface NangoYamlV2IntegrationSync {
-    endpoint: string | string[] | NangoSyncEndpointV2 | NangoSyncEndpointV2[];
+    endpoint: string | string[] | NangoYamlV2Endpoint | NangoYamlV2Endpoint[];
     output: string | string[];
     description?: string;
     sync_type?: SyncTypeLiteral;
@@ -47,7 +52,7 @@ export interface NangoYamlV2IntegrationSync {
     version?: string;
 }
 export interface NangoYamlV2IntegrationAction {
-    endpoint: string;
+    endpoint: string | NangoYamlV2Endpoint;
     output?: string | string[];
     description?: string;
     scopes?: string | string[];
@@ -136,4 +141,5 @@ export type NangoSyncEndpointOld = {
 export interface NangoSyncEndpointV2 {
     method: HTTP_METHOD;
     path: string;
+    entity?: string | undefined;
 }

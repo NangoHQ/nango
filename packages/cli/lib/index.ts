@@ -16,7 +16,7 @@ import deployService from './services/deploy.service.js';
 import { compileAllFiles } from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
 import { DryRunService } from './services/dryrun.service.js';
-import { v1toV2Migration, directoryMigration } from './services/migration.service.js';
+import { v1toV2Migration, directoryMigration, endpointMigration } from './services/migration.service.js';
 import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug, isCI } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 import { parse } from './services/config.service.js';
@@ -192,6 +192,13 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts();
         await directoryMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION), debug);
+    });
+
+program
+    .command('migrate-endpoints')
+    .description('Migrate the endpoint format')
+    .action(function (this: Command) {
+        endpointMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
     });
 
 // Hidden commands //
