@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import type { Endpoint } from '../api';
+import type { PickFromUnion } from '../utils';
 import type { MessageRow, MessageState, OperationList, OperationRow } from './messages';
 
 type Concat<T extends OperationList> = T extends { action: string } ? `${T['type']}:${T['action']}` : never;
@@ -81,7 +82,7 @@ export type PostInsights = Endpoint<{
     Path: '/api/v1/logs/insights';
     Querystring: { env: string };
     Body: {
-        type: 'action' | 'sync' | 'proxy' | 'webhook_external';
+        type: PickFromUnion<ConcatOperationListWithGroup, 'action' | 'sync' | 'proxy' | 'webhook:incoming'>;
     };
     Success: {
         data: {

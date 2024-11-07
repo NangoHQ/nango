@@ -5344,6 +5344,8 @@ tiktok-ads:
     token_url: https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/
     proxy:
         base_url: https://business-api.tiktok.com/open_api/v1.3/
+        headers:
+            Access-Token: ${accessToken}
     token_params:
         grant_type: authorization_code
     authorization_url_replacements:
