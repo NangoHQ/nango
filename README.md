@@ -27,11 +27,11 @@ Ship integrations fast. Maintain full control.
 
 Nango is a single API to interact with all other external APIs. It should be the only API you need to integrate to your app.
 
-<img src="/docs-v2/images/overview.svg">
+<img src="/docs-v2/images/overview.png">
 
 # 📺 Demo video
 
-[![what-is-nango](/docs-v2/images/video-thumbnail.svg)](https://www.youtube.com/watch?v=pvUpbi04IjQ)
+[![what-is-nango](/docs-v2/images/video-thumbnail.png)](https://www.youtube.com/watch?v=pvUpbi04IjQ)
 
 # 👩‍💻 Sample code
 
