@@ -200,12 +200,14 @@ export async function upsert({
     connectionId,
     environmentId,
     model,
+    syncJobId,
     softDelete = false
 }: {
     records: FormattedRecord[];
     connectionId: number;
     environmentId: number;
     model: string;
+    syncJobId: number;
     softDelete?: boolean;
 }): Promise<Result<UpsertSummary>> {
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
@@ -219,6 +221,8 @@ export async function upsert({
     const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys };
     try {
         await db.transaction(async (trx) => {
+            // Lock on sync job level to prevent concurrent upserts
+            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_upsert`, [syncJobId]);
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
                 const encryptedRecords = encryptRecords(chunk);
@@ -250,15 +254,13 @@ export async function upsert({
                                 connection_id: connectionId,
                                 model
                             })
-                            .whereIn('external_id', externalIds)
-                            .forUpdate();
+                            .whereIn('external_id', externalIds);
                     })
                     .with('upsert', (qb) => {
                         qb.insert(encryptedRecords)
                             .into(RECORDS_TABLE)
                             .onConflict(['connection_id', 'external_id', 'model'])
                             .merge()
-                            .whereIn(`${RECORDS_TABLE}.external_id`, trx.select('external_id').from('existing'))
                             .returning(['external_id', 'data_hash', 'deleted_at']);
                     })
                     .select<{ external_id: string; status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged' }[]>(
@@ -337,11 +339,13 @@ export async function upsert({
 export async function update({
     records,
     connectionId,
-    model
+    model,
+    syncJobId
 }: {
     records: FormattedRecord[];
     connectionId: number;
     model: string;
+    syncJobId: number;
 }): Promise<Result<UpsertSummary>> {
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
 
@@ -354,6 +358,8 @@ export async function update({
     try {
         const updatedKeys: string[] = [];
         await db.transaction(async (trx) => {
+            // Lock on sync job level to prevent concurrent updates
+            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_update`, [syncJobId]);
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
 
