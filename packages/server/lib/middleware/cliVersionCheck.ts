@@ -51,8 +51,6 @@ export function cliMaxVersion() {
             return;
         }
 
-        console.log(match[1], semver.gt(match[1], NANGO_VERSION));
-
         if (semver.gt(match[1], NANGO_VERSION)) {
             res.status(400).send({
                 error: {
