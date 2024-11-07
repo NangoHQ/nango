@@ -5629,6 +5629,98 @@ integrations:
                     secondEmail: string | null
                     login: string
                     email: string
+    okta-preview:
+        syncs:
+            users:
+                description: Fetches lists users in your org
+                runs: every day
+                output: User
+                endpoint: GET /users
+                sync_type: incremental
+                scopes:
+                    - okta.users.read
+        actions:
+            create-user:
+                description: Creates a new user in your Okta org without credentials.
+                output: User
+                endpoint: POST /user
+                input: OktaCreateUser
+                scopes:
+                    - okta.users.manage
+            add-group:
+                description: Adds a new group with the OKTA_GROUP type to your org
+                output: Group
+                endpoint: POST /group
+                input: OktaAddGroup
+                scopes:
+                    - okta.groups.manage
+            add-user-group:
+                description: Assigns a user to a group with the OKTA_GROUP type
+                output: SuccessResponse
+                endpoint: PUT /user-group
+                input: OktaAssignRemoveUserGroup
+                scopes:
+                    - okta.groups.manage
+            remove-user-group:
+                description: Unassigns a user from a group with the OKTA_GROUP type
+                output: SuccessResponse
+                endpoint: DELETE /user-group
+                input: OktaAssignRemoveUserGroup
+                scopes:
+                    - okta.groups.manage
+        models:
+            ActionResponseError:
+                message: string
+            OktaAddGroup:
+                description?: string | undefined
+                name: string
+            OktaUserGroupProfile:
+                description: string | null
+                name: string
+            OktaActiveDirectoryGroupProfile:
+                description: string
+                dn: string
+                externalId: string
+                name: string
+                samAccountName: string
+                windowsDomainQualifiedName: string
+            Group:
+                id: string
+                created: string
+                lastMembershipUpdated: string
+                lastUpdated: string
+                objectClass: string[]
+                type: APP_GROUP | BUILT_IN | OKTA_GROUP
+                profile: OktaUserGroupProfile | OktaActiveDirectoryGroupProfile
+            OktaAssignRemoveUserGroup:
+                groupId: string
+                userId: string
+            SuccessResponse:
+                success: boolean
+            OktaCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                login: string
+                mobilePhone?: string | undefined | null
+            User:
+                id: string
+                status: string
+                created: string
+                activated: string
+                statusChanged: string
+                lastLogin: string | null
+                lastUpdated: string
+                passwordChanged: string | null
+                type:
+                    id: string
+                profile:
+                    firstName: string | null
+                    lastName: string | null
+                    mobilePhone: string | null
+                    secondEmail: string | null
+                    login: string
+                    email: string
     outlook:
         syncs:
             emails:
