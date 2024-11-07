@@ -50,9 +50,9 @@ export const Homepage: React.FC = () => {
             <div className="grid gap-8 grid-cols-[repeat(auto-fill,minmax(300px,470px))] mt-8">
                 {globalEnv.features.scripts && (
                     <InsightChart
-                        title="Sync"
+                        title="Sync Executions"
                         type="sync"
-                        desc="Sync executions"
+                        desc=""
                         help={
                             <div>
                                 No sync executions in the last 14 days.{' '}
@@ -65,9 +65,9 @@ export const Homepage: React.FC = () => {
                 )}
                 {globalEnv.features.scripts && (
                     <InsightChart
-                        title="Action"
+                        title="Action Executions"
                         type="action"
-                        desc="Action executions"
+                        desc=""
                         help={
                             <div>
                                 No action executions in the last 14 days.{' '}
@@ -79,12 +79,12 @@ export const Homepage: React.FC = () => {
                     />
                 )}
                 <InsightChart
-                    title="Proxy"
+                    title="Proxy Requests"
                     type="proxy"
-                    desc="Proxy requests"
+                    desc=""
                     help={
                         <div>
-                            No proxy calls in the last 14 days.{' '}
+                            No proxy requests sent in the last 14 days.{' '}
                             <Link to="https://docs.nango.dev/integrate/guides/proxy-requests-to-an-api" className="underline text-white">
                                 Learn more
                             </Link>
@@ -93,12 +93,12 @@ export const Homepage: React.FC = () => {
                 />
                 {globalEnv.features.scripts && (
                     <InsightChart
-                        title="Webhook"
-                        type="webhook_external"
-                        desc="External webhooks received"
+                        title="Webhook Executions"
+                        type="webhook:incoming"
+                        desc=""
                         help={
                             <div>
-                                No external webhooks received in the last 14 days.{' '}
+                                No webhook executions in the last 14 days.{' '}
                                 <Link to="https://docs.nango.dev/integrate/guides/receive-webhooks-from-an-api" className="underline text-white">
                                     Learn more
                                 </Link>
