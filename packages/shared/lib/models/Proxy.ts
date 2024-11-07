@@ -1,5 +1,5 @@
 import type { ParamsSerializerOptions } from 'axios';
-import type { HTTP_VERB } from './Generic.js';
+import type { HTTP_METHOD } from './Generic.js';
 import type {
     BasicApiCredentials,
     ApiKeyCredentials,
