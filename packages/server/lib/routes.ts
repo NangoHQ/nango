@@ -103,7 +103,7 @@ import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
-import { cliMinVersion } from './middleware/cliVersionCheck.js';
+import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 
 export const router = express.Router();
 
@@ -166,6 +166,7 @@ const publicAPICorsHandler = cors({
     origin: '*'
 });
 publicAPI.use(publicAPICorsHandler);
+publicAPI.use(cliMaxVersion());
 publicAPI.options('*', publicAPICorsHandler); // Pre-flight
 
 // API routes (Public key auth).

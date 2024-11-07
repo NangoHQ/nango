@@ -1,3 +1,4 @@
+import { NANGO_VERSION } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import type { Request, Response, NextFunction } from 'express';
 
@@ -28,6 +29,38 @@ export function cliMinVersion(minVersion: string) {
             //     error: { code: 'invalid_cli_version', message: `This endpoint requires a CLI version >= ${minVersion} (current: ${match[0]})` }
             // });
             // return;
+        }
+
+        next();
+    };
+}
+
+export function cliMaxVersion() {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const userAgent = req.headers['user-agent'];
+        if (!userAgent) {
+            // Could be strictly enforced
+            next();
+            return;
+        }
+
+        const match = userAgent.match(VERSION_REGEX);
+        if (!match || match.length <= 1 || !match[1]) {
+            // Could be strictly enforced
+            next();
+            return;
+        }
+
+        console.log(match[1], semver.gt(match[1], NANGO_VERSION));
+
+        if (semver.gt(match[1], NANGO_VERSION)) {
+            res.status(400).send({
+                error: {
+                    code: 'invalid_cli_version',
+                    message: `You are using a SDK version greater than the API version (SDK: ${match[1]}, API: ${NANGO_VERSION})`
+                }
+            });
+            return;
         }
 
         next();
