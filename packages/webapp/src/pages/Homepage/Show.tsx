@@ -84,7 +84,7 @@ export const Homepage: React.FC = () => {
                     desc=""
                     help={
                         <div>
-                            No proxy requests sent the last 14 days.{' '}
+                            No proxy requests sent in the last 14 days.{' '}
                             <Link to="https://docs.nango.dev/integrate/guides/proxy-requests-to-an-api" className="underline text-white">
                                 Learn more
                             </Link>
