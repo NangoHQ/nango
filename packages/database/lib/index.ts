@@ -1,11 +1,11 @@
 import path from 'node:path';
 import knex from 'knex';
 import type { Knex } from 'knex';
-import { retry } from '@nangohq/utils';
+import { projectRoot, retry } from '@nangohq/utils';
 import { defaultSchema, getDbConfig } from './getConfig.js';
 
 // Note: we are in dist when it executes but migrations are not compiled
-const directory = path.join(import.meta.dirname, '../lib/migrations');
+const directory = path.join(projectRoot, 'packages/database/lib/migrations');
 
 export class KnexDatabase {
     knex: Knex;

@@ -90,12 +90,15 @@ RUN true \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
 
 # Do not use root to run the app
-USER node
+# BUT it does not work with secret mount (could not find a solution yet)
+# TODO: fix this
+# USER node
 
 WORKDIR /app/nango
 
 # Code
-COPY --from=build --chown=node:node /app/tmp /app/nango
+# COPY --from=build --chown=node:node /app/tmp /app/nango
+COPY --from=build /app/tmp /app/nango
 
 ARG image_env
 ARG git_hash

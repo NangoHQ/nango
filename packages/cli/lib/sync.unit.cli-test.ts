@@ -9,6 +9,7 @@ import { compileAllFiles, compileSingleFile, getFileToCompile } from './services
 import parserService from './services/parser.service.js';
 import { copyDirectoryAndContents, removeVersion, fixturesPath, getTestDirectory } from './tests/helpers.js';
 import { parse } from './services/config.service.js';
+import { directoryMigration } from './services/migration.service.js';
 
 describe('generate function tests', () => {
     // Not the best but until we have a logger it will work
@@ -460,6 +461,25 @@ describe('generate function tests', () => {
         expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
         expect(fs.existsSync(join(dir, 'contacts.ts'))).toBe(true);
         expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
+        expect(success).toBe(true);
+    });
+
+    it('should be able to migrate-to-directories', async () => {
+        const dir = await getTestDirectory('old-directory-migrate');
+        init({ absolutePath: dir });
+
+        await copyDirectoryAndContents(join(fixturesPath, 'nango-yaml/v2/non-nested-integrations'), dir);
+
+        await directoryMigration(dir);
+        expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
+        expect(fs.existsSync(join(dir, 'hubspot/actions/create-contact.ts'))).toBe(true);
+        expect(fs.existsSync(join(dir, 'contacts.ts'))).toBe(false);
+        expect(fs.existsSync(join(dir, 'create-contacts.ts'))).toBe(false);
+
+        const success = await compileAllFiles({ fullPath: dir, debug: false });
+        expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
+        expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
+
         expect(success).toBe(true);
     });
 
