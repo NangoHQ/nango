@@ -392,6 +392,23 @@ asana:
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/asana
 
+asana-scim:
+    display_name: Asana (SCIM API)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.asana.com/api
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/asana
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your asana scim account
+
 ashby:
     display_name: Ashby
     categories:
@@ -537,6 +554,25 @@ aws:
             description: The domain extension of your AWS account
             example: com
             pattern: '^[a-z.]+$'
+
+aws-iam:
+    display_name: AWS IAM
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://iam.amazonaws.com
+        connection_base_url: ${connectionConfig.region}
+        retry:
+            at: 'x-ratelimit-reset'
+    docs: https://docs.nango.dev/integrations/all/aws
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region to where your AWS account is hosted
+            example: us-east-1
+            pattern: '^[a-z0-9-]+$'
 
 bamboohr:
     display_name: BambooHR
@@ -5327,6 +5363,8 @@ tiktok-ads:
     token_url: https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/
     proxy:
         base_url: https://business-api.tiktok.com/open_api/v1.3/
+        headers:
+            Access-Token: ${accessToken}
     token_params:
         grant_type: authorization_code
     authorization_url_replacements:

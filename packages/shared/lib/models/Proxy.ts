@@ -48,7 +48,7 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
 
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
     decompress?: boolean;
-    method: HTTP_VERB;
+    method: HTTP_METHOD;
     providerName: string;
     token:
         | string

@@ -42,6 +42,7 @@ export interface BaseProvider {
     proxy?: {
         base_url: string;
         headers?: Record<string, string>;
+        connection_base_url?: string;
         query?: {
             api_key: string;
         };

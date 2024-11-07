@@ -8,8 +8,8 @@ import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Telemetry.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { nangoConfigFile } from '../nango-config.service.js';
 import localFileService from './local.service.js';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 let client: S3Client | null = null;
 let useS3 = !isLocal && !isTest;

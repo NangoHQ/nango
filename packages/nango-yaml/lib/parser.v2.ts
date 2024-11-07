@@ -1,7 +1,6 @@
 import type {
-    HTTP_VERB,
     NangoModel,
-    NangoSyncEndpoint,
+    NangoSyncEndpointV2,
     NangoYamlParsedIntegration,
     NangoYamlV2,
     NangoYamlV2Integration,
@@ -13,7 +12,7 @@ import type {
 } from '@nangohq/types';
 import { NangoYamlParser } from './parser.js';
 import { ParserErrorEndpointsMismatch, ParserErrorInvalidRuns } from './errors.js';
-import { getInterval } from './helpers.js';
+import { getInterval, parseEndpoint } from './helpers.js';
 
 export class NangoYamlParserV2 extends NangoYamlParser {
     parse(): boolean {
@@ -85,7 +84,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 modelNames.add(modelInput.name);
             }
 
-            const endpoints: NangoSyncEndpoint[] = [];
+            const endpoints: NangoSyncEndpointV2[] = [];
             if (sync.endpoint) {
                 const tmp = Array.isArray(sync.endpoint) ? sync.endpoint : [sync.endpoint];
 
@@ -95,12 +94,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 }
 
                 for (const endpoint of tmp) {
-                    const split = endpoint.split(' ');
-                    if (split.length === 2) {
-                        endpoints.push({ [split[0] as HTTP_VERB]: split[1] });
-                    } else {
-                        endpoints.push({ GET: split[0]! });
-                    }
+                    endpoints.push(parseEndpoint(endpoint, 'GET'));
                 }
             }
 
@@ -163,14 +157,9 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 modelNames.add(modelInput.name);
             }
 
-            const endpoint: NangoSyncEndpoint = {};
+            let endpoint: NangoSyncEndpointV2 | null = null;
             if (action.endpoint) {
-                const split = action.endpoint.split(' ');
-                if (split.length === 2) {
-                    endpoint[split[0]! as HTTP_VERB] = split[1]!;
-                } else {
-                    endpoint['POST'] = split[0]!;
-                }
+                endpoint = parseEndpoint(action.endpoint, 'POST');
             }
 
             const parsedAction: ParsedNangoAction = {

@@ -104,6 +104,7 @@ import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
+import { cliMinVersion } from './middleware/cliVersionCheck.js';
 
 export const router = express.Router();
 
@@ -221,8 +222,8 @@ publicAPI.route('/connection/metadata').post(apiAuth, postPublicMetadata);
 publicAPI.route('/connection/metadata').patch(apiAuth, patchPublicMetadata);
 publicAPI.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
-publicAPI.route('/sync/deploy').post(apiAuth, postDeploy);
-publicAPI.route('/sync/deploy/confirmation').post(apiAuth, postDeployConfirmation);
+publicAPI.route('/sync/deploy').post(apiAuth, cliMinVersion('0.39.25'), postDeploy);
+publicAPI.route('/sync/deploy/confirmation').post(apiAuth, cliMinVersion('0.39.25'), postDeployConfirmation);
 publicAPI.route('/sync/deploy/internal').post(apiAuth, postDeployInternal);
 publicAPI.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
 publicAPI.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
