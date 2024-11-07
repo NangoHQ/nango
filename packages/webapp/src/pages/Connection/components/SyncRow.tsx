@@ -136,7 +136,9 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
             </Table.Cell>
             <Table.Cell bordered>{formatFrequency(sync.frequency)}</Table.Cell>
             <Table.Cell bordered>
-                <SimpleTooltip tooltipContent={sync.record_count.toLocaleString()}>{formatQuantity(sync.record_count)}</SimpleTooltip>
+                <SimpleTooltip tooltipContent={JSON.stringify(sync.record_count, null, 2)}>
+                    {formatQuantity(Object.entries(sync.record_count).reduce((acc, [, count]) => acc + count, 0))}
+                </SimpleTooltip>
             </Table.Cell>
             <Table.Cell bordered>
                 <SimpleTooltip
