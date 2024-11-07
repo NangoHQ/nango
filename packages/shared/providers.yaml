@@ -3930,6 +3930,23 @@ okta:
             example: domain
             suffix: .okta.com
 
+okta-preview:
+    alias: okta
+    display_name: Okta (Preview)
+    authorization_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/authorize
+    token_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.oktapreview.com
+    docs: https://docs.nango.dev/integrations/all/okta
+    connection_config:
+        subdomain:
+            type: string
+            title: Okta Preview Domain
+            description: The subdomain of your Okta Preview account
+            pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .oktapreview.com
+
 one-drive:
     display_name: One Drive
     categories:

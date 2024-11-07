@@ -133,7 +133,7 @@ function validateProvider(providerKey: string, provider: Provider) {
             error = true;
         }
         if (!provider.proxy?.verification) {
-            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `do not have "proxy" > "verification" set`);
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `does not have "proxy" > "verification" set`);
         }
     } else if (provider.auth_mode === 'BASIC') {
         if (!provider.credentials?.['username']) {
@@ -143,7 +143,7 @@ function validateProvider(providerKey: string, provider: Provider) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" > "password" is not defined`);
         }
         if (!provider.proxy?.verification) {
-            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `do not have "proxy" > "verification" set`);
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `does not have "proxy" > "verification" set`);
         }
     } else {
         if (provider.credentials) {
