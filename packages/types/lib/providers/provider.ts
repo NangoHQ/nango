@@ -136,7 +136,7 @@ export interface ProviderTwoStep extends BaseProvider {
     proxy_header_authorization?: string;
 }
 export interface ProviderSignatureBased extends BaseProvider {
-    signature_protocol: 'WSSE' | 'AWS_V4';
+    signature_protocol: 'WSSE';
     token: {
         expires_in_ms: number;
     };
