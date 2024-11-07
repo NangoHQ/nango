@@ -53,9 +53,6 @@ jobs:
               with:
                   username: ${{ secrets.DOCKER_USERNAME }}
                   password: ${{ secrets.DOCKER_PASSWORD }}
-            - name: Push tag
-              run: |
-                  docker buildx imagetools create nangohq/nango-jobs:${{ github.sha }} --tag nangohq/nango-jobs:${{ inputs.stage }}
             - name: Deploy jobs
               run: |
                   SERVICE_ID=${{ fromJson('{ production: "srv-clvvtdug1b2c73cklps0", staging: "srv-clthttda73kc73ejflg0" }')[inputs.stage] }}
