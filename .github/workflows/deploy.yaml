@@ -59,6 +59,11 @@ jobs:
             - name: Deploy jobs
               run: |
                   SERVICE_ID=${{ fromJson('{ production: "srv-clvvtdug1b2c73cklps0", staging: "srv-clthttda73kc73ejflg0" }')[inputs.stage] }}
+                  IMAGE_TAG_PREFIX=${{ fromJson('{ "production": "prod", "staging": "staging" }')[inputs.stage] }}
+                  IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
+
+                  echo "Deploying $IMAGE to $SERVICE_ID"
+
                   curl --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
     deploy_runners:
         if: inputs.service == 'runner'

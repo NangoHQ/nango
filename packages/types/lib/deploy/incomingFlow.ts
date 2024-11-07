@@ -1,4 +1,5 @@
-import type { NangoModel, NangoSyncEndpoint, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
+import type { Merge } from 'type-fest';
+import type { NangoModel, NangoSyncEndpointOld, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
 
 export interface IncomingScriptFiles {
     js: string;
@@ -38,7 +39,7 @@ interface InternalIncomingPreBuiltFlowConfig {
     metadata?: NangoConfigMetadata | undefined;
     model_schema: string | NangoModel[];
     input?: string | LegacySyncModelSchema | undefined;
-    endpoints?: NangoSyncEndpoint[] | undefined;
+    endpoints?: (NangoSyncEndpointV2 | NangoSyncEndpointOld)[] | undefined;
     track_deletes: boolean;
     providerConfigKey: string;
 }
@@ -51,6 +52,7 @@ export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlow
     syncName?: string; // legacy
     nango_config_id?: number;
     fileBody?: IncomingScriptFiles;
+    endpoints: NangoSyncEndpointV2[];
 }
 
 export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
@@ -60,3 +62,5 @@ export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     sync_type?: SyncTypeLiteral | undefined;
     webhookSubscriptions?: string[] | undefined;
 }
+
+export type CleanedIncomingFlowConfig = Merge<IncomingFlowConfig, { endpoints: NangoSyncEndpointV2[] }>;

@@ -156,7 +156,8 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
         {
           "description": "Get a GitHub issue.",
           "endpoint": {
-            "GET": "/ticketing/tickets/{GithubCreateIssueInput:id}",
+            "method": "GET",
+            "path": "/ticketing/tickets/{GithubCreateIssueInput:id}",
           },
           "input": null,
           "name": "github-get-issue",
@@ -175,7 +176,8 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
         {
           "description": "Creates a GitHub issue.",
           "endpoint": {
-            "POST": "/ticketing/tickets",
+            "method": "POST",
+            "path": "/ticketing/tickets",
           },
           "input": "GithubCreateIssueInput",
           "name": "github-create-issue",
@@ -196,7 +198,8 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
         {
           "description": "Deletes a GitHub issue.",
           "endpoint": {
-            "DELETE": "/ticketing/tickets/{GithubIssue:id}",
+            "method": "DELETE",
+            "path": "/ticketing/tickets/{GithubIssue:id}",
           },
           "input": null,
           "name": "github-delete-issue",
@@ -221,7 +224,8 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "description": "Sync github issues continuously from public repos",
           "endpoints": [
             {
-              "GET": "/ticketing/tickets",
+              "method": "GET",
+              "path": "/ticketing/tickets",
             },
           ],
           "input": null,
@@ -249,7 +253,8 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "description": "Sync github issues continuously from public repos example two",
           "endpoints": [
             {
-              "GET": "/ticketing/tickets-two",
+              "method": "GET",
+              "path": "/ticketing/tickets-two",
             },
           ],
           "input": null,
@@ -275,10 +280,12 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "description": "Sync github issues to multiple models",
           "endpoints": [
             {
-              "GET": "/ticketing/ticket",
+              "method": "GET",
+              "path": "/ticketing/ticket",
             },
             {
-              "GET": "/ticketing/pr",
+              "method": "GET",
+              "path": "/ticketing/pr",
             },
           ],
           "input": null,
