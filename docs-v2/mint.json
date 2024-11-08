@@ -596,7 +596,8 @@
                 "integrations/all/zoho-people",
                 "integrations/all/zoom",
                 "integrations/all/zoominfo",
-                "integrations/all/acuity-scheduling"
+                "integrations/all/acuity-scheduling",
+                "integrations/all/mindbody"
             ]
         },
         {

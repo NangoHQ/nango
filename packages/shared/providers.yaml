@@ -3700,6 +3700,15 @@ microsoft-power-bi:
         base_url: https://api.powerbi.com
     docs: https://docs.nango.dev/integrations/all/microsoft-power-bi
 
+mindbody:
+    display_name: Mindbody
+    categories:
+        - fitness
+    default_scopes:
+        - offline_access
+    auth_mode: OAUTH2
+    docs: https://docs.nango.dev/integrations/all/mindbody
+
 mixpanel:
     display_name: Mixpanel
     categories:
