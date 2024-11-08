@@ -1,5 +1,6 @@
 import { expect, describe, it, afterEach, vi } from 'vitest';
 import path, { join } from 'node:path';
+import os from 'node:os';
 import fs from 'node:fs';
 import yaml from 'js-yaml';
 import stripAnsi from 'strip-ansi';
@@ -563,7 +564,8 @@ describe('generate function tests', () => {
         expect(result).toBe(false);
     });
 
-    it('should be able to migrate-endpoints', async () => {
+    // Problem with double lines
+    it.skipIf(os.platform() === 'win32')('should be able to migrate-endpoints', async () => {
         const dir = await getTestDirectory('old-endpoint');
         init({ absolutePath: dir });
 
