@@ -135,11 +135,11 @@ class PaginationService {
     ): AsyncGenerator<T[], undefined, void> {
         const offsetPagination: OffsetPagination = paginationConfig;
         const offsetParameterName: string = offsetPagination.offset_name_in_request;
-        const offsetCalculatioMethod: OffsetCalculationMethod = offsetPagination.offset_calculation_method || 'by-response-size';
+        const offsetCalculationMethod: OffsetCalculationMethod = offsetPagination.offset_calculation_method || 'by-response-size';
         let offset = offsetPagination.offset_start_value || 0;
 
         while (true) {
-            updatedBodyOrParams[offsetParameterName] = `${offset}`;
+            updatedBodyOrParams[offsetParameterName] = passPaginationParamsInBody ? offset : String(offset);
 
             this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
@@ -161,7 +161,7 @@ class PaginationService {
                 return;
             }
 
-            if (offsetCalculatioMethod === 'per-page') {
+            if (offsetCalculationMethod === 'per-page') {
                 offset++;
             } else {
                 offset += responseData.length;
