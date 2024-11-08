@@ -130,11 +130,11 @@ export function endpointMigration(loadLocation: string): void {
         return;
     }
 
-    let dump = response.yaml.replaceAll(
+    let dump = response.yaml.replace(
         /^(\s+)endpoint: ((GET|POST|PUT|PATCH|DELETE)\s)?(\/[a-zA-Z0-9-:{}./_]+)$/gim,
         `$1endpoint:\r\n$1  method: $3\r\n$1  path: $4`
     );
-    dump = dump.replaceAll(/^(\s+)- ((GET|POST|PUT|PATCH|DELETE)\s)?(\/[a-zA-Z0-9-:{}./_]+)$/gim, `$1- method: $3\r\n$1  path: $4`);
+    dump = dump.replace(/^(\s+)- ((GET|POST|PUT|PATCH|DELETE)\s)?(\/[a-zA-Z0-9-:{}./_]+)$/gim, `$1- method: $3\r\n$1  path: $4`);
 
     writeFileSync(`${loadLocation}/nango.yaml`, dump);
     console.log(chalk.green(`Migration complete.`));

@@ -1,6 +1,6 @@
 import { expect, describe, it, afterEach, vi } from 'vitest';
 import path, { join } from 'node:path';
-import fs from 'fs';
+import fs from 'node:fs';
 import yaml from 'js-yaml';
 import stripAnsi from 'strip-ansi';
 import { init, generate } from './cli.js';
