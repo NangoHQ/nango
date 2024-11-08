@@ -3921,6 +3921,10 @@ okta:
         base_url: https://${connectionConfig.subdomain}.okta.com
         retry:
             at: 'x-rate-limit-reset'
+        paginate:
+            type: 'link'
+            limit_name_in_request: 'limit'
+            link_rel_in_response_header: 'next'
     docs: https://docs.nango.dev/integrations/all/okta
     connection_config:
         subdomain:
