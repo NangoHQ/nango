@@ -3704,9 +3704,9 @@ mindbody:
     display_name: Mindbody
     categories:
         - fitness
-    default_scopes:
-        - offline_access
     auth_mode: OAUTH2
+    proxy:
+        base_url: https://api.mindbodyonline.com/partnergateway/consumeractivity
     docs: https://docs.nango.dev/integrations/all/mindbody
 
 mixpanel:
