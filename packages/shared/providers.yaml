@@ -3704,19 +3704,26 @@ mindbody:
     display_name: Mindbody
     categories:
         - fitness
-    default_scopes:
-        - offline_access
-        - PG.ConsumerActivity.Api.Read
-    auth_mode: OAUTH2
-    authorization_params:
-        response_type: code
-    refresh_params:
-        grant_type: refresh_token
-    authorization_url: https://signin.mindbodyonline.com/connect/authorize
-    token_url: https://signin.mindbodyonline.com/connect/token
+    auth_mode: API_KEY
     proxy:
-        base_url: https://api.mindbodyonline.com/partnergateway/consumeractivity
+        base_url: https://api.mindbodyonline.com/public/v6
+        headers:
+            API-Key: ${apiKey}
+            siteId: ${connectionConfig.siteId}
+        verification:
+            method: GET
+            endpoint: /site/locations
     docs: https://docs.nango.dev/integrations/all/mindbody
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Mindbody account
+    connection_config:
+        siteId:
+            type: string
+            title: Site ID
+            description: The site ID for your Mindbody account
 
 mixpanel:
     display_name: Mixpanel
