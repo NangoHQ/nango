@@ -3704,7 +3704,18 @@ mindbody:
     display_name: Mindbody
     categories:
         - fitness
+    default_scopes:
+        - offline_access
+        - PG.ConsumerActivity.Api.Read
     auth_mode: OAUTH2
+    authorization_params:
+        response_mode: form_post
+        response_type: code
+        nonce: AnotherRandomStringMindbody
+    refresh_params:
+        grant_type: refresh_token
+    authorization_url: https://signin.mindbodyonline.com/connect/authorize
+    token_url: https://signin.mindbodyonline.com/connect/token
     proxy:
         base_url: https://api.mindbodyonline.com/partnergateway/consumeractivity
     docs: https://docs.nango.dev/integrations/all/mindbody
