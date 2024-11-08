@@ -230,7 +230,6 @@ const runJob = async (
         records: formatting.value,
         connectionId: connection.id as number,
         environmentId: connection.environment_id,
-        syncJobId: syncJob.id,
         model,
         softDelete
     });
@@ -311,8 +310,7 @@ async function populateRecords(
             records: records.slice(i, i + chunkSize),
             connectionId: connection.id!,
             environmentId: connection.environment_id,
-            model,
-            syncJobId: syncJob.id
+            model
         });
         if (res.isErr()) {
             throw new Error(`Failed to upsert records: ${res.error.message}`);

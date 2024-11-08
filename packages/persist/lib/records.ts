@@ -58,17 +58,17 @@ export async function persistRecords({
         case 'save':
             softDelete = false;
             persistFunction = async (records: FormattedRecord[]) =>
-                recordsService.upsert({ records, connectionId: nangoConnectionId, environmentId, model, syncJobId, softDelete });
+                recordsService.upsert({ records, connectionId: nangoConnectionId, environmentId, model, softDelete });
             break;
         case 'delete':
             softDelete = true;
             persistFunction = async (records: FormattedRecord[]) =>
-                recordsService.upsert({ records, connectionId: nangoConnectionId, environmentId, model, syncJobId, softDelete });
+                recordsService.upsert({ records, connectionId: nangoConnectionId, environmentId, model, softDelete });
             break;
         case 'update':
             softDelete = false;
             persistFunction = async (records: FormattedRecord[]) => {
-                return recordsService.update({ records, connectionId: nangoConnectionId, syncJobId, model });
+                return recordsService.update({ records, connectionId: nangoConnectionId, model });
             };
             break;
     }

@@ -213,11 +213,11 @@ describe('Records service', () => {
         // upserting the same record concurrently
         const res = (
             await Promise.all([
-                Records.upsert({ records, connectionId, environmentId, model, syncJobId }),
-                Records.upsert({ records, connectionId, environmentId, model, syncJobId }),
-                Records.upsert({ records, connectionId, environmentId, model, syncJobId }),
-                Records.upsert({ records, connectionId, environmentId, model, syncJobId }),
-                Records.upsert({ records, connectionId, environmentId, model, syncJobId })
+                Records.upsert({ records, connectionId, environmentId, model }),
+                Records.upsert({ records, connectionId, environmentId, model }),
+                Records.upsert({ records, connectionId, environmentId, model }),
+                Records.upsert({ records, connectionId, environmentId, model }),
+                Records.upsert({ records, connectionId, environmentId, model })
             ])
         ).map((r) => r.unwrap());
         const agg = res.reduce((acc, curr) => {
@@ -262,7 +262,7 @@ async function upsertRecords(
     if (formatRes.isErr()) {
         throw new Error(`Failed to format records: ${formatRes.error.message}`);
     }
-    const upsertRes = await Records.upsert({ records: formatRes.value, connectionId, environmentId, model, syncJobId, softDelete });
+    const upsertRes = await Records.upsert({ records: formatRes.value, connectionId, environmentId, model, softDelete });
     if (upsertRes.isErr()) {
         throw new Error(`Failed to update records: ${upsertRes.error.message}`);
     }
@@ -274,7 +274,7 @@ async function updateRecords(records: UnencryptedRecordData[], connectionId: num
     if (formatRes.isErr()) {
         throw new Error(`Failed to format records: ${formatRes.error.message}`);
     }
-    const updateRes = await Records.update({ records: formatRes.value, connectionId, syncJobId, model });
+    const updateRes = await Records.update({ records: formatRes.value, connectionId, model });
     if (updateRes.isErr()) {
         throw new Error(`Failed to update records: ${updateRes.error.message}`);
     }

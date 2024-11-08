@@ -6,7 +6,7 @@ import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
 import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
 import { logger } from '../utils/logger.js';
-import { Err, Ok, retry } from '@nangohq/utils';
+import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -200,14 +200,12 @@ export async function upsert({
     connectionId,
     environmentId,
     model,
-    syncJobId,
     softDelete = false
 }: {
     records: FormattedRecord[];
     connectionId: number;
     environmentId: number;
     model: string;
-    syncJobId: number;
     softDelete?: boolean;
 }): Promise<Result<UpsertSummary>> {
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
@@ -221,8 +219,8 @@ export async function upsert({
     const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys };
     try {
         await db.transaction(async (trx) => {
-            // Lock on sync job level to prevent concurrent upserts
-            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_upsert`, [syncJobId]);
+            // Lock to prevent concurrent upserts
+            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_upsert`, [newLockId(connectionId, model)]);
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
                 const encryptedRecords = encryptRecords(chunk);
@@ -339,13 +337,11 @@ export async function upsert({
 export async function update({
     records,
     connectionId,
-    model,
-    syncJobId
+    model
 }: {
     records: FormattedRecord[];
     connectionId: number;
     model: string;
-    syncJobId: number;
 }): Promise<Result<UpsertSummary>> {
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
 
@@ -358,8 +354,8 @@ export async function update({
     try {
         const updatedKeys: string[] = [];
         await db.transaction(async (trx) => {
-            // Lock on sync job level to prevent concurrent updates
-            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_update`, [syncJobId]);
+            // Lock to prevent concurrent updates
+            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_update`, [newLockId(connectionId, model)]);
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
 
@@ -528,4 +524,9 @@ async function getRecordsToUpdate({
         })
         .whereIn('external_id', keys)
         .whereNotIn(['external_id', 'data_hash'], keysWithHash);
+}
+
+function newLockId(connectionId: number, model: string): bigint {
+    const modelHash = stringToHash(model);
+    return (BigInt(connectionId) << 32n) | BigInt(modelHash);
 }
