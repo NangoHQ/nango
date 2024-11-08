@@ -139,7 +139,7 @@ class PaginationService {
         let offset = offsetPagination.offset_start_value || 0;
 
         while (true) {
-            updatedBodyOrParams[offsetParameterName] = offset;
+            updatedBodyOrParams[offsetParameterName] = passPaginationParamsInBody ? offset : String(offset);
 
             this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
