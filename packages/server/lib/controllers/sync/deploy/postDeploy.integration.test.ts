@@ -151,7 +151,7 @@ describe(`POST ${endpoint}`, () => {
                             auto_start: false,
                             description: 'a',
                             enabled: true,
-                            endpoints: [{ method: 'GET', path: '/path' }],
+                            endpoints: [{ method: 'GET', path: '/path', entity: null }],
                             input: {
                                 fields: [{ array: false, name: 'id', optional: false, tsType: true, value: 'number' }],
                                 name: 'Input'
