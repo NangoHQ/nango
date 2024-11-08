@@ -1,5 +1,5 @@
 import type { JSONSchema7 } from 'json-schema';
-import type { HTTP_METHOD, Timestamps, TimestampsAndDeleted } from './Generic.js';
+import type { TimestampsAndDeleted } from './Generic.js';
 import type { NangoConfigMetadata, NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 
@@ -103,14 +103,6 @@ export interface SyncConfig extends TimestampsAndDeleted {
     webhook_subscriptions: string[] | null;
     enabled: boolean;
     models_json_schema?: JSONSchema7 | null;
-}
-
-export interface SyncEndpoint extends Timestamps {
-    id?: number;
-    sync_config_id: number;
-    method: HTTP_METHOD;
-    path: string;
-    model?: string;
 }
 
 export interface SyncDeploymentResult {

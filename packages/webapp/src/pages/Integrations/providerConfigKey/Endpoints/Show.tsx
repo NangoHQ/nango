@@ -9,20 +9,6 @@ import { EndpointsList } from './components/List';
 import { EndpointOne } from './components/One';
 import PageNotFound from '../../../PageNotFound';
 
-const allowedGroup = [
-    'customers',
-    'invoices',
-    'payments',
-    'tickets',
-    'users',
-    'articles',
-    'accounts',
-    'contacts',
-    'employees',
-    'deals',
-    'opportunities',
-    'leads'
-];
 export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['data'] }> = ({ integration }) => {
     const env = useStore((state) => state.env);
     const { providerConfigKey } = useParams();
@@ -39,12 +25,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         const tmp: Record<string, NangoSyncConfigWithEndpoint[]> = {};
         for (const flow of data.flows) {
             for (const endpoint of flow.endpoints) {
-                const paths = endpoint.path.split('/');
-                const firstPath = paths[1];
-                if (!firstPath) {
-                    continue;
-                }
-                const groupName = allowedGroup.includes(firstPath) ? firstPath : 'others';
+                const groupName = endpoint.entity || 'others';
 
                 let group = tmp[groupName];
                 if (!group) {
