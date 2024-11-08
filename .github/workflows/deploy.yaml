@@ -42,7 +42,9 @@ jobs:
             - name: Deploy server
               run: |
                   SERVICE_ID=${{ fromJson('{ production: "srv-cfifsvha6gdq1k7u46a0", staging: "srv-cmj6t6da73kc739ol660" }')[inputs.stage] }}
-                  curl --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+                  curl --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys"\
+                     --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+
     deploy_jobs:
         if: inputs.service == 'jobs'
         runs-on: ubuntu-latest
@@ -61,7 +63,10 @@ jobs:
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
 
-                  curl --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"imageUrl\": \"$IMAGE\" }"
+
     deploy_runners:
         if: inputs.service == 'runner'
         runs-on: ubuntu-latest
@@ -82,6 +87,7 @@ jobs:
                   RUNNER_OWNER_ID: ${{ secrets.RENDER_RUNNER_OWNER_ID }}
               run: |
                   bash ./scripts/deploy/runners.bash
+
     deploy_persist:
         if: inputs.service == 'persist'
         runs-on: ubuntu-latest
@@ -100,7 +106,9 @@ jobs:
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
 
-                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"$IMAGE\" }"
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_orchestrator:
         if: inputs.service == 'orchestrator'
@@ -120,7 +128,9 @@ jobs:
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
 
-                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"$IMAGE\" }"
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_connect_ui:
         if: inputs.service == 'connect_ui'
@@ -136,6 +146,9 @@ jobs:
               run: |
                   SERVICE_ID=${{ fromJson('{ "production": "srv-crtut51u0jms73bts8fg", "staging": "srv-cmj6t6da73kc739ol660" }')[inputs.stage] }}
                   COMMIT="${{ github.sha }}"
+
                   echo "Deploying $COMMIT to $SERVICE_ID"
 
-                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"commitId\": \"$COMMIT\" }"
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"commitId\": \"$COMMIT\" }"
