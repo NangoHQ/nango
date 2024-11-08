@@ -2202,6 +2202,7 @@ integrations:
                 track_deletes: true
                 runs: every day
                 output: Article
+                version: 1.0.0
             contacts:
                 description: |
                     Fetches the list of contacts.
