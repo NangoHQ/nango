@@ -105,7 +105,7 @@ bump_and_npm_publish "@nangohq/shared" "$VERSION"
 package_dirs=("cli")
 for dir in "${package_dirs[@]}"; do
     pushd "$GIT_ROOT_DIR/packages/$dir"
-    npm install @nangohq/shared@$VERSION
+    npm install @nangohq/shared@^$VERSION
     popd
 done
 
