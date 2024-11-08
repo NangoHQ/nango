@@ -32,6 +32,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuIte
 import { IconChevronDown } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
 import type { ApiConnectionSimple } from '@nangohq/types';
+import { CopyText } from '../../components/CopyText';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -81,6 +82,14 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                     <p className="break-words break-all">{row.original.provider_config_key}</p>
                 </div>
             );
+        }
+    },
+    {
+        accessorKey: 'connection_id',
+        header: 'Connection ID',
+        size: 130,
+        cell: ({ row }) => {
+            return <CopyText className="text-s font-code" text={row.original.connection_id} showOnHover />;
         }
     },
     {
