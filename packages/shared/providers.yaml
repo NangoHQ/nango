@@ -3924,7 +3924,6 @@ okta:
             type: 'link'
             limit_name_in_request: 'limit'
             link_rel_in_response_header: 'next'
-            limit: 100
     docs: https://docs.nango.dev/integrations/all/okta
     connection_config:
         subdomain:
