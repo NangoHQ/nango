@@ -3709,6 +3709,7 @@ mindbody:
         headers:
             API-Key: ${apiKey}
             siteId: ${connectionConfig.siteId}
+            authorization: {staffUserToken}
         verification:
             method: GET
             endpoint: /public/v6/site/locations
