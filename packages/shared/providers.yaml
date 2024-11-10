@@ -3709,7 +3709,6 @@ mindbody:
         headers:
             API-Key: ${apiKey}
             siteId: ${connectionConfig.siteId}
-            authorization: {staffUserToken}
         verification:
             method: GET
             endpoint: /public/v6/site/locations
@@ -3727,7 +3726,7 @@ mindbody:
             title: Site ID
             description: The site ID for your Mindbody account
             pattern: '^\d+$'
-            example:  -99
+            example: '-99'
 
 mixpanel:
     display_name: Mixpanel
