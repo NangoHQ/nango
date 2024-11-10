@@ -3701,29 +3701,33 @@ microsoft-power-bi:
     docs: https://docs.nango.dev/integrations/all/microsoft-power-bi
 
 mindbody:
-    display_name: Mindbody
+    display_name: Mindbody (api key)
     categories:
-        - fitness
+        - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.mindbodyonline.com/public/v6
         headers:
             API-Key: ${apiKey}
             siteId: ${connectionConfig.siteId}
+            authorization: {staffUserToken}
         verification:
             method: GET
-            endpoint: /site/locations
+            endpoint: /public/v6/site/locations
     docs: https://docs.nango.dev/integrations/all/mindbody
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Mindbody account
+            pattern: '^[a-f0-9]{32}$'
+            example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
     connection_config:
         siteId:
             type: string
             title: Site ID
             description: The site ID for your Mindbody account
+            pattern: '^\d+$'
+            example:  -99
 
 mixpanel:
     display_name: Mixpanel
