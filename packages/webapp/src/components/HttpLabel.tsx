@@ -1,7 +1,7 @@
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
 import { cn } from '../utils/utils';
-import type { HTTP_VERB } from '@nangohq/types';
+import type { NangoSyncEndpointV2 } from '@nangohq/types';
 
 const styles = cva('', {
     variants: {
@@ -36,7 +36,7 @@ const sizesText = cva('text-[13px]', {
     }
 });
 
-export const HttpLabel: React.FC<{ method: HTTP_VERB; path: string; size?: Sizes }> = ({ method, path, size }) => {
+export const HttpLabel: React.FC<NangoSyncEndpointV2 & { size?: Sizes }> = ({ method, path, size }) => {
     return (
         <div className={cn('flex items-center gap-2')}>
             <div className={cn(styles({ bg: method }), sizesMethod({ size }), 'py-[1px] px-1.5 rounded')}>

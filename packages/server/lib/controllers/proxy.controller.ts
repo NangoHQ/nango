@@ -8,7 +8,7 @@ import url from 'url';
 import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
-import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration, File } from '@nangohq/shared';
+import type { HTTP_METHOD, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration, File } from '@nangohq/shared';
 import { LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
 import { metrics, getLogger, axiosInstance as axios, getHeaders } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
@@ -80,7 +80,7 @@ class ProxyController {
                 headers,
                 baseUrlOverride,
                 decompress: decompress === 'true' ? true : false,
-                method: method.toUpperCase() as HTTP_VERB,
+                method: method.toUpperCase() as HTTP_METHOD,
                 retryOn
             };
 
@@ -164,7 +164,7 @@ class ProxyController {
                 return;
             }
 
-            await this.sendToHttpMethod({ res, method: method as HTTP_VERB, configBody: proxyConfig, logCtx, isDebug });
+            await this.sendToHttpMethod({ res, method: method as HTTP_METHOD, configBody: proxyConfig, logCtx, isDebug });
         } catch (err) {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
@@ -212,7 +212,7 @@ class ProxyController {
         isDebug
     }: {
         res: Response;
-        method: HTTP_VERB;
+        method: HTTP_METHOD;
         configBody: ApplicationConstructedProxyConfiguration;
         logCtx: LogContext;
         isDebug: boolean;
@@ -392,7 +392,7 @@ class ProxyController {
         isDebug
     }: {
         res: Response;
-        method: HTTP_VERB;
+        method: HTTP_METHOD;
         url: string;
         config: ApplicationConstructedProxyConfiguration;
         decompress: boolean;

@@ -8,12 +8,13 @@ import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
-import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, getPkgVersion, printDebug } from './utils.js';
+import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
 import { loadYamlAndGenerate } from './services/model.service.js';
 import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
 import { getLayoutMode } from './utils/layoutMode.js';
 import { getProviderConfigurationFromPath, nangoConfigFile } from '@nangohq/nango-yaml';
+import { NANGO_VERSION } from './version.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,7 +25,7 @@ export const version = (debug: boolean) => {
     if (debug) {
         printDebug('Looking up the version first for a local path first then globally');
     }
-    const version = getPkgVersion();
+    const version = NANGO_VERSION;
 
     console.log(chalk.green('Nango CLI version:'), version);
 };

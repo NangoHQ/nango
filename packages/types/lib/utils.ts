@@ -9,3 +9,6 @@ export interface Logger {
     debug: LogMethod;
     child: (...message: any[]) => Logger;
 }
+
+type ValidateSelection<T, U> = U extends T ? U : never;
+export type PickFromUnion<T, U extends T> = ValidateSelection<T, U>;

@@ -7,10 +7,12 @@ import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import { LogActionEnum } from '../../models/Telemetry.js';
 import type { LayoutMode } from '../../models/NangoConfig.js';
-import { nangoConfigFile, SYNC_FILE_EXTENSION } from '../nango-config.service.js';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const SYNC_FILE_EXTENSION = 'js';
 
 class LocalFileService {
     public readFile(rawFilePath: string) {

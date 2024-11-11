@@ -10,11 +10,12 @@ import util from 'util';
 import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
-import { cloudHost, stagingHost, NANGO_VERSION } from '@nangohq/shared';
+import { cloudHost, stagingHost } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { state } from './state.js';
 import https from 'node:https';
 import type { NangoConnection } from '@nangohq/types';
+import { NANGO_VERSION } from './version.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -113,10 +114,6 @@ export function checkEnvVars(optionalHostport?: string) {
     }
 }
 
-export function getPkgVersion() {
-    return NANGO_VERSION;
-}
-
 export async function upgradeAction(debug = false) {
     const isRunViaNpx = process.argv.some((arg) => arg.includes('npx'));
     const locallyInstalled = isLocallyInstalled('nango', debug);
@@ -146,7 +143,7 @@ export async function upgradeAction(debug = false) {
 
     try {
         const resolved = npa('nango');
-        const version = getPkgVersion();
+        const version = NANGO_VERSION;
         if (debug) {
             printDebug(`Version ${version} of nango is installed.`);
         }
@@ -270,7 +267,7 @@ export const http = axios.create({
 });
 
 export function getUserAgent(): string {
-    const clientVersion = getPkgVersion();
+    const clientVersion = NANGO_VERSION;
     const nodeVersion = process.versions.node;
 
     const osName = os.platform().replace(' ', '_');

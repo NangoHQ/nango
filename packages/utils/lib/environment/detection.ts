@@ -2,7 +2,7 @@ import { NodeEnv, localhostUrl } from './constants.js';
 
 export const baseUrl = process.env['NANGO_SERVER_URL'] || localhostUrl;
 export const basePublicUrl = process.env['NANGO_PUBLIC_SERVER_URL'] || baseUrl;
-export const connectUrl = process.env['NANGO_PUBLIC_CONNECT_URL'] || 'http://localhost:5173';
+export const connectUrl = process.env['NANGO_PUBLIC_CONNECT_URL'] || 'http://localhost:3009';
 
 export const isDocker = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED';
 export const isStaging = process.env['NODE_ENV'] === NodeEnv.Staging;

@@ -6,7 +6,7 @@ import { envs, modelOperations } from '@nangohq/logs';
 
 const validation = z
     .object({
-        type: z.enum(['sync', 'action', 'proxy', 'webhook_external'])
+        type: z.enum(['sync', 'action', 'proxy', 'webhook:incoming'])
     })
     .strict();
 

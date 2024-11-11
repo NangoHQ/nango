@@ -51,7 +51,7 @@ export const ActionBloc: React.FC<{ step: Steps; providerConfigKey: string; conn
                 setSnippet(
                     await httpSnippet({
                         baseUrl,
-                        endpoint: { POST: endpointAction },
+                        endpoint: { method: 'POST', path: endpointAction },
                         secretKey,
                         connectionId,
                         providerConfigKey,
