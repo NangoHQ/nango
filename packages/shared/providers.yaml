@@ -3728,6 +3728,12 @@ mindbody:
             description: The site ID for your Mindbody account
             pattern: '^\d+$'
             example: '-99'
+        staffUserToken:
+            type: string
+            title: Staff User Token
+            description: The staff user token for your Mindbody account
+            pattern: '^[a-f0-9]{32}$'
+            example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
 
 mixpanel:
     display_name: Mixpanel
