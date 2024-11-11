@@ -1873,6 +1873,17 @@ integrations:
                 input: IdEntity
                 scopes:
                     - members.delete
+            fetch-file:
+                description: >-
+                    Fetches the content of a file given its ID, processes the data using a
+                    response stream, and encodes it into a base64 string. This
+                    base64-encoded string can be used to recreate the file in its original
+                    format using an external tool.
+                endpoint: GET /fetch-file
+                output: string
+                input: string
+                scopes:
+                    - files.content.read
         syncs:
             users:
                 runs: every day
@@ -1884,6 +1895,19 @@ integrations:
                 endpoint: GET /users
                 scopes:
                     - members.read
+            files:
+                runs: every day
+                description: >
+                    Sync the metadata of a specified files or folders paths from Dropbox.
+                    A file or folder id or path can be used.
+                input: DocumentMetadata
+                auto_start: false
+                output: Document
+                sync_type: full
+                track_deletes: true
+                endpoint: GET /files
+                scopes:
+                    - files.metadata.read
         models:
             SuccessResponse:
                 success: boolean
@@ -1898,6 +1922,13 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
+            DocumentMetadata:
+                files: string[] | undefined
+                folders: string[] | undefined
+            Document:
+                id: string
+                path: string
+                title: string
     evaluagent:
         syncs:
             users:
