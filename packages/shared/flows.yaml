@@ -3365,8 +3365,6 @@ integrations:
                 description: |
                     Fetches the list of users in Harvest
                 endpoint: GET /users
-                sync_type: full
-                track_deletes: true
                 runs: every day
                 output: User
                 scopes:
