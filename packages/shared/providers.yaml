@@ -5666,7 +5666,7 @@ twenty-crm-self-hosted:
         - crm
     auth_mode: API_KEY
     proxy:
-        base_url: https://{connectionConfig.domain}/rest
+        base_url: https://${connectionConfig.domain}/rest
         headers:
             Authorization: Bearer ${apiKey}
         retry:
