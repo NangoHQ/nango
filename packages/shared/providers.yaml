@@ -5672,6 +5672,59 @@ twinfield:
     disable_pkce: true
     docs: https://docs.nango.dev/integrations/all/twinfield
 
+twenty-crm:
+    display_name: Twenty CRM
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.twenty.com/rest
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            after: 'Retry-After'
+        verification:
+            method: GET
+            endpoint: /companies
+    docs: https://docs.nango.dev/integrations/all/twenty-crm
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Twenty CRM account
+            example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc'
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+
+twenty-crm-self-hosted:
+    display_name: Twenty CRM (Self Hosted)
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}/rest
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            after: 'Retry-After'
+        verification:
+            method: GET
+            endpoint: /companies
+    docs: https://docs.nango.dev/integrations/all/twenty-crm
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Twenty CRM account
+            example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc'
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+    connection_config:
+        domain:
+            type: string
+            title: Twenty CRM domain
+            description: The domain of your Twnety CRM instance
+            pattern: '^[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+            example: domain
+
 typeform:
     display_name: Typeform
     categories:
