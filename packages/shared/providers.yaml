@@ -1854,8 +1854,9 @@ emarsys:
     display_name: Emarsys Core API
     categories:
         - marketing
-    auth_mode: SIGNATURE_BASED
-    signature_protocol: WSSE
+    auth_mode: SIGNATURE
+    signature:
+        protocol: WSSE
     proxy:
         base_url: https://api.emarsys.net
         headers:

@@ -40,7 +40,7 @@
                         "JWT",
                         "BILL",
                         "TWO_STEP",
-                        "SIGNATURE_BASED"
+                        "SIGNATURE"
                     ]
                 },
                 "authorization_method": {
@@ -296,9 +296,12 @@
                     "type": "string",
                     "enum": ["HMAC-SHA1", "PLAINTEXT"]
                 },
-                "signature_protocol": {
-                    "type": "string",
-                    "enum": ["WSSE"]
+                "signature": {
+                    "type": "object",
+                    "protocol": {
+                        "type": "string",
+                        "enum": ["WSSE"]
+                    }
                 },
                 "token_expiration_buffer": {
                     "type": "number"
