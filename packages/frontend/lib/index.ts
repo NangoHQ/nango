@@ -20,7 +20,7 @@ import type {
     JwtCredentials,
     OAuthCredentialsOverride,
     BillCredentials,
-    SignatureBasedCredentials
+    SignatureCredentials
 } from './types';
 import { AuthorizationStatus, WSMessageType } from './types.js';
 
@@ -295,18 +295,18 @@ export default class Nango {
             | OAuth2ClientCredentials
             | BillCredentials
             | TwoStepCredentials
-            | SignatureBasedCredentials
+            | SignatureCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
 
-        if ('type' in credentials && 'username' in credentials && 'password' in credentials && credentials.type === 'SIGNATURE_BASED') {
-            const signatureBasedCredentials: SignatureBasedCredentials = {
+        if ('type' in credentials && 'username' in credentials && 'password' in credentials && credentials.type === 'SIGNATURE') {
+            const signatureCredentials: SignatureCredentials = {
                 type: credentials.type,
                 username: credentials.username,
                 password: credentials.password
             };
 
-            return { params: signatureBasedCredentials } as unknown as ConnectionConfig;
+            return { params: signatureCredentials } as unknown as ConnectionConfig;
         }
 
         if ('username' in credentials) {
@@ -426,7 +426,7 @@ export default class Nango {
             | BillCredentials
             | OAuth2ClientCredentials
             | TwoStepCredentials
-            | SignatureBasedCredentials
+            | SignatureCredentials
             | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
@@ -472,11 +472,10 @@ export default class Nango {
             });
         }
 
-        if ('type' in credentials && credentials['type'] === 'SIGNATURE_BASED' && 'username' in credentials && 'password' in credentials) {
+        if ('type' in credentials && credentials['type'] === 'SIGNATURE' && 'username' in credentials && 'password' in credentials) {
             return await this.triggerAuth({
-                authUrl:
-                    this.hostBaseUrl + `/auth/signature-based/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
-                credentials: credentials as unknown as SignatureBasedCredentials
+                authUrl: this.hostBaseUrl + `/auth/signature/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as SignatureCredentials
             });
         }
 

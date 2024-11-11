@@ -764,7 +764,7 @@ describe('Proxy service configure', () => {
     it('Should correctly insert headers with dynamic values for signature based', () => {
         const config = {
             provider: {
-                auth_mode: 'SIGNATURE_BASED',
+                auth_mode: 'SIGNATURE',
                 proxy: {
                     headers: {
                         'X-WSSE': '${accessToken}'

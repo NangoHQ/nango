@@ -7,7 +7,7 @@ import type {
     TbaCredentials,
     TableauCredentials,
     JwtCredentials,
-    SignatureBasedCredentials
+    SignatureCredentials
 } from './Auth.js';
 import type { Connection } from './Connection.js';
 import type { Provider, TwoStepCredentials } from '@nangohq/types';
@@ -59,7 +59,7 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
         | TableauCredentials
         | JwtCredentials
         | TwoStepCredentials
-        | SignatureBasedCredentials;
+        | SignatureCredentials;
     provider: Provider;
     connection: Connection;
 }

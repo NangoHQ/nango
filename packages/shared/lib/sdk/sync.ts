@@ -171,7 +171,7 @@ export interface AuthModes {
     Jwt: 'JWT';
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
-    SignatureBased: 'SIGNATURE_BASED';
+    Signature: 'SIGNATURE';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 
@@ -282,8 +282,8 @@ interface TwoStepCredentials extends CredentialsCommon {
     token?: string;
     expires_at?: Date | undefined;
 }
-interface SignatureBasedCredentials {
-    type: AuthModes['SignatureBased'];
+interface SignatureCredentials {
+    type: AuthModes['Signature'];
     username: string;
     password: string;
     token?: string;
@@ -309,7 +309,7 @@ type AuthCredentials =
     | JwtCredentials
     | BillCredentials
     | TwoStepCredentials
-    | SignatureBasedCredentials
+    | SignatureCredentials
     | CustomCredentials;
 
 type Metadata = Record<string, unknown>;
@@ -653,7 +653,7 @@ export class NangoAction {
         | JwtCredentials
         | BillCredentials
         | TwoStepCredentials
-        | SignatureBasedCredentials
+        | SignatureCredentials
     > {
         this.exitSyncIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);

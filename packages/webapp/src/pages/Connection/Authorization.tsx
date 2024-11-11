@@ -120,7 +120,7 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
             </div>
 
             {connection.credentials &&
-                (connection.credentials.type === 'BASIC' || connection.credentials.type === 'BILL' || connection.credentials.type === 'SIGNATURE_BASED') &&
+                (connection.credentials.type === 'BASIC' || connection.credentials.type === 'BILL' || connection.credentials.type === 'SIGNATURE') &&
                 'password' in connection.credentials && (
                     <div className="flex">
                         {connection?.credentials.username && (

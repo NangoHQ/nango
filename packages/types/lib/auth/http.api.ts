@@ -171,7 +171,7 @@ export type PostPublicTwoStepAuthorization = Endpoint<{
     };
 }>;
 
-export type PostPublicSignatureBasedAuthorization = Endpoint<{
+export type PostPublicSignatureAuthorization = Endpoint<{
     Method: 'POST';
     Body: {
         username: string;

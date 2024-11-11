@@ -498,7 +498,7 @@ export class NangoError extends Error {
                 this.message = `Error fetching Two Step credentials`;
                 break;
 
-            case 'signature_based_token_generation_error':
+            case 'signature_token_generation_error':
                 this.status = 400;
                 this.message = `Error generating signature based token`;
                 break;

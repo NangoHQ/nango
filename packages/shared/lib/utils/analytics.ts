@@ -16,11 +16,17 @@ export enum AnalyticsTypes {
     API_CONNECTION_INSERTED = 'server:api_key_connection_inserted',
     API_CONNECTION_UPDATED = 'server:api_key_connection_updated',
     TBA_CONNECTION_INSERTED = 'server:tba_connection_inserted',
+    TBA_CONNECTION_UPDATED = 'server:tba_connection_updated',
     TABLEAU_CONNECTION_INSERTED = 'server:tableau_connection_inserted',
+    TABLEAU_CONNECTION_UPDATED = 'server:tableau_connection_updated',
     JWT_CONNECTION_INSERTED = 'server:jwt_connection_inserted',
+    JWT_CONNECTION_UPDATED = 'server:jwt_connection_updated',
     BILL_CONNECTION_INSERTED = 'server:bill_connection_inserted',
+    BILL_CONNECTION_UPDATED = 'server:bill_connection_updated',
     TWO_STEP_CONNECTION_INSERTED = 'server:two_step_connection_inserted',
-    SIGNATURE_BASED_CONNECTION_INSERTED = 'server:signature_based_connection_inserted',
+    TWO_STEP_CONNECTION_UPDATED = 'server:two_step_connection_updated',
+    SIGNATURE_CONNECTION_INSERTED = 'server:signature_connection_inserted',
+    SIGNATURE_CONNECTION_UPDATED = 'server:signature_connection_updated',
     CONFIG_CREATED = 'server:config_created',
     CONNECTION_INSERTED = 'server:connection_inserted',
     CONNECTION_LIST_FETCHED = 'server:connection_list_fetched',
@@ -51,7 +57,7 @@ export enum AnalyticsTypes {
     PRE_OAUTH2_CC_AUTH = 'server:pre_oauth2_cc_auth',
     PRE_TBA_AUTH = 'server:pre_tba_auth',
     PRE_JWT_AUTH = 'server:pre_jwt_auth',
-    PRE_SIGNATURE_BASED_AUTH = 'server:pre_signature_based_auth',
+    PRE_SIGNATURE_AUTH = 'server:pre_signature_auth',
     RESOURCE_CAPPED_CONNECTION_CREATED = 'server:resource_capped:connection_creation',
     RESOURCE_CAPPED_CONNECTION_IMPORTED = 'server:resource_capped:connection_imported',
     RESOURCE_CAPPED_SCRIPT_ACTIVATE = 'server:resource_capped:script_activate',
@@ -66,6 +72,44 @@ export enum AnalyticsTypes {
     WEB_CONNECION_CREATED = 'web:connection_created',
     WEB_ACCOUNT_SIGNUP = 'web:account_signup'
 }
+
+type OperationType = 'override' | 'creation';
+type ProviderType = 'SIGNATURE' | 'TWO_STEP' | 'BILL' | 'JWT' | 'TABLEAU' | 'TBA' | 'API_KEY' | 'BASIC';
+
+const AnalyticsEventMapping: Record<ProviderType, Record<OperationType, AnalyticsTypes>> = {
+    TWO_STEP: {
+        creation: AnalyticsTypes.TWO_STEP_CONNECTION_INSERTED,
+        override: AnalyticsTypes.TWO_STEP_CONNECTION_UPDATED
+    },
+    SIGNATURE: {
+        creation: AnalyticsTypes.SIGNATURE_CONNECTION_INSERTED,
+        override: AnalyticsTypes.SIGNATURE_CONNECTION_UPDATED
+    },
+    BILL: {
+        creation: AnalyticsTypes.BILL_CONNECTION_INSERTED,
+        override: AnalyticsTypes.BILL_CONNECTION_UPDATED
+    },
+    JWT: {
+        creation: AnalyticsTypes.JWT_CONNECTION_INSERTED,
+        override: AnalyticsTypes.JWT_CONNECTION_UPDATED
+    },
+    TABLEAU: {
+        creation: AnalyticsTypes.TABLEAU_CONNECTION_INSERTED,
+        override: AnalyticsTypes.TABLEAU_CONNECTION_UPDATED
+    },
+    TBA: {
+        creation: AnalyticsTypes.TBA_CONNECTION_INSERTED,
+        override: AnalyticsTypes.TBA_CONNECTION_UPDATED
+    },
+    API_KEY: {
+        creation: AnalyticsTypes.API_CONNECTION_INSERTED,
+        override: AnalyticsTypes.API_CONNECTION_UPDATED
+    },
+    BASIC: {
+        creation: AnalyticsTypes.API_CONNECTION_INSERTED,
+        override: AnalyticsTypes.API_CONNECTION_UPDATED
+    }
+};
 
 class Analytics {
     client: PostHog | undefined;
@@ -166,6 +210,22 @@ class Analytics {
             default:
                 return 'unknown';
         }
+    }
+
+    public async trackConnectionEvent({
+        provider_type,
+        operation,
+        accountId
+    }: {
+        provider_type: string;
+        operation: OperationType;
+        accountId: number;
+    }): Promise<void> {
+        const providerKey = provider_type as ProviderType;
+
+        const eventType = AnalyticsEventMapping[providerKey][operation];
+
+        await this.track(eventType, accountId, { provider_type });
     }
 }
 

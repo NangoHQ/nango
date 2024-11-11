@@ -137,16 +137,16 @@ export default function IntegrationCreate() {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         Object.keys(params).forEach((key) => params[key] === '' && delete params[key]);
 
-        if (authMode === 'BASIC' || authMode === 'SIGNATURE_BASED') {
+        if (authMode === 'BASIC' || authMode === 'SIGNATURE') {
             credentials = {
                 username: apiAuthUsername,
                 password: apiAuthPassword
             };
 
-            if (authMode === 'SIGNATURE_BASED') {
+            if (authMode === 'SIGNATURE') {
                 credentials = {
                     ...credentials,
-                    type: 'SIGNATURE_BASED'
+                    type: 'SIGNATURE'
                 };
             }
         }
@@ -415,14 +415,14 @@ export default function IntegrationCreate() {
   `;
         }
 
-        if (integration?.authMode === 'BASIC' || integration?.authMode === 'SIGNATURE_BASED') {
+        if (integration?.authMode === 'BASIC' || integration?.authMode === 'SIGNATURE') {
             apiAuthString = `
     credentials: {
       username: '${apiAuthUsername}',
       password: '${apiAuthPassword}'${
-          integration.authMode === 'SIGNATURE_BASED'
+          integration.authMode === 'SIGNATURE'
               ? `,
-      Type: 'SIGNATURE_BASED'`
+      Type: 'SIGNATURE'`
               : ''
       }
     }
@@ -935,7 +935,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </div>
                             ))}
 
-                            {(authMode === 'API_KEY' || authMode === 'BASIC' || authMode === 'BILL' || authMode === 'SIGNATURE_BASED') && (
+                            {(authMode === 'API_KEY' || authMode === 'BASIC' || authMode === 'BILL' || authMode === 'SIGNATURE') && (
                                 <div>
                                     <div>
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
@@ -944,7 +944,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                         <p className="mt-3 mb-5">{authMode}</p>
                                     </div>
 
-                                    {(authMode === 'BASIC' || authMode === 'BILL' || authMode === 'SIGNATURE_BASED') && (
+                                    {(authMode === 'BASIC' || authMode === 'BILL' || authMode === 'SIGNATURE') && (
                                         <div>
                                             <div className="flex mt-6">
                                                 <label htmlFor="username" className="text-text-light-gray block text-sm font-semibold">

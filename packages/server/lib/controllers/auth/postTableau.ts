@@ -140,7 +140,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         }
 
         const connectionId = receivedConnectionId || connectionService.generateConnectionId();
-        const [updatedConnection] = await connectionService.upsertTableauConnection({
+        const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
             providerConfigKey,
             credentials,

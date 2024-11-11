@@ -13,7 +13,7 @@ export interface AuthModes {
     Jwt: 'JWT';
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
-    SignatureBased: 'SIGNATURE_BASED';
+    Signature: 'SIGNATURE';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -176,8 +176,8 @@ export interface TwoStepCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
-export interface SignatureBasedCredentials {
-    type: AuthModes['SignatureBased'];
+export interface SignatureCredentials {
+    type: AuthModes['Signature'];
     username: string;
     password: string;
     token?: string;
@@ -207,4 +207,4 @@ export type AllAuthCredentials =
     | JwtCredentials
     | BillCredentials
     | TwoStepCredentials
-    | SignatureBasedCredentials;
+    | SignatureCredentials;

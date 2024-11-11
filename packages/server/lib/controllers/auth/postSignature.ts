@@ -13,7 +13,7 @@ import {
     LogActionEnum,
     getProvider
 } from '@nangohq/shared';
-import type { PostPublicSignatureBasedAuthorization, ProviderSignatureBased } from '@nangohq/types';
+import type { PostPublicSignatureAuthorization, ProviderSignature } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -51,7 +51,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSignatureBasedAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignatureAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -77,9 +77,9 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
     }
 
     const { account, environment, authType } = res.locals;
-    const { username, password }: PostPublicSignatureBasedAuthorization['Body'] = val.data;
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicSignatureBasedAuthorization['Querystring'] = queryStringVal.data;
-    const { providerConfigKey }: PostPublicSignatureBasedAuthorization['Params'] = paramsVal.data;
+    const { username, password }: PostPublicSignatureAuthorization['Body'] = val.data;
+    const { connection_id: receivedConnectionId, params, hmac }: PostPublicSignatureAuthorization['Querystring'] = queryStringVal.data;
+    const { providerConfigKey }: PostPublicSignatureAuthorization['Params'] = paramsVal.data;
     const connectionConfig = params ? getConnectionConfig(params) : {};
 
     let logCtx: LogContext | undefined;
@@ -88,12 +88,12 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
         logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'signaturebased' },
+                meta: { authType: 'signature' },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
         );
-        void analytics.track(AnalyticsTypes.PRE_SIGNATURE_BASED_AUTH, account.id);
+        void analytics.track(AnalyticsTypes.PRE_SIGNATURE_AUTH, account.id);
 
         await hmacCheck({
             environment,
@@ -120,8 +120,8 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
             return;
         }
 
-        if (provider.auth_mode !== 'SIGNATURE_BASED') {
-            await logCtx.error('Provider does not support SIGNATURE_BASED auth', { provider: config.provider });
+        if (provider.auth_mode !== 'SIGNATURE') {
+            await logCtx.error('Provider does not support SIGNATURE auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -129,17 +129,13 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const {
-            success,
-            error,
-            response: credentials
-        } = connectionService.getSignatureBasedCredentials(provider as ProviderSignatureBased, username, password);
+        const { success, error, response: credentials } = connectionService.getSignatureCredentials(provider as ProviderSignature, username, password);
 
         if (!success || !credentials) {
-            await logCtx.error('Error during SignatureBased credentials creation', { error, provider: config.provider });
+            await logCtx.error('Error during Signature credentials creation', { error, provider: config.provider });
             await logCtx.failed();
 
-            errorManager.errRes(res, 'signaturebased_error');
+            errorManager.errRes(res, 'signature_error');
 
             return;
         }
@@ -165,7 +161,7 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
             return;
         }
 
-        const [updatedConnection] = await connectionService.upsertSignatureBasedConnection({
+        const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
             providerConfigKey,
             credentials,
@@ -188,7 +184,7 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-        await logCtx.info('SignatureBased connection creation was successful');
+        await logCtx.info('Signature connection creation was successful');
         await logCtx.success();
 
         void connectionCreatedHook(
@@ -196,7 +192,7 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
                 connection: updatedConnection.connection,
                 environment,
                 account,
-                auth_mode: 'SIGNATURE_BASED',
+                auth_mode: 'SIGNATURE',
                 operation: updatedConnection.operation
             },
             config.provider,
@@ -214,10 +210,10 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
                 connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
                 environment,
                 account,
-                auth_mode: 'SIGNATURE_BASED',
+                auth_mode: 'SIGNATURE',
                 error: {
                     type: 'unknown',
-                    description: `Error during SignatureBased create: ${prettyError}`
+                    description: `Error during Signature create: ${prettyError}`
                 },
                 operation: 'unknown'
             },
@@ -225,7 +221,7 @@ export const postPublicSignatureBasedAuthorization = asyncWrapper<PostPublicSign
             logCtx
         );
         if (logCtx) {
-            await logCtx.error('Error during SignatureBased credentials creation', { error: err });
+            await logCtx.error('Error during Signature credentials creation', { error: err });
             await logCtx.failed();
         }
 
