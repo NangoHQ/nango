@@ -298,10 +298,13 @@
                 },
                 "signature": {
                     "type": "object",
-                    "protocol": {
-                        "type": "string",
-                        "enum": ["WSSE"]
-                    }
+                    "properties": {
+                        "protocol": {
+                            "type": "string",
+                            "enum": ["WSSE"]
+                        }
+                    },
+                    "required": ["protocol"]
                 },
                 "token_expiration_buffer": {
                     "type": "number"
