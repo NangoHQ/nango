@@ -1840,7 +1840,7 @@ components:
                             'JWT',
                             'BILL',
                             'TWO_STEP',
-                            'SIGNATURE_BASED'
+                            'SIGNATURE'
                         ]
                 proxy:
                     properties:
