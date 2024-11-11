@@ -328,6 +328,7 @@ export const Go: React.FC = () => {
                                                             <FormControl>
                                                                 <CustomInput
                                                                     placeholder={definition?.example || definition?.title || base?.example}
+                                                                    prefix={definition?.prefix}
                                                                     suffix={definition?.suffix}
                                                                     {...field}
                                                                     autoComplete="off"
