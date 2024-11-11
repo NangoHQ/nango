@@ -151,6 +151,7 @@ aircall-basic:
         retry:
             at: 'X-AircallApi-Reset'
     docs: https://docs.nango.dev/integrations/all/aircall
+    docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
 
 airtable:
     display_name: Airtable
