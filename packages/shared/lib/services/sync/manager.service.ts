@@ -468,7 +468,7 @@ export class SyncManagerService {
             latestExecutionStatus: latestJob?.status,
             recordCount,
             ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})
-        } as ReportedSyncJobStatus;
+        };
     }
 }
 
