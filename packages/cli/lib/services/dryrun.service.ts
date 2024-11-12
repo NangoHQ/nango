@@ -6,7 +6,7 @@ import chalk from 'chalk';
 
 import type { NangoProps, RunnerOutput, SyncConfig } from '@nangohq/shared';
 import type { Metadata, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
-import { NangoError, localFileService, validateData, NangoSync, ActionError } from '@nangohq/shared';
+import { NangoError, validateData, NangoSync, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
@@ -221,7 +221,7 @@ export class DryRunService {
 
         if (actionInput) {
             if (actionInput.toString().includes('@') && actionInput.toString().endsWith('.json')) {
-                const fileContents = localFileService.readFile(actionInput.toString());
+                const fileContents = readFile(actionInput.toString());
                 if (!fileContents) {
                     console.log(chalk.red('The file could not be read. Please make sure it exists.'));
                     return;
@@ -252,7 +252,7 @@ export class DryRunService {
 
         if (rawStubbedMetadata) {
             if (rawStubbedMetadata.toString().includes('@') && rawStubbedMetadata.toString().endsWith('.json')) {
-                const fileContents = localFileService.readFile(rawStubbedMetadata.toString());
+                const fileContents = readFile(rawStubbedMetadata.toString());
                 if (!fileContents) {
                     console.log(chalk.red('The metadata file could not be read. Please make sure it exists.'));
                     return;
@@ -345,7 +345,7 @@ export class DryRunService {
             const results = await this.runScript({
                 syncName,
                 nangoProps,
-                optionalLoadLocation: './',
+                loadLocation: './',
                 input: normalizedInput
             });
             console.log('---');
@@ -453,19 +453,19 @@ export class DryRunService {
     async runScript({
         syncName,
         nangoProps,
-        optionalLoadLocation,
+        loadLocation,
         input
     }: {
         syncName: string;
         nangoProps: NangoProps;
-        optionalLoadLocation: string;
+        loadLocation: string;
         input: object;
     }): Promise<RunnerOutput> {
         const nango = new NangoSync(nangoProps);
         try {
             await nango.log(`Executing -> integration:"${nangoProps.provider}" script:"${syncName}"`);
 
-            const script: string | null = localFileService.getIntegrationFile(syncName, nangoProps.providerConfigKey, optionalLoadLocation);
+            const script = getIntegrationFile(syncName, nangoProps.providerConfigKey, loadLocation);
             const isAction = nangoProps.scriptType === 'action';
 
             if (!script) {
@@ -619,5 +619,38 @@ export class DryRunService {
         } finally {
             await nango.log(`Done`);
         }
+    }
+}
+
+function readFile(rawFilePath: string): string | null {
+    try {
+        const filePath = rawFilePath.replace('@', '');
+        const realPath = fs.realpathSync(filePath);
+        const fileContents = fs.readFileSync(realPath, 'utf8');
+
+        return fileContents;
+    } catch (err) {
+        console.log(err);
+        return null;
+    }
+}
+
+function getIntegrationFile(syncName: string, providerConfigKey: string, location: string): string | null {
+    try {
+        const filePath = `${location}dist/${syncName}.js`;
+        const fileNameWithProviderConfigKey = filePath.replace(`.js`, `-${providerConfigKey}.js`);
+
+        let realPath;
+        if (fs.existsSync(fileNameWithProviderConfigKey)) {
+            realPath = fs.realpathSync(fileNameWithProviderConfigKey);
+        } else {
+            realPath = fs.realpathSync(filePath);
+        }
+        const integrationFileContents = fs.readFileSync(realPath, 'utf8');
+
+        return integrationFileContents;
+    } catch (err) {
+        console.log(err);
+        return null;
     }
 }
