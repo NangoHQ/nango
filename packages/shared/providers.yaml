@@ -6109,6 +6109,8 @@ xero:
         - offline_access
     proxy:
         base_url: https://api.xero.com
+        retry:
+            after: 'Retry-After'
     post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
 
