@@ -422,7 +422,8 @@
                                     "type": "string"
                                 },
                                 "format": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": ["hostname", "uri", "uuid"]
                                 },
                                 "order": {
                                     "type": "number"
@@ -470,7 +471,8 @@
                                     "type": "string"
                                 },
                                 "format": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": ["hostname", "uri", "uuid", "email"]
                                 },
                                 "default_value": {
                                     "type": "string"
