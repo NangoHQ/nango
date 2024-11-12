@@ -217,6 +217,7 @@ export interface SyncStatus {
     status: 'RUNNING' | 'SUCCESS' | 'ERROR' | 'PAUSED' | 'STOPPED';
     frequency: string;
     latestResult: Record<string, StatusAction>;
+    recordCount: Record<string, number>;
 }
 
 export interface StatusAction {

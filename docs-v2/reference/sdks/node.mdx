@@ -993,7 +993,17 @@ await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNE
             "finishedAt": "<string>",
             "nextScheduledSyncAt": "<string>",
             "frequency": "<string>",
-            "latestResult": {}
+            "latestResult": {
+                "<string>": {
+                    "added": <number>,
+                    "updated": <number>,
+                    "deleted": <number>,
+                }
+            },
+            "recordCount": {
+                "<string>": <number>
+                ...
+            }
         }
     ]
 }
