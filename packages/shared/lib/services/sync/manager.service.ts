@@ -445,7 +445,7 @@ export class SyncManagerService {
 
         const countRes = await recordsService.getRecordCountsByModel({ connectionId: sync.nango_connection_id, environmentId });
         if (countRes.isErr()) {
-            logger.error(`Failed to get record count for sync ${sync.id} in environment ${environmentId}: ${stringifyError(countRes.error)}`);
+            throw new Error(`Failed to get records count for sync ${sync.id} in environment ${environmentId}: ${stringifyError(countRes.error)}`);
         }
         const recordCount: Record<string, number> =
             syncConfig?.models.reduce(
