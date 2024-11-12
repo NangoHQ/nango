@@ -902,6 +902,7 @@ builder-io-private:
             description: The domain of your Builder.io account
             example: app.builder.io
             format: hostname
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -929,6 +930,7 @@ builder-io-public:
             description: The domain of your Builder.io account
             example: app.builder.io
             format: hostname
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -1374,6 +1376,7 @@ codeclimate:
             title: Domain
             description: The domain of your Code Climate account
             format: hostname
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -1546,6 +1549,7 @@ coupa-compass:
             title: Instance Domain
             description: The domain of your Coupa Compass account
             format: hostname
+            prefix: https://
 
 databricks-account:
     display_name: Databricks (Account Level)
@@ -1768,6 +1772,7 @@ discourse:
             title: Domain
             description: The domain of your Discourse account
             format: hostname
+            prefix: https://
         apiUsername:
             type: string
             title: API Username
@@ -2201,6 +2206,7 @@ fiserv:
             title: Domain
             description: The domain of your Fiserv account
             format: hostname
+            prefix: https://
 
 fiserv-api-key:
     display_name: Fiserv (api key)
@@ -3427,6 +3433,7 @@ listmonk:
             title: Domain
             description: The domain of your Listmonk account
             format: hostname
+            prefix: https://
 
 make:
     display_name: Make
@@ -3447,6 +3454,7 @@ make:
             title: Domain
             description: The domain of your Make account
             format: hostname
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -3525,11 +3533,17 @@ marketo:
             title: Domain
             description: The domain of your Marketo account
             format: hostname
+            example: xxx.mktorest.com
+            prefix: https://
+            suffix: /
         identityURL:
             type: string
             title: Identity URL
             description: The identity URL of your Marketo account
             format: hostname
+            prefix: https://
+            example: xxx.mktorest.com
+            suffix: /oauth/token
 
 malwarebytes:
     display_name: Malwarebytes
@@ -3576,6 +3590,7 @@ medallia:
             title: Domain
             description: The domain of your Medallia account
             format: hostname
+            prefix: https://
         tenantName:
             type: string
             title: Tenant Name
@@ -3585,6 +3600,7 @@ medallia:
             title: Gateway URL
             description: The gateway URL of your Medallia account
             format: hostname
+            prefix: https://
 
 metabase:
     display_name: Metabase
@@ -3872,6 +3888,7 @@ next-cloud-ocs:
             title: Domain
             description: The domain of your Next Cloud account
             format: hostname
+            prefix: https://
 
 notion:
     display_name: Notion
@@ -3939,6 +3956,7 @@ odoo:
             title: Domain
             description: The domain of your Odoo account
             format: hostname
+            prefix: https://
 
 okta:
     display_name: Okta
@@ -5064,6 +5082,7 @@ snowflake:
             title: Domain
             description: The domain of your Snowflake account
             format: hostname
+            prefix: https://
 
 splitwise:
     display_name: Splitwise
@@ -5312,6 +5331,7 @@ tableau:
             title: Domain
             description: The domain of your Tableau instance
             format: hostname
+            prefix: https://
         version:
             type: string
             title: API Version
@@ -6095,6 +6115,7 @@ wrike:
             title: Domain
             description: The domain of your Wrike account
             format: hostname
+            prefix: https://
 
 xero:
     display_name: Xero
