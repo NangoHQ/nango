@@ -427,6 +427,9 @@
                                 "order": {
                                     "type": "number"
                                 },
+                                "prefix": {
+                                    "type": "string"
+                                },
                                 "suffix": {
                                     "type": "string"
                                 },

@@ -29,7 +29,11 @@ Nango is a single API to interact with all other external APIs. It should be the
 
 <img src="/docs-v2/images/overview.png">
 
-## 👩‍💻 Sample code
+# 📺 Demo video
+
+[![what-is-nango](/docs-v2/images/video-thumbnail.png)](https://www.youtube.com/watch?v=pvUpbi04IjQ)
+
+# 👩‍💻 Sample code
 
 Initiate a new OAuth flow from your frontend:
 
@@ -47,7 +51,7 @@ nango.listRecords<GithubIssue>({
 });
 ```
 
-# 👩🏻‍🔧 Choose your level of service
+# 👩🏻‍🔧 Pre-built and custom integrations
 
 Nango's flexibility ensures it supports any API integration:
 

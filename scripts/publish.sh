@@ -96,7 +96,7 @@ bump_other_pkg "shared" "nango-yaml"
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/shared"
-npm install @nangohq/node@^$VERSION
+npm install @nangohq/node@$VERSION
 popd
 
 # Shared
@@ -115,7 +115,7 @@ bump_and_npm_publish "nango" "$VERSION"
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/webapp"
-npm install @nangohq/frontend@^$VERSION
+npm install @nangohq/frontend@$VERSION
 popd
 
 # clean up

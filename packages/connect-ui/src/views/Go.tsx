@@ -312,10 +312,13 @@ export const Go: React.FC = () => {
                                                 return (
                                                     <FormItem className={cn(isPreconfigured || definition?.hidden ? 'hidden' : null)}>
                                                         <div>
-                                                            <div className="flex gap-2 items-start pb-1">
-                                                                <FormLabel className="leading-4">
+                                                            <div className="flex gap-2 items-center pb-1">
+                                                                <FormLabel className="leading-5">
                                                                     {definition?.title || base?.title} {!isOptional && <span className="text-red-base">*</span>}
                                                                 </FormLabel>
+                                                                {isOptional && (
+                                                                    <span className="bg-dark-300 rounded-lg px-2 py-0.5 text-xs text-dark-500">optional</span>
+                                                                )}
                                                                 {definition?.doc_section && (
                                                                     <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
                                                                         <IconInfoCircle size={16} />
@@ -328,6 +331,7 @@ export const Go: React.FC = () => {
                                                             <FormControl>
                                                                 <CustomInput
                                                                     placeholder={definition?.example || definition?.title || base?.example}
+                                                                    prefix={definition?.prefix}
                                                                     suffix={definition?.suffix}
                                                                     {...field}
                                                                     autoComplete="off"

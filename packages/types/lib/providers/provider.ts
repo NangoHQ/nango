@@ -32,6 +32,7 @@ export interface SimplifiedJSONSchema {
     order: number;
     default_value?: string;
     hidden?: string;
+    prefix?: string;
     suffix?: string;
     doc_section?: string;
 }
