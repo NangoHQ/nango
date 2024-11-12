@@ -217,6 +217,12 @@
             ]
         },
         {
+            "group": "Other Features",
+            "pages": [
+                "features/otlp-export"
+            ]
+        },
+        {
             "group": "APIs & Templates",
             "pages": [
                 "integrations/overview",
