@@ -599,6 +599,7 @@ bamboohr:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
+            order: 1
 
 bamboohr-basic:
     display_name: BambooHR (basic auth)
@@ -619,17 +620,22 @@ bamboohr-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
+            order: 1
     credentials:
         username:
-            type: string
-            title: Email address
-            description: The email address of your BambooHR account
-            format: email
-        password:
             type: string
             title: API key
             description: The API Key of your BambooHR account
             pattern: '^[a-zA-Z0-9]+$'
+            secret: true
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://documentation.bamboohr.com/docs/getting-started
+            # Bamboo HR is using basic auth with an api key
+            default_value: x
+            hidden: true
 
 battlenet:
     display_name: Battle.net
@@ -3090,6 +3096,17 @@ jira-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .atlassian.net
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Email Address
+            description: The Email Address of your Jira account
+            format: email
+        password:
+            type: string
+            title: API Key
+            description: The API Key of your Jira account
 
 jira-data-center:
     display_name: Jira Data Center

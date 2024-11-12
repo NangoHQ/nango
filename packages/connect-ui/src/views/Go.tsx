@@ -340,7 +340,7 @@ export const Go: React.FC = () => {
                                                                     suffix={definition?.suffix}
                                                                     {...field}
                                                                     autoComplete="off"
-                                                                    type={base?.secret ? 'password' : 'text'}
+                                                                    type={definition?.secret || base?.secret ? 'password' : 'text'}
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />

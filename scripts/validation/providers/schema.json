@@ -423,10 +423,13 @@
                                 },
                                 "format": {
                                     "type": "string",
-                                    "enum": ["hostname", "uri", "uuid"]
+                                    "enum": ["hostname", "uri", "uuid", "email"]
                                 },
                                 "order": {
                                     "type": "number"
+                                },
+                                "secret": {
+                                    "type": "boolean"
                                 },
                                 "prefix": {
                                     "type": "string"
@@ -476,6 +479,9 @@
                                 },
                                 "default_value": {
                                     "type": "string"
+                                },
+                                "secret": {
+                                    "type": "boolean"
                                 },
                                 "hidden": {
                                     "type": "boolean"
