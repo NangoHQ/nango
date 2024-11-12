@@ -104,6 +104,7 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 import { cliMinVersion } from './middleware/cliVersionCheck.js';
+import { getProviders } from './controllers/v1/getProviders.js';
 
 export const router = express.Router();
 
@@ -154,6 +155,7 @@ router.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
 router.get('/env.js', getEnvJs);
+router.get('/providers.yaml', getProviders);
 
 // -------
 // Public API routes
