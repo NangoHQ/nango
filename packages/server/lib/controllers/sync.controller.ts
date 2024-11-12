@@ -132,7 +132,7 @@ class SyncController {
         if (byModel.isOk()) {
             return syncs.map((sync) => ({
                 ...sync,
-                record_count: sync.models.reduce((sum, model) => sum + (byModel.value[model]?.count ?? 0), 0)
+                record_count: Object.fromEntries(sync.models.map((model) => [model, byModel.value[model]?.count ?? 0]))
             }));
         } else {
             return syncs.map((sync) => ({ ...sync, record_count: null }));
@@ -523,6 +523,7 @@ class SyncController {
                 provider_config_key as string,
                 syncNames,
                 orchestrator,
+                recordsService,
                 connection_id as string,
                 false,
                 connection

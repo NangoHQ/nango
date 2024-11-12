@@ -6,7 +6,7 @@ import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
 import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
 import { logger } from '../utils/logger.js';
-import { Err, Ok, retry } from '@nangohq/utils';
+import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -216,52 +216,96 @@ export async function upsert({
         );
     }
 
-    let summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys };
+    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys };
     try {
         await db.transaction(async (trx) => {
+            // Lock to prevent concurrent upserts
+            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_upsert`, [newLockId(connectionId, model)]);
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
-                const chunkSummary = await getUpsertSummary({ records: chunk, connectionId, model, nonUniqueKeys, softDelete, trx });
-                summary = {
-                    addedKeys: [...summary.addedKeys, ...chunkSummary.addedKeys],
-                    updatedKeys: [...summary.updatedKeys, ...chunkSummary.updatedKeys],
-                    deletedKeys: [...(summary.deletedKeys || []), ...(chunkSummary.deletedKeys || [])],
-                    nonUniqueKeys: nonUniqueKeys
-                };
                 const encryptedRecords = encryptRecords(chunk);
 
-                // Retry upserting if deadlock detected
+                // Retry if deadlock detected
                 // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
-                const upserting = () =>
-                    trx.from<FormattedRecord>(RECORDS_TABLE).insert(encryptedRecords).onConflict(['connection_id', 'external_id', 'model']).merge();
-                await retry(upserting, {
-                    maxAttempts: 3,
-                    delayMs: 500,
-                    retryIf: (res) => {
-                        if ('code' in res) {
-                            const errorCode = (res as { code: string }).code;
-                            return errorCode === '40P01'; // deadlock_detected
+                const withRetry = async <T>(query: Knex.QueryBuilder<any, T>) => {
+                    return retry(() => query, {
+                        maxAttempts: 3,
+                        delayMs: 500,
+                        retryIf: (res) => {
+                            if ('code' in res) {
+                                const errorCode = (res as { code: string }).code;
+                                return errorCode === '40P01'; // deadlock_detected
+                            }
+                            return false;
                         }
-                        return false;
-                    }
-                });
+                    });
+                };
 
-                const delta = chunkSummary.addedKeys.length - (chunkSummary.deletedKeys?.length ?? 0);
-                if (delta !== 0) {
-                    await trx
-                        .from(RECORD_COUNTS_TABLE)
-                        .insert({
-                            connection_id: connectionId,
-                            model,
-                            environment_id: environmentId,
-                            count: delta
-                        })
-                        .onConflict(['connection_id', 'environment_id', 'model'])
-                        .merge({
-                            count: trx.raw(`${RECORD_COUNTS_TABLE}.count + EXCLUDED.count`),
-                            updated_at: trx.fn.now()
-                        });
+                // we need to know which records were updated, deleted, undeleted or unchanged
+                // we achieve this by comparing the records data_hash and deleted_at fields before and after the update
+                const externalIds = chunk.map((r) => r.external_id);
+                const updateQuery = trx
+                    .with('existing', (qb) => {
+                        qb.select('external_id', 'data_hash', 'deleted_at')
+                            .from(RECORDS_TABLE)
+                            .where({
+                                connection_id: connectionId,
+                                model
+                            })
+                            .whereIn('external_id', externalIds);
+                    })
+                    .with('upsert', (qb) => {
+                        qb.insert(encryptedRecords)
+                            .into(RECORDS_TABLE)
+                            .onConflict(['connection_id', 'external_id', 'model'])
+                            .merge()
+                            .returning(['external_id', 'data_hash', 'deleted_at']);
+                    })
+                    .select<{ external_id: string; status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged' }[]>(
+                        'upsert.external_id',
+                        trx.raw(`
+                                CASE
+                                    WHEN existing.external_id IS NULL THEN 'inserted'
+                                    ELSE
+                                        CASE
+                                            WHEN existing.deleted_at IS NOT NULL AND upsert.deleted_at IS NULL THEN 'undeleted'
+                                            WHEN existing.deleted_at IS NULL AND upsert.deleted_at IS NOT NULL THEN 'deleted'
+                                            WHEN existing.data_hash <> upsert.data_hash THEN 'changed'
+                                            ELSE 'unchanged'
+                                        END
+                                END as status`)
+                    )
+                    .from('upsert')
+                    .leftJoin('existing', 'upsert.external_id', 'existing.external_id');
+                const updatedRes = await withRetry(updateQuery);
+
+                const inserted = updatedRes.filter((r) => r.status === 'inserted').map((r) => r.external_id);
+                const undeleted = updatedRes.filter((r) => r.status === 'undeleted').map((r) => r.external_id);
+                const deleted = updatedRes.filter((r) => r.status === 'deleted').map((r) => r.external_id);
+                const updated = updatedRes.filter((r) => r.status === 'changed').map((r) => r.external_id);
+
+                if (softDelete) {
+                    summary.deletedKeys?.push(...deleted);
+                } else {
+                    summary.addedKeys.push(...inserted.concat(undeleted));
+                    summary.updatedKeys.push(...updated);
                 }
+            }
+            const delta = summary.addedKeys.length - (summary.deletedKeys?.length ?? 0);
+            if (delta !== 0) {
+                await trx
+                    .from(RECORD_COUNTS_TABLE)
+                    .insert({
+                        connection_id: connectionId,
+                        model,
+                        environment_id: environmentId,
+                        count: delta
+                    })
+                    .onConflict(['connection_id', 'environment_id', 'model'])
+                    .merge({
+                        count: trx.raw(`${RECORD_COUNTS_TABLE}.count + EXCLUDED.count`),
+                        updated_at: trx.fn.now()
+                    });
             }
         });
 
@@ -310,6 +354,8 @@ export async function update({
     try {
         const updatedKeys: string[] = [];
         await db.transaction(async (trx) => {
+            // Lock to prevent concurrent updates
+            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_update`, [newLockId(connectionId, model)]);
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
 
@@ -480,47 +526,7 @@ async function getRecordsToUpdate({
         .whereNotIn(['external_id', 'data_hash'], keysWithHash);
 }
 
-async function getUpsertSummary({
-    records,
-    connectionId,
-    model,
-    nonUniqueKeys,
-    softDelete,
-    trx
-}: {
-    records: FormattedRecord[];
-    connectionId: number;
-    model: string;
-    nonUniqueKeys: string[];
-    softDelete: boolean;
-    trx: Knex.Transaction;
-}): Promise<UpsertSummary> {
-    const keys: string[] = records.map((record: FormattedRecord) => getUniqueId(record));
-    const nonDeletedKeys: string[] = await trx
-        .from(RECORDS_TABLE)
-        .where({
-            connection_id: connectionId,
-            model,
-            deleted_at: null
-        })
-        .whereIn('external_id', keys)
-        .pluck('external_id');
-
-    if (softDelete) {
-        return {
-            addedKeys: [],
-            updatedKeys: [],
-            deletedKeys: nonDeletedKeys,
-            nonUniqueKeys: nonUniqueKeys
-        };
-    } else {
-        const addedKeys = keys.filter((key: string) => !nonDeletedKeys.includes(key));
-        const updatedRecords = await getRecordsToUpdate({ records, connectionId, model, trx });
-        return {
-            addedKeys,
-            updatedKeys: updatedRecords.map((record) => record.external_id),
-            deletedKeys: [],
-            nonUniqueKeys: nonUniqueKeys
-        };
-    }
+function newLockId(connectionId: number, model: string): bigint {
+    const modelHash = stringToHash(model);
+    return (BigInt(connectionId) << 32n) | BigInt(modelHash);
 }

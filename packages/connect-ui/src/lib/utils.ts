@@ -14,7 +14,7 @@ export function cn(...inputs: ClassValue[]) {
 export function jsonSchemaToZod(schema: SimplifiedJSONSchema): ZodTypeAny {
     let fieldString = z.string();
     if (schema.format === 'hostname') {
-        fieldString = fieldString.regex(/^[a-zA-Z0-9-]$/);
+        fieldString = fieldString.regex(/^[a-zA-Z0-9.-]+$/, 'Invalid hostname');
     } else if (schema.format === 'uuid') {
         fieldString = fieldString.uuid();
     } else if (schema.format === 'uri') {
