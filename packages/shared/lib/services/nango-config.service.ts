@@ -35,7 +35,7 @@ export function loadStandardConfig(configData: NangoConfig): ServiceResponse<Sta
 
         return configServiceResponse;
     } catch (error) {
-        return { success: false, error: new NangoError('error_loading_nango_config', error instanceof Error ? error.message : {}), response: null };
+        return { success: false, error: new NangoError('error_loading_nango_config', error instanceof Error ? error.message : (error as any)), response: null };
     }
 }
 
