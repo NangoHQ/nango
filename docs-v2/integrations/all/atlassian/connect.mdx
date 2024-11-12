@@ -7,42 +7,42 @@ sidebarTitle: Atlassian
 # Overview
 
 To authenticate with Atlassian, you need two key pieces of information:
-1. **Application ID** - A unique identifier for your application on Atlassian.
-2. **Admin API Key** - A key that grants full access to all your application's indices and configurations.
+1. **Atlassian Domain** - Your Account domain on Atlassian
+2. **Atlassian API Key** - Your unique account identifier
+
+Note: API tokens can be used with the Confluence Cloud, Jira Cloud and Jira Align REST APIs.
+
 
 This guide will walk you through finding or creating those credentials within Atlassian.
 
+
 ### Prerequisites:
 
-- You must have **API Keys access** to view and manage API keys in Atlassian.
-
-### Instructions:
-
-#### Step 1: Finding Your Application ID
-1. **Log in** to your Atlassian dashboard.
-2. Select your application in the select location in the header
-3. Go to the **Settings > Team > API Keys** section (located in the left-hand menu).
-
-<img src="/integrations/all/Atlassian/app_id.png" />
+- You must set up an Enterprise account with Atlassian.
 
 
-#### Step 2: Finding Your Admin API Key
-
-1. After picking your Application ID, scroll down and copy **Admin API Key**
-
-<img src="/integrations/all/Atlassian/api_key.png" />
-
-<Tip>You can use your Search-Only API Key if you only want to replicate records, but it won't let index anything to Atlassian. You can also choose to generate a dedicated key.</Tip>
-
-#### Step 3: Enter credentials in the Connect UI
-
-Once you have both the **Application ID** and **Admin API Key**:
-1. Open the form where you need to authenticate with Atlassian.
-2. Enter the **Application ID** in the designated field.
-3. Enter the **Admin API Key** in the API Key field for the key.
-4. Submit the form, and you should be successfully authenticated.
+#### Step 1: Finding Your Atlassian Domain and Atlassian API Key
+1. Log in to **https://id.atlassian.com/manage-profile/security/api-tokens**.
+2. Click **Create API token**.
+3. From the dialog that appears, enter a memorable and concise **Label** for your token and click **Create**.
+4. Click **Copy to clipboard**, and store your API Key securely
 
 
-<img src="/integrations/all/Atlassian/form.png" style={{maxWidth: "450px" }}/>
+Important: Copy and store your API Key securely, it will not be visible again once you leave the creation dialog.
 
-You are now connected to Atlassian.
+
+3. Your Atlassian Domain is available in the browser search bar
+
+<img src="/integrations/all/Atlassian/nango-Atlassian-1.png" />
+
+
+#### Step 2: Connect Your Atlassian Account
+
+<img src="/integrations/all/Atlassian/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Atlassian authentication form.
+Enter your credentials as follows:
+- User Name: Your email when creating the API key
+- Password: Your API Key
+- Atlassian Domain: Your Atlassian domain
+Click "Connect" to complete the authentication.
