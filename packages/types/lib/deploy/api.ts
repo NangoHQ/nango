@@ -2,6 +2,7 @@ import type { JSONSchema7 } from 'json-schema';
 
 import type { Endpoint, ApiError } from '../api.js';
 import type { IncomingFlowConfig, PostConnectionScriptByProvider } from './incomingFlow.js';
+import type { SyncDeploymentResult } from './results.js';
 
 export type PostDeployConfirmation = Endpoint<{
     Method: 'POST';
@@ -29,7 +30,7 @@ export type PostDeploy = Endpoint<{
         singleDeployMode?: boolean;
         jsonSchema?: JSONSchema7 | undefined;
     };
-    Success: any[]; // TODO: move SyncDeploymentResult here
+    Success: SyncDeploymentResult[];
 }>;
 
 export type PostDeployInternal = Endpoint<{
@@ -48,7 +49,7 @@ export type PostDeployInternal = Endpoint<{
         jsonSchema?: JSONSchema7 | undefined;
     };
     Error: ApiError<'forbidden'> | ApiError<'environment_creation_error'>;
-    Success: any[]; // TODO: move SyncDeploymentResult here
+    Success: SyncDeploymentResult[];
 }>;
 
 export interface SlimSync {

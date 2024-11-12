@@ -1,11 +1,12 @@
 import promptly from 'promptly';
 import fs from 'node:fs';
+import { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 
 import type { NangoProps, RunnerOutput, SyncConfig } from '@nangohq/shared';
 import type { Metadata, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
-import { cloudHost, stagingHost, NangoError, localFileService, validateData, NangoSync, formatScriptError, ActionError } from '@nangohq/shared';
+import { NangoError, localFileService, validateData, NangoSync, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
@@ -18,6 +19,7 @@ import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
 import { Buffer } from 'buffer';
+import { serializeError } from 'serialize-error';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -187,7 +189,7 @@ export class DryRunService {
             printDebug(`Provider found: ${provider}`);
         }
 
-        if (process.env['NANGO_HOSTPORT'] === cloudHost || process.env['NANGO_HOSTPORT'] === stagingHost) {
+        if (process.env['NANGO_HOSTPORT']?.endsWith('.nango.dev')) {
             process.env['NANGO_CLOUD'] = 'true';
         }
 
@@ -572,11 +574,42 @@ export class DryRunService {
                     };
                 } else if (err instanceof NangoError) {
                     return { success: false, error: err, response: null };
+                } else if (err instanceof AxiosError) {
+                    if (err.response?.data) {
+                        const errorResponse = err.response.data.payload || err.response.data;
+                        return {
+                            success: false,
+                            error: {
+                                type: 'script_http_error',
+                                payload: typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse,
+                                status: err.response.status
+                            },
+                            response: null
+                        };
+                    } else {
+                        const tmp = serializeError(err);
+                        return {
+                            success: false,
+                            error: {
+                                type: 'script_http_error',
+                                payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                                status: 500
+                            },
+                            response: null
+                        };
+                    }
+                } else {
+                    const tmp = serializeError(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
+                    return {
+                        success: false,
+                        error: {
+                            type: 'script_internal_error',
+                            payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                            status: 500
+                        },
+                        response: null
+                    };
                 }
-
-                const errorType = isAction ? 'action_script_failure' : 'sync_script_failure';
-
-                return formatScriptError(err, errorType, syncName);
             }
         } catch (err) {
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);

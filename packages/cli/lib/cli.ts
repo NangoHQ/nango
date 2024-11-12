@@ -8,9 +8,9 @@ import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
-import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
+import { getNangoRootPath, printDebug } from './utils.js';
 import { loadYamlAndGenerate } from './services/model.service.js';
-import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
+import { NANGO_INTEGRATIONS_NAME, TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
 import { getLayoutMode } from './utils/layoutMode.js';
 import { getProviderConfigurationFromPath, nangoConfigFile } from '@nangohq/nango-yaml';
