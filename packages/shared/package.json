@@ -23,7 +23,7 @@
         "@hapi/boom": "^10.0.1",
         "@nangohq/database": "file:../database",
         "@nangohq/nango-yaml": "0.42.22",
-        "@nangohq/node": "^0.42.22",
+        "@nangohq/node": "0.42.22",
         "@nangohq/utils": "file:../utils",
         "@sentry/node": "^7.119.2",
         "ajv": "^8.12.0",
