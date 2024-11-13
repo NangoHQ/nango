@@ -80,7 +80,7 @@ async function fetchRunners() {
 
         const filteredServices = fetched.map((item) => item.service).filter((service) => service.name.startsWith(`${process.env.ENVIRONMENT}-runner-`));
 
-        services = services.concat(...filteredServices);
+        services = services.concat(filteredServices);
 
         await sleep(1000);
     }
