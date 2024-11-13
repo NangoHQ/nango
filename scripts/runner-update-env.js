@@ -4,28 +4,8 @@
 
 const apiUrl = 'https://api.render.com/v1';
 
-if (!process.env.ENVIRONMENT) {
-    console.error('Please set the ENVIRONMENT environment variable');
-    process.exit(1);
-}
-
-if (!process.env.OWNER_ID) {
-    console.error('Please set the OWNER_ID environment variable');
-    process.exit(1);
-}
-
-if (!process.env.RENDER_API_KEY) {
-    console.error('Please set the RENDER_API_KEY environment variable');
-    process.exit(1);
-}
-
-if (!process.env.KEY) {
-    console.error('Please set the KEY environment variable');
-    process.exit(1);
-}
-
-if (!process.env.VALUE) {
-    console.error('Please set the VALUE environment variable');
+if (!process.env.ENVIRONMENT || !process.env.OWNER_ID || !process.env.RENDER_API_KEY || !process.env.KEY || !process.env.VALUE) {
+    help();
     process.exit(1);
 }
 
@@ -43,6 +23,14 @@ for (let i = 0; i < runners.length; i++) {
 console.log();
 console.log('Remember: these changes will not take effect until the runner is restarted.');
 console.log();
+
+function help() {
+    console.log();
+    console.log(
+        'Usage: ENVIRONMENT=<env> OWNER_ID=<OWNER_ID> RENDER_API_KEY=<RENDER_API_KEY> KEY=<ENV-KEY> VALUE=<ENV-VALUE> node ./scripts/runner-update-env.js'
+    );
+    console.log();
+}
 
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
