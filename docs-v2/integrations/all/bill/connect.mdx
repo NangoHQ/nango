@@ -7,7 +7,10 @@ sidebarTitle: Bill
 # Overview
 
 To authenticate with Bill, you need two key pieces of information:
-1. **API Key** - A unique identifier for your application on Bill.
+1. **organizaton ID** - A unique identifier for your organization on Bill.
+2. **Developer Key** - Used to identify your developer account in API requests.
+3. **apiToken** - A unique token for your application on Bill.
+4. **session_id** - A unique sessionId for your application on Bill.
 
 
 This guide will walk you through finding or creating those credentials within Bill.
@@ -28,8 +31,12 @@ This guide will walk you through finding or creating those credentials within Bi
 - **password**: After setting up a test company with the Sandbox Access Form, click Set up password to complete the flow of creating a password.
 Use this value to sign in to the web app on your sandbox developer account.
 
+Important:
+- Copy and securely store your API Token. It will not be available after registration.
+- To get your **Organization ID** and **Developer Key** you must send an email to bill at [email](developerprogram@hq.bill.com).
+- Your organization ID will begin with `008`.
+- You will have to contact bill to get production credentials.
 
-Important: Copy and securely store your API Token. It will not be available after registration.
 
 
 #### Step 2: Connect Your Bill Account
@@ -40,8 +47,8 @@ To authenticate using your API credentials, navigate to the Bill authentication 
 Enter your credentials as follows:
 - User Name: Your username is the email address used to sign in to your account
 - Password: Password associated with email address for your account
-- apiToken: Your API Key
-- base URL: URL for environment (sandbox: https://gateway.stage.bill.com/connect/v3 | production: https://gateway.prod.bill.com/connect/v3)
+- Organization ID: Your Organization ID
+- Developer Key: Your developer key
 
 Click "Connect" to complete the authentication.
 
