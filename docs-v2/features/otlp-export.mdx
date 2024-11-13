@@ -16,7 +16,7 @@ Nango provides OpenTelemetry export to help you monitor and analyze your integra
 The following integration events are currently exported (as of November 2024):
 - Sync executions
 - Action executions
-- Webhook executions
+- 3rd-party API webhooks executions
 - Proxied requests
 
 ### Configuration
@@ -29,4 +29,4 @@ Log into the Nango dashboard and navigate to the Environment settings page.
 
 In the Environment Settings, provide the following information:
 - OpenTelemetry endpoint: The endpoint URL of your OpenTelemetry collector. Ex: https://my.otlp.collector:4318/v1/
-- Headers (Optional): Any authentication headers or additional headers required to access your collector
+- Headers (Optional): Any authorization headers or additional headers required to access your collector.
