@@ -6007,7 +6007,7 @@ whatsapp-business:
             type: string
             title: API Key
             description: The access token to your whatsapp account
-            pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
+            pattern: '^[a-zA-Z0-9]+$'
 
 whoop:
     display_name: Whoop
