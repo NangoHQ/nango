@@ -1,0 +1,32 @@
+---
+title: BrightCrowd
+sidebarTitle: BrightCrowd
+---
+
+API configurations: [`brightcrowd`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [OAuth related docs](https://brightcrowd.com/partner-api#/operations/listBooks#Request)
+-   [BrightCrowd REST API docs](https://brightcrowd.com/partner-api#/)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-   BrightCrowd API handles two main resources, `Book` and `Page`.
+-   Different auth scopes are required for different requests. To find the exact scope needed for a specific request, please refer to the Security Scopes section, such as the [Request](https://brightcrowd.com/partner-api#/operations/listBooks#Request) for listing all books in the account.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/brightcrowd.mdx)</Note>

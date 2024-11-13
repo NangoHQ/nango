@@ -35,7 +35,8 @@ export interface ConnectionConfig {
         | TableauCredentials
         | JwtCredentials
         | TwoStepCredentials
-        | OAuth2ClientCredentials;
+        | OAuth2ClientCredentials
+        | SignatureCredentials;
 }
 
 export interface OAuthCredentialsOverride {
@@ -97,6 +98,12 @@ export interface BillCredentials {
 
 export interface TwoStepCredentials {
     type: 'TWO_STEP';
+}
+
+export interface SignatureCredentials {
+    type: 'SIGNATURE';
+    username: string;
+    password: string;
 }
 
 export enum AuthorizationStatus {
