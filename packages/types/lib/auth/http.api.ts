@@ -1,5 +1,17 @@
 import type { ApiError, Endpoint } from '../api';
 
+export type ConnectionQueryString = {
+    connection_id?: string | undefined;
+    params?: Record<string, any> | undefined;
+    user_scope?: string | undefined;
+} & (
+    | {
+          public_key: string;
+          hmac?: string | undefined;
+      }
+    | { connect_session_token: string }
+);
+
 export type PostPublicTbaAuthorization = Endpoint<{
     Method: 'POST';
     Body: {
@@ -8,11 +20,7 @@ export type PostPublicTbaAuthorization = Endpoint<{
         oauth_client_id_override?: string | undefined;
         oauth_client_secret_override?: string | undefined;
     };
-    Querystring: {
-        connection_id?: string | undefined;
-        params?: Record<string, any> | undefined;
-        hmac?: string | undefined;
-    };
+    Querystring: ConnectionQueryString;
     Params: {
         providerConfigKey: string;
     };
@@ -37,11 +45,7 @@ export type PostPublicTableauAuthorization = Endpoint<{
         pat_secret: string;
         content_url?: string | undefined;
     };
-    Querystring: {
-        connection_id?: string | undefined;
-        params?: Record<string, any> | undefined;
-        hmac?: string | undefined;
-    };
+    Querystring: ConnectionQueryString;
     Params: {
         providerConfigKey: string;
     };
@@ -71,11 +75,7 @@ export type PostPublicJwtAuthorization = Endpoint<{
               }
             | string;
     };
-    Querystring: {
-        connection_id?: string | undefined;
-        params?: Record<string, any> | undefined;
-        hmac?: string | undefined;
-    };
+    Querystring: ConnectionQueryString;
     Params: {
         providerConfigKey: string;
     };
@@ -95,10 +95,7 @@ export type PostPublicJwtAuthorization = Endpoint<{
 
 export type PostPublicUnauthenticatedAuthorization = Endpoint<{
     Method: 'POST';
-    Querystring: {
-        connection_id?: string | undefined;
-        hmac?: string | undefined;
-    };
+    Querystring: ConnectionQueryString;
     Params: {
         providerConfigKey: string;
     };
@@ -124,11 +121,7 @@ export type PostPublicBillAuthorization = Endpoint<{
         organization_id: string;
         dev_key: string;
     };
-    Querystring: {
-        connection_id?: string | undefined;
-        params?: Record<string, any> | undefined;
-        hmac?: string | undefined;
-    };
+    Querystring: ConnectionQueryString;
     Params: {
         providerConfigKey: string;
     };
@@ -149,11 +142,7 @@ export type PostPublicBillAuthorization = Endpoint<{
 export type PostPublicTwoStepAuthorization = Endpoint<{
     Method: 'POST';
     Body: Record<string, any>;
-    Querystring: {
-        connection_id?: string | undefined;
-        params?: Record<string, any> | undefined;
-        hmac?: string | undefined;
-    };
+    Querystring: ConnectionQueryString;
     Params: {
         providerConfigKey: string;
     };

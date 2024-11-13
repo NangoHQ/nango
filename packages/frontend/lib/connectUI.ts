@@ -6,7 +6,7 @@ export interface ConnectUIProps {
     /**
      * The unique token to identify your user. It is required to make UI work but can be set asynchronously.
      */
-    sessionToken?: string;
+    sessionToken?: string | undefined;
     /**
      * The base URL to load the UI
      * @default `https://connect.nango.dev`

@@ -18,7 +18,7 @@ import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionIdSchema, providerConfigKeySchema, connectionCredential } from '../../helpers/validation.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 
@@ -28,12 +28,10 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
-        public_key: z.string().uuid().optional(),
-        connect_session_token: connectSessionTokenSchema.optional(),
-        user_scope: z.string().optional(),
-        hmac: z.string().optional()
+        user_scope: z.string().optional()
     })
-    .strict();
+    .strict()
+    .and(connectionCredential);
 
 const paramsValidation = z
     .object({
@@ -68,9 +66,11 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
     const { account, environment, authType } = res.locals;
     const bodyData: PostPublicTwoStepAuthorization['Body'] = val.data;
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicTwoStepAuthorization['Querystring'] = queryStringVal.data;
+    const queryString: PostPublicTwoStepAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTwoStepAuthorization['Params'] = paramsVal.data;
-    const connectionConfig = params ? getConnectionConfig(params) : {};
+    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    const connectionId = queryString.connection_id || connectionService.generateConnectionId();
+    const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
 
     let logCtx: LogContext | undefined;
 
@@ -85,14 +85,10 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
         );
         void analytics.track(AnalyticsTypes.PRE_TWO_STEP_AUTH, account.id);
 
-        await hmacCheck({
-            environment,
-            logCtx,
-            providerConfigKey,
-            connectionId: receivedConnectionId,
-            hmac,
-            res
-        });
+        const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+        if (!checked) {
+            return;
+        }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
@@ -133,8 +129,6 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
             return;
         }
-
-        const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
         const [updatedConnection] = await connectionService.upsertTwoStepConnection({
             connectionId,
@@ -183,7 +177,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                 environment,
                 account,
                 auth_mode: 'TWO_STEP',
@@ -205,10 +199,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.AUTH,
             environmentId: environment.id,
-            metadata: {
-                providerConfigKey,
-                connectionId: receivedConnectionId
-            }
+            metadata: { providerConfigKey, connectionId }
         });
 
         next(err);

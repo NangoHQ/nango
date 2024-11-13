@@ -17,12 +17,13 @@ Nango guides the user through the (O)Auth flow in a popup window.
 Store the `connectionId` & `integrationId` in your database to retrieve the user's data later.
 
 ```ts Frontend: Trigger the OAuth flow.
+const nango = new Nango({ connectSessionToken });
+
 // Shows authorization popup to the user.
 await nango.openConnectUI({
-    sessionToken,
     onEvent: (event) {
         if (event.type === 'connect') {
-            // The auth flow succeeded. The integration is set up!
+            // The auth flow succeeded. The user is connected!
             saveToDatabase(connectionId, integrationId);
         }
     }
@@ -32,6 +33,11 @@ await nango.openConnectUI({
 <Tip>
 When a new user connects your integration, Nango automatically starts fetching their data (e.g. issues, contacts, files, etc.) in the background.
 </Tip>
+
+<Card title="Step-by-step Guide" icon="link" href="/integrate/guides/authorize-an-api" horizontal>
+  Learn how to authorize your users
+</Card>
+
 
 ## 2. Receive data update notifications
 
@@ -46,6 +52,10 @@ Nango uses webhooks to notify your backend when external user data has been adde
     "modifiedAfter": "2023-05-31T11:46:13.390Z"
 }
 ```
+
+<Card title="Step-by-step Guide" icon="link" href="/integrate/guides/receive-webhooks-from-an-api" horizontal>
+  Learn how to receive webhooks
+</Card>
 
 ## 3. Collect and save the new data
 
@@ -66,6 +76,10 @@ const records = await nango.listRecords<Ticket>({
 saveToDatabase(records);
 ```
 
+<Card title="Step-by-step Guide" icon="link" href="/integrate/guides/sync-data-from-an-api" horizontal>
+  Learn how to sync data
+</Card>
+
 ## 4. Write back to external APIs
 
 Push updates back to external APIs in a way that is:
@@ -82,6 +96,11 @@ const result = await nango.triggerAction({
     input: { "title": "...", "content": "..." }
 });
 ```
+
+<Card title="Step-by-step Guide" icon="link" href="/integrate/guides/perform-workflows-with-an-api" horizontal>
+  Learn how to perform workflows
+</Card>
+
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

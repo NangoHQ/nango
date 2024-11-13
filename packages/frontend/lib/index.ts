@@ -29,6 +29,23 @@ export * from './connectUI.js';
 const prodHost = 'https://api.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
 
+export type NangoOptions = {
+    host?: string;
+    websocketsPath?: string;
+    width?: number;
+    height?: number;
+    debug?: boolean;
+} & (
+    | {
+          connectSessionToken?: string;
+          publicKey?: never;
+      }
+    | {
+          connectSessionToken?: never;
+          publicKey?: string;
+      }
+);
+
 export class AuthError extends Error {
     type;
 
@@ -51,15 +68,7 @@ export default class Nango {
 
     public win: AuthorizationModal | null = null;
 
-    constructor(config: {
-        host?: string;
-        websocketsPath?: string;
-        publicKey?: string;
-        connectSessionToken?: string;
-        width?: number;
-        height?: number;
-        debug?: boolean;
-    }) {
+    constructor(config: NangoOptions = {}) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
         config.websocketsPath = config.websocketsPath || '/'; // Default to root path.
         this.debug = config.debug || false;
@@ -77,12 +86,8 @@ export default class Nango {
             this.height = config.height;
         }
 
-        this.hostBaseUrl = config.host.slice(-1) === '/' ? config.host.slice(0, -1) : config.host; // Remove trailing slash.
+        this.hostBaseUrl = config.host.endsWith('/') ? config.host.slice(0, -1) : config.host; // Remove trailing slash.
         this.status = AuthorizationStatus.IDLE;
-
-        if ((!config.publicKey && !config.connectSessionToken) || (config.publicKey && config.connectSessionToken)) {
-            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missingAuthToken');
-        }
 
         this.publicKey = config.publicKey;
         this.connectSessionToken = config.connectSessionToken;
@@ -112,6 +117,8 @@ export default class Nango {
         connectionIdOrConnectionConfig?: string | ConnectionConfig,
         moreConnectionConfig?: ConnectionConfig
     ): Promise<AuthResult> {
+        this.ensureCredentials();
+
         let connectionId: string | null = null;
         let connectionConfig: ConnectionConfig | undefined = moreConnectionConfig;
         if (typeof connectionIdOrConnectionConfig === 'string') {
@@ -138,6 +145,8 @@ export default class Nango {
     public auth(providerConfigKey: string, options?: AuthOptions): Promise<AuthResult>;
     public auth(providerConfigKey: string, connectionId: string, options?: AuthOptions): Promise<AuthResult>;
     public auth(providerConfigKey: string, connectionIdOrOptions?: string | AuthOptions, moreOptions?: AuthOptions): Promise<AuthResult> {
+        this.ensureCredentials();
+
         let connectionId: string | null = null;
         let options: AuthOptions | undefined = moreOptions;
         if (typeof connectionIdOrOptions === 'string') {
@@ -272,7 +281,7 @@ export default class Nango {
      * Open managed Connect UI
      */
     public openConnectUI(params: ConnectUIProps) {
-        const connect = new ConnectUI(params);
+        const connect = new ConnectUI({ sessionToken: this.connectSessionToken, ...params });
         connect.open();
         return connect;
     }
@@ -584,6 +593,16 @@ export default class Nango {
         }
 
         return query.length === 0 ? '' : '?' + query.join('&');
+    }
+
+    /**
+     * Check that we have one valid credential
+     * It's not done in the constructor because if you only use Nango Connect it's not relevant to throw an error
+     */
+    private ensureCredentials() {
+        if (!this.publicKey && !this.connectSessionToken) {
+            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missingAuthToken');
+        }
     }
 }
 

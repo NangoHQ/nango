@@ -26,7 +26,6 @@ import ResetPassword from './pages/Account/ResetPassword';
 import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
 import { EmailVerified } from './pages/Account/EmailVerified';
-import AuthLink from './pages/AuthLink';
 import { Homepage } from './pages/Homepage/Show';
 import { NotFound } from './pages/NotFound';
 import { LogsSearch } from './pages/Logs/Search';
@@ -94,7 +93,6 @@ const App = () => {
                             <Route path="/:env/team-settings" element={<TeamSettings />} />
                             <Route path="/:env/user-settings" element={<UserSettings />} />
                         </Route>
-                        <Route path="/auth-link" element={<AuthLink />} />
                         {true && <Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
                         {globalEnv.features.auth && (
                             <>

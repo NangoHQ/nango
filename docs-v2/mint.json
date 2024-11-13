@@ -146,7 +146,6 @@
                                 "integrate/guides/advanced/authorize-an-api-headless",
                                 "integrate/guides/advanced/store-customer-specific-data",
                                 "integrate/guides/advanced/use-custom-field-mappings",
-                                "integrate/guides/advanced/secure-frontend-sdk",
                                 "integrate/guides/advanced/verify-webhooks-from-nango"
                             ]
                         }

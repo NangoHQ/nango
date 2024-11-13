@@ -101,20 +101,17 @@ api.post('/sessionToken', (req, res) => {
 
 ## Step 2: Trigger Auth Flow
 
-In **your frontend**, you need to load our SDK and open Nango Connect
+In **your frontend**, you need to load our SDK, get the Session Token from Step 1 and open Nango Connect
 
 ```js
 import Nango from '@nangohq/frontend';
 
-const nango = new Nango({ publicKey: process.env.PUBLIC_NANGO_PUBLIC_KEY });
-
-function setSessionToken(connect) {
-  const res = await fetch('/sessionToken', { method: 'POST' });
-  connect.setSessionToken(res.sessionToken);
-}
-
+const nango = new Nango();
 const connect = nango.openConnectUI();
-await setSessionToken(connect);
+
+// Call the endpoint created in Step 1
+const res = await fetch('/sessionToken', { method: 'POST' });
+connect.setSessionToken(res.sessionToken);
 ```
 
 <Tip>It's recommended to set the `sessionToken` asynchronously to be able to display the UI loading to your users before it's ready for better UX</Tip>
