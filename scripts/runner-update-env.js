@@ -51,9 +51,9 @@ function sleep(ms) {
 async function fetchRunners() {
     let services = [];
     let cursor = '';
-    let running = true;
 
-    while (running) {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
         const params = new URLSearchParams({
             limit: 100,
             cursor,
@@ -71,7 +71,6 @@ async function fetchRunners() {
 
         const fetched = await response.json();
         if (fetched.length === 0) {
-            running = false;
             break;
         }
 
