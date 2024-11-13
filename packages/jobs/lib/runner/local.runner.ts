@@ -4,6 +4,8 @@ import { RunnerType } from './runner.js';
 import { execSync, spawn } from 'child_process';
 import { getRunnerClient } from '@nangohq/nango-runner';
 import { getLogger, stringifyError } from '@nangohq/utils';
+import { getProvidersUrl } from '@nangohq/shared';
+import { envs } from '../env.js';
 
 const logger = getLogger('Jobs');
 
@@ -55,7 +57,9 @@ export class LocalRunner implements Runner {
                 env: {
                     ...process.env,
                     RUNNER_ID: runnerId,
-                    IDLE_MAX_DURATION_MS: '0'
+                    IDLE_MAX_DURATION_MS: '0',
+                    PROVIDERS_URL: getProvidersUrl(),
+                    PROVIDERS_RELOAD_INTERVAL: envs.PROVIDERS_RELOAD_INTERVAL.toString()
                 }
             });
 
