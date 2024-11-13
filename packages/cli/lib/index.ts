@@ -18,7 +18,7 @@ import verificationService from './services/verification.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { v1toV2Migration, directoryMigration, endpointMigration } from './services/migration.service.js';
 import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug, isCI } from './utils.js';
-import type { ENV, DeployOptions } from './types.js';
+import type { DeployOptions } from './types.js';
 import { parse } from './services/config.service.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
@@ -176,7 +176,7 @@ program
         const options: DeployOptions = this.opts();
         const { debug } = options;
         const fullPath = process.cwd();
-        await deployService.prep({ fullPath, options: { ...options, env: 'production' as ENV }, environment, debug });
+        await deployService.prep({ fullPath, options: { ...options, env: 'cloud' }, environment, debug });
     });
 
 program
@@ -222,20 +222,6 @@ program
     .alias('cli')
     .action(() => {
         getNangoRootPath(true);
-    });
-
-program
-    .command('deploy:staging', { hidden: true })
-    .alias('ds')
-    .description('Deploy a Nango integration to staging')
-    .arguments('environment')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
-    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
-    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
-    .action(async function (this: Command, environment: string) {
-        const options: DeployOptions = this.opts();
-        const fullPath = process.cwd();
-        await deployService.prep({ fullPath, options: { ...options, env: 'staging' }, environment, debug: options.debug });
     });
 
 program
@@ -317,7 +303,7 @@ program
     .command('admin:deploy-internal', { hidden: true })
     .description('Deploy a Nango integration to the internal Nango dev account')
     .arguments('environment')
-    .option('-nre, --nango-remote-environment [nre]', 'Optional: Set the Nango remote environment (local, staging, production).')
+    .option('-nre, --nango-remote-environment [nre]', 'Optional: Set the Nango remote environment (local, cloud).')
     .action(async function (this: Command, environment: string) {
         const { debug, nangoRemoteEnvironment } = this.opts();
         const fullPath = process.cwd();

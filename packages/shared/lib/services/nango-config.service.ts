@@ -450,6 +450,7 @@ function buildActions({
             endpoints: endpoint ? [endpoint] : [],
             nango_yaml_version: action.nango_yaml_version || 'v2',
             enabled,
+            // TODO: remove this, this obviously does not work cloud and also it's useless?
             layout_mode: localFileService.getLayoutMode(actionName, providerConfigKey, 'action'),
             json_schema: null
         };

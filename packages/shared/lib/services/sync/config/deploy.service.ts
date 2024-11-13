@@ -6,7 +6,7 @@ import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyn
 import connectionService from '../../connection.service.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
-import type { SyncModelSchema, SyncConfig, SyncDeploymentResult, SyncConfigResult, SyncEndpoint, SyncType, Sync } from '../../../models/Sync.js';
+import type { SyncModelSchema, SyncConfig, SyncEndpoint, SyncType, Sync } from '../../../models/Sync.js';
 import type {
     DBEnvironment,
     DBTeam,
@@ -16,7 +16,8 @@ import type {
     PostConnectionScriptByProvider,
     NangoSyncEndpointV2,
     IncomingFlowConfig,
-    HTTP_METHOD
+    HTTP_METHOD,
+    SyncDeploymentResult
 } from '@nangohq/types';
 import { postConnectionScriptService } from '../post-connection.service.js';
 import { NangoError } from '../../../utils/error.js';
@@ -39,6 +40,11 @@ const nameOfType = 'sync/action';
 
 type FlowParsed = Merge<CleanedIncomingFlowConfig, { model_schema: NangoModel[] }>;
 type FlowWithoutScript = Omit<FlowParsed, 'fileBody'>;
+
+interface SyncConfigResult {
+    result: SyncDeploymentResult[];
+    logCtx: LogContext;
+}
 
 /**
  * Transform received incoming flow from the CLI to an internally standard object

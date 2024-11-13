@@ -4,7 +4,6 @@ import chalk from 'chalk';
 import promptly from 'promptly';
 import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
-import type { SyncDeploymentResult } from '@nangohq/shared';
 import type {
     NangoYamlParsed,
     PostConnectionScriptByProvider,
@@ -15,15 +14,15 @@ import type {
     PostDeployInternal,
     PostDeployConfirmation
 } from '@nangohq/types';
-import { stagingHost, cloudHost } from '@nangohq/shared';
 import { compileSingleFile, compileAllFiles, resolveTsFileLocation, getFileToCompile } from './compile.service.js';
 
 import verificationService from './verification.service.js';
-import { printDebug, parseSecretKey, port, enrichHeaders, http, isCI } from '../utils.js';
+import { printDebug, parseSecretKey, enrichHeaders, http, isCI } from '../utils.js';
 import type { DeployOptions, InternalDeployOptions } from '../types.js';
 import { parse } from './config.service.js';
 import type { JSONSchema7 } from 'json-schema';
 import { loadSchemaJson } from './model.service.js';
+import { cloudHost, localhostUrl } from '../constants.js';
 
 class DeployService {
     public async admin({ fullPath, environmentName, debug = false }: { fullPath: string; environmentName: string; debug?: boolean }): Promise<void> {
@@ -34,10 +33,7 @@ class DeployService {
         if (!process.env['NANGO_HOSTPORT']) {
             switch (environmentName) {
                 case 'local':
-                    process.env['NANGO_HOSTPORT'] = `http://localhost:${port}`;
-                    break;
-                case 'staging':
-                    process.env['NANGO_HOSTPORT'] = stagingHost;
+                    process.env['NANGO_HOSTPORT'] = localhostUrl;
                     break;
                 default:
                     process.env['NANGO_HOSTPORT'] = cloudHost;
@@ -108,10 +104,7 @@ class DeployService {
         if (!process.env['NANGO_HOSTPORT']) {
             switch (env) {
                 case 'local':
-                    process.env['NANGO_HOSTPORT'] = `http://localhost:${port}`;
-                    break;
-                case 'staging':
-                    process.env['NANGO_HOSTPORT'] = stagingHost;
+                    process.env['NANGO_HOSTPORT'] = localhostUrl;
                     break;
                 default:
                     process.env['NANGO_HOSTPORT'] = cloudHost;
@@ -275,7 +268,7 @@ class DeployService {
     public async deploy(url: string, body: PostDeploy['Body']) {
         await http
             .post(url, body, { headers: enrichHeaders() })
-            .then((response: AxiosResponse<SyncDeploymentResult[]>) => {
+            .then((response: AxiosResponse<PostDeploy['Success']>) => {
                 const results = response.data;
                 if (results.length === 0) {
                     console.log(chalk.green(`Successfully removed the syncs/actions.`));
@@ -311,10 +304,7 @@ class DeployService {
         if (!process.env['NANGO_HOSTPORT']) {
             switch (env) {
                 case 'local':
-                    process.env['NANGO_HOSTPORT'] = `http://localhost:${port}`;
-                    break;
-                case 'staging':
-                    process.env['NANGO_HOSTPORT'] = stagingHost;
+                    process.env['NANGO_HOSTPORT'] = localhostUrl;
                     break;
                 default:
                     process.env['NANGO_HOSTPORT'] = cloudHost;
