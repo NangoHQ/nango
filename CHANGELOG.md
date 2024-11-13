@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.43.0] - 2024-11-13
+
+### Added
+
+- *(proxy)* Fix TikTok Ads access_token header for proxy requests (#2933) by @hassan254-prog
+- Add merge_group trigger event to github action workflow by @TBonnin
+- *(okta)* [nan-2124] add okta preview (#2960) by @khaliqgant
+- *(okta)* Add the okta pagination configuration (#2965) by @dannylwe
+- Hosea/ext 192 add twenty crm support (#2946) by @mungaihosea
+- *(integrations)* Add support for mindbody fitness (#2968) by @davidosemwegie
+- *(integrations)* Add connection docs (aircall-basic) (#2954) by @dannylwe
+- *(xero)* Add retry header for xero (#2969) by @khaliqgant
+- Show records count on connections page (#2936) by @TBonnin
+- Return records count in /sync/status endpoint/sdk (#2961) by @TBonnin
+- *(nango-yaml)* Support new endpoint format (#2958) by @bodinsamuel
+
+### Changed
+
+- Add demo video to docs and readme (#2950) by @bastienbeurier
+- Deploy jobs fix (#2959) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/a79b05ad0e63ff1b7ca777752349b283a43c775a by Khaliq. Commit message: feat(okta): [nan-2124] add in okta preview (#101) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/fa19354f28f545728f578b76dea02c7e53f0721a by Daniel Roy Lwetabe. Commit message: feat(freshdesk): Update freshdesk endpoint for conversations (#100) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/436500ee9f2ed83abdf6f0233f01803e9dc074e1 by Mungai Hosea. Commit message: feat: Hosea/ext 213 dropbox file sync (#99) by @github-actions[bot]
+
+### Fixed
+
+- *(server)* Expose env to configure mailgun url (#2953) by @bodinsamuel
+- *(webhooks)* Fix graph in homepage, correctly handle errors (#2947) by @bodinsamuel
+- *(connection)* Reintroduce copy connectionId in the UI (#2956) by @bodinsamuel
+- *(deploy)* Missing hash for jobs (#2963) by @bodinsamuel
+- *(pagination)* Offset type casting (#2964) by @bodinsamuel
+- *(package)* Pin more internal package (#2955) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/8f74f8f2e07ddd4119bf4aa170d3d712fc2579e5 by Khaliq. Commit message: fix(harvest): incremental sync for harvest users (#105) by @github-actions[bot]
+- *(connect)* Explicit optional fields (#2967) by @bodinsamuel
+- *(documentation)* Documentation fixes - images and ordering (#2973) by @khaliqgant
+- *(connect)* Bad regex for hostname, add prefix when hostname, improve marketo validation (#2970) by @bodinsamuel
+- Upsert summary race condition (#2952) by @TBonnin
+- Service ID for connect-UI staging (#2975) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/1d44fff629df827b42302a532cc69864319f350a by Khaliq. Commit message: fix(intercom): update syncs and actions (#106) by @github-actions[bot]
+- *(cli)* Clean up some references to shared and unused code (#2976) by @bodinsamuel
+- *(connect)* Support oauth2_cc, fix password, improve bamboohr/jira display (#2979) by @bodinsamuel
+
 ## [v0.42.22] - 2024-11-06
 
 ### Added
@@ -2237,6 +2279,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.43.0]: https://github.com/NangoHQ/nango/compare/v0.42.22..v0.43.0
 [v0.42.22]: https://github.com/NangoHQ/nango/compare/v0.42.21..v0.42.22
 [v0.42.21]: https://github.com/NangoHQ/nango/compare/v0.42.20..v0.42.21
 [v0.42.20]: https://github.com/NangoHQ/nango/compare/v0.42.19..v0.42.20
