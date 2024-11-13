@@ -283,5 +283,56 @@ describe('parse', () => {
             expect(parser.errors).toStrictEqual([]);
             expect(parser.warnings).toStrictEqual([]);
         });
+
+        it('should handle endpoint new format (single)', () => {
+            const v2: NangoYamlV2 = {
+                models: { Found: { id: 'string' } },
+                integrations: {
+                    provider: { actions: { getGithubIssue: { endpoint: { method: 'POST', path: '/ticketing/tickets/{Found:id}' } } } }
+                }
+            };
+            const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
+            parser.parse();
+            expect(parser.errors).toStrictEqual([]);
+            expect(parser.warnings).toStrictEqual([]);
+            expect(parser.parsed?.integrations[0]?.actions).toMatchObject([
+                {
+                    endpoint: { method: 'POST', path: '/ticketing/tickets/{Found:id}' }
+                }
+            ]);
+        });
+
+        it('should handle endpoint new format (array)', () => {
+            const v2: NangoYamlV2 = {
+                models: { Input: { id: 'string' }, Top: { id: 'string' }, Tip: { id: 'string' } },
+                integrations: {
+                    provider: {
+                        syncs: {
+                            top: {
+                                runs: 'every day',
+                                input: 'Input',
+                                output: ['Top', 'Tip'],
+                                endpoint: [
+                                    { method: 'GET', path: '/provider/top' },
+                                    { path: '/provider/tip', entity: 'Record' }
+                                ]
+                            }
+                        }
+                    }
+                }
+            };
+            const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
+            parser.parse();
+            expect(parser.errors).toStrictEqual([]);
+            expect(parser.warnings).toStrictEqual([]);
+            expect(parser.parsed?.integrations[0]?.syncs).toMatchObject([
+                {
+                    endpoints: [
+                        { method: 'GET', path: '/provider/top' },
+                        { method: 'GET', path: '/provider/tip', entity: 'Record' }
+                    ]
+                }
+            ]);
+        });
     });
 });

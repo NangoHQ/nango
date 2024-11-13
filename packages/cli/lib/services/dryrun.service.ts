@@ -1,11 +1,12 @@
 import promptly from 'promptly';
 import fs from 'node:fs';
+import { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 
 import type { NangoProps, RunnerOutput, SyncConfig } from '@nangohq/shared';
 import type { Metadata, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
-import { cloudHost, stagingHost, NangoError, localFileService, validateData, NangoSync, formatScriptError, ActionError } from '@nangohq/shared';
+import { NangoError, validateData, NangoSync, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
 import { compileAllFiles } from './compile.service.js';
@@ -18,6 +19,7 @@ import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
 import { Buffer } from 'buffer';
+import { serializeError } from 'serialize-error';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -187,7 +189,7 @@ export class DryRunService {
             printDebug(`Provider found: ${provider}`);
         }
 
-        if (process.env['NANGO_HOSTPORT'] === cloudHost || process.env['NANGO_HOSTPORT'] === stagingHost) {
+        if (process.env['NANGO_HOSTPORT']?.endsWith('.nango.dev')) {
             process.env['NANGO_CLOUD'] = 'true';
         }
 
@@ -219,7 +221,7 @@ export class DryRunService {
 
         if (actionInput) {
             if (actionInput.toString().includes('@') && actionInput.toString().endsWith('.json')) {
-                const fileContents = localFileService.readFile(actionInput.toString());
+                const fileContents = readFile(actionInput.toString());
                 if (!fileContents) {
                     console.log(chalk.red('The file could not be read. Please make sure it exists.'));
                     return;
@@ -250,7 +252,7 @@ export class DryRunService {
 
         if (rawStubbedMetadata) {
             if (rawStubbedMetadata.toString().includes('@') && rawStubbedMetadata.toString().endsWith('.json')) {
-                const fileContents = localFileService.readFile(rawStubbedMetadata.toString());
+                const fileContents = readFile(rawStubbedMetadata.toString());
                 if (!fileContents) {
                     console.log(chalk.red('The metadata file could not be read. Please make sure it exists.'));
                     return;
@@ -343,7 +345,7 @@ export class DryRunService {
             const results = await this.runScript({
                 syncName,
                 nangoProps,
-                optionalLoadLocation: './',
+                loadLocation: './',
                 input: normalizedInput
             });
             console.log('---');
@@ -451,19 +453,19 @@ export class DryRunService {
     async runScript({
         syncName,
         nangoProps,
-        optionalLoadLocation,
+        loadLocation,
         input
     }: {
         syncName: string;
         nangoProps: NangoProps;
-        optionalLoadLocation: string;
+        loadLocation: string;
         input: object;
     }): Promise<RunnerOutput> {
         const nango = new NangoSync(nangoProps);
         try {
             await nango.log(`Executing -> integration:"${nangoProps.provider}" script:"${syncName}"`);
 
-            const script: string | null = localFileService.getIntegrationFile(syncName, nangoProps.providerConfigKey, optionalLoadLocation);
+            const script = getIntegrationFile(syncName, nangoProps.providerConfigKey, loadLocation);
             const isAction = nangoProps.scriptType === 'action';
 
             if (!script) {
@@ -572,11 +574,42 @@ export class DryRunService {
                     };
                 } else if (err instanceof NangoError) {
                     return { success: false, error: err, response: null };
+                } else if (err instanceof AxiosError) {
+                    if (err.response?.data) {
+                        const errorResponse = err.response.data.payload || err.response.data;
+                        return {
+                            success: false,
+                            error: {
+                                type: 'script_http_error',
+                                payload: typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse,
+                                status: err.response.status
+                            },
+                            response: null
+                        };
+                    } else {
+                        const tmp = serializeError(err);
+                        return {
+                            success: false,
+                            error: {
+                                type: 'script_http_error',
+                                payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                                status: 500
+                            },
+                            response: null
+                        };
+                    }
+                } else {
+                    const tmp = serializeError(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
+                    return {
+                        success: false,
+                        error: {
+                            type: 'script_internal_error',
+                            payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                            status: 500
+                        },
+                        response: null
+                    };
                 }
-
-                const errorType = isAction ? 'action_script_failure' : 'sync_script_failure';
-
-                return formatScriptError(err, errorType, syncName);
             }
         } catch (err) {
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
@@ -586,5 +619,38 @@ export class DryRunService {
         } finally {
             await nango.log(`Done`);
         }
+    }
+}
+
+function readFile(rawFilePath: string): string | null {
+    try {
+        const filePath = rawFilePath.replace('@', '');
+        const realPath = fs.realpathSync(filePath);
+        const fileContents = fs.readFileSync(realPath, 'utf8');
+
+        return fileContents;
+    } catch (err) {
+        console.log(err);
+        return null;
+    }
+}
+
+function getIntegrationFile(syncName: string, providerConfigKey: string, location: string): string | null {
+    try {
+        const filePath = `${location}dist/${syncName}.js`;
+        const fileNameWithProviderConfigKey = filePath.replace(`.js`, `-${providerConfigKey}.js`);
+
+        let realPath;
+        if (fs.existsSync(fileNameWithProviderConfigKey)) {
+            realPath = fs.realpathSync(fileNameWithProviderConfigKey);
+        } else {
+            realPath = fs.realpathSync(filePath);
+        }
+        const integrationFileContents = fs.readFileSync(realPath, 'utf8');
+
+        return integrationFileContents;
+    } catch (err) {
+        console.log(err);
+        return null;
     }
 }

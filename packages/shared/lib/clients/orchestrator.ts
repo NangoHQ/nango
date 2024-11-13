@@ -30,6 +30,7 @@ import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.serv
 import { getSyncConfigRaw, getSyncConfigBySyncId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { RecordCount } from '@nangohq/records';
 
 export interface RecordsServiceInterface {
     deleteRecordsBySyncId({
@@ -43,6 +44,7 @@ export interface RecordsServiceInterface {
         model: string;
         syncId: string;
     }): Promise<{ totalDeletedRecords: number }>;
+    getRecordCountsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>>;
 }
 
 export interface OrchestratorClientInterface {

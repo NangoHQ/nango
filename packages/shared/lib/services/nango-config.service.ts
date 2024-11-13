@@ -35,7 +35,7 @@ export function loadStandardConfig(configData: NangoConfig): ServiceResponse<Sta
 
         return configServiceResponse;
     } catch (error) {
-        return { success: false, error: new NangoError('error_loading_nango_config', error instanceof Error ? error.message : {}), response: null };
+        return { success: false, error: new NangoError('error_loading_nango_config', error instanceof Error ? error.message : (error as any)), response: null };
     }
 }
 
@@ -450,6 +450,7 @@ function buildActions({
             endpoints: endpoint ? [endpoint] : [],
             nango_yaml_version: action.nango_yaml_version || 'v2',
             enabled,
+            // TODO: remove this, this obviously does not work cloud and also it's useless?
             layout_mode: localFileService.getLayoutMode(actionName, providerConfigKey, 'action'),
             json_schema: null
         };

@@ -9,7 +9,10 @@ export default defineConfig({
     plugins: [react(), svgr()],
     resolve: {
         alias: {
-            '@': path.resolve(__dirname, './src')
+            '@': path.resolve(__dirname, './src'),
+            // https://github.com/tabler/tabler-icons/issues/1233
+            // /esm/icons/index.mjs only exports the icons statically, so no separate chunks are created
+            '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
         }
     }
 });
