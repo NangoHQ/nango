@@ -21,7 +21,7 @@ This guide will walk you through finding or creating those credentials within Bi
 - You must set up an account with Bill.
 
 
-#### Step 1: Finding Your API Key (token)
+#### Step 1: Finding Your API Key (token) and bill credentials
 1. Sign up for bill.com sandbox here **https://app-dev-sandbox.divvy.co/create-sandbox-company**
 
 
@@ -36,6 +36,30 @@ Important:
 - To get your **Organization ID** and **Developer Key** you must send an email to bill at [email](developerprogram@hq.bill.com).
 - Your organization ID will begin with `008`.
 - You will have to contact bill to get production credentials.
+
+3. Make this request to get your seesionId using cURL
+
+- Request
+```
+curl --request POST \
+--url 'https://gateway.stage.bill.com/connect/v3/login' \
+--header 'content-type: application/json' \
+--data '{
+  "username": "{username}", 
+  "password": "{password}",
+  "organizationId": "{organization_id}", 
+  "devKey": "{developer_key}"
+}'
+```
+
+- Response
+```
+{
+    "sessionId": "{session_id}",
+    "organizationId": "{organization_id}",
+    "userId": "{user_id}"
+}
+```
 
 
 
