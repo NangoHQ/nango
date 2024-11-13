@@ -1,6 +1,7 @@
 import { expect, describe, it, afterEach, vi } from 'vitest';
 import path, { join } from 'node:path';
-import fs from 'fs';
+import os from 'node:os';
+import fs from 'node:fs';
 import yaml from 'js-yaml';
 import stripAnsi from 'strip-ansi';
 import { init, generate } from './cli.js';
@@ -9,7 +10,7 @@ import { compileAllFiles, compileSingleFile, getFileToCompile } from './services
 import parserService from './services/parser.service.js';
 import { copyDirectoryAndContents, removeVersion, fixturesPath, getTestDirectory } from './tests/helpers.js';
 import { parse } from './services/config.service.js';
-import { directoryMigration } from './services/migration.service.js';
+import { directoryMigration, endpointMigration } from './services/migration.service.js';
 
 describe('generate function tests', () => {
     // Not the best but until we have a logger it will work
@@ -254,11 +255,12 @@ describe('generate function tests', () => {
                 }
             }
         };
+
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(join(dir, 'nango.yaml'), yamlData, 'utf8');
 
         const acc: string[] = [];
-        consoleMock.mockImplementation((m) => acc.push(stripAnsi(m)));
+        consoleMock.mockImplementation((m) => acc.push(typeof m === 'string' ? stripAnsi(m) : m));
         generate({ debug: false, fullPath: dir });
 
         expect(acc).toStrictEqual([
@@ -332,6 +334,7 @@ describe('generate function tests', () => {
                 }
             }
         };
+
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(join(dir, 'nango.yaml'), yamlData, 'utf8');
         generate({ debug: false, fullPath: dir });
@@ -559,5 +562,20 @@ describe('generate function tests', () => {
             debug: false
         });
         expect(result).toBe(false);
+    });
+
+    // Problem with double lines
+    it.skipIf(os.platform() === 'win32')('should be able to migrate-endpoints', async () => {
+        const dir = await getTestDirectory('old-endpoint');
+        init({ absolutePath: dir });
+
+        const dest = join(dir, 'nango.yaml');
+        await fs.promises.copyFile(join(fixturesPath, 'nango-yaml/v2/nango.yaml'), dest);
+
+        endpointMigration(dir);
+
+        const content = await fs.promises.readFile(dest, 'utf8');
+
+        expect(content).toMatchSnapshot();
     });
 });

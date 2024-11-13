@@ -28,13 +28,14 @@ export interface SimplifiedJSONSchema {
     example?: string;
     pattern?: string;
     optional?: boolean;
-    format?: string;
+    format?: 'hostname' | 'uri' | 'uuid' | 'email';
     order: number;
     default_value?: string;
     hidden?: string;
     prefix?: string;
     suffix?: string;
     doc_section?: string;
+    secret?: string;
 }
 
 export interface BaseProvider {

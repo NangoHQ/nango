@@ -33,7 +33,10 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
     NONE: z.object({}),
     OAUTH1: z.object({}),
     OAUTH2: z.object({}),
-    OAUTH2_CC: z.object({}),
+    OAUTH2_CC: z.object({
+        client_id: z.string().min(1),
+        client_secret: z.string().min(1)
+    }),
     TABLEAU: z.object({
         pat_name: z.string().min(1),
         pat_secret: z.string().min(1),
@@ -68,15 +71,19 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
 
 const defaultConfiguration: Record<string, { secret: boolean; title: string; example: string }> = {
     'credentials.apiKey': { secret: true, title: 'API Key', example: 'Your API Key' },
-    'credentials.username': { secret: true, title: 'User Name', example: 'Your user name' },
-    'credentials.password': { secret: false, title: 'Password', example: 'Your password' },
+    'credentials.username': { secret: false, title: 'User Name', example: 'Your user name' },
+    'credentials.password': { secret: true, title: 'Password', example: 'Your password' },
     'credentials.pat_name': { secret: false, title: 'Personal App Token', example: 'Your PAT' },
     'credentials.pat_secret': { secret: true, title: 'Personal App Token Secret', example: 'Your PAT Secret' },
     'credentials.content_url': { secret: true, title: 'Content URL', example: 'Your content URL' },
+    'credentials.client_id': { secret: false, title: 'Client ID', example: 'Your Client ID' },
+    'credentials.client_secret': { secret: true, title: 'Client Secret', example: 'Your Client Secret' },
     'credentials.oauth_client_id_override': { secret: false, title: 'OAuth Client ID', example: 'Your OAuth Client ID' },
     'credentials.oauth_client_secret_override': { secret: true, title: 'OAuth Client Secret', example: 'Your OAuth Client Secret' },
     'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
-    'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' }
+    'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
+    'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
+    'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' }
 };
 
 export const Go: React.FC = () => {
@@ -335,7 +342,7 @@ export const Go: React.FC = () => {
                                                                     suffix={definition?.suffix}
                                                                     {...field}
                                                                     autoComplete="off"
-                                                                    type={base?.secret ? 'password' : 'text'}
+                                                                    type={definition?.secret || base?.secret ? 'password' : 'text'}
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />

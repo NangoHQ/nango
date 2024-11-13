@@ -13,7 +13,7 @@ import type { DBSyncConfig, NangoSyncEndpointV2, SlimSync } from '@nangohq/types
 
 const TABLE = dbNamespace + 'sync_configs';
 
-type ExtendedSyncConfig = SyncConfig & { provider: string; unique_key: string; endpoints_object: NangoSyncEndpointV2[] };
+type ExtendedSyncConfig = SyncConfig & { provider: string; unique_key: string; endpoints_object: NangoSyncEndpointV2[] | null };
 
 function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): StandardNangoConfig[] {
     const tmp: Record<string, StandardNangoConfig> = {};
@@ -46,7 +46,7 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             version: syncConfig.version as string,
             is_public: syncConfig.is_public || false,
             pre_built: syncConfig.pre_built || false,
-            endpoints: syncConfig.endpoints_object,
+            endpoints: syncConfig.endpoints_object || [],
             input: input as any,
             nango_yaml_version: 'v2',
             enabled: syncConfig.enabled,

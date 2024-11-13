@@ -19,6 +19,8 @@ export function jsonSchemaToZod(schema: SimplifiedJSONSchema): ZodTypeAny {
         fieldString = fieldString.uuid();
     } else if (schema.format === 'uri') {
         fieldString = fieldString.url();
+    } else if (schema.format === 'email') {
+        fieldString = fieldString.email();
     }
     if (schema.pattern) {
         fieldString = fieldString.regex(new RegExp(schema.pattern), { message: `Incorrect ${schema.title}` });
