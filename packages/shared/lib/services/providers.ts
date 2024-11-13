@@ -8,16 +8,7 @@ import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('providers');
 
-let rawProviders: string | undefined = undefined;
 let providers: Record<string, Provider> | undefined = undefined;
-
-export function getRawProviders() {
-    if (!rawProviders) {
-        loadProvidersYaml();
-    }
-
-    return rawProviders;
-}
 
 export function getProviders() {
     if (!providers) {
@@ -49,10 +40,9 @@ function getProvidersPath() {
     return findProvidersYaml(dirname());
 }
 
-function loadProvidersYaml(): Record<string, Provider> | undefined {
+export function loadProvidersYaml(): Record<string, Provider> | undefined {
     try {
-        rawProviders = fs.readFileSync(getProvidersPath()).toString();
-        const fileEntries = yaml.load(rawProviders) as Record<string, Provider | ProviderAlias>;
+        const fileEntries = yaml.load(fs.readFileSync(getProvidersPath()).toString()) as Record<string, Provider | ProviderAlias>;
 
         if (fileEntries == null) {
             throw new NangoError('provider_template_loading_failed');
