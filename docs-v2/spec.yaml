@@ -1275,6 +1275,9 @@ paths:
                                                 latestResult:
                                                     type: object
                                                     description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records
+                                                recordCount:
+                                                    type: object
+                                                    description: Total count of records for each model synced by the sync
                 '400':
                     description: Invalid request
                     content:

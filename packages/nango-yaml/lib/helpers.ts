@@ -1,7 +1,7 @@
 import path from 'node:path';
 import ms from 'ms';
 import type { StringValue } from 'ms';
-import type { HTTP_METHOD, NangoSyncEndpointV2, NangoYaml, NangoYamlParsed, NangoYamlParsedIntegration } from '@nangohq/types';
+import type { HTTP_METHOD, NangoSyncEndpointV2, NangoYaml, NangoYamlParsed, NangoYamlParsedIntegration, NangoYamlV2Endpoint } from '@nangohq/types';
 
 interface IntervalResponse {
     interval: StringValue;
@@ -195,7 +195,7 @@ export function getProviderConfigurationFromPath({ filePath, parsed }: { filePat
     return providerConfiguration;
 }
 
-export function parseEndpoint(rawEndpoint: string | NangoSyncEndpointV2, defaultMethod: HTTP_METHOD): NangoSyncEndpointV2 {
+export function parseEndpoint(rawEndpoint: string | NangoSyncEndpointV2 | NangoYamlV2Endpoint, defaultMethod: HTTP_METHOD): NangoSyncEndpointV2 {
     if (typeof rawEndpoint === 'string') {
         const endpoint = rawEndpoint.split(' ');
         if (endpoint.length > 1) {
@@ -205,5 +205,5 @@ export function parseEndpoint(rawEndpoint: string | NangoSyncEndpointV2, default
         return { method: defaultMethod, path: endpoint[0] as string };
     }
 
-    return rawEndpoint;
+    return { method: rawEndpoint.method || defaultMethod, path: rawEndpoint.path, entity: rawEndpoint.entity };
 }
