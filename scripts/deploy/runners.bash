@@ -24,7 +24,10 @@ while true; do
   parsed_response=$(echo "$response" | jq -c '.[]' 2>/dev/null)
   CURSOR=$(echo "$response" | jq -r '.[-1].cursor' 2>/dev/null)
 
-  for item in $parsed_response; do
+  while IFS= read -r item; do
+    if [ -z "$item" ]; then
+      continue
+    fi
     name=$(echo "$item" | jq -r '.service.name' 2>/dev/null)
     if [[ "$name" != "$ENVIRONMENT-runner-"* ]]; then
       continue
@@ -40,8 +43,11 @@ while true; do
         --header "accept: application/json" \
         --header "authorization: Bearer $API_KEY" \
         --header "content-type: application/json"
+
+    else
+      echo "Failed to get service ID for service: $item"
     fi
-  done
+  done < <(echo "$parsed_response")
 
   echo $CURSOR
 
