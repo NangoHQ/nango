@@ -19,7 +19,8 @@ import type {
     TwoStepCredentials,
     JwtCredentials,
     OAuthCredentialsOverride,
-    BillCredentials
+    BillCredentials,
+    SignatureCredentials
 } from './types';
 import { AuthorizationStatus, WSMessageType } from './types.js';
 
@@ -303,8 +304,19 @@ export default class Nango {
             | OAuth2ClientCredentials
             | BillCredentials
             | TwoStepCredentials
+            | SignatureCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
+
+        if ('type' in credentials && 'username' in credentials && 'password' in credentials && credentials.type === 'SIGNATURE') {
+            const signatureCredentials: SignatureCredentials = {
+                type: credentials.type,
+                username: credentials.username,
+                password: credentials.password
+            };
+
+            return { params: signatureCredentials } as unknown as ConnectionConfig;
+        }
 
         if ('username' in credentials) {
             params['username'] = credentials.username || '';
@@ -423,6 +435,7 @@ export default class Nango {
             | BillCredentials
             | OAuth2ClientCredentials
             | TwoStepCredentials
+            | SignatureCredentials
             | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
@@ -465,6 +478,13 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/two-step/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as TwoStepCredentials
+            });
+        }
+
+        if ('type' in credentials && credentials['type'] === 'SIGNATURE' && 'username' in credentials && 'password' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/signature/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as SignatureCredentials
             });
         }
 

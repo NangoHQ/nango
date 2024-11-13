@@ -1,6 +1,14 @@
 import type { ParamsSerializerOptions } from 'axios';
 import type { HTTP_METHOD } from './Generic.js';
-import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials, TbaCredentials, TableauCredentials, JwtCredentials } from './Auth.js';
+import type {
+    BasicApiCredentials,
+    ApiKeyCredentials,
+    AppCredentials,
+    TbaCredentials,
+    TableauCredentials,
+    JwtCredentials,
+    SignatureCredentials
+} from './Auth.js';
 import type { Connection } from './Connection.js';
 import type { Provider, TwoStepCredentials } from '@nangohq/types';
 
@@ -42,7 +50,16 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
     decompress?: boolean;
     method: HTTP_METHOD;
     providerName: string;
-    token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials | TbaCredentials | TableauCredentials | JwtCredentials | TwoStepCredentials;
+    token:
+        | string
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppCredentials
+        | TbaCredentials
+        | TableauCredentials
+        | JwtCredentials
+        | TwoStepCredentials
+        | SignatureCredentials;
     provider: Provider;
     connection: Connection;
 }

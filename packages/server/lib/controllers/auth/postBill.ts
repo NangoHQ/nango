@@ -133,7 +133,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
             return;
         }
 
-        const [updatedConnection] = await connectionService.upsertBillConnection({
+        const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
             providerConfigKey,
             credentials,

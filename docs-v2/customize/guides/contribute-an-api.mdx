@@ -18,6 +18,12 @@ Fork the [repo](https://github.com/NangoHQ/nango) and edit the API configuration
 Learn more: [understand API configurations](/understand/concepts/integrations#api-configurations), [reference](/reference/api-configuration), [all existing API configurations](https://nango.dev/providers.yaml).
 </Tip>
 
+You can test the configuration of your new provider with this command:
+
+```sh
+npx tsx scripts/validation/providers/validate.ts
+```
+
 # Test the API
 
 To test your new provider, go to the `nango` repo root and run:
@@ -50,6 +56,7 @@ If all goes well, you should see your new connection in the _Connections_ tab. C
 Add a `<api>.mdx` file (e.g. `github.mdx`) for you API to the `docs-v2/integrations/all` folder. Check out [other examples](/integrations) to fill out the content of the documentation page.
 
 Reference the page in the `docs-v2/mint.json` file in the `Supported APIs` group in alphabetical order.
+
 
 # Submit a pull request
 

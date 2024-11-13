@@ -13,25 +13,37 @@ import {
     LogActionEnum,
     getProvider
 } from '@nangohq/shared';
-import type { PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
+import type { PostPublicSignatureAuthorization, ProviderSignature } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { connectionIdSchema, providerConfigKeySchema, connectionCredential } from '../../helpers/validation.js';
+import {
+    connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
+    connectionTest as connectionTestHook
+} from '../../hooks/hooks.js';
+import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 
-const bodyValidation = z.object({}).catchall(z.any()).strict();
+const bodyValidation = z
+    .object({
+        username: z.string().min(1),
+        password: z.string().min(1),
+        type: z.string().min(1)
+    })
+    .strict();
 
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
-        user_scope: z.string().optional()
+        public_key: z.string().uuid().optional(),
+        connect_session_token: connectSessionTokenSchema.optional(),
+        user_scope: z.string().optional(),
+        hmac: z.string().optional()
     })
-    .strict()
-    .and(connectionCredential);
+    .strict();
 
 const paramsValidation = z
     .object({
@@ -39,7 +51,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignatureAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -65,12 +77,10 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
     }
 
     const { account, environment, authType } = res.locals;
-    const bodyData: PostPublicTwoStepAuthorization['Body'] = val.data;
-    const queryString: PostPublicTwoStepAuthorization['Querystring'] = queryStringVal.data;
-    const { providerConfigKey }: PostPublicTwoStepAuthorization['Params'] = paramsVal.data;
-    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
-    const connectionId = queryString.connection_id || connectionService.generateConnectionId();
-    const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
+    const { username, password }: PostPublicSignatureAuthorization['Body'] = val.data;
+    const { connection_id: receivedConnectionId, params, hmac }: PostPublicSignatureAuthorization['Querystring'] = queryStringVal.data;
+    const { providerConfigKey }: PostPublicSignatureAuthorization['Params'] = paramsVal.data;
+    const connectionConfig = params ? getConnectionConfig(params) : {};
 
     let logCtx: LogContext | undefined;
 
@@ -78,17 +88,21 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
         logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'twostep' },
+                meta: { authType: 'signature' },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
         );
-        void analytics.track(AnalyticsTypes.PRE_TWO_STEP_AUTH, account.id);
+        void analytics.track(AnalyticsTypes.PRE_SIGNATURE_AUTH, account.id);
 
-        const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
-        if (!checked) {
-            return;
-        }
+        await hmacCheck({
+            environment,
+            logCtx,
+            providerConfigKey,
+            connectionId: receivedConnectionId,
+            hmac,
+            res
+        });
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
@@ -106,8 +120,8 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             return;
         }
 
-        if (provider.auth_mode !== 'TWO_STEP') {
-            await logCtx.error('Provider does not support TWO_STEP auth', { provider: config.provider });
+        if (provider.auth_mode !== 'SIGNATURE') {
+            await logCtx.error('Provider does not support SIGNATURE auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -115,17 +129,34 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const {
-            success,
-            error,
-            response: credentials
-        } = await connectionService.getTwoStepCredentials(provider as ProviderTwoStep, bodyData, connectionConfig);
+        const { success, error, response: credentials } = connectionService.getSignatureCredentials(provider as ProviderSignature, username, password);
 
         if (!success || !credentials) {
-            await logCtx.error('Error during TwoStep credentials creation', { error, provider: config.provider });
+            await logCtx.error('Error during Signature credentials creation', { error, provider: config.provider });
             await logCtx.failed();
 
-            errorManager.errRes(res, 'two_step_error');
+            errorManager.errRes(res, 'signature_error');
+
+            return;
+        }
+
+        const connectionId = receivedConnectionId || connectionService.generateConnectionId();
+
+        const connectionResponse = await connectionTestHook(
+            config.provider,
+            provider,
+            credentials,
+            connectionId,
+            providerConfigKey,
+            environment.id,
+            connectionConfig
+        );
+
+        if (connectionResponse.isErr()) {
+            await logCtx.error('Provided credentials are invalid', { provider: config.provider });
+            await logCtx.failed();
+
+            errorManager.errResFromNangoErr(res, connectionResponse.error);
 
             return;
         }
@@ -140,7 +171,6 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             environment,
             account
         });
-
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
             await logCtx.error('Failed to create connection');
@@ -154,7 +184,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-        await logCtx.info('TwoStep connection creation was successful');
+        await logCtx.info('Signature connection creation was successful');
         await logCtx.success();
 
         void connectionCreatedHook(
@@ -162,7 +192,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 connection: updatedConnection.connection,
                 environment,
                 account,
-                auth_mode: 'TWO_STEP',
+                auth_mode: 'SIGNATURE',
                 operation: updatedConnection.operation
             },
             config.provider,
@@ -177,13 +207,13 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
                 environment,
                 account,
-                auth_mode: 'TWO_STEP',
+                auth_mode: 'SIGNATURE',
                 error: {
                     type: 'unknown',
-                    description: `Error during TwoStep create: ${prettyError}`
+                    description: `Error during Signature create: ${prettyError}`
                 },
                 operation: 'unknown'
             },
@@ -191,7 +221,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             logCtx
         );
         if (logCtx) {
-            await logCtx.error('Error during TwoStep credentials creation', { error: err });
+            await logCtx.error('Error during Signature credentials creation', { error: err });
             await logCtx.failed();
         }
 
@@ -199,7 +229,10 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.AUTH,
             environmentId: environment.id,
-            metadata: { providerConfigKey, connectionId }
+            metadata: {
+                providerConfigKey,
+                connectionId: receivedConnectionId
+            }
         });
 
         next(err);
