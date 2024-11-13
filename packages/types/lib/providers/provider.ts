@@ -137,4 +137,12 @@ export interface ProviderTwoStep extends BaseProvider {
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
 }
-export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep;
+export interface ProviderSignature extends BaseProvider {
+    signature: {
+        protocol: 'WSSE';
+    };
+    token: {
+        expires_in_ms: number;
+    };
+}
+export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep | ProviderSignature;
