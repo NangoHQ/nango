@@ -40,7 +40,7 @@ function getProvidersPath() {
     return findProvidersYaml(dirname());
 }
 
-export function loadProvidersYaml(): Record<string, Provider> | undefined {
+function loadProvidersYaml(): Record<string, Provider> | undefined {
     try {
         const fileEntries = yaml.load(fs.readFileSync(getProvidersPath()).toString()) as Record<string, Provider | ProviderAlias>;
 
