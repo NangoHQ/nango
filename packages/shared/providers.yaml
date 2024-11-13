@@ -599,6 +599,7 @@ bamboohr:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
+            order: 1
 
 bamboohr-basic:
     display_name: BambooHR (basic auth)
@@ -619,6 +620,22 @@ bamboohr-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your BambooHR account
+            pattern: '^[a-zA-Z0-9]+$'
+            secret: true
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://documentation.bamboohr.com/docs/getting-started
+            # Bamboo HR is using basic auth with an api key
+            default_value: x
+            hidden: true
 
 battlenet:
     display_name: Battle.net
@@ -672,7 +689,7 @@ bigcommerce:
             example: 123e4567-e89b-12d3-a456-426614174000
 
 bill-sandbox:
-    display_name: Bill(Connect API sandbox)
+    display_name: Bill (Connect API sandbox)
     categories:
         - payment
     auth_mode: BILL
@@ -682,7 +699,7 @@ bill-sandbox:
     docs: https://docs.nango.dev/integrations/all/bill
 
 bill:
-    display_name: Bill(Connect API)
+    display_name: Bill (Connect API)
     categories:
         - payment
     auth_mode: BILL
@@ -3079,6 +3096,17 @@ jira-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .atlassian.net
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Email Address
+            description: The Email Address of your Jira account
+            format: email
+        password:
+            type: string
+            title: API Key
+            description: The API Key of your Jira account
 
 jira-data-center:
     display_name: Jira Data Center
@@ -3523,7 +3551,7 @@ marketo:
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.endpointURL}
-    token_url: https://${connectionConfig.identityURL}/oauth/token
+    token_url: https://${connectionConfig.identityURL}/identity/oauth/token
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
@@ -3536,6 +3564,7 @@ marketo:
             example: xxx.mktorest.com
             prefix: https://
             suffix: /
+            order: 1
         identityURL:
             type: string
             title: Identity URL
@@ -3543,7 +3572,8 @@ marketo:
             format: hostname
             prefix: https://
             example: xxx.mktorest.com
-            suffix: /oauth/token
+            suffix: /identity/oauth/token
+            order: 2
 
 malwarebytes:
     display_name: Malwarebytes
@@ -4845,7 +4875,6 @@ sedna:
             type: string
             title: Tenant
             description: The tenant name to your sedna account
-            format: tenant
 
 sedna-basic:
     display_name: Sedna (Basic Auth)
@@ -4860,7 +4889,6 @@ sedna-basic:
             type: string
             title: Tenant
             description: The tenant name to your sedna account
-            format: tenant
 
 servicem8:
     display_name: ServiceM8

@@ -266,7 +266,7 @@ export const connectionTest = async (
 
         if (axios.isAxiosError(response)) {
             span.setTag('nango.error', response);
-            const error = new NangoError('connection_test_failed', response, response.response?.status);
+            const error = new NangoError('connection_test_failed', response.response?.data, response.response?.status);
             return Err(error);
         }
 
