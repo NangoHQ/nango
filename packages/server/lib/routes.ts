@@ -155,7 +155,7 @@ router.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
 router.get('/env.js', getEnvJs);
-router.get('/providers.json', getProvidersJSON);
+router.get('/providers.json', rateLimiterMiddleware, getProvidersJSON);
 
 // -------
 // Public API routes
