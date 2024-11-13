@@ -1,0 +1,33 @@
+---
+title: Emarsys
+sidebarTitle: Emarsys
+---
+
+API configuration: [`emarsys`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (Signature)](/integrate/guides/authorize-an-api) | ✅ |
+| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
+| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
+| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [Emarsys Core API Authentication](https://dev.emarsys.com/docs/core-api-reference/b3c3a1eba8515-authentication)
+-   [Emarsys Core API docs](https://dev.emarsys.com/docs/core-api-reference/64bjdnkvt328t-overview-of-endpoint-batches)
+-   [Emarsys Core API rate limiting](https://dev.emarsys.com/docs/core-api-reference/cd1025a4f6b0d-miscellaneous#:~:text=Rate%20Limiting&text=At%201000%20requests%20per%20minute,and%20monitoring%20for%20your%20client.)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- Emarsys offers different APIs(Emarsys core, Loyalty V4 and SMS), currently Nango support Emarsys core API which offers WSSE over SSL authentication.
+- When creating a new connection in Nango, use a combination of the `username` and `secret` that you received during onboarding. The `username` follows the format `account_name00X`, where X is a digit.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/emarsys.mdx).</Note>

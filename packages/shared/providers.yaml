@@ -1873,6 +1873,27 @@ dropbox:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
 
+emarsys:
+    display_name: Emarsys Core API
+    categories:
+        - marketing
+    auth_mode: SIGNATURE
+    signature:
+        protocol: WSSE
+    proxy:
+        base_url: https://api.emarsys.net
+        headers:
+            Content-Type: application/json
+            X-WSSE: ${accessToken}
+        verification:
+            method: GET
+            endpoint: /api/v2/settings
+        retry:
+            at: 'X-RateLimit-Reset'
+    token:
+        expires_in_ms: 300000
+    docs: https://docs.nango.dev/integrations/all/emarsys
+
 e-conomic:
     display_name: e-conomic
     categories:
