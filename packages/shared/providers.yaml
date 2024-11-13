@@ -900,6 +900,23 @@ brex-staging:
         base_url: https://platform.staging.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
 
+brightcrowd:
+    display_name: BrightCrowd
+    categories:
+        - social
+    auth_mode: OAUTH2_CC
+    token_url: https://bcb-staging.auth.us-east-1.amazoncognito.com/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.brightcrowd.com/partner
+        paginate:
+            type: cursor
+            cursor_path_in_response: nextPageToken
+            cursor_name_in_request: pageToken
+    docs: https://docs.nango.dev/integrations/all/brightcrowd
+
 builder-io-private:
     display_name: Builder.io (private)
     categories:
@@ -1872,6 +1889,27 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+
+emarsys:
+    display_name: Emarsys Core API
+    categories:
+        - marketing
+    auth_mode: SIGNATURE
+    signature:
+        protocol: WSSE
+    proxy:
+        base_url: https://api.emarsys.net
+        headers:
+            Content-Type: application/json
+            X-WSSE: ${accessToken}
+        verification:
+            method: GET
+            endpoint: /api/v2/settings
+        retry:
+            at: 'X-RateLimit-Reset'
+    token:
+        expires_in_ms: 300000
+    docs: https://docs.nango.dev/integrations/all/emarsys
 
 e-conomic:
     display_name: e-conomic

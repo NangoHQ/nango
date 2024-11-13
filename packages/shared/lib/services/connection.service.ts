@@ -29,7 +29,9 @@ import type {
     DBConnection,
     DBEndUser,
     TwoStepCredentials,
-    ProviderTwoStep
+    ProviderTwoStep,
+    ProviderSignature,
+    SignatureCredentials
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -63,6 +65,7 @@ import { getProvider } from './providers.js';
 import { v4 as uuidv4 } from 'uuid';
 import { locking } from '../clients/locking.js';
 import type { Lock, Locking } from '../utils/lock/locking.js';
+import { generateWsseSignature } from '../signatures/wsse.signature.js';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -148,7 +151,7 @@ class ConnectionService {
         return [{ connection: connection[0]!, operation: 'creation' }];
     }
 
-    public async upsertTbaConnection({
+    public async upsertAuthConnection({
         connectionId,
         providerConfigKey,
         credentials,
@@ -160,131 +163,15 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials: TbaCredentials;
-        connectionConfig?: ConnectionConfig;
-        config: ProviderConfig;
-        metadata?: Metadata | null;
-        environment: DBEnvironment;
-        account: DBTeam;
-    }): Promise<ConnectionUpsertResponse[]> {
-        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
-
-        if (storedConnection) {
-            const encryptedConnection = encryptionManager.encryptConnection({
-                connection_id: connectionId,
-                config_id: config.id as number,
-                provider_config_key: providerConfigKey,
-                credentials,
-                connection_config: connectionConfig || storedConnection.connection_config,
-                environment_id: environment.id,
-                metadata: metadata || storedConnection.metadata || null
-            });
-            (encryptedConnection as Connection).updated_at = new Date();
-            const connection = await db.knex
-                .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id!, deleted: false })
-                .update(encryptedConnection)
-                .returning('*');
-
-            void analytics.track(AnalyticsTypes.TBA_CONNECTION_INSERTED, account.id, { provider: config.provider });
-
-            return [{ connection: connection[0]!, operation: 'override' }];
-        }
-        const connection = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .insert(
-                encryptionManager.encryptConnection({
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    config_id: config.id as number,
-                    credentials,
-                    metadata: metadata || null,
-                    connection_config: connectionConfig || {},
-                    environment_id: environment.id
-                })
-            )
-            .returning('*');
-
-        void analytics.track(AnalyticsTypes.TBA_CONNECTION_INSERTED, account.id, { provider: config.provider });
-
-        return [{ connection: connection[0]!, operation: 'creation' }];
-    }
-
-    public async upsertTableauConnection({
-        connectionId,
-        providerConfigKey,
-        credentials,
-        connectionConfig,
-        metadata,
-        config,
-        environment,
-        account
-    }: {
-        connectionId: string;
-        providerConfigKey: string;
-        credentials: TableauCredentials;
-        connectionConfig?: ConnectionConfig;
-        config: ProviderConfig;
-        metadata?: Metadata | null;
-        environment: DBEnvironment;
-        account: DBTeam;
-    }): Promise<ConnectionUpsertResponse[]> {
-        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
-
-        if (storedConnection) {
-            const encryptedConnection = encryptionManager.encryptConnection({
-                connection_id: connectionId,
-                config_id: config.id as number,
-                provider_config_key: providerConfigKey,
-                credentials,
-                connection_config: connectionConfig || storedConnection.connection_config,
-                environment_id: environment.id,
-                metadata: metadata || storedConnection.metadata || null
-            });
-            (encryptedConnection as Connection).updated_at = new Date();
-            const connection = await db.knex
-                .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id!, deleted: false })
-                .update(encryptedConnection)
-                .returning('*');
-
-            void analytics.track(AnalyticsTypes.TABLEAU_CONNECTION_INSERTED, account.id, { provider: config.provider });
-
-            return [{ connection: connection[0]!, operation: 'override' }];
-        }
-        const connection = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .insert(
-                encryptionManager.encryptConnection({
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    config_id: config.id as number,
-                    credentials,
-                    metadata: metadata || null,
-                    connection_config: connectionConfig || {},
-                    environment_id: environment.id
-                })
-            )
-            .returning('*');
-
-        void analytics.track(AnalyticsTypes.TABLEAU_CONNECTION_INSERTED, account.id, { provider: config.provider });
-
-        return [{ connection: connection[0]!, operation: 'creation' }];
-    }
-
-    public async upsertJwtConnection({
-        connectionId,
-        providerConfigKey,
-        credentials,
-        connectionConfig,
-        metadata,
-        config,
-        environment,
-        account
-    }: {
-        connectionId: string;
-        providerConfigKey: string;
-        credentials: JwtCredentials;
+        credentials:
+            | TwoStepCredentials
+            | TableauCredentials
+            | TbaCredentials
+            | JwtCredentials
+            | ApiKeyCredentials
+            | BasicApiCredentials
+            | BillCredentials
+            | SignatureCredentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -311,160 +198,17 @@ class ConnectionService {
             })
             .returning('*');
 
-        void analytics.track(AnalyticsTypes.JWT_CONNECTION_INSERTED, account.id, { provider: config.provider });
+        const operation = connection ? 'creation' : 'override';
 
-        return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
-    }
-
-    public async upsertApiConnection({
-        connectionId,
-        providerConfigKey,
-        provider,
-        credentials,
-        connectionConfig,
-        metadata,
-        environment,
-        account
-    }: {
-        connectionId: string;
-        providerConfigKey: string;
-        provider: string;
-        credentials: ApiKeyCredentials | BasicApiCredentials;
-        connectionConfig?: ConnectionConfig;
-        metadata?: Metadata | null;
-        environment: DBEnvironment;
-        account: DBTeam;
-    }): Promise<ConnectionUpsertResponse[]> {
-        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
-        const config_id = await configService.getIdByProviderConfigKey(environment.id, providerConfigKey); // TODO remove that
-
-        if (storedConnection) {
-            const encryptedConnection = encryptionManager.encryptConnection({
-                connection_id: connectionId,
-                config_id: config_id as number,
-                provider_config_key: providerConfigKey,
-                credentials,
-                connection_config: connectionConfig || storedConnection.connection_config,
-                environment_id: environment.id,
-                metadata: metadata || storedConnection.metadata || null
+        if (credentials.type) {
+            await analytics.trackConnectionEvent({
+                provider_type: credentials.type,
+                operation,
+                accountId: account.id
             });
-            (encryptedConnection as Connection).updated_at = new Date();
-            const connection = await db.knex
-                .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id!, deleted: false })
-                .update(encryptedConnection)
-                .returning('*');
-
-            void analytics.track(AnalyticsTypes.API_CONNECTION_UPDATED, account.id, { provider });
-
-            return [{ connection: connection[0]!, operation: 'override' }];
         }
-        const connection = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .insert(
-                encryptionManager.encryptConnection({
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    config_id: config_id as number,
-                    credentials,
-                    metadata: metadata || {},
-                    connection_config: connectionConfig || {},
-                    environment_id: environment.id
-                })
-            )
-            .returning('*');
 
-        void analytics.track(AnalyticsTypes.API_CONNECTION_INSERTED, account.id, { provider });
-
-        return [{ connection: connection[0]!, operation: 'creation' }];
-    }
-
-    public async upsertBillConnection({
-        connectionId,
-        providerConfigKey,
-        credentials,
-        connectionConfig,
-        metadata,
-        config,
-        environment,
-        account
-    }: {
-        connectionId: string;
-        providerConfigKey: string;
-        credentials: BillCredentials;
-        connectionConfig?: ConnectionConfig;
-        config: ProviderConfig;
-        metadata?: Metadata | null;
-        environment: DBEnvironment;
-        account: DBTeam;
-    }): Promise<ConnectionUpsertResponse[]> {
-        const encryptedConnection = encryptionManager.encryptConnection({
-            connection_id: connectionId,
-            provider_config_key: providerConfigKey,
-            config_id: config.id as number,
-            credentials,
-            connection_config: connectionConfig || {},
-            environment_id: environment.id,
-            metadata: metadata || null
-        });
-
-        const [connection] = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .insert(encryptedConnection)
-            .onConflict(['connection_id', 'provider_config_key', 'environment_id', 'deleted_at'])
-            .merge({
-                ...encryptedConnection,
-                updated_at: new Date()
-            })
-            .returning('*');
-
-        void analytics.track(AnalyticsTypes.BILL_CONNECTION_INSERTED, account.id, { provider: config.provider });
-
-        return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
-    }
-
-    public async upsertTwoStepConnection({
-        connectionId,
-        providerConfigKey,
-        credentials,
-        connectionConfig,
-        metadata,
-        config,
-        environment,
-        account
-    }: {
-        connectionId: string;
-        providerConfigKey: string;
-        credentials: TwoStepCredentials;
-        connectionConfig?: ConnectionConfig;
-        config: ProviderConfig;
-        metadata?: Metadata | null;
-        environment: DBEnvironment;
-        account: DBTeam;
-    }): Promise<ConnectionUpsertResponse[]> {
-        const encryptedConnection = encryptionManager.encryptConnection({
-            connection_id: connectionId,
-            provider_config_key: providerConfigKey,
-            config_id: config.id as number,
-            credentials,
-            connection_config: connectionConfig || {},
-            environment_id: environment.id,
-            metadata: metadata || null
-        });
-
-        const [connection] = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .insert(encryptedConnection)
-            .onConflict(['connection_id', 'provider_config_key', 'environment_id', 'deleted_at'])
-            .merge({
-                ...encryptedConnection,
-                updated_at: new Date()
-            })
-            .returning('*');
-
-        void analytics.track(AnalyticsTypes.TWO_STEP_CONNECTION_INSERTED, account.id, { provider: config.provider });
-
-        return [{ connection: connection!, operation: connection ? 'override' : 'creation' }];
+        return [{ connection: connection!, operation }];
     }
 
     public async upsertUnauthConnection({
@@ -565,7 +309,6 @@ class ConnectionService {
     public async importApiAuthConnection({
         connectionId,
         providerConfigKey,
-        provider,
         metadata = null,
         environment,
         account,
@@ -583,13 +326,20 @@ class ConnectionService {
         credentials: BasicApiCredentials | ApiKeyCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
     }) {
-        const [importedConnection] = await this.upsertApiConnection({
+        const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+
+        if (!config) {
+            logger.error('Unknown provider');
+            return [];
+        }
+
+        const [importedConnection] = await this.upsertAuthConnection({
             connectionId,
             providerConfigKey,
-            provider,
             credentials,
             connectionConfig,
             metadata,
+            config,
             environment,
             account
         });
@@ -698,7 +448,8 @@ class ConnectionService {
                 | TableauCredentials
                 | JwtCredentials
                 | TwoStepCredentials
-                | BillCredentials;
+                | BillCredentials
+                | SignatureCredentials;
             if (credentials.type && credentials.type === 'OAUTH2') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
@@ -730,6 +481,12 @@ class ConnectionService {
             }
 
             if (credentials.type && credentials.type === 'BILL') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'SIGNATURE') {
                 const creds = credentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
@@ -1167,7 +924,8 @@ class ConnectionService {
             connection?.credentials?.type === 'TABLEAU' ||
             connection?.credentials?.type === 'JWT' ||
             connection?.credentials?.type === 'BILL' ||
-            connection?.credentials?.type === 'TWO_STEP'
+            connection?.credentials?.type === 'TWO_STEP' ||
+            connection?.credentials?.type === 'SIGNATURE'
         ) {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connectionId: connection.connection_id,
@@ -1467,7 +1225,8 @@ class ConnectionService {
                 | TableauCredentials
                 | JwtCredentials
                 | TwoStepCredentials
-                | BillCredentials;
+                | BillCredentials
+                | SignatureCredentials;
         }>
     > {
         const providerConfigKey = providerConfig.unique_key;
@@ -1484,6 +1243,7 @@ class ConnectionService {
                 | JwtCredentials
                 | TwoStepCredentials
                 | BillCredentials
+                | SignatureCredentials
                 | null;
         }> => {
             const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
@@ -1512,7 +1272,8 @@ class ConnectionService {
                           | TableauCredentials
                           | JwtCredentials
                           | TwoStepCredentials
-                          | BillCredentials)
+                          | BillCredentials
+                          | SignatureCredentials)
             };
         };
 
@@ -2044,6 +1805,33 @@ class ConnectionService {
         }
     }
 
+    public getSignatureCredentials(provider: ProviderSignature, username: string, password: string): ServiceResponse<SignatureCredentials> {
+        try {
+            let token: string;
+
+            if (provider.signature.protocol === 'WSSE') {
+                token = generateWsseSignature(username, password);
+            } else {
+                throw new NangoError('unsupported_signature_protocol', { message: 'Signature protocol not supported' });
+            }
+
+            const expiresAt = new Date(Date.now() + provider.token.expires_in_ms);
+
+            const credentials: SignatureCredentials = {
+                type: 'SIGNATURE',
+                username,
+                password,
+                token,
+                expires_at: expiresAt
+            };
+
+            return { success: true, error: null, response: credentials };
+        } catch (err) {
+            const error = new NangoError('signature_token_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
+            return { success: false, error, response: null };
+        }
+    }
+
     public async shouldCapUsage({
         providerConfigKey,
         environmentId,
@@ -2147,6 +1935,7 @@ class ConnectionService {
             | JwtCredentials
             | BillCredentials
             | TwoStepCredentials
+            | SignatureCredentials
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
@@ -2222,6 +2011,15 @@ class ConnectionService {
                 error,
                 response: credentials
             } = await this.getTwoStepCredentials(provider as ProviderTwoStep, dynamicCredentials, connection.connection_config);
+
+            if (!success || !credentials) {
+                return { success, error, response: null };
+            }
+
+            return { success: true, error: null, response: credentials };
+        } else if (provider.auth_mode === 'SIGNATURE') {
+            const { username, password } = connection.credentials as SignatureCredentials;
+            const { success, error, response: credentials } = this.getSignatureCredentials(provider as ProviderSignature, username, password);
 
             if (!success || !credentials) {
                 return { success, error, response: null };

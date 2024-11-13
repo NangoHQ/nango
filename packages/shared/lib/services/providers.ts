@@ -7,6 +7,7 @@ import { dirname } from '../utils/utils.js';
 import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('providers');
+
 let providers: Record<string, Provider> | undefined = undefined;
 
 export function getProviders() {
