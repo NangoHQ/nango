@@ -6,8 +6,6 @@ import type { Connection } from '../models/Connection.js';
 import type { DBEnvironment } from '@nangohq/types';
 import get from 'lodash-es/get.js';
 
-export { cloudHost, stagingHost };
-
 export enum UserType {
     Local = 'localhost',
     SelfHosted = 'self-hosted',
@@ -140,11 +138,6 @@ export function getGlobalOAuthCallbackUrl() {
     return baseUrl + '/oauth/callback';
 }
 
-export function getGlobalAppCallbackUrl() {
-    const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
-    return baseUrl + '/app-auth/connect';
-}
-
 export function getGlobalWebhookReceiveUrl() {
     const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/webhook';
@@ -159,13 +152,6 @@ export async function getOauthCallbackUrl(environmentId?: number) {
     }
 
     return globalCallbackUrl;
-}
-
-export function getAppCallbackUrl(_environmentId?: number) {
-    const globalAppCallbackUrl = getGlobalAppCallbackUrl();
-
-    // TODO add this to settings and make it configurable
-    return globalAppCallbackUrl;
 }
 
 /**
