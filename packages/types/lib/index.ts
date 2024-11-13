@@ -38,6 +38,7 @@ export type * from './auth/api.js';
 export type * from './auth/db.js';
 export type * from './auth/http.api.js';
 export type * from './deploy/api.js';
+export type * from './deploy/index.js';
 export type * from './deploy/incomingFlow.js';
 export type * from './endpoints/db.js';
 export type * from './connect/api.js';

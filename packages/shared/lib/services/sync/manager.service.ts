@@ -13,7 +13,7 @@ import {
 import { errorNotificationService } from '../notification/error.service.js';
 import configService from '../config.service.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
-import type { SyncDeploymentResult, Sync, ReportedSyncJobStatus, SyncCommand } from '../../models/Sync.js';
+import type { Sync, ReportedSyncJobStatus, SyncCommand } from '../../models/Sync.js';
 import { SyncType, SyncStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
@@ -23,7 +23,7 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
 import type { Orchestrator, RecordsServiceInterface } from '../../clients/orchestrator.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
-import type { DBEnvironment, IncomingFlowConfig } from '@nangohq/types';
+import type { DBEnvironment, IncomingFlowConfig, SyncDeploymentResult } from '@nangohq/types';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {

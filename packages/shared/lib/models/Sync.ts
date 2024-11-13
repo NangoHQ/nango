@@ -1,7 +1,6 @@
 import type { JSONSchema7 } from 'json-schema';
 import type { TimestampsAndDeleted } from './Generic.js';
 import type { NangoConfigMetadata, NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -104,27 +103,6 @@ export interface SyncConfig extends TimestampsAndDeleted {
     webhook_subscriptions: string[] | null;
     enabled: boolean;
     models_json_schema?: JSONSchema7 | null;
-}
-
-export interface SyncDeploymentResult {
-    name: string;
-    version?: string;
-    providerConfigKey: string;
-    type: ScriptTypeLiteral;
-    last_deployed?: Date;
-    input?: string | SyncModelSchema | undefined;
-    models: string | string[];
-    id?: number | undefined;
-
-    /** @deprecated legacy **/
-    sync_name?: string;
-    /** @deprecated legacy **/
-    syncName?: string;
-}
-
-export interface SyncConfigResult {
-    result: SyncDeploymentResult[];
-    logCtx: LogContext;
 }
 
 export enum SyncCommand {
