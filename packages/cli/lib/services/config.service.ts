@@ -51,8 +51,8 @@ export function parse(fullPath: string, debug = false): ServiceResponse<NangoYam
         }
 
         return { success: true, error: null, response: parser };
-    } catch {
-        return { success: false, error: new NangoError('error_loading_nango_config'), response: null };
+    } catch (err) {
+        return { success: false, error: new NangoError('error_loading_nango_config', err instanceof Error ? err.message : (err as any)), response: null };
     }
 }
 

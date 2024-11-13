@@ -66,7 +66,11 @@ export type AuthCredentials =
     | TbaCredentials
     | TableauCredentials
     | BillCredentials
-    | TwoStepCredentials;
+    | TwoStepCredentials
+    | SignatureCredentials
+    | JwtCredentials
+    | ApiKeyCredentials
+    | BasicApiCredentials;
 
 export interface AppCredentials {
     type?: 'APP';
@@ -169,6 +173,14 @@ export interface BillCredentials extends CredentialsCommon {
     dev_key: string;
     session_id?: string;
     user_id?: string;
+    expires_at?: Date | undefined;
+}
+
+export interface SignatureCredentials {
+    type: 'SIGNATURE';
+    username: string;
+    password: string;
+    token?: string;
     expires_at?: Date | undefined;
 }
 

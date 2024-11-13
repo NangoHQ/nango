@@ -136,7 +136,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
         const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
-        const [updatedConnection] = await connectionService.upsertTwoStepConnection({
+        const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
             providerConfigKey,
             credentials,

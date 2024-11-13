@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs, { writeFileSync } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { exec } from 'child_process';
@@ -87,16 +87,16 @@ export const directoryMigration = async (loadLocation: string, debug?: boolean):
         return;
     }
 
-    for (const [providerConfigKey, integration] of Object.entries(response.parsed.integrations)) {
-        const integrationPath = path.join(loadLocation, providerConfigKey);
+    for (const integration of response.parsed.integrations) {
+        const integrationPath = path.join(loadLocation, integration.providerConfigKey);
         await createDirectory(integrationPath, debug);
 
         if (integration.syncs) {
             const syncsPath: string = path.join(integrationPath, 'syncs');
             await createDirectory(syncsPath, debug);
-            for (const sync of Object.keys(integration.syncs)) {
-                const syncPath: string = path.join(syncsPath, `${sync}.ts`);
-                const moved = await moveFile(path.join(loadLocation, `${sync}.ts`), syncPath, debug);
+            for (const sync of integration.syncs) {
+                const syncPath: string = path.join(syncsPath, `${sync.name}.ts`);
+                const moved = await moveFile(path.join(loadLocation, `${sync.name}.ts`), syncPath, debug);
                 if (moved) {
                     await updateModelImport(syncPath, debug);
                 }
@@ -106,9 +106,9 @@ export const directoryMigration = async (loadLocation: string, debug?: boolean):
         if (integration.actions) {
             const actionsPath: string = path.join(integrationPath, 'actions');
             await createDirectory(actionsPath, debug);
-            for (const action of Object.keys(integration.actions)) {
-                const actionPath: string = path.join(actionsPath, `${action}.ts`);
-                const moved = await moveFile(path.join(loadLocation, `${action}.ts`), actionPath, debug);
+            for (const action of integration.actions) {
+                const actionPath: string = path.join(actionsPath, `${action.name}.ts`);
+                const moved = await moveFile(path.join(loadLocation, `${action.name}.ts`), actionPath, debug);
                 if (moved) {
                     await updateModelImport(actionPath, debug);
                 }
@@ -118,3 +118,24 @@ export const directoryMigration = async (loadLocation: string, debug?: boolean):
 
     console.log(chalk.green(`Migration to nested directories complete.`));
 };
+
+export function endpointMigration(loadLocation: string): void {
+    const { response, success } = parse(loadLocation);
+    if (!success || !response?.parsed) {
+        return;
+    }
+
+    if (response.parsed.yamlVersion !== 'v2') {
+        console.log(chalk.red(`nango.yaml is not at v2. New endpoint format is only supported in V2`));
+        return;
+    }
+
+    let dump = response.yaml.replace(
+        /^(\s+)endpoint: ((GET|POST|PUT|PATCH|DELETE)\s)?(\/[a-zA-Z0-9-:{}./_]+)$/gim,
+        `$1endpoint:\r\n$1  method: $3\r\n$1  path: $4`
+    );
+    dump = dump.replace(/^(\s+)- ((GET|POST|PUT|PATCH|DELETE)\s)?(\/[a-zA-Z0-9-:{}./_]+)$/gim, `$1- method: $3\r\n$1  path: $4`);
+
+    writeFileSync(`${loadLocation}/nango.yaml`, dump);
+    console.log(chalk.green(`Migration complete.`));
+}

@@ -1275,6 +1275,9 @@ paths:
                                                 latestResult:
                                                     type: object
                                                     description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records
+                                                recordCount:
+                                                    type: object
+                                                    description: Total count of records for each model synced by the sync
                 '400':
                     description: Invalid request
                     content:
@@ -1825,7 +1828,23 @@ components:
                 auth_mode:
                     type: string
                     enum:
-                        ['OAUTH1', 'OAUTH2', 'OAUTH2_CC', 'BASIC', 'API_KEY', 'APP_STORE', 'CUSTOM', 'APP', 'NONE', 'TBA', 'TABLEAU', 'JWT', 'BILL', 'TWO_STEP']
+                        [
+                            'OAUTH1',
+                            'OAUTH2',
+                            'OAUTH2_CC',
+                            'BASIC',
+                            'API_KEY',
+                            'APP_STORE',
+                            'CUSTOM',
+                            'APP',
+                            'NONE',
+                            'TBA',
+                            'TABLEAU',
+                            'JWT',
+                            'BILL',
+                            'TWO_STEP',
+                            'SIGNATURE'
+                        ]
                 proxy:
                     properties:
                         base_url:

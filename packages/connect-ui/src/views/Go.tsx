@@ -33,7 +33,10 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
     NONE: z.object({}),
     OAUTH1: z.object({}),
     OAUTH2: z.object({}),
-    OAUTH2_CC: z.object({}),
+    OAUTH2_CC: z.object({
+        client_id: z.string().min(1),
+        client_secret: z.string().min(1)
+    }),
     TABLEAU: z.object({
         pat_name: z.string().min(1),
         pat_secret: z.string().min(1),
@@ -63,20 +66,29 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
         organization_id: z.string().min(1),
         dev_key: z.string().min(1)
     }),
+    SIGNATURE: z.object({
+        username: z.string().min(1),
+        password: z.string().min(1),
+        type: z.string().min(1)
+    }),
     CUSTOM: z.object({})
 };
 
 const defaultConfiguration: Record<string, { secret: boolean; title: string; example: string }> = {
     'credentials.apiKey': { secret: true, title: 'API Key', example: 'Your API Key' },
-    'credentials.username': { secret: true, title: 'User Name', example: 'Your user name' },
-    'credentials.password': { secret: false, title: 'Password', example: 'Your password' },
+    'credentials.username': { secret: false, title: 'User Name', example: 'Your user name' },
+    'credentials.password': { secret: true, title: 'Password', example: 'Your password' },
     'credentials.pat_name': { secret: false, title: 'Personal App Token', example: 'Your PAT' },
     'credentials.pat_secret': { secret: true, title: 'Personal App Token Secret', example: 'Your PAT Secret' },
     'credentials.content_url': { secret: true, title: 'Content URL', example: 'Your content URL' },
+    'credentials.client_id': { secret: false, title: 'Client ID', example: 'Your Client ID' },
+    'credentials.client_secret': { secret: true, title: 'Client Secret', example: 'Your Client Secret' },
     'credentials.oauth_client_id_override': { secret: false, title: 'OAuth Client ID', example: 'Your OAuth Client ID' },
     'credentials.oauth_client_secret_override': { secret: true, title: 'OAuth Client Secret', example: 'Your OAuth Client Secret' },
     'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
-    'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' }
+    'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
+    'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
+    'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' }
 };
 
 export const Go: React.FC = () => {
@@ -312,10 +324,13 @@ export const Go: React.FC = () => {
                                                 return (
                                                     <FormItem className={cn(isPreconfigured || definition?.hidden ? 'hidden' : null)}>
                                                         <div>
-                                                            <div className="flex gap-2 items-start pb-1">
-                                                                <FormLabel className="leading-4">
+                                                            <div className="flex gap-2 items-center pb-1">
+                                                                <FormLabel className="leading-5">
                                                                     {definition?.title || base?.title} {!isOptional && <span className="text-red-base">*</span>}
                                                                 </FormLabel>
+                                                                {isOptional && (
+                                                                    <span className="bg-dark-300 rounded-lg px-2 py-0.5 text-xs text-dark-500">optional</span>
+                                                                )}
                                                                 {definition?.doc_section && (
                                                                     <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
                                                                         <IconInfoCircle size={16} />
@@ -328,10 +343,11 @@ export const Go: React.FC = () => {
                                                             <FormControl>
                                                                 <CustomInput
                                                                     placeholder={definition?.example || definition?.title || base?.example}
+                                                                    prefix={definition?.prefix}
                                                                     suffix={definition?.suffix}
                                                                     {...field}
                                                                     autoComplete="off"
-                                                                    type={base?.secret ? 'password' : 'text'}
+                                                                    type={definition?.secret || base?.secret ? 'password' : 'text'}
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />
@@ -347,7 +363,7 @@ export const Go: React.FC = () => {
                         {shouldAutoTrigger && (
                             <div className="text-sm text-dark-500 w-full text-center">
                                 We will connect you to {provider.display_name}
-                                {provider.auth_mode === 'OAUTH2' && ". A popup will open, please make sure your browser don't block popup"}
+                                {provider.auth_mode === 'OAUTH2' && ". A popup will open, please make sure your browser doesn't block popups"}
                             </div>
                         )}
                         <div className="flex flex-col gap-4">

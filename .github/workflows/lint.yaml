@@ -6,6 +6,7 @@ on:
             - master
             - staging/**
     pull_request:
+    merge_group:
 
 jobs:
     lint-code:

@@ -151,6 +151,7 @@ aircall-basic:
         retry:
             at: 'X-AircallApi-Reset'
     docs: https://docs.nango.dev/integrations/all/aircall
+    docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
 
 airtable:
     display_name: Airtable
@@ -392,6 +393,23 @@ asana:
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/asana
 
+asana-scim:
+    display_name: Asana (SCIM API)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.asana.com/api
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/asana
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your asana scim account
+
 ashby:
     display_name: Ashby
     categories:
@@ -538,6 +556,25 @@ aws:
             example: com
             pattern: '^[a-z.]+$'
 
+aws-iam:
+    display_name: AWS IAM
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://iam.amazonaws.com
+        connection_base_url: ${connectionConfig.region}
+        retry:
+            at: 'x-ratelimit-reset'
+    docs: https://docs.nango.dev/integrations/all/aws
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region to where your AWS account is hosted
+            example: us-east-1
+            pattern: '^[a-z0-9-]+$'
+
 bamboohr:
     display_name: BambooHR
     categories:
@@ -562,6 +599,7 @@ bamboohr:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
+            order: 1
 
 bamboohr-basic:
     display_name: BambooHR (basic auth)
@@ -582,6 +620,22 @@ bamboohr-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your BambooHR account
+            pattern: '^[a-zA-Z0-9]+$'
+            secret: true
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://documentation.bamboohr.com/docs/getting-started
+            # Bamboo HR is using basic auth with an api key
+            default_value: x
+            hidden: true
 
 battlenet:
     display_name: Battle.net
@@ -635,7 +689,7 @@ bigcommerce:
             example: 123e4567-e89b-12d3-a456-426614174000
 
 bill-sandbox:
-    display_name: Bill(Connect API sandbox)
+    display_name: Bill (Connect API sandbox)
     categories:
         - payment
     auth_mode: BILL
@@ -645,7 +699,7 @@ bill-sandbox:
     docs: https://docs.nango.dev/integrations/all/bill
 
 bill:
-    display_name: Bill(Connect API)
+    display_name: Bill (Connect API)
     categories:
         - payment
     auth_mode: BILL
@@ -882,6 +936,7 @@ builder-io-private:
             description: The domain of your Builder.io account
             example: app.builder.io
             format: hostname
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -909,6 +964,7 @@ builder-io-public:
             description: The domain of your Builder.io account
             example: app.builder.io
             format: hostname
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -1354,6 +1410,7 @@ codeclimate:
             title: Domain
             description: The domain of your Code Climate account
             format: hostname
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -1526,6 +1583,7 @@ coupa-compass:
             title: Instance Domain
             description: The domain of your Coupa Compass account
             format: hostname
+            prefix: https://
 
 databricks-account:
     display_name: Databricks (Account Level)
@@ -1748,6 +1806,7 @@ discourse:
             title: Domain
             description: The domain of your Discourse account
             format: hostname
+            prefix: https://
         apiUsername:
             type: string
             title: API Username
@@ -1830,6 +1889,27 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+
+emarsys:
+    display_name: Emarsys Core API
+    categories:
+        - marketing
+    auth_mode: SIGNATURE
+    signature:
+        protocol: WSSE
+    proxy:
+        base_url: https://api.emarsys.net
+        headers:
+            Content-Type: application/json
+            X-WSSE: ${accessToken}
+        verification:
+            method: GET
+            endpoint: /api/v2/settings
+        retry:
+            at: 'X-RateLimit-Reset'
+    token:
+        expires_in_ms: 300000
+    docs: https://docs.nango.dev/integrations/all/emarsys
 
 e-conomic:
     display_name: e-conomic
@@ -2181,6 +2261,7 @@ fiserv:
             title: Domain
             description: The domain of your Fiserv account
             format: hostname
+            prefix: https://
 
 fiserv-api-key:
     display_name: Fiserv (api key)
@@ -3053,6 +3134,17 @@ jira-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .atlassian.net
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Email Address
+            description: The Email Address of your Jira account
+            format: email
+        password:
+            type: string
+            title: API Key
+            description: The API Key of your Jira account
 
 jira-data-center:
     display_name: Jira Data Center
@@ -3407,6 +3499,7 @@ listmonk:
             title: Domain
             description: The domain of your Listmonk account
             format: hostname
+            prefix: https://
 
 make:
     display_name: Make
@@ -3427,6 +3520,7 @@ make:
             title: Domain
             description: The domain of your Make account
             format: hostname
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -3495,7 +3589,7 @@ marketo:
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.endpointURL}
-    token_url: https://${connectionConfig.identityURL}/oauth/token
+    token_url: https://${connectionConfig.identityURL}/identity/oauth/token
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
@@ -3505,11 +3599,19 @@ marketo:
             title: Domain
             description: The domain of your Marketo account
             format: hostname
+            example: xxx.mktorest.com
+            prefix: https://
+            suffix: /
+            order: 1
         identityURL:
             type: string
             title: Identity URL
             description: The identity URL of your Marketo account
             format: hostname
+            prefix: https://
+            example: xxx.mktorest.com
+            suffix: /identity/oauth/token
+            order: 2
 
 malwarebytes:
     display_name: Malwarebytes
@@ -3556,6 +3658,7 @@ medallia:
             title: Domain
             description: The domain of your Medallia account
             format: hostname
+            prefix: https://
         tenantName:
             type: string
             title: Tenant Name
@@ -3565,6 +3668,7 @@ medallia:
             title: Gateway URL
             description: The gateway URL of your Medallia account
             format: hostname
+            prefix: https://
 
 metabase:
     display_name: Metabase
@@ -3680,6 +3784,41 @@ microsoft-power-bi:
     proxy:
         base_url: https://api.powerbi.com
     docs: https://docs.nango.dev/integrations/all/microsoft-power-bi
+
+mindbody:
+    display_name: Mindbody (api key)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            API-Key: ${apiKey}
+            siteId: ${connectionConfig.siteId}
+            authorization: ${connectionConfig.staffUserToken}
+        verification:
+            method: GET
+            endpoint: /public/v6/site/locations
+    docs: https://docs.nango.dev/integrations/all/mindbody
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Mindbody account
+            pattern: '^[a-f0-9]{32}$'
+            example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+    connection_config:
+        siteId:
+            type: string
+            title: Site ID
+            description: The site ID for your Mindbody account
+            pattern: '^\d+$'
+            example: '-99'
+        staffUserToken:
+            type: string
+            title: Staff User Token
+            description: The staff user token for your Mindbody account
+            pattern: '^[a-f0-9]{32}$'
+            example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
 
 mixpanel:
     display_name: Mixpanel
@@ -3817,6 +3956,7 @@ next-cloud-ocs:
             title: Domain
             description: The domain of your Next Cloud account
             format: hostname
+            prefix: https://
 
 notion:
     display_name: Notion
@@ -3884,6 +4024,7 @@ odoo:
             title: Domain
             description: The domain of your Odoo account
             format: hostname
+            prefix: https://
 
 okta:
     display_name: Okta
@@ -3901,6 +4042,10 @@ okta:
         base_url: https://${connectionConfig.subdomain}.okta.com
         retry:
             at: 'x-rate-limit-reset'
+        paginate:
+            type: 'link'
+            limit_name_in_request: 'limit'
+            link_rel_in_response_header: 'next'
     docs: https://docs.nango.dev/integrations/all/okta
     connection_config:
         subdomain:
@@ -3910,6 +4055,23 @@ okta:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .okta.com
+
+okta-preview:
+    alias: okta
+    display_name: Okta (Preview)
+    authorization_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/authorize
+    token_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.oktapreview.com
+    docs: https://docs.nango.dev/integrations/all/okta
+    connection_config:
+        subdomain:
+            type: string
+            title: Okta Preview Domain
+            description: The subdomain of your Okta Preview account
+            pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .oktapreview.com
 
 one-drive:
     display_name: One Drive
@@ -4751,7 +4913,6 @@ sedna:
             type: string
             title: Tenant
             description: The tenant name to your sedna account
-            format: tenant
 
 sedna-basic:
     display_name: Sedna (Basic Auth)
@@ -4766,7 +4927,6 @@ sedna-basic:
             type: string
             title: Tenant
             description: The tenant name to your sedna account
-            format: tenant
 
 servicem8:
     display_name: ServiceM8
@@ -4988,6 +5148,7 @@ snowflake:
             title: Domain
             description: The domain of your Snowflake account
             format: hostname
+            prefix: https://
 
 splitwise:
     display_name: Splitwise
@@ -5236,6 +5397,7 @@ tableau:
             title: Domain
             description: The domain of your Tableau instance
             format: hostname
+            prefix: https://
         version:
             type: string
             title: API Version
@@ -5325,6 +5487,8 @@ tiktok-ads:
     token_url: https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/
     proxy:
         base_url: https://business-api.tiktok.com/open_api/v1.3/
+        headers:
+            Access-Token: ${accessToken}
     token_params:
         grant_type: authorization_code
     authorization_url_replacements:
@@ -5594,6 +5758,59 @@ twinfield:
         - offline_access
     disable_pkce: true
     docs: https://docs.nango.dev/integrations/all/twinfield
+
+twenty-crm:
+    display_name: Twenty CRM
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.twenty.com/rest
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            after: 'Retry-After'
+        verification:
+            method: GET
+            endpoint: /companies
+    docs: https://docs.nango.dev/integrations/all/twenty-crm
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Twenty CRM account
+            example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc'
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+
+twenty-crm-self-hosted:
+    display_name: Twenty CRM (Self Hosted)
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}/rest
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            after: 'Retry-After'
+        verification:
+            method: GET
+            endpoint: /companies
+    docs: https://docs.nango.dev/integrations/all/twenty-crm
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Twenty CRM account
+            example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc'
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+    connection_config:
+        domain:
+            type: string
+            title: Twenty CRM domain
+            description: The domain of your Twnety CRM instance
+            pattern: '^[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+            example: domain
 
 typeform:
     display_name: Typeform
@@ -5964,6 +6181,7 @@ wrike:
             title: Domain
             description: The domain of your Wrike account
             format: hostname
+            prefix: https://
 
 xero:
     display_name: Xero
@@ -5978,6 +6196,8 @@ xero:
         - offline_access
     proxy:
         base_url: https://api.xero.com
+        retry:
+            after: 'Retry-After'
     post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
 

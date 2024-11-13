@@ -13,7 +13,7 @@ These instructions only apply for **free** self-hosting features, not Enterprise
 Add server environment variables for the instance URL and port (in the `.env`
 file or directly on Heroku/Render):
 
-```
+```sh
 NANGO_SERVER_URL=<INSTANCE-URL>
 SERVER_PORT=<PORT>
 ```
@@ -26,6 +26,25 @@ The resulting callback URL for OAuth will be `<INSTANCE-URL>/oauth/callback`.
     If you are using a custom domain, you should change the `NANGO_SERVER_URL` server environment variable accordingly (in the `.env` file or directly on
     Heroku/Render).
 </Note>
+
+## Using Nango Connect
+
+Nango Connect is an aditionnal UI that you can your customers can use to easily connect to integration. [See related documentation](/integrate/guides/authorize-an-api#authorize-users-from-your-app).
+This UI is directly available for self-hosted in the main docker image.
+
+```sh
+FLAG_SERVE_CONNECT_UI=true
+NANGO_CONNECT_UI_PORT=3009
+NANGO_PUBLIC_CONNECT_URL=<INSTANCE-URL>
+```
+
+Nango Connect is available by default at `http://localhost:3009`.
+
+<Note>
+    If you are using a custom domain, you should change the `NANGO_PUBLIC_CONNECT_URL` server environment variable accordingly (in the `.env` file or directly on
+    Heroku/Render).
+</Note>
+
 
 ## Persistent storage[](#persistent-storage 'Direct link to Persistent storage')
 

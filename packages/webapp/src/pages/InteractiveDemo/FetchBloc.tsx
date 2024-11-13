@@ -38,7 +38,16 @@ export const FetchBloc: React.FC<{
             if (language === Language.Node) {
                 setSnippet(nodeSyncSnippet({ modelName: model, secretKey, connectionId, providerConfigKey }));
             } else if (language === Language.cURL) {
-                setSnippet(await httpSnippet({ baseUrl, endpoint: { GET: endpointSync }, secretKey, connectionId, providerConfigKey, language: 'shell' }));
+                setSnippet(
+                    await httpSnippet({
+                        baseUrl,
+                        endpoint: { method: 'GET', path: endpointSync },
+                        secretKey,
+                        connectionId,
+                        providerConfigKey,
+                        language: 'shell'
+                    })
+                );
             }
         })();
     }, [language, baseUrl, secretKey, connectionId, providerConfigKey]);

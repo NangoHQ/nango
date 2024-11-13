@@ -6,7 +6,7 @@ import { axiosInstance as axios, SIGNATURE_METHOD } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
-import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
+import type { HTTP_METHOD, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
 
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
@@ -123,6 +123,12 @@ class ProxyService {
                     token = credentials.token;
                 }
                 break;
+            case 'SIGNATURE':
+                {
+                    const credentials = connection.credentials;
+                    token = credentials.token;
+                }
+                break;
         }
 
         logs.push({
@@ -185,7 +191,7 @@ class ProxyService {
 
         const configBody: ApplicationConstructedProxyConfiguration = {
             endpoint,
-            method: method?.toUpperCase() as HTTP_VERB,
+            method: method?.toUpperCase() as HTTP_METHOD,
             provider,
             token: token || '',
             providerName,
@@ -325,7 +331,7 @@ class ProxyService {
      * @param {Request} req Express request object
      * @param {Response} res Express response object
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
-     * @param {HTTP_VERB} method
+     * @param {HTTP_METHOD} method
      * @param {ApplicationConstructedProxyConfiguration} configBody
      */
     private sendToHttpMethod(configBody: ApplicationConstructedProxyConfiguration): Promise<RouteResponse & Logs> {
@@ -446,9 +452,8 @@ class ProxyService {
 
     /**
      * Construct Headers
-     * @param {ApplicationConstructedProxyConfiguration} config
      */
-    public constructHeaders(config: ApplicationConstructedProxyConfiguration, method: HTTP_VERB, url: string): Record<string, string> {
+    public constructHeaders(config: ApplicationConstructedProxyConfiguration, method: HTTP_METHOD, url: string): Record<string, string> {
         let headers = {};
 
         switch (config.provider.auth_mode) {
@@ -488,6 +493,7 @@ class ProxyService {
                     let tokenPair;
                     switch (config.provider.auth_mode) {
                         case 'OAUTH2':
+                        case 'SIGNATURE':
                             if (value.includes('connectionConfig')) {
                                 value = value.replace(/connectionConfig\./g, '');
                                 tokenPair = config.connection.connection_config;

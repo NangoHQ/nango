@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { NangoConnection, HTTP_VERB, Connection, Sync } from '@nangohq/shared';
+import type { NangoConnection, HTTP_METHOD, Connection, Sync } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import {
@@ -132,7 +132,7 @@ class SyncController {
         if (byModel.isOk()) {
             return syncs.map((sync) => ({
                 ...sync,
-                record_count: sync.models.reduce((sum, model) => sum + (byModel.value[model]?.count ?? 0), 0)
+                record_count: Object.fromEntries(sync.models.map((model) => [model, byModel.value[model]?.count ?? 0]))
             }));
         } else {
             return syncs.map((sync) => ({ ...sync, record_count: null }));
@@ -231,7 +231,7 @@ class SyncController {
                 return;
             }
 
-            const { action, model } = await getActionOrModelByEndpoint(connection as NangoConnection, req.method as HTTP_VERB, path);
+            const { action, model } = await getActionOrModelByEndpoint(connection as NangoConnection, req.method as HTTP_METHOD, path);
             if (action) {
                 const input = req.body || req.params[1];
                 req.body = {};
@@ -523,6 +523,7 @@ class SyncController {
                 provider_config_key as string,
                 syncNames,
                 orchestrator,
+                recordsService,
                 connection_id as string,
                 false,
                 connection

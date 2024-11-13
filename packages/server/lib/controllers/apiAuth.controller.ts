@@ -135,12 +135,13 @@ class ApiAuthController {
                 return;
             }
 
-            const [updatedConnection] = await connectionService.upsertApiConnection({
+            const [updatedConnection] = await connectionService.upsertAuthConnection({
                 connectionId,
                 providerConfigKey,
-                provider: config.provider,
                 credentials,
                 connectionConfig,
+                metadata: {},
+                config,
                 environment,
                 account
             });
@@ -317,12 +318,13 @@ class ApiAuthController {
                 return;
             }
 
-            const [updatedConnection] = await connectionService.upsertApiConnection({
+            const [updatedConnection] = await connectionService.upsertAuthConnection({
                 connectionId,
                 providerConfigKey,
-                provider: config.provider,
                 credentials,
                 connectionConfig,
+                metadata: {},
+                config,
                 environment,
                 account
             });

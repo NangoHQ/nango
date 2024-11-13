@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import proxyService from './proxy.service.js';
-import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, OAuth2Credentials } from '../models/index.js';
+import type { UserProvidedProxyConfiguration, InternalProxyConfiguration, OAuth2Credentials } from '../models/index.js';
 import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { MessageRowInsert } from '@nangohq/types';
@@ -13,7 +13,7 @@ describe('Proxy service Construct Header Tests', () => {
             providerConfigKey: 'test',
             connectionId: 'test',
             token: { apiKey: 'sweet-secret-token' },
-            method: 'GET' as HTTP_VERB,
+            method: 'GET',
             provider: {
                 auth_mode: 'API_KEY',
                 authorization_url: 'https://api.nangostarter.com',
@@ -759,5 +759,26 @@ describe('Proxy service configure', () => {
         });
         expect(error).toBeNull();
         expect(logs.length).toBe(4);
+    });
+
+    it('Should correctly insert headers with dynamic values for signature based', () => {
+        const config = {
+            provider: {
+                auth_mode: 'SIGNATURE',
+                proxy: {
+                    headers: {
+                        'X-WSSE': '${accessToken}'
+                    }
+                }
+            },
+            token: 'some-oauth-access-token'
+        };
+
+        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+
+        expect(result).toEqual({
+            Authorization: 'Bearer some-oauth-access-token',
+            'X-WSSE': 'some-oauth-access-token'
+        });
     });
 });

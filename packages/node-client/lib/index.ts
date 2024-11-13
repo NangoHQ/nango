@@ -23,7 +23,8 @@ import type {
     PostConnectSessions,
     JwtCredentials,
     TwoStepCredentials,
-    GetPublicConnections
+    GetPublicConnections,
+    SignatureCredentials
 } from '@nangohq/types';
 import type {
     Connection,
@@ -44,7 +45,6 @@ import type {
 } from './types.js';
 import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
-export const stagingHost = 'https://api-staging.nango.dev';
 export const prodHost = 'https://api.nango.dev';
 
 export * from './types.js';
@@ -341,6 +341,7 @@ export class Nango {
         | JwtCredentials
         | BillCredentials
         | TwoStepCredentials
+        | SignatureCredentials
     > {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 

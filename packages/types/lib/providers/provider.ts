@@ -28,12 +28,14 @@ export interface SimplifiedJSONSchema {
     example?: string;
     pattern?: string;
     optional?: boolean;
-    format?: string;
+    format?: 'hostname' | 'uri' | 'uuid' | 'email';
     order: number;
     default_value?: string;
     hidden?: string;
+    prefix?: string;
     suffix?: string;
     doc_section?: string;
+    secret?: string;
 }
 
 export interface BaseProvider {
@@ -42,6 +44,7 @@ export interface BaseProvider {
     proxy?: {
         base_url: string;
         headers?: Record<string, string>;
+        connection_base_url?: string;
         query?: {
             api_key: string;
         };
@@ -134,4 +137,12 @@ export interface ProviderTwoStep extends BaseProvider {
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
 }
-export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep;
+export interface ProviderSignature extends BaseProvider {
+    signature: {
+        protocol: 'WSSE';
+    };
+    token: {
+        expires_in_ms: number;
+    };
+}
+export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep | ProviderSignature;

@@ -315,6 +315,7 @@
             "group": "Pre-Configured APIs",
             "pages": [
                 "integrations/all/accelo",
+                "integrations/all/acuity-scheduling",
                 "integrations/all/adobe",
                 "integrations/all/adyen",
                 "integrations/all/affinity",
@@ -390,6 +391,7 @@
                 "integrations/all/elevio",
                 "integrations/all/egnyte",
                 "integrations/all/elevenlabs",
+                "integrations/all/emarsys",
                 "integrations/all/entrata",
                 "integrations/all/envoy",
                 "integrations/all/epic-games",
@@ -474,6 +476,7 @@
                 "integrations/all/microsoft-power-bi",
                 "integrations/all/microsoft-teams",
                 "integrations/all/microsoft-tenant-specific",
+                "integrations/all/mindbody",
                 "integrations/all/miro",
                 "integrations/all/mixpanel",
                 "integrations/all/monday",
@@ -563,6 +566,7 @@
                 "integrations/all/twitch",
                 "integrations/all/twitter",
                 "integrations/all/twinfield",
+                "integrations/all/twenty-crm",
                 "integrations/all/typeform",
                 "integrations/all/typefully",
                 "integrations/all/uber",
@@ -596,8 +600,7 @@
                 "integrations/all/zoho-mail",
                 "integrations/all/zoho-people",
                 "integrations/all/zoom",
-                "integrations/all/zoominfo",
-                "integrations/all/acuity-scheduling"
+                "integrations/all/zoominfo"
             ]
         },
         {

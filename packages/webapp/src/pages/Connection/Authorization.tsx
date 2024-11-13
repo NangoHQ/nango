@@ -4,7 +4,6 @@ import PrismPlus from '../../components/ui/prism/PrismPlus';
 import type { ActiveLog, ApiConnectionFull, ApiEndUser } from '@nangohq/types';
 import { formatDateToShortUSFormat } from '../../utils/utils';
 import SecretInput from '../../components/ui/input/SecretInput';
-import { CopyButton } from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
 import type React from 'react';
 import { apiRefreshConnection } from '../../hooks/useConnections';
@@ -15,6 +14,7 @@ import { mutate } from 'swr';
 import { getLogsUrl } from '../../utils/logs';
 import { Info } from '../../components/Info';
 import { Link } from 'react-router-dom';
+import { CopyText } from '../../components/CopyText';
 
 interface AuthorizationProps {
     connection: ApiConnectionFull;
@@ -58,6 +58,13 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                 </div>
             )}
             <div className="grid grid-cols-3 gap-5">
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
+                    <div className="text-s -ml-2">
+                        <CopyText text={connection.connection_id} className=" text-white" />
+                    </div>
+                </div>
+
                 {endUser?.id && (
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">User ID</span>
@@ -110,17 +117,10 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                         <span className="text-white">{formatDateToShortUSFormat(connection.credentials.expires_at.toString())}</span>
                     </div>
                 )}
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
-                    <div className="flex items-center gap-2">
-                        <span className="text-white break-all font-code text-xs">{connection.connection_id}</span>
-                        <CopyButton text={connection.connection_id} />
-                    </div>
-                </div>
             </div>
 
             {connection.credentials &&
-                (connection.credentials.type === 'BASIC' || connection.credentials.type === 'BILL') &&
+                (connection.credentials.type === 'BASIC' || connection.credentials.type === 'BILL' || connection.credentials.type === 'SIGNATURE') &&
                 'password' in connection.credentials && (
                     <div className="flex">
                         {connection?.credentials.username && (

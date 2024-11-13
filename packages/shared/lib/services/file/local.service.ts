@@ -7,24 +7,14 @@ import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import { LogActionEnum } from '../../models/Telemetry.js';
 import type { LayoutMode } from '../../models/NangoConfig.js';
-import { nangoConfigFile, SYNC_FILE_EXTENSION } from '../nango-config.service.js';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const SYNC_FILE_EXTENSION = 'js';
+
 class LocalFileService {
-    public readFile(rawFilePath: string) {
-        try {
-            const filePath = rawFilePath.replace('@', '');
-            const realPath = fs.realpathSync(filePath);
-            const fileContents = fs.readFileSync(realPath, 'utf8');
-
-            return fileContents;
-        } catch {
-            return null;
-        }
-    }
-
     public getIntegrationFile(syncName: string, providerConfigKey: string, setIntegrationPath?: string | null) {
         try {
             const filePath = setIntegrationPath ? `${setIntegrationPath}dist/${syncName}.${SYNC_FILE_EXTENSION}` : this.resolveIntegrationFile(syncName);
@@ -58,51 +48,6 @@ class LocalFileService {
             console.log(error);
             return false;
         }
-    }
-
-    public checkForIntegrationDistFile(syncName: string, providerConfigKey: string, optionalNangoIntegrationsDirPath?: string) {
-        let nangoIntegrationsDirPath = '';
-
-        if (optionalNangoIntegrationsDirPath) {
-            nangoIntegrationsDirPath = optionalNangoIntegrationsDirPath;
-        } else {
-            nangoIntegrationsDirPath = process.env['NANGO_INTEGRATIONS_FULL_PATH'] as string;
-        }
-
-        const distDirPath = path.resolve(nangoIntegrationsDirPath, 'dist');
-
-        if (!fs.existsSync(nangoIntegrationsDirPath)) {
-            return {
-                result: false,
-                path: nangoIntegrationsDirPath
-            };
-        }
-
-        if (!fs.existsSync(distDirPath)) {
-            return {
-                result: false,
-                path: distDirPath
-            };
-        }
-
-        let filePath = path.resolve(distDirPath, `${syncName}.${SYNC_FILE_EXTENSION}`);
-        let realPath;
-
-        const fileNameWithProviderConfigKey = filePath.replace(`.${SYNC_FILE_EXTENSION}`, `-${providerConfigKey}.${SYNC_FILE_EXTENSION}`);
-
-        if (fs.existsSync(fileNameWithProviderConfigKey)) {
-            filePath = fileNameWithProviderConfigKey;
-        }
-        try {
-            realPath = fs.realpathSync(filePath);
-        } catch {
-            realPath = filePath;
-        }
-
-        return {
-            result: fs.existsSync(realPath),
-            path: realPath
-        };
     }
 
     public checkForIntegrationSourceFile(fileName: string, optionalNangoIntegrationsDirPath?: string) {

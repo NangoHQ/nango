@@ -25,7 +25,7 @@ import type {
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import { getOrchestrator } from '../utils/utils.js';
-import type { TbaCredentials, IntegrationConfig, DBEnvironment, Provider, JwtCredentials } from '@nangohq/types';
+import type { TbaCredentials, IntegrationConfig, DBEnvironment, Provider, JwtCredentials, SignatureCredentials } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
@@ -198,7 +198,7 @@ export const connectionRefreshFailed = async ({
 export const connectionTest = async (
     providerName: string,
     provider: Provider,
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials,
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials,
     connectionId: string,
     providerConfigKey: string,
     environment_id: number,
@@ -266,7 +266,7 @@ export const connectionTest = async (
 
         if (axios.isAxiosError(response)) {
             span.setTag('nango.error', response);
-            const error = new NangoError('connection_test_failed', response, response.response?.status);
+            const error = new NangoError('connection_test_failed', response.response?.data, response.response?.status);
             return Err(error);
         }
 

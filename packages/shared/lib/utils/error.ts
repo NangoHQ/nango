@@ -1,5 +1,3 @@
-import { stringifyError } from '@nangohq/utils';
-
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
@@ -498,6 +496,16 @@ export class NangoError extends Error {
                 this.message = `Error fetching Two Step credentials`;
                 break;
 
+            case 'signature_token_generation_error':
+                this.status = 400;
+                this.message = `Error generating signature based token`;
+                break;
+
+            case 'unsupported_signature_protocol':
+                this.status = 400;
+                this.message = `Signature protocol not currently supported`;
+                break;
+
             case 'invalid_two_step_credentials':
                 this.status = 400;
                 this.message = `Invalid credentials provided to create a Two Step connection`;
@@ -682,6 +690,11 @@ export class NangoError extends Error {
                 this.message = `An internal error occurred during the script execution`;
                 break;
 
+            case 'wsse_token_generation_error':
+                this.status = 500;
+                this.message = `An error occured while generating an WSSE token`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
@@ -693,31 +706,6 @@ export class NangoError extends Error {
         this.payload = payload;
     }
 }
-
-export const formatScriptError = (err: any, errorType: string, scriptName: string) => {
-    let errorMessage: string;
-
-    if ('response' in err && 'data' in err.response) {
-        if (typeof err.response.data === 'string' && (err.response.data.trim().startsWith('<!DOCTYPE html>') || /<\/?[a-z][\s\S]*>/i.test(err.response.data))) {
-            errorMessage = err.response.data;
-        } else {
-            errorMessage = JSON.stringify(err.response.data, null, 2);
-        }
-    } else if (err.message) {
-        errorMessage = err.message;
-    } else if (err && typeof err === 'object' && Object.keys(err as object).length > 0) {
-        errorMessage = stringifyError(err, { pretty: true, stack: true });
-    } else {
-        errorMessage = String(err);
-    }
-
-    const content = `Script for '${scriptName}' failed to execute with error: ${errorMessage}`;
-
-    const status = err?.response?.status || 500;
-    const error = new NangoError(errorType, content, status);
-
-    return { success: false, error, response: null };
-};
 
 export function isNangoErrorAsJson(obj: unknown): obj is NangoError {
     return Boolean(typeof obj === 'object' && obj && 'payload' in obj && 'type' in obj);

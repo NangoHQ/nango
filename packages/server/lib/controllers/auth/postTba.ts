@@ -164,7 +164,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         return;
     }
 
-    const [updatedConnection] = await connectionService.upsertTbaConnection({
+    const [updatedConnection] = await connectionService.upsertAuthConnection({
         connectionId,
         providerConfigKey,
         credentials: tbaCredentials,

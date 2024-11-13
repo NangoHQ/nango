@@ -39,7 +39,8 @@
                         "TABLEAU",
                         "JWT",
                         "BILL",
-                        "TWO_STEP"
+                        "TWO_STEP",
+                        "SIGNATURE"
                     ]
                 },
                 "authorization_method": {
@@ -135,6 +136,9 @@
                     "additionalProperties": false,
                     "properties": {
                         "base_url": {
+                            "type": "string"
+                        },
+                        "connection_base_url": {
                             "type": "string"
                         },
                         "decompress": {
@@ -292,6 +296,16 @@
                     "type": "string",
                     "enum": ["HMAC-SHA1", "PLAINTEXT"]
                 },
+                "signature": {
+                    "type": "object",
+                    "properties": {
+                        "protocol": {
+                            "type": "string",
+                            "enum": ["WSSE"]
+                        }
+                    },
+                    "required": ["protocol"]
+                },
                 "token_expiration_buffer": {
                     "type": "number"
                 },
@@ -419,10 +433,17 @@
                                     "type": "string"
                                 },
                                 "format": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": ["hostname", "uri", "uuid", "email"]
                                 },
                                 "order": {
                                     "type": "number"
+                                },
+                                "secret": {
+                                    "type": "boolean"
+                                },
+                                "prefix": {
+                                    "type": "string"
                                 },
                                 "suffix": {
                                     "type": "string"
@@ -464,10 +485,14 @@
                                     "type": "string"
                                 },
                                 "format": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": ["hostname", "uri", "uuid", "email"]
                                 },
                                 "default_value": {
                                     "type": "string"
+                                },
+                                "secret": {
+                                    "type": "boolean"
                                 },
                                 "hidden": {
                                     "type": "boolean"

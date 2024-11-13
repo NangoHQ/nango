@@ -25,7 +25,7 @@ describe('parse', () => {
                         {
                             auto_start: true,
                             description: '',
-                            endpoints: [{ GET: '/provider/top' }],
+                            endpoints: [{ method: 'GET', path: '/provider/top' }],
                             input: 'GithubIssue',
                             name: 'top',
                             output: ['GithubIssue'],
@@ -44,7 +44,7 @@ describe('parse', () => {
                         {
                             description: '',
                             input: 'Anonymous_provider_action_createIssue_input',
-                            endpoint: { POST: '/test' },
+                            endpoint: { method: 'POST', path: '/test' },
                             name: 'createIssue',
                             output: ['GithubIssue'],
                             scopes: [],
@@ -92,7 +92,7 @@ describe('parse', () => {
                         {
                             description: '',
                             input: null,
-                            endpoint: { POST: '/test' },
+                            endpoint: { method: 'POST', path: '/test' },
                             name: 'createIssue',
                             output: ['Start'],
                             scopes: [],
@@ -131,7 +131,7 @@ describe('parse', () => {
                         {
                             auto_start: true,
                             description: '',
-                            endpoints: [{ GET: '/provider/top' }],
+                            endpoints: [{ method: 'GET', path: '/provider/top' }],
                             input: 'Anonymous_provider_sync_top_input',
                             name: 'top',
                             output: ['Anonymous_provider_sync_top_output'],
@@ -235,7 +235,7 @@ describe('parse', () => {
             expect(parser.warnings).toStrictEqual([]);
             expect(parser.parsed?.integrations[0]?.actions).toMatchObject([
                 {
-                    endpoint: { GET: '/ticketing/tickets/{Found:id}' }
+                    endpoint: { method: 'GET', path: '/ticketing/tickets/{Found:id}' }
                 }
             ]);
         });
@@ -282,6 +282,57 @@ describe('parse', () => {
             parser.parse();
             expect(parser.errors).toStrictEqual([]);
             expect(parser.warnings).toStrictEqual([]);
+        });
+
+        it('should handle endpoint new format (single)', () => {
+            const v2: NangoYamlV2 = {
+                models: { Found: { id: 'string' } },
+                integrations: {
+                    provider: { actions: { getGithubIssue: { endpoint: { method: 'POST', path: '/ticketing/tickets/{Found:id}' } } } }
+                }
+            };
+            const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
+            parser.parse();
+            expect(parser.errors).toStrictEqual([]);
+            expect(parser.warnings).toStrictEqual([]);
+            expect(parser.parsed?.integrations[0]?.actions).toMatchObject([
+                {
+                    endpoint: { method: 'POST', path: '/ticketing/tickets/{Found:id}' }
+                }
+            ]);
+        });
+
+        it('should handle endpoint new format (array)', () => {
+            const v2: NangoYamlV2 = {
+                models: { Input: { id: 'string' }, Top: { id: 'string' }, Tip: { id: 'string' } },
+                integrations: {
+                    provider: {
+                        syncs: {
+                            top: {
+                                runs: 'every day',
+                                input: 'Input',
+                                output: ['Top', 'Tip'],
+                                endpoint: [
+                                    { method: 'GET', path: '/provider/top' },
+                                    { path: '/provider/tip', entity: 'Record' }
+                                ]
+                            }
+                        }
+                    }
+                }
+            };
+            const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
+            parser.parse();
+            expect(parser.errors).toStrictEqual([]);
+            expect(parser.warnings).toStrictEqual([]);
+            expect(parser.parsed?.integrations[0]?.syncs).toMatchObject([
+                {
+                    endpoints: [
+                        { method: 'GET', path: '/provider/top' },
+                        { method: 'GET', path: '/provider/tip', entity: 'Record' }
+                    ]
+                }
+            ]);
         });
     });
 });
