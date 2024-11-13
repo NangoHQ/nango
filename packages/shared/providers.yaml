@@ -3791,6 +3791,7 @@ mindbody:
         - productivity
     auth_mode: API_KEY
     proxy:
+        base_url: https://api.mindbodyonline.com
         headers:
             API-Key: ${apiKey}
             siteId: ${connectionConfig.siteId}
