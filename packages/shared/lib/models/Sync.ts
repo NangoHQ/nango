@@ -59,15 +59,16 @@ export interface Job extends TimestampsAndDeleted {
 
 export interface ReportedSyncJobStatus {
     id?: string;
-    type: SyncType;
+    type: SyncType | 'INITIAL';
     name?: string;
     status: SyncStatus;
-    latestResult?: SyncResultByModel;
+    latestResult?: SyncResultByModel | undefined;
     jobStatus?: SyncStatus;
-    frequency: string;
-    finishedAt: Date;
+    frequency: string | null;
+    finishedAt: Date | undefined;
     nextScheduledSyncAt: Date | null;
-    latestExecutionStatus: SyncStatus;
+    latestExecutionStatus: SyncStatus | undefined;
+    recordCount: Record<string, number>;
 }
 
 // TODO: change that to use Parsed type
