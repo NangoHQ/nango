@@ -2,7 +2,7 @@ import type { JSONSchema7 } from 'json-schema';
 
 import type { Endpoint, ApiError } from '../api.js';
 import type { IncomingFlowConfig, PostConnectionScriptByProvider } from './incomingFlow.js';
-import type { SyncDeploymentResult } from './results.js';
+import type { SyncDeploymentResult } from './index.js';
 
 export type PostDeployConfirmation = Endpoint<{
     Method: 'POST';
