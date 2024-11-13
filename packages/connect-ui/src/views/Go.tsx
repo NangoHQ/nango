@@ -81,7 +81,9 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.oauth_client_id_override': { secret: false, title: 'OAuth Client ID', example: 'Your OAuth Client ID' },
     'credentials.oauth_client_secret_override': { secret: true, title: 'OAuth Client Secret', example: 'Your OAuth Client Secret' },
     'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
-    'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' }
+    'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
+    'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
+    'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' }
 };
 
 export const Go: React.FC = () => {

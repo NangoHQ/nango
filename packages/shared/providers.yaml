@@ -689,7 +689,7 @@ bigcommerce:
             example: 123e4567-e89b-12d3-a456-426614174000
 
 bill-sandbox:
-    display_name: Bill(Connect API sandbox)
+    display_name: Bill (Connect API sandbox)
     categories:
         - payment
     auth_mode: BILL
@@ -699,7 +699,7 @@ bill-sandbox:
     docs: https://docs.nango.dev/integrations/all/bill
 
 bill:
-    display_name: Bill(Connect API)
+    display_name: Bill (Connect API)
     categories:
         - payment
     auth_mode: BILL
