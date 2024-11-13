@@ -78,7 +78,11 @@ async function fetchRunners() {
         cursor = fetched[fetched.length - 1].cursor;
         console.log(cursor);
 
-        const filteredServices = fetched.map((item) => item.service).filter((service) => service.name.startsWith(`${process.env.ENVIRONMENT}-runner-`));
+        // eslint-disable-next-line prettier/prettier
+        const filteredServices = fetched
+            .map((item) => item.service)
+            .filter((service) => 
+                service.name.startsWith(`${process.env.ENVIRONMENT}-runner-`));
 
         services = services.concat(filteredServices);
 
