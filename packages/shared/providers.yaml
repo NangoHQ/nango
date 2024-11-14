@@ -3124,7 +3124,6 @@ jira:
     post_connection_script: jiraPostConnection
     webhook_routing_script: jiraWebhookRouting
     docs: https://docs.nango.dev/integrations/all/jira
-    docs_connect: https://docs.nango.dev/integrations/all/jira-basic/connect
 
 jira-basic:
     display_name: Jira (basic auth)
@@ -3162,6 +3161,7 @@ jira-basic:
             title: API Key
             description: The API Key of your Jira account
             doc_section: '#step-1-finding-atlassian-api-key'
+    docs_connect: https://docs.nango.dev/integrations/all/jira-basic/connect
 
 jira-data-center:
     display_name: Jira Data Center
