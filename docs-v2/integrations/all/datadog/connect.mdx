@@ -1,0 +1,74 @@
+---
+title: Datadog - How do I link my account?
+sidebarTitle: Datadog
+---
+
+
+# Overview
+
+To authenticate with Datadog, you need three key pieces of information:
+1. **API Key** - Your Datadog API Key
+2. **Site Parameter** - Location of your datadog host
+3. **Application Key** - Keys are associated with the user account that created
+
+
+This guide will walk you through finding or creating those credentials within Datadog.
+
+
+### Prerequisites:
+
+- You must set up an account with Datadog.
+
+
+#### Step 1: Finding Your Datadog Domain
+1. Log in to your Datadog account. 
+
+
+2. You can identify which site (Site Parameter) you are on by matching your Datadog website URL (in your browser) to one of the following:
+
+| Site     | Site URL                     | Site Parameter       | Location      |
+|----------|-------------------------------|----------------------|---------------|
+| US1      | [https://app.datadoghq.com](https://app.datadoghq.com)         | datadoghq.com       | US            |
+| US3      | [https://us3.datadoghq.com](https://us3.datadoghq.com)         | us3.datadoghq.com   | US            |
+| US5      | [https://us5.datadoghq.com](https://us5.datadoghq.com)         | us5.datadoghq.com   | US            |
+| EU1      | [https://app.datadoghq.eu](https://app.datadoghq.eu)           | datadoghq.eu        | EU (Germany)  |
+| US1-FED  | [https://app.ddog-gov.com](https://app.ddog-gov.com)           | ddog-gov.com        | US            |
+| AP1      | [https://ap1.datadoghq.com](https://ap1.datadoghq.com)         | ap1.datadoghq.com   | Japan         |
+
+
+#### Step 2: Datadog API Key
+1. To add a Datadog API key, Navigate to **Organization settings**, then click the **API keys** tab.
+- Click the **New Key** or **New Client Token** button, depending on which you’re creating
+- Enter a name for your key and then click **Create API key**
+
+<img src="/integrations/all/datadog/datadog-1.png" />
+
+Note:
+- Your org must have at least one API key and at most 50 API keys.
+- Key names must be unique across your organization.
+
+
+#### Step 3: Datadog Application Key
+1. To create a new application key, navigate to **Organization Settings** > **Application Keys**. If you have the permission to create application keys, click **New Key**.
+
+<img src="/integrations/all/datadog/datadog-2.avif" />
+
+
+2. Once you’ve clicked this, you’ll see a pop-up that confirms that this API key will replace the one used for GDPR compliance and personal data storage. 
+
+Note:
+- Application key names cannot be blank.
+- Securely copy your API and application keys
+
+
+#### Step 4: Connect Your Datadog Account
+
+<img src="/integrations/all/datadog/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Datadog authentication form.
+Enter your credentials as follows:
+- API Key: Your API key
+- Site Parameter: Your datadog host
+- Application Key: Your application key
+
+Click "Connect" to complete the authentication.
