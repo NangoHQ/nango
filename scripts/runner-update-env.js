@@ -80,7 +80,7 @@ async function fetchRunners() {
         const remaining = parseInt(response.headers.get('ratelimit-remaining'));
         const resetMs = (parseInt(response.headers.get('ratelimit-reset')) + 1) * 1000;
 
-        await sleep(Math.ceil((resetMs + 1) / remaining));
+        await sleep(Math.ceil(resetMs / remaining));
     }
 
     return services;
@@ -111,5 +111,5 @@ async function updateEnvVar(serviceId, key, value) {
     const remaining = parseInt(response.headers.get('ratelimit-remaining'));
     const resetMs = (parseInt(response.headers.get('ratelimit-reset')) + 1) * 1000;
 
-    await sleep(Math.ceil((resetMs + 1) / remaining));
+    await sleep(Math.ceil(resetMs / remaining));
 }
