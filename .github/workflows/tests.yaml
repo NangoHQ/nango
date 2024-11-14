@@ -31,7 +31,7 @@ jobs:
                   cache: 'npm'
                   node-version: ${{ matrix.node-version }}
 
-            - run: npm run ci
+            - run: npm ci
             - run: npm run ts-build
             - run: npm run test:unit
             - run: npm run test:cli
