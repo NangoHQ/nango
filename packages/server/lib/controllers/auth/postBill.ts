@@ -18,7 +18,7 @@ import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 
@@ -35,12 +35,10 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
-        public_key: z.string().uuid().optional(),
-        connect_session_token: connectSessionTokenSchema.optional(),
-        user_scope: z.string().optional(),
-        hmac: z.string().optional()
+        user_scope: z.string().optional()
     })
-    .strict();
+    .strict()
+    .and(connectionCredential);
 
 const paramsValidation = z
     .object({
@@ -75,9 +73,11 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
 
     const { account, environment, authType } = res.locals;
     const { username: userName, password: password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicBillAuthorization['Querystring'] = queryStringVal.data;
+    const queryString: PostPublicBillAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBillAuthorization['Params'] = paramsVal.data;
-    const connectionConfig = params ? getConnectionConfig(params) : {};
+    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    const connectionId = queryString.connection_id || connectionService.generateConnectionId();
+    const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
 
     let logCtx: LogContext | undefined;
 
@@ -92,14 +92,10 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
         );
         void analytics.track(AnalyticsTypes.PRE_BILL_AUTH, account.id);
 
-        await hmacCheck({
-            environment,
-            logCtx,
-            providerConfigKey,
-            connectionId: receivedConnectionId,
-            hmac,
-            res
-        });
+        const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+        if (!checked) {
+            return;
+        }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
@@ -136,8 +132,6 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
 
             return;
         }
-
-        const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
@@ -185,7 +179,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                 environment,
                 account,
                 auth_mode: 'BILL',
@@ -207,10 +201,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.AUTH,
             environmentId: environment.id,
-            metadata: {
-                providerConfigKey,
-                connectionId: receivedConnectionId
-            }
+            metadata: { providerConfigKey, connectionId }
         });
 
         next(err);
