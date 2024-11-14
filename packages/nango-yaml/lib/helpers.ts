@@ -205,5 +205,5 @@ export function parseEndpoint(rawEndpoint: string | NangoSyncEndpointV2 | NangoY
         return { method: defaultMethod, path: endpoint[0] as string };
     }
 
-    return { method: rawEndpoint.method || defaultMethod, path: rawEndpoint.path, entity: rawEndpoint.entity };
+    return { method: rawEndpoint.method || defaultMethod, path: rawEndpoint.path, group: rawEndpoint.group };
 }

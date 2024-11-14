@@ -20,6 +20,7 @@ integrations:
         endpoint: # Generated endpoint to access the synced model.
           method: GET
           path: /tasks
+          group: Tasks
         sync_type: incremental # Data is replaced ('full') or upserted ('incremental') on each sync execution.
         runs: every 30min # Sync frequency.
         input:  AsanaProject # Necessary input to execute the sync.
@@ -41,6 +42,7 @@ integrations:
         endpoint: # Generated endpoint to trigger to action.
           method: POST
           path: /tasks
+          group: Tasks
         input: # Necessary input to execute the action.
         scopes: # Required scopes.
           - scope1
@@ -114,11 +116,13 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
     endpoint:
       method: GET
       path: /tasks
+      group?: Tasks
     ```
 
     Possible method values are: `GET`
 
     The method/endpoint combination can be shared across syncs to unify the communication with external APIs.
+    The `group` is an optional value to group endpoints across scripts.
 
     Legacy format: `<METHOD> <URL-PATH>`.  e.g.: `GET /tasks`.
 </ResponseField>
@@ -195,6 +199,7 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
     Possible method values are: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
 
     The method/endpoint combination can be shared across actions to unify the communication with external APIs.
+    The `group` is an optional value to group endpoints across scripts.
 
     Legacy format: `<METHOD> <URL-PATH>`.  e.g.: `POST /tasks`.
 </ResponseField>
