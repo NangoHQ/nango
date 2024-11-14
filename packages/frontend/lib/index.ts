@@ -87,7 +87,7 @@ export default class Nango {
             this.height = config.height;
         }
 
-        this.hostBaseUrl = config.host.endsWith('/') ? config.host.slice(0, -1) : config.host; // Remove trailing slash.
+        this.hostBaseUrl = config.host.replace(/\/+$/, ''); // Remove trailing slash.
         this.status = AuthorizationStatus.IDLE;
 
         this.publicKey = config.publicKey;
