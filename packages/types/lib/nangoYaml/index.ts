@@ -30,7 +30,7 @@ export interface NangoYamlV2 {
 export interface NangoYamlV2Endpoint {
     method?: HTTP_METHOD;
     path: string;
-    entity?: string | undefined;
+    group?: string | undefined;
 }
 export interface NangoYamlV2Integration {
     provider?: string;
@@ -141,5 +141,5 @@ export type NangoSyncEndpointOld = {
 export interface NangoSyncEndpointV2 {
     method: HTTP_METHOD;
     path: string;
-    entity?: string | undefined;
+    group?: string | undefined;
 }
