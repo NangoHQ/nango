@@ -6097,15 +6097,8 @@ workable:
         base_url: https://${connectionConfig.subdomain}.workable.com
         retry:
             at: 'X-Rate-Limit-Reset'
+    post_connection_script: workablePostConnection
     docs: https://docs.nango.dev/integrations/all/workable
-    connection_config:
-        subdomain:
-            type: string
-            title: Workable Domain
-            description: The subdomain of your Workable account
-            pattern: '^[a-z0-9_-]+$'
-            example: domain
-            suffix: .workable.com
     credentials:
         apiKey:
             type: string
