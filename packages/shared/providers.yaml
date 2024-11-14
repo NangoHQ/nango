@@ -1628,7 +1628,7 @@ databricks-workspace:
             pattern: '^[a-z0-9_-]+(\.[a-z0-9_-]+)*$'
             example: dbc-a1b2345c-d6e7.cloud.databricks.com
 
-#Untested configuration. Please reach out if you have a test account that we can use to test it.
+# Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     display_name: Datev
     categories:
@@ -3579,7 +3579,7 @@ mailchimp:
         response_type: code
     docs: https://docs.nango.dev/integrations/all/mailchimp
 
-#Untested configuration. Please reach out if you have a test account that we can use to test it.
+# Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:
     display_name: Manatal
     auth_mode: API_KEY
