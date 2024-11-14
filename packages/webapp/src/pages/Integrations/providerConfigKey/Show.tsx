@@ -77,8 +77,7 @@ export const ShowIntegration: React.FC = () => {
 
         const nango = new Nango({
             host: environmentAndAccount.host || baseUrl(),
-            websocketsPath: environmentAndAccount.environment.websockets_path || '',
-            publicKey: environmentAndAccount.environment.public_key
+            websocketsPath: environmentAndAccount.environment.websockets_path || ''
         });
 
         connectUI.current = nango.openConnectUI({

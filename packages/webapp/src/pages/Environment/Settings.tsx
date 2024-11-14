@@ -28,6 +28,8 @@ import WebhookCheckboxes from './WebhookCheckboxes';
 import type { WebhookSettings as CheckboxState } from '@nangohq/types';
 import { globalEnv } from '../../utils/env';
 import { useLocalStorage } from 'react-use';
+import { Info } from '../../components/Info';
+import { Link } from 'react-router-dom';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -528,30 +530,39 @@ export const EnvironmentSettings: React.FC = () => {
                     <div className="border border-border-gray rounded-md h-fit pt-6 pb-14">
                         <div>
                             <div className="mx-8 mt-8">
-                                <div className="flex">
-                                    <label htmlFor="public_key" className="text-text-light-gray block text-sm font-semibold mb-2">
-                                        Public Key
-                                    </label>
-                                    <Tooltip
-                                        text={
-                                            <>
-                                                <div className="flex text-black text-sm">
-                                                    {`Used by the`}
-                                                    <a
-                                                        href="https://docs.nango.dev/reference/sdks/frontend"
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="text-text-blue ml-1"
-                                                    >
-                                                        Frontend SDK
-                                                    </a>
-                                                    {'.'}
-                                                </div>
-                                            </>
-                                        }
-                                    >
-                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                    </Tooltip>
+                                <div className="flex flex-col gap-1 mb-2">
+                                    <div className="flex">
+                                        <label htmlFor="public_key" className="text-text-light-gray block text-sm font-semibold mb-2">
+                                            Public Key
+                                        </label>
+                                        <Tooltip
+                                            text={
+                                                <>
+                                                    <div className="flex text-black text-sm">
+                                                        {`Used by the`}
+                                                        <a
+                                                            href="https://docs.nango.dev/reference/sdks/frontend"
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="text-text-blue ml-1"
+                                                        >
+                                                            Frontend SDK
+                                                        </a>
+                                                        {'.'}
+                                                    </div>
+                                                </>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                    </div>
+
+                                    <Info variant={'warning'}>
+                                        Public Key is deprecated, please use{' '}
+                                        <Link className="underline" to="https://docs.nango.dev/integrate/guides/authorize-an-api#authorize-users-from-your-app">
+                                            Nango Connect
+                                        </Link>
+                                    </Info>
                                 </div>
                                 <div className="flex">
                                     <Prism className="w-full" language="bash" colorScheme="dark">
@@ -913,34 +924,16 @@ export const EnvironmentSettings: React.FC = () => {
                         <WebhookCheckboxes mutate={mutate} env={env} checkboxState={webhookCheckboxSettings} setCheckboxState={setWebhookCheckboxSettings} />
                         <div>
                             <div className="mx-8 mt-8 relative">
-                                <div className="flex mb-2">
-                                    <div className="flex text-white mb-2">
-                                        <div className="flex">
-                                            <label htmlFor="hmac key" className="text-text-light-gray block text-sm font-semibold">
-                                                HMAC Key
-                                            </label>
-                                            <Tooltip
-                                                text={
-                                                    <>
-                                                        <div className="flex text-black text-sm">
-                                                            {`To secure the Frontend SDK calls with`}
-                                                            <a
-                                                                href="https://docs.nango.dev/integrate/guides/authorize-an-api#secure-the-frontend-sdk"
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="text-text-blue ml-1"
-                                                            >
-                                                                HMAC
-                                                            </a>
-                                                            {`.`}
-                                                        </div>
-                                                    </>
-                                                }
-                                            >
-                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                            </Tooltip>
-                                        </div>
-                                    </div>
+                                <div className="flex flex-col gap-1 mb-2">
+                                    <label htmlFor="hmac key" className="text-text-light-gray block text-sm font-semibold">
+                                        HMAC Key
+                                    </label>
+                                    <Info variant={'warning'}>
+                                        HMAC is deprecated, please use{' '}
+                                        <Link className="underline" to="https://docs.nango.dev/integrate/guides/authorize-an-api#authorize-users-from-your-app">
+                                            Nango Connect
+                                        </Link>
+                                    </Info>
                                 </div>
                                 {!hmacEditMode && (
                                     <div className="flex">
