@@ -3,9 +3,10 @@ import { RunnerType } from './runner.js';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import { getRunnerClient } from '@nangohq/nango-runner';
 import { env, stringifyError } from '@nangohq/utils';
-import { NodeEnv, getPersistAPIUrl } from '@nangohq/shared';
+import { NodeEnv, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import { RenderAPI } from './render.api.js';
 import tracer from 'dd-trace';
+import { envs } from '../env.js';
 
 const jobsServiceUrl = process.env['JOBS_SERVICE_URL'] || 'http://localhost:3005';
 
@@ -79,7 +80,9 @@ export class RenderRunner implements Runner {
                         { key: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
                         { key: 'DD_ENV', value: process.env['DD_ENV'] || '' },
                         { key: 'DD_SITE', value: process.env['DD_SITE'] || '' },
-                        { key: 'DD_TRACE_AGENT_URL', value: process.env['DD_TRACE_AGENT_URL'] || '' }
+                        { key: 'DD_TRACE_AGENT_URL', value: process.env['DD_TRACE_AGENT_URL'] || '' },
+                        { key: 'PROVIDERS_URL', value: getProvidersUrl() },
+                        { key: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
                     ]
                 });
                 svc = res.data.service;

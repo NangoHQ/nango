@@ -133,6 +133,10 @@ export function getApiUrl() {
     return getServerBaseUrl();
 }
 
+export function getProvidersUrl() {
+    return `${getApiUrl()}/providers.json`;
+}
+
 export function getGlobalOAuthCallbackUrl() {
     const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/oauth/callback';
