@@ -1,26 +1,26 @@
 import db from '@nangohq/database';
 import remoteFileService from '../file/remote.service.js';
 import { env } from '@nangohq/utils';
-import type { PostConnectionScriptByProvider, PostConnectionScript, DBTeam, DBEnvironment } from '@nangohq/types';
+import type { OnEventScriptsByProvider, OnEventScript, DBTeam, DBEnvironment } from '@nangohq/types';
 import { increment } from './config/config.service.js';
 import configService from '../config.service.js';
 
-const TABLE = '_nango_post_connection_scripts';
+const TABLE = 'on_event_scripts';
 
-export const postConnectionScriptService = {
+export const onEventScriptService = {
     async update({
         environment,
         account,
-        postConnectionScriptsByProvider
+        onEventScriptsByProvider
     }: {
         environment: DBEnvironment;
         account: DBTeam;
-        postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
+        onEventScriptsByProvider: OnEventScriptsByProvider[];
     }): Promise<void> {
         await db.knex.transaction(async (trx) => {
-            const postConnectionInserts: Omit<PostConnectionScript, 'id' | 'created_at' | 'updated_at'>[] = [];
-            for (const postConnectionScriptByProvider of postConnectionScriptsByProvider) {
-                const { providerConfigKey, scripts } = postConnectionScriptByProvider;
+            const onEventInserts: Omit<OnEventScript, 'id' | 'created_at' | 'updated_at'>[] = [];
+            for (const onEventScriptByProvider of onEventScriptsByProvider) {
+                const { providerConfigKey, scripts } = onEventScriptByProvider;
 
                 for (const script of scripts) {
                     const { name, fileBody } = script;
@@ -31,7 +31,7 @@ export const postConnectionScriptService = {
                     }
 
                     const previousScriptVersion = await trx
-                        .from<PostConnectionScript>(TABLE)
+                        .from<OnEventScript>(TABLE)
                         .select('version')
                         .where({
                             config_id: config.id,
@@ -43,7 +43,7 @@ export const postConnectionScriptService = {
                     const version = previousScriptVersion ? increment(previousScriptVersion.version) : '0.0.1';
 
                     await trx
-                        .from<PostConnectionScript>(TABLE)
+                        .from<OnEventScript>(TABLE)
                         .where({
                             config_id: config.id,
                             name
@@ -59,7 +59,7 @@ export const postConnectionScriptService = {
                     );
 
                     if (!file_location) {
-                        throw new Error(`Failed to upload the post connection script file: ${name}`);
+                        throw new Error(`Failed to upload the onEvent script file: ${name}`);
                     }
 
                     await remoteFileService.upload(
@@ -68,7 +68,7 @@ export const postConnectionScriptService = {
                         environment.id
                     );
 
-                    postConnectionInserts.push({
+                    onEventInserts.push({
                         config_id: config.id,
                         name,
                         file_location,
@@ -77,10 +77,10 @@ export const postConnectionScriptService = {
                     });
                 }
             }
-            await trx.insert(postConnectionInserts).into(TABLE);
+            await trx.insert(onEventInserts).into(TABLE);
         });
     },
-    getByConfig: async (configId: number): Promise<PostConnectionScript[]> => {
-        return db.knex.from<PostConnectionScript>(TABLE).where({ config_id: configId, active: true });
+    getByConfig: async (configId: number): Promise<OnEventScript[]> => {
+        return db.knex.from<OnEventScript>(TABLE).where({ config_id: configId, active: true });
     }
 };

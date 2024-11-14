@@ -45,7 +45,7 @@ describe(`POST ${endpoint}`, () => {
                 code: 'invalid_body',
                 errors: [
                     { code: 'invalid_type', message: 'Required', path: ['flowConfigs'] },
-                    { code: 'invalid_type', message: 'Required', path: ['postConnectionScriptsByProvider'] },
+                    { code: 'invalid_type', message: 'Required', path: ['onEventScriptsByProvider'] },
                     { code: 'invalid_type', message: 'Required', path: ['nangoYamlBody'] },
                     { code: 'invalid_type', message: 'Required', path: ['reconcile'] },
                     { code: 'invalid_type', message: 'Expected boolean, received string', path: ['debug'] }
@@ -64,7 +64,7 @@ describe(`POST ${endpoint}`, () => {
                 debug: false,
                 flowConfigs: [],
                 nangoYamlBody: '',
-                postConnectionScriptsByProvider: [],
+                onEventScriptsByProvider: [],
                 reconcile: false,
                 singleDeployMode: false,
                 jsonSchema: { $comment: '', $schema: 'http://json-schema.org/draft-07/schema#', definitions: {} }
@@ -122,7 +122,7 @@ describe(`POST ${endpoint}`, () => {
                         }
                     ],
                     nangoYamlBody: ``,
-                    postConnectionScriptsByProvider: [],
+                    onEventScriptsByProvider: [],
                     reconcile: false,
                     singleDeployMode: false
                 }
@@ -204,7 +204,7 @@ describe(`POST ${endpoint}`, () => {
                     },
                     flowConfigs: [],
                     nangoYamlBody: ``,
-                    postConnectionScriptsByProvider: [],
+                    onEventScriptsByProvider: [],
                     reconcile: true,
                     singleDeployMode: false
                 }

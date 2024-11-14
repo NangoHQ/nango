@@ -1,7 +1,7 @@
 import type { JSONSchema7 } from 'json-schema';
 
 import type { Endpoint, ApiError } from '../api.js';
-import type { IncomingFlowConfig, PostConnectionScriptByProvider } from './incomingFlow.js';
+import type { IncomingFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
 import type { SyncDeploymentResult } from './index.js';
 
 export type PostDeployConfirmation = Endpoint<{
@@ -9,7 +9,7 @@ export type PostDeployConfirmation = Endpoint<{
     Path: '/sync/deploy/confirmation';
     Body: {
         flowConfigs: IncomingFlowConfig[];
-        postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
+        onEventScriptsByProvider: OnEventScriptsByProvider[];
         reconcile: boolean;
         debug: boolean;
         singleDeployMode?: boolean;
@@ -23,7 +23,7 @@ export type PostDeploy = Endpoint<{
     Path: '/sync/deploy';
     Body: {
         flowConfigs: IncomingFlowConfig[];
-        postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
+        onEventScriptsByProvider: OnEventScriptsByProvider[];
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
@@ -41,7 +41,7 @@ export type PostDeployInternal = Endpoint<{
     };
     Body: {
         flowConfigs: IncomingFlowConfig[];
-        postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
+        onEventScriptsByProvider: OnEventScriptsByProvider[];
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;

@@ -1,13 +1,9 @@
 import type { RecentlyCreatedConnection } from '@nangohq/shared';
-import { postConnectionScriptService } from '@nangohq/shared';
+import { onEventScriptService } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
-import { getOrchestrator } from '../../utils/utils.js';
+import { getOrchestrator } from '../../../utils/utils.js';
 
-export async function externalPostConnection(
-    createdConnection: RecentlyCreatedConnection,
-    provider: string,
-    logContextGetter: LogContextGetter
-): Promise<void> {
+export async function onConnectionCreated(createdConnection: RecentlyCreatedConnection, provider: string, logContextGetter: LogContextGetter): Promise<void> {
     if (!createdConnection) {
         return;
     }
@@ -18,9 +14,9 @@ export async function externalPostConnection(
         return;
     }
 
-    const postConnectionScripts = await postConnectionScriptService.getByConfig(config_id);
+    const onConnectionCreatedScripts = await onEventScriptService.getByConfig(config_id);
 
-    if (!postConnectionScripts || postConnectionScripts.length === 0) {
+    if (!onConnectionCreatedScripts || onConnectionCreatedScripts.length === 0) {
         return;
     }
 
@@ -35,7 +31,7 @@ export async function externalPostConnection(
     );
 
     let failed = false;
-    for (const postConnectionScript of postConnectionScripts) {
+    for (const postConnectionScript of onConnectionCreatedScripts) {
         const { name, file_location: fileLocation, version } = postConnectionScript;
 
         const res = await getOrchestrator().triggerPostConnectionScript({
