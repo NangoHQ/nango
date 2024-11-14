@@ -1686,7 +1686,7 @@ datadog:
             description: The application key required for read data access
             pattern: '^[a-f0-9]{40}$'
             example: '5d8a7b3f2dc8bce1b234e7f1a1ac54728dbf9e4a7'
-            doc_section: '#step-2-datadog-api-key-and-credentials'
+            doc_section: '#step-3-datadog-application-key'
     credentials:
         apiKey:
             type: string
@@ -1694,7 +1694,7 @@ datadog:
             description: The API key for your Datadog account
             pattern: '^[a-f0-9]{32}$'
             example: '4f3c12efb9659a0b5c123b568745dbf9'
-            doc_section: '#step-2-datadog-api-key-and-credentials'
+            doc_section: '#step-2-datadog-api-key'
 
 deel:
     display_name: Deel
