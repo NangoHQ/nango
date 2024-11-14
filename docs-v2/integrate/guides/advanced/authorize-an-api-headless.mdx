@@ -21,7 +21,7 @@ In your frontend, initiate Nango ([reference](/reference/sdks/frontend#instantia
 ```ts
 import Nango from '@nangohq/frontend';
 
-let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
+const nango = new Nango({ connectSessionToken: '<CONNECTION-SESSION-TOKNE>' });
 ```
 
 Initiate the authorization flow ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
