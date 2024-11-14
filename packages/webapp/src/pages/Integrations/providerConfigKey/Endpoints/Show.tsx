@@ -25,7 +25,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         const tmp: Record<string, NangoSyncConfigWithEndpoint[]> = {};
         for (const flow of data.flows) {
             for (const endpoint of flow.endpoints) {
-                const groupName = endpoint.entity || 'others';
+                const groupName = endpoint.group || 'others';
 
                 let group = tmp[groupName];
                 if (!group) {

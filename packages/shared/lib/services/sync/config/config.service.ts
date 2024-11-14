@@ -693,7 +693,7 @@ export async function getSyncConfigsAsStandardConfig(
             '_nango_configs.provider',
             db.knex.raw(
                 `(
-                    SELECT json_agg(json_build_object('method', method, 'path', path, 'entity', entity))
+                    SELECT json_agg(json_build_object('method', method, 'path', path, 'group', group))
                     FROM _nango_sync_endpoints
                     WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
                 ) as endpoints_object`

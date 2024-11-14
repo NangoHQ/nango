@@ -310,12 +310,12 @@ export async function upgradePreBuilt({
 
         // update endpoints
         if (flow.endpoints) {
-            flow.endpoints.forEach(({ method, path, entity }, endpointIndex) => {
+            flow.endpoints.forEach(({ method, path, group }, endpointIndex) => {
                 const res: DBSyncEndpointCreate = {
                     sync_config_id: newSyncConfigId,
                     method,
                     path,
-                    entity: entity || null,
+                    group: group || null,
                     created_at: now,
                     updated_at: now
                 };
@@ -908,7 +908,7 @@ function endpointToSyncEndpoint(flow: Pick<CleanedIncomingFlowConfig, 'endpoints
             sync_config_id,
             method: endpoint.method,
             path: endpoint.path,
-            entity: endpoint.entity || null,
+            group: endpoint.group || null,
             created_at: new Date(),
             updated_at: new Date()
         };
