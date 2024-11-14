@@ -73,7 +73,10 @@ async function fetchRunners() {
 
         services = services.concat(filteredServices);
 
-        await sleep(1000);
+        const remaining = parseInt(response.headers.get('ratelimit-remaining'));
+        const resetMs = (parseInt(response.headers.get('ratelimit-reset')) + 1) * 1000;
+
+        await sleep(Math.ceil((resetMs + 1) / remaining));
     }
 
     return services;
@@ -96,4 +99,9 @@ async function updateEnvVar(serviceId, key, value) {
         const body = await response.text();
         throw new Error(`Failed to update env var ${key} for service ${serviceId}\n${body}`);
     }
+
+    const remaining = parseInt(response.headers.get('ratelimit-remaining'));
+    const resetMs = (parseInt(response.headers.get('ratelimit-reset')) + 1) * 1000;
+
+    await sleep(Math.ceil((resetMs + 1) / remaining));
 }
