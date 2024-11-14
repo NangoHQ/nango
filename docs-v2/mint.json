@@ -217,6 +217,12 @@
             ]
         },
         {
+            "group": "Other Features",
+            "pages": [
+                "features/otlp-export"
+            ]
+        },
+        {
             "group": "APIs & Templates",
             "pages": [
                 "integrations/overview",
@@ -351,6 +357,7 @@
                 "integrations/all/box",
                 "integrations/all/braintree",
                 "integrations/all/brex",
+                "integrations/all/brightcrowd",
                 "integrations/all/builder-io",
                 "integrations/all/buildium",
                 "integrations/all/calendly",
@@ -390,6 +397,7 @@
                 "integrations/all/elevio",
                 "integrations/all/egnyte",
                 "integrations/all/elevenlabs",
+                "integrations/all/emarsys",
                 "integrations/all/entrata",
                 "integrations/all/envoy",
                 "integrations/all/epic-games",

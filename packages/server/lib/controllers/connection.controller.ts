@@ -600,7 +600,7 @@ class ConnectionController {
                     return;
                 }
 
-                const [imported] = await connectionService.upsertTbaConnection({
+                const [imported] = await connectionService.upsertAuthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
                     credentials: tbaCredentials,

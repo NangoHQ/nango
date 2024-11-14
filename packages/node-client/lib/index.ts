@@ -23,7 +23,8 @@ import type {
     PostConnectSessions,
     JwtCredentials,
     TwoStepCredentials,
-    GetPublicConnections
+    GetPublicConnections,
+    SignatureCredentials
 } from '@nangohq/types';
 import type {
     Connection,
@@ -340,6 +341,7 @@ export class Nango {
         | JwtCredentials
         | BillCredentials
         | TwoStepCredentials
+        | SignatureCredentials
     > {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 

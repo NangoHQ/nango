@@ -599,6 +599,7 @@ bamboohr:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
+            order: 1
 
 bamboohr-basic:
     display_name: BambooHR (basic auth)
@@ -619,6 +620,22 @@ bamboohr-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your BambooHR account
+            pattern: '^[a-zA-Z0-9]+$'
+            secret: true
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://documentation.bamboohr.com/docs/getting-started
+            # Bamboo HR is using basic auth with an api key
+            default_value: x
+            hidden: true
 
 battlenet:
     display_name: Battle.net
@@ -672,7 +689,7 @@ bigcommerce:
             example: 123e4567-e89b-12d3-a456-426614174000
 
 bill-sandbox:
-    display_name: Bill(Connect API sandbox)
+    display_name: Bill (Connect API sandbox)
     categories:
         - payment
     auth_mode: BILL
@@ -682,7 +699,7 @@ bill-sandbox:
     docs: https://docs.nango.dev/integrations/all/bill
 
 bill:
-    display_name: Bill(Connect API)
+    display_name: Bill (Connect API)
     categories:
         - payment
     auth_mode: BILL
@@ -882,6 +899,23 @@ brex-staging:
     proxy:
         base_url: https://platform.staging.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
+
+brightcrowd:
+    display_name: BrightCrowd
+    categories:
+        - social
+    auth_mode: OAUTH2_CC
+    token_url: https://bcb-staging.auth.us-east-1.amazoncognito.com/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.brightcrowd.com/partner
+        paginate:
+            type: cursor
+            cursor_path_in_response: nextPageToken
+            cursor_name_in_request: pageToken
+    docs: https://docs.nango.dev/integrations/all/brightcrowd
 
 builder-io-private:
     display_name: Builder.io (private)
@@ -1855,6 +1889,27 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+
+emarsys:
+    display_name: Emarsys Core API
+    categories:
+        - marketing
+    auth_mode: SIGNATURE
+    signature:
+        protocol: WSSE
+    proxy:
+        base_url: https://api.emarsys.net
+        headers:
+            Content-Type: application/json
+            X-WSSE: ${accessToken}
+        verification:
+            method: GET
+            endpoint: /api/v2/settings
+        retry:
+            at: 'X-RateLimit-Reset'
+    token:
+        expires_in_ms: 300000
+    docs: https://docs.nango.dev/integrations/all/emarsys
 
 e-conomic:
     display_name: e-conomic
@@ -3079,6 +3134,17 @@ jira-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .atlassian.net
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Email Address
+            description: The Email Address of your Jira account
+            format: email
+        password:
+            type: string
+            title: API Key
+            description: The API Key of your Jira account
 
 jira-data-center:
     display_name: Jira Data Center
@@ -3523,7 +3589,7 @@ marketo:
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.endpointURL}
-    token_url: https://${connectionConfig.identityURL}/oauth/token
+    token_url: https://${connectionConfig.identityURL}/identity/oauth/token
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
@@ -3536,6 +3602,7 @@ marketo:
             example: xxx.mktorest.com
             prefix: https://
             suffix: /
+            order: 1
         identityURL:
             type: string
             title: Identity URL
@@ -3543,7 +3610,8 @@ marketo:
             format: hostname
             prefix: https://
             example: xxx.mktorest.com
-            suffix: /oauth/token
+            suffix: /identity/oauth/token
+            order: 2
 
 malwarebytes:
     display_name: Malwarebytes
@@ -3723,6 +3791,7 @@ mindbody:
         - productivity
     auth_mode: API_KEY
     proxy:
+        base_url: https://api.mindbodyonline.com
         headers:
             API-Key: ${apiKey}
             siteId: ${connectionConfig.siteId}
@@ -4845,7 +4914,6 @@ sedna:
             type: string
             title: Tenant
             description: The tenant name to your sedna account
-            format: tenant
 
 sedna-basic:
     display_name: Sedna (Basic Auth)
@@ -4860,7 +4928,6 @@ sedna-basic:
             type: string
             title: Tenant
             description: The tenant name to your sedna account
-            format: tenant
 
 servicem8:
     display_name: ServiceM8
@@ -5940,7 +6007,7 @@ whatsapp-business:
             type: string
             title: API Key
             description: The access token to your whatsapp account
-            pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
+            pattern: '^[a-zA-Z0-9]+$'
 
 whoop:
     display_name: Whoop
