@@ -6,7 +6,7 @@ import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyn
 import connectionService from '../../connection.service.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
-import type { SyncModelSchema, SyncConfig, SyncEndpoint, SyncType, Sync } from '../../../models/Sync.js';
+import type { SyncModelSchema, SyncConfig, SyncType, Sync } from '../../../models/Sync.js';
 import type {
     DBEnvironment,
     DBTeam,
@@ -17,7 +17,9 @@ import type {
     NangoSyncEndpointV2,
     IncomingFlowConfig,
     HTTP_METHOD,
-    SyncDeploymentResult
+    SyncDeploymentResult,
+    DBSyncEndpointCreate,
+    DBSyncEndpoint
 } from '@nangohq/types';
 import { postConnectionScriptService } from '../post-connection.service.js';
 import { NangoError } from '../../../utils/error.js';
@@ -163,7 +165,7 @@ export async function deploy({
             )
             .returning('id');
 
-        const endpoints: SyncEndpoint[] = [];
+        const endpoints: DBSyncEndpointCreate[] = [];
         for (const [index, row] of flowIds.entries()) {
             const flow = flows[index];
             if (!flow) {
@@ -174,7 +176,7 @@ export async function deploy({
         }
 
         if (endpoints.length > 0) {
-            await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+            await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
         }
 
         if (postConnectionScriptsByProvider.length > 0) {
@@ -301,18 +303,19 @@ export async function upgradePreBuilt({
             throw new NangoError('error_creating_sync_config');
         }
         const newSyncConfigId = newSyncConfig.id;
-        const endpoints: SyncEndpoint[] = [];
+        const endpoints: DBSyncEndpointCreate[] = [];
 
         // update sync_config_id in syncs table
         await db.knex.from<Sync>(SYNC_TABLE).update({ sync_config_id: newSyncConfigId }).where('sync_config_id', syncConfig.id);
 
         // update endpoints
         if (flow.endpoints) {
-            flow.endpoints.forEach(({ method, path }, endpointIndex) => {
-                const res: SyncEndpoint = {
+            flow.endpoints.forEach(({ method, path, group }, endpointIndex) => {
+                const res: DBSyncEndpointCreate = {
                     sync_config_id: newSyncConfigId,
                     method,
                     path,
+                    group_name: group || null,
                     created_at: now,
                     updated_at: now
                 };
@@ -325,7 +328,7 @@ export async function upgradePreBuilt({
         }
 
         if (endpoints.length > 0) {
-            await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+            await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
         }
 
         await db.knex.from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', [syncConfig.id]);
@@ -594,7 +597,7 @@ export async function deployPreBuilt({
             }
         });
 
-        const endpoints: SyncEndpoint[] = [];
+        const endpoints: DBSyncEndpointCreate[] = [];
         for (const [index, row] of syncConfigs.entries()) {
             const flow = configs[index];
             if (!flow) {
@@ -605,7 +608,7 @@ export async function deployPreBuilt({
         }
 
         if (endpoints.length > 0) {
-            await db.knex.from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+            await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
         }
 
         for (const id of idsToMarkAsInactive) {
@@ -899,12 +902,13 @@ function findModelInModelSchema(fields: NangoModel['fields']) {
 }
 
 function endpointToSyncEndpoint(flow: Pick<CleanedIncomingFlowConfig, 'endpoints' | 'models'>, sync_config_id: number) {
-    const endpoints: SyncEndpoint[] = [];
+    const endpoints: DBSyncEndpointCreate[] = [];
     for (const [endpointIndex, endpoint] of flow.endpoints.entries()) {
-        const res: SyncEndpoint = {
+        const res: DBSyncEndpointCreate = {
             sync_config_id,
             method: endpoint.method,
             path: endpoint.path,
+            group_name: endpoint.group || null,
             created_at: new Date(),
             updated_at: new Date()
         };

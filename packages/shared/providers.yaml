@@ -3791,6 +3791,7 @@ mindbody:
         - productivity
     auth_mode: API_KEY
     proxy:
+        base_url: https://api.mindbodyonline.com
         headers:
             API-Key: ${apiKey}
             siteId: ${connectionConfig.siteId}
@@ -6006,7 +6007,7 @@ whatsapp-business:
             type: string
             title: API Key
             description: The access token to your whatsapp account
-            pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
+            pattern: '^[a-zA-Z0-9]+$'
 
 whoop:
     display_name: Whoop
